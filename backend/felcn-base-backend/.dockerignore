@@ -1,0 +1,19 @@
+#ignoring dirs
+./node_modules
+./dist
+./.next
+./.nuxt
+
+#ignoring dotfiles
+.dockerignore
+.env.sample
+.git
+
+#ignoring markdown files
+*.md
+
+*ockerfile*
+*docker-compose*
+
+./.gitlab-ci.yml
+./.gitlab

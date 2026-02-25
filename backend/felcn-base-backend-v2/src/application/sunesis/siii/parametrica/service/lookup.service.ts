@@ -1,0 +1,165 @@
+import { Injectable } from '@nestjs/common'
+import { BaseService } from '@/common/base'
+import { LookupRepository } from '../repository/lookup.repository'
+
+@Injectable()
+export class LookupService extends BaseService {
+  constructor(private readonly lookupRepository: LookupRepository) {
+    super()
+  }
+
+  // Geografía
+  async listarContinentes() {
+    return this.lookupRepository.listarContinentes()
+  }
+
+  async listarPaises() {
+    return this.lookupRepository.listarPaises()
+  }
+
+  async listarPaisesPorContinente(idContinente: number) {
+    return this.lookupRepository.listarPaisesPorContinente(idContinente)
+  }
+
+  async listarPaisesDestino() {
+    return this.lookupRepository.listarPaisesDestino()
+  }
+
+  async listarDepartamentos() {
+    return this.lookupRepository.listarDepartamentos()
+  }
+
+  async listarDepartamentosPorPais(idPais: number) {
+    return this.lookupRepository.listarDepartamentosPorPais(idPais)
+  }
+
+  async listarProvincias() {
+    return this.lookupRepository.listarProvincias()
+  }
+
+  async listarProvinciasPorDepartamento(idDepartamento: number) {
+    return this.lookupRepository.listarProvinciasPorDepartamento(idDepartamento)
+  }
+
+  async listarLocalidades() {
+    return this.lookupRepository.listarLocalidades()
+  }
+
+  async listarLocalidadesPorProvincia(idProvincia: number) {
+    return this.lookupRepository.listarLocalidadesPorProvincia(idProvincia)
+  }
+
+  // Tipos
+  async listarTiposDroga() {
+    return this.lookupRepository.listarTiposDroga()
+  }
+
+  async listarTiposOperacion() {
+    return this.lookupRepository.listarTiposOperacion()
+  }
+
+  async listarTiposPenal() {
+    return this.lookupRepository.listarTiposPenal()
+  }
+
+  async listarTiposRelevancia() {
+    return this.lookupRepository.listarTiposRelevancia()
+  }
+
+  async listarTiposPersona() {
+    return this.lookupRepository.listarTiposPersona()
+  }
+
+  async listarEstadosCiviles() {
+    return this.lookupRepository.listarEstadosCiviles()
+  }
+
+  async listarCategoriasOperativo() {
+    return this.lookupRepository.listarCategoriasOperativo()
+  }
+
+  // Nuevos tipos
+  async listarTiposDenuncia() {
+    return this.lookupRepository.listarTiposDenuncia()
+  }
+
+  async listarTiposFabrica() {
+    return this.lookupRepository.listarTiposFabrica()
+  }
+
+  async listarTiposDocumento() {
+    return this.lookupRepository.listarTiposDocumento()
+  }
+
+  async listarTiposImplicado() {
+    return this.lookupRepository.listarTiposImplicado()
+  }
+
+  // Operativo params
+  async listarPlanesOperaciones() {
+    return this.lookupRepository.listarPlanesOperaciones()
+  }
+
+  async listarFormasTransporte() {
+    return this.lookupRepository.listarFormasTransporte()
+  }
+
+  async listarEtapas() {
+    return this.lookupRepository.listarEtapas()
+  }
+
+  async listarEtapasInvestigacion() {
+    return this.lookupRepository.listarEtapasInvestigacion()
+  }
+
+  async listarRecursos() {
+    return this.lookupRepository.listarRecursos()
+  }
+
+  // Sustancias
+  async listarSustanciasSolidasDesc() {
+    return this.lookupRepository.listarSustanciasSolidasDesc()
+  }
+
+  async listarSustanciasLiquidasDesc() {
+    return this.lookupRepository.listarSustanciasLiquidasDesc()
+  }
+
+  async listarCocaProcedencias() {
+    return this.lookupRepository.listarCocaProcedencias()
+  }
+
+  async listarCocaEstados() {
+    return this.lookupRepository.listarCocaEstados()
+  }
+
+  async listarCocaDescripciones() {
+    return this.lookupRepository.listarCocaDescripciones()
+  }
+
+  // Bienes
+  async listarBienes() {
+    return this.lookupRepository.listarBienes()
+  }
+
+  async listarCalidadesBien() {
+    return this.lookupRepository.listarCalidadesBien()
+  }
+
+  // Persona - colores
+  async listarColoresPiel() {
+    return this.lookupRepository.listarColoresPiel()
+  }
+
+  async listarColoresOjos() {
+    return this.lookupRepository.listarColoresOjos()
+  }
+
+  async listarColoresCabello() {
+    return this.lookupRepository.listarColoresCabello()
+  }
+
+  async listarTiposCabello() {
+    return this.lookupRepository.listarTiposCabello()
+  }
+}

@@ -1,0 +1,33 @@
+Generar Changelog y Tag:
+  image: hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_AUTHOR !~ /adas-cli\[bot\]/'
+  tags:
+    - runner-k8s-dev
+  script:
+    - /adas/adas-cli ci release changelog --motor git-chglog --mode npm --group proyectos-base --environment dev-proyectos-base --project $CI_PROJECT_NAME
+
+Generar release minor:
+  image: hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_AUTHOR !~ /adas-cli\[bot\]/'
+      when: manual
+      allow_failure: true
+  tags:
+    - runner-k8s-dev
+  script:
+    - /adas/adas-cli ci release changelog --motor git-chglog --mode npm --change-to minor --group proyectos-base --environment dev-proyectos-base --project $CI_PROJECT_NAME
+
+Generar release patch:
+  image: hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop" && $CI_COMMIT_AUTHOR !~ /adas-cli\[bot\]/'
+      when: manual
+      allow_failure: true
+  tags:
+    - runner-k8s-dev
+  script:
+    - /adas/adas-cli ci release changelog --motor git-chglog --mode npm --change-to patch --group proyectos-base --environment dev-proyectos-base --project $CI_PROJECT_NAME
