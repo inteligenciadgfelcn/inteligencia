@@ -1,0 +1,15 @@
+FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS base
+WORKDIR /home/node/app
+
+COPY package*.json ./
+
+RUN npm set registry https://registry.agcs.agetic.gob.bo/ && \
+    npm set strict-ssl false && \
+    npm ci --progress=false --no-audit --ignore-scripts --legacy-peer-deps
+
+COPY . .
+
+RUN node --run build
+
+FROM base AS merge
+RUN npm run format-check

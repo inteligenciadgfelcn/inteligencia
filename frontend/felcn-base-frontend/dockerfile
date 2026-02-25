@@ -1,0 +1,40 @@
+FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS build
+WORKDIR /home/node/app
+
+COPY package*.json ./
+
+RUN npm set registry https://registry.agcs.agetic.gob.bo/ && \
+    npm set strict-ssl false && \
+    npm ci --progress=false --no-audit --ignore-scripts --legacy-peer-deps
+
+COPY . .
+
+RUN node --run build
+
+FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS release
+WORKDIR /home/node/app
+RUN apk add --no-cache libc6-compat && \
+    chown -R node:node /home/node/app
+    
+RUN npm i sharp@0.33.5 --legacy-peer-deps
+
+COPY --chown=node:node ./public ./public
+COPY --chown=node:node ./package.json ./package.json
+
+COPY --chown=node:node ./next.config.js ./next.config.js
+COPY --chown=node:node ./next-env.d.ts ./next-env.d.ts
+
+COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
+COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
+
+ARG CI_COMMIT_SHORT_SHA
+ARG CI_COMMIT_MESSAGE
+ARG CI_COMMIT_REF_NAME
+ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} \
+    CI_COMMIT_MESSAGE=${CI_COMMIT_MESSAGE} \
+    CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
+
+FROM release AS app
+USER node
+CMD  ["sh", "-c",  "node server.js"]
+EXPOSE 3000
