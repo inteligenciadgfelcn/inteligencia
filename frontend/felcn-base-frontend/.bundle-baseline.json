@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-02-04T10:25:57.008Z",
+  "totalDependencies": 66,
+  "muiDependencies": 11,
+  "muiDependenciesList": [
+    "@emotion/cache",
+    "@emotion/react",
+    "@emotion/server",
+    "@emotion/styled",
+    "@mui/icons-material",
+    "@mui/lab",
+    "@mui/material",
+    "@mui/material-nextjs",
+    "@mui/x-charts",
+    "@mui/x-data-grid",
+    "@mui/x-date-pickers"
+  ],
+  "buildSizes": {
+    "error": "Build failed",
+    "message": "Command failed: npm run build 2>&1"
+  },
+  "nodeModulesSize": "1.5G"
+}
