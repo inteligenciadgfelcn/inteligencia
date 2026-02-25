@@ -50,3 +50,11 @@ export const generarFechaAnterior = (
   unit: ManipulateType,
   formato: string
 ): string => dayjs().subtract(value, unit).format(formato)
+
+export const nowDateToString = () => {
+  const now = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+
+  return formatted
+}
