@@ -1,5 +1,5 @@
+import { FormularioOperativo } from '@/components/organismos/operativo/FormularioOperativo';
 import { Meta, StoryFn } from '@storybook/react';
-import { FormularioOperativo } from '@/app/stories/organismos/operativo/FormularioOperativo';
 
 export default {
     title: 'Operativo/FormularioOperativo',

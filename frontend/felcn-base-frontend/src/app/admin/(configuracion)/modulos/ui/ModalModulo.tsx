@@ -27,38 +27,38 @@ const formSchema = z
     url: z.string().min(1, 'URL obligatoria'),
     orden: z.coerce.number().min(1, 'Orden mínimo 1'),
     descripcion: z.string().min(1, 'Descripción obligatoria'),
-    icono: z
-      .string()
-      .refine((v) => v !== '', 'Debe seleccionar una opción')
-      .nullable(),
-    moduloPadreId: z
-      .string()
-      .refine((v) => v !== '', 'Debe seleccionar una opción')
-      .nullable(),
+    icono: z.string().optional(),
+    moduloPadreId: z.string().nullable(),
     esSeccion: z.boolean(),
   })
   .refine(
     (data) => {
       if (!data.esSeccion) {
-        return !!data.icono && data.icono !== ''
+        return (
+          data.icono !== undefined && data.icono !== null && data.icono !== ''
+        )
       }
       return true
     },
     {
-      path: ['icono'],
-      message: 'Debe seleccionar un icono',
+      path: ['icono'], // Campo al que se aplica la validación condicional
+      message: 'El ícono es requerido',
     }
   )
   .refine(
     (data) => {
       if (!data.esSeccion) {
-        return !!data.moduloPadreId && data.moduloPadreId !== ''
+        return (
+          data.moduloPadreId !== null &&
+          data.moduloPadreId !== undefined &&
+          data.moduloPadreId !== ''
+        )
       }
       return true
     },
     {
       path: ['moduloPadreId'],
-      message: 'Debe seleccionar una sección',
+      message: 'La sección es requerida',
     }
   )
 
@@ -110,7 +110,7 @@ export const ModalModulo = ({
       descripcion: modulo?.propiedades?.descripcion || '',
       icono: modulo?.propiedades?.icono || '',
       moduloPadreId: modulo?.modulo?.id || null,
-      esSeccion: tipoNuevo === 'seccion' ? true : modulo?.modulo === null,
+      esSeccion: tipoNuevo === 'seccion',
     },
   })
 
@@ -122,8 +122,9 @@ export const ModalModulo = ({
     if (loading) return
     try {
       setLoading(true)
-
+      console.log(values)
       const payload = {
+        idModulo: values.moduloPadreId,
         label: values.label,
         url: values.url,
         nombre: values.nombre,

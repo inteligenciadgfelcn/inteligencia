@@ -19,27 +19,27 @@ const Sidebar = () => {
   const modulosBackend = rolUsuario?.modulos || []
   const modulos = [
     ...modulosBackend,
-    {
-      id: 'operativo-module',
-      label: 'Operaciones',
-      propiedades: {
-        icono: 'widgets',
-        descripcion: 'Modulo de Operaciones',
-        orden: 99,
-      },
-      subModulo: [
-        {
-          id: 'formulario-operativo',
-          label: 'Formulario Operativo',
-          url: '/admin/operativo',
-          propiedades: {
-            icono: 'form',
-            descripcion: 'Formulario de registro operativo',
-            orden: 1,
-          },
-        },
-      ],
-    },
+    // {
+    //   id: 'operativo-module',
+    //   label: 'Operaciones',
+    //   propiedades: {
+    //     icono: 'widgets',
+    //     descripcion: 'Modulo de Operaciones',
+    //     orden: 99,
+    //   },
+    //   subModulo: [
+    //     {
+    //       id: 'formulario-operativo',
+    //       label: 'Formulario Operativo',
+    //       url: '/admin/operativo',
+    //       propiedades: {
+    //         icono: 'form',
+    //         descripcion: 'Formulario de registro operativo',
+    //         orden: 1,
+    //       },
+    //     },
+    //   ],
+    // },
   ]
 
   const pathname = usePathname()
