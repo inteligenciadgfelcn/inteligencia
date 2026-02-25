@@ -1,7 +1,0 @@
-export * from './abstract-controller.dto'
-export * from './error-response.dto'
-export * from './paginacion-query.dto'
-export * from './params-id.dto'
-export * from './params-uuid.dto'
-export * from './success-response.dto'
-export * from './total-rows-response.dto'
