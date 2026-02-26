@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsEmail, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  IsDateString,
+  IsArray,
+} from 'class-validator';
 
 export class CreatePersonaExternoDto {
   @ApiProperty({ example: '12345678' })
@@ -7,7 +13,7 @@ export class CreatePersonaExternoDto {
   @IsNotEmpty()
   nroDocumento: string;
 
-  @ApiProperty({ example: '12345678' })
+  @ApiProperty({ example: 'CI' })
   @IsString()
   @IsNotEmpty()
   tipoDocumento: string;
@@ -24,21 +30,25 @@ export class CreatePersonaExternoDto {
   @ApiProperty({ example: 'Juan' })
   @IsString()
   @IsNotEmpty()
-  nombre: string;
+  nombres: string;
 
   @ApiProperty({ example: '1990-05-10' })
   @IsDateString()
-  fechaNacimiento: string;
+  fechaNacimiento: number;
 
   @ApiProperty({ example: 'juan.perez@gmail.com' })
   @IsEmail()
-  correo: string;
+  correoElectronico: string;
 
-  @ApiProperty({ example: 'juan.perez@gmail.com' })
-  @IsEmail()
-  roles: string[];
-
-  @ApiProperty({ example: '77777777' })
+  @ApiProperty({ example: '67896356' })
   @IsString()
   telefono: string;
+
+  @ApiProperty({
+    example: ['1'],
+    type: [String],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  roles: string[];
 }

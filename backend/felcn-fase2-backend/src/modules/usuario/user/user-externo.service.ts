@@ -7,7 +7,7 @@ export class UsuarioExternoService {
   constructor(private readonly httpService: HttpService) {}
 
   async crearUsuarioExterno(dto: any, token: string) {
-    console.log('DTO para usuario externo:', token);
+   console.log('TOKEN RECIBIDO:', token);
     try {
       const response = await firstValueFrom(
         this.httpService.post(
@@ -15,7 +15,7 @@ export class UsuarioExternoService {
           dto,
           {
             headers: {
-              Authorization: `${token}`,
+              Authorization: `Bearer ${token}`,
             },
           },
         ),
