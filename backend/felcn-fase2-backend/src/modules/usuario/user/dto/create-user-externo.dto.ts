@@ -34,7 +34,7 @@ export class CreatePersonaExternoDto {
 
   @ApiProperty({ example: '1990-05-10' })
   @IsDateString()
-  fechaNacimiento: number;
+  fechaNacimiento: string;
 
   @ApiProperty({ example: 'juan.perez@gmail.com' })
   @IsEmail()

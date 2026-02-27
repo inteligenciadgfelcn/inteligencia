@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Column, Entity, Index, ManyToOne, JoinColumn } from 'typeorm';
 
 import { BaseStatusEntity } from 'src/common/entity/base-status.entity';
 import { Grado } from '../../grados/entities/grado.entity';
@@ -24,6 +18,54 @@ export class User extends BaseStatusEntity {
   })
   idUsuario: number;
 
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+    comment: 'Nro de Carnet o pasaporte',
+  })
+  nroDocumento: string;
+
+  @Column({
+    type: 'varchar',
+    length: 30,
+    nullable: true,
+    comment: 'Tipo de documento',
+  })
+  tipoDocumento: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    comment: 'Nombres del usuario',
+  })
+  nombres: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    comment: 'Primer apellido del usuario',
+  })
+  primerApellido: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    comment: 'Segundo apellido del usuario',
+  })
+  segundoApellido: string;
+
+  @Column({
+    type: 'varchar',
+    length: 150,
+    nullable: true,
+    comment: 'Correo electronico del usuario',
+  })
+  correoElectronico: string;
+
   @Index({ unique: true })
   @Column({
     type: 'varchar',
@@ -33,6 +75,14 @@ export class User extends BaseStatusEntity {
     comment: 'Número de pase único del usuario',
   })
   nroPase: string;
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    comment: 'Teléfono del usuario',
+  })
+  telefono: string;
 
   @Column({
     type: 'varchar',

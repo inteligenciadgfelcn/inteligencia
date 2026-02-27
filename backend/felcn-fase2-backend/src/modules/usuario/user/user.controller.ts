@@ -29,6 +29,7 @@ import { PaginationResult } from 'src/common/interfaces/pagination-result.interf
 import { UserService } from './user.service';
 import { CreateUsuarioCompletoDto } from './dto/create-user-completo.dto';
 import { JwtAuthGuard } from 'src/core/auth/jwt-auth.guard';
+import { UpdateUsuarioCompletoDto } from './dto/update-user-completo.dto';
 
 @ApiBearerAuth('jwt-auth')
 @UseGuards(JwtAuthGuard)
@@ -38,15 +39,12 @@ export class UsersController {
   constructor(private readonly usersService: UserService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async create(@Body() dto: CreateUsuarioCompletoDto, @Req() req) {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     return this.usersService.create(dto, token);
   }
 
-  // 🔹 LISTADO PAGINADO
   @Get()
   @ApiOperation({
     summary: 'Listado paginado de usuarios',
@@ -57,7 +55,6 @@ export class UsersController {
     return this.usersService.findAll(pagination);
   }
 
-  // 🔹 LISTA SIMPLE
   @Get('lista')
   @ApiOperation({
     summary: 'Lista simple de usuarios activos',
@@ -66,7 +63,6 @@ export class UsersController {
     return this.usersService.findAllActivos();
   }
 
-  // 🔹 BUSCAR POR ID
   @Get(':id')
   @ApiOperation({
     summary: 'Obtener usuario por ID',
@@ -76,26 +72,14 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  // 🔹 ACTUALIZAR
   @Patch(':id')
-  @ApiOperation({
-    summary: 'Actualizar usuario',
-  })
-  @ApiParam({ name: 'id', example: 1 })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateUserDto,
+    @Body() dto: UpdateUsuarioCompletoDto,
+    @Req() req,
   ): Promise<User> {
-    return this.usersService.update(id, dto);
-  }
+    const token = req.headers.authorization;
 
-  // 🔹 ELIMINACIÓN LÓGICA
-  @Delete(':id')
-  @ApiOperation({
-    summary: 'Eliminar usuario (lógico)',
-  })
-  @ApiParam({ name: 'id', example: 1 })
-  remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return this.usersService.remove(id);
+    return this.usersService.update(id, dto, token);
   }
 }
