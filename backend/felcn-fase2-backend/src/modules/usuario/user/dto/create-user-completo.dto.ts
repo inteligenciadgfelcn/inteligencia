@@ -1,10 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNumber } from "class-validator";
-import { CreatePersonaExternoDto } from "./create-user-externo.dto";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber } from 'class-validator';
+import { CreatePersonaExternoDto } from './create-user-externo.dto';
 
-export class CreateUsuarioCompletoDto 
-  extends CreatePersonaExternoDto {
-
+export class CreateUsuarioCompletoDto extends CreatePersonaExternoDto {
   @ApiProperty({ example: 'P-1234' })
   @IsString()
   nroPase: string;

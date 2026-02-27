@@ -9,9 +9,9 @@ import { Grado } from '../grados/entities/grado.entity';
 import { Grupo } from '../grupos/entities/grupo.entity';
 
 @Module({
-  imports:  [TypeOrmModule.forFeature([User,Grado,Grupo]), HttpModule],
+  imports: [TypeOrmModule.forFeature([User, Grado, Grupo]), HttpModule],
   controllers: [UsersController],
-  providers: [UserService,  UsuarioExternoService],
+  providers: [UserService, UsuarioExternoService],
   exports: [UserService],
 })
 export class UserModule {}

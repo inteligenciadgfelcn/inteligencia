@@ -7,7 +7,6 @@ import { UploadModule } from './modules/upload/upload.module';
 import { DatabaseModule } from './core/database/database.module';
 import { AuthModule } from './core/auth/auth.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { RequestContextService } from './common/subscribers/request-context.service';
 import { ApiModule} from './modules/ApiModule';
 import { UserModule } from './modules/usuario/user/user.module';
 import { AuditoriaModule } from './modules/auditoria/auditoria.module';
