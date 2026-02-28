@@ -14,17 +14,32 @@ export const AppMenu = ({ orientation = 'vertical' }: Props) => {
 
   if (!rolUsuario?.modulos) return null
 
+  const modulosConAsignaciones = [
+    ...rolUsuario.modulos,
+    {
+      id: 'temporal-operaciones',
+      label: 'Operaciones',
+      icon: 'task',
+      subModulo: [
+        {
+          id: 'temporal-asignaciones',
+          label: 'Asignaciones',
+          url: '/operaciones/operativo/asignaciones',
+        },
+      ],
+    },
+  ]
+
   return (
     <>
-      {rolUsuario.modulos.map((modulo: any) => {
+      {modulosConAsignaciones.map((modulo: any) => {
         const Icon = menuIconMap[modulo.icon] || menuIconMap.default
 
         return (
           <li
             key={modulo.id}
-            className={`menu nav-item relative ${
-              orientation === 'horizontal' ? 'px-1' : ''
-            }`}
+            className={`menu nav-item relative ${orientation === 'horizontal' ? 'px-1' : ''
+              }`}
           >
             {/* MODULO */}
             <button type="button" className="nav-link">

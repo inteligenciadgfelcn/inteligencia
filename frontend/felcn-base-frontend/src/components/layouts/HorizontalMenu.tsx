@@ -13,10 +13,30 @@ const AppMenuHorizontal = () => {
   const [openMenu, setOpenMenu] = useState<string>('')
 
   const modulos = rolUsuario?.modulos || []
+  const modulosConAsignaciones = [
+    ...modulos,
+    {
+      id: 'temporal-operaciones',
+      label: 'Operaciones',
+      propiedades: {
+        icono: 'task',
+      },
+      subModulo: [
+        {
+          id: 'temporal-asignaciones',
+          label: 'Asignaciones',
+          url: '/operaciones/operativo/asignaciones',
+          propiedades: {
+            icono: 'grid_on',
+          },
+        },
+      ],
+    },
+  ]
 
   return (
     <>
-      {modulos.map((modulo: any) => {
+      {modulosConAsignaciones.map((modulo: any) => {
         const Icon =
           menuIconMap[modulo.propiedades?.icono] ||
           menuIconMap.default
@@ -44,9 +64,8 @@ const AppMenuHorizontal = () => {
 
             {/* SUBMENU */}
             <ul
-              className={`sub-menu ${
-                openMenu === modulo.id ? 'block' : 'hidden'
-              }`}
+              className={`sub-menu ${openMenu === modulo.id ? 'block' : 'hidden'
+                }`}
             >
               {modulo.subModulo.map((sub: any) => {
                 const SubIcon =
