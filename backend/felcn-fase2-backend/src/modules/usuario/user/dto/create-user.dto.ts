@@ -15,7 +15,7 @@ export class CreateUserDto {
   @IsString()
   telefonoCorporativo: string;
 
-  @ApiProperty({ example: 2 })
+  @ApiProperty({ example: 1 })
   @IsNumber()
   idGrupo: number;
 }
