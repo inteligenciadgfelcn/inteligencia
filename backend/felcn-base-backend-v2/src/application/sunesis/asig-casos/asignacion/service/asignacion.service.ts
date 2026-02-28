@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common'
 import { BaseService } from '@/common/base'
 import { Asignacion } from '../entity/asignacion.entity'
 import { AsignacionRepository } from '../repository/asignacion.repository'
@@ -19,15 +23,18 @@ export class AsignacionService extends BaseService {
     super()
   }
 
-  async crear(dto: CrearAsignacionDto, usuarioLogin: string): Promise<Asignacion> {
+  async crear(
+    dto: CrearAsignacionDto,
+    usuarioLogin: string
+  ): Promise<Asignacion> {
     // Verificar si ya existe un caso con el mismo número (si tiene número)
     if (dto.numeroCaso && dto.numeroCaso.trim() !== '') {
       const existente = await this.asignacionRepository.buscarPorNumeroCaso(
-        dto.numeroCaso,
+        dto.numeroCaso
       )
       if (existente) {
         throw new ConflictException(
-          `Ya existe una asignación con el número de caso: ${dto.numeroCaso}`,
+          `Ya existe una asignación con el número de caso: ${dto.numeroCaso}`
         )
       }
     }
@@ -50,7 +57,9 @@ export class AsignacionService extends BaseService {
   async buscarPorId(idAsignacion: string): Promise<Asignacion> {
     const asignacion = await this.asignacionRepository.buscarPorId(idAsignacion)
     if (!asignacion) {
-      throw new NotFoundException(`Asignación con ID ${idAsignacion} no encontrada`)
+      throw new NotFoundException(
+        `Asignación con ID ${idAsignacion} no encontrada`
+      )
     }
     return asignacion
   }
@@ -63,7 +72,9 @@ export class AsignacionService extends BaseService {
    * Buscar casos no aprobados (donde numero_caso está vacío)
    * Implementa la funcionalidad de muestranoaprob() del FRM-OP-ING.aspx.cs
    */
-  async buscarNoAprobadosPorUsuario(usuarioLogin: string): Promise<Asignacion[]> {
+  async buscarNoAprobadosPorUsuario(
+    usuarioLogin: string
+  ): Promise<Asignacion[]> {
     return this.asignacionRepository.buscarNoAprobadosPorUsuario(usuarioLogin)
   }
 
@@ -72,7 +83,7 @@ export class AsignacionService extends BaseService {
       await this.asignacionRepository.buscarPorNumeroCaso(numeroCaso)
     if (!asignacion) {
       throw new NotFoundException(
-        `Asignación con número de caso ${numeroCaso} no encontrada`,
+        `Asignación con número de caso ${numeroCaso} no encontrada`
       )
     }
     return asignacion
@@ -83,7 +94,7 @@ export class AsignacionService extends BaseService {
       await this.asignacionRepository.buscarPorNumeroOperativo(numeroOperativo)
     if (!asignacion) {
       throw new NotFoundException(
-        `Asignación con número de operativo ${numeroOperativo} no encontrada`,
+        `Asignación con número de operativo ${numeroOperativo} no encontrada`
       )
     }
     return asignacion
@@ -91,7 +102,7 @@ export class AsignacionService extends BaseService {
 
   async actualizar(
     idAsignacion: string,
-    dto: ActualizarAsignacionDto,
+    dto: ActualizarAsignacionDto
   ): Promise<Asignacion> {
     const asignacion = await this.buscarPorId(idAsignacion)
 

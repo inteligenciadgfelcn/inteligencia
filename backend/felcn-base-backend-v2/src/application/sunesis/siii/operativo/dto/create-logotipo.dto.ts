@@ -36,7 +36,10 @@ export class CreateLogotipoDto {
   @IsString()
   descripcion: string
 
-  @ApiProperty({ description: 'Nombre del archivo de imagen', example: 'logo001.png' })
+  @ApiProperty({
+    description: 'Nombre del archivo de imagen',
+    example: 'logo001.png',
+  })
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)

@@ -21,7 +21,7 @@ export class UsuarioPerfilService extends BaseService {
 
     if (!usuario) {
       throw new NotFoundException(
-        `Usuario con login ${usuarioLogin} no encontrado`,
+        `Usuario con login ${usuarioLogin} no encontrado`
       )
     }
 

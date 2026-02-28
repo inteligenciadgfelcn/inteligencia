@@ -11,7 +11,7 @@ import { Grupo } from '../entity/grupo.entity'
 export class EstructuraRepository {
   constructor(
     @InjectDataSource(DB_S2I)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   // Grados

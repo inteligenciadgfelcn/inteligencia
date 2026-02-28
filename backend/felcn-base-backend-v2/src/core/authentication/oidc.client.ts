@@ -16,7 +16,9 @@ if (process.env.NODE_ENV === 'development') {
       ],
     },
   } as unknown
-  custom.setHttpOptionsDefaults(devOptions as Parameters<typeof custom.setHttpOptionsDefaults>[0])
+  custom.setHttpOptionsDefaults(
+    devOptions as Parameters<typeof custom.setHttpOptionsDefaults>[0]
+  )
 } else {
   custom.setHttpOptionsDefaults({ timeout: 10000 }) // Valor por defecto: 3500
 }

@@ -19,13 +19,13 @@ export class AsigLookupService extends BaseService {
   }
 
   async buscarDepartamentoPorId(
-    idDepartamento: string,
+    idDepartamento: string
   ): Promise<DepartamentoCaso> {
     const departamento =
       await this.lookupRepository.buscarDepartamentoPorId(idDepartamento)
     if (!departamento) {
       throw new NotFoundException(
-        `Departamento con ID ${idDepartamento} no encontrado`,
+        `Departamento con ID ${idDepartamento} no encontrado`
       )
     }
     return departamento
@@ -58,7 +58,9 @@ export class AsigLookupService extends BaseService {
   }
 
   // Usuario Unidad
-  async listarUnidadesPorUsuario(usuarioLogin: string): Promise<UsuarioUnidad[]> {
+  async listarUnidadesPorUsuario(
+    usuarioLogin: string
+  ): Promise<UsuarioUnidad[]> {
     return this.lookupRepository.listarUnidadesPorUsuario(usuarioLogin)
   }
 
@@ -68,7 +70,7 @@ export class AsigLookupService extends BaseService {
       await this.lookupRepository.buscarUsuarioIcia(usuarioLogin)
     if (!usuarioIcia) {
       throw new NotFoundException(
-        `Usuario ICIA con login ${usuarioLogin} no encontrado`,
+        `Usuario ICIA con login ${usuarioLogin} no encontrado`
       )
     }
     return usuarioIcia

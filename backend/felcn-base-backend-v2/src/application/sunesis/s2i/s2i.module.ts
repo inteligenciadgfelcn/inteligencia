@@ -57,6 +57,11 @@ const entities = [
     UsuarioRepository,
     EstructuraRepository,
   ],
-  exports: [UsuarioService, UsuarioPerfilService, EstructuraService, MenuService],
+  exports: [
+    UsuarioService,
+    UsuarioPerfilService,
+    EstructuraService,
+    MenuService,
+  ],
 })
 export class S2iModule {}
