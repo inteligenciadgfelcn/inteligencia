@@ -11,7 +11,7 @@ import { UsuarioPerfilService } from '../service/usuario-perfil.service'
 export class UsuarioController extends BaseController {
   constructor(
     private readonly usuarioService: UsuarioService,
-    private readonly perfilService: UsuarioPerfilService,
+    private readonly perfilService: UsuarioPerfilService
   ) {
     super()
   }
