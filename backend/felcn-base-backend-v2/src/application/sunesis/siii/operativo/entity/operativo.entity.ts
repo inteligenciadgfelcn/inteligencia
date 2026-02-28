@@ -101,7 +101,12 @@ export class Operativo extends AuditoriaEntity {
   @Column({ name: 'organizacion', type: 'varchar', length: 50 })
   organizacion: string
 
-  @Column({ name: 'clan_familiar', type: 'varchar', length: 50, nullable: true })
+  @Column({
+    name: 'clan_familiar',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
   clanFamiliar?: string
 
   @Column({ name: 'es_revisado', type: 'boolean' })
