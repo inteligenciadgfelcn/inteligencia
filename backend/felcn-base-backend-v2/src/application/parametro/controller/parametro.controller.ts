@@ -18,12 +18,7 @@ import {
   CrearParametroDto,
   ParamGrupoDto,
 } from '../dto'
-import {
-  ApiBody,
-  ApiOperation,
-  ApiProperty,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiBody, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger'
 
 // TODO: Reactivar guards para producción
 // import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'

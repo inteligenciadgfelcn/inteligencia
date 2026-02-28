@@ -42,7 +42,7 @@ export class ServicioService extends BaseService {
       await this.servicioRepository.buscarPorCodigo(codigoServicio)
     if (!servicio) {
       throw new NotFoundException(
-        `Servicio con código ${codigoServicio} no encontrado`,
+        `Servicio con código ${codigoServicio} no encontrado`
       )
     }
     return servicio

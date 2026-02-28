@@ -50,7 +50,10 @@ export class CreateDetenidoDto {
   @IsBoolean()
   esMasculino: boolean
 
-  @ApiPropertyOptional({ description: 'Fecha de nacimiento', example: '1985-05-15' })
+  @ApiPropertyOptional({
+    description: 'Fecha de nacimiento',
+    example: '1985-05-15',
+  })
   @IsOptional()
   @IsDateString()
   fechaNacimiento?: string

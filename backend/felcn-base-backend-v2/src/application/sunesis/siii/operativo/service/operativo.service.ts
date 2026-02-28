@@ -74,24 +74,39 @@ export class OperativoService extends BaseService {
   }
 
   async buscarPorNumeroOperativo(numeroOperativo: string): Promise<Operativo> {
-    const operativo = await this.operativoRepository.buscarPorNumeroOperativo(numeroOperativo)
+    const operativo =
+      await this.operativoRepository.buscarPorNumeroOperativo(numeroOperativo)
     if (!operativo) {
-      throw new NotFoundException(`Operativo con número ${numeroOperativo} no encontrado`)
+      throw new NotFoundException(
+        `Operativo con número ${numeroOperativo} no encontrado`
+      )
     }
     return operativo
   }
 
-  async actualizar(id: string, data: Partial<Operativo>, usuarioModificacion: string): Promise<Operativo> {
+  async actualizar(
+    id: string,
+    data: Partial<Operativo>,
+    usuarioModificacion: string
+  ): Promise<Operativo> {
     const operativo = await this.buscarPorId(id)
 
     // Recalcular coordenadas si cambian
-    if (data.gradosX !== undefined || data.minX !== undefined || data.segX !== undefined) {
+    if (
+      data.gradosX !== undefined ||
+      data.minX !== undefined ||
+      data.segX !== undefined
+    ) {
       const gx = data.gradosX ?? operativo.gradosX
       const mx = data.minX ?? operativo.minX
       const sx = data.segX ?? operativo.segX
       data.coordX = (gx + mx / 60 + sx / 3600) * -1
     }
-    if (data.gradosY !== undefined || data.minY !== undefined || data.segY !== undefined) {
+    if (
+      data.gradosY !== undefined ||
+      data.minY !== undefined ||
+      data.segY !== undefined
+    ) {
       const gy = data.gradosY ?? operativo.gradosY
       const my = data.minY ?? operativo.minY
       const sy = data.segY ?? operativo.segY
@@ -111,7 +126,11 @@ export class OperativoService extends BaseService {
 
   // ==================== DROGAS ====================
 
-  async agregarDroga(idOperativo: string, data: CreateDrogaDto, usuario: string): Promise<Droga> {
+  async agregarDroga(
+    idOperativo: string,
+    data: CreateDrogaDto,
+    usuario: string
+  ): Promise<Droga> {
     await this.buscarPorId(idOperativo) // Verificar que existe
     const droga = new Droga({
       idOperativo,
@@ -136,7 +155,11 @@ export class OperativoService extends BaseService {
 
   // ==================== SUSTANCIAS SÓLIDAS ====================
 
-  async agregarSustanciaSolida(idOperativo: string, data: CreateSustanciaSolidaDto, usuario: string): Promise<SustanciaSolida> {
+  async agregarSustanciaSolida(
+    idOperativo: string,
+    data: CreateSustanciaSolidaDto,
+    usuario: string
+  ): Promise<SustanciaSolida> {
     await this.buscarPorId(idOperativo)
     const sustancia = new SustanciaSolida({
       idOperativo,
@@ -146,18 +169,29 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearSustanciaSolida(sustancia)
   }
 
-  async listarSustanciasSolidas(idOperativo: string): Promise<SustanciaSolida[]> {
-    return this.operativoRepository.listarSustanciasSolidasPorOperativo(idOperativo)
+  async listarSustanciasSolidas(
+    idOperativo: string
+  ): Promise<SustanciaSolida[]> {
+    return this.operativoRepository.listarSustanciasSolidasPorOperativo(
+      idOperativo
+    )
   }
 
-  async eliminarSustanciaSolida(idOperativo: string, idSustancia: string): Promise<void> {
+  async eliminarSustanciaSolida(
+    idOperativo: string,
+    idSustancia: string
+  ): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarSustanciaSolida(idSustancia)
   }
 
   // ==================== SUSTANCIAS LÍQUIDAS ====================
 
-  async agregarSustanciaLiquida(idOperativo: string, data: CreateSustanciaLiquidaDto, usuario: string): Promise<SustanciaLiquida> {
+  async agregarSustanciaLiquida(
+    idOperativo: string,
+    data: CreateSustanciaLiquidaDto,
+    usuario: string
+  ): Promise<SustanciaLiquida> {
     await this.buscarPorId(idOperativo)
     const sustancia = new SustanciaLiquida({
       idOperativo,
@@ -167,18 +201,29 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearSustanciaLiquida(sustancia)
   }
 
-  async listarSustanciasLiquidas(idOperativo: string): Promise<SustanciaLiquida[]> {
-    return this.operativoRepository.listarSustanciasLiquidasPorOperativo(idOperativo)
+  async listarSustanciasLiquidas(
+    idOperativo: string
+  ): Promise<SustanciaLiquida[]> {
+    return this.operativoRepository.listarSustanciasLiquidasPorOperativo(
+      idOperativo
+    )
   }
 
-  async eliminarSustanciaLiquida(idOperativo: string, idSustancia: string): Promise<void> {
+  async eliminarSustanciaLiquida(
+    idOperativo: string,
+    idSustancia: string
+  ): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarSustanciaLiquida(idSustancia)
   }
 
   // ==================== FÁBRICAS ====================
 
-  async agregarFabrica(idOperativo: string, data: CreateFabricaDto, usuario: string): Promise<Fabrica> {
+  async agregarFabrica(
+    idOperativo: string,
+    data: CreateFabricaDto,
+    usuario: string
+  ): Promise<Fabrica> {
     await this.buscarPorId(idOperativo)
     const fabrica = new Fabrica({
       idOperativo,
@@ -199,7 +244,11 @@ export class OperativoService extends BaseService {
 
   // ==================== BIENES SECUESTRADOS ====================
 
-  async agregarBien(idOperativo: string, data: CreateBienSecuestradoDto, usuario: string): Promise<ItemBienSecuestrado> {
+  async agregarBien(
+    idOperativo: string,
+    data: CreateBienSecuestradoDto,
+    usuario: string
+  ): Promise<ItemBienSecuestrado> {
     await this.buscarPorId(idOperativo)
     const bien = new ItemBienSecuestrado({
       idOperativo,
@@ -220,12 +269,18 @@ export class OperativoService extends BaseService {
 
   // ==================== DETENIDOS ====================
 
-  async agregarDetenido(idOperativo: string, data: CreateDetenidoDto, usuario: string): Promise<DetenidoAuxiliar> {
+  async agregarDetenido(
+    idOperativo: string,
+    data: CreateDetenidoDto,
+    usuario: string
+  ): Promise<DetenidoAuxiliar> {
     await this.buscarPorId(idOperativo)
     const detenido = new DetenidoAuxiliar({
       idOperativo,
       ...data,
-      fechaNacimiento: data.fechaNacimiento ? new Date(data.fechaNacimiento) : undefined,
+      fechaNacimiento: data.fechaNacimiento
+        ? new Date(data.fechaNacimiento)
+        : undefined,
       apellidoMaterno: data.apellidoMaterno || '*',
       apellidoEsposo: data.apellidoEsposo || '*',
       serie: data.serie || '',
@@ -246,14 +301,22 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.listarDetenidosPorOperativo(idOperativo)
   }
 
-  async eliminarDetenido(idOperativo: string, idDetenido: string): Promise<void> {
+  async eliminarDetenido(
+    idOperativo: string,
+    idDetenido: string
+  ): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarDetenido(idDetenido)
   }
 
   // ==================== GALERÍA ====================
 
-  async agregarFotoGaleria(idOperativo: string, data: CreateGaleriaDto, foto: Buffer, usuario: string): Promise<Galeria> {
+  async agregarFotoGaleria(
+    idOperativo: string,
+    data: CreateGaleriaDto,
+    foto: Buffer,
+    usuario: string
+  ): Promise<Galeria> {
     await this.buscarPorId(idOperativo)
     const galeria = new Galeria({
       idOperativo,
@@ -267,14 +330,22 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.listarGaleriaPorOperativo(idOperativo)
   }
 
-  async eliminarFotoGaleria(idOperativo: string, idGaleria: string): Promise<void> {
+  async eliminarFotoGaleria(
+    idOperativo: string,
+    idGaleria: string
+  ): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarGaleria(idGaleria)
   }
 
   // ==================== LOGOTIPOS ====================
 
-  async agregarLogotipo(idOperativo: string, data: CreateLogotipoDto, fotografia: Buffer, usuario: string): Promise<Logotipo> {
+  async agregarLogotipo(
+    idOperativo: string,
+    data: CreateLogotipoDto,
+    fotografia: Buffer,
+    usuario: string
+  ): Promise<Logotipo> {
     await this.buscarPorId(idOperativo)
     const logotipo = new Logotipo({
       idOperativo,
@@ -302,7 +373,10 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
   }
 
-  async eliminarLogotipo(idOperativo: string, idLogotipo: string): Promise<void> {
+  async eliminarLogotipo(
+    idOperativo: string,
+    idLogotipo: string
+  ): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarLogotipo(idLogotipo)
   }
@@ -318,7 +392,9 @@ export class OperativoService extends BaseService {
   }
 
   async listarItemsOperativo(idCategoriaOperativo: number) {
-    return this.operativoRepository.listarItemsOperativoPorCategoria(idCategoriaOperativo)
+    return this.operativoRepository.listarItemsOperativoPorCategoria(
+      idCategoriaOperativo
+    )
   }
 
   async listarCatalogoClases(idBien: number) {
@@ -330,14 +406,25 @@ export class OperativoService extends BaseService {
   }
 
   async listarCatalogoCaracteristicas(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(idCatalogoClase)
+    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(
+      idCatalogoClase
+    )
   }
 
   // ==================== OPERATIVO COMPLETO ====================
 
   async obtenerOperativoCompleto(id: string): Promise<any> {
     const operativo = await this.buscarPorId(id)
-    const [drogas, sustanciasSolidas, sustanciasLiquidas, fabricas, bienes, detenidos, galeria, logotipos] = await Promise.all([
+    const [
+      drogas,
+      sustanciasSolidas,
+      sustanciasLiquidas,
+      fabricas,
+      bienes,
+      detenidos,
+      galeria,
+      logotipos,
+    ] = await Promise.all([
       this.listarDrogas(id),
       this.listarSustanciasSolidas(id),
       this.listarSustanciasLiquidas(id),

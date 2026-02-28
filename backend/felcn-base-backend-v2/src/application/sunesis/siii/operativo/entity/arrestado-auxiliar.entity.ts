@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
 
@@ -95,7 +102,11 @@ export class ArrestadoAuxiliar {
   @Column({ name: 'usuario', type: 'varchar', length: 50 })
   usuario: string
 
-  @Column({ name: 'fecha_hora_actualizacion', type: 'timestamp', nullable: true })
+  @Column({
+    name: 'fecha_hora_actualizacion',
+    type: 'timestamp',
+    nullable: true,
+  })
   fechaHoraActualizacion?: Date
 
   @ManyToOne(() => Operativo)

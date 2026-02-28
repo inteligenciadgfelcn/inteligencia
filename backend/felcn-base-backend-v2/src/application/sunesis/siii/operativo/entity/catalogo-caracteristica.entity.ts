@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { CatalogoClase } from './catalogo-clase.entity'
 
@@ -11,7 +17,10 @@ import { CatalogoClase } from './catalogo-clase.entity'
  */
 @Entity({ name: 'catalogo_caracteristica', schema: SCHEMA_PUBLIC })
 export class CatalogoCaracteristica {
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id_catalogo_caracteristica' })
+  @PrimaryGeneratedColumn({
+    type: 'integer',
+    name: 'id_catalogo_caracteristica',
+  })
   id: number
 
   @Column({ name: 'id_catalogo_clase', type: 'integer' })

@@ -71,14 +71,17 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Buscar operativo por número' })
   @Get('numero/:numeroOperativo')
-  async buscarPorNumeroOperativo(@Param('numeroOperativo') numeroOperativo: string) {
-    const operativo = await this.operativoService.buscarPorNumeroOperativo(numeroOperativo)
+  async buscarPorNumeroOperativo(
+    @Param('numeroOperativo') numeroOperativo: string
+  ) {
+    const operativo =
+      await this.operativoService.buscarPorNumeroOperativo(numeroOperativo)
     return this.successList(operativo)
   }
 
   @ApiOperation({ summary: 'Crear operativo' })
   @Post()
-  async crear(@Body() data: CreateOperativoDto, ) {
+  async crear(@Body() data: CreateOperativoDto) {
     const usuario = 'SISTEMA'
     const operativo = await this.operativoService.crear(data, usuario)
     return this.successCreate(operativo)
@@ -86,17 +89,24 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Actualizar operativo' })
   @Patch(':id')
-  async actualizar(@Param('id') id: string, @Body() data: any, ) {
+  async actualizar(@Param('id') id: string, @Body() data: any) {
     const usuarioModificacion = 'SISTEMA'
-    const operativo = await this.operativoService.actualizar(id, data, usuarioModificacion)
+    const operativo = await this.operativoService.actualizar(
+      id,
+      data,
+      usuarioModificacion
+    )
     return this.successUpdate(operativo)
   }
 
   @ApiOperation({ summary: 'Inactivar operativo' })
   @Patch(':id/inactivar')
-  async inactivar(@Param('id') id: string, ) {
+  async inactivar(@Param('id') id: string) {
     const usuarioModificacion = 'SISTEMA'
-    const operativo = await this.operativoService.inactivar(id, usuarioModificacion)
+    const operativo = await this.operativoService.inactivar(
+      id,
+      usuarioModificacion
+    )
     return this.successUpdate(operativo)
   }
 
@@ -118,7 +128,7 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar droga al operativo' })
   @Post(':id/drogas')
-  async agregarDroga(@Param('id') id: string, @Body() data: CreateDrogaDto, ) {
+  async agregarDroga(@Param('id') id: string, @Body() data: CreateDrogaDto) {
     const usuario = 'SISTEMA'
     const droga = await this.operativoService.agregarDroga(id, data, usuario)
     return this.successCreate(droga)
@@ -126,7 +136,10 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Eliminar droga del operativo' })
   @Delete(':id/drogas/:idDroga')
-  async eliminarDroga(@Param('id') id: string, @Param('idDroga') idDroga: string) {
+  async eliminarDroga(
+    @Param('id') id: string,
+    @Param('idDroga') idDroga: string
+  ) {
     await this.operativoService.eliminarDroga(id, idDroga)
     return this.successDelete(null)
   }
@@ -142,15 +155,25 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar sustancia sólida al operativo' })
   @Post(':id/sustancias-solidas')
-  async agregarSustanciaSolida(@Param('id') id: string, @Body() data: CreateSustanciaSolidaDto, ) {
+  async agregarSustanciaSolida(
+    @Param('id') id: string,
+    @Body() data: CreateSustanciaSolidaDto
+  ) {
     const usuario = 'SISTEMA'
-    const sustancia = await this.operativoService.agregarSustanciaSolida(id, data, usuario)
+    const sustancia = await this.operativoService.agregarSustanciaSolida(
+      id,
+      data,
+      usuario
+    )
     return this.successCreate(sustancia)
   }
 
   @ApiOperation({ summary: 'Eliminar sustancia sólida del operativo' })
   @Delete(':id/sustancias-solidas/:idSustancia')
-  async eliminarSustanciaSolida(@Param('id') id: string, @Param('idSustancia') idSustancia: string) {
+  async eliminarSustanciaSolida(
+    @Param('id') id: string,
+    @Param('idSustancia') idSustancia: string
+  ) {
     await this.operativoService.eliminarSustanciaSolida(id, idSustancia)
     return this.successDelete(null)
   }
@@ -166,15 +189,25 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar sustancia líquida al operativo' })
   @Post(':id/sustancias-liquidas')
-  async agregarSustanciaLiquida(@Param('id') id: string, @Body() data: CreateSustanciaLiquidaDto, ) {
+  async agregarSustanciaLiquida(
+    @Param('id') id: string,
+    @Body() data: CreateSustanciaLiquidaDto
+  ) {
     const usuario = 'SISTEMA'
-    const sustancia = await this.operativoService.agregarSustanciaLiquida(id, data, usuario)
+    const sustancia = await this.operativoService.agregarSustanciaLiquida(
+      id,
+      data,
+      usuario
+    )
     return this.successCreate(sustancia)
   }
 
   @ApiOperation({ summary: 'Eliminar sustancia líquida del operativo' })
   @Delete(':id/sustancias-liquidas/:idSustancia')
-  async eliminarSustanciaLiquida(@Param('id') id: string, @Param('idSustancia') idSustancia: string) {
+  async eliminarSustanciaLiquida(
+    @Param('id') id: string,
+    @Param('idSustancia') idSustancia: string
+  ) {
     await this.operativoService.eliminarSustanciaLiquida(id, idSustancia)
     return this.successDelete(null)
   }
@@ -190,15 +223,25 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar fábrica al operativo' })
   @Post(':id/fabricas')
-  async agregarFabrica(@Param('id') id: string, @Body() data: CreateFabricaDto, ) {
+  async agregarFabrica(
+    @Param('id') id: string,
+    @Body() data: CreateFabricaDto
+  ) {
     const usuario = 'SISTEMA'
-    const fabrica = await this.operativoService.agregarFabrica(id, data, usuario)
+    const fabrica = await this.operativoService.agregarFabrica(
+      id,
+      data,
+      usuario
+    )
     return this.successCreate(fabrica)
   }
 
   @ApiOperation({ summary: 'Eliminar fábrica del operativo' })
   @Delete(':id/fabricas/:idFabrica')
-  async eliminarFabrica(@Param('id') id: string, @Param('idFabrica') idFabrica: string) {
+  async eliminarFabrica(
+    @Param('id') id: string,
+    @Param('idFabrica') idFabrica: string
+  ) {
     await this.operativoService.eliminarFabrica(id, idFabrica)
     return this.successDelete(null)
   }
@@ -214,7 +257,10 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar bien secuestrado al operativo' })
   @Post(':id/bienes')
-  async agregarBien(@Param('id') id: string, @Body() data: CreateBienSecuestradoDto, ) {
+  async agregarBien(
+    @Param('id') id: string,
+    @Body() data: CreateBienSecuestradoDto
+  ) {
     const usuario = 'SISTEMA'
     const bien = await this.operativoService.agregarBien(id, data, usuario)
     return this.successCreate(bien)
@@ -238,15 +284,25 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Agregar detenido al operativo' })
   @Post(':id/detenidos')
-  async agregarDetenido(@Param('id') id: string, @Body() data: CreateDetenidoDto, ) {
+  async agregarDetenido(
+    @Param('id') id: string,
+    @Body() data: CreateDetenidoDto
+  ) {
     const usuario = 'SISTEMA'
-    const detenido = await this.operativoService.agregarDetenido(id, data, usuario)
+    const detenido = await this.operativoService.agregarDetenido(
+      id,
+      data,
+      usuario
+    )
     return this.successCreate(detenido)
   }
 
   @ApiOperation({ summary: 'Eliminar detenido del operativo' })
   @Delete(':id/detenidos/:idDetenido')
-  async eliminarDetenido(@Param('id') id: string, @Param('idDetenido') idDetenido: string) {
+  async eliminarDetenido(
+    @Param('id') id: string,
+    @Param('idDetenido') idDetenido: string
+  ) {
     await this.operativoService.eliminarDetenido(id, idDetenido)
     return this.successDelete(null)
   }
@@ -262,7 +318,10 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Eliminar foto de la galería' })
   @Delete(':id/galeria/:idGaleria')
-  async eliminarFotoGaleria(@Param('id') id: string, @Param('idGaleria') idGaleria: string) {
+  async eliminarFotoGaleria(
+    @Param('id') id: string,
+    @Param('idGaleria') idGaleria: string
+  ) {
     await this.operativoService.eliminarFotoGaleria(id, idGaleria)
     return this.successDelete(null)
   }
@@ -283,17 +342,25 @@ export class OperativoController extends BaseController {
   async agregarLogotipo(
     @Param('id') id: string,
     @Body() data: CreateLogotipoDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File
   ) {
     const usuario = 'SISTEMA'
     const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipo(id, data, fotografia, usuario)
+    const logotipo = await this.operativoService.agregarLogotipo(
+      id,
+      data,
+      fotografia,
+      usuario
+    )
     return this.successCreate(logotipo)
   }
 
   @ApiOperation({ summary: 'Eliminar logotipo del operativo' })
   @Delete(':id/logotipos/:idLogotipo')
-  async eliminarLogotipo(@Param('id') id: string, @Param('idLogotipo') idLogotipo: string) {
+  async eliminarLogotipo(
+    @Param('id') id: string,
+    @Param('idLogotipo') idLogotipo: string
+  ) {
     await this.operativoService.eliminarLogotipo(id, idLogotipo)
     return this.successDelete(null)
   }
@@ -303,42 +370,59 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Listar estados de droga por tipo' })
   @Get('catalogos/estados-droga/:idTipoDroga')
   async listarEstadosDroga(@Param('idTipoDroga') idTipoDroga: string) {
-    const estados = await this.operativoService.listarEstadosDroga(parseInt(idTipoDroga))
+    const estados = await this.operativoService.listarEstadosDroga(
+      parseInt(idTipoDroga)
+    )
     return this.successList(estados)
   }
 
   @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
   @Get('catalogos/fabrica-modelos/:idTipoFabrica')
   async listarFabricaModelos(@Param('idTipoFabrica') idTipoFabrica: string) {
-    const modelos = await this.operativoService.listarFabricaModelos(parseInt(idTipoFabrica))
+    const modelos = await this.operativoService.listarFabricaModelos(
+      parseInt(idTipoFabrica)
+    )
     return this.successList(modelos)
   }
 
   @ApiOperation({ summary: 'Listar items de operativo por categoría' })
   @Get('catalogos/items-operativo/:idCategoriaOperativo')
-  async listarItemsOperativo(@Param('idCategoriaOperativo') idCategoriaOperativo: string) {
-    const items = await this.operativoService.listarItemsOperativo(parseInt(idCategoriaOperativo))
+  async listarItemsOperativo(
+    @Param('idCategoriaOperativo') idCategoriaOperativo: string
+  ) {
+    const items = await this.operativoService.listarItemsOperativo(
+      parseInt(idCategoriaOperativo)
+    )
     return this.successList(items)
   }
 
   @ApiOperation({ summary: 'Listar clases de catálogo por bien' })
   @Get('catalogos/clases/:idBien')
   async listarCatalogoClases(@Param('idBien') idBien: string) {
-    const clases = await this.operativoService.listarCatalogoClases(parseInt(idBien))
+    const clases = await this.operativoService.listarCatalogoClases(
+      parseInt(idBien)
+    )
     return this.successList(clases)
   }
 
   @ApiOperation({ summary: 'Listar tipos de catálogo por clase' })
   @Get('catalogos/tipos/:idCatalogoClase')
   async listarCatalogoTipos(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const tipos = await this.operativoService.listarCatalogoTipos(parseInt(idCatalogoClase))
+    const tipos = await this.operativoService.listarCatalogoTipos(
+      parseInt(idCatalogoClase)
+    )
     return this.successList(tipos)
   }
 
   @ApiOperation({ summary: 'Listar características de catálogo por clase' })
   @Get('catalogos/caracteristicas/:idCatalogoClase')
-  async listarCatalogoCaracteristicas(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const caracteristicas = await this.operativoService.listarCatalogoCaracteristicas(parseInt(idCatalogoClase))
+  async listarCatalogoCaracteristicas(
+    @Param('idCatalogoClase') idCatalogoClase: string
+  ) {
+    const caracteristicas =
+      await this.operativoService.listarCatalogoCaracteristicas(
+        parseInt(idCatalogoClase)
+      )
     return this.successList(caracteristicas)
   }
 }

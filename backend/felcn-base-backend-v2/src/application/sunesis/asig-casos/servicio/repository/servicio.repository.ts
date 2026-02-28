@@ -9,7 +9,7 @@ import { DB_ASIG_CASOS } from '../../../shared/constants'
 export class ServicioRepository {
   constructor(
     @InjectDataSource(DB_ASIG_CASOS)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   private get repository() {

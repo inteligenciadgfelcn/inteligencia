@@ -37,7 +37,7 @@ export class EstructuraController extends BaseController {
   @Get('distritales/unidad/:idUnidad')
   async listarDistritalesPorUnidad(@Param('idUnidad') idUnidad: string) {
     const datos = await this.estructuraService.listarDistritalesPorUnidad(
-      parseInt(idUnidad),
+      parseInt(idUnidad)
     )
     return this.successList(datos)
   }
@@ -53,7 +53,7 @@ export class EstructuraController extends BaseController {
   @Get('grupos/distrital/:idDistrital')
   async listarGruposPorDistrital(@Param('idDistrital') idDistrital: string) {
     const datos = await this.estructuraService.listarGruposPorDistrital(
-      parseInt(idDistrital),
+      parseInt(idDistrital)
     )
     return this.successList(datos)
   }

@@ -36,7 +36,10 @@ export class CreateOperativoDto {
   @IsNumber()
   idTipoPenal?: number
 
-  @ApiProperty({ description: 'Fecha del operativo', example: '2024-01-15T14:30:00Z' })
+  @ApiProperty({
+    description: 'Fecha del operativo',
+    example: '2024-01-15T14:30:00Z',
+  })
   @IsNotEmpty()
   @IsDateString()
   fechaOperativo: string
@@ -56,7 +59,10 @@ export class CreateOperativoDto {
   @IsNumber()
   idLocalidad: number
 
-  @ApiProperty({ description: 'Lugar del operativo', example: 'Zona Sur, Calle 21' })
+  @ApiProperty({
+    description: 'Lugar del operativo',
+    example: 'Zona Sur, Calle 21',
+  })
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
