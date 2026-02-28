@@ -22,7 +22,7 @@ export class UsuarioService extends BaseService {
       await this.usuarioRepository.buscarPorUsuarioLogin(usuarioLogin)
     if (!usuario) {
       throw new NotFoundException(
-        `Usuario con login ${usuarioLogin} no encontrado`,
+        `Usuario con login ${usuarioLogin} no encontrado`
       )
     }
     return usuario
