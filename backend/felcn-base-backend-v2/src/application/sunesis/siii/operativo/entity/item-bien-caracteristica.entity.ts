@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { ItemBienSecuestrado } from './item-bien-secuestrado.entity'
 
@@ -10,7 +17,10 @@ import { ItemBienSecuestrado } from './item-bien-secuestrado.entity'
  */
 @Entity({ name: 'item_bien_caracteristica', schema: SCHEMA_PUBLIC })
 export class ItemBienCaracteristica {
-  @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_item_bien_caracteristica' })
+  @PrimaryGeneratedColumn({
+    type: 'bigint',
+    name: 'id_item_bien_caracteristica',
+  })
   id: string
 
   @Column({ name: 'id_item_bien_secuestrado', type: 'bigint' })

@@ -30,7 +30,7 @@ import { CatalogoCaracteristica } from '../entity/catalogo-caracteristica.entity
 export class OperativoRepository {
   constructor(
     @InjectDataSource(DB_SIII)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   // ==================== OPERATIVO ====================
@@ -61,7 +61,9 @@ export class OperativoRepository {
     })
   }
 
-  async buscarPorNumeroOperativo(numeroOperativo: string): Promise<Operativo | null> {
+  async buscarPorNumeroOperativo(
+    numeroOperativo: string
+  ): Promise<Operativo | null> {
     return this.operativoRepo.findOne({ where: { numeroOperativo } })
   }
 
@@ -96,11 +98,15 @@ export class OperativoRepository {
     return this.dataSource.getRepository(SustanciaSolida)
   }
 
-  async crearSustanciaSolida(sustancia: SustanciaSolida): Promise<SustanciaSolida> {
+  async crearSustanciaSolida(
+    sustancia: SustanciaSolida
+  ): Promise<SustanciaSolida> {
     return this.sustanciaSolidaRepo.save(sustancia)
   }
 
-  async listarSustanciasSolidasPorOperativo(idOperativo: string): Promise<SustanciaSolida[]> {
+  async listarSustanciasSolidasPorOperativo(
+    idOperativo: string
+  ): Promise<SustanciaSolida[]> {
     return this.sustanciaSolidaRepo.find({
       where: { idOperativo },
       order: { fechaHoraIngreso: 'DESC' },
@@ -117,11 +123,15 @@ export class OperativoRepository {
     return this.dataSource.getRepository(SustanciaLiquida)
   }
 
-  async crearSustanciaLiquida(sustancia: SustanciaLiquida): Promise<SustanciaLiquida> {
+  async crearSustanciaLiquida(
+    sustancia: SustanciaLiquida
+  ): Promise<SustanciaLiquida> {
     return this.sustanciaLiquidaRepo.save(sustancia)
   }
 
-  async listarSustanciasLiquidasPorOperativo(idOperativo: string): Promise<SustanciaLiquida[]> {
+  async listarSustanciasLiquidasPorOperativo(
+    idOperativo: string
+  ): Promise<SustanciaLiquida[]> {
     return this.sustanciaLiquidaRepo.find({
       where: { idOperativo },
       order: { fechaHoraIngreso: 'DESC' },
@@ -163,7 +173,9 @@ export class OperativoRepository {
     return this.bienRepo.save(bien)
   }
 
-  async listarBienesPorOperativo(idOperativo: string): Promise<ItemBienSecuestrado[]> {
+  async listarBienesPorOperativo(
+    idOperativo: string
+  ): Promise<ItemBienSecuestrado[]> {
     return this.bienRepo.find({
       where: { idOperativo },
       order: { fechaHoraIngreso: 'DESC' },
@@ -184,7 +196,9 @@ export class OperativoRepository {
     return this.detenidoRepo.save(detenido)
   }
 
-  async listarDetenidosPorOperativo(idOperativo: string): Promise<DetenidoAuxiliar[]> {
+  async listarDetenidosPorOperativo(
+    idOperativo: string
+  ): Promise<DetenidoAuxiliar[]> {
     return this.detenidoRepo.find({
       where: { idOperativo },
       order: { fechaHoraIngreso: 'DESC' },
@@ -243,13 +257,17 @@ export class OperativoRepository {
     })
   }
 
-  async listarFabricaModelosPorTipo(idTipoFabrica: number): Promise<FabricaModelo[]> {
+  async listarFabricaModelosPorTipo(
+    idTipoFabrica: number
+  ): Promise<FabricaModelo[]> {
     return this.dataSource.getRepository(FabricaModelo).find({
       where: { idTipoFabrica },
     })
   }
 
-  async listarItemsOperativoPorCategoria(idCategoriaOperativo: number): Promise<ItemOperativo[]> {
+  async listarItemsOperativoPorCategoria(
+    idCategoriaOperativo: number
+  ): Promise<ItemOperativo[]> {
     return this.dataSource.getRepository(ItemOperativo).find({
       where: { idCategoriaOperativo },
     })
@@ -261,13 +279,17 @@ export class OperativoRepository {
     })
   }
 
-  async listarCatalogoTiposPorClase(idCatalogoClase: number): Promise<CatalogoTipo[]> {
+  async listarCatalogoTiposPorClase(
+    idCatalogoClase: number
+  ): Promise<CatalogoTipo[]> {
     return this.dataSource.getRepository(CatalogoTipo).find({
       where: { idCatalogoClase },
     })
   }
 
-  async listarCatalogoCaracteristicasPorClase(idCatalogoClase: number): Promise<CatalogoCaracteristica[]> {
+  async listarCatalogoCaracteristicasPorClase(
+    idCatalogoClase: number
+  ): Promise<CatalogoCaracteristica[]> {
     return this.dataSource.getRepository(CatalogoCaracteristica).find({
       where: { idCatalogoClase },
     })
