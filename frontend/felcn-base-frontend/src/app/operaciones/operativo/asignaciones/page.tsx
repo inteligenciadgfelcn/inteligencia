@@ -8,5 +8,18 @@ export const metadata: Metadata = {
 }
 
 export default function AsignacionesPage() {
-    return <AsignacionesDatatable />
+    return (
+        <div className="flex flex-col gap-6">
+            <AsignacionesDatatable
+                title="Asignaciones Aprobadas"
+                endpoint="/asignaciones/usuario/admin"
+                queryKeyName="asignaciones-aprobadas"
+            />
+            <AsignacionesDatatable
+                title="Asignaciones No Aprobadas"
+                endpoint="/asignaciones/usuario/admin/no-aprobados"
+                queryKeyName="asignaciones-no-aprobadas"
+            />
+        </div>
+    )
 }
