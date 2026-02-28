@@ -7,7 +7,13 @@ import { Constantes } from '@/config/Constantes'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { AsignacionType, AsignacionesRespuesta } from '../types/asignacionTypes'
 
-export const AsignacionesDatatable: React.FC = () => {
+interface Props {
+    title: string
+    endpoint: string
+    queryKeyName: string
+}
+
+export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryKeyName }) => {
     const { sesionPeticion } = useSession()
 
     const [page, setPage] = useState(1)
@@ -16,7 +22,7 @@ export const AsignacionesDatatable: React.FC = () => {
 
     const obtenerAsignaciones = async (): Promise<AsignacionType[]> => {
         const respuesta = await sesionPeticion<AsignacionesRespuesta>({
-            url: `${Constantes.baseUrl}/asignaciones/usuario/admin`,
+            url: `${Constantes.baseUrl}${endpoint}`,
         })
         return respuesta.datos ?? []
     }
@@ -26,7 +32,7 @@ export const AsignacionesDatatable: React.FC = () => {
         isLoading: loading,
         refetch,
     } = useQuery({
-        queryKey: ['asignaciones'],
+        queryKey: [queryKeyName],
         queryFn: obtenerAsignaciones,
     })
 
@@ -146,7 +152,7 @@ export const AsignacionesDatatable: React.FC = () => {
 
     return (
         <VristoDataTable<AsignacionType>
-            title="Asignaciones del Usuario"
+            title={title}
             rows={filasPagina}
             total={total}
             page={page}
