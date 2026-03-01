@@ -1,0 +1,36 @@
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/siii-lookups/continentes' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"id":1,"descripcion":"Africa"},{"id":3,"descripcion":"America Central"},{"id":2,"descripcion":"America del Norte"},{"id":4,"descripcion":"America del Sur"},{"id":5,"descripcion":"Asia"},{"id":6,"descripcion":"Caribe"},{"id":7,"descripcion":"Europa"},{"id":8,"descripcion":"Medio Oriente"},{"id":9,"descripcion":"Oceania"}]}%                                                          
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/asig-lookups/unidades' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"idUnidad":"IC","descripcion":"DEPARTAMENTO NACIONAL DE INTELIGENCIA"},{"idUnidad":"EF","descripcion":"GRUPO DE INVESTIGACION DE ANALISIS ECONOMICO FINANCIERO"},{"idUnidad":"CE","descripcion":"GRUPO DE INVESTIGACION DE CASOS ESPECIALES"},{"idUnidad":"QU","descripcion":"GRUPO DE INVESTIGACION DE SUSTANCIAS QUIMICAS"},{"idUnidad":"OE","descripcion":"GRUPO DE INVESTIGACION Y OPERACIONES ESPECIALES"},{"idUnidad":"CC","descripcion":"GRUPO ESPECIAL DE CONTROL DE COCA"},{"idUnidad":"JD","descripcion":"JEFATURA DEPARTAMENTAL"},{"idUnidad":"JA","descripcion":"JEFATURA NACIONAL DE CONTROL DE AEROPUERTOS"},{"idUnidad":"UM","descripcion":"UNIDAD MOVIL DE PATRULLAJE RURAL"}]}%                                                                                                                                                                    
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/asig-lookups/unidades' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"idUnidad":"IC","descripcion":"DEPARTAMENTO NACIONAL DE INTELIGENCIA"},{"idUnidad":"EF","descripcion":"GRUPO DE INVESTIGACION DE ANALISIS ECONOMICO FINANCIERO"},{"idUnidad":"CE","descripcion":"GRUPO DE INVESTIGACION DE CASOS ESPECIALES"},{"idUnidad":"QU","descripcion":"GRUPO DE INVESTIGACION DE SUSTANCIAS QUIMICAS"},{"idUnidad":"OE","descripcion":"GRUPO DE INVESTIGACION Y OPERACIONES ESPECIALES"},{"idUnidad":"CC","descripcion":"GRUPO ESPECIAL DE CONTROL DE COCA"},{"idUnidad":"JD","descripcion":"JEFATURA DEPARTAMENTAL"},{"idUnidad":"JA","descripcion":"JEFATURA NACIONAL DE CONTROL DE AEROPUERTOS"},{"idUnidad":"UM","descripcion":"UNIDAD MOVIL DE PATRULLAJE RURAL"}]}%                                                                                                                                                                    
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/siii-lookups/departamentos' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"id":8,"idPais":70,"descripcion":"BENI","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":1,"idPais":70,"descripcion":"CHUQUISACA","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":3,"idPais":70,"descripcion":"COCHABAMBA","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":2,"idPais":70,"descripcion":"LA PAZ","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":4,"idPais":70,"descripcion":"ORURO","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":9,"idPais":70,"descripcion":"PANDO","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":5,"idPais":70,"descripcion":"POTOSÍ","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":7,"idPais":70,"descripcion":"SANTA CRUZ","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}},{"id":6,"idPais":70,"descripcion":"TARIJA","pais":{"id":70,"idContinente":4,"descripcion":"Bolivia"}}]}%                                                                                                                                        
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/siii-lookups/provincias/departamento/1' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"id":2,"idDepartamento":1,"descripcion":"AZURDUY","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":8,"idDepartamento":1,"descripcion":"BELISARIO BOETO","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":5,"idDepartamento":1,"descripcion":"HERNANDO SILES","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":10,"idDepartamento":1,"descripcion":"LUIS CALVO","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":7,"idDepartamento":1,"descripcion":"NOR CINTI","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":1,"idDepartamento":1,"descripcion":"OROPEZA","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":9,"idDepartamento":1,"descripcion":"SUD CINTI","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":4,"idDepartamento":1,"descripcion":"TOMINA","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":6,"idDepartamento":1,"descripcion":"YAMPARAEZ","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}},{"id":3,"idDepartamento":1,"descripcion":"ZUDAÑEZ","departamento":{"id":1,"idPais":70,"descripcion":"CHUQUISACA"}}]}%                                                                                                                   
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/siii-lookups/localidades/provincia/1' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[{"id":3,"idProvincia":1,"descripcion":"Poroma","provincia":{"id":1,"idDepartamento":1,"descripcion":"OROPEZA"}},{"id":1,"idProvincia":1,"descripcion":"Sucre","provincia":{"id":1,"idDepartamento":1,"descripcion":"OROPEZA"}},{"id":2,"idProvincia":1,"descripcion":"Yotala","provincia":{"id":1,"idDepartamento":1,"descripcion":"OROPEZA"}}]}%                                              
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/estructura/unidades' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[]}%                                                                                                                                                         
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/estructura/distritales/unidad/1' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[]}%                                                                                                                                                         
+➜  ~ curl -X 'GET' \
+  'http://localhost:3000/api/estructura/grupos/distrital/1' \
+  -H 'accept: */*'
+{"finalizado":true,"mensaje":"Registros obtenidos con éxito.","datos":[]}%   

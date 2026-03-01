@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks'
 import { useQuery } from '@tanstack/react-query'
 import { Constantes } from '@/config/Constantes'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { AsignacionType, AsignacionesRespuesta } from '../types/asignacionTypes'
+import { Button } from '@/components/ui/Button'
 
 interface Props {
     title: string
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryKeyName }) => {
+    const router = useRouter()
     const { sesionPeticion } = useSession()
 
     const [page, setPage] = useState(1)
@@ -146,6 +149,27 @@ export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryK
                 <span className="text-xs text-gray-400">
                     {formatearFecha(row.fechaHoraRegistro)}
                 </span>
+            ),
+        },
+        {
+            accessor: 'idAsignacion',
+            title: 'Acciones',
+            render: (row) => (
+                <div className="flex items-center justify-end gap-2">
+                    {row.numeroCaso?.trim() && (
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() =>
+                                router.push(
+                                    `/operaciones/operativo`,
+                                )
+                            }
+                        >
+                            Ver Caso
+                        </Button>
+                    )}
+                </div>
             ),
         },
     ]

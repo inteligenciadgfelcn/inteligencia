@@ -1,18 +1,19 @@
 'use client';
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Card } from '@/components/ui/Card';
 import { FormInputText, FormInputDropdown, FormInputDate } from '@/components/form';
+import { optionType } from '@/components/form/FormInputDropdown';
 import FormInputFile from '@/components/form/FormInputFile';
-import { Button } from '@/components/ui/Button'; // Assuming Button is in ui or form imports, checking previous file list
+import { Button } from '@/components/ui/Button';
 import Mapa from '@/components/mapas/Mapa';
 import { Marker } from 'react-leaflet';
 import { icon } from 'leaflet';
-import { useRef, useState } from 'react';
 import { DataTable } from 'mantine-datatable';
 import IconTrashLines from '@/components/Icon/IconTrashLines';
 import IconPlus from '@/components/Icon/IconPlus';
 import IconPencil from '@/components/Icon/IconPencil';
+import { useParametricas } from '@/hooks';
 
 const ICON = icon({
     iconRetinaUrl: '/leaflet/marker-icon.png',
@@ -22,15 +23,69 @@ const ICON = icon({
 });
 
 export const FormularioOperativo = () => {
+    // ── Servicios paramétricos ────────────────────────────────────────────────
+    const {
+        departamentos,
+        provincias,
+        localidades,
+        cargarDepartamentos,
+        cargarProvincias,
+        cargarLocalidades,
+        // estructura
+        unidadesEstructura,
+        distritales,
+        grupos,
+        cargarUnidadesEstructura,
+        cargarDistritales,
+        cargarGrupos,
+    } = useParametricas()
+
+    const opcionesDepartamento: optionType[] = departamentos.map((d) => ({
+        id: String(d.id),
+        value: String(d.id),
+        label: d.descripcion,
+    }))
+
+    const opcionesProvicia: optionType[] = provincias.map((p) => ({
+        id: String(p.id),
+        value: String(p.id),
+        label: p.descripcion,
+    }))
+
+    const opcionesMunicipio: optionType[] = localidades.map((l) => ({
+        id: String(l.id),
+        value: String(l.id),
+        label: l.descripcion,
+    }))
+
+    // ── Estructura (Unidad → Distrital → Grupo) ───────────────────────────────
+    const opcionesUnidadEst: optionType[] = unidadesEstructura.map((u) => ({
+        id: String(u.id),
+        value: String(u.id),
+        label: u.descripcion,
+    }))
+
+    const opcionesDistritalEst: optionType[] = distritales.map((d) => ({
+        id: String(d.id),
+        value: String(d.id),
+        label: d.descripcion,
+    }))
+
+    const opcionesGrupoEst: optionType[] = grupos.map((g) => ({
+        id: String(g.id),
+        value: String(g.id),
+        label: g.descripcion,
+    }))
+
     const { control, watch, setValue, getValues } = useForm({
         defaultValues: {
             numeroOperativo: 'CB-UM-363/25',
             relevancia: 'ninguno',
             numeroInforme: '',
             nombreCaso: '',
-            unidad: 'unidad_movil',
-            distrital: 'chapare',
-            grupo: 'castillo',
+            unidad: '',
+            distrital: '',
+            grupo: '',
             quienRealiza: 'TTE. SERGIO DALMAR CLAROS ROMERO',
             celularRealiza: '70377797',
             asignado: 'TTE. SERGIO DALMAR CLAROS ROMERO',
@@ -40,9 +95,9 @@ export const FormularioOperativo = () => {
             tipoDenuncia: 'de_oficio',
             tipoPenal: 'trafico',
             fechaHora: new Date('2025-11-27T04:00:00'), // Example date
-            departamento: 'cochabamba',
-            provincia: 'chapare',
-            municipio: 'villa_tunari',
+            departamento: '',
+            provincia: '',
+            municipio: '',
             localidad: 'CENTRAL VILLA 14 DE SEPTIEMBRE SINDICATO VILLA POR VENIR',
             operativoEn: 'centros',
             tipoLugar: 'rural',
@@ -193,24 +248,102 @@ export const FormularioOperativo = () => {
 
 
 
-    const options = [
-        { id: 'opt-ninguno', label: 'Ninguno', value: 'ninguno' },
-        { id: 'opt-unidad', label: 'Unidad Movil de Patrullaje Rural', value: 'unidad_movil' },
-        { id: 'opt-chapare', label: 'Chapare', value: 'chapare' },
-        { id: 'opt-castillo', label: 'Castillo', value: 'castillo' },
-        { id: 'opt-deoficio', label: 'De Oficio', value: 'de_oficio' },
-        { id: 'opt-trafico', label: 'Tráfico (Art. 48 Ley 1008)', value: 'trafico' },
-        { id: 'opt-cocha', label: 'COCHABAMBA', value: 'cochabamba' },
-        { id: 'opt-villa', label: 'Village Tunari', value: 'villa_tunari' },
-        { id: 'opt-centros', label: 'Centros', value: 'centros' },
-        { id: 'opt-rural', label: 'Rural', value: 'rural' },
-        { id: 'opt-vias', label: 'Vias Seguras', value: 'vias_seguras' },
-        { id: 'opt-patrullaje', label: 'Patrullaje', value: 'patrullaje' },
-    ];
+    // ── Opciones por campo ────────────────────────────────────────────────────
+    const opcionesRelevancia = [
+        { id: 'rel-ninguno', label: 'Ninguno', value: 'ninguno' },
+        { id: 'rel-alta', label: 'Alta', value: 'alta' },
+        { id: 'rel-media', label: 'Media', value: 'media' },
+        { id: 'rel-baja', label: 'Baja', value: 'baja' },
+    ]
+
+    const opcionesTipoDenuncia = [
+        { id: 'den-oficio', label: 'De Oficio', value: 'de_oficio' },
+        { id: 'den-ciudadana', label: 'Denuncia Ciudadana', value: 'ciudadana' },
+        { id: 'den-inteligencia', label: 'Trabajo de Inteligencia', value: 'inteligencia' },
+    ]
+
+    const opcionesTipoPenal = [
+        { id: 'pen-trafico', label: 'Tráfico (Art. 48 Ley 1008)', value: 'trafico' },
+        { id: 'pen-microtrafico', label: 'Micro Tráfico (Art. 51 Ley 1008)', value: 'microtrafico' },
+        { id: 'pen-consumo', label: 'Consumo (Art. 49 Ley 1008)', value: 'consumo' },
+        { id: 'pen-elaboracion', label: 'Elaboración (Art. 50 Ley 1008)', value: 'elaboracion' },
+    ]
+
+    const opcionesOperativoEn = [
+        { id: 'op-centros', label: 'Centros', value: 'centros' },
+        { id: 'op-via-publica', label: 'Via Pública', value: 'via_publica' },
+        { id: 'op-domicilio', label: 'Domicilio', value: 'domicilio' },
+        { id: 'op-vehiculo', label: 'Vehículo', value: 'vehiculo' },
+        { id: 'op-aeropuerto', label: 'Aeropuerto / Terminal', value: 'aeropuerto' },
+    ]
+
+    const opcionesTipoLugar = [
+        { id: 'lug-rural', label: 'Rural', value: 'rural' },
+        { id: 'lug-urbano', label: 'Urbano', value: 'urbano' },
+    ]
+
+    const opcionesPlan = [
+        { id: 'plan-vias', label: 'Vias Seguras', value: 'vias_seguras' },
+        { id: 'plan-integral', label: 'Plan Integral', value: 'integral' },
+        { id: 'plan-fronteras', label: 'Control Fronteras', value: 'fronteras' },
+    ]
+
+    const opcionesTipoOperativo = [
+        { id: 'top-patrullaje', label: 'Patrullaje', value: 'patrullaje' },
+        { id: 'top-allanamiento', label: 'Allanamiento', value: 'allanamiento' },
+        { id: 'top-control', label: 'Control de Carreteras', value: 'control' },
+        { id: 'top-investigacion', label: 'Investigación', value: 'investigacion' },
+    ]
+
 
     const latitud = watch('latitud');
     const longitud = watch('longitud');
+    const departamentoSeleccionado = watch('departamento');
+    const provinciaSeleccionada = watch('provincia');
+    const unidadSeleccionada = watch('unidad');
+    const distritalSeleccionado = watch('distrital');
     const mapRef = useRef(null);
+
+    // ── Efectos en cascada: Geografía ────────────────────────────────────────
+    useEffect(() => {
+        cargarDepartamentos()
+        cargarUnidadesEstructura()
+    }, [])
+
+    useEffect(() => {
+        const id = Number(departamentoSeleccionado)
+        if (id > 0) {
+            setValue('provincia', '')
+            setValue('municipio', '')
+            cargarProvincias(id)
+        }
+    }, [departamentoSeleccionado])
+
+    useEffect(() => {
+        const id = Number(provinciaSeleccionada)
+        if (id > 0) {
+            setValue('municipio', '')
+            cargarLocalidades(id)
+        }
+    }, [provinciaSeleccionada])
+
+    // ── Efectos en cascada: Estructura ───────────────────────────────────────
+    useEffect(() => {
+        const id = Number(unidadSeleccionada)
+        if (id > 0) {
+            setValue('distrital', '')
+            setValue('grupo', '')
+            cargarDistritales(id)
+        }
+    }, [unidadSeleccionada])
+
+    useEffect(() => {
+        const id = Number(distritalSeleccionado)
+        if (id > 0) {
+            setValue('grupo', '')
+            cargarGrupos(id)
+        }
+    }, [distritalSeleccionado])
 
     const handleMapClick = (center: [number, number]) => {
         setValue('latitud', center[0]);
@@ -223,7 +356,7 @@ export const FormularioOperativo = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Row 1 */}
                     <FormInputText id="numeroOperativo" name="numeroOperativo" label="Numero de Operativo" control={control} />
-                    <FormInputDropdown id="relevancia" name="relevancia" label="Relevancia" control={control} options={options} />
+                    <FormInputDropdown id="relevancia" name="relevancia" label="Relevancia" control={control} options={opcionesRelevancia} />
                     <div className="hidden lg:block"></div>
 
                     {/* Row 2 */}
@@ -232,9 +365,9 @@ export const FormularioOperativo = () => {
                     <div className="hidden lg:block"></div>
 
                     {/* Row 3 */}
-                    <FormInputDropdown id="unidad" name="unidad" label="Unidad" control={control} options={options} />
-                    <FormInputDropdown id="distrital" name="distrital" label="Distrital" control={control} options={options} />
-                    <FormInputDropdown id="grupo" name="grupo" label="Grupo" control={control} options={options} />
+                    <FormInputDropdown id="unidad" name="unidad" label="Unidad" control={control} options={opcionesUnidadEst} />
+                    <FormInputDropdown id="distrital" name="distrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} />
+                    <FormInputDropdown id="grupo" name="grupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} />
 
                     {/* Row 4 */}
                     <FormInputText id="quienRealiza" name="quienRealiza" label="Quien Realiza la Solicitud" control={control} />
@@ -252,14 +385,34 @@ export const FormularioOperativo = () => {
                     <div className="hidden lg:block"></div>
 
                     {/* Row 7 */}
-                    <FormInputDropdown id="tipoDenuncia" name="tipoDenuncia" label="Tipo de la Denuncia" control={control} options={options} />
-                    <FormInputDropdown id="tipoPenal" name="tipoPenal" label="Tipo Penal" control={control} options={options} />
+                    <FormInputDropdown id="tipoDenuncia" name="tipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} />
+                    <FormInputDropdown id="tipoPenal" name="tipoPenal" label="Tipo Penal" control={control} options={opcionesTipoPenal} />
                     <FormInputDate id="fechaHora" name="fechaHora" label="Fecha y Hora del Operativo" control={control} />
 
                     {/* Row 8 */}
-                    <FormInputDropdown id="departamento" name="departamento" label="Departamento" control={control} options={options} />
-                    <FormInputDropdown id="provincia" name="provincia" label="Provincia" control={control} options={options} />
-                    <FormInputDropdown id="municipio" name="municipio" label="Municipio" control={control} options={options} />
+                    <FormInputDropdown
+                        id="departamento"
+                        name="departamento"
+                        label="Departamento"
+                        control={control}
+                        options={opcionesDepartamento}
+                    />
+                    <FormInputDropdown
+                        id="provincia"
+                        name="provincia"
+                        label="Provincia"
+                        control={control}
+                        options={opcionesProvicia}
+                        disabled={opcionesProvicia.length === 0}
+                    />
+                    <FormInputDropdown
+                        id="municipio"
+                        name="municipio"
+                        label="Municipio"
+                        control={control}
+                        options={opcionesMunicipio}
+                        disabled={opcionesMunicipio.length === 0}
+                    />
 
                     {/* Row 9 */}
                     <div className="col-span-1 lg:col-span-3">
@@ -267,13 +420,13 @@ export const FormularioOperativo = () => {
                     </div>
 
                     {/* Row 10 */}
-                    <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={options} />
-                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Tipo Lugar" control={control} options={options} />{/* Label inferred */}
+                    <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} />
+                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Tipo Lugar" control={control} options={opcionesTipoLugar} />
                     <FormInputText id="mando" name="mando" label="Al Mando de" control={control} />
 
                     {/* Row 11 */}
-                    <FormInputDropdown id="plan" name="plan" label="Plan de Operaciones" control={control} options={options} />
-                    <FormInputDropdown id="tipoOperativo" name="tipoOperativo" label="El Operativo es de Tipo" control={control} options={options} />
+                    <FormInputDropdown id="plan" name="plan" label="Plan de Operaciones" control={control} options={opcionesPlan} />
+                    <FormInputDropdown id="tipoOperativo" name="tipoOperativo" label="El Operativo es de Tipo" control={control} options={opcionesTipoOperativo} />
                     <div className="hidden lg:block"></div>
 
                     {/* Row 12 */}
