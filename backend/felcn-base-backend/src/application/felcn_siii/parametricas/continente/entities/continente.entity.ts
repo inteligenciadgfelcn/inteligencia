@@ -1,5 +1,12 @@
 import { Estado } from '@/application/felcn_s2i/estado.enum'
-import { BeforeInsert, Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 import { Pais } from '../../pais/entities/pais.entity'
 
 @Entity({
@@ -37,6 +44,6 @@ export class Continente {
     }
   }
 
-  //@OneToMany(() => Pais, (pais) => pais.continente)
- // paises: Pais[]
+  @OneToMany(() => Pais, (pais) => pais.continente)
+  paises: Pais[]
 }
