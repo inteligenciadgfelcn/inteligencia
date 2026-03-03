@@ -1,34 +1,72 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ContinenteService } from './continente.service';
-import { CreateContinenteDto } from './dto/create-continente.dto';
-import { UpdateContinenteDto } from './dto/update-continente.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common'
+import { ContinenteService } from './continente.service'
+import { CreateContinenteDto } from './dto/create-continente.dto'
+import { UpdateContinenteDto } from './dto/update-continente.dto'
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger'
+import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { BaseController } from '@/common/base'
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiTags('SIII - Continentes')
 @Controller('continente')
-export class ContinenteController {
-  constructor(private readonly continenteService: ContinenteService) {}
+export class ContinenteController extends BaseController {
+  constructor(private readonly continenteService: ContinenteService) {
+    super()
+  }
 
   @Post()
-  create(@Body() createContinenteDto: CreateContinenteDto) {
-    return this.continenteService.create(createContinenteDto);
+  @ApiOperation({ summary: 'Crear un continente' })
+  @ApiResponse({ status: 201, description: 'Continente creado correctamente' })
+  create(@Body() dto: CreateContinenteDto) {
+    return this.continenteService.create(dto)
   }
 
   @Get()
-  findAll() {
-    return this.continenteService.findAll();
+  @ApiOperation({ summary: 'listar distrital con paginación' })
+  async findAll(@Query() pagination: PaginacionQueryDto) {
+    const result = await this.continenteService.findAllPaginado(pagination)
+    return this.successListRows(result)
+  }
+
+  @Get('allGeneral')
+  @ApiOperation({ summary: 'Listar todos las continentes (sin paginación)' })
+  findAllGeneral() {
+    return this.continenteService.findAll()
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.continenteService.findOne(+id);
+  @ApiOperation({ summary: 'Obtener un continente por ID' })
+  findOne(@Param('id') id: number) {
+    return this.continenteService.findOne(id)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContinenteDto: UpdateContinenteDto) {
-    return this.continenteService.update(+id, updateContinenteDto);
+  @ApiOperation({ summary: 'Actualizar un continente' })
+  update(@Param('id') id: number, @Body() dto: UpdateContinenteDto) {
+    return this.continenteService.update(id, dto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.continenteService.remove(+id);
+  @ApiOperation({ summary: 'Eliminar un continente' })
+  remove(@Param('id') id: number) {
+    return this.continenteService.remove(id)
   }
 }
