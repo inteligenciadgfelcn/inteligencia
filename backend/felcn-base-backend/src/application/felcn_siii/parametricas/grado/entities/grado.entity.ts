@@ -1,5 +1,6 @@
+import { Estado } from '@/application/felcn_siii/estado.enum'
 import { BeforeInsert, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm'
-import { Estado } from '../../estado.enum'
+
 
 @Entity({ name: 'grado' })
 export class Grado {

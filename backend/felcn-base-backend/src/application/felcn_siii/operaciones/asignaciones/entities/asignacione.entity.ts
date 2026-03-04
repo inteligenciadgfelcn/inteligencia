@@ -1,11 +1,12 @@
-import { Grupo } from '@/application/felcn_s2i/grupo/entities/grupo.entity'
 import { Departamento } from '@/application/felcn_siii/parametricas/departamento/entities/departamento.entity'
+import { Distrital } from '@/application/felcn_siii/parametricas/distrital/entities/distrital.entity'
+import { Grupo } from '@/application/felcn_siii/parametricas/grupo/entities/grupo.entity'
+import { Unidad } from '@/application/felcn_siii/parametricas/unidad/entities/unidad.entity'
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
-  Index,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
@@ -13,29 +14,32 @@ import {
 export class Asignacion {
   @PrimaryGeneratedColumn({
     type: 'int',
-    name: 'id_asignacion',
+    name: 'id_caso',
     comment: 'Clave primaria del registro',
   })
   idAsignacion: number
 
-  @ManyToOne(() => Departamento, { nullable: false })
-  @JoinColumn({ name: 'id_departamento_caso' })
+  @ManyToOne(() => Departamento)
+  @JoinColumn({
+    name: 'abreviatura_departamento',
+    referencedColumnName: 'abreviatura',
+  })
   departamento: Departamento
 
-  @Column({
+  @ManyToOne(() => Unidad)
+  @JoinColumn({
     name: 'abreviatura_unidad',
-    type: 'varchar',
-    length: 10,
-    nullable: true,
-    comment: 'abreviatura de la unidad',
+    referencedColumnName: 'abreviatura',
   })
-  abreviatura_unidad: string
+  unidad: Unidad
 
-  @Column({
-    name: 'id_grupo',
-    type: 'int',
-  })
-  idGrupo: number
+  @ManyToOne(() => Distrital)
+  @JoinColumn({ name: 'id_distrital', referencedColumnName: 'idDistrital' })
+  distrital: Distrital
+
+  @ManyToOne(() => Grupo)
+  @JoinColumn({ name: 'id_grupo' })
+  grupo: Grupo
 
   @Column({
     name: 'letras',
@@ -65,7 +69,7 @@ export class Asignacion {
   nroCasoPerDom: string
 
   @Column({
-    name: 'nro_operativo',
+    name: 'numero_operativo',
     type: 'varchar',
     length: 50,
     nullable: false,
@@ -120,7 +124,7 @@ export class Asignacion {
   telefonoSolicitud: string
 
   @Column({
-    name: 'signado_caso',
+    name: 'asignado_caso',
     type: 'varchar',
     length: 150,
     comment: 'Nombre del investigador o responsable asignado',
@@ -152,15 +156,15 @@ export class Asignacion {
   telefonoFiscal: string
 
   @Column({
-    name: 'eta_inv',
+    name: 'id_etapa_investigacion',
     type: 'numeric',
     precision: 10,
     scale: 2,
     nullable: true,
     default: 7,
-    comment: 'Tiempo estimado de investigación en días (por defecto 7)',
+    comment: 'Etapa de investigación (por defecto 7)',
   })
-  etaInv: number
+  etapaInvestigacion: number
 
   @Column({
     type: 'boolean',

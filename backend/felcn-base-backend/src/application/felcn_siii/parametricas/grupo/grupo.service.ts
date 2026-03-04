@@ -5,22 +5,26 @@ import {
 } from '@nestjs/common'
 import { CreateGrupoDto } from './dto/create-grupo.dto'
 import { UpdateGrupoDto } from './dto/update-grupo.dto'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DB_S2I } from '@/core/config/database/database.module'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { DB_SIII } from '@/core/config/database/database.module'
 import { Grupo } from './entities/grupo.entity'
-import { Estado } from '../estado.enum'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { Estado } from '../../estado.enum'
+import { Repository } from 'typeorm'
+import { Distrital } from '../distrital/entities/distrital.entity'
 
 @Injectable()
 export class GrupoService {
   constructor(
-    @InjectDataSource(DB_S2I)
-    private readonly datasource: DataSource
+    @InjectRepository(Grupo, DB_SIII)
+    private readonly grupoRepository: Repository<Grupo>,
+
+    @InjectRepository(Distrital, DB_SIII)
+    private readonly distritalRepository: Repository<Distrital>
   ) {}
 
   async create(dto: CreateGrupoDto): Promise<Grupo> {
-    const distrital = await this.datasource.getRepository('distrital').findOne({
+    const distrital = await this.distritalRepository.findOne({
       where: { idDistrital: dto.idDistrital, estado: Estado.ACTIVO },
     })
 
@@ -28,7 +32,7 @@ export class GrupoService {
       throw new BadRequestException('Distrital no válida o inactiva')
     }
 
-    const exists = await this.datasource.getRepository('grupo').findOne({
+    const exists = await this.grupoRepository.findOne({
       where: {
         descripcion: dto.descripcion,
         distrital: { idDistrital: dto.idDistrital },
@@ -41,18 +45,17 @@ export class GrupoService {
       )
     }
 
-    const grupo = this.datasource.getRepository('grupo').create({
+    const grupo = this.grupoRepository.create({
       descripcion: dto.descripcion,
       distrital: distrital,
     })
 
-    return await this.datasource.getRepository<Grupo>('grupo').save(grupo)
+    return await this.grupoRepository.save(grupo)
   }
 
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro, sentido } = pagination
-    const query = this.datasource
-      .getRepository('grupo')
+    const query = this.grupoRepository
       .createQueryBuilder('grupo')
       .leftJoinAndSelect('grupo.distrital', 'distrital')
       .where('grupo.estado = :estado', {
@@ -68,7 +71,7 @@ export class GrupoService {
   }
 
   async findAllDistrito(idDistrital?: number): Promise<Grupo[]> {
-    return this.datasource.getRepository(Grupo).find({
+    return this.grupoRepository.find({
       where: {
         estado: Estado.ACTIVO,
         ...(idDistrital ? { distrital: { idDistrital } } : {}),
@@ -78,7 +81,7 @@ export class GrupoService {
   }
 
   async findAllGeneral(): Promise<Grupo[]> {
-    return this.datasource.getRepository<Grupo>('grupo').find({
+    return this.grupoRepository.find({
       where: { estado: Estado.ACTIVO },
       relations: ['distrital'],
       order: { descripcion: 'ASC' },
@@ -86,7 +89,7 @@ export class GrupoService {
   }
 
   async findOne(id: number): Promise<Grupo> {
-    const grupo = await this.datasource.getRepository(Grupo).findOne({
+    const grupo = await this.grupoRepository.findOne({
       where: {
         idGrupo: id,
         estado: Estado.ACTIVO,
@@ -100,7 +103,7 @@ export class GrupoService {
   }
 
   async update(id: number, dto: UpdateGrupoDto): Promise<Grupo> {
-    const grupo = await this.datasource.getRepository('grupo').findOne({
+    const grupo = await this.grupoRepository.findOne({
       where: { idGrupo: id, estado: Estado.ACTIVO },
       relations: ['distrital'],
     })
@@ -111,10 +114,10 @@ export class GrupoService {
 
     // Validar cambio de descripción
     if (dto.descripcion && dto.descripcion !== grupo.descripcion) {
-      const exists = await this.datasource.getRepository('grupo').findOne({
+      const exists = await this.grupoRepository.findOne({
         where: {
           descripcion: dto.descripcion,
-          distrital: { id: grupo.distrital.id },
+          distrital: { idDistrital: grupo.distrital.idDistrital },
         },
       })
 
@@ -126,11 +129,9 @@ export class GrupoService {
     }
 
     if (dto.idDistrital !== undefined) {
-      const distrito = await this.datasource
-        .getRepository('distrital')
-        .findOne({
-          where: { idDistrital: dto.idDistrital, estado: Estado.ACTIVO },
-        })
+      const distrito = await this.distritalRepository.findOne({
+        where: { idDistrital: dto.idDistrital, estado: Estado.ACTIVO },
+      })
 
       if (!distrito) {
         throw new BadRequestException('Distrital no válida o inactiva')
@@ -142,11 +143,11 @@ export class GrupoService {
 
     Object.assign(grupo, dto)
 
-    return await this.datasource.getRepository<Grupo>('grupo').save(grupo)
+    return await this.grupoRepository.save(grupo)
   }
 
   async remove(id: number): Promise<Grupo> {
-    const grupo = await this.datasource.getRepository('grupo').findOne({
+    const grupo = await this.grupoRepository.findOne({
       where: { idGrupo: id, estado: Estado.ACTIVO },
     })
 
@@ -156,6 +157,6 @@ export class GrupoService {
 
     grupo.estado = Estado.INACTIVO
 
-    return await this.datasource.getRepository<Grupo>('grupo').save(grupo)
+    return await this.grupoRepository.save(grupo)
   }
 }

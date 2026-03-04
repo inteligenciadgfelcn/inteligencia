@@ -6,7 +6,7 @@ import { DB_S2I } from '@/core/config/database/database.module';
 import { DataSource } from 'typeorm';
 import { Grado } from './entities/grado.entity';
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto';
-import { Estado } from '../estado.enum';
+import { Estado } from '../../estado.enum';
 
 @Injectable()
 export class GradoService {

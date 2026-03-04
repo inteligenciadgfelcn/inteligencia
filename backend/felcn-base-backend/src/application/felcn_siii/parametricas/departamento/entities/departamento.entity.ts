@@ -9,7 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
-import { Estado } from '@/application/felcn_s2i/estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
 import { Pais } from '../../pais/entities/pais.entity'
 import { Asignacion } from '@/application/felcn_siii/operaciones/asignaciones/entities/asignacione.entity'
 
@@ -29,9 +29,9 @@ export class Departamento {
   @Column({
     name :'abreviatura',
     type: 'varchar',
-    length: 150,
+    length: 2,
     nullable: false,
-    comment: 'Nombre del departamento',
+    comment: 'Abreviatura del departamento',
   })
   abreviatura: string
 
@@ -68,9 +68,6 @@ export class Departamento {
       this.estado = Estado.ACTIVO
     }
   }
-
-  // @OneToMany(() => Provincia, (provincia) => provincia.departamento)
-  // provincias: Provincia[];
 
   @OneToMany(() => Asignacion, (asignacion) => asignacion.departamento)
   asignaciones: Asignacion[]
