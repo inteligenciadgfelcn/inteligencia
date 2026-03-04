@@ -15,7 +15,7 @@ export class CreateUnidadDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(3)
+  @MaxLength(10)
   abreviatura: string;
 
   @ApiProperty({
@@ -25,7 +25,7 @@ export class CreateUnidadDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(80)
+  @MaxLength(250)
   descripcion?: string;
 
   @ApiProperty({
@@ -34,7 +34,7 @@ export class CreateUnidadDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(2)
+  @MaxLength(10)
   abreviaturaIcia: string;
 
   @ApiProperty({
