@@ -22,7 +22,7 @@ export class Unidad {
   @Index({ unique: true })
   @Column({
     type: 'varchar',
-    length: 3,
+    length: 10,
     nullable: false,
     comment: 'abreviatura única de la unidad',
   })
@@ -30,7 +30,7 @@ export class Unidad {
 
   @Column({
     type: 'varchar',
-    length: 80,
+    length: 250,
     nullable: false,
     comment: 'Descripción de la unidad',
   })
@@ -39,7 +39,7 @@ export class Unidad {
    @Column({
     name:'abreviatura_icia',
     type: 'varchar',
-    length: 2,
+    length: 10,
     nullable: false,
     comment: 'Abreviatura ICIA',
   })
