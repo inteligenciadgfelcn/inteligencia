@@ -26,7 +26,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('S2I - Grupos')
+@ApiTags('SIII - Grupos')
 @Controller('grupos')
 export class GrupoController extends BaseController {
   constructor(private readonly grupoService: GrupoService) {

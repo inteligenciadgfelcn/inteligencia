@@ -10,7 +10,7 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { Continente } from './entities/continente.entity'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { Estado } from '@/application/felcn_s2i/estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
 
 @Injectable()
 export class ContinenteService {

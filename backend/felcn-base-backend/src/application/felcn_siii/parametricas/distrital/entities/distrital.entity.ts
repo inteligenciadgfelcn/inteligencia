@@ -10,7 +10,8 @@ import {
 } from 'typeorm'
 import { Unidad } from '../../unidad/entities/unidad.entity'
 import { Grupo } from '../../grupo/entities/grupo.entity'
-import { Estado } from '../../estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
+import { Asignacion } from '@/application/felcn_siii/operaciones/asignaciones/entities/asignacione.entity'
 
 @Entity({ name: 'distrital' })
 export class Distrital {
@@ -56,4 +57,7 @@ export class Distrital {
 
   @OneToMany(() => Grupo, (grupo) => grupo.distrital)
   grupos: Grupo[]
+
+  @OneToMany(() => Asignacion, (asignacion) => asignacion.distrital)
+  asignaciones: Asignacion[]
 }

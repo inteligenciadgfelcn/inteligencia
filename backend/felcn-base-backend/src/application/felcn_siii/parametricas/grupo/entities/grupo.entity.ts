@@ -9,7 +9,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Distrital } from '../../distrital/entities/distrital.entity'
-import { Estado } from '../../estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
+import { Asignacion } from '@/application/felcn_siii/operaciones/asignaciones/entities/asignacione.entity'
 
 @Entity({ name: 'grupo' })
 @Index('UQ_grupo_distrito_descripcion', ['distrital', 'descripcion'], {
@@ -55,6 +56,6 @@ export class Grupo {
     }
   }
 
- // @OneToMany(() => Asignacion, (asignacion) => asignacion.grupo)
- // asignaciones: Asignacion[]
+  @OneToMany(() => Asignacion, (asignacion) => asignacion.grupo)
+  asignaciones: Asignacion[]
 }

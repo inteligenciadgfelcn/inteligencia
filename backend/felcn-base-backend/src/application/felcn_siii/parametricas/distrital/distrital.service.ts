@@ -5,23 +5,26 @@ import {
 } from '@nestjs/common'
 import { CreateDistritalDto } from './dto/create-distrital.dto'
 import { UpdateDistritalDto } from './dto/update-distrital.dto'
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { InjectRepository} from '@nestjs/typeorm'
 import { Distrital } from './entities/distrital.entity'
-import { Unidad } from '../unidad/entities/unidad.entity'
-import { DataSource, Repository } from 'typeorm'
-import { Estado } from '../estado.enum'
+import { Repository} from 'typeorm'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { DB_S2I } from '@/core/config/database/database.module'
+import { DB_SIII } from '@/core/config/database/database.module'
+import { Estado } from '../../estado.enum'
+import { Unidad } from '../unidad/entities/unidad.entity'
 
 @Injectable()
 export class DistritalService {
   constructor(
-    @InjectDataSource(DB_S2I)
-    private readonly datasource: DataSource
-  ) {}
+      @InjectRepository(Unidad, DB_SIII)
+      private readonly unidadRepository: Repository<Unidad>,
+
+      @InjectRepository(Distrital, DB_SIII)
+      private readonly distritalRepository: Repository<Distrital>,
+    ) {}
 
   async create(dto: CreateDistritalDto): Promise<Distrital> {
-    const unidad = await this.datasource.getRepository('unidad').findOne({
+    const unidad = await this.unidadRepository.findOne({
       where: { idUnidad: dto.idUnidad, estado: Estado.ACTIVO },
     })
 
@@ -29,7 +32,7 @@ export class DistritalService {
       throw new BadRequestException('Unidad no válida o inactiva')
     }
 
-    const exists = await this.datasource.getRepository('distrital').exist({
+    const exists = await this.distritalRepository.exists({
       where: {
         descripcion: dto.descripcion,
         unidad: { idUnidad: dto.idUnidad },
@@ -42,8 +45,8 @@ export class DistritalService {
       )
     }
 
-    return this.datasource.getRepository<Distrital>('distrital').save(
-      this.datasource.getRepository('distrital').create({
+    return this.distritalRepository.save(
+      this.distritalRepository.create({
         descripcion: dto.descripcion,
         unidad,
       })
@@ -53,8 +56,7 @@ export class DistritalService {
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro, sentido } = pagination
 
-    const query = this.datasource
-      .getRepository(Distrital)
+    const query = this.distritalRepository
       .createQueryBuilder('distrital')
       .innerJoinAndSelect('distrital.unidad', 'unidad')
       .where('distrital.estado = :estado', { estado: Estado.ACTIVO })
@@ -74,7 +76,7 @@ export class DistritalService {
   }
 
   async findAllGeneral(): Promise<Distrital[]> {
-    return this.datasource.getRepository<Distrital>('distrital').find({
+    return this.distritalRepository.find({
       where: { estado: Estado.ACTIVO },
       relations: ['unidad'],
       order: { descripcion: 'ASC' },
@@ -82,7 +84,7 @@ export class DistritalService {
   }
 
   async findAllUnidad(idUnidad?: number) {
-    return this.datasource.getRepository<Distrital>('distrital').find({
+    return this.distritalRepository.find({
       where: {
         estado: Estado.ACTIVO,
         ...(idUnidad && { unidad: { idUnidad } }),
@@ -93,8 +95,7 @@ export class DistritalService {
   }
 
   async findOne(id: number): Promise<Distrital> {
-    const distrital = await this.datasource
-      .getRepository<Distrital>('distrital')
+    const distrital = await this.distritalRepository
       .findOne({
         where: {
           idDistrital: id,
@@ -113,7 +114,7 @@ export class DistritalService {
   }
 
   async update(id: number, dto: UpdateDistritalDto): Promise<Distrital> {
-    const distrital = await this.datasource.getRepository('distrital').findOne({
+    const distrital = await this.distritalRepository.findOne({
       where: { idDistrital:id, estado: Estado.ACTIVO },
       relations: ['unidad'],
     })
@@ -124,10 +125,10 @@ export class DistritalService {
 
     // Validar unique si cambia descripcion
     if (dto.descripcion && dto.descripcion !== distrital.descripcion) {
-      const exists = await this.datasource.getRepository('distrital').findOne({
+      const exists = await this.distritalRepository.findOne({
         where: {
           descripcion: dto.descripcion,
-          unidad: { id: distrital.unidad.id },
+          unidad: { idUnidad: distrital.unidad.idUnidad },
         },
       })
 
@@ -140,7 +141,7 @@ export class DistritalService {
 
     // Cambiar unidad si envían idUnidad
     if (dto.idUnidad !== undefined) {
-      const unidad = await this.datasource.getRepository('unidad').findOne({
+      const unidad = await this.unidadRepository.findOne({
         where: { idUnidad: dto.idUnidad, estado: Estado.ACTIVO },
       })
       if (!unidad) {
@@ -150,13 +151,11 @@ export class DistritalService {
       delete dto.idUnidad
     }
     Object.assign(distrital, dto)
-    return await this.datasource
-      .getRepository<Distrital>('distrital')
-      .save(distrital)
+    return await this.distritalRepository.save(distrital)
   }
 
   async remove(id: number): Promise<Distrital> {
-    const distrital = await this.datasource.getRepository('distrital').findOne({
+    const distrital = await this.distritalRepository.findOne({
       where: { idDistrital: id, estado: Estado.ACTIVO },
     })
 
@@ -166,8 +165,6 @@ export class DistritalService {
 
     distrital.estado = Estado.INACTIVO
 
-    return await this.datasource
-      .getRepository<Distrital>('distrital')
-      .save(distrital)
+    return await this.distritalRepository.save(distrital)
   }
 }

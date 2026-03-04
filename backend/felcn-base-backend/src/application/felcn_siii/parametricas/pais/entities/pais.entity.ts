@@ -8,7 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Estado } from '@/application/felcn_s2i/estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
 import { Continente } from '../../continente/entities/continente.entity'
 import { Departamento } from '../../departamento/entities/departamento.entity'
 

@@ -7,7 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Distrital } from '../../distrital/entities/distrital.entity'
-import { Estado } from '../../estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
+import { Asignacion } from '@/application/felcn_siii/operaciones/asignaciones/entities/asignacione.entity'
 
 @Entity({ name: 'unidad' })
 export class Unidad {
@@ -21,27 +22,45 @@ export class Unidad {
   @Index({ unique: true })
   @Column({
     type: 'varchar',
-    length: 20,
+    length: 3,
     nullable: false,
-    comment: 'Código único de la unidad',
+    comment: 'abreviatura única de la unidad',
   })
   abreviatura: string
 
   @Column({
     type: 'varchar',
-    length: 255,
+    length: 80,
     nullable: false,
     comment: 'Descripción de la unidad',
   })
   descripcion: string
 
+   @Column({
+    name:'abreviatura_icia',
+    type: 'varchar',
+    length: 2,
+    nullable: false,
+    comment: 'Abreviatura ICIA',
+  })
+  abreviaturaIcia: string
+
   @Column({
     name: 'es_operativa_admin',
     type: 'boolean',
-    default: false,
+    default: true,
     comment: 'Indicador de operación administrativa',
   })
   es_operativa_admin: boolean
+
+  @Column({
+    name:'abreviatura_reporte',
+    type: 'varchar',
+    length: 10,
+    nullable: false,
+    comment: 'abreviatura de reporte',
+  })
+  abreviaturaReporte: string
 
   @Column({
     type: 'enum',
@@ -60,4 +79,7 @@ export class Unidad {
 
   @OneToMany(() => Distrital, (distrital) => distrital.unidad)
   distritales: Distrital[]
+
+  @OneToMany(() => Asignacion, (asignacion) => asignacion.unidad)
+  asignaciones: Asignacion[]
 }

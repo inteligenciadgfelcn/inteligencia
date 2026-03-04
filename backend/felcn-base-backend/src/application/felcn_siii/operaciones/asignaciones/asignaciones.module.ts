@@ -4,14 +4,13 @@ import { AsignacionesService } from './asignaciones.service';
 import { AsignacionesController } from './asignaciones.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Asignacion } from './entities/asignacione.entity';
-import { Grupo } from '@/application/felcn_s2i/grupo/entities/grupo.entity';
-import { DB_S2I, DB_SIII } from '@/core/config/database/database.module';
+import { DB_SIII } from '@/core/config/database/database.module';
 import { Departamento } from '../../parametricas/departamento/entities/departamento.entity';
+import { Grupo } from '../../parametricas/grupo/entities/grupo.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Asignacion,Departamento], DB_SIII),
-    TypeOrmModule.forFeature([Grupo], DB_S2I),
+    TypeOrmModule.forFeature([Asignacion,Departamento, Grupo], DB_SIII),
   ],
   providers: [AsignacionesService],
   controllers: [AsignacionesController],

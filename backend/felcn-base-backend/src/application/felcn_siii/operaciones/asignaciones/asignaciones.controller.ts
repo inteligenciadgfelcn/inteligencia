@@ -21,7 +21,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('Operaciones - Asignaciones')
+@ApiTags('SIII - Asignaciones')
 @Controller('asignaciones')
 export class AsignacionesController extends BaseController {
   constructor(private readonly service: AsignacionesService) {
