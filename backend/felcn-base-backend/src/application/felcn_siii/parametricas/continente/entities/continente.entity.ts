@@ -1,4 +1,4 @@
-import { Estado } from '@/application/felcn_s2i/estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
 import {
   BeforeInsert,
   Column,

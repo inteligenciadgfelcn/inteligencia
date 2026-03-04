@@ -25,7 +25,7 @@ import { BaseController } from '@/common/base'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('S2I - Distrital')
+@ApiTags('SIII - Distrital')
 @Controller('distrital')
 export class DistritalController extends BaseController {
   constructor(private readonly distritalService: DistritalService) {

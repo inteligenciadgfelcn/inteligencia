@@ -24,7 +24,7 @@ import { BaseController } from '@/common/base'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('S2I - Unidades')
+@ApiTags('SIII - Unidades')
 @Controller('unidad')
 export class UnidadController extends BaseController {
   constructor(private readonly unidadService: UnidadService) {

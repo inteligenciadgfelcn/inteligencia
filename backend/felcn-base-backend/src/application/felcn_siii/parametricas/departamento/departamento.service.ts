@@ -9,7 +9,7 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '@/core/config/database/database.module'
 import { Departamento } from './entities/departamento.entity'
-import { Estado } from '@/application/felcn_s2i/estado.enum'
+import { Estado } from '@/application/felcn_siii/estado.enum'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { Pais } from '../pais/entities/pais.entity'
 

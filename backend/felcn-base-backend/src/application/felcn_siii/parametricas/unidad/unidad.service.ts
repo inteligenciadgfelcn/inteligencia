@@ -5,22 +5,23 @@ import {
 } from '@nestjs/common'
 import { CreateUnidadDto } from './dto/create-unidad.dto'
 import { UpdateUnidadDto } from './dto/update-unidad.dto'
-import { InjectDataSource } from '@nestjs/typeorm'
-import { DB_S2I } from '@/core/config/database/database.module'
-import { DataSource } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { DB_SIII } from '@/core/config/database/database.module'
+import { Repository } from 'typeorm'
 import { Unidad } from './entities/unidad.entity'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { Estado } from '../estado.enum'
+import { Estado } from '../../estado.enum'
 
 @Injectable()
 export class UnidadService {
-  constructor(
-    @InjectDataSource(DB_S2I)
-    private readonly datasource: DataSource
+ constructor(
+    @InjectRepository(Unidad, DB_SIII)
+    private readonly unidadRepository: Repository<Unidad>,
   ) {}
 
+
   async create(dto: CreateUnidadDto): Promise<Unidad> {
-    const exists = await this.datasource.getRepository('unidad').findOne({
+    const exists = await this.unidadRepository.findOne({
       where: { abreviatura: dto.abreviatura },
     })
 
@@ -28,15 +29,14 @@ export class UnidadService {
       throw new BadRequestException('Ya existe una unidad con ese código')
     }
 
-    const unidad = this.datasource.getRepository('unidad').create(dto)
-    return await this.datasource.getRepository<Unidad>('unidad').save(unidad)
+    const unidad = this.unidadRepository.create(dto)
+    return await this.unidadRepository.save(unidad)
   }
 
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro, sentido } = pagination
 
-    const query = this.datasource
-      .getRepository(Unidad)
+    const query = this.unidadRepository
       .createQueryBuilder('unidad')
       .where('unidad.estado = :estado', { estado: Estado.ACTIVO })
       .take(limite)
@@ -53,15 +53,14 @@ export class UnidadService {
   }
 
   async findAllGeneral(): Promise<Unidad[]> {
-    return this.datasource.getRepository<Unidad>('unidad').find({
+    return this.unidadRepository.find({
       where: { estado: Estado.ACTIVO },
       order: { abreviatura: 'ASC' },
     })
   }
 
   async findOne(id: number): Promise<Unidad> {
-    const unidad = await this.datasource
-      .getRepository<Unidad>('unidad')
+    const unidad = await this.unidadRepository
       .findOne({
         where: { idUnidad: id, estado: Estado.ACTIVO },
       })
@@ -73,7 +72,7 @@ export class UnidadService {
   }
 
   async update(id: number, dto: UpdateUnidadDto) {
-    const unidad = await this.datasource.getRepository('unidad').findOne({
+    const unidad = await this.unidadRepository.findOne({
       where: { idUnidad: id, estado: Estado.ACTIVO },
     })
 
@@ -81,8 +80,8 @@ export class UnidadService {
       throw new NotFoundException('Unidad no encontrada')
     }
 
-    if (dto.abreviatura && dto.abreviatura !== unidad.codigo) {
-      const exists = await this.datasource.getRepository('unidad').findOne({
+    if (dto.abreviatura && dto.abreviatura !== unidad.abreviatura) {
+      const exists = await this.unidadRepository.findOne({
         where: { abreviatura: dto.abreviatura },
       })
 
@@ -93,11 +92,11 @@ export class UnidadService {
 
     Object.assign(unidad, dto)
 
-    return await this.datasource.getRepository<Unidad>('unidad').save(unidad)
+    return await this.unidadRepository.save(unidad)
   }
 
   async remove(id: number): Promise<Unidad> {
-    const unidad = await this.datasource.getRepository('unidad').findOne({
+    const unidad = await this.unidadRepository.findOne({
       where: { idUnidad: id, estado: Estado.ACTIVO },
     })
 
@@ -107,6 +106,6 @@ export class UnidadService {
 
     unidad.estado = Estado.INACTIVO
 
-    return await this.datasource.getRepository<Unidad>('unidad').save(unidad)
+    return await this.unidadRepository.save(unidad)
   }
 }
