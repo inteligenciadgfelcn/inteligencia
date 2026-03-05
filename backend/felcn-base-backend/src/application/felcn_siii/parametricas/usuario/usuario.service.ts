@@ -1,26 +1,119 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
-import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { DB_SIII } from '@/core/config/database/database.module'
+import { Repository } from 'typeorm'
+import { Usuario } from './entities/usuario.entity'
+import { Estado } from '../../estado.enum'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @Injectable()
 export class UsuarioService {
-  create(createUsuarioDto: CreateUsuarioDto) {
-    return 'This action adds a new usuario';
+  constructor(
+    @InjectRepository(Usuario, DB_SIII)
+    private readonly usuarioRepository: Repository<Usuario>,
+  ) {}
+
+  async findAllPaginado(pagination: PaginacionQueryDto){
+    const {filtro} = pagination
+    const query = this.usuarioRepository.createQueryBuilder('usuario')
+      .leftJoinAndSelect('usuario.grado', 'grado')
+      .leftJoinAndSelect('usuario.grupo', 'grupo')
+      .where('usuario.estado = :estado', {
+        estado: Estado.ACTIVO,
+      })
+
+    if (filtro) {
+      query.andWhere(
+        '(usuario.nombre_app ILIKE :filtro OR usuario.usuario ILIKE :filtro)',
+        { filtro: `%${filtro}%` }
+      )
+    }
+    return await query.getManyAndCount()
   }
 
-  findAll() {
-    return `This action returns all usuario`;
+  async findAllActivos() {
+    return this.usuarioRepository.find({
+      where: { estado: Estado.ACTIVO },
+      relations: ['grado', 'grupo', 'grupo.unidad']
+    })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} usuario`;
+  async findByGrupo(grupoId: number) {
+    return this.usuarioRepository.find({
+      where: {
+        estado: Estado.ACTIVO,
+        grupo: { idGrupo: grupoId },
+      },
+      relations: ['grado', 'grupo'],
+    })
   }
 
-  update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    return `This action updates a #${id} usuario`;
+  async findByDistrito(disId: number) {
+    return this.usuarioRepository.find({
+      where: {
+        estado: Estado.ACTIVO,
+        grupo: {
+          distrital: {
+            idDistrital: disId,
+          },
+        },
+      },
+      relations: ['grado', 'grupo', 'grupo.distrital']
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} usuario`;
+  async findByUnidad(unidadId: number) {
+    return this.usuarioRepository.find({
+      where: {
+        estado: Estado.ACTIVO,
+        grupo: {
+          distrital: {
+            unidad: {
+              idUnidad: unidadId,
+            },
+          },
+        },
+      },
+      relations: [
+        'grado',
+        'grupo',
+        'grupo.distrital',
+        'grupo.distrital.unidad',
+      ]
+    })
+  }
+
+  async findByUnidadInteligencia() {
+    return this.usuarioRepository.find({
+      where: {
+        estado: Estado.ACTIVO,
+        grupo: {
+          distrital: {
+            unidad: {
+              idUnidad: 22,
+            },
+          },
+        },
+      },
+      relations: [
+        'grado',
+        'grupo',
+        'grupo.distrital',
+        'grupo.distrital.unidad',
+      ]
+    })
+  }
+
+  async findOne(idUsuario: string){
+    const user = await this.usuarioRepository.findOne({
+      where: { usuario: idUsuario },
+      relations: ['grado', 'grupo'],
+    })
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado')
+    }
+
+    return user
   }
 }
