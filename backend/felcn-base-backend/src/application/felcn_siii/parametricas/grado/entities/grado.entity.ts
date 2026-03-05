@@ -1,8 +1,15 @@
 import { Estado } from '@/application/felcn_siii/estado.enum'
-import { BeforeInsert, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { Usuario } from '../../usuario/entities/usuario.entity'
 
-
-@Entity({ name: 'grado' })
+@Entity({ name: 'grado', schema: 'parametricas'  })
 export class Grado {
   @PrimaryGeneratedColumn({
     type: 'int',
@@ -42,4 +49,7 @@ export class Grado {
       this.estado = Estado.ACTIVO
     }
   }
+
+  @OneToMany(() => Usuario, (usuario) => usuario.grado)
+  usuarios: Usuario[]
 }

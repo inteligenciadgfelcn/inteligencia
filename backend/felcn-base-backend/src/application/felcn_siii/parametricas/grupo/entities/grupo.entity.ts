@@ -11,6 +11,8 @@ import {
 import { Distrital } from '../../distrital/entities/distrital.entity'
 import { Estado } from '@/application/felcn_siii/estado.enum'
 import { Asignacion } from '@/application/felcn_siii/operaciones/asignaciones/entities/asignacione.entity'
+import { Usuario } from '../../usuario/entities/usuario.entity'
+
 
 @Entity({ name: 'grupo' })
 @Index('UQ_grupo_distrito_descripcion', ['distrital', 'descripcion'], {
@@ -58,4 +60,7 @@ export class Grupo {
 
   @OneToMany(() => Asignacion, (asignacion) => asignacion.grupo)
   asignaciones: Asignacion[]
+
+  @OneToMany(() => Usuario, (usuario) => usuario.grupo)
+  usuarios: Usuario[]
 }

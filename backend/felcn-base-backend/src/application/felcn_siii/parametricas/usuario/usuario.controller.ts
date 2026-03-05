@@ -1,34 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { UsuarioService } from './usuario.service';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
-import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+} from '@nestjs/common'
+import { UsuarioService } from './usuario.service'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 
-@Controller('usuario')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiTags('SIII - Usuario')
+@Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
 
-  @Post()
-  create(@Body() createUsuarioDto: CreateUsuarioDto) {
-    return this.usuarioService.create(createUsuarioDto);
+  @Get('unidad/inteligencia')
+  @ApiOperation({
+    summary: 'Lista de usuarios de la unidad de inteligencia',
+  })
+  findByUnidadInteligencia() {
+    return this.usuarioService.findByUnidadInteligencia()
   }
 
-  @Get()
-  findAll() {
-    return this.usuarioService.findAll();
+  @Get('grupo/:id')
+  @ApiOperation({
+    summary: 'Lista de usuarios activos por grupo',
+  })
+  findByGrupo(@Param('id') id: number) {
+    return this.usuarioService.findByGrupo(id)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usuarioService.findOne(+id);
+  @Get('distrito/:id')
+  @ApiOperation({
+    summary: 'Lista de usuarios activos por distrito',
+  })
+  findByDistrito(@Param('id') id: number) {
+    return this.usuarioService.findByDistrito(id)
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUsuarioDto: UpdateUsuarioDto) {
-    return this.usuarioService.update(+id, updateUsuarioDto);
+  @Get('unidad/:id')
+  @ApiOperation({
+    summary: 'Lista de usuarios activos por unidad',
+  })
+  findByUnidad(@Param('id') id: number) {
+    return this.usuarioService.findByUnidad(id)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usuarioService.remove(+id);
+  @Get('usuario/:usuario')
+  @ApiOperation({
+    summary: 'Obtener usuario por código',
+  })
+  @ApiParam({ name: 'usuario', example: 'G-SRG-0144' })
+  findOne(@Param('usuario') usuario: string) {
+    return this.usuarioService.findOne(usuario)
   }
 }
