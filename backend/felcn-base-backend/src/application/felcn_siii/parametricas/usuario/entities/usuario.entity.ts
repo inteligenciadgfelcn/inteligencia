@@ -21,10 +21,10 @@ export class Usuario {
   usuario: string
 
   @ManyToOne(() => Grado, (grado) => grado.usuarios, { eager: false })
-@JoinColumn({
-  name: 'id_grado',
-})
-grado: Grado
+  @JoinColumn({
+    name: 'id_grado',
+  })
+  grado: Grado
 
   @Column({
     type: 'varchar',
