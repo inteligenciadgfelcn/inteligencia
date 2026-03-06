@@ -1,9 +1,23 @@
 import { Estado } from '@/application/felcn_siii/estado.enum'
-import { BeforeInsert, Column, Entity, PrimaryColumn } from 'typeorm'
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @Entity({ name: 'servicio', schema: 'public' })
 export class Servicio {
-  @PrimaryColumn({
+  @PrimaryGeneratedColumn({
+    type: 'int',
+    name: 'id_servicio',
+    comment: 'Clave primaria del registro',
+  })
+  idServicio: number
+
+  @Index({ unique: true })
+  @Column({
     type: 'varchar',
     length: 50,
     nullable: false,
