@@ -11,8 +11,13 @@ import { Repository } from 'typeorm'
 import { CreateServicioDto } from './dto/create-servicio.dto'
 import { Estado } from '@/application/felcn_siii/estado.enum'
 import { formatearFecha, validarRangoFechas } from './utils/fecha.util'
-import { generarCodigoServicio } from './utils/servicio.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import {
+  buscarServicioHoy,
+  cerrarServiciosVencidos,
+  generarCodigoServicio,
+  validarCruceServicios,
+} from './utils/servicio.util'
 
 @Injectable()
 export class ServicioService {
@@ -28,15 +33,58 @@ export class ServicioService {
 
     validarRangoFechas(fechaIngreso, fechaSalida, ahora)
 
-    await this.cerrarServiciosVencidos(ahora)
+    // cerrar servicios vencidos
+    await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
-    await this.validarCruceServicios(fechaIngreso, fechaSalida)
+    // verificar si ya existe servicio hoy
+    const servicioHoy = await buscarServicioHoy(this.servicioRepository)
 
+    if (servicioHoy) {
+      return {
+        mensaje: 'Hoy ya existe un servicio registrado',
+        servicio: {
+          codigoServicio: servicioHoy.codigoServicio,
+          usuarioPrincipal: servicioHoy.usuarioPrincipal,
+          usuarioEmergencia: servicioHoy.usuarioEmergencia,
+          fechaIngreso: formatearFecha(servicioHoy.fechaIngreso),
+          fechaSalida: formatearFecha(servicioHoy.fechaSalida),
+          estado: servicioHoy.estado,
+        },
+      }
+    }
+
+    // validar cruce de servicios
+    await validarCruceServicios(
+      this.servicioRepository,
+      fechaIngreso,
+      fechaSalida
+    )
+
+    // generar codigo
     const codigoServicio = generarCodigoServicio(
       fechaIngreso,
       fechaSalida,
       ahora
     )
+
+    // verificar si el código ya existe
+    const existeCodigo = await this.servicioRepository.findOne({
+      where: { codigoServicio },
+    })
+
+    if (existeCodigo) {
+      return {
+        mensaje: 'El código de servicio ya existe',
+        servicio: {
+          codigoServicio: existeCodigo.codigoServicio,
+          usuarioPrincipal: existeCodigo.usuarioPrincipal,
+          usuarioEmergencia: existeCodigo.usuarioEmergencia,
+          fechaIngreso: formatearFecha(existeCodigo.fechaIngreso),
+          fechaSalida: formatearFecha(existeCodigo.fechaSalida),
+          estado: existeCodigo.estado,
+        },
+      }
+    }
 
     const servicio = this.servicioRepository.create({
       codigoServicio,
@@ -111,24 +159,24 @@ export class ServicioService {
 
     const ahora = new Date()
 
-    // no permitir modificar si ya empezó
     if (servicio.fechaIngreso <= ahora) {
       throw new BadRequestException(
         'No se puede modificar un servicio que ya inició'
       )
     }
 
-    // usar fechas nuevas si vienen, sino mantener las actuales
     const fechaIngreso = dto.fechaIngreso ?? servicio.fechaIngreso
     const fechaSalida = dto.fechaSalida ?? servicio.fechaSalida
 
     validarRangoFechas(fechaIngreso, fechaSalida, ahora)
 
-    const usuarioPrincipal = dto.usuarioPrincipal ?? servicio.usuarioPrincipal
+    await validarCruceServicios(
+      this.servicioRepository,
+      fechaIngreso,
+      fechaSalida,
+      codigoServicio
+    )
 
-    await this.validarCruceServicios(fechaIngreso, fechaSalida, codigoServicio)
-
-    // actualizar solo los campos enviados
     if (dto.usuarioPrincipal !== undefined) {
       servicio.usuarioPrincipal = dto.usuarioPrincipal
     }
@@ -152,44 +200,9 @@ export class ServicioService {
     }
   }
 
-  private async cerrarServiciosVencidos(ahora: Date) {
-    await this.servicioRepository
-      .createQueryBuilder()
-      .update()
-      .set({ estado: Estado.INACTIVO })
-      .where('fechaSalida < :ahora', { ahora })
-      .andWhere('estado = :estado', { estado: Estado.ACTIVO })
-      .execute()
-  }
-
-  private async validarCruceServicios(
-    fechaIngreso: Date,
-    fechaSalida: Date,
-    codigoExcluir?: string
-  ) {
-    const query = this.servicioRepository
-      .createQueryBuilder('s')
-      .where('s.estado = :estado', { estado: Estado.ACTIVO })
-      .andWhere('s.fechaIngreso <= :fechaSalida', { fechaSalida })
-      .andWhere('s.fechaSalida >= :fechaIngreso', { fechaIngreso })
-
-    if (codigoExcluir) {
-      query.andWhere('s.codigoServicio != :codigoExcluir', { codigoExcluir })
-    }
-
-    const existe = await query.getOne()
-
-    if (existe) {
-      throw new BadRequestException(
-        `Ya existe un servicio desde ${formatearFecha(
-          existe.fechaIngreso
-        )} hasta ${formatearFecha(existe.fechaSalida)}`
-      )
-    }
-  }
-
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro } = pagination
+
     const query = this.servicioRepository
       .createQueryBuilder('servicio')
       .take(limite)

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   UseGuards,
+  Query,
 } from '@nestjs/common'
 import { ServicioService } from './servicio.service'
 import { UpdateServicioDto } from './dto/update-servicio.dto'
@@ -18,8 +19,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger'
 import { CreateServicioDto } from './dto/create-servicio.dto'
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { BaseController } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -50,10 +51,11 @@ export class ServicioController extends BaseController {
 
   @Get()
   @ApiOperation({ summary: 'Listar distritales con paginación' })
-  async findAllPaginado(pagination: PaginacionQueryDto) {
+  async findAllPaginado(@Query() pagination: PaginacionQueryDto) {
     const result = await this.servicioService.findAllPaginado(pagination)
     return this.successListRows(result)
   }
+
   @Get('info/:codigoServicio')
   @ApiOperation({ summary: 'Obtener información de un servicio' })
   @ApiParam({ name: 'codigoServicio', description: 'Código del servicio' })
