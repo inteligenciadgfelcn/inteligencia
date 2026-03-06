@@ -118,7 +118,7 @@ export const DB_SIII = 'siii' // felcn_siii
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres' as const,
-        host:a
+        host:
           configService.get<string>('DB_S2I_HOST') ||
           configService.get<string>('DB_HOST'),
         port:
