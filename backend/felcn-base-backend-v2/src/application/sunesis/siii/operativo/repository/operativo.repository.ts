@@ -186,6 +186,37 @@ export class OperativoRepository {
     await this.bienRepo.delete(id)
   }
 
+  // ==================== CARACTERÍSTICAS DE BIENES ====================
+
+  private get bienCaracteristicaRepo() {
+    return this.dataSource.getRepository(ItemBienCaracteristica)
+  }
+
+  async crearBienCaracteristica(
+    caracteristica: ItemBienCaracteristica
+  ): Promise<ItemBienCaracteristica> {
+    return this.bienCaracteristicaRepo.save(caracteristica)
+  }
+
+  async listarCaracteristicasPorBien(
+    idItemBienSecuestrado: string
+  ): Promise<ItemBienCaracteristica[]> {
+    return this.bienCaracteristicaRepo.find({
+      where: { idItemBienSecuestrado },
+      order: { fechaHoraIngreso: 'DESC' },
+    })
+  }
+
+  async buscarBienCaracteristica(
+    id: string
+  ): Promise<ItemBienCaracteristica | null> {
+    return this.bienCaracteristicaRepo.findOne({ where: { id } })
+  }
+
+  async eliminarBienCaracteristica(id: string): Promise<void> {
+    await this.bienCaracteristicaRepo.delete(id)
+  }
+
   // ==================== DETENIDOS ====================
 
   private get detenidoRepo() {
@@ -305,5 +336,56 @@ export class OperativoRepository {
       .where('d.id_operativo = :idOperativo', { idOperativo })
       .getRawOne()
     return result
+  }
+
+  async obtenerEstadisticasOperativo(idOperativo: string): Promise<any> {
+    const [
+      cantidadDrogas,
+      cantidadSustanciasSolidas,
+      cantidadSustanciasLiquidas,
+      cantidadFabricas,
+      cantidadBienes,
+      cantidadDetenidos,
+      cantidadGaleria,
+      cantidadLogotipos,
+    ] = await Promise.all([
+      this.drogaRepo.count({ where: { idOperativo } }),
+      this.sustanciaSolidaRepo.count({ where: { idOperativo } }),
+      this.sustanciaLiquidaRepo.count({ where: { idOperativo } }),
+      this.fabricaRepo.count({ where: { idOperativo } }),
+      this.bienRepo.count({ where: { idOperativo } }),
+      this.detenidoRepo.count({ where: { idOperativo } }),
+      this.galeriaRepo.count({ where: { idOperativo } }),
+      this.logotipoRepo.count({ where: { idOperativo } }),
+    ])
+
+    return {
+      drogas: cantidadDrogas,
+      sustanciasSolidas: cantidadSustanciasSolidas,
+      sustanciasLiquidas: cantidadSustanciasLiquidas,
+      fabricas: cantidadFabricas,
+      bienes: cantidadBienes,
+      detenidos: cantidadDetenidos,
+      galeria: cantidadGaleria,
+      logotipos: cantidadLogotipos,
+    }
+  }
+
+  // ==================== IMÁGENES ====================
+
+  async buscarGaleriaPorId(id: string): Promise<Galeria | null> {
+    return this.galeriaRepo.findOne({ where: { id } })
+  }
+
+  async buscarDetenidoPorId(id: string): Promise<DetenidoAuxiliar | null> {
+    return this.detenidoRepo.findOne({ where: { id } })
+  }
+
+  async buscarBienPorId(id: string): Promise<ItemBienSecuestrado | null> {
+    return this.bienRepo.findOne({ where: { id } })
+  }
+
+  async buscarLogotipoPorId(id: string): Promise<Logotipo | null> {
+    return this.logotipoRepo.findOne({ where: { id } })
   }
 }
