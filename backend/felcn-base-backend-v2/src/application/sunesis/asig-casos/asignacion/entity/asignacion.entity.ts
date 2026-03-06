@@ -16,6 +16,17 @@ import { Servicio } from '../../servicio/entity/servicio.entity'
  * Base de datos: felcn_asignacion_caso
  * Tabla: asignacion
  * Script: database/scripts/felcn_asignacion_caso.sql
+ *
+ * Campos del formulario original FRM-OP.aspx (muestradatos):
+ * Insert S2 (insertacasosS2 de ICIA-SERV-01):
+ *   DptoAv_Id→idDepartamento, UnidAV_Id→idUnidad, Letras→codigoLetra('PD'),
+ *   NroCaso→numeroCaso(''), NroOperativo→numeroOperativo,
+ *   FechaOperativo→fechaOperativo, NombreCaso→nombreCaso,
+ *   AsigCaso→asignacionCaso, CodServicio→codigoServicio,
+ *   FiscalAsigCaso→fiscalAsignado, fechahoraing→fechaHoraRegistro, Usuario→usuarioLogin
+ *
+ * NOTA: Dis_Id, Grp_Id, FSolicitud, FonoS, FonoA, FonoF NO están en esta tabla.
+ * Esos campos se insertan en felcn_siii.public.asignacion (Insert S3 / insertacasosS3).
  */
 @Entity({ name: 'asignacion' })
 export class Asignacion {

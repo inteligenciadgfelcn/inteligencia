@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { DB_SIII } from '../shared/constants'
 
+
 // Geografía
 import { Continente } from './parametrica/entity/geografia/continente.entity'
 import { Pais } from './parametrica/entity/geografia/pais.entity'
@@ -53,6 +54,14 @@ import { ContenidoCaso } from './parametrica/entity/bien/contenido-caso.entity'
 import { Grado } from './parametrica/entity/bien/grado.entity'
 import { Letra } from './parametrica/entity/bien/letra.entity'
 
+// Estructura organizacional (público)
+import { Unidad } from './parametrica/entity/estructura/unidad.entity'
+import { Distrital } from './parametrica/entity/estructura/distrital.entity'
+import { Grupo } from './parametrica/entity/estructura/grupo.entity'
+
+// Asignación (felcn_siii.public.asignacion — Insert S3 / muestradatos / muestranoaprob)
+import { AsignacionSiii } from './asignacion/entity/asignacion-siii.entity'
+
 // Operativo - Entidad principal
 import { Operativo } from './operativo/entity/operativo.entity'
 
@@ -89,6 +98,7 @@ import { OperativoService } from './operativo/service/operativo.service'
 // Repositories
 import { LookupRepository } from './parametrica/repository/lookup.repository'
 import { OperativoRepository } from './operativo/repository/operativo.repository'
+import { AsignacionSiiiRepository } from './asignacion/repository/asignacion-siii.repository'
 
 const entitiesParametricas = [
   // Geografía
@@ -136,9 +146,15 @@ const entitiesParametricas = [
   ContenidoCaso,
   Grado,
   Letra,
+  // Estructura organizacional
+  Unidad,
+  Distrital,
+  Grupo,
 ]
 
 const entitiesOperativas = [
+  // Asignación (felcn_siii)
+  AsignacionSiii,
   // Operativo principal
   Operativo,
   // Sub-entidades
@@ -176,6 +192,7 @@ const entitiesOperativas = [
     OperativoService,
     LookupRepository,
     OperativoRepository,
+    AsignacionSiiiRepository,
   ],
   exports: [LookupService, OperativoService],
 })

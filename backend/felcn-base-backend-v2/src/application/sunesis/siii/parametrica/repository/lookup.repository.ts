@@ -48,6 +48,11 @@ import { CocaDescripcion } from '../entity/sustancia/coca-descripcion.entity'
 import { Bienes } from '../entity/bien/bienes.entity'
 import { CalidadBien } from '../entity/bien/calidad-bien.entity'
 
+// Estructura organizacional
+import { Unidad } from '../entity/estructura/unidad.entity'
+import { Distrital } from '../entity/estructura/distrital.entity'
+import { Grupo } from '../entity/estructura/grupo.entity'
+
 @Injectable()
 export class LookupRepository {
   constructor(
@@ -298,5 +303,24 @@ export class LookupRepository {
     return this.dataSource
       .getRepository(TipoCabello)
       .find({ order: { descripcion: 'ASC' } })
+  }
+
+  // Estructura organizacional
+  async listarUnidades(): Promise<Unidad[]> {
+    return this.dataSource
+      .getRepository(Unidad)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarDistritalesPorUnidad(idUnidad: number): Promise<Distrital[]> {
+    return this.dataSource
+      .getRepository(Distrital)
+      .find({ where: { idUnidad }, order: { descripcion: 'ASC' } })
+  }
+
+  async listarGruposPorDistrital(idDistrital: number): Promise<Grupo[]> {
+    return this.dataSource
+      .getRepository(Grupo)
+      .find({ where: { idDistrital }, order: { descripcion: 'ASC' } })
   }
 }
