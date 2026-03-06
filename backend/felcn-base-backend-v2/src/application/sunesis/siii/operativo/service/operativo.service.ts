@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { BaseService } from '@/common/base'
-import { Status } from '@/common/constants'
 import { OperativoRepository } from '../repository/operativo.repository'
+import { AsignacionSiiiRepository } from '../../asignacion/repository/asignacion-siii.repository'
 
 // Entities
 import { Operativo } from '../entity/operativo.entity'
@@ -10,6 +10,7 @@ import { SustanciaSolida } from '../entity/sustancia-solida.entity'
 import { SustanciaLiquida } from '../entity/sustancia-liquida.entity'
 import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
+import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
 import { DetenidoAuxiliar } from '../entity/detenido-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
@@ -20,6 +21,7 @@ import {
   CreateDrogaDto,
   CreateDetenidoDto,
   CreateBienSecuestradoDto,
+  CreateBienCaracteristicaDto,
   CreateFabricaDto,
   CreateSustanciaSolidaDto,
   CreateSustanciaLiquidaDto,
@@ -29,7 +31,10 @@ import {
 
 @Injectable()
 export class OperativoService extends BaseService {
-  constructor(private readonly operativoRepository: OperativoRepository) {
+  constructor(
+    private readonly operativoRepository: OperativoRepository,
+    private readonly asignacionSiiiRepository: AsignacionSiiiRepository
+  ) {
     super()
   }
 
@@ -52,7 +57,6 @@ export class OperativoService extends BaseService {
       esIcia: true,
       esParteDiario: false,
       usuario,
-      estado: Status.ACTIVE,
     })
     return this.operativoRepository.crearOperativo(operativo)
   }
@@ -113,14 +117,14 @@ export class OperativoService extends BaseService {
       data.coordY = (gy + my / 60 + sy / 3600) * -1
     }
 
-    Object.assign(operativo, data, { usuarioModificacion })
+    Object.assign(operativo, data)
     return this.operativoRepository.actualizarOperativo(operativo)
   }
 
   async inactivar(id: string, usuarioModificacion: string): Promise<Operativo> {
     const operativo = await this.buscarPorId(id)
-    operativo.estado = Status.INACTIVE
-    operativo.usuarioModificacion = usuarioModificacion
+    // Marcar como revisado (equivalente a inactivar en el sistema antiguo)
+    operativo.esRevisado = true
     return this.operativoRepository.actualizarOperativo(operativo)
   }
 
@@ -265,6 +269,60 @@ export class OperativoService extends BaseService {
   async eliminarBien(idOperativo: string, idBien: string): Promise<void> {
     await this.buscarPorId(idOperativo)
     await this.operativoRepository.eliminarBien(idBien)
+  }
+
+  // ==================== CARACTERÍSTICAS DE BIENES ====================
+
+  async agregarCaracteristicaBien(
+    idOperativo: string,
+    idBien: string,
+    data: CreateBienCaracteristicaDto,
+    usuario: string
+  ): Promise<ItemBienCaracteristica> {
+    await this.buscarPorId(idOperativo)
+    // Verificar que el bien existe
+    const bien = await this.operativoRepository.listarBienesPorOperativo(
+      idOperativo
+    )
+    if (!bien.find((b) => b.id === idBien)) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado`)
+    }
+
+    const caracteristica = new ItemBienCaracteristica({
+      idItemBienSecuestrado: idBien,
+      ...data,
+      usuario,
+    })
+    return this.operativoRepository.crearBienCaracteristica(caracteristica)
+  }
+
+  async listarCaracteristicasBien(
+    idOperativo: string,
+    idBien: string
+  ): Promise<ItemBienCaracteristica[]> {
+    await this.buscarPorId(idOperativo)
+    return this.operativoRepository.listarCaracteristicasPorBien(idBien)
+  }
+
+  async eliminarCaracteristicaBien(
+    idOperativo: string,
+    idBien: string,
+    idCaracteristica: string
+  ): Promise<void> {
+    await this.buscarPorId(idOperativo)
+    const caracteristica =
+      await this.operativoRepository.buscarBienCaracteristica(idCaracteristica)
+    if (!caracteristica) {
+      throw new NotFoundException(
+        `Característica con ID ${idCaracteristica} no encontrada`
+      )
+    }
+    if (caracteristica.idItemBienSecuestrado !== idBien) {
+      throw new NotFoundException(
+        `La característica ${idCaracteristica} no pertenece al bien ${idBien}`
+      )
+    }
+    await this.operativoRepository.eliminarBienCaracteristica(idCaracteristica)
   }
 
   // ==================== DETENIDOS ====================
@@ -446,5 +504,181 @@ export class OperativoService extends BaseService {
       galeria,
       logotipos,
     }
+  }
+
+  // ==================== RESUMEN (CARGA PROGRESIVA) ====================
+
+  async obtenerResumen(id: string): Promise<any> {
+    const operativo = await this.buscarPorId(id)
+    const estadisticas =
+      await this.operativoRepository.obtenerEstadisticasOperativo(id)
+
+    return {
+      operativo: {
+        id: operativo.id,
+        idCaso: operativo.idCaso,
+        numeroOperativo: operativo.numeroOperativo,
+        fechaOperativo: operativo.fechaOperativo,
+        idDepartamento: operativo.idDepartamento,
+        idProvincia: operativo.idProvincia,
+        idLocalidad: operativo.idLocalidad,
+        lugar: operativo.lugar,
+        idTipoRelevancia: operativo.idTipoRelevancia,
+        idTipoDenuncia: operativo.idTipoDenuncia,
+        idTipoPenal: operativo.idTipoPenal,
+        idCategoriaOperativo: operativo.idCategoriaOperativo,
+        idItemOperativo: operativo.idItemOperativo,
+        descripcion: operativo.descripcion,
+        breveDetalle: operativo.breveDetalle,
+      },
+      estadisticas,
+    }
+  }
+
+  /**
+   * Retorna datos del caso desde felcn_siii.public.asignacion para pre-cargar el formulario.
+   * Implementa FRM-OP.aspx → muestradatos():
+   *   SELECT Casos_Id, NombreCaso, FSolicitud, FonoS, AsigCaso,
+   *          FonoA, FiscalAsigCaso, FonoF, NroOperativo, NroCaso
+   *   FROM ASIGNACION WHERE Casos_Id = X   (CONEXSIII)
+   */
+  async obtenerDatosNuevoOperativo(casoId: string): Promise<any> {
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(casoId)
+    if (!asignacion) {
+      throw new NotFoundException(`Caso con ID ${casoId} no encontrado`)
+    }
+
+    return {
+      caso: {
+        id: asignacion.idCaso,
+        numeroCaso: asignacion.numeroCaso,
+        numeroOperativo: asignacion.numeroOperativo,
+        nombreCaso: asignacion.nombreCaso,
+        // Estructura organizacional (para pre-seleccionar combos del formulario)
+        idDepartamento: asignacion.idDepartamentoCaso,
+        abreviaturaUnidad: asignacion.abreviaturaUnidad,
+        idDistrital: asignacion.idDistrital,
+        idGrupo: asignacion.idGrupo,
+        // Solicitante (FSolicitud = nombre, FonoS = teléfono)
+        fiscalSolicitud: asignacion.fiscalSolicitud,
+        telefonoSolicitud: asignacion.telefonoSolicitud,
+        // Asignado (AsigCaso, FonoA)
+        asignadoCaso: asignacion.asignadoCaso,
+        telefonoAsignado: asignacion.telefonoAsignado,
+        // Fiscal (FiscalAsigCaso, FonoF)
+        fiscalAsignadoCaso: asignacion.fiscalAsignadoCaso,
+        telefonoFiscal: asignacion.telefonoFiscal,
+        // Servicio
+        codigoServicio: asignacion.codigoServicio,
+      },
+      operativo: null,
+    }
+  }
+
+  /**
+   * Lista casos no aprobados de un usuario desde felcn_siii.public.asignacion.
+   * Implementa FRM-OP-ING.aspx → muestranoaprob():
+   *   SELECT ... FROM ASIGNACION
+   *   WHERE Usuario = X AND RTRIM(NroCaso) = ''  (CONEXSIII)
+   */
+  async listarCasosNoAprobados(usuario: string): Promise<any[]> {
+    const asignaciones =
+      await this.asignacionSiiiRepository.buscarNoAprobadosPorUsuario(usuario)
+
+    return asignaciones.map((a) => ({
+      id: a.idCaso,
+      numeroOperativo: a.numeroOperativo,
+      nombreCaso: a.nombreCaso,
+      idDepartamento: a.idDepartamentoCaso,
+      abreviaturaUnidad: a.abreviaturaUnidad,
+      idDistrital: a.idDistrital,
+      idGrupo: a.idGrupo,
+      asignadoCaso: a.asignadoCaso,
+      fiscalAsignadoCaso: a.fiscalAsignadoCaso,
+      codigoServicio: a.codigoServicio,
+    }))
+  }
+
+  // ==================== IMÁGENES (LAZY LOADING) ====================
+
+  async obtenerFotoGaleria(
+    idOperativo: string,
+    idFoto: string
+  ): Promise<Buffer> {
+    await this.buscarPorId(idOperativo)
+    const galeria = await this.operativoRepository.buscarGaleriaPorId(idFoto)
+    if (!galeria) {
+      throw new NotFoundException(`Foto de galería con ID ${idFoto} no encontrada`)
+    }
+    if (galeria.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La foto ${idFoto} no pertenece al operativo ${idOperativo}`
+      )
+    }
+    return galeria.foto
+  }
+
+  async obtenerFotoDetenido(
+    idOperativo: string,
+    idDetenido: string,
+    tipo: 'frente' | 'perfil-derecho' | 'perfil-izquierdo'
+  ): Promise<Buffer> {
+    await this.buscarPorId(idOperativo)
+    const detenido =
+      await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    if (!detenido) {
+      throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
+    }
+    if (detenido.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El detenido ${idDetenido} no pertenece al operativo ${idOperativo}`
+      )
+    }
+
+    switch (tipo) {
+      case 'frente':
+        return detenido.fotoFrente || Buffer.alloc(0)
+      case 'perfil-derecho':
+        return detenido.fotoPerfilDerecho || Buffer.alloc(0)
+      case 'perfil-izquierdo':
+        return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
+      default:
+        throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
+    }
+  }
+
+  async obtenerFotoBien(
+    idOperativo: string,
+    idBien: string
+  ): Promise<Buffer> {
+    await this.buscarPorId(idOperativo)
+    const bien = await this.operativoRepository.buscarBienPorId(idBien)
+    if (!bien) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado`)
+    }
+    if (bien.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El bien ${idBien} no pertenece al operativo ${idOperativo}`
+      )
+    }
+    return bien.fotoBien || Buffer.alloc(0)
+  }
+
+  async obtenerFotoLogotipo(
+    idOperativo: string,
+    idLogotipo: string
+  ): Promise<Buffer> {
+    await this.buscarPorId(idOperativo)
+    const logotipo =
+      await this.operativoRepository.buscarLogotipoPorId(idLogotipo)
+    if (!logotipo) {
+      throw new NotFoundException(`Logotipo con ID ${idLogotipo} no encontrado`)
+    }
+    if (logotipo.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El logotipo ${idLogotipo} no pertenece al operativo ${idOperativo}`
+      )
+    }
+    return logotipo.fotografia || Buffer.alloc(0)
   }
 }
