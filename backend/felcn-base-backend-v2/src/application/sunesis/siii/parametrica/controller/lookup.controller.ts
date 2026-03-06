@@ -265,4 +265,28 @@ export class LookupController extends BaseController {
   async listarTiposCabello() {
     return this.successList(await this.lookupService.listarTiposCabello())
   }
+
+  // ==================== ESTRUCTURA ORGANIZACIONAL ====================
+
+  @ApiOperation({ summary: 'Listar unidades' })
+  @Get('unidades')
+  async listarUnidades() {
+    return this.successList(await this.lookupService.listarUnidades())
+  }
+
+  @ApiOperation({ summary: 'Listar distritales por unidad' })
+  @Get('distritales/unidad/:id')
+  async listarDistritalesPorUnidad(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarDistritalesPorUnidad(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar grupos por distrital' })
+  @Get('grupos/distrital/:id')
+  async listarGruposPorDistrital(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarGruposPorDistrital(parseInt(id))
+    )
+  }
 }
