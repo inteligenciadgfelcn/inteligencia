@@ -79,10 +79,24 @@ export class OperativoController extends BaseController {
   }
 
   @ApiOperation({
+    summary: 'Listar todos los casos de un usuario (FRM-OP-ING → muestraoperativos)',
+    description:
+      'Lee de felcn_siii.public.asignacion con JOINs a unidad/distrital/grupo. ' +
+      'Implementa: SELECT ... FROM ASIGNACION WHERE Usuario=X (CONEXSIII). ' +
+      'Reemplaza: GET /api/asignaciones/usuario/:usuarioLogin',
+  })
+  @Get('casos/usuario/:usuario')
+  async listarCasosPorUsuario(@Param('usuario') usuario: string) {
+    const datos = await this.operativoService.listarCasosPorUsuario(usuario)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
     summary: 'Listar casos no aprobados de un usuario (FRM-OP-ING → muestranoaprob)',
     description:
-      'Lee de felcn_siii.public.asignacion. ' +
-      'Implementa: SELECT ... FROM ASIGNACION WHERE Usuario=X AND NroCaso="" (CONEXSIII).',
+      'Lee de felcn_siii.public.asignacion con JOINs a unidad/distrital/grupo. ' +
+      'Implementa: SELECT ... FROM ASIGNACION WHERE Usuario=X AND NroCaso="" (CONEXSIII). ' +
+      'Reemplaza: GET /api/asignaciones/usuario/:usuarioLogin/no-aprobados',
   })
   @Get('casos/no-aprobados/usuario/:usuario')
   async listarCasosNoAprobados(@Param('usuario') usuario: string) {

@@ -47,24 +47,28 @@ OPERATIVO (felcn_siii · public)
 
 ## 2. Cómo determinar NUEVO vs EDICIÓN
 
-El punto de entrada siempre es la **lista de no-aprobados**. Cada fila entrega un `idAsignacion`.
+FRM-OP-ING muestra **dos listas** que leen de `felcn_siii`. Ambas tienen el mismo contrato.
+El punto de entrada al formulario es la **lista de no-aprobados** (GridView2). Cada fila entrega un `idCaso`.
 
 ```bash
-# Paso 1 — obtener lista de no-aprobados
-GET /api/asignaciones/usuario/{usuarioLogin}/no-aprobados
+# Lista 1 (GridView1) — todos los casos del usuario
+GET /api/operativos/casos/usuario/{usuarioLogin}
 
-# Paso 2 — verificar si ya existe operativo para ese caso
-GET /api/operativos/caso/{idAsignacion}
+# Lista 2 (GridView2) — solo casos sin número asignado (entrada al formulario)
+GET /api/operativos/casos/no-aprobados/usuario/{usuarioLogin}
+
+# Paso siguiente — verificar si ya existe operativo para ese caso
+GET /api/operativos/caso/{idCaso}
 ```
 
-| Resultado del paso 2 | Acción |
+| Resultado | Acción |
 |---|---|
 | Array vacío `[]` | **NUEVO** → ir a paso 3a |
 | Array con elementos | **EDICIÓN** → `idOperativo = datos[0].id` → ir a paso 3b |
 
 ```bash
 # Paso 3a (NUEVO) — cargar datos del caso para pre-rellenar SEC0
-GET /api/operativos/nuevo/{idAsignacion}
+GET /api/operativos/nuevo/{idCaso}
 
 # Paso 3b (EDICIÓN) — cargar resumen y estadísticas
 GET /api/operativos/{idOperativo}/resumen
@@ -155,13 +159,13 @@ GET /api/operativos/catalogos/caracteristicas/{idCatalogoClase}
 |---|---|---|
 | `txtnombrecaso` | `caso.nombreCaso` | Read-only |
 | `txtnroop` | `caso.numeroOperativo` | Read-only |
-| `txtsolicita` (fecha solicitud) | `caso.fechaSolicitud` | Read-only |
-| `fonosolicita` | `caso.fonoSolicitud` | Read-only |
-| `txtasignadocaso` | `caso.asignacionCaso` | Read-only |
-| `fonoasignado` | `caso.fonoAsignado` | Read-only |
-| `txtfiscalasignado` | `caso.fiscalAsignado` | Read-only |
-| `fonofiscal` | `caso.fonoFiscal` | Read-only |
-| `cbounidad` (preselección) | `caso.idUnidad` | Selecciona en combo |
+| `txtsolicita` (nombre solicitante) | `caso.fiscalSolicitud` | Read-only — es nombre, NO fecha |
+| `fonosolicita` | `caso.telefonoSolicitud` | Read-only |
+| `txtasignadocaso` | `caso.asignadoCaso` | Read-only |
+| `fonoasignado` | `caso.telefonoAsignado` | Read-only |
+| `txtfiscalasignado` | `caso.fiscalAsignadoCaso` | Read-only |
+| `fonofiscal` | `caso.telefonoFiscal` | Read-only |
+| `cbounidad` (preselección) | `caso.abreviaturaUnidad` | Selecciona en combo |
 | `cboDistrital` (preselección) | `caso.idDistrital` | Selecciona en combo |
 | `cboGrupo` (preselección) | `caso.idGrupo` | Selecciona en combo |
 
@@ -250,6 +254,15 @@ CASO_ID=7   # idAsignacion de la lista de no-aprobados
 ### FASE 0 — Verificar y cargar datos iniciales
 
 ```bash
+# 0.0 — Obtener lista de no-aprobados (GridView2 de FRM-OP-ING)
+curl "$BASE/operativos/casos/no-aprobados/usuario/JPEREZ"
+# Response: [{ "idCaso": "7", "unidadDescripcion": "INTELIGENCIA CRIMINAL",
+#              "distritaleDescripcion": "COCHABAMBA", "grupoDescripcion": "GRUPO ALFA",
+#              "numeroCaso": "", "numeroCasoPerDom": "", "numeroOperativo": "CB-IC-42/26",
+#              "nombreCaso": "OPERACION ALBA", "asignadoCaso": "TTE. GARCIA",
+#              "fiscalAsignadoCaso": "DR. QUISPE" }]
+# → usar idCaso de la fila seleccionada
+
 # 0.1 — Confirmar que es NUEVO (array vacío)
 curl "$BASE/operativos/caso/$CASO_ID"
 # → { "datos": [] }  ← NUEVO
@@ -262,19 +275,19 @@ curl "$BASE/operativos/nuevo/$CASO_ID"
 #     "caso": {
 #       "id": "7",
 #       "numeroCaso": "",
-#       "numeroOperativo": "OP-2024-001",
-#       "nombreCaso": "OPERACIÓN ALFA",
-#       "fechaSolicitud": "2024-01-10T08:00:00",
-#       "idDepartamento": "02", "departamento": "COCHABAMBA",
-#       "idUnidad": "03",      "unidad": "UMOPAR",
-#       "idDistrital": 5,      "distrital": "DISTRITAL NORTE",
-#       "idGrupo": 12,         "grupo": "GRUPO ALPHA",
-#       "asignacionCaso": "CMDTE. JUAN MAMANI",
-#       "fonoAsignado": "70012345",
-#       "codigoServicio": "SVC-001",
-#       "fonoSolicitud": "2123456",
-#       "fiscalAsignado": "DR. PEDRO QUISPE",
-#       "fonoFiscal": "72234567"
+#       "numeroOperativo": "CB-IC-42/26",
+#       "nombreCaso": "OPERACION ALBA",
+#       "idDepartamento": "CB",
+#       "abreviaturaUnidad": "IC",
+#       "idDistrital": 1,
+#       "idGrupo": 3,
+#       "fiscalSolicitud": "JPEREZ",
+#       "telefonoSolicitud": "72345678",
+#       "asignadoCaso": "TTE. GARCIA MAMANI JUAN CARLOS",
+#       "telefonoAsignado": "71234567",
+#       "fiscalAsignadoCaso": "DR. QUISPE TICONA MARIO",
+#       "telefonoFiscal": "70000001",
+#       "codigoServicio": "ICIA-060726032026"
 #     },
 #     "operativo": null
 #   }
@@ -723,14 +736,16 @@ numeroDocumento = numeroDocumento || 'SN'
 { "finalizado": false, "codigo": 404, "mensaje": "No encontrado" }
 ```
 
-### Endpoints — Asignaciones
+### Endpoints — Listas de Casos (fuente: `felcn_siii`)
 
-| Método | Endpoint | Descripción |
-|---|---|---|
-| GET | `/asignaciones` | Listar con filtros |
-| GET | `/asignaciones/usuario/:login` | Todas las del usuario |
-| GET | `/asignaciones/usuario/:login/no-aprobados` | Sin número de caso |
-| GET | `/asignaciones/:id` | Detalle de una asignación |
+| Método | Endpoint | Función ASP | Descripción |
+|---|---|---|---|
+| GET | `/operativos/casos/usuario/:usuario` | `muestraoperativos()` | Todos los casos del usuario |
+| GET | `/operativos/casos/no-aprobados/usuario/:usuario` | `muestranoaprob()` | Sin número de caso (entrada a FRM-OP) |
+
+> **Contrato de respuesta:** `{ idCaso, unidadDescripcion, distritaleDescripcion, grupoDescripcion, numeroCaso, numeroCasoPerDom, numeroOperativo, nombreCaso, asignadoCaso, fiscalAsignadoCaso }`
+
+> **Nota:** Los endpoints `/api/asignaciones/usuario/:login` y `/api/asignaciones/usuario/:login/no-aprobados` quedan obsoletos — leían de `felcn_asignacion_caso` que no es la fuente correcta per ASP.
 
 ### Endpoints — Operativo principal
 
@@ -829,5 +844,5 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-**Última actualización:** 2026-03-05
-**Versión:** 3.0 — Información verificada contra el código fuente real
+**Última actualización:** 2026-03-06
+**Versión:** 3.1 — Corregido origen de datos: ambas listas de FRM-OP-ING leen de `felcn_siii`
