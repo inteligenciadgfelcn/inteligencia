@@ -22,7 +22,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message: string | object = 'Internal server error';
 
     if (exception instanceof HttpException) {
-      status = exception.getStatus();
+      status = exception.getStatus() || HttpStatus.INTERNAL_SERVER_ERROR;
       message = exception.getResponse();
     } else if (exception instanceof EntityNotFoundError) {
       status = HttpStatus.NOT_FOUND;
