@@ -162,4 +162,17 @@ export class LookupService extends BaseService {
   async listarTiposCabello() {
     return this.lookupRepository.listarTiposCabello()
   }
+
+  // Estructura organizacional
+  async listarUnidades() {
+    return this.lookupRepository.listarUnidades()
+  }
+
+  async listarDistritalesPorUnidad(idUnidad: number) {
+    return this.lookupRepository.listarDistritalesPorUnidad(idUnidad)
+  }
+
+  async listarGruposPorDistrital(idDistrital: number) {
+    return this.lookupRepository.listarGruposPorDistrital(idDistrital)
+  }
 }

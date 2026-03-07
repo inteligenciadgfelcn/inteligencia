@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm'
-import { AuditoriaEntity } from '@/common/entity'
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BaseEntity } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 
 /**
@@ -9,7 +8,7 @@ import { SCHEMA_PUBLIC } from '../../../shared/constants'
  * Tabla: operativo
  */
 @Entity({ name: 'operativo', schema: SCHEMA_PUBLIC })
-export class Operativo extends AuditoriaEntity {
+export class Operativo extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_operativo' })
   id: string
 
@@ -141,7 +140,7 @@ export class Operativo extends AuditoriaEntity {
   }
 
   constructor(data?: Partial<Operativo>) {
-    super(data)
+    super()
     if (data) Object.assign(this, data)
   }
 }

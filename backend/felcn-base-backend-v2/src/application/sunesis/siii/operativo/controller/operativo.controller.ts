@@ -8,7 +8,10 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  Res,
+  StreamableFile,
 } from '@nestjs/common'
+import { Response } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
@@ -20,9 +23,11 @@ import {
   CreateDrogaDto,
   CreateDetenidoDto,
   CreateBienSecuestradoDto,
+  CreateBienCaracteristicaDto,
   CreateFabricaDto,
   CreateSustanciaSolidaDto,
   CreateSustanciaLiquidaDto,
+  CreateGaleriaDto,
   CreateLogotipoDto,
 } from '../dto'
 
@@ -59,6 +64,41 @@ export class OperativoController extends BaseController {
   @Get(':id/completo')
   async obtenerCompleto(@Param('id') id: string) {
     const datos = await this.operativoService.obtenerOperativoCompleto(id)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
+    summary: 'Obtener resumen del operativo (carga inicial optimizada)',
+    description:
+      'Retorna datos mínimos: caso + operativo + estadísticas. Para carga progresiva.',
+  })
+  @Get(':id/resumen')
+  async obtenerResumen(@Param('id') id: string) {
+    const datos = await this.operativoService.obtenerResumen(id)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
+    summary: 'Listar casos no aprobados de un usuario (FRM-OP-ING → muestranoaprob)',
+    description:
+      'Lee de felcn_siii.public.asignacion. ' +
+      'Implementa: SELECT ... FROM ASIGNACION WHERE Usuario=X AND NroCaso="" (CONEXSIII).',
+  })
+  @Get('casos/no-aprobados/usuario/:usuario')
+  async listarCasosNoAprobados(@Param('usuario') usuario: string) {
+    const datos = await this.operativoService.listarCasosNoAprobados(usuario)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
+    summary: 'Obtener datos del caso para nuevo operativo (FRM-OP → muestradatos)',
+    description:
+      'Lee de felcn_siii.public.asignacion. ' +
+      'Implementa: SELECT NombreCaso, FSolicitud, FonoS, AsigCaso... FROM ASIGNACION WHERE Casos_Id=X (CONEXSIII).',
+  })
+  @Get('nuevo/:casoId')
+  async obtenerDatosNuevoOperativo(@Param('casoId') casoId: string) {
+    const datos = await this.operativoService.obtenerDatosNuevoOperativo(casoId)
     return this.successList(datos)
   }
 
@@ -273,6 +313,53 @@ export class OperativoController extends BaseController {
     return this.successDelete(null)
   }
 
+  // ==================== CARACTERÍSTICAS DE BIENES ====================
+
+  @ApiOperation({ summary: 'Listar características de un bien' })
+  @Get(':id/bienes/:idBien/caracteristicas')
+  async listarCaracteristicasBien(
+    @Param('id') id: string,
+    @Param('idBien') idBien: string
+  ) {
+    const caracteristicas = await this.operativoService.listarCaracteristicasBien(
+      id,
+      idBien
+    )
+    return this.successList(caracteristicas)
+  }
+
+  @ApiOperation({ summary: 'Agregar característica a un bien' })
+  @Post(':id/bienes/:idBien/caracteristicas')
+  async agregarCaracteristicaBien(
+    @Param('id') id: string,
+    @Param('idBien') idBien: string,
+    @Body() data: CreateBienCaracteristicaDto
+  ) {
+    const usuario = 'SISTEMA'
+    const caracteristica = await this.operativoService.agregarCaracteristicaBien(
+      id,
+      idBien,
+      data,
+      usuario
+    )
+    return this.successCreate(caracteristica)
+  }
+
+  @ApiOperation({ summary: 'Eliminar característica de un bien' })
+  @Delete(':id/bienes/:idBien/caracteristicas/:idCaracteristica')
+  async eliminarCaracteristicaBien(
+    @Param('id') id: string,
+    @Param('idBien') idBien: string,
+    @Param('idCaracteristica') idCaracteristica: string
+  ) {
+    await this.operativoService.eliminarCaracteristicaBien(
+      id,
+      idBien,
+      idCaracteristica
+    )
+    return this.successDelete(null)
+  }
+
   // ==================== DETENIDOS ====================
 
   @ApiOperation({ summary: 'Listar detenidos del operativo' })
@@ -314,6 +401,26 @@ export class OperativoController extends BaseController {
   async listarGaleria(@Param('id') id: string) {
     const galeria = await this.operativoService.listarGaleria(id)
     return this.successList(galeria)
+  }
+
+  @ApiOperation({ summary: 'Agregar foto a la galería' })
+  @ApiConsumes('multipart/form-data')
+  @Post(':id/galeria')
+  @UseInterceptors(FileInterceptor('foto'))
+  async agregarFotoGaleria(
+    @Param('id') id: string,
+    @Body() data: CreateGaleriaDto,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const usuario = 'SISTEMA'
+    const foto = file?.buffer || Buffer.alloc(0)
+    const galeria = await this.operativoService.agregarFotoGaleria(
+      id,
+      data,
+      foto,
+      usuario
+    )
+    return this.successCreate(galeria)
   }
 
   @ApiOperation({ summary: 'Eliminar foto de la galería' })
@@ -424,5 +531,125 @@ export class OperativoController extends BaseController {
         parseInt(idCatalogoClase)
       )
     return this.successList(caracteristicas)
+  }
+
+  // ==================== IMÁGENES (LAZY LOADING) ====================
+
+  @ApiOperation({ summary: 'Obtener foto de galería (thumbnail)' })
+  @Get(':id/galeria/:idFoto/thumbnail')
+  async obtenerGaleriaThumbnail(
+    @Param('id') id: string,
+    @Param('idFoto') idFoto: string,
+    @Res() res: Response
+  ) {
+    // TODO: Implementar procesamiento de imagen con sharp para generar thumbnail de 50x50px
+    const foto = await this.operativoService.obtenerFotoGaleria(id, idFoto)
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de galería (medium)' })
+  @Get(':id/galeria/:idFoto/medium')
+  async obtenerGaleriaMedium(
+    @Param('id') id: string,
+    @Param('idFoto') idFoto: string,
+    @Res() res: Response
+  ) {
+    // TODO: Implementar procesamiento de imagen con sharp para generar imagen de 400x400px
+    const foto = await this.operativoService.obtenerFotoGaleria(id, idFoto)
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de galería (full)' })
+  @Get(':id/galeria/:idFoto/full')
+  async obtenerGaleriaFull(
+    @Param('id') id: string,
+    @Param('idFoto') idFoto: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoGaleria(id, idFoto)
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de detenido (frente)' })
+  @Get(':id/detenidos/:idDetenido/fotos/frente')
+  async obtenerFotoDetenidoFrente(
+    @Param('id') id: string,
+    @Param('idDetenido') idDetenido: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoDetenido(
+      id,
+      idDetenido,
+      'frente'
+    )
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de detenido (perfil derecho)' })
+  @Get(':id/detenidos/:idDetenido/fotos/perfil-derecho')
+  async obtenerFotoDetenidoPerfilDerecho(
+    @Param('id') id: string,
+    @Param('idDetenido') idDetenido: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoDetenido(
+      id,
+      idDetenido,
+      'perfil-derecho'
+    )
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de detenido (perfil izquierdo)' })
+  @Get(':id/detenidos/:idDetenido/fotos/perfil-izquierdo')
+  async obtenerFotoDetenidoPerfilIzquierdo(
+    @Param('id') id: string,
+    @Param('idDetenido') idDetenido: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoDetenido(
+      id,
+      idDetenido,
+      'perfil-izquierdo'
+    )
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de bien secuestrado' })
+  @Get(':id/bienes/:idBien/foto')
+  async obtenerFotoBien(
+    @Param('id') id: string,
+    @Param('idBien') idBien: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoBien(id, idBien)
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto de logotipo' })
+  @Get(':id/logotipos/:idLogotipo/foto')
+  async obtenerFotoLogotipo(
+    @Param('id') id: string,
+    @Param('idLogotipo') idLogotipo: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoLogotipo(id, idLogotipo)
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
   }
 }
