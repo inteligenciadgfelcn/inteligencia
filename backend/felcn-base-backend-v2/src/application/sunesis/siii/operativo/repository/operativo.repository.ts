@@ -67,6 +67,13 @@ export class OperativoRepository {
     return this.operativoRepo.findOne({ where: { numeroOperativo } })
   }
 
+  async resolverPorCaso(idCaso: string): Promise<Operativo | null> {
+    return this.operativoRepo.findOne({
+      where: { idCaso },
+      order: { fechaOperativo: 'DESC' },
+    })
+  }
+
   async actualizarOperativo(operativo: Operativo): Promise<Operativo> {
     return this.operativoRepo.save(operativo)
   }
