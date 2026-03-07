@@ -108,24 +108,55 @@ deletesegcasos(nroop)  → DELETE ASIGNACION WHERE NroOperativo=X [felcn_siii]
 
 ---
 
-## Flujo 3 — Lista de Casos No Aprobados (FRM-OP-ING)
+## Flujo 3 — Lista de Casos del Usuario (FRM-OP-ING)
 
-El agente ve su lista de casos pendientes para iniciar o editar un operativo.
+FRM-OP-ING muestra **dos grids** en la misma pantalla. Ambos usan `CONEXSIII` (`felcn_siii`),
+la misma query, los mismos JOINs y el mismo contrato de respuesta. Solo difieren en el filtro.
+
+### Contrato de respuesta (ambas listas)
+
+```json
+{
+  "idCaso": "string",
+  "unidadDescripcion": "string",
+  "distritaleDescripcion": "string",
+  "grupoDescripcion": "string",
+  "numeroCaso": "string",
+  "numeroCasoPerDom": "string",
+  "numeroOperativo": "string",
+  "nombreCaso": "string",
+  "asignadoCaso": "string",
+  "fiscalAsignadoCaso": "string"
+}
+```
+
+### GridView 1 — `muestraoperativos()` — todos los casos
 
 ```sql
 -- DB: felcn_siii
-SELECT ASIGNACION.Casos_Id, UNIDADES.Uni_Descripcion, DISTRITALES.Dis_Descripcion,
-       GRUPOS.Descripcion, NroCaso, NroOperativo, NombreCaso, AsigCaso, FiscalAsigCaso
-FROM ASIGNACION
-  INNER JOIN UNIDADES    ON ASIGNACION.Uni_Abrev = UNIDADES.Uni_Abrev
-  INNER JOIN DISTRITALES ON ASIGNACION.Dis_Id = DISTRITALES.Dis_Id
-  INNER JOIN GRUPOS      ON ASIGNACION.Grp_Id = GRUPOS.Grp_Id
-WHERE ASIGNACION.Usuario = '{pase}' AND RTRIM(ASIGNACION.NroCaso) = ''
-ORDER BY Unidad, Distrital, Grupo
+SELECT a.id_caso, u.descripcion, d.descripcion, g.descripcion,
+       a.numero_caso, a.numero_caso_per_dom, a.numero_operativo,
+       a.nombre_caso, a.asignado_caso, a.fiscal_asignado_caso
+FROM asignacion a
+  LEFT JOIN unidad u ON a.abreviatura_unidad = u.abreviatura
+  LEFT JOIN distrital d ON a.id_distrital = d.id_distrital
+  LEFT JOIN grupo g ON a.id_grupo = g.id_grupo
+WHERE a.usuario = '{pase}'
+ORDER BY u.descripcion, d.descripcion, g.descripcion
+```
+
+**API:** `GET /api/operativos/casos/usuario/:usuario`
+**Reemplaza:** `GET /api/asignaciones/usuario/:usuarioLogin` (que leía de `felcn_asignacion_caso` ❌)
+
+### GridView 2 — `muestranoaprob()` — solo casos sin número asignado
+
+```sql
+-- Misma query + filtro:
+WHERE a.usuario = '{pase}' AND TRIM(a.numero_caso) = ''
 ```
 
 **API:** `GET /api/operativos/casos/no-aprobados/usuario/:usuario`
-**DB:** `felcn_siii.public.asignacion`
+**Reemplaza:** `GET /api/asignaciones/usuario/:usuarioLogin/no-aprobados` (que leía de `felcn_asignacion_caso` ❌)
 
 ---
 
@@ -192,6 +223,7 @@ FRM-OP recibe: ?id={Casos_Id}
 
 | API REST | Función ASP | DB |
 |---|---|---|
+| `GET /api/operativos/casos/usuario/:u` | `muestraoperativos()` | `felcn_siii` |
 | `GET /api/operativos/casos/no-aprobados/usuario/:u` | `muestranoaprob()` | `felcn_siii` |
 | `GET /api/operativos/nuevo/:casoId` | `muestradatos()` | `felcn_siii` |
 | `GET /api/operativos/caso/:idCaso` | `idvalor()` + `muestra_operativo()` | `felcn_siii` |
@@ -402,15 +434,21 @@ INSERT INTO public.asignacion (
 
 ---
 
-### FLUJO 3 — Listar Casos No Aprobados (FRM-OP-ING)
+### FLUJO 3 — Listas de Casos del Usuario (FRM-OP-ING)
 
-El agente ve sus casos pendientes de ingreso de operativo.
+Ambas listas leen de `felcn_siii` y retornan el mismo contrato.
 
 ```bash
-curl -X GET "http://localhost:3000/api/operativos/casos/no-aprobados/usuario/JPEREZ" \
-  -H "Content-Type: application/json"
-# Lee de felcn_siii.public.asignacion WHERE usuario='JPEREZ' AND TRIM(numero_caso)=''
-# Retorna lista de casos con id, numeroOperativo, nombreCaso, idDistrital, idGrupo, etc.
+# GridView 1 — todos los casos del usuario (muestraoperativos)
+curl -X GET "http://localhost:3000/api/operativos/casos/usuario/JPEREZ"
+# Retorna: [{ idCaso, unidadDescripcion, distritaleDescripcion, grupoDescripcion,
+#             numeroCaso, numeroCasoPerDom, numeroOperativo, nombreCaso,
+#             asignadoCaso, fiscalAsignadoCaso }]
+
+# GridView 2 — solo casos sin número asignado (muestranoaprob)
+curl -X GET "http://localhost:3000/api/operativos/casos/no-aprobados/usuario/JPEREZ"
+# Misma forma, filtrado WHERE TRIM(numero_caso) = ''
+# Cada fila → idCaso es el entrada al formulario de operativo (FRM-OP)
 ```
 
 ---
@@ -517,7 +555,8 @@ curl -X POST "http://localhost:3000/api/operativos/1/drogas" \
 6. GET    /api/operativos/correlativo?dpto=X&unidad=Y → Nro correlativo
 7. POST   /api/asignaciones                           → Insert S2 (felcn_asignacion_caso)
          [SQL directo]                                → Insert S3 (felcn_siii)
-8. GET    /api/operativos/casos/no-aprobados/usuario/:u → Lista casos pendientes
+8a. GET   /api/operativos/casos/usuario/:u              → Todos los casos (GridView1)
+8b. GET   /api/operativos/casos/no-aprobados/usuario/:u → Solo sin número (GridView2)
 9. GET    /api/operativos/nuevo/:casoId               → Datos del caso para form
 10. POST  /api/operativos                             → Crear operativo
 11. POST  /api/operativos/:id/drogas                  → Agregar drogas
