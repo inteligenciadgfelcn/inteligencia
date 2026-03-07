@@ -1,4 +1,5 @@
 export * from './create-operativo.dto'
+export * from './operativo.dto'
 export * from './create-droga.dto'
 export * from './create-detenido.dto'
 export * from './create-bien-secuestrado.dto'
