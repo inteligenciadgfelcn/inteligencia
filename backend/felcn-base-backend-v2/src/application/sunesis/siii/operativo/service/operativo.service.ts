@@ -576,27 +576,21 @@ export class OperativoService extends BaseService {
   }
 
   /**
-   * Lista casos no aprobados de un usuario desde felcn_siii.public.asignacion.
-   * Implementa FRM-OP-ING.aspx → muestranoaprob():
-   *   SELECT ... FROM ASIGNACION
-   *   WHERE Usuario = X AND RTRIM(NroCaso) = ''  (CONEXSIII)
+   * FRM-OP-ING.aspx → muestraoperativos()
+   * Todos los casos del usuario desde felcn_siii.
+   * Mismo contrato que listarCasosNoAprobados (GridView1 vs GridView2).
+   */
+  async listarCasosPorUsuario(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarTodosPorUsuario(usuario)
+  }
+
+  /**
+   * FRM-OP-ING.aspx → muestranoaprob()
+   * Casos no aprobados del usuario desde felcn_siii (NroCaso vacío).
+   * Mismo contrato que listarCasosPorUsuario.
    */
   async listarCasosNoAprobados(usuario: string): Promise<any[]> {
-    const asignaciones =
-      await this.asignacionSiiiRepository.buscarNoAprobadosPorUsuario(usuario)
-
-    return asignaciones.map((a) => ({
-      id: a.idCaso,
-      numeroOperativo: a.numeroOperativo,
-      nombreCaso: a.nombreCaso,
-      idDepartamento: a.idDepartamentoCaso,
-      abreviaturaUnidad: a.abreviaturaUnidad,
-      idDistrital: a.idDistrital,
-      idGrupo: a.idGrupo,
-      asignadoCaso: a.asignadoCaso,
-      fiscalAsignadoCaso: a.fiscalAsignadoCaso,
-      codigoServicio: a.codigoServicio,
-    }))
+    return this.asignacionSiiiRepository.buscarNoAprobadosPorUsuario(usuario)
   }
 
   // ==================== IMÁGENES (LAZY LOADING) ====================
