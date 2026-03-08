@@ -8,10 +8,11 @@ import {
   Param,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   Res,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express'
 import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { OperativoService } from '../service/operativo.service'
@@ -28,6 +29,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  CreateLogotipoDrogaDto,
 } from '../dto'
 
 // TODO: Reactivar guards para producción
@@ -181,13 +183,6 @@ export class OperativoController extends BaseController {
     return this.successList(operativo)
   }
 
-  @ApiOperation({ summary: 'Inactivar operativo por ID interno (admin)' })
-  @Patch(':id/inactivar')
-  async inactivar(@Param('id') id: string) {
-    const operativo = await this.operativoService.inactivar(id, 'SISTEMA')
-    return this.successUpdate(operativo)
-  }
-
   // ==================== DROGAS ====================
 
   @ApiOperation({ summary: 'Listar drogas del caso ([] si operativo no existe)' })
@@ -204,14 +199,116 @@ export class OperativoController extends BaseController {
     return this.successList(pesaje)
   }
 
-  @ApiOperation({ summary: 'Agregar droga al caso (requiere operativo existente)' })
+  @ApiOperation({
+    summary: 'Agregar droga al caso (requiere operativo existente)',
+    description:
+      'Enviar como multipart/form-data. Campos de texto como campos del form. ' +
+      'Archivos opcionales: pruebaCampo (foto prueba de campo) y pesaje (foto cuantificación/pesaje).',
+  })
+  @ApiConsumes('multipart/form-data')
   @Post('caso/:idCaso/drogas')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'pruebaCampo', maxCount: 1 },
+      { name: 'pesaje', maxCount: 1 },
+    ])
+  )
   async agregarDroga(
     @Param('idCaso') idCaso: string,
-    @Body() data: CreateDrogaDto
+    @Body() data: CreateDrogaDto,
+    @UploadedFiles()
+    files: {
+      pruebaCampo?: Express.Multer.File[]
+      pesaje?: Express.Multer.File[]
+    }
   ) {
-    const droga = await this.operativoService.agregarDroga(idCaso, data, 'SISTEMA')
+    const pruebaCampo = files?.pruebaCampo?.[0]?.buffer || Buffer.alloc(0)
+    const pesaje = files?.pesaje?.[0]?.buffer || Buffer.alloc(0)
+    const droga = await this.operativoService.agregarDroga(
+      idCaso,
+      data,
+      pruebaCampo,
+      pesaje,
+      'SISTEMA'
+    )
     return this.successCreate(droga)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto prueba de campo de una droga' })
+  @Get('caso/:idCaso/drogas/:idDroga/fotos/prueba-campo')
+  async obtenerFotoPruebaCampo(
+    @Param('idCaso') idCaso: string,
+    @Param('idDroga') idDroga: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoDroga(
+      idCaso,
+      idDroga,
+      'prueba-campo'
+    )
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Obtener foto cuantificación/pesaje de una droga' })
+  @Get('caso/:idCaso/drogas/:idDroga/fotos/pesaje')
+  async obtenerFotoPesaje(
+    @Param('idCaso') idCaso: string,
+    @Param('idDroga') idDroga: string,
+    @Res() res: Response
+  ) {
+    const foto = await this.operativoService.obtenerFotoDroga(
+      idCaso,
+      idDroga,
+      'pesaje'
+    )
+    res.setHeader('Content-Type', 'image/jpeg')
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    res.send(foto)
+  }
+
+  @ApiOperation({
+    summary: 'Listar logotipos de una droga específica',
+    description:
+      'Retorna solo los logotipos asociados a esa droga (fila expandida en la grilla).',
+  })
+  @Get('caso/:idCaso/drogas/:idDroga/logotipos')
+  async listarLogotiposDroga(
+    @Param('idCaso') idCaso: string,
+    @Param('idDroga') idDroga: string
+  ) {
+    const logotipos = await this.operativoService.listarLogotiposPorDroga(
+      idCaso,
+      idDroga
+    )
+    return this.successList(logotipos)
+  }
+
+  @ApiOperation({
+    summary: 'Agregar logotipo a una droga (modal)',
+    description:
+      'idTipoDroga, idPaisOrigen e idPaisDestino se resuelven automáticamente desde la droga. ' +
+      'Enviar como multipart/form-data con archivo fotografia.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @Post('caso/:idCaso/drogas/:idDroga/logotipos')
+  @UseInterceptors(FileInterceptor('fotografia'))
+  async agregarLogotipoDroga(
+    @Param('idCaso') idCaso: string,
+    @Param('idDroga') idDroga: string,
+    @Body() data: CreateLogotipoDrogaDto,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const fotografia = file?.buffer || Buffer.alloc(0)
+    const logotipo = await this.operativoService.agregarLogotipoDroga(
+      idCaso,
+      idDroga,
+      data,
+      fotografia,
+      'SISTEMA'
+    )
+    return this.successCreate(logotipo)
   }
 
   @ApiOperation({ summary: 'Eliminar droga del caso' })
