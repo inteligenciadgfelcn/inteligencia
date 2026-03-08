@@ -6,8 +6,10 @@ import type {
     GestionOperativoResumen,
     RespuestaApi,
 } from './types'
+import type { GestionOperativoItem } from '@/app/operaciones/operativo/gestion-operativo/types'
 
 const BASE = `${Constantes.baseUrl}/gestion-operativo`
+const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoService = {
     listar(): Promise<RespuestaApi<GestionOperativoResumen[]>> {
@@ -29,5 +31,13 @@ export const GestionOperativoService = {
         payload: GestionOperativoCabeceraPayload
     ): Promise<RespuestaApi<GestionOperativoCabecera>> {
         return Servicios.patch({ url: `${BASE}/${id}`, body: payload })
+    },
+
+    listarNoAprobadosPorUsuario(
+        usuario: string
+    ): Promise<RespuestaApi<GestionOperativoItem[]>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/casos/no-aprobados/usuario/${usuario}`,
+        })
     },
 }
