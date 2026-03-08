@@ -95,6 +95,10 @@ export class OperativoRepository {
     })
   }
 
+  async buscarDrogaPorId(id: string): Promise<Droga | null> {
+    return this.drogaRepo.findOne({ where: { id } })
+  }
+
   async eliminarDroga(id: string): Promise<void> {
     await this.drogaRepo.delete(id)
   }
@@ -281,6 +285,17 @@ export class OperativoRepository {
     return this.logotipoRepo.find({
       where: { idOperativo },
     })
+  }
+
+  async listarLogotiposPorDroga(idDroga: string): Promise<Logotipo[]> {
+    return this.logotipoRepo.find({
+      where: { idDroga },
+      order: { fechaHoraIngreso: 'DESC' },
+    })
+  }
+
+  async eliminarLogotiposPorDroga(idDroga: string): Promise<void> {
+    await this.logotipoRepo.delete({ idDroga })
   }
 
   async eliminarLogotipo(id: string): Promise<void> {
