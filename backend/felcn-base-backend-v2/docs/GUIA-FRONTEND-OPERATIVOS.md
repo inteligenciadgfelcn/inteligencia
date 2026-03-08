@@ -1,6 +1,6 @@
 # GUÍA FRONTEND — MÓDULO OPERATIVOS
 
-**Versión:** 4.4 — Sección DROGAS: URLs de imagen en respuestas de lista (Opción A)
+**Versión:** 4.5 — Sección 10: curls flujo completo Servicio → Asignación → Operativo para pruebas
 **Fecha:** 2026-03-08
 **Base URL:** `http://localhost:3000/api`
 
@@ -17,6 +17,7 @@
 7. [Flujo DROGAS: CRUD + imágenes vía URL](#7-flujo-drogas-crud--imágenes-vía-url)
 8. [Reglas de negocio y validaciones](#8-reglas-de-negocio-y-validaciones)
 9. [Referencia de endpoints](#9-referencia-de-endpoints)
+10. [Flujo de prueba: Servicio → Asignación → Operativo (curls completos)](#10-flujo-de-prueba-servicio--asignación--operativo-curls-completos)
 
 ---
 
@@ -1457,5 +1458,346 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
+## 10. Flujo de prueba: Servicio → Asignación → Operativo (curls completos)
+
+Esta sección contiene los curls para simular el flujo completo de alta desde cero.
+Ejecutarlos **en orden**. Los IDs retornados en cada paso se usan en el siguiente.
+
+```
+BASE="http://localhost:3000/api"
+```
+
+---
+
+### PASO 0 — Verificar lookups (opcional, para obtener IDs válidos)
+
+```bash
+BASE="http://localhost:3000/api"
+
+# Lookups módulo Asig-Casos (felcn_asignacion_caso)
+curl "$BASE/asig-lookups/departamentos"   # → id, descripcion (ej: "01" = La Paz)
+curl "$BASE/asig-lookups/unidades"        # → id, descripcion
+curl "$BASE/asig-lookups/letras"          # → codigo (ej: "PD", "RP", "IC")
+
+# Lookups módulo SIII (felcn_siii — requiere migración ejecutada)
+curl "$BASE/siii-lookups/tipos-relevancia"
+curl "$BASE/siii-lookups/tipos-operacion"
+curl "$BASE/siii-lookups/categorias-operativo"
+curl "$BASE/siii-lookups/planes-operaciones"
+curl "$BASE/siii-lookups/departamentos"
+
+# Lookups dependientes de selección anterior:
+curl "$BASE/siii-lookups/provincias/departamento/1"    # provincias de departamento 1
+curl "$BASE/siii-lookups/localidades/provincia/1"      # localidades de provincia 1
+curl "$BASE/siii-lookups/unidades"                     # unidades organizacionales
+curl "$BASE/siii-lookups/distritales/unidad/1"         # distritales de unidad 1
+curl "$BASE/siii-lookups/grupos/distrital/1"           # grupos de distrital 1
+
+# Lookups de drogas
+curl "$BASE/siii-lookups/tipos-droga"
+curl "$BASE/siii-lookups/formas-transporte"
+curl "$BASE/operativos/catalogos/estados-droga/1"      # estados para tipo_droga=1
+```
+
+> **Nota `siii-lookups` error 500:** Si el schema `parametricas` no existe en la BD,
+> ejecutar primero `npm run migration:run`. Verificar con:
+> `SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'parametricas';`
+
+---
+
+### PASO 1 — Crear Servicio (`felcn_asignacion_caso.servicio`)
+
+```bash
+BASE="http://localhost:3000/api"
+
+curl -X POST "$BASE/servicios" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "codigoServicio": "SERV-001-2026",
+    "usuarioLogin": "JPEREZ",
+    "usuarioEjecutor": "JPEREZ",
+    "fechaHoraIngreso": "2026-03-08T08:00:00Z",
+    "fechaHoraSalida": "2026-03-08T20:00:00Z"
+  }'
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "codigoServicio": "SERV-001-2026",
+#     "usuarioLogin": "JPEREZ",
+#     "usuarioEjecutor": "JPEREZ",
+#     "fechaHoraIngreso": "2026-03-08T08:00:00.000Z",
+#     "fechaHoraSalida": "2026-03-08T20:00:00.000Z"
+#   }
+# }
+
+# Verificar servicio creado:
+curl "$BASE/servicios/SERV-001-2026"
+```
+
+---
+
+### PASO 2 — Crear Asignación/Caso (`felcn_asignacion_caso.asignacion`)
+
+```bash
+curl -X POST "$BASE/asignaciones" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "idDepartamento": "01",
+    "idUnidad": "01",
+    "codigoLetra": "IC",
+    "numeroCaso": "CASO-042-2026",
+    "numeroOperativo": "OP-042-2026",
+    "fechaOperativo": "2026-03-08T10:00:00Z",
+    "nombreCaso": "Operacion Zona Sur",
+    "asignacionCaso": "Investigacion trafico de sustancias controladas zona sur",
+    "codigoServicio": "SERV-001-2026",
+    "fiscalAsignado": "LIC. MARIA QUISPE FLORES"
+  }'
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "3",           ← GUARDAR ESTE ID (idCaso para todos los siguientes pasos)
+#     "idDepartamento": "01",
+#     "idUnidad": "01",
+#     "codigoLetra": "IC",
+#     "numeroCaso": "CASO-042-2026",
+#     "numeroOperativo": "OP-042-2026",
+#     "nombreCaso": "Operacion Zona Sur",
+#     "asignacionCaso": "Investigacion...",
+#     "codigoServicio": "SERV-001-2026",
+#     "fiscalAsignado": "LIC. MARIA QUISPE FLORES"
+#   }
+# }
+
+CASO_ID=3   # ← el id retornado arriba
+
+# Verificar asignación:
+curl "$BASE/asignaciones/$CASO_ID"
+
+# Listar casos del usuario:
+curl "$BASE/operativos/casos/usuario/JPEREZ"
+```
+
+---
+
+### PASO 3 — Verificar estado antes de crear operativo
+
+```bash
+# Retorna: { caso: {...}, operativo: null }  ← operativo null = formulario nuevo
+curl "$BASE/operativos/caso/$CASO_ID"
+```
+
+---
+
+### PASO 4 — Crear Operativo (`felcn_siii.public.operativo`)
+
+> **Coordenadas:** Solo `coordX` (latitud decimal) y `coordY` (longitud decimal).
+> En Bolivia son negativas. El frontend convierte desde DMS si el usuario lo ingresa
+> manualmente: `decimal = grados + minutos/60 + segundos/3600` (negativo en Bolivia).
+
+```bash
+curl -X POST "$BASE/operativos/caso/$CASO_ID" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "numeroOperativo": "IC-042/2026",
+    "idTipoRelevancia": 1,
+    "idTipoDenuncia": 1,
+    "idTipoPenal": 1,
+    "fechaOperativo": "2026-03-08T14:30:00Z",
+    "idDepartamento": 1,
+    "idProvincia": 1,
+    "idLocalidad": 1,
+    "lugar": "Zona Sur, Av. Circunvalacion Km 3",
+    "idCategoriaOperativo": 1,
+    "idItemOperativo": 1,
+    "idUnidad": 1,
+    "idDistrital": 1,
+    "idGrupo": 1,
+    "mando": "CAP. JUAN PEREZ MAMANI",
+    "coordX": -17.395972,
+    "coordY": -66.156139,
+    "idPlanOperacion": 1,
+    "breveDetalle": "Operativo antidrogas zona sur",
+    "descripcion": "Se realizo operativo de control en zona sur. Se encontraron sustancias controladas.",
+    "idTipoOperacion": 1,
+    "organizacion": "NARCOTRAFICANTES",
+    "clanFamiliar": "Clan Mamani"
+  }'
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "42",           ← idOperativo (solo para admin/debug)
+#     "idCaso": "3",
+#     "numeroOperativo": "IC-042/2026",
+#     "coordX": -17.395972,
+#     "coordY": -66.156139,
+#     ...
+#   }
+# }
+
+# Verificar: ahora operativo ya no es null
+curl "$BASE/operativos/caso/$CASO_ID"
+```
+
+---
+
+### PASO 5 — Agregar Droga (multipart/form-data)
+
+```bash
+# Con fotos:
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
+  -F "idTipoDroga=1" \
+  -F "idEstadoDroga=3" \
+  -F "cantidadGramos=2500.5" \
+  -F "cantidadUnidades=0" \
+  -F "idFormaTransporte=2" \
+  -F "idPaisProcedencia=70" \
+  -F "idPaisDestino=70" \
+  -F "observaciones=Droga en polvo, embalada en bolsas plasticas" \
+  -F "pruebaCampo=@/tmp/prueba_campo.jpg;type=image/jpeg" \
+  -F "pesaje=@/tmp/pesaje.jpg;type=image/jpeg"
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "101",            ← GUARDAR ESTE ID (idDroga)
+#     "idOperativo": "42",
+#     "idTipoDroga": 1,
+#     "cantidadGramos": 2500.5,
+#     "urlFotoPruebaCampo": "/api/operativos/caso/3/drogas/101/fotos/prueba-campo",
+#     "urlFotoPesaje": "/api/operativos/caso/3/drogas/101/fotos/pesaje"
+#   }
+# }
+
+DROGA_ID=101
+
+# Sin fotos (también válido):
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
+  -F "idTipoDroga=2" \
+  -F "idEstadoDroga=1" \
+  -F "cantidadGramos=500" \
+  -F "cantidadUnidades=0" \
+  -F "idFormaTransporte=1" \
+  -F "idPaisProcedencia=70" \
+  -F "idPaisDestino=71"
+# → urlFotoPruebaCampo: null, urlFotoPesaje: null
+
+# Listar drogas:
+curl "$BASE/operativos/caso/$CASO_ID/drogas"
+
+# Recuperar foto (binaria):
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/prueba-campo" --output prueba.jpg
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/pesaje" --output pesaje.jpg
+
+# Eliminar droga (cascade: borra también sus logotipos):
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
+```
+
+---
+
+### PASO 6 — Agregar Logotipo a una Droga
+
+```bash
+# Con foto:
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+  -F "imagen=CALI-01" \
+  -F "descripcionLogo=Marca del cartel para identificar cargamentos de cocaina" \
+  -F "organizacion=CARTEL CALI" \
+  -F "blanco=Mercado europeo" \
+  -F "observacion=Encontrado en embalaje de plastico negro sellado" \
+  -F "enlace=https://ref.ejemplo.com/cali01" \
+  -F "fotografia=@/tmp/logo_cali.jpg;type=image/jpeg"
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "5",              ← GUARDAR ESTE ID (idLogotipo)
+#     "idDroga": "101",
+#     "idOperativo": "42",
+#     "imagen": "CALI-01",
+#     "idTipoDroga": 1,       ← resuelto automáticamente desde la droga
+#     "idPaisOrigen": 70,     ← resuelto automáticamente desde la droga
+#     "urlFotografia": "/api/operativos/caso/3/logotipos/5/foto"
+#   }
+# }
+
+LOGO_ID=5
+
+# Sin foto:
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+  -F "imagen=LOCAL-02" \
+  -F "descripcionLogo=Marca sin identificar" \
+  -F "organizacion=DESCONOCIDO"
+
+# Listar logotipos de esa droga:
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos"
+
+# Listar todos los logotipos del caso:
+curl "$BASE/operativos/caso/$CASO_ID/logotipos"
+
+# Recuperar foto logotipo (binaria):
+curl "$BASE/operativos/caso/$CASO_ID/logotipos/$LOGO_ID/foto" --output logo.jpg
+
+# Eliminar logotipo:
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/logotipos/$LOGO_ID"
+```
+
+---
+
+### PASO 7 — Editar Operativo (PATCH)
+
+```bash
+# PATCH usa el mismo DTO que POST — todos los campos son requeridos (no es PartialType)
+curl -X PATCH "$BASE/operativos/caso/$CASO_ID" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "numeroOperativo": "IC-042/2026",
+    "idTipoRelevancia": 2,
+    "idTipoDenuncia": 1,
+    "idTipoPenal": 1,
+    "fechaOperativo": "2026-03-08T14:30:00Z",
+    "idDepartamento": 1,
+    "idProvincia": 1,
+    "idLocalidad": 1,
+    "lugar": "Zona Sur, Av. Circunvalacion Km 3 — ACTUALIZADO",
+    "idCategoriaOperativo": 1,
+    "idItemOperativo": 1,
+    "idUnidad": 1,
+    "idDistrital": 1,
+    "idGrupo": 1,
+    "mando": "MAY. CARLOS QUISPE",
+    "coordX": -17.395972,
+    "coordY": -66.156139,
+    "idPlanOperacion": 1,
+    "breveDetalle": "Operativo actualizado",
+    "descripcion": "Descripcion actualizada del operativo.",
+    "idTipoOperacion": 1,
+    "organizacion": "NARCOTRAFICANTES",
+    "clanFamiliar": "Clan X"
+  }'
+```
+
+---
+
+### RESUMEN — Errores esperados y sus causas
+
+| HTTP | Causa | Solución |
+|---|---|---|
+| 400 `coordX should not be empty` | Se enviaron campos DMS viejos en lugar de `coordX`/`coordY` | Usar `"coordX": -17.39, "coordY": -66.15` |
+| 400 `validation errors` | Falta un campo requerido | Revisar todos los campos del DTO |
+| 404 `No existe operativo` | Se intenta agregar droga/detenido sin crear operativo antes | Ejecutar PASO 4 primero |
+| 409 `ya existe` | Se hace POST operativo cuando ya existe uno para ese caso | Usar PATCH para actualizar |
+| 500 `siii-lookups` | Schema `parametricas` no existe en BD | Ejecutar `npm run migration:run` |
+
+---
+
 **Última actualización:** 2026-03-08
-**Versión:** 4.3 — Sección 7 nueva: flujo DROGAS con grilla expandible y modal logotipos. POST drogas ahora es multipart. Nuevos endpoints: fotos por droga, logotipos por droga.
+**Versión:** 4.5 — Sección 10: curls flujo completo Servicio → Asignación → Operativo para pruebas. Coordenadas: solo coordX/coordY decimal.

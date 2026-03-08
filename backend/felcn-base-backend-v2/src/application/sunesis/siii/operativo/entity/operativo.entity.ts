@@ -67,6 +67,46 @@ export class Operativo extends BaseEntity {
   @Column({ name: 'coord_y', type: 'double precision' })
   coordY: number
 
+  // TODO: eliminar estos campos tras ejecutar script SQL de limpieza en BD
+  // Columnas DMS — existen en la tabla física como NOT NULL, mapear para evitar error INSERT
+  @Column({ name: 'grados_x', type: 'integer' })
+  gradosX: number = 0
+
+  @Column({ name: 'min_x', type: 'integer' })
+  minX: number = 0
+
+  @Column({ name: 'seg_x', type: 'double precision' })
+  segX: number = 0
+
+  @Column({ name: 'grados_y', type: 'integer' })
+  gradosY: number = 0
+
+  @Column({ name: 'min_y', type: 'integer' })
+  minY: number = 0
+
+  @Column({ name: 'seg_y', type: 'double precision' })
+  segY: number = 0
+
+  // TODO: eliminar estos campos tras ejecutar script SQL de limpieza en BD
+  // Flags booleanos — existen en la tabla física como NOT NULL
+  @Column({ name: 'es_revisado', type: 'boolean' })
+  esRevisado: boolean = false
+
+  @Column({ name: 'es_positivo', type: 'boolean' })
+  esPositivo: boolean = false
+
+  @Column({ name: 'es_aprehendido', type: 'boolean' })
+  esAprehendido: boolean = false
+
+  @Column({ name: 'es_arrestado', type: 'boolean' })
+  esArrestado: boolean = false
+
+  @Column({ name: 'es_icia', type: 'boolean' })
+  esIcia: boolean = false
+
+  @Column({ name: 'es_parte_diario', type: 'boolean' })
+  esParteDiario: boolean = false
+
   @Column({ name: 'id_plan_operacion', type: 'integer' })
   idPlanOperacion: number
 
