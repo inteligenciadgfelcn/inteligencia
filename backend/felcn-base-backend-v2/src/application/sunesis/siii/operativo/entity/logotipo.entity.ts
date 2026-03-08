@@ -24,6 +24,9 @@ export class Logotipo {
   @Column({ name: 'id_operativo', type: 'bigint' })
   idOperativo: string
 
+  @Column({ name: 'id_droga', type: 'bigint', nullable: true })
+  idDroga?: string
+
   @Column({ name: 'numero_caso', type: 'varchar', length: 20 })
   numeroCaso: string
 

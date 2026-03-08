@@ -60,27 +60,9 @@ export class Operativo extends BaseEntity {
   @Column({ name: 'mando', type: 'varchar', length: 150 })
   mando: string
 
-  // Coordenadas GIS
-  @Column({ name: 'grados_x', type: 'integer' })
-  gradosX: number
-
-  @Column({ name: 'min_x', type: 'integer' })
-  minX: number
-
-  @Column({ name: 'seg_x', type: 'double precision' })
-  segX: number
-
+  // Coordenadas GIS (decimal — el frontend convierte DMS si aplica)
   @Column({ name: 'coord_x', type: 'double precision' })
   coordX: number
-
-  @Column({ name: 'grados_y', type: 'integer' })
-  gradosY: number
-
-  @Column({ name: 'min_y', type: 'integer' })
-  minY: number
-
-  @Column({ name: 'seg_y', type: 'double precision' })
-  segY: number
 
   @Column({ name: 'coord_y', type: 'double precision' })
   coordY: number
@@ -107,24 +89,6 @@ export class Operativo extends BaseEntity {
     nullable: true,
   })
   clanFamiliar?: string
-
-  @Column({ name: 'es_revisado', type: 'boolean' })
-  esRevisado: boolean
-
-  @Column({ name: 'es_positivo', type: 'boolean' })
-  esPositivo: boolean
-
-  @Column({ name: 'es_aprehendido', type: 'boolean' })
-  esAprehendido: boolean
-
-  @Column({ name: 'es_arrestado', type: 'boolean' })
-  esArrestado: boolean
-
-  @Column({ name: 'es_icia', type: 'boolean' })
-  esIcia: boolean
-
-  @Column({ name: 'es_parte_diario', type: 'boolean' })
-  esParteDiario: boolean
 
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
