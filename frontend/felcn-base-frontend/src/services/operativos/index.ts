@@ -1,5 +1,6 @@
 export * from './types'
 export * from './GestionOperativoService'
+export * from './GestionOperativoCatalogosService'
 export * from './GestionOperativosDatosGeneralesService'
 export * from './GestionOperativoSeccion2Service'
 export * from './GestionOperativoSeccion3Service'
