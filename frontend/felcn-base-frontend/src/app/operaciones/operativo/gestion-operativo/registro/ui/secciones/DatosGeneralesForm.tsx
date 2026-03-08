@@ -11,16 +11,17 @@ import { FormInputDate, FormInputDropdown, FormInputText } from '@/components/fo
 import type { optionType } from '@/components/form/FormInputDropdown'
 import Mapa from '@/components/mapas/Mapa'
 import { useParametricas } from '@/hooks'
+import { useAlerts } from '@/hooks/useAlerts'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
 import type { CasoOperativoDetalle } from '@/services/operativos'
 import type { OperativoPayload } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
+import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 
 interface DatosGeneralesFormProps {
     titulo: string
     onGuardar: (payload: SeccionPayloadBase) => Promise<unknown>
-    onRecuperar: () => Promise<unknown>
     cargando?: boolean
 }
 
@@ -157,12 +158,12 @@ const mapCasoOperativoToForm = (
 export function DatosGeneralesForm({
     titulo,
     onGuardar,
-    onRecuperar,
     cargando = false,
 }: DatosGeneralesFormProps) {
     const searchParams = useSearchParams()
+    const { Alerta } = useAlerts()
     const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
-    const autoRecuperadoRef = useRef(false)
+    const [tieneOperativo, setTieneOperativo] = useState(false)
     const {
         departamentos,
         provincias,
@@ -359,46 +360,61 @@ export function DatosGeneralesForm({
         const payload = getValues()
         const idCaso = Number(searchParams.get('id') ?? 0)
 
-        if (idCaso > 0) {
-            const payloadOperativo: OperativoPayload = {
-                numeroOperativo: payload.numeroOperativo,
-                idTipoRelevancia: toNumberOrZero(payload.relevancia),
-                idTipoDenuncia: toNumberOrZero(payload.tipoDenuncia),
-                idTipoPenal: toNumberOrZero(payload.tipoPenal),
-                fechaOperativo: toIsoDate(payload.fechaHora),
-                idDepartamento: toNumberOrZero(payload.departamento),
-                idProvincia: toNumberOrZero(payload.provincia),
-                idLocalidad: toNumberOrZero(payload.municipio),
-                lugar: payload.localidad,
-                idCategoriaOperativo: toNumberOrZero(payload.tipoLugar),
-                idItemOperativo: toNumberOrZero(payload.operativoEn),
-                idUnidad: toNumberOrZero(payload.unidad),
-                idDistrital: toNumberOrZero(payload.distrital),
-                idGrupo: toNumberOrZero(payload.grupo),
-                mando: payload.mando,
-                coordX: toNumberOrZero(payload.coordX),
-                coordY: toNumberOrZero(payload.coordY),
-                idPlanOperacion: toNumberOrZero(payload.plan),
-                breveDetalle: payload.detalleOperativo,
-                descripcion: payload.detalleOperativo,
-                idTipoOperacion: toNumberOrZero(payload.tipoOperativo),
-                organizacion: payload.organizacion,
-                clanFamiliar: payload.clan,
+        try {
+            if (idCaso > 0) {
+                const payloadOperativo: OperativoPayload = {
+                    numeroOperativo: payload.numeroOperativo,
+                    idTipoRelevancia: toNumberOrZero(payload.relevancia),
+                    idTipoDenuncia: toNumberOrZero(payload.tipoDenuncia),
+                    idTipoPenal: toNumberOrZero(payload.tipoPenal),
+                    fechaOperativo: toIsoDate(payload.fechaHora),
+                    idDepartamento: toNumberOrZero(payload.departamento),
+                    idProvincia: toNumberOrZero(payload.provincia),
+                    idLocalidad: toNumberOrZero(payload.municipio),
+                    lugar: payload.localidad,
+                    idCategoriaOperativo: toNumberOrZero(payload.tipoLugar),
+                    idItemOperativo: toNumberOrZero(payload.operativoEn),
+                    idUnidad: toNumberOrZero(payload.unidad),
+                    idDistrital: toNumberOrZero(payload.distrital),
+                    idGrupo: toNumberOrZero(payload.grupo),
+                    mando: payload.mando,
+                    coordX: toNumberOrZero(payload.coordX),
+                    coordY: toNumberOrZero(payload.coordY),
+                    idPlanOperacion: toNumberOrZero(payload.plan),
+                    breveDetalle: payload.detalleOperativo,
+                    descripcion: payload.detalleOperativo,
+                    idTipoOperacion: toNumberOrZero(payload.tipoOperativo),
+                    organizacion: payload.organizacion,
+                    clanFamiliar: payload.clan,
+                }
+
+                if (tieneOperativo) {
+                    await GestionOperativosDatosGeneralesService.actualizarOperativo(
+                        idCaso,
+                        payloadOperativo
+                    )
+                    Alerta({ mensaje: 'Operativo actualizado correctamente', variant: 'success' })
+                } else {
+                    await GestionOperativosDatosGeneralesService.crearOperativo(
+                        idCaso,
+                        payloadOperativo
+                    )
+                    Alerta({ mensaje: 'Operativo guardado correctamente', variant: 'success' })
+                }
+                return
             }
 
-            await GestionOperativosDatosGeneralesService.crearOperativo(
-                idCaso,
-                payloadOperativo
-            )
-            return
+            await onGuardar(payload as unknown as SeccionPayloadBase)
+            Alerta({ mensaje: 'Datos guardados correctamente', variant: 'success' })
+        } catch (e) {
+            Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
         }
-
-        await onGuardar(payload as unknown as SeccionPayloadBase)
     }
 
-    const handleRecuperar = useCallback(async () => {
+    const cargarDatosCaso = useCallback(async () => {
         let datosCasoOperativo: Partial<DatosGeneralesPayload> = {}
         const idCaso = Number(searchParams.get('id') ?? 0)
+        setTieneOperativo(false)
 
         if (idCaso > 0) {
             const respuestaCaso =
@@ -407,52 +423,25 @@ export function DatosGeneralesForm({
                 )
 
             if (respuestaCaso?.datos) {
+                setTieneOperativo(Boolean(respuestaCaso.datos.operativo))
                 datosCasoOperativo = mapCasoOperativoToForm(respuestaCaso.datos)
             }
         }
 
-        const respuestaSeccion = await onRecuperar()
-        const datosSeccion =
-            (respuestaSeccion as { data?: { datos?: Partial<DatosGeneralesPayload> } })?.data
-                ?.datos ??
-            (respuestaSeccion as { datos?: Partial<DatosGeneralesPayload> })?.datos
-
-        const datos =
-            Object.keys(datosCasoOperativo).length > 0
-                ? {
-                    ...datosCasoOperativo,
-                    ...datosSeccion,
-                }
-                : datosSeccion
-
-        if (datos && typeof datos === 'object') {
-            const payload = { ...datos }
-            const fechaHoraRaw = (payload as { fechaHora?: unknown }).fechaHora
-            if (typeof fechaHoraRaw === 'string') {
-                const payloadMutable = payload as { fechaHora?: Date }
-                payloadMutable.fechaHora = new Date(fechaHoraRaw)
-            }
-
-            reset({
-                ...DEFAULT_VALUES,
-                ...payload,
-            })
-        } else if (Object.keys(datosCasoOperativo).length > 0) {
+        if (Object.keys(datosCasoOperativo).length > 0) {
             reset({
                 ...DEFAULT_VALUES,
                 ...datosCasoOperativo,
             })
         }
-    }, [onRecuperar, reset, searchParams])
+    }, [reset, searchParams])
 
     useEffect(() => {
-        if (!parametricasBaseListas || autoRecuperadoRef.current) {
+        if (!parametricasBaseListas) {
             return
         }
-
-        autoRecuperadoRef.current = true
-        void handleRecuperar()
-    }, [parametricasBaseListas, handleRecuperar])
+        void cargarDatosCaso()
+    }, [cargarDatosCaso, parametricasBaseListas])
 
     if (!parametricasBaseListas) {
         return <FullScreenLoading mensaje="Cargando parámetros del formulario..." />
@@ -552,12 +541,9 @@ export function DatosGeneralesForm({
                     />
                 </div>
 
-                <div className="col-span-1 lg:col-span-3 flex gap-2 justify-end mt-4">
-                    <Button variant="outline-secondary" type="button" onClick={() => void handleRecuperar()} disabled={cargando}>
-                        Recuperar
-                    </Button>
+                <div className="col-span-1 lg:col-span-3 flex justify-end mt-4">
                     <Button variant="primary" type="button" onClick={() => void handleGuardar()} disabled={cargando}>
-                        Guardar Seccion 1
+                        {tieneOperativo ? 'Actualizar' : 'Guardar'}
                     </Button>
                 </div>
             </div>

@@ -28,3 +28,29 @@ export interface GestionOperativoCabeceraPayload {
 export interface SeccionPayload {
     [key: string]: unknown
 }
+
+export interface OperativoPayload {
+    numeroOperativo: string
+    idTipoRelevancia: number
+    idTipoDenuncia: number
+    idTipoPenal: number
+    fechaOperativo: string
+    idDepartamento: number
+    idProvincia: number
+    idLocalidad: number
+    lugar: string
+    idCategoriaOperativo: number
+    idItemOperativo: number
+    idUnidad: number
+    idDistrital: number
+    idGrupo: number
+    mando: string
+    coordX: number
+    coordY: number
+    idPlanOperacion: number
+    breveDetalle: string
+    descripcion: string
+    idTipoOperacion: number
+    organizacion: string
+    clanFamiliar: string
+}

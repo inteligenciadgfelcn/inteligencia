@@ -54,7 +54,6 @@ export function FormGestionOperativo({
                 <DatosGeneralesForm
                     titulo="Seccion 1"
                     onGuardar={seccion1.mutation.mutateAsync}
-                    onRecuperar={() => seccion1.query.refetch()}
                     cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
                 />
             )

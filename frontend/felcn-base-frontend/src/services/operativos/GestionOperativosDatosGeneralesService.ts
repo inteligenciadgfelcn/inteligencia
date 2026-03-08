@@ -1,6 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { RespuestaApi } from './types'
+import type { OperativoPayload, RespuestaApi } from './types'
 
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
@@ -19,79 +19,11 @@ export interface CasoResumen {
     telefonoFiscal: string
 }
 
-export interface OperativoDetalle {
-    id: string
-    idCaso: string
-    numeroOperativo: string
-    idTipoRelevancia: number
-    idTipoDenuncia: number
-    idTipoPenal: number
-    fechaOperativo: string
-    idDepartamento: number
-    idProvincia: number
-    idLocalidad: number
-    lugar: string
-    idCategoriaOperativo: number
-    idItemOperativo: number
-    idUnidad: number
-    idDistrital: number
-    idGrupo: number
-    mando: string
-    gradosX: number
-    minX: number
-    segX: number
-    coordX: number
-    gradosY: number
-    minY: number
-    segY: number
-    coordY: number
-    idPlanOperacion: number
-    breveDetalle: string
-    descripcion: string
-    idTipoOperacion: number
-    organizacion: string
-    clanFamiliar: string
-    esRevisado: boolean
-    esPositivo: boolean
-    esAprehendido: boolean
-    esArrestado: boolean
-    esIcia: boolean
-    esParteDiario: boolean
-    fechaHoraIngreso: string
-    usuario: string
-}
+
 
 export interface CasoOperativoDetalle {
     caso: CasoResumen
-    operativo: OperativoDetalle
-}
-
-// ── Tipos del endpoint POST /operativos/caso/:idCaso ────────────────────────
-
-export interface OperativoPayload {
-    numeroOperativo: string
-    idTipoRelevancia: number
-    idTipoDenuncia: number
-    idTipoPenal: number
-    fechaOperativo: string
-    idDepartamento: number
-    idProvincia: number
-    idLocalidad: number
-    lugar: string
-    idCategoriaOperativo: number
-    idItemOperativo: number
-    idUnidad: number
-    idDistrital: number
-    idGrupo: number
-    mando: string
-    coordX: number
-    coordY: number
-    idPlanOperacion: number
-    breveDetalle: string
-    descripcion: string
-    idTipoOperacion: number
-    organizacion: string
-    clanFamiliar: string
+    operativo: OperativoPayload | null
 }
 
 // ── Servicio ─────────────────────────────────────────────────────────────────
@@ -109,8 +41,17 @@ export const GestionOperativosDatosGeneralesService = {
     crearOperativo(
         idCaso: number,
         payload: OperativoPayload
-    ): Promise<RespuestaApi<OperativoDetalle>> {
+    ): Promise<RespuestaApi<CasoOperativoDetalle>> {
         return Servicios.post({
+            url: `${BASE_OPERATIVOS}/caso/${idCaso}`,
+            body: payload,
+        })
+    },
+    actualizarOperativo(
+        idCaso: number,
+        payload: OperativoPayload
+    ): Promise<RespuestaApi<CasoOperativoDetalle>> {
+        return Servicios.patch({
             url: `${BASE_OPERATIVOS}/caso/${idCaso}`,
             body: payload,
         })
