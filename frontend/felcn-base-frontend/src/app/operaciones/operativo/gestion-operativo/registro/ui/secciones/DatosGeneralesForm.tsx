@@ -11,8 +11,10 @@ import { FormInputDate, FormInputDropdown, FormInputText } from '@/components/fo
 import type { optionType } from '@/components/form/FormInputDropdown'
 import Mapa from '@/components/mapas/Mapa'
 import { useParametricas } from '@/hooks'
+import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
 import type { CasoOperativoDetalle } from '@/services/operativos'
+import type { OperativoPayload } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 
 interface DatosGeneralesFormProps {
@@ -97,6 +99,32 @@ const DEFAULT_VALUES: DatosGeneralesPayload = {
 
 const toStringOrEmpty = (value: unknown) =>
     value == null ? '' : String(value)
+
+const toNumberOrZero = (value: unknown): number => {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
+const toIsoDate = (value: unknown): string => {
+    if (value instanceof Date) {
+        return value.toISOString()
+    }
+    const parsed = new Date(String(value ?? ''))
+    if (Number.isNaN(parsed.getTime())) {
+        return new Date().toISOString()
+    }
+    return parsed.toISOString()
+}
+
+const toDms = (coordinate: number) => {
+    const abs = Math.abs(coordinate)
+    const grados = Math.trunc(abs)
+    const minFloat = (abs - grados) * 60
+    const min = Math.trunc(minFloat)
+    const seg = (minFloat - min) * 60
+
+    return { grados, min, seg }
+}
 
 const mapCasoOperativoToForm = (
     data: CasoOperativoDetalle
@@ -240,18 +268,17 @@ export function DatosGeneralesForm({
         label: String(p.nombre ?? ''),
     }))
 
-    const opcionesOperativoEn: optionType[] = [
-        { id: 'op-centros', label: 'Centros', value: 'centros' },
-        { id: 'op-via-publica', label: 'Via Pública', value: 'via_publica' },
-        { id: 'op-domicilio', label: 'Domicilio', value: 'domicilio' },
-        { id: 'op-vehiculo', label: 'Vehículo', value: 'vehiculo' },
-        { id: 'op-aeropuerto', label: 'Aeropuerto / Terminal', value: 'aeropuerto' },
-    ]
+    const opcionesOperativoEn: optionType[] = planesOperaciones.map((p) => ({
+        id: String(p.id),
+        value: String(p.id),
+        label: String(p.nombre ?? ''),
+    }))
 
-    const opcionesTipoLugar: optionType[] = [
-        { id: 'lug-rural', label: 'Rural', value: 'rural' },
-        { id: 'lug-urbano', label: 'Urbano', value: 'urbano' },
-    ]
+    const opcionesTipoLugar: optionType[] = tiposOperacion.map((t) => ({
+        id: String(t.id),
+        value: String(t.id),
+        label: String(t.descripcion ?? ''),
+    }))
 
     const latitud = watch('latitud')
     const longitud = watch('longitud')
@@ -334,6 +361,51 @@ export function DatosGeneralesForm({
 
     const handleGuardar = async () => {
         const payload = getValues()
+        const idCaso = Number(searchParams.get('id') ?? 0)
+
+        if (idCaso > 0) {
+            const latitud = Number(payload.latitud) || 0
+            const longitud = Number(payload.longitud) || 0
+            const dmsX = toDms(latitud)
+            const dmsY = toDms(longitud)
+
+            const payloadOperativo: OperativoPayload = {
+                numeroOperativo: payload.numeroOperativo,
+                idTipoRelevancia: toNumberOrZero(payload.relevancia),
+                idTipoDenuncia: toNumberOrZero(payload.tipoDenuncia),
+                idTipoPenal: toNumberOrZero(payload.tipoPenal),
+                fechaOperativo: toIsoDate(payload.fechaHora),
+                idDepartamento: toNumberOrZero(payload.departamento),
+                idProvincia: toNumberOrZero(payload.provincia),
+                idLocalidad: toNumberOrZero(payload.municipio),
+                lugar: payload.localidad,
+                idCategoriaOperativo: toNumberOrZero(payload.tipoLugar),
+                idItemOperativo: toNumberOrZero(payload.operativoEn),
+                idUnidad: toNumberOrZero(payload.unidad),
+                idDistrital: toNumberOrZero(payload.distrital),
+                idGrupo: toNumberOrZero(payload.grupo),
+                mando: payload.mando,
+                gradosX: dmsX.grados,
+                minX: dmsX.min,
+                segX: dmsX.seg,
+                gradosY: dmsY.grados,
+                minY: dmsY.min,
+                segY: dmsY.seg,
+                idPlanOperacion: toNumberOrZero(payload.plan),
+                breveDetalle: payload.detalleOperativo,
+                descripcion: payload.detalleOperativo,
+                idTipoOperacion: toNumberOrZero(payload.tipoOperativo),
+                organizacion: payload.organizacion,
+                clanFamiliar: payload.clan,
+            }
+
+            await GestionOperativosDatosGeneralesService.crearOperativo(
+                idCaso,
+                payloadOperativo
+            )
+            return
+        }
+
         await onGuardar(payload as unknown as SeccionPayloadBase)
     }
 
@@ -394,6 +466,10 @@ export function DatosGeneralesForm({
         autoRecuperadoRef.current = true
         void handleRecuperar()
     }, [parametricasBaseListas, handleRecuperar])
+
+    if (!parametricasBaseListas) {
+        return <FullScreenLoading mensaje="Cargando parámetros del formulario..." />
+    }
 
     return (
         <Card title="DATOS GENERALES">

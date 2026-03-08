@@ -1,8 +1,8 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { RespuestaApi, SeccionPayload } from './types'
+import type { RespuestaApi } from './types'
 
-const BASE = `${Constantes.baseUrl}/gestion-operativo`
+
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 // ── Tipos del endpoint GET /operativos/casos/usuario/:idUsuario ──────────────
@@ -101,25 +101,12 @@ export interface OperativoPayload {
 // ── Servicio ─────────────────────────────────────────────────────────────────
 
 export const GestionOperativosDatosGeneralesService = {
-    obtener(idGestionOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.get({ url: `${BASE}/${idGestionOperativo}/seccion-1` })
-    },
-
-    guardar(
-        idGestionOperativo: number,
-        payload: SeccionPayload
-    ): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.post({
-            url: `${BASE}/${idGestionOperativo}/seccion-1`,
-            body: payload,
-        })
-    },
 
     obtenerPorUsuario(
         idUsuario: number
     ): Promise<RespuestaApi<CasoOperativoDetalle>> {
         return Servicios.get({
-            url: `${BASE_OPERATIVOS}/casos/usuario/${idUsuario}`,
+            url: `${BASE_OPERATIVOS}/caso/${idUsuario}`,
         })
     },
 
