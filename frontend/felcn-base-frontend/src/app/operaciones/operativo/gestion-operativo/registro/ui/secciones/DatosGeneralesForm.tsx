@@ -52,8 +52,8 @@ interface DatosGeneralesPayload {
     tipoOperativo: string
     clan: string
     organizacion: string
-    latitud: number
-    longitud: number
+    coordX: number
+    coordY: number
     detalleOperativo: string
 }
 
@@ -92,8 +92,8 @@ const DEFAULT_VALUES: DatosGeneralesPayload = {
     tipoOperativo: '',
     clan: '',
     organizacion: '',
-    latitud: 16.48,
-    longitud: -65.31936111111111,
+    coordX: -17.78507,
+    coordY: -63.1761788,
     detalleOperativo: '',
 }
 
@@ -114,16 +114,6 @@ const toIsoDate = (value: unknown): string => {
         return new Date().toISOString()
     }
     return parsed.toISOString()
-}
-
-const toDms = (coordinate: number) => {
-    const abs = Math.abs(coordinate)
-    const grados = Math.trunc(abs)
-    const minFloat = (abs - grados) * 60
-    const min = Math.trunc(minFloat)
-    const seg = (minFloat - min) * 60
-
-    return { grados, min, seg }
 }
 
 const mapCasoOperativoToForm = (
@@ -158,8 +148,8 @@ const mapCasoOperativoToForm = (
     tipoOperativo: toStringOrEmpty(data.operativo?.idTipoOperacion),
     clan: data.operativo?.clanFamiliar ?? '',
     organizacion: data.operativo?.organizacion ?? '',
-    latitud: data.operativo?.coordX ?? DEFAULT_VALUES.latitud,
-    longitud: data.operativo?.coordY ?? DEFAULT_VALUES.longitud,
+    coordX: data.operativo?.coordX ?? DEFAULT_VALUES.coordX,
+    coordY: data.operativo?.coordY ?? DEFAULT_VALUES.coordY,
     detalleOperativo:
         data.operativo?.breveDetalle ?? data.operativo?.descripcion ?? '',
 })
@@ -198,9 +188,10 @@ export function DatosGeneralesForm({
         cargarGrupos,
     } = useParametricas()
 
-    const { control, watch, setValue, getValues, reset } = useForm<DatosGeneralesPayload>({
+    const { control, watch, setValue, getValues, reset, trigger } = useForm<DatosGeneralesPayload>({
         defaultValues: DEFAULT_VALUES,
     })
+    const reglaObligatorio = { required: 'Campo obligatorio' }
 
     const opcionesDepartamento: optionType[] = departamentos.map((d) => ({
         id: String(d.id),
@@ -280,8 +271,8 @@ export function DatosGeneralesForm({
         label: String(t.descripcion ?? ''),
     }))
 
-    const latitud = watch('latitud')
-    const longitud = watch('longitud')
+    const coordX = watch('coordX')
+    const coordY = watch('coordY')
     const departamentoSeleccionado = watch('departamento')
     const provinciaSeleccionada = watch('provincia')
     const unidadSeleccionada = watch('unidad')
@@ -355,20 +346,20 @@ export function DatosGeneralesForm({
     }, [distritalSeleccionado, setValue, cargarGrupos])
 
     const handleMapClick = (center: [number, number]) => {
-        setValue('latitud', center[0])
-        setValue('longitud', center[1])
+        setValue('coordX', center[0])
+        setValue('coordY', center[1])
     }
 
     const handleGuardar = async () => {
+        const esValido = await trigger()
+        if (!esValido) {
+            return
+        }
+
         const payload = getValues()
         const idCaso = Number(searchParams.get('id') ?? 0)
 
         if (idCaso > 0) {
-            const latitud = Number(payload.latitud) || 0
-            const longitud = Number(payload.longitud) || 0
-            const dmsX = toDms(latitud)
-            const dmsY = toDms(longitud)
-
             const payloadOperativo: OperativoPayload = {
                 numeroOperativo: payload.numeroOperativo,
                 idTipoRelevancia: toNumberOrZero(payload.relevancia),
@@ -385,12 +376,8 @@ export function DatosGeneralesForm({
                 idDistrital: toNumberOrZero(payload.distrital),
                 idGrupo: toNumberOrZero(payload.grupo),
                 mando: payload.mando,
-                gradosX: dmsX.grados,
-                minX: dmsX.min,
-                segX: dmsX.seg,
-                gradosY: dmsY.grados,
-                minY: dmsY.min,
-                segY: dmsY.seg,
+                coordX: toNumberOrZero(payload.coordX),
+                coordY: toNumberOrZero(payload.coordY),
                 idPlanOperacion: toNumberOrZero(payload.plan),
                 breveDetalle: payload.detalleOperativo,
                 descripcion: payload.detalleOperativo,
@@ -478,37 +465,37 @@ export function DatosGeneralesForm({
                     <h3 className="text-base font-semibold">{titulo}</h3>
                 </div>
 
-                <FormInputText id="numeroOperativo" name="numeroOperativo" label="Numero de Operativo" control={control} />
-                <FormInputDropdown id="relevancia" name="relevancia" label="Relevancia" control={control} options={opcionesRelevancia} />
+                <FormInputText id="numeroOperativo" name="numeroOperativo" label="Numero de Operativo" control={control} rules={reglaObligatorio} />
+                <FormInputDropdown id="relevancia" name="relevancia" label="Relevancia" control={control} options={opcionesRelevancia} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="numeroInforme" name="numeroInforme" label="Numero de Informe" control={control} />
-                <FormInputText id="nombreCaso" name="nombreCaso" label="Nombre del Caso" control={control} />
+                <FormInputText id="numeroInforme" name="numeroInforme" label="Numero de Informe" control={control} rules={reglaObligatorio} />
+                <FormInputText id="nombreCaso" name="nombreCaso" label="Nombre del Caso" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputDropdown id="unidad" name="unidad" label="Unidad" control={control} options={opcionesUnidadEst} />
-                <FormInputDropdown id="distrital" name="distrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} />
-                <FormInputDropdown id="grupo" name="grupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} />
+                <FormInputDropdown id="unidad" name="unidad" label="Unidad" control={control} options={opcionesUnidadEst} rules={reglaObligatorio} />
+                <FormInputDropdown id="distrital" name="distrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="grupo" name="grupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} rules={reglaObligatorio} />
 
-                <FormInputText id="quienRealiza" name="quienRealiza" label="Quien Realiza la Solicitud" control={control} />
-                <FormInputText id="celularRealiza" name="celularRealiza" label="Nro. Celular" control={control} />
+                <FormInputText id="quienRealiza" name="quienRealiza" label="Quien Realiza la Solicitud" control={control} rules={reglaObligatorio} />
+                <FormInputText id="celularRealiza" name="celularRealiza" label="Nro. Celular" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="asignado" name="asignado" label="Asignado al Caso" control={control} />
-                <FormInputText id="celularAsignado" name="celularAsignado" label="Nro. Celular" control={control} />
+                <FormInputText id="asignado" name="asignado" label="Asignado al Caso" control={control} rules={reglaObligatorio} />
+                <FormInputText id="celularAsignado" name="celularAsignado" label="Nro. Celular" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="fiscal" name="fiscal" label="Fiscal Asignado" control={control} />
-                <FormInputText id="celularFiscal" name="celularFiscal" label="Nro. Celular" control={control} />
+                <FormInputText id="fiscal" name="fiscal" label="Fiscal Asignado" control={control} rules={reglaObligatorio} />
+                <FormInputText id="celularFiscal" name="celularFiscal" label="Nro. Celular" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputDropdown id="tipoDenuncia" name="tipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} />
-                <FormInputDropdown id="tipoPenal" name="tipoPenal" label="Tipo Penal" control={control} options={opcionesTipoPenal} />
-                <FormInputDate id="fechaHora" name="fechaHora" label="Fecha y Hora del Operativo" control={control} />
+                <FormInputDropdown id="tipoDenuncia" name="tipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} rules={reglaObligatorio} />
+                <FormInputDropdown id="tipoPenal" name="tipoPenal" label="Tipo Penal" control={control} options={opcionesTipoPenal} rules={reglaObligatorio} />
+                <FormInputDate id="fechaHora" name="fechaHora" label="Fecha y Hora del Operativo" control={control} rules={reglaObligatorio} />
 
-                <FormInputDropdown id="departamento" name="departamento" label="Departamento" control={control} options={opcionesDepartamento} />
-                <FormInputDropdown id="provincia" name="provincia" label="Provincia" control={control} options={opcionesProvicia} disabled={opcionesProvicia.length === 0} />
-                <FormInputDropdown id="municipio" name="municipio" label="Municipio" control={control} options={opcionesMunicipio} disabled={opcionesMunicipio.length === 0} />
+                <FormInputDropdown id="departamento" name="departamento" label="Departamento" control={control} options={opcionesDepartamento} rules={reglaObligatorio} />
+                <FormInputDropdown id="provincia" name="provincia" label="Provincia" control={control} options={opcionesProvicia} disabled={opcionesProvicia.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="municipio" name="municipio" label="Municipio" control={control} options={opcionesMunicipio} disabled={opcionesMunicipio.length === 0} rules={reglaObligatorio} />
 
                 <div className="col-span-1 lg:col-span-3">
                     <FormInputText
@@ -516,37 +503,38 @@ export function DatosGeneralesForm({
                         name="localidad"
                         label="En la localidad, comunidad, direccion (Zona, Calle, Avenida, Barrio)"
                         control={control}
+                        rules={reglaObligatorio}
                     />
                 </div>
 
-                <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} />
-                <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Categoria Operativo" control={control} options={opcionesTipoLugar} />
-                <FormInputText id="mando" name="mando" label="Al Mando de" control={control} />
+                <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} rules={reglaObligatorio} />
+                <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Categoria Operativo" control={control} options={opcionesTipoLugar} rules={reglaObligatorio} />
+                <FormInputText id="mando" name="mando" label="Al Mando de" control={control} rules={reglaObligatorio} />
 
-                <FormInputDropdown id="plan" name="plan" label="Plan de Operaciones" control={control} options={opcionesPlan} />
-                <FormInputDropdown id="tipoOperativo" name="tipoOperativo" label="El Operativo es de Tipo" control={control} options={opcionesTipoOperativo} />
+                <FormInputDropdown id="plan" name="plan" label="Plan de Operaciones" control={control} options={opcionesPlan} rules={reglaObligatorio} />
+                <FormInputDropdown id="tipoOperativo" name="tipoOperativo" label="El Operativo es de Tipo" control={control} options={opcionesTipoOperativo} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="clan" name="clan" label="Clan Familiar" control={control} />
-                <FormInputText id="organizacion" name="organizacion" label="Organizacion Criminal" control={control} />
+                <FormInputText id="clan" name="clan" label="Clan Familiar" control={control} rules={reglaObligatorio} />
+                <FormInputText id="organizacion" name="organizacion" label="Organizacion Criminal" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
                 <div className="col-span-1 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormInputText id="latitud" name="latitud" label="Latitud" control={control} />
-                    <FormInputText id="longitud" name="longitud" label="Longitud" control={control} />
+                    <FormInputText id="coordX" name="coordX" label="Latitud" control={control} rules={reglaObligatorio} />
+                    <FormInputText id="coordY" name="coordY" label="Longitud" control={control} rules={reglaObligatorio} />
                 </div>
 
                 <div className="col-span-1 lg:col-span-3 mt-4">
                     <Mapa
                         id="mapa-operativo-seccion-1"
                         mapRef={mapRef}
-                        centro={[Number(latitud) || -17.4, Number(longitud) || -66.15]}
-                        zoom={15}
+                        centro={[Number(coordX) || -17.78507, Number(coordY) || -63.1761788]}
+                        zoom={15.63}
                         height={400}
                         onClick={handleMapClick}
                         markers={
-                            latitud && longitud ? (
-                                <Marker position={[Number(latitud), Number(longitud)]} icon={ICON} />
+                            coordX && coordY ? (
+                                <Marker position={[Number(coordX), Number(coordY)]} icon={ICON} />
                             ) : null
                         }
                     />
@@ -558,6 +546,7 @@ export function DatosGeneralesForm({
                         name="detalleOperativo"
                         label="Breve Detalle del Operativo"
                         control={control}
+                        rules={reglaObligatorio}
                         multiline={true}
                         rows={6}
                     />

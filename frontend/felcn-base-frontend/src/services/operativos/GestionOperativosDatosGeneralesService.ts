@@ -84,12 +84,8 @@ export interface OperativoPayload {
     idDistrital: number
     idGrupo: number
     mando: string
-    gradosX: number
-    minX: number
-    segX: number
-    gradosY: number
-    minY: number
-    segY: number
+    coordX: number
+    coordY: number
     idPlanOperacion: number
     breveDetalle: string
     descripcion: string

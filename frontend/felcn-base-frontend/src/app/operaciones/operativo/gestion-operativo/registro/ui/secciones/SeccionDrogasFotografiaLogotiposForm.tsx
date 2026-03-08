@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { DataTable } from 'mantine-datatable'
 import { Card } from '@/components/ui/Card'
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { FormInputDropdown, FormInputText } from '@/components/form'
 import FormInputFile from '@/components/form/FormInputFile'
 import IconTrashLines from '@/components/Icon/IconTrashLines'
+import { SiiiLookupsService } from '@/services/parametricas'
+import { GestionOperativoCatalogosService } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 
 interface SeccionFormProps {
@@ -23,7 +25,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     onRecuperar,
     cargando = false,
 }: SeccionFormProps) {
-    const { control, getValues } = useForm({
+    const { control, getValues, setValue, watch } = useForm({
         defaultValues: {
             tipoDroga: 'marihuana',
             estadoDroga: 'seco',
@@ -46,6 +48,177 @@ export function SeccionDrogasFotografiaLogotiposForm({
             fotoLogo: [],
         },
     })
+
+    const [opcionesTiposDroga, setOpcionesTiposDroga] = useState([
+        { id: 'marihuana', label: 'Marihuana', value: 'marihuana' },
+        { id: 'cocaina', label: 'Cocaina', value: 'cocaina' },
+    ])
+    const [opcionesEstadosDroga, setOpcionesEstadosDroga] = useState([
+        { id: 'seco', label: 'Seco', value: 'seco' },
+        { id: 'humedo', label: 'Humedo', value: 'humedo' },
+    ])
+    const [opcionesFormasTransporte, setOpcionesFormasTransporte] = useState([
+        { id: 'terrestre', label: 'Terrestre', value: 'terrestre' },
+        { id: 'aereo', label: 'Aereo', value: 'aereo' },
+        { id: 'fluvial', label: 'Fluvial', value: 'fluvial' },
+    ])
+    const tipoDrogaSeleccionada = watch('tipoDroga')
+
+    useEffect(() => {
+        let activo = true
+
+        const cargarTiposDroga = async () => {
+            try {
+                const res = await SiiiLookupsService.obtenerTiposDroga()
+                if (!activo || !res?.finalizado) return
+
+                const opciones = (res.datos ?? [])
+                    .map((item: Record<string, unknown>, index: number) => {
+                        const idRaw = item.id ?? item.codigo ?? item.valor ?? item.value ?? index
+                        const valueRaw = item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
+                        const labelRaw =
+                            item.descripcion ??
+                            item.nombre ??
+                            item.detalle ??
+                            item.label ??
+                            valueRaw
+
+                        return {
+                            id: String(idRaw),
+                            value: String(valueRaw),
+                            label: String(labelRaw),
+                        }
+                    })
+                    .filter((opcion) => opcion.value.length > 0)
+
+                if (opciones.length > 0) {
+                    setOpcionesTiposDroga(opciones)
+                    const tipoActual = String(getValues('tipoDroga') ?? '')
+                    if (!opciones.some((opcion) => opcion.value === tipoActual)) {
+                        setValue('tipoDroga', opciones[0].value)
+                    }
+                }
+            } catch {
+                // Mantener fallback local si la consulta falla
+            }
+        }
+
+        void cargarTiposDroga()
+
+        return () => {
+            activo = false
+        }
+    }, [getValues, setValue])
+
+    useEffect(() => {
+        let activo = true
+
+        const cargarFormasTransporte = async () => {
+            try {
+                const res = await SiiiLookupsService.obtenerFormasTransporte()
+                if (!activo || !res?.finalizado) return
+
+                const opciones = (res.datos ?? [])
+                    .map((item: Record<string, unknown>, index: number) => {
+                        const idRaw = item.id ?? item.codigo ?? item.valor ?? item.value ?? index
+                        const valueRaw = item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
+                        const labelRaw =
+                            item.descripcion ??
+                            item.nombre ??
+                            item.detalle ??
+                            item.label ??
+                            valueRaw
+
+                        return {
+                            id: String(idRaw),
+                            value: String(valueRaw),
+                            label: String(labelRaw),
+                        }
+                    })
+                    .filter((opcion) => opcion.value.length > 0)
+
+                if (opciones.length > 0) {
+                    setOpcionesFormasTransporte(opciones)
+                    const formaActual = String(getValues('formaTransporte') ?? '')
+                    if (!opciones.some((opcion) => opcion.value === formaActual)) {
+                        setValue('formaTransporte', opciones[0].value)
+                    }
+                }
+            } catch {
+                // Mantener fallback local si la consulta falla
+            }
+        }
+
+        void cargarFormasTransporte()
+
+        return () => {
+            activo = false
+        }
+    }, [getValues, setValue])
+
+    useEffect(() => {
+        let activo = true
+
+        const cargarEstadosDroga = async () => {
+            const tipoSeleccionado = String(tipoDrogaSeleccionada ?? '')
+            const idDesdeValor = Number(tipoSeleccionado)
+            const idDesdeOpcion = Number(
+                opcionesTiposDroga.find((opcion) => opcion.value === tipoSeleccionado)?.id
+            )
+            const idTipoDroga =
+                Number.isFinite(idDesdeValor) && idDesdeValor > 0
+                    ? idDesdeValor
+                    : Number.isFinite(idDesdeOpcion) && idDesdeOpcion > 0
+                        ? idDesdeOpcion
+                        : 0
+
+            if (idTipoDroga <= 0) {
+                return
+            }
+
+            try {
+                const res = await GestionOperativoCatalogosService.obtenerEstadosDroga(
+                    idTipoDroga
+                )
+                if (!activo || !res?.finalizado) return
+
+                const opciones = (res.datos ?? [])
+                    .map((item: Record<string, unknown>, index: number) => {
+                        const idRaw = item.id ?? item.codigo ?? item.valor ?? item.value ?? index
+                        const valueRaw = item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
+                        const labelRaw =
+                            item.descripcion ??
+                            item.nombre ??
+                            item.detalle ??
+                            item.label ??
+                            valueRaw
+
+                        return {
+                            id: String(idRaw),
+                            value: String(valueRaw),
+                            label: String(labelRaw),
+                        }
+                    })
+                    .filter((opcion) => opcion.value.length > 0)
+
+                if (opciones.length > 0) {
+                    setOpcionesEstadosDroga(opciones)
+                    const estadoActual = String(getValues('estadoDroga') ?? '')
+                    if (!opciones.some((opcion) => opcion.value === estadoActual)) {
+                        setValue('estadoDroga', opciones[0].value)
+                    }
+                }
+            } catch {
+                // Mantener fallback local si la consulta falla
+            }
+        }
+
+        void cargarEstadosDroga()
+
+        return () => {
+            activo = false
+        }
+    }, [getValues, opcionesTiposDroga, setValue, tipoDrogaSeleccionada])
 
     const [items, setItems] = useState<any[]>([])
 
@@ -93,20 +266,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                         name="tipoDroga"
                         label="Tipo de Droga"
                         control={control}
-                        options={[
-                            { id: 'marihuana', label: 'Marihuana', value: 'marihuana' },
-                            { id: 'cocaina', label: 'Cocaina', value: 'cocaina' },
-                        ]}
+                        options={opcionesTiposDroga}
                     />
                     <FormInputDropdown
                         id="estadoDroga"
                         name="estadoDroga"
                         label="Estado de la Droga"
                         control={control}
-                        options={[
-                            { id: 'seco', label: 'Seco', value: 'seco' },
-                            { id: 'humedo', label: 'Humedo', value: 'humedo' },
-                        ]}
+                        options={opcionesEstadosDroga}
                     />
                     <FormInputText
                         id="cocainaLiquida"
@@ -174,11 +341,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                         name="formaTransporte"
                         label="Forma de Transporte"
                         control={control}
-                        options={[
-                            { id: 'terrestre', label: 'Terrestre', value: 'terrestre' },
-                            { id: 'aereo', label: 'Aereo', value: 'aereo' },
-                            { id: 'fluvial', label: 'Fluvial', value: 'fluvial' },
-                        ]}
+                        options={opcionesFormasTransporte}
                     />
                     <FormInputDropdown
                         id="procedencia"
