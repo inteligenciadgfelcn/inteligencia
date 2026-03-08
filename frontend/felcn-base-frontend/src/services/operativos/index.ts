@@ -1,0 +1,7 @@
+export * from './types'
+export * from './GestionOperativoService'
+export * from './GestionOperativosDatosGeneralesService'
+export * from './GestionOperativoSeccion2Service'
+export * from './GestionOperativoSeccion3Service'
+export * from './GestionOperativoSeccion4Service'
+export * from './GestionOperativoSeccion5Service'

@@ -114,7 +114,7 @@ export const FormularioOperativo = () => {
     const opcionesPlan: optionType[] = planesOperaciones.map((p) => ({
         id: String(p.id),
         value: String(p.id),
-        label: String(p.nombre ?? ''),
+        label: String(p.descripcion ?? ''),
     }))
 
     const { control, watch, setValue, getValues } = useForm({
@@ -433,7 +433,7 @@ export const FormularioOperativo = () => {
 
                     {/* Row 10 */}
                     <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} />
-                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Categoria Operativo" control={control} options={opcionesTipoLugar} />
+                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Tipo Lugar" control={control} options={opcionesTipoLugar} />
                     <FormInputText id="mando" name="mando" label="Al Mando de" control={control} />
 
                     {/* Row 11 */}
