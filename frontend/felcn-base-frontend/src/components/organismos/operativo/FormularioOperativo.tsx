@@ -28,14 +28,24 @@ export const FormularioOperativo = () => {
         departamentos,
         provincias,
         localidades,
+        tiposRelevancia,
+        tiposDenuncia,
+        tiposPenal,
+        tiposOperacion,
+        planesOperaciones,
+        unidadesSiii,
         cargarDepartamentos,
         cargarProvincias,
         cargarLocalidades,
+        cargarTiposRelevancia,
+        cargarTiposDenuncia,
+        cargarTiposPenal,
+        cargarTiposOperacion,
+        cargarPlanesOperaciones,
+        cargarUnidadesSiii,
         // estructura
-        unidadesEstructura,
         distritales,
         grupos,
-        cargarUnidadesEstructura,
         cargarDistritales,
         cargarGrupos,
     } = useParametricas()
@@ -59,7 +69,7 @@ export const FormularioOperativo = () => {
     }))
 
     // ── Estructura (Unidad → Distrital → Grupo) ───────────────────────────────
-    const opcionesUnidadEst: optionType[] = unidadesEstructura.map((u) => ({
+    const opcionesUnidadEst: optionType[] = unidadesSiii.map((u) => ({
         id: String(u.id),
         value: String(u.id),
         label: u.descripcion,
@@ -77,10 +87,40 @@ export const FormularioOperativo = () => {
         label: g.descripcion,
     }))
 
+    const opcionesRelevancia: optionType[] = tiposRelevancia.map((r) => ({
+        id: String(r.id),
+        value: String(r.id),
+        label: String(r.descripcion ?? ''),
+    }))
+
+    const opcionesTipoDenuncia: optionType[] = tiposDenuncia.map((t) => ({
+        id: String(t.id),
+        value: String(t.id),
+        label: String(t.descripcion ?? ''),
+    }))
+
+    const opcionesTipoPenal: optionType[] = tiposPenal.map((t) => ({
+        id: String(t.id),
+        value: String(t.id),
+        label: String(t.descripcion ?? ''),
+    }))
+
+    const opcionesTipoOperativo: optionType[] = tiposOperacion.map((t) => ({
+        id: String(t.id),
+        value: String(t.id),
+        label: String(t.descripcion ?? ''),
+    }))
+
+    const opcionesPlan: optionType[] = planesOperaciones.map((p) => ({
+        id: String(p.id),
+        value: String(p.id),
+        label: String(p.nombre ?? ''),
+    }))
+
     const { control, watch, setValue, getValues } = useForm({
         defaultValues: {
             numeroOperativo: 'CB-UM-363/25',
-            relevancia: 'ninguno',
+            relevancia: '',
             numeroInforme: '',
             nombreCaso: '',
             unidad: '',
@@ -93,7 +133,7 @@ export const FormularioOperativo = () => {
             fiscal: 'DRA. MARIANA ALBORNOZ DURAN',
             celularFiscal: '78456883',
             tipoDenuncia: 'de_oficio',
-            tipoPenal: 'trafico',
+            tipoPenal: '',
             fechaHora: new Date('2025-11-27T04:00:00'), // Example date
             departamento: '',
             provincia: '',
@@ -102,8 +142,8 @@ export const FormularioOperativo = () => {
             operativoEn: 'centros',
             tipoLugar: 'rural',
             mando: 'CAP. OSCAR DANIEL CHOQUE ALARCON',
-            plan: 'vias_seguras',
-            tipoOperativo: 'patrullaje',
+            plan: '',
+            tipoOperativo: '',
             clan: '',
             organizacion: '',
             latitud: 16.48,
@@ -249,26 +289,6 @@ export const FormularioOperativo = () => {
 
 
     // ── Opciones por campo ────────────────────────────────────────────────────
-    const opcionesRelevancia = [
-        { id: 'rel-ninguno', label: 'Ninguno', value: 'ninguno' },
-        { id: 'rel-alta', label: 'Alta', value: 'alta' },
-        { id: 'rel-media', label: 'Media', value: 'media' },
-        { id: 'rel-baja', label: 'Baja', value: 'baja' },
-    ]
-
-    const opcionesTipoDenuncia = [
-        { id: 'den-oficio', label: 'De Oficio', value: 'de_oficio' },
-        { id: 'den-ciudadana', label: 'Denuncia Ciudadana', value: 'ciudadana' },
-        { id: 'den-inteligencia', label: 'Trabajo de Inteligencia', value: 'inteligencia' },
-    ]
-
-    const opcionesTipoPenal = [
-        { id: 'pen-trafico', label: 'Tráfico (Art. 48 Ley 1008)', value: 'trafico' },
-        { id: 'pen-microtrafico', label: 'Micro Tráfico (Art. 51 Ley 1008)', value: 'microtrafico' },
-        { id: 'pen-consumo', label: 'Consumo (Art. 49 Ley 1008)', value: 'consumo' },
-        { id: 'pen-elaboracion', label: 'Elaboración (Art. 50 Ley 1008)', value: 'elaboracion' },
-    ]
-
     const opcionesOperativoEn = [
         { id: 'op-centros', label: 'Centros', value: 'centros' },
         { id: 'op-via-publica', label: 'Via Pública', value: 'via_publica' },
@@ -280,19 +300,6 @@ export const FormularioOperativo = () => {
     const opcionesTipoLugar = [
         { id: 'lug-rural', label: 'Rural', value: 'rural' },
         { id: 'lug-urbano', label: 'Urbano', value: 'urbano' },
-    ]
-
-    const opcionesPlan = [
-        { id: 'plan-vias', label: 'Vias Seguras', value: 'vias_seguras' },
-        { id: 'plan-integral', label: 'Plan Integral', value: 'integral' },
-        { id: 'plan-fronteras', label: 'Control Fronteras', value: 'fronteras' },
-    ]
-
-    const opcionesTipoOperativo = [
-        { id: 'top-patrullaje', label: 'Patrullaje', value: 'patrullaje' },
-        { id: 'top-allanamiento', label: 'Allanamiento', value: 'allanamiento' },
-        { id: 'top-control', label: 'Control de Carreteras', value: 'control' },
-        { id: 'top-investigacion', label: 'Investigación', value: 'investigacion' },
     ]
 
 
@@ -307,7 +314,12 @@ export const FormularioOperativo = () => {
     // ── Efectos en cascada: Geografía ────────────────────────────────────────
     useEffect(() => {
         cargarDepartamentos()
-        cargarUnidadesEstructura()
+        cargarTiposRelevancia()
+        cargarTiposDenuncia()
+        cargarTiposPenal()
+        cargarTiposOperacion()
+        cargarPlanesOperaciones()
+        cargarUnidadesSiii()
     }, [])
 
     useEffect(() => {
@@ -421,7 +433,7 @@ export const FormularioOperativo = () => {
 
                     {/* Row 10 */}
                     <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} />
-                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Tipo Lugar" control={control} options={opcionesTipoLugar} />
+                    <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Categoria Operativo" control={control} options={opcionesTipoLugar} />
                     <FormInputText id="mando" name="mando" label="Al Mando de" control={control} />
 
                     {/* Row 11 */}

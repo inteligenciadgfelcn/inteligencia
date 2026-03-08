@@ -3,10 +3,10 @@ import {
     AsigLookupsService,
     Continente,
     Departamento,
-    Distrital,
     EstructuraService,
-    Grupo,
+    LookupBasico,
     Localidad,
+    PlanOperacion,
     Provincia,
     SiiiLookupsService,
     UnidadAsig,
@@ -31,6 +31,12 @@ export function useParametricas() {
     const [departamentos, setDepartamentos] = useState<Departamento[]>([])
     const [provincias, setProvincias] = useState<Provincia[]>([])
     const [localidades, setLocalidades] = useState<Localidad[]>([])
+    const [tiposRelevancia, setTiposRelevancia] = useState<LookupBasico[]>([])
+    const [tiposDenuncia, setTiposDenuncia] = useState<LookupBasico[]>([])
+    const [tiposPenal, setTiposPenal] = useState<LookupBasico[]>([])
+    const [tiposOperacion, setTiposOperacion] = useState<LookupBasico[]>([])
+    const [planesOperaciones, setPlanesOperaciones] = useState<PlanOperacion[]>([])
+    const [unidadesSiii, setUnidadesSiii] = useState<LookupBasico[]>([])
 
     // ── asig-lookups ──────────────────────────────────────────────────────────
     const [unidadesAsig, setUnidadesAsig] = useState<UnidadAsig[]>([])
@@ -39,8 +45,8 @@ export function useParametricas() {
     const [unidadesEstructura, setUnidadesEstructura] = useState<
         UnidadEstructura[]
     >([])
-    const [distritales, setDistritales] = useState<Distrital[]>([])
-    const [grupos, setGrupos] = useState<Grupo[]>([])
+    const [distritales, setDistritales] = useState<LookupBasico[]>([])
+    const [grupos, setGrupos] = useState<LookupBasico[]>([])
 
     // ── métodos ───────────────────────────────────────────────────────────────
 
@@ -87,6 +93,66 @@ export function useParametricas() {
         }
     }, [])
 
+    const cargarTiposRelevancia = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerTiposRelevancia()
+            if (res.finalizado) setTiposRelevancia(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
+    const cargarTiposDenuncia = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerTiposDenuncia()
+            if (res.finalizado) setTiposDenuncia(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
+    const cargarTiposPenal = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerTiposPenal()
+            if (res.finalizado) setTiposPenal(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
+    const cargarTiposOperacion = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerTiposOperacion()
+            if (res.finalizado) setTiposOperacion(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
+    const cargarPlanesOperaciones = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerPlanesOperaciones()
+            if (res.finalizado) setPlanesOperaciones(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
+    const cargarUnidadesSiii = useCallback(async () => {
+        setCargando(true)
+        try {
+            const res = await SiiiLookupsService.obtenerUnidades()
+            if (res.finalizado) setUnidadesSiii(res.datos)
+        } finally {
+            setCargando(false)
+        }
+    }, [])
+
     const cargarUnidadesAsig = useCallback(async () => {
         setCargando(true)
         try {
@@ -112,7 +178,7 @@ export function useParametricas() {
         setDistritales([])
         setGrupos([])
         try {
-            const res = await EstructuraService.obtenerDistritales(idUnidad)
+            const res = await SiiiLookupsService.obtenerDistritalesPorUnidad(idUnidad)
             if (res.finalizado) setDistritales(res.datos)
         } finally {
             setCargando(false)
@@ -123,7 +189,7 @@ export function useParametricas() {
         setCargando(true)
         setGrupos([])
         try {
-            const res = await EstructuraService.obtenerGrupos(idDistrital)
+            const res = await SiiiLookupsService.obtenerGruposPorDistrital(idDistrital)
             if (res.finalizado) setGrupos(res.datos)
         } finally {
             setCargando(false)
@@ -137,10 +203,22 @@ export function useParametricas() {
         departamentos,
         provincias,
         localidades,
+        tiposRelevancia,
+        tiposDenuncia,
+        tiposPenal,
+        tiposOperacion,
+        planesOperaciones,
+        unidadesSiii,
         cargarContinentes,
         cargarDepartamentos,
         cargarProvincias,
         cargarLocalidades,
+        cargarTiposRelevancia,
+        cargarTiposDenuncia,
+        cargarTiposPenal,
+        cargarTiposOperacion,
+        cargarPlanesOperaciones,
+        cargarUnidadesSiii,
         // asig-lookups
         unidadesAsig,
         cargarUnidadesAsig,
