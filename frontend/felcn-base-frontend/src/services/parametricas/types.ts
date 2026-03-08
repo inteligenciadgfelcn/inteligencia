@@ -39,6 +39,18 @@ export interface Localidad {
     provincia: Pick<Provincia, 'id' | 'idDepartamento' | 'descripcion'>
 }
 
+export interface LookupBasico {
+    id: number | string
+    descripcion: string
+    [key: string]: unknown
+}
+
+export interface PlanOperacion {
+    id: number
+    nombre: string
+    gestion: string
+}
+
 // ─── asig-lookups ──────────────────────────────────────────────────────────────
 
 export interface UnidadAsig {
