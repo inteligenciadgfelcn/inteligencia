@@ -1,7 +1,7 @@
 # GUÍA FRONTEND — MÓDULO OPERATIVOS
 
-**Versión:** 4.2 — Corrección campos `caso` y `numeroOperativo` ingresado por usuario
-**Fecha:** 2026-03-07
+**Versión:** 4.4 — Sección DROGAS: URLs de imagen en respuestas de lista (Opción A)
+**Fecha:** 2026-03-08
 **Base URL:** `http://localhost:3000/api`
 
 ---
@@ -14,8 +14,9 @@
 4. [Tabla completa: API lookup → Combo del formulario](#4-tabla-completa-api-lookup--combo-del-formulario)
 5. [Flujo completo NUEVO operativo — curl](#5-flujo-completo-nuevo-operativo--curl)
 6. [Flujo completo EDICIÓN operativo — curl](#6-flujo-completo-edición-operativo--curl)
-7. [Reglas de negocio y validaciones](#7-reglas-de-negocio-y-validaciones)
-8. [Referencia de endpoints](#8-referencia-de-endpoints)
+7. [Flujo DROGAS: CRUD + imágenes vía URL](#7-flujo-drogas-crud--imágenes-vía-url)
+8. [Reglas de negocio y validaciones](#8-reglas-de-negocio-y-validaciones)
+9. [Referencia de endpoints](#9-referencia-de-endpoints)
 
 ---
 
@@ -148,13 +149,7 @@ El body de POST/PATCH corresponde 1:1 con los campos editables de este grupo (ve
       "idDistrital": 5,
       "idGrupo": 12,
       "mando": "CMDTE. JUAN MAMANI QUISPE",
-      "gradosX": 17,
-      "minX": 23,
-      "segX": 45.5,
       "coordX": -17.395972,
-      "gradosY": 66,
-      "minY": 9,
-      "segY": 22.1,
       "coordY": -66.156139,
       "idPlanOperacion": 1,
       "breveDetalle": "Intervención en vivienda con laboratorio clandestino",
@@ -162,12 +157,6 @@ El body de POST/PATCH corresponde 1:1 con los campos editables de este grupo (ve
       "idTipoOperacion": 2,
       "organizacion": "CARTEL LOCAL",
       "clanFamiliar": "FAMILIA MAMANI",
-      "esRevisado": false,
-      "esPositivo": true,
-      "esAprehendido": false,
-      "esArrestado": false,
-      "esIcia": true,
-      "esParteDiario": false,
       "fechaHoraIngreso": "2024-03-15T14:22:00.000Z",
       "usuario": "SISTEMA"
     }
@@ -216,16 +205,14 @@ con el GET es:
 | `idDistrital` | **sí** | `cboDistrital` | dependiente de unidad; disabled tras guardar |
 | `idGrupo` | **sí** | `cboGrupo` | dependiente de distrital; disabled tras guardar |
 | `mando` | **sí** | `txtmando` | — |
-| `gradosX`, `minX`, `segX` | **sí** | `txtgradosx`, `txtminx`, `txtsegx` | DMS — el backend calcula `coordX` |
-| `gradosY`, `minY`, `segY` | **sí** | `txtgradosy`, `txtminy`, `txtsegy` | DMS — el backend calcula `coordY` |
-| `coordX`, `coordY` | no | — | calculados por el backend, solo en GET |
+| `coordX` | **sí** | `txtcoordenadax` | Latitud decimal negativa (ej. `-17.395972`) |
+| `coordY` | **sí** | `txtcoordenaday` | Longitud decimal negativa (ej. `-66.156139`) |
 | `idPlanOperacion` | **sí** | `cboplanoperaciones` | — |
 | `breveDetalle` | **sí** | `txtbrevedetalle` | opcional |
 | `descripcion` | **sí** | `txtdescripcion` | — |
 | `idTipoOperacion` | **sí** | `cbotipoop` | — |
 | `organizacion` | **sí** | `txtorganizacion` | — |
 | `clanFamiliar` | **sí** | `txtclanfamiliar` | opcional |
-| `esRevisado`, `esPositivo`, etc. | no | — | flags de sistema, defaults en backend |
 | `fechaHoraIngreso`, `usuario` | no | — | gestionados por el backend |
 
 ---
@@ -481,7 +468,7 @@ curl "$BASE/operativos/catalogos/caracteristicas/10"
 
 ```bash
 # numeroOperativo = txtnroinf (ingresado por el usuario, ≠ txtnroop del caso).
-# gradosX/minX/segX van en el body — el backend calcula coordX/coordY.
+# coordX/coordY en decimal negativo (latitud/longitud).
 curl -X POST "$BASE/operativos/caso/$CASO_ID" \
   -H "Content-Type: application/json" \
   -d '{
@@ -500,8 +487,8 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID" \
     "idDistrital": 5,
     "idGrupo": 12,
     "mando": "CMDTE. JUAN MAMANI QUISPE",
-    "gradosX": 17, "minX": 23, "segX": 45.5,
-    "gradosY": 66, "minY": 9,  "segY": 22.1,
+    "coordX": -17.395972,
+    "coordY": -66.156139,
     "idPlanOperacion": 1,
     "breveDetalle": "Intervención en vivienda con laboratorio clandestino",
     "descripcion": "Durante operación de inteligencia se detectó...",
@@ -518,18 +505,40 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID" \
 
 ```bash
 # === DROGAS ===
+# POST es multipart/form-data — incluye las dos fotos opcionales
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "idTipoDroga": 1, "idEstadoDroga": 3, "cantidadGramos": 1500.5,
-    "cantidadUnidades": 0, "idFormaTransporte": 2,
-    "idPaisProcedencia": 70, "idPaisDestino": 70,
-    "observaciones": "Droga en estado sólido prensado"
-  }'
+  -F "idTipoDroga=1" \
+  -F "idEstadoDroga=3" \
+  -F "cantidadGramos=1500.5" \
+  -F "cantidadUnidades=0" \
+  -F "idFormaTransporte=2" \
+  -F "idPaisProcedencia=70" \
+  -F "idPaisDestino=70" \
+  -F "observaciones=Droga en estado sólido prensado" \
+  -F "pruebaCampo=@/ruta/foto_prueba.jpg" \
+  -F "pesaje=@/ruta/foto_pesaje.jpg"
+# → 201: { "datos": { "id": "101", ... } }
+DROGA_ID=101
 
-curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"
+curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"   # resumen total
 
-curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/101"
+# Ver fotos de la droga (al expandir fila)
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/prueba-campo"
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/pesaje"
+
+# Logotipos de la droga (al expandir fila)
+curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos"
+
+# Crear logotipo desde la modal
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+  -F "imagen=CALI-01" \
+  -F "descripcionLogo=Marca cartel en embalaje" \
+  -F "organizacion=CARTEL CALI" \
+  -F "blanco=Mercado europeo" \
+  -F "observacion=Encontrado en bolsas negras" \
+  -F "fotografia=@/ruta/logo.jpg"
+
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
 
 # === SUSTANCIAS SÓLIDAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-solidas" \
@@ -588,19 +597,15 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/galeria" \
   -F "descripcion=Vista exterior del laboratorio" \
   -F "foto=@/ruta/foto.jpg"
 
-# === LOGOTIPOS ===
-curl -X POST "$BASE/operativos/caso/$CASO_ID/logotipos" \
-  -F "numeroCaso=CASO-2024-007" \
-  -F "numeroOperativo=CB-IC-42/26" \
-  -F "fechaOperativo=2024-03-15T10:00:00" \
-  -F "nombreCaso=OPERACIÓN ALBA" \
-  -F "descripcion=Logotipo en embalaje" \
-  -F "imagen=IMAGEN_BASE64" \
-  -F "descripcionLogo=Marca cartel" \
-  -F "idTipoDroga=1" \
-  -F "idPaisOrigen=70" \
-  -F "idPaisDestino=70" \
+# === LOGOTIPOS (nuevo flujo — desde la modal de una droga específica) ===
+# El backend resuelve idTipoDroga, idPaisOrigen, idPaisDestino desde la droga.
+# Ver sección 7 para flujo completo.
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+  -F "imagen=CALI-01" \
+  -F "descripcionLogo=Marca cartel en embalaje" \
   -F "organizacion=CARTEL LOCAL" \
+  -F "blanco=Mercado europeo" \
+  -F "observacion=Encontrado en bolsas negras" \
   -F "fotografia=@/ruta/logo.jpg"
 ```
 
@@ -653,8 +658,8 @@ curl "$BASE/operativos/caso/$CASO_ID"
 #       "idDistrital": 5,
 #       "idGrupo": 12,
 #       "mando": "CMDTE. JUAN MAMANI QUISPE",
-#       "gradosX": 17, "minX": 23, "segX": 45.5, "coordX": -17.395972,
-#       "gradosY": 66, "minY": 9,  "segY": 22.1,  "coordY": -66.156139,
+#       "coordX": -17.395972,
+#       "coordY": -66.156139,
 #       "idPlanOperacion": 1,
 #       "breveDetalle": "...",
 #       "descripcion": "...",
@@ -723,8 +728,8 @@ curl -X PATCH "$BASE/operativos/caso/$CASO_ID" \
     "idDistrital": 5,
     "idGrupo": 12,
     "mando": "CMDTE. JUAN MAMANI QUISPE",
-    "gradosX": 17, "minX": 23, "segX": 45.5,
-    "gradosY": 66, "minY": 9,  "segY": 22.1,
+    "coordX": -17.395972,
+    "coordY": -66.156139,
     "idPlanOperacion": 1,
     "breveDetalle": "Actualización: segundo laboratorio encontrado",
     "descripcion": "Durante operación de inteligencia se detectó...",
@@ -761,7 +766,520 @@ curl "$BASE/operativos/caso/$CASO_ID/logotipos/1/foto"
 
 ---
 
-## 7. Reglas de negocio y validaciones
+## 7. DROGAS — CRUD + imágenes vía URL
+
+### 7.1 Estructura visual
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES                     │
+│                                                              │
+│  Tipo droga [combo] Estado [combo]  Cantidad Tn[ ] Kg[ ]    │
+│                                              g [ ] Mg[ ]    │
+│  Forma transporte [combo]  Procedencia [combo]  Destino [combo]│
+│  Foto Prueba Campo [file]   Foto Pesaje [file]               │
+│  [Guardar droga]                                             │
+│                                                              │
+│  ┌──────┬──────────┬──────┬────────┬──────────┬────────────┐ │
+│  │  #   │ Tipo     │ Cant │ Origen │  Fotos   │  Acciones  │ │
+│  ├──────┼──────────┼──────┼────────┼──────────┼────────────┤ │
+│  │  1   │ Cocaína  │2500g │ Chile  │ [PC][PS] │    [🗑]    │ │
+│  │  2   │Marihuana │ 500g │ Perú   │  [PC]    │    [🗑]    │ │
+│  └──────┴──────────┴──────┴────────┴──────────┴────────────┘ │
+│                                                              │
+│  LOGOTIPOS                                                   │
+│  ┌──────┬──────────┬────────────┬───────────┬─────────────┐  │
+│  │  #   │ Código   │ Descrip.   │   Foto    │  Acciones   │  │
+│  ├──────┼──────────┼────────────┼───────────┼─────────────┤  │
+│  │  1   │ CALI-01  │ Marca...   │  [img]    │    [🗑]     │  │
+│  └──────┴──────────┴────────────┴───────────┴─────────────┘  │
+│  [+ Nuevo logotipo]                                          │
+└──────────────────────────────────────────────────────────────┘
+```
+
+> `[PC]` = botón/thumbnail Prueba de Campo · `[PS]` = Pesaje.
+> Se renderizan solo si `urlFotoPruebaCampo` / `urlFotoPesaje` no es `null`.
+
+---
+
+### 7.2 Mecanismo de carga de la grilla de drogas
+
+La grilla se alimenta de `GET /caso/:idCaso/drogas`. Este endpoint devuelve
+metadatos de cada droga **más los campos de imagen** (`tiene*` + `url*`).
+Los buffers binarios **nunca se incluyen** en el JSON.
+
+#### Cuándo cargar la grilla
+
+| Momento | Acción |
+|---|---|
+| Al abrir el formulario con `operativo !== null` | `GET /caso/:idCaso/drogas` |
+| Tras guardar una nueva droga (POST 201) | Refrescar: `GET /caso/:idCaso/drogas` |
+| Tras eliminar una droga (DELETE 200) | Refrescar: `GET /caso/:idCaso/drogas` |
+| Al abrir formulario nuevo (`operativo === null`) | No cargar — la grilla estará vacía |
+
+#### Estructura de cada elemento en la lista
+
+```json
+{
+  "id": "101",
+  "idOperativo": "42",
+  "idTipoDroga": 1,
+  "idEstadoDroga": 3,
+  "cantidadGramos": 1500.5,
+  "cantidadUnidades": 0,
+  "idFormaTransporte": 2,
+  "idPaisProcedencia": 70,
+  "idPaisDestino": 70,
+  "observaciones": "Droga en estado sólido prensado",
+  "fechaHoraIngreso": "2024-03-15T14:22:00.000Z",
+  "usuario": "SISTEMA",
+  "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+  "urlFotoPesaje": null
+}
+```
+
+> `url*` es `null` si no hay imagen guardada. Usar para habilitar/deshabilitar
+> el botón de visualización en la grilla sin hacer una petición extra.
+>
+> Los campos `idTipoDroga`, `idEstadoDroga`, etc. son IDs numéricos. El frontend
+> los resuelve contra los lookups estáticos (ver sección 3) para mostrar texto.
+
+#### Curl
+
+```bash
+BASE="http://localhost:3000/api"
+CASO_ID=7
+
+curl "$BASE/operativos/caso/$CASO_ID/drogas"
+# → {
+#     "finalizado": true,
+#     "datos": [
+#       {
+#         "id": "101", "idTipoDroga": 1, "cantidadGramos": 1500.5,
+#         "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+#         "urlFotoPesaje": null
+#       }
+#     ]
+#   }
+# Si el operativo no existe aún → datos: []  (no es error)
+```
+
+---
+
+### 7.3 CRUD drogas
+
+#### CREATE — POST multipart/form-data
+
+##### Por qué multipart y no JSON
+
+El formulario de alta envía **datos + 2 archivos de imagen** en una sola petición.
+`Content-Type: application/json` no puede transportar binarios. La alternativa
+correcta es `multipart/form-data`, donde cada campo (texto o archivo) va en una
+parte separada del body.
+
+##### Cómo construye el frontend el multipart
+
+```javascript
+// El usuario completa el form y selecciona los archivos
+const formData = new FormData()
+
+// Campos de texto — mismos nombres que el DTO
+formData.append('idTipoDroga',      '1')
+formData.append('idEstadoDroga',    '3')
+formData.append('cantidadGramos',   '1500.5')  // ya convertido a gramos (ver sección 8)
+formData.append('cantidadUnidades', '0')
+formData.append('idFormaTransporte','2')
+formData.append('idPaisProcedencia','70')
+formData.append('idPaisDestino',    '70')
+formData.append('observaciones',    'Droga en estado sólido prensado')
+
+// Archivos — nombres exactos que espera NestJS en FileFieldsInterceptor
+const filePrueba = document.querySelector('#inputPruebaCampo').files[0]
+const filePesaje = document.querySelector('#inputPesaje').files[0]
+if (filePrueba) formData.append('pruebaCampo', filePrueba)  // campo opcional
+if (filePesaje) formData.append('pesaje',      filePesaje)  // campo opcional
+
+// Enviar — NO poner Content-Type manualmente; el browser lo genera con el boundary
+const res = await fetch(`/api/operativos/caso/${idCaso}/drogas`, {
+  method: 'POST',
+  body: formData,
+  // headers: NO agregar Content-Type — fetch lo pone solo con el boundary correcto
+})
+const { datos } = await res.json()
+// datos.urlFotoPruebaCampo → URL si se subió la foto, null si no
+```
+
+##### Cómo lo recibe NestJS
+
+El controller usa `FileFieldsInterceptor` que registra dos campos de archivo:
+
+```
+pruebaCampo  → guardado en droga.foto_prueba_campo (bytea en PostgreSQL)
+pesaje       → guardado en droga.foto_pesaje        (bytea en PostgreSQL)
+```
+
+Los campos de texto llegan en `@Body()` como strings que NestJS valida con el DTO.
+Los archivos llegan en `@UploadedFiles()` como objetos `Multer.File` con `.buffer`.
+Ambos son **opcionales**: si el usuario no adjunta una imagen, el campo queda `null`.
+
+##### Curl equivalente
+
+```bash
+# -F "campo=valor"         → campo de texto en multipart
+# -F "campo=@/ruta/foto"   → archivo binario en multipart
+
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
+  -F "idTipoDroga=1" \
+  -F "idEstadoDroga=3" \
+  -F "cantidadGramos=1500.5" \
+  -F "cantidadUnidades=0" \
+  -F "idFormaTransporte=2" \
+  -F "idPaisProcedencia=70" \
+  -F "idPaisDestino=70" \
+  -F "observaciones=Droga en estado sólido prensado" \
+  -F "pruebaCampo=@/home/user/fotos/prueba_campo.jpg;type=image/jpeg" \
+  -F "pesaje=@/home/user/fotos/pesaje.jpg;type=image/jpeg"
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "101",
+#     "idOperativo": "42",
+#     "idTipoDroga": 1,
+#     "cantidadGramos": 1500.5,
+#     "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+#     "urlFotoPesaje": "/api/operativos/caso/7/drogas/101/fotos/pesaje",
+#     "fechaHoraIngreso": "2024-03-15T14:22:00.000Z"
+#   }
+# }
+DROGA_ID=101
+
+# Sin imágenes (también válido):
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
+  -F "idTipoDroga=1" \
+  -F "idEstadoDroga=3" \
+  -F "cantidadGramos=500" \
+  -F "cantidadUnidades=0" \
+  -F "idFormaTransporte=2" \
+  -F "idPaisProcedencia=70" \
+  -F "idPaisDestino=70"
+# → urlFotoPruebaCampo: null, urlFotoPesaje: null
+```
+
+#### READ — GET lista (grilla)
+
+```bash
+curl "$BASE/operativos/caso/$CASO_ID/drogas"
+# → 200 con array enriquecido (ver sección 7.2)
+```
+
+#### DELETE con cascade
+
+Al eliminar una droga, el backend borra **en orden**:
+
+```
+1. DELETE logotipos WHERE id_droga = :idDroga   ← todos los logos de esa droga
+2. DELETE droga WHERE id_droga = :idDroga
+```
+
+Esto garantiza integridad sin depender de constraints de BD. El frontend
+simplemente llama al DELETE y refresca la grilla.
+
+```bash
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
+# → 200: { "finalizado": true }
+# Después: refrescar GET /caso/:idCaso/drogas
+```
+
+> **No existe PATCH para drogas**: coherente con el formulario original.
+> Si el usuario necesita corregir un registro, lo elimina y lo vuelve a crear.
+
+---
+
+### 7.4 Cómo mostrar imágenes con autenticación (patrón Blob URL)
+
+Las imágenes viven en endpoints protegidos por JWT (`Authorization: Bearer ...`).
+El browser **no puede enviar headers personalizados** cuando usa `<img src="...">`.
+La solución es usar `fetch` + `URL.createObjectURL()`:
+
+```javascript
+/**
+ * Carga una imagen protegida por JWT y la asigna a un elemento <img>.
+ * @param {string} url    - URL relativa del endpoint de imagen
+ * @param {string} token  - JWT del usuario autenticado
+ * @param {HTMLImageElement} imgEl - Elemento <img> donde mostrar la foto
+ */
+async function cargarImagenProtegida(url, token, imgEl) {
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) return  // sin imagen — dejar placeholder
+
+  const blob = await res.blob()
+  const blobUrl = URL.createObjectURL(blob)
+  imgEl.src = blobUrl
+
+  // Liberar memoria cuando el elemento se destruya
+  imgEl.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true })
+}
+
+// Uso:
+const token = localStorage.getItem('jwt')
+
+// Para una droga con urlFotoPruebaCampo !== null:
+await cargarImagenProtegida(droga.urlFotoPruebaCampo, token,
+  document.querySelector(`#img-pc-${droga.id}`))
+
+await cargarImagenProtegida(droga.urlFotoPesaje, token,
+  document.querySelector(`#img-ps-${droga.id}`))
+```
+
+> **Importante:** Solo llamar `cargarImagenProtegida` si el campo `tiene*`
+> correspondiente es `true`. Evita peticiones innecesarias a endpoints que
+> devolverían un buffer vacío.
+
+```javascript
+// Patrón correcto al renderizar una fila de droga:
+function renderFilaDroga(droga) {
+  // ...render datos de texto...
+
+  if (droga.urlFotoPruebaCampo) {
+    cargarImagenProtegida(droga.urlFotoPruebaCampo, token, document.querySelector(`#img-pc-${droga.id}`))
+  }
+  if (droga.urlFotoPesaje) {
+    cargarImagenProtegida(droga.urlFotoPesaje, token, document.querySelector(`#img-ps-${droga.id}`))
+  }
+}
+```
+
+> **Nota durante desarrollo (guards desactivados):** Si los guards JWT están
+> comentados (`// TODO: Reactivar guards para producción`), se puede usar
+> `<img src="...url...">` directamente sin Blob URL. Al activar los guards
+> en producción se requiere el patrón `fetch + createObjectURL` de arriba.
+
+---
+
+### 7.5 CRUD logotipos
+
+#### Estructura de la respuesta `GET /caso/:idCaso/logotipos`
+
+Al igual que drogas, la lista de logotipos incluye campos `tiene*` + `url*`:
+
+```json
+{
+  "id": "5",
+  "idOperativo": "42",
+  "idDroga": "101",
+  "imagen": "CALI-01",
+  "descripcionLogo": "Marca utilizada por el cartel...",
+  "organizacion": "CARTEL CALI",
+  "idTipoDroga": 1,
+  "idPaisOrigen": 70,
+  "idPaisDestino": 70,
+  "blanco": "Mercado europeo",
+  "observacion": "Logotipo encontrado en embalaje...",
+  "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
+  "urlFotografia": "/api/operativos/caso/7/logotipos/5/foto"
+}
+```
+
+```bash
+curl "$BASE/operativos/caso/$CASO_ID/logotipos"
+# → { "finalizado": true, "datos": [ {...}, {...} ] }
+# Si no hay logotipos → datos: []
+```
+
+#### CREATE — POST logotipo
+
+El backend resuelve automáticamente `idTipoDroga`, `idPaisOrigen`, `idPaisDestino`
+desde la droga asociada — el frontend **no los envía**.
+
+```bash
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+  -F "imagen=CALI-01" \
+  -F "descripcionLogo=Marca utilizada por el cartel para identificar cargamentos" \
+  -F "organizacion=CARTEL CALI" \
+  -F "blanco=Mercado europeo" \
+  -F "observacion=Logotipo encontrado en embalaje de plástico negro" \
+  -F "fotografia=@/home/user/fotos/logo_cali.jpg;type=image/jpeg"
+
+# Respuesta 201:
+# {
+#   "finalizado": true,
+#   "datos": {
+#     "id": "5",
+#     "idDroga": "101",
+#     "idOperativo": "42",
+#     "imagen": "CALI-01",
+#     "descripcionLogo": "Marca utilizada...",
+#     "organizacion": "CARTEL CALI",
+#     "idTipoDroga": 1,
+#     "idPaisOrigen": 70,
+#     "idPaisDestino": 70,
+#     "urlFotografia": "/api/operativos/caso/7/logotipos/5/foto",
+#     "fechaHoraIngreso": "2024-03-15T14:30:00.000Z"
+#   }
+# }
+LOGO_ID=5
+```
+
+**FormData en el frontend:**
+
+```javascript
+async function guardarLogotipo(idCaso, idDroga, datos, archivoFoto) {
+  const body = new FormData()
+  body.append('imagen',        datos.imagen)
+  body.append('descripcionLogo', datos.descripcionLogo)
+  body.append('organizacion',  datos.organizacion)
+  if (datos.blanco)      body.append('blanco',      datos.blanco)
+  if (datos.observacion) body.append('observacion', datos.observacion)
+  if (datos.enlace)      body.append('enlace',      datos.enlace)
+  if (archivoFoto)       body.append('fotografia',  archivoFoto)  // File object
+
+  const res = await fetch(`/api/operativos/caso/${idCaso}/drogas/${idDroga}/logotipos`, {
+    method: 'POST',
+    body,  // NO poner Content-Type — fetch lo genera con el boundary correcto
+  })
+  if (res.ok) {
+    cerrarModal()
+    await refrescarLogotipos(idCaso)
+  }
+}
+```
+
+#### DELETE — eliminar un logotipo
+
+```bash
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/logotipos/$LOGO_ID"
+# → 200: { "finalizado": true }
+```
+
+> **No existe PATCH para logotipos**: si el usuario necesita corregir un logo,
+> lo elimina y lo vuelve a crear.
+
+#### Resumen CRUD logotipos
+
+| Operación | Método | Endpoint | Body |
+|---|---|---|---|
+| Crear (desde droga) | POST | `/caso/:idCaso/drogas/:idDroga/logotipos` | multipart: campos + `fotografia` |
+| Listar todos del caso | GET | `/caso/:idCaso/logotipos` | — |
+| Listar por droga (futuro) | GET | `/caso/:idCaso/drogas/:idDroga/logotipos` | — |
+| Ver foto | GET | `/caso/:idCaso/logotipos/:id/foto` | — (binario) |
+| Eliminar | DELETE | `/caso/:idCaso/logotipos/:id` | — |
+
+---
+
+### 7.6 Pseudocódigo frontend completo
+
+```javascript
+const TOKEN = localStorage.getItem('jwt')
+
+// ─── Función helper: imagen con auth ─────────────────────────────────────
+async function cargarImagenProtegida(url, imgEl) {
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } })
+  if (!res.ok) return
+  const blobUrl = URL.createObjectURL(await res.blob())
+  imgEl.src = blobUrl
+  imgEl.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true })
+}
+
+// ─── Inicialización — carga grilla drogas y logotipos ────────────────────
+async function inicializarSeccionDrogas(idCaso) {
+  const [drogas, logotipos] = await Promise.all([
+    fetch(`/api/operativos/caso/${idCaso}/drogas`).then(r => r.json()).then(r => r.datos),
+    fetch(`/api/operativos/caso/${idCaso}/logotipos`).then(r => r.json()).then(r => r.datos),
+  ])
+  renderGrillaDrogas(drogas)
+  renderGrillaLogotipos(logotipos)
+}
+
+// ─── Render grilla — muestra thumbnails de fotos ─────────────────────────
+function renderGrillaDrogas(drogas) {
+  drogas.forEach(droga => {
+    // ...render fila de texto (tipo, cantidad, etc.)...
+
+    if (droga.urlFotoPruebaCampo) {
+      const imgPC = document.querySelector(`#img-pc-${droga.id}`)
+      cargarImagenProtegida(droga.urlFotoPruebaCampo, imgPC)
+    }
+    if (droga.urlFotoPesaje) {
+      const imgPS = document.querySelector(`#img-ps-${droga.id}`)
+      cargarImagenProtegida(droga.urlFotoPesaje, imgPS)
+    }
+  })
+}
+
+function renderGrillaLogotipos(logotipos) {
+  logotipos.forEach(logo => {
+    // ...render fila de texto (código, descripción, etc.)...
+
+    if (logo.urlFotografia) {
+      const imgLogo = document.querySelector(`#img-logo-${logo.id}`)
+      cargarImagenProtegida(logo.urlFotografia, imgLogo)
+    }
+  })
+}
+
+// ─── Guardar droga ────────────────────────────────────────────────────────
+async function guardarDroga(idCaso, formValues, archivos) {
+  const body = new FormData()
+  Object.entries(formValues).forEach(([k, v]) => body.append(k, v))
+  if (archivos.pruebaCampo) body.append('pruebaCampo', archivos.pruebaCampo)
+  if (archivos.pesaje)      body.append('pesaje',      archivos.pesaje)
+
+  const res = await fetch(`/api/operativos/caso/${idCaso}/drogas`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${TOKEN}` },
+    body,
+  })
+  if (res.ok) await inicializarSeccionDrogas(idCaso)
+}
+
+// ─── Eliminar droga (cascade automático en backend) ──────────────────────
+async function eliminarDroga(idCaso, idDroga) {
+  if (!confirm('¿Eliminar esta droga y todos sus logotipos?')) return
+  await fetch(`/api/operativos/caso/${idCaso}/drogas/${idDroga}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  })
+  await inicializarSeccionDrogas(idCaso)
+}
+
+// ─── Guardar logotipo ─────────────────────────────────────────────────────
+async function guardarLogotipo(idCaso, idDroga, datos, archivoFoto) {
+  const body = new FormData()
+  body.append('imagen',          datos.imagen)
+  body.append('descripcionLogo', datos.descripcionLogo)
+  body.append('organizacion',    datos.organizacion)
+  if (datos.blanco)      body.append('blanco',      datos.blanco)
+  if (datos.observacion) body.append('observacion', datos.observacion)
+  if (datos.enlace)      body.append('enlace',      datos.enlace)
+  if (archivoFoto)       body.append('fotografia',  archivoFoto)
+
+  const res = await fetch(
+    `/api/operativos/caso/${idCaso}/drogas/${idDroga}/logotipos`,
+    { method: 'POST', headers: { Authorization: `Bearer ${TOKEN}` }, body }
+  )
+  if (res.ok) {
+    cerrarModal()
+    await inicializarSeccionDrogas(idCaso)
+  }
+}
+
+// ─── Eliminar logotipo ────────────────────────────────────────────────────
+async function eliminarLogotipo(idCaso, idLogotipo) {
+  await fetch(`/api/operativos/caso/${idCaso}/logotipos/${idLogotipo}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${TOKEN}` },
+  })
+  await inicializarSeccionDrogas(idCaso)
+}
+```
+
+---
+
+## 8. Reglas de negocio y validaciones
 
 ### Comportamiento por operación
 
@@ -781,13 +1299,11 @@ curl "$BASE/operativos/caso/$CASO_ID/logotipos/1/foto"
 - Campos `cbounidad`, `cboDistrital`, `cboGrupo` y `txtnroinf` quedan `disabled` tras el `POST /caso/:idCaso` exitoso (201).
 - `txtnroop` (`caso.numeroOperativo`) es siempre read-only — es el nro. de referencia del caso, no se envía al backend.
 - `txtnroinf` (`dto.numeroOperativo`) es editado por el usuario y **sí va en el body** de POST/PATCH.
-- `coordX`/`coordY` son calculados por el backend desde `gradosX/minX/segX` — nunca en el body.
+- `coordX`/`coordY` van en el body — el frontend ya los entrega en decimal.
 
 ### Conversiones que hace el frontend
 
 ```javascript
-// GPS: enviar grados/min/seg, el backend calcula: coordX = (g + m/60 + s/3600) * -1
-
 // Peso de drogas: convertir a gramos
 const cantidadGramos =
   (toneladas  || 0) * 1_000_000 +
@@ -814,7 +1330,7 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-## 8. Referencia de endpoints
+## 9. Referencia de endpoints
 
 ### Formato de response estándar
 
@@ -844,16 +1360,21 @@ numeroDocumento = numeroDocumento || 'SN'
 |---|---|---|
 | GET | `/operativos` | Listar todos (admin) |
 | GET | `/operativos/:id` | Por ID interno (debug) |
-| PATCH | `/operativos/:id/inactivar` | Marcar como revisado (admin) |
 
 ### Endpoints — Sub-entidades (`/caso/:idCaso/...`)
 
 | Método | Endpoint | Descripción |
 |---|---|---|
-| GET | `/operativos/caso/:idCaso/drogas` | Listar (`[]` si no hay operativo) |
+| GET | `/operativos/caso/:idCaso/drogas` | Listar — alimenta la grilla (`[]` si no hay operativo) |
 | GET | `/operativos/caso/:idCaso/drogas/pesaje` | Resumen peso total |
-| POST | `/operativos/caso/:idCaso/drogas` | Agregar |
-| DELETE | `/operativos/caso/:idCaso/drogas/:id` | Eliminar |
+| POST | `/operativos/caso/:idCaso/drogas` | Crear (**multipart**: datos + `pruebaCampo?` + `pesaje?`) |
+| DELETE | `/operativos/caso/:idCaso/drogas/:id` | Eliminar **en cascada** (borra sus logotipos primero) |
+| GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/prueba-campo` | Foto prueba de campo (binaria — usar como `<img src>`) |
+| GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/pesaje` | Foto cuantificación/pesaje (binaria — usar como `<img src>`) |
+| GET | `/operativos/caso/:idCaso/drogas/:idDroga/logotipos` | Listar logos de esa droga (panel expandido) |
+| POST | `/operativos/caso/:idCaso/drogas/:idDroga/logotipos` | Crear logo para droga (**multipart** + `fotografia?`) |
+| GET | `/operativos/caso/:idCaso/logotipos/:id/foto` | Foto de un logotipo (binaria — usar como `<img src>`) |
+| DELETE | `/operativos/caso/:idCaso/logotipos/:id` | Eliminar logotipo |
 | GET | `/operativos/caso/:idCaso/sustancias-solidas` | Listar |
 | POST | `/operativos/caso/:idCaso/sustancias-solidas` | Agregar |
 | DELETE | `/operativos/caso/:idCaso/sustancias-solidas/:id` | Eliminar |
@@ -883,6 +1404,8 @@ numeroDocumento = numeroDocumento || 'SN'
 
 | Método | Endpoint |
 |---|---|
+| GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/prueba-campo` |
+| GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/pesaje` |
 | GET | `/operativos/caso/:idCaso/galeria/:id/thumbnail` |
 | GET | `/operativos/caso/:idCaso/galeria/:id/medium` |
 | GET | `/operativos/caso/:idCaso/galeria/:id/full` |
@@ -934,5 +1457,5 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-**Última actualización:** 2026-03-07
-**Versión:** 4.1 — Eliminado `esNuevo` (usar `operativo === null`), eliminadas `estadisticas`, alineados campos GET/POST.
+**Última actualización:** 2026-03-08
+**Versión:** 4.3 — Sección 7 nueva: flujo DROGAS con grilla expandible y modal logotipos. POST drogas ahora es multipart. Nuevos endpoints: fotos por droga, logotipos por droga.
