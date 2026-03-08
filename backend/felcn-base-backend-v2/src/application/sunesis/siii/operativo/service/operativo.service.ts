@@ -31,6 +31,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  CreateLogotipoDrogaDto,
 } from '../dto'
 
 @Injectable()
@@ -120,21 +121,10 @@ export class OperativoService extends BaseService {
       throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
     }
 
-    const coordX = (dto.gradosX + dto.minX / 60 + dto.segX / 3600) * -1
-    const coordY = (dto.gradosY + dto.minY / 60 + dto.segY / 3600) * -1
-
     const operativo = new Operativo({
       ...dto,
       idCaso,
       fechaOperativo: new Date(dto.fechaOperativo),
-      coordX,
-      coordY,
-      esRevisado: false,
-      esPositivo: true,
-      esAprehendido: false,
-      esArrestado: false,
-      esIcia: true,
-      esParteDiario: false,
       usuario,
     })
     return this.operativoRepository.crearOperativo(operativo)
@@ -152,20 +142,7 @@ export class OperativoService extends BaseService {
     const idOperativo = await this.resolverIdOperativo(idCaso)
     const operativo = await this.buscarPorId(idOperativo)
 
-    const data: Partial<Operativo> = { ...dto, fechaOperativo: new Date(dto.fechaOperativo) }
-
-    // Recalcular coordenadas
-    const gx = data.gradosX ?? operativo.gradosX
-    const mx = data.minX ?? operativo.minX
-    const sx = data.segX ?? operativo.segX
-    data.coordX = (gx + mx / 60 + sx / 3600) * -1
-
-    const gy = data.gradosY ?? operativo.gradosY
-    const my = data.minY ?? operativo.minY
-    const sy = data.segY ?? operativo.segY
-    data.coordY = (gy + my / 60 + sy / 3600) * -1
-
-    Object.assign(operativo, data)
+    Object.assign(operativo, { ...dto, fechaOperativo: new Date(dto.fechaOperativo) })
     return this.operativoRepository.actualizarOperativo(operativo)
   }
 
@@ -196,32 +173,56 @@ export class OperativoService extends BaseService {
     return operativo
   }
 
-  async inactivar(id: string, usuarioModificacion: string): Promise<Operativo> {
-    const operativo = await this.buscarPorId(id)
-    operativo.esRevisado = true
-    return this.operativoRepository.actualizarOperativo(operativo)
-  }
 
   // ==================== DROGAS ====================
 
   async agregarDroga(
     idCaso: string,
     data: CreateDrogaDto,
+    pruebaCampo: Buffer,
+    pesaje: Buffer,
     usuario: string
-  ): Promise<Droga> {
+  ): Promise<any> {
     const idOperativo = await this.resolverIdOperativo(idCaso)
-    const droga = new Droga({ idOperativo, ...data, usuario })
-    return this.operativoRepository.crearDroga(droga)
+    const drogaEntity = new Droga({
+      idOperativo,
+      ...data,
+      fotoPruebaCampo: pruebaCampo.length ? pruebaCampo : undefined,
+      fotoPesaje: pesaje.length ? pesaje : undefined,
+      usuario,
+    })
+    const droga = await this.operativoRepository.crearDroga(drogaEntity)
+    const { fotoPruebaCampo, fotoPesaje, ...resto } = droga
+    return {
+      ...resto,
+      urlFotoPruebaCampo: fotoPruebaCampo?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${droga.id}/fotos/prueba-campo`
+        : null,
+      urlFotoPesaje: fotoPesaje?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${droga.id}/fotos/pesaje`
+        : null,
+    }
   }
 
-  async listarDrogas(idCaso: string): Promise<Droga[]> {
+  async listarDrogas(idCaso: string): Promise<any[]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
     if (!idOperativo) return []
-    return this.operativoRepository.listarDrogasPorOperativo(idOperativo)
+    const drogas = await this.operativoRepository.listarDrogasPorOperativo(idOperativo)
+    return drogas.map(({ fotoPruebaCampo, fotoPesaje, ...d }) => ({
+      ...d,
+      urlFotoPruebaCampo: fotoPruebaCampo?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/prueba-campo`
+        : null,
+      urlFotoPesaje: fotoPesaje?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/pesaje`
+        : null,
+    }))
   }
 
   async eliminarDroga(idCaso: string, idDroga: string): Promise<void> {
-    const idOperativo = await this.resolverIdOperativo(idCaso)
+    await this.resolverIdOperativo(idCaso)
+    // Cascade: primero eliminar todos los logotipos asociados a esta droga
+    await this.operativoRepository.eliminarLogotiposPorDroga(idDroga)
     await this.operativoRepository.eliminarDroga(idDroga)
   }
 
@@ -229,6 +230,90 @@ export class OperativoService extends BaseService {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
     if (!idOperativo) return { totalGramos: 0, totalRegistros: 0 }
     return this.operativoRepository.obtenerResumenDrogas(idOperativo)
+  }
+
+  async obtenerFotoDroga(
+    idCaso: string,
+    idDroga: string,
+    tipo: 'prueba-campo' | 'pesaje'
+  ): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const droga = await this.operativoRepository.buscarDrogaPorId(idDroga)
+    if (!droga) {
+      throw new NotFoundException(`Droga con ID ${idDroga} no encontrada`)
+    }
+    if (droga.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La droga ${idDroga} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    return tipo === 'prueba-campo'
+      ? droga.fotoPruebaCampo || Buffer.alloc(0)
+      : droga.fotoPesaje || Buffer.alloc(0)
+  }
+
+  async listarLogotiposPorDroga(
+    idCaso: string,
+    idDroga: string
+  ): Promise<any[]> {
+    await this.resolverIdOperativo(idCaso)
+    const logotipos = await this.operativoRepository.listarLogotiposPorDroga(idDroga)
+    return logotipos.map(({ fotografia, ...l }) => ({
+      ...l,
+      urlFotografia: fotografia?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
+        : null,
+    }))
+  }
+
+  async agregarLogotipoDroga(
+    idCaso: string,
+    idDroga: string,
+    data: CreateLogotipoDrogaDto,
+    fotografia: Buffer,
+    usuario: string
+  ): Promise<any> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const droga = await this.operativoRepository.buscarDrogaPorId(idDroga)
+    if (!droga) {
+      throw new NotFoundException(`Droga con ID ${idDroga} no encontrada`)
+    }
+    if (droga.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La droga ${idDroga} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    const operativo = await this.buscarPorId(idOperativo)
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+
+    const logotipoEntity = new Logotipo({
+      idOperativo,
+      idDroga,
+      numeroCaso: asignacion?.nombreCaso || '',
+      numeroOperativo: operativo.numeroOperativo,
+      fechaOperativo: operativo.fechaOperativo,
+      nombreCaso: asignacion?.nombreCaso || '',
+      descripcion: operativo.descripcion,
+      imagen: data.imagen,
+      descripcionLogo: data.descripcionLogo,
+      idTipoDroga: droga.idTipoDroga,
+      idPaisOrigen: droga.idPaisProcedencia,
+      idPaisDestino: droga.idPaisDestino,
+      organizacion: data.organizacion,
+      blanco: data.blanco || '',
+      observacion: data.observacion || '',
+      enlace: data.enlace || '',
+      fotografia,
+      usuario,
+    })
+    const logotipo = await this.operativoRepository.crearLogotipo(logotipoEntity)
+    const { fotografia: foto, ...resto } = logotipo
+    return {
+      ...resto,
+      urlFotografia: foto?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${logotipo.id}/foto`
+        : null,
+    }
   }
 
   // ==================== SUSTANCIAS SÓLIDAS ====================
@@ -446,9 +531,9 @@ export class OperativoService extends BaseService {
     data: CreateLogotipoDto,
     fotografia: Buffer,
     usuario: string
-  ): Promise<Logotipo> {
+  ): Promise<any> {
     const idOperativo = await this.resolverIdOperativo(idCaso)
-    const logotipo = new Logotipo({
+    const logotipoEntity = new Logotipo({
       idOperativo,
       numeroCaso: data.numeroCaso,
       numeroOperativo: data.numeroOperativo,
@@ -467,13 +552,26 @@ export class OperativoService extends BaseService {
       fotografia,
       usuario,
     })
-    return this.operativoRepository.crearLogotipo(logotipo)
+    const logotipo = await this.operativoRepository.crearLogotipo(logotipoEntity)
+    const { fotografia: foto, ...resto } = logotipo
+    return {
+      ...resto,
+      urlFotografia: foto?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${logotipo.id}/foto`
+        : null,
+    }
   }
 
-  async listarLogotipos(idCaso: string): Promise<Logotipo[]> {
+  async listarLogotipos(idCaso: string): Promise<any[]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
     if (!idOperativo) return []
-    return this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
+    const logotipos = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
+    return logotipos.map(({ fotografia, ...l }) => ({
+      ...l,
+      urlFotografia: fotografia?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
+        : null,
+    }))
   }
 
   async eliminarLogotipo(idCaso: string, idLogotipo: string): Promise<void> {
