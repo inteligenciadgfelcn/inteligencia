@@ -1,7 +1,8 @@
 'use client'
 
+import { Button } from '@/components/ui/Button'
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
-import { Seccion2Form } from './secciones/Seccion2Form'
+import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
 import { Seccion3Form } from './secciones/Seccion3Form'
 import { Seccion4Form } from './secciones/Seccion4Form'
 import { Seccion5Form } from './secciones/Seccion5Form'
@@ -43,6 +44,65 @@ export function FormGestionOperativo({
     const seccion4 = useSeccion4(id)
     const seccion5 = useSeccion5(id)
 
+    const toggleSeccion = (key: SeccionKey) => {
+        setSeccionActiva(key)
+    }
+
+    const renderSeccion = (key: SeccionKey) => {
+        if (key === 'seccion-1') {
+            return (
+                <DatosGeneralesForm
+                    titulo="Seccion 1"
+                    onGuardar={seccion1.mutation.mutateAsync}
+                    onRecuperar={() => seccion1.query.refetch()}
+                    cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-2') {
+            return (
+                <SeccionDrogasFotografiaLogotiposForm
+                    titulo="Seccion 2"
+                    onGuardar={seccion2.mutation.mutateAsync}
+                    onRecuperar={() => seccion2.query.refetch()}
+                    cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-3') {
+            return (
+                <Seccion3Form
+                    titulo="Seccion 3"
+                    onGuardar={seccion3.mutation.mutateAsync}
+                    onRecuperar={() => seccion3.query.refetch()}
+                    cargando={seccion3.mutation.isPending || seccion3.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-4') {
+            return (
+                <Seccion4Form
+                    titulo="Seccion 4"
+                    onGuardar={seccion4.mutation.mutateAsync}
+                    onRecuperar={() => seccion4.query.refetch()}
+                    cargando={seccion4.mutation.isPending || seccion4.query.isFetching}
+                />
+            )
+        }
+
+        return (
+            <Seccion5Form
+                titulo="Seccion 5"
+                onGuardar={seccion5.mutation.mutateAsync}
+                onRecuperar={() => seccion5.query.refetch()}
+                cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
+            />
+        )
+    }
+
     return (
         <div className="space-y-4">
             <div className="panel">
@@ -57,64 +117,27 @@ export function FormGestionOperativo({
                 )}
             </div>
 
-            <div className="panel">
-                <div className="flex flex-wrap gap-2">
-                    {SECCIONES.map((seccion) => (
-                        <button
-                            key={seccion.key}
-                            type="button"
-                            className={`btn btn-sm ${seccionActiva === seccion.key
-                                ? 'btn-primary'
-                                : 'btn-outline-primary'
-                                }`}
-                            onClick={() => setSeccionActiva(seccion.key)}
-                        >
-                            {seccion.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <div className="space-y-3">
+                {SECCIONES.map((seccion) => {
+                    const abierta = seccionActiva === seccion.key
 
-            {seccionActiva === 'seccion-1' && (
-                <DatosGeneralesForm
-                    titulo="Seccion 1"
-                    onGuardar={seccion1.mutation.mutateAsync}
-                    onRecuperar={async () => seccion1.query.refetch()}
-                    cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
-                />
-            )}
-            {seccionActiva === 'seccion-2' && (
-                <Seccion2Form
-                    titulo="Seccion 2"
-                    onGuardar={seccion2.mutation.mutateAsync}
-                    onRecuperar={async () => seccion2.query.refetch()}
-                    cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
-                />
-            )}
-            {seccionActiva === 'seccion-3' && (
-                <Seccion3Form
-                    titulo="Seccion 3"
-                    onGuardar={seccion3.mutation.mutateAsync}
-                    onRecuperar={async () => seccion3.query.refetch()}
-                    cargando={seccion3.mutation.isPending || seccion3.query.isFetching}
-                />
-            )}
-            {seccionActiva === 'seccion-4' && (
-                <Seccion4Form
-                    titulo="Seccion 4"
-                    onGuardar={seccion4.mutation.mutateAsync}
-                    onRecuperar={async () => seccion4.query.refetch()}
-                    cargando={seccion4.mutation.isPending || seccion4.query.isFetching}
-                />
-            )}
-            {seccionActiva === 'seccion-5' && (
-                <Seccion5Form
-                    titulo="Seccion 5"
-                    onGuardar={seccion5.mutation.mutateAsync}
-                    onRecuperar={async () => seccion5.query.refetch()}
-                    cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
-                />
-            )}
+                    return (
+                        <div key={seccion.key} className="panel p-3">
+                            <Button
+                                type="button"
+                                variant={abierta ? 'primary' : 'outline-primary'}
+                                size="sm"
+                                className="w-full justify-between"
+                                onClick={() => toggleSeccion(seccion.key)}
+                            >
+                                <span>{seccion.label}</span>
+                                <span className="text-xs">{abierta ? 'Ocultar' : 'Mostrar'}</span>
+                            </Button>
+                            {abierta && <div className="mt-3">{renderSeccion(seccion.key)}</div>}
+                        </div>
+                    )
+                })}
+            </div>
         </div>
     )
 }
