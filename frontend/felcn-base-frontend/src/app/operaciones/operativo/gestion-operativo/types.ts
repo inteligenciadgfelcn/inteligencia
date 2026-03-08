@@ -1,9 +1,14 @@
 export interface GestionOperativoItem {
-    id: number
-    codigo: string
+    idCaso: string
+    unidadDescripcion: string
+    distritaleDescripcion: string
+    grupoDescripcion: string
+    numeroCaso: string
+    numeroCasoPerDom: string
+    numeroOperativo: string
     nombreCaso: string
-    fechaRegistro: string
-    estado: string
+    asignadoCaso: string
+    fiscalAsignadoCaso: string
 }
 
 export interface GestionOperativoCabeceraPayload {
