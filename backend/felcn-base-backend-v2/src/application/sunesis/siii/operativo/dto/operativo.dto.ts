@@ -100,35 +100,21 @@ export class OperativoDto {
   @MaxLength(150)
   mando: string
 
-  @ApiProperty({ description: 'Grados coordenada X (latitud)', example: 16 })
+  @ApiProperty({
+    description: 'Coordenada X (latitud decimal negativa). El frontend convierte DMS si el usuario ingresa manualmente.',
+    example: -17.395972,
+  })
   @IsNotEmpty()
   @IsNumber()
-  gradosX: number
+  coordX: number
 
-  @ApiProperty({ description: 'Minutos coordenada X', example: 30 })
+  @ApiProperty({
+    description: 'Coordenada Y (longitud decimal negativa). El frontend convierte DMS si el usuario ingresa manualmente.',
+    example: -66.156139,
+  })
   @IsNotEmpty()
   @IsNumber()
-  minX: number
-
-  @ApiProperty({ description: 'Segundos coordenada X', example: 15.5 })
-  @IsNotEmpty()
-  @IsNumber()
-  segX: number
-
-  @ApiProperty({ description: 'Grados coordenada Y (longitud)', example: 68 })
-  @IsNotEmpty()
-  @IsNumber()
-  gradosY: number
-
-  @ApiProperty({ description: 'Minutos coordenada Y', example: 9 })
-  @IsNotEmpty()
-  @IsNumber()
-  minY: number
-
-  @ApiProperty({ description: 'Segundos coordenada Y', example: 30.2 })
-  @IsNotEmpty()
-  @IsNumber()
-  segY: number
+  coordY: number
 
   @ApiProperty({ description: 'ID plan de operaciones', example: 1 })
   @IsNotEmpty()
