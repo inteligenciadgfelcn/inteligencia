@@ -4,26 +4,30 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { UpdateServicioDto } from './dto/update-servicio.dto'
-import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
+import { DB_ASIG_CASOS, DB_SIII } from '@/core/config/database/database.module'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Servicio } from './entities/servicio.entity'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { CreateServicioDto } from './dto/create-servicio.dto'
 import { formatearFecha, validarRangoFechas } from './utils/fecha.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import {
-  buscarServicioHoy,
+  buscarServicioPorFecha,
   cerrarServiciosVencidos,
   generarCodigoServicio,
   validarCruceServicios,
 } from './utils/servicio.util'
 import { Estado } from '../../felcn_siii/estado.enum'
+import { Usuario } from '../../felcn_siii/parametricas/usuario/entities/usuario.entity'
 
 @Injectable()
 export class ServicioService {
   constructor(
     @InjectRepository(Servicio, DB_ASIG_CASOS)
-    private readonly servicioRepository: Repository<Servicio>
+    private readonly servicioRepository: Repository<Servicio>,
+
+    @InjectRepository(Usuario, DB_SIII)
+    private readonly usuarioRepository: Repository<Usuario>
   ) {}
 
   async create(dto: CreateServicioDto) {
@@ -37,7 +41,10 @@ export class ServicioService {
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
     // verificar si ya existe servicio hoy
-    const servicioHoy = await buscarServicioHoy(this.servicioRepository)
+    const servicioHoy = await buscarServicioPorFecha(
+      this.servicioRepository,
+      fechaIngreso
+    )
 
     if (servicioHoy) {
       return {
@@ -200,7 +207,9 @@ export class ServicioService {
     }
   }
 
-  async findAllPaginado(pagination: PaginacionQueryDto) {
+  async findAllPaginado(
+    pagination: PaginacionQueryDto
+  ): Promise<[any[], number]> {
     const { limite, saltar, filtro } = pagination
 
     const query = this.servicioRepository
@@ -214,7 +223,30 @@ export class ServicioService {
         { filtro: `%${filtro}%` }
       )
     }
-    return await query.getManyAndCount()
+    const [servicios, total] = await query.getManyAndCount()
+
+    const usuariosIds = [
+      ...servicios.map((s) => s.usuarioPrincipal),
+      ...servicios.map((s) => s.usuarioEmergencia),
+    ]
+
+    const usuarios: Usuario[] = await this.usuarioRepository.findBy({
+      usuario: In(usuariosIds),
+    })
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.usuario, u]))
+
+    const resultado = servicios.map((servicio) => ({
+      ...servicio,
+      fechaIngreso: formatearFecha(servicio.fechaIngreso),
+      fechaSalida: formatearFecha(servicio.fechaSalida),
+      nombreUsuarioPrincipal:
+        usuariosMap.get(servicio.usuarioPrincipal)?.nombres ?? null,
+      nombreUsuarioEmergencia:
+        usuariosMap.get(servicio.usuarioEmergencia)?.nombres ?? null,
+    }))
+
+    return [resultado, total]
   }
 
   async findOne(codigoServicio: string) {
