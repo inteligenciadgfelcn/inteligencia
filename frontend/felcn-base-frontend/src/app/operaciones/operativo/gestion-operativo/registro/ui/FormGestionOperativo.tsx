@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
@@ -39,6 +40,8 @@ const SECCIONES: { key: SeccionKey; label: string }[] = [
 export function FormGestionOperativo({
     idGestionOperativo,
 }: FormGestionOperativoProps) {
+    const [mostrarTodasLasSecciones, setMostrarTodasLasSecciones] = useState(false)
+
     const {
         idGestionOperativo: id,
         esEdicion,
@@ -170,11 +173,20 @@ export function FormGestionOperativo({
                 {guardandoCabecera && (
                     <p className="text-xs text-primary mt-2">Guardando cabecera...</p>
                 )}
+                <label className="mt-3 inline-flex items-center gap-2 text-sm text-gray-700">
+                    <input
+                        type="checkbox"
+                        className="form-checkbox"
+                        checked={mostrarTodasLasSecciones}
+                        onChange={(event) => setMostrarTodasLasSecciones(event.target.checked)}
+                    />
+                    Mostrar todas las secciones
+                </label>
             </div>
 
             <div className="space-y-3">
                 {SECCIONES.map((seccion) => {
-                    const abierta = seccionActiva === seccion.key
+                    const abierta = mostrarTodasLasSecciones || seccionActiva === seccion.key
 
                     return (
                         <div key={seccion.key} className="panel p-3">
