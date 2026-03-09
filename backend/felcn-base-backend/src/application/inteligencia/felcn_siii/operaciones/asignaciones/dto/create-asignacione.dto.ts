@@ -3,6 +3,18 @@ import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAsignacionDto {
+  @ApiProperty({ example: 'Codigo de servicio' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(30)
+  codigoServicio: string;
+
+  @ApiProperty({ example: 'Numero de pase' })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10)
+  usuario: string;
+
   @ApiProperty({ example: 1 })
   @Type(() => Number)
   @IsNumber()
