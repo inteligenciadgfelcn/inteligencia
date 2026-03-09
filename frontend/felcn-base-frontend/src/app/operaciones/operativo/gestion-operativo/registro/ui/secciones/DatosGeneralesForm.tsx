@@ -13,7 +13,10 @@ import Mapa from '@/components/mapas/Mapa'
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
-import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
+import {
+    GestionOperativoCatalogosService,
+    GestionOperativosDatosGeneralesService,
+} from '@/services/operativos'
 import { SiiiLookupsService } from '@/services/parametricas'
 import type { CasoOperativoDetalle } from '@/services/operativos'
 import type { OperativoPayload } from '@/services/operativos'
@@ -135,6 +138,7 @@ export function DatosGeneralesForm({
     const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
     const [tieneOperativo, setTieneOperativo] = useState(false)
     const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>([])
+    const [opcionesCategoriaOperativo, setOpcionesCategoriaOperativo] = useState<optionType[]>([])
     const [datosLectura, setDatosLectura] = useState<DatosLectura>({
         numeroInforme: '',
         nombreCaso: '',
@@ -243,18 +247,12 @@ export function DatosGeneralesForm({
         value: String(p.id),
         label: String(p.nombre ?? ''),
     }))
-
-    const opcionesTipoLugar: optionType[] = tiposOperacion.map((t) => ({
-        id: String(t.id),
-        value: String(t.id),
-        label: String(t.descripcion ?? ''),
-    }))
-
     const obtenerLabel = (options: optionType[], value: string) =>
         options.find((option) => option.value === value)?.label ?? value
 
     const coordX = watch('coordX')
     const coordY = watch('coordY')
+    const categoriaOperativoSeleccionada = watch('idCategoriaOperativo')
     const departamentoSeleccionado = watch('idDepartamento')
     const provinciaSeleccionada = watch('idProvincia')
     const unidadSeleccionada = watch('idUnidad')
@@ -320,9 +318,9 @@ export function DatosGeneralesForm({
                     })
                     .filter((opcion) => opcion.value.length > 0)
 
-                setOpcionesOperativoEn(opciones)
+                setOpcionesCategoriaOperativo(opciones)
             } catch {
-                setOpcionesOperativoEn([])
+                setOpcionesCategoriaOperativo([])
             }
         }
 
@@ -334,10 +332,68 @@ export function DatosGeneralesForm({
     }, [])
 
     useEffect(() => {
+        let activo = true
+
+        const cargarItemsOperativo = async () => {
+            const idCategoria = Number(categoriaOperativoSeleccionada)
+            if (idCategoria <= 0) {
+                setOpcionesOperativoEn([])
+                setValue('idItemOperativo', 0)
+                return
+            }
+
+            try {
+                const respuesta =
+                    await GestionOperativoCatalogosService.obtenerItemsOperativo(
+                        idCategoria
+                    )
+                if (!activo || !respuesta?.finalizado) return
+
+                const opciones = (respuesta.datos ?? [])
+                    .map((item: Record<string, unknown>, index: number) => {
+                        const idRaw = item.id ?? item.codigo ?? item.valor ?? item.value ?? index
+                        const valueRaw = item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
+                        const labelRaw =
+                            item.descripcion ??
+                            item.nombre ??
+                            item.detalle ??
+                            item.label ??
+                            valueRaw
+
+                        return {
+                            id: String(idRaw),
+                            value: String(valueRaw),
+                            label: String(labelRaw),
+                        }
+                    })
+                    .filter((opcion) => opcion.value.length > 0)
+
+                setOpcionesOperativoEn(opciones)
+                const idItemActual = Number(getValues('idItemOperativo'))
+                const existeItemActual = opciones.some(
+                    (opcion) => Number(opcion.value) === idItemActual
+                )
+                if (!existeItemActual) {
+                    setValue('idItemOperativo', 0)
+                }
+            } catch {
+                setOpcionesOperativoEn([])
+                setValue('idItemOperativo', 0)
+            }
+        }
+
+        void cargarItemsOperativo()
+
+        return () => {
+            activo = false
+        }
+    }, [categoriaOperativoSeleccionada, getValues, setValue])
+
+    useEffect(() => {
         const id = Number(departamentoSeleccionado)
         if (id > 0) {
-            setValue('idProvincia', '')
-            setValue('idMunicipio', '')
+            setValue('idProvincia', 0)
+            setValue('idLocalidad', 0)
             void cargarProvincias(id)
         }
     }, [departamentoSeleccionado, setValue, cargarProvincias])
@@ -345,7 +401,7 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(provinciaSeleccionada)
         if (id > 0) {
-            setValue('idMunicipio', '')
+            setValue('idLocalidad', 0)
             void cargarLocalidades(id)
         }
     }, [provinciaSeleccionada, setValue, cargarLocalidades])
@@ -353,8 +409,8 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(unidadSeleccionada)
         if (id > 0) {
-            setValue('idDistrital', '')
-            setValue('idGrupo', '')
+            setValue('idDistrital', 0)
+            setValue('idGrupo', 0)
             void cargarDistritales(id)
         }
     }, [unidadSeleccionada, setValue, cargarDistritales])
@@ -362,7 +418,7 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(distritalSeleccionado)
         if (id > 0) {
-            setValue('idGrupo', '')
+            setValue('idGrupo', 0)
             void cargarGrupos(id)
         }
     }, [distritalSeleccionado, setValue, cargarGrupos])
@@ -502,18 +558,9 @@ export function DatosGeneralesForm({
                 </div>
                 <div className="hidden lg:block"></div>
 
-                <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Unidad</label>
-                    <input className="form-input w-full" value={obtenerLabel(opcionesUnidadEst, datosLectura.unidad)} disabled readOnly />
-                </div>
-                <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Distrital</label>
-                    <input className="form-input w-full" value={obtenerLabel(opcionesDistritalEst, datosLectura.distrital)} disabled readOnly />
-                </div>
-                <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Grupo</label>
-                    <input className="form-input w-full" value={obtenerLabel(opcionesGrupoEst, datosLectura.grupo)} disabled readOnly />
-                </div>
+                     <FormInputDropdown id="idUnidad" name="idUnidad" label="Unidad" control={control} options={opcionesUnidadEst} rules={reglaObligatorio} />
+                <FormInputDropdown id="idDistrital" name="idDistrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="idGrupo" name="idGrupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} rules={reglaObligatorio} />
 
                 <div>
                     <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Quien Realiza la Solicitud</label>
@@ -563,8 +610,8 @@ export function DatosGeneralesForm({
                     />
                 </div>
 
-                <FormInputDropdown id="idItemOperativo" name="idItemOperativo" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} rules={reglaObligatorio} />
-                <FormInputDropdown id="idCategoriaOperativo" name="idCategoriaOperativo" label="Categoria Operativo" control={control} options={opcionesTipoLugar} rules={reglaObligatorio} />
+                <FormInputDropdown id="idCategoriaOperativo" name="idCategoriaOperativo" label="Categoria Operativo" control={control} options={opcionesCategoriaOperativo} rules={reglaObligatorio} />
+                <FormInputDropdown id="idItemOperativo" name="idItemOperativo" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} disabled={opcionesOperativoEn.length === 0} rules={reglaObligatorio} />
                 <FormInputText id="mando" name="mando" label="Al Mando de" control={control} rules={reglaObligatorio} />
 
                 <FormInputDropdown id="idPlanOperacion" name="idPlanOperacion" label="Plan de Operaciones" control={control} options={opcionesPlan} rules={reglaObligatorio} />
