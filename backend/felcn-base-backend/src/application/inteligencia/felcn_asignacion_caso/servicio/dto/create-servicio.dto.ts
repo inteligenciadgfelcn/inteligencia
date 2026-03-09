@@ -10,7 +10,7 @@ import { Type } from 'class-transformer'
 export class CreateServicioDto {
 
   @ApiProperty({
-    example: 'MOEW-0392',
+    example: 'G-AGAG-0508',
     description: 'Numero de pase de usuario Principal',
     maxLength: 15,
   })
@@ -22,7 +22,7 @@ export class CreateServicioDto {
   usuarioPrincipal: string
 
   @ApiProperty({
-    example: 'MOEW-0392',
+    example: 'G-AAF-0465',
     description: 'Numero de pase de usuario de emergencia',
     maxLength: 15,
   })
