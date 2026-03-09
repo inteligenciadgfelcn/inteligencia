@@ -25,6 +25,19 @@ interface DatosGeneralesFormProps {
     cargando?: boolean
 }
 
+interface DatosLectura {
+    numeroInforme: string
+    nombreCaso: string
+    unidad: string
+    distrital: string
+    grupo: string
+    quienRealiza: string
+    celularRealiza: string
+    asignado: string
+    celularAsignado: string
+    fiscal: string
+    celularFiscal: string
+}
 
 
 const ICON = icon({
@@ -34,37 +47,30 @@ const ICON = icon({
     iconAnchor: [12.5, 41],
 })
 
-const DEFAULT_VALUES: DatosGeneralesPayload = {
+const DEFAULT_VALUES: OperativoPayload = {
     numeroOperativo: 'CB-UM-363/25',
-    relevancia: '',
-    numeroInforme: '',
-    nombreCaso: '',
-    unidad: '',
-    distrital: '',
-    grupo: '',
-    quienRealiza: 'TTE. SERGIO DALMAR CLAROS ROMERO',
-    celularRealiza: '70377797',
-    asignado: 'TTE. SERGIO DALMAR CLAROS ROMERO',
-    celularAsignado: '70377797',
-    fiscal: 'DRA. MARIANA ALBORNOZ DURAN',
-    celularFiscal: '78456883',
-    tipoDenuncia: 'de_oficio',
-    tipoPenal: '',
-    fechaHora: new Date('2025-11-27T04:00:00'),
-    departamento: '',
-    provincia: '',
-    municipio: '',
-    localidad: 'CENTRAL VILLA 14 DE SEPTIEMBRE SINDICATO VILLA POR VENIR',
-    operativoEn: 'centros',
-    tipoLugar: 'rural',
+    idTipoRelevancia: 0,
+    idTipoDenuncia: 0,
+    idTipoPenal: 0,
+    fechaOperativo: new Date('2025-11-27T04:00:00').toISOString(),
+    idDepartamento: 0,
+    idProvincia: 0,
+    idLocalidad: 0,
+    lugar: 'CENTRAL VILLA 14 DE SEPTIEMBRE SINDICATO VILLA POR VENIR',
+    idCategoriaOperativo: 0,
+    idItemOperativo: 0,
+    idUnidad: 0,
+    idDistrital: 0,
+    idGrupo: 0,
     mando: 'CAP. OSCAR DANIEL CHOQUE ALARCON',
-    plan: '',
-    tipoOperativo: '',
-    clan: '',
+    idPlanOperacion: 0,
+    breveDetalle: '',
+    descripcion: '',
+    idTipoOperacion: 0,
     organizacion: '',
     coordX: -17.78507,
     coordY: -63.1761788,
-    detalleOperativo: '',
+    clanFamiliar: '',
 }
 
 const toStringOrEmpty = (value: unknown) =>
@@ -93,35 +99,29 @@ const mapCasoOperativoToForm = (
         data.operativo?.numeroOperativo ??
         data.caso?.numeroOperativo ??
         DEFAULT_VALUES.numeroOperativo,
-    nombreCaso: data.caso?.nombreCaso ?? '',
-    quienRealiza: data.caso?.fiscalSolicitud ?? '',
-    celularRealiza: data.caso?.telefonoSolicitud ?? '',
-    asignado: data.caso?.asignadoCaso ?? '',
-    celularAsignado: data.caso?.telefonoAsignado ?? '',
-    fiscal: data.caso?.fiscalAsignadoCaso ?? '',
-    celularFiscal: data.caso?.telefonoFiscal ?? '',
-    relevancia: toStringOrEmpty(data.operativo?.idTipoRelevancia),
-    tipoDenuncia: toStringOrEmpty(data.operativo?.idTipoDenuncia),
-    tipoPenal: toStringOrEmpty(data.operativo?.idTipoPenal),
-    fechaHora: data.operativo?.fechaOperativo
+    idTipoRelevancia: toNumberOrZero(data.operativo?.idTipoRelevancia),
+    idTipoDenuncia: toNumberOrZero(data.operativo?.idTipoDenuncia),
+    idTipoPenal: toNumberOrZero(data.operativo?.idTipoPenal),
+    fechaOperativo: data.operativo?.fechaOperativo
         ? new Date(data.operativo.fechaOperativo)
-        : DEFAULT_VALUES.fechaHora,
-    departamento: toStringOrEmpty(data.operativo?.idDepartamento),
-    provincia: toStringOrEmpty(data.operativo?.idProvincia),
-    municipio: toStringOrEmpty(data.operativo?.idLocalidad),
-    localidad: data.operativo?.lugar ?? '',
-    unidad: toStringOrEmpty(data.operativo?.idUnidad),
-    distrital: toStringOrEmpty(data.operativo?.idDistrital),
-    grupo: toStringOrEmpty(data.operativo?.idGrupo),
+            .toISOString()
+        : DEFAULT_VALUES.fechaOperativo,
+    idDepartamento: toNumberOrZero(data.operativo?.idDepartamento),
+    idProvincia: toNumberOrZero(data.operativo?.idProvincia),
+    idLocalidad: toNumberOrZero(data.operativo?.idLocalidad),
+    lugar: data.operativo?.lugar ?? '',
+    idUnidad: toNumberOrZero(data.operativo?.idUnidad),
+    idDistrital: toNumberOrZero(data.operativo?.idDistrital),
+    idGrupo: toNumberOrZero(data.operativo?.idGrupo),
     mando: data.operativo?.mando ?? '',
-    plan: toStringOrEmpty(data.operativo?.idPlanOperacion),
-    tipoOperativo: toStringOrEmpty(data.operativo?.idTipoOperacion),
-    clan: data.operativo?.clanFamiliar ?? '',
+    idPlanOperacion: toNumberOrZero(data.operativo?.idPlanOperacion),
+    idTipoOperacion: toNumberOrZero(data.operativo?.idTipoOperacion),
+    clanFamiliar: data.operativo?.clanFamiliar ?? '',
     organizacion: data.operativo?.organizacion ?? '',
     coordX: data.operativo?.coordX ?? DEFAULT_VALUES.coordX,
     coordY: data.operativo?.coordY ?? DEFAULT_VALUES.coordY,
-    detalleOperativo:
-        data.operativo?.breveDetalle ?? data.operativo?.descripcion ?? '',
+    breveDetalle: data.operativo?.breveDetalle ?? data.operativo?.descripcion ?? '',
+    descripcion: data.operativo?.descripcion ?? data.operativo?.breveDetalle ?? '',
 })
 
 export function DatosGeneralesForm({
@@ -133,6 +133,19 @@ export function DatosGeneralesForm({
     const { Alerta } = useAlerts()
     const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
     const [tieneOperativo, setTieneOperativo] = useState(false)
+    const [datosLectura, setDatosLectura] = useState<DatosLectura>({
+        numeroInforme: '',
+        nombreCaso: '',
+        unidad: '',
+        distrital: '',
+        grupo: '',
+        quienRealiza: '',
+        celularRealiza: '',
+        asignado: '',
+        celularAsignado: '',
+        fiscal: '',
+        celularFiscal: '',
+    })
     const {
         departamentos,
         provincias,
@@ -240,6 +253,9 @@ export function DatosGeneralesForm({
         value: String(t.id),
         label: String(t.descripcion ?? ''),
     }))
+
+    const obtenerLabel = (options: optionType[], value: string) =>
+        options.find((option) => option.value === value)?.label ?? value
 
     const coordX = watch('coordX')
     const coordY = watch('coordY')
@@ -351,7 +367,7 @@ export function DatosGeneralesForm({
                     coordY: toNumberOrZero(payload.coordY),
                     idPlanOperacion: toNumberOrZero(payload.idPlanOperacion),
                     breveDetalle: payload.breveDetalle,
-                    descripcion: payload.descripcion,
+                    descripcion: payload.descripcion || payload.breveDetalle,
                     idTipoOperacion: toNumberOrZero(payload.idTipoOperacion),
                     organizacion: payload.organizacion,
                     clanFamiliar: payload.clanFamiliar,
@@ -381,7 +397,7 @@ export function DatosGeneralesForm({
     }
 
     const cargarDatosCaso = useCallback(async () => {
-        let datosCasoOperativo: Partial<DatosGeneralesPayload> = {}
+        let datosCasoOperativo: Partial<OperativoPayload> = {}
         const idCaso = Number(searchParams.get('id') ?? 0)
         setTieneOperativo(false)
 
@@ -394,6 +410,19 @@ export function DatosGeneralesForm({
             if (respuestaCaso?.datos) {
                 setTieneOperativo(Boolean(respuestaCaso.datos.operativo))
                 datosCasoOperativo = mapCasoOperativoToForm(respuestaCaso.datos)
+                setDatosLectura({
+                    numeroInforme: '',
+                    nombreCaso: respuestaCaso.datos.caso?.nombreCaso ?? '',
+                    unidad: toStringOrEmpty(respuestaCaso.datos.operativo?.idUnidad),
+                    distrital: toStringOrEmpty(respuestaCaso.datos.operativo?.idDistrital),
+                    grupo: toStringOrEmpty(respuestaCaso.datos.operativo?.idGrupo),
+                    quienRealiza: respuestaCaso.datos.caso?.fiscalSolicitud ?? '',
+                    celularRealiza: respuestaCaso.datos.caso?.telefonoSolicitud ?? '',
+                    asignado: respuestaCaso.datos.caso?.asignadoCaso ?? '',
+                    celularAsignado: respuestaCaso.datos.caso?.telefonoAsignado ?? '',
+                    fiscal: respuestaCaso.datos.caso?.fiscalAsignadoCaso ?? '',
+                    celularFiscal: respuestaCaso.datos.caso?.telefonoFiscal ?? '',
+                })
             }
         }
 
@@ -427,24 +456,57 @@ export function DatosGeneralesForm({
                 <FormInputDropdown id="idTipoRelevancia" name="idTipoRelevancia" label="Relevancia" control={control} options={opcionesRelevancia} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="numeroInforme" name="numeroInforme" label="Numero de Informe" control={control} rules={reglaObligatorio} />
-                <FormInputText id="nombreCaso" name="nombreCaso" label="Nombre del Caso" control={control} rules={reglaObligatorio} />
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Numero de Informe</label>
+                    <input className="form-input w-full" value={datosLectura.numeroInforme} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Nombre del Caso</label>
+                    <input className="form-input w-full" value={datosLectura.nombreCaso} disabled readOnly />
+                </div>
                 <div className="hidden lg:block"></div>
 
-                <FormInputDropdown id="idUnidad" name="idUnidad" label="Unidad" control={control} options={opcionesUnidadEst} rules={reglaObligatorio} />
-                <FormInputDropdown id="idDistrital" name="idDistrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} rules={reglaObligatorio} />
-                <FormInputDropdown id="idGrupo" name="idGrupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} rules={reglaObligatorio} />
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Unidad</label>
+                    <input className="form-input w-full" value={obtenerLabel(opcionesUnidadEst, datosLectura.unidad)} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Distrital</label>
+                    <input className="form-input w-full" value={obtenerLabel(opcionesDistritalEst, datosLectura.distrital)} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Grupo</label>
+                    <input className="form-input w-full" value={obtenerLabel(opcionesGrupoEst, datosLectura.grupo)} disabled readOnly />
+                </div>
 
-                <FormInputText id="quienRealiza" name="quienRealiza" label="Quien Realiza la Solicitud" control={control} rules={reglaObligatorio} />
-                <FormInputText id="celularRealiza" name="celularRealiza" label="Nro. Celular" control={control} rules={reglaObligatorio} />
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Quien Realiza la Solicitud</label>
+                    <input className="form-input w-full" value={datosLectura.quienRealiza} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Nro. Celular</label>
+                    <input className="form-input w-full" value={datosLectura.celularRealiza} disabled readOnly />
+                </div>
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="asignado" name="asignado" label="Asignado al Caso" control={control} rules={reglaObligatorio} />
-                <FormInputText id="celularAsignado" name="celularAsignado" label="Nro. Celular" control={control} rules={reglaObligatorio} />
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Asignado al Caso</label>
+                    <input className="form-input w-full" value={datosLectura.asignado} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Nro. Celular</label>
+                    <input className="form-input w-full" value={datosLectura.celularAsignado} disabled readOnly />
+                </div>
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="fiscal" name="fiscal" label="Fiscal Asignado" control={control} rules={reglaObligatorio} />
-                <FormInputText id="celularFiscal" name="celularFiscal" label="Nro. Celular" control={control} rules={reglaObligatorio} />
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Fiscal Asignado</label>
+                    <input className="form-input w-full" value={datosLectura.fiscal} disabled readOnly />
+                </div>
+                <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">Nro. Celular</label>
+                    <input className="form-input w-full" value={datosLectura.celularFiscal} disabled readOnly />
+                </div>
                 <div className="hidden lg:block"></div>
 
                 <FormInputDropdown id="idTipoDenuncia" name="idTipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} rules={reglaObligatorio} />
