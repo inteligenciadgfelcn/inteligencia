@@ -14,6 +14,7 @@ import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
+import { SiiiLookupsService } from '@/services/parametricas'
 import type { CasoOperativoDetalle } from '@/services/operativos'
 import type { OperativoPayload } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
@@ -133,6 +134,7 @@ export function DatosGeneralesForm({
     const { Alerta } = useAlerts()
     const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
     const [tieneOperativo, setTieneOperativo] = useState(false)
+    const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>([])
     const [datosLectura, setDatosLectura] = useState<DatosLectura>({
         numeroInforme: '',
         nombreCaso: '',
@@ -242,12 +244,6 @@ export function DatosGeneralesForm({
         label: String(p.nombre ?? ''),
     }))
 
-    const opcionesOperativoEn: optionType[] = planesOperaciones.map((p) => ({
-        id: String(p.id),
-        value: String(p.id),
-        label: String(p.nombre ?? ''),
-    }))
-
     const opcionesTipoLugar: optionType[] = tiposOperacion.map((t) => ({
         id: String(t.id),
         value: String(t.id),
@@ -296,6 +292,46 @@ export function DatosGeneralesForm({
         cargarPlanesOperaciones,
         cargarUnidadesSiii,
     ])
+
+    useEffect(() => {
+        let activo = true
+
+        const cargarCategoriasOperativo = async () => {
+            try {
+                const respuesta = await SiiiLookupsService.obtenerCategoriasOperativo()
+                if (!activo || !respuesta?.finalizado) return
+
+                const opciones = (respuesta.datos ?? [])
+                    .map((item: Record<string, unknown>, index: number) => {
+                        const idRaw = item.id ?? item.codigo ?? item.valor ?? item.value ?? index
+                        const valueRaw = item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
+                        const labelRaw =
+                            item.descripcion ??
+                            item.nombre ??
+                            item.detalle ??
+                            item.label ??
+                            valueRaw
+
+                        return {
+                            id: String(idRaw),
+                            value: String(valueRaw),
+                            label: String(labelRaw),
+                        }
+                    })
+                    .filter((opcion) => opcion.value.length > 0)
+
+                setOpcionesOperativoEn(opciones)
+            } catch {
+                setOpcionesOperativoEn([])
+            }
+        }
+
+        void cargarCategoriasOperativo()
+
+        return () => {
+            activo = false
+        }
+    }, [])
 
     useEffect(() => {
         const id = Number(departamentoSeleccionado)
