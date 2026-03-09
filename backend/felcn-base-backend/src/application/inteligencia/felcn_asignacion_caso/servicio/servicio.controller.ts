@@ -50,7 +50,7 @@ export class ServicioController extends BaseController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar distritales con paginación' })
+  @ApiOperation({ summary: 'Listar servicios con paginación' })
   async findAllPaginado(@Query() pagination: PaginacionQueryDto) {
     const result = await this.servicioService.findAllPaginado(pagination)
     return this.successListRows(result)
