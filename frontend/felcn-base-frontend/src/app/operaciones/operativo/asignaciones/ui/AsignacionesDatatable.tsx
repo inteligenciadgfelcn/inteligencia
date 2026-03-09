@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks'
+import { useAuth } from '@/context/AuthProvider'
 import { useQuery } from '@tanstack/react-query'
 import { Constantes } from '@/config/Constantes'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
@@ -18,14 +19,21 @@ interface Props {
 export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryKeyName }) => {
     const router = useRouter()
     const { sesionPeticion } = useSession()
+    const { usuario } = useAuth()
 
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(10)
     const [search, setSearch] = useState('')
 
+    const endpointResuelto = useMemo(() => {
+        const usuarioActual = usuario?.usuario?.trim()
+        if (!usuarioActual) return ''
+        return endpoint.replace(':usuario', encodeURIComponent(usuarioActual))
+    }, [endpoint, usuario?.usuario])
+
     const obtenerAsignaciones = async (): Promise<AsignacionType[]> => {
         const respuesta = await sesionPeticion<AsignacionesRespuesta>({
-            url: `${Constantes.baseUrl}${endpoint}`,
+            url: `${Constantes.baseUrl}${endpointResuelto}`,
         })
         return respuesta.datos ?? []
     }
@@ -35,8 +43,9 @@ export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryK
         isLoading: loading,
         refetch,
     } = useQuery({
-        queryKey: [queryKeyName],
+        queryKey: [queryKeyName, endpointResuelto],
         queryFn: obtenerAsignaciones,
+        enabled: !!endpointResuelto,
     })
 
     /* Filtro local por búsqueda */
@@ -45,12 +54,16 @@ export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryK
         const q = search.toLowerCase()
         return asignaciones.filter(
             (a) =>
-                a.numeroCaso?.toLowerCase().includes(q) ||
-                a.codigoServicio?.toLowerCase().includes(q) ||
-                a.asignacionCaso?.toLowerCase().includes(q) ||
-                a.fiscalAsignado?.toLowerCase().includes(q) ||
-                a.departamento?.descripcion?.toLowerCase().includes(q) ||
-                a.unidad?.descripcion?.toLowerCase().includes(q),
+                a.idCaso.toLowerCase().includes(q) ||
+                a.numeroCaso.toLowerCase().includes(q) ||
+                a.numeroCasoPerDom.toLowerCase().includes(q) ||
+                a.numeroOperativo.toLowerCase().includes(q) ||
+                a.nombreCaso.toLowerCase().includes(q) ||
+                a.asignadoCaso.toLowerCase().includes(q) ||
+                a.fiscalAsignadoCaso.toLowerCase().includes(q) ||
+                a.distritaleDescripcion.toLowerCase().includes(q) ||
+                a.grupoDescripcion.toLowerCase().includes(q) ||
+                a.unidadDescripcion.toLowerCase().includes(q),
         )
     }, [asignaciones, search])
 
@@ -58,22 +71,14 @@ export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryK
     const total = filasFiltradas.length
     const filasPagina = filasFiltradas.slice((page - 1) * limit, page * limit)
 
-    const formatearFecha = (fecha: string | null): string => {
-        if (!fecha) return '-'
-        return new Date(fecha).toLocaleDateString('es-BO', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        })
-    }
-
     const columns: Column<AsignacionType>[] = [
-        {
-            accessor: 'idAsignacion',
-            title: '#',
+       {
+            accessor: 'numeroOperativo',
+            title: 'Nro. Operativo',
+            sortable: true,
             render: (row) => (
-                <span className="text-sm font-semibold text-primary">
-                    {row.idAsignacion}
+                <span className="badge badge-outline-primary text-xs font-semibold">
+                    {row.numeroOperativo || '-'}
                 </span>
             ),
         },
@@ -88,81 +93,72 @@ export const AsignacionesDatatable: React.FC<Props> = ({ title, endpoint, queryK
             ),
         },
         {
-            accessor: 'codigoServicio',
-            title: 'Código Servicio',
+            accessor: 'nombreCaso',
+            title: 'Nombre del Caso',
             sortable: true,
             render: (row) => (
-                <span className="badge badge-outline-info text-xs">
-                    {row.codigoServicio?.trim() || '-'}
-                </span>
-            ),
-        },
-        {
-            accessor: 'nombreCaso',
-            title: 'Nombre Caso',
-            render: (row) => (
-                <span className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
                     {row.nombreCaso?.trim() || '-'}
                 </span>
             ),
         },
         {
-            accessor: 'asignacionCaso',
-            title: 'Asignado a',
-            render: (row) => (
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {row.asignacionCaso?.trim() || '-'}
-                </span>
-            ),
-        },
-        {
-            accessor: 'fiscalAsignado',
-            title: 'Fiscal Asignado',
-            render: (row) => (
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {row.fiscalAsignado?.trim() || '-'}
-                </span>
-            ),
-        },
-        {
-            accessor: 'departamento',
-            title: 'Departamento',
-            render: (row) => (
-                <span className="badge badge-outline-secondary text-xs">
-                    {row.departamento?.descripcion || row.idDepartamento}
-                </span>
-            ),
-        },
-        {
-            accessor: 'unidad',
+            accessor: 'unidadDescripcion',
             title: 'Unidad',
             render: (row) => (
                 <span className="text-xs text-gray-600 dark:text-gray-300">
-                    {row.unidad?.descripcion || row.idUnidad}
+                    {row.unidadDescripcion || '-'}
                 </span>
             ),
         },
         {
-            accessor: 'fechaHoraRegistro',
-            title: 'Fecha Registro',
+            accessor: 'distritaleDescripcion',
+            title: 'Distrital',
+            render: (row) => (
+                <span className="badge badge-outline-secondary text-xs">
+                    {row.distritaleDescripcion || '-'}
+                </span>
+            ),
+        },
+        {
+            accessor: 'grupoDescripcion',
+            title: 'Grupo',
             render: (row) => (
                 <span className="text-xs text-gray-400">
-                    {formatearFecha(row.fechaHoraRegistro)}
+                    {row.grupoDescripcion || '-'}
                 </span>
             ),
         },
         {
-            accessor: 'idAsignacion',
+            accessor: 'asignadoCaso',
+            title: 'Asignado al Caso',
+            render: (row) => (
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {row.asignadoCaso?.trim() || '-'}
+                </span>
+            ),
+        },
+        {
+            accessor: 'fiscalAsignadoCaso',
+            title: 'Fiscal Asignado',
+            render: (row) => (
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {row.fiscalAsignadoCaso?.trim() || '-'}
+                </span>
+            ),
+        },
+        {
+            accessor: 'idCaso',
             title: 'Acciones',
             render: (row) => (
                 <div className="flex items-center justify-end gap-2">
-                    {row.numeroCaso?.trim() && (
+                    {(row.numeroCaso?.trim() || row.numeroOperativo?.trim()) && (
                         <Button
                             variant="outline-primary"
                             size="sm"
                             onClick={() =>
                                 router.push(
-                                    `/operaciones/operativo`,
+                                    `/operaciones/operativo/gestion-operativo/registro?id=${row.idCaso}`,
                                 )
                             }
                         >

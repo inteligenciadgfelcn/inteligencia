@@ -1,35 +1,16 @@
-export interface DepartamentoType {
-    idDepartamento: string
-    descripcion: string
-}
 
-export interface UnidadType {
-    idUnidad: string
-    descripcion: string
-}
-
-export interface LetraType {
-    codigo: string
-    esMostrable: boolean
-}
 
 export interface AsignacionType {
-    idAsignacion: string
-    idDepartamento: string
-    idUnidad: string
-    codigoLetra: string
+    idCaso: string
+    unidadDescripcion: string
+    distritaleDescripcion: string
+    grupoDescripcion: string
     numeroCaso: string
+    numeroCasoPerDom: string
     numeroOperativo: string
-    fechaOperativo: string | null
     nombreCaso: string
-    asignacionCaso: string
-    codigoServicio: string
-    fiscalAsignado: string
-    fechaHoraRegistro: string
-    usuarioLogin: string
-    departamento: DepartamentoType
-    unidad: UnidadType
-    letra: LetraType
+    asignadoCaso: string
+    fiscalAsignadoCaso: string
 }
 
 export interface AsignacionesRespuesta {
