@@ -51,10 +51,45 @@ export const generarFechaAnterior = (
   formato: string
 ): string => dayjs().subtract(value, unit).format(formato)
 
+export const dateToString = (date: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const formatted = `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+
+  return formatted
+}
+
 export const nowDateToString = () => {
   const now = new Date()
   const pad = (n: number) => n.toString().padStart(2, '0')
   const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
 
   return formatted
+}
+
+export const tomorrowDateToString = () => {
+  const now = new Date()
+  now.setDate(now.getDate() + 1)
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+
+  return formatted
+}
+
+export const dateToStringAmPm = (date: string | Date) => {
+  if (typeof date === 'string') {
+    date = date.replace(' ', 'T')
+  }
+
+  const validDate = new Date(date)
+
+  if (isNaN(validDate.getTime())) {
+    throw new Error('Fecha inválida')
+  }
+
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  const hours = validDate.getHours()
+  const period = hours >= 12 ? 'pm' : 'am'
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12
+
+  return `${pad(validDate.getDate())}/${pad(validDate.getMonth() + 1)}/${validDate.getFullYear()} ${pad(hour12)}:${pad(validDate.getMinutes())}:${pad(validDate.getSeconds())} ${period}`
 }
