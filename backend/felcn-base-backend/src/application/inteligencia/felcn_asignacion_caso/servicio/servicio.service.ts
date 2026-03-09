@@ -233,7 +233,7 @@ export class ServicioService {
 
     const usuarios: Usuario[] = await this.usuarioRepository.find({
       where: { usuario: In(usuariosIds) },
-      relations: ['grado'], // traer relacion con grado
+      relations: ['grado'],
     })
 
     const usuariosMap = new Map(usuarios.map((u) => [u.usuario, u]))
