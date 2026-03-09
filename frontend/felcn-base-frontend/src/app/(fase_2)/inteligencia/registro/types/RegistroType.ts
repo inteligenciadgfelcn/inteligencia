@@ -1,32 +1,53 @@
-export interface RegistroTypeCRUD {
-  id: number;
-  estado: string;
-  departamento: Departamento;
-  grupo: Grupo;
-  nroOperativo: string;
-  nombreCaso: string;
-  fechaSolicitud: string;
-  asignado: string;
-  fiscalAsignado: string;
+export interface AsiganacionTable {
+  idAsignacion: string
+  letra: null
+  nroCaso: null
+  nroCasoPerDom: null
+  nroOperativo: string
+  codigoServicio: string
+  ianus: null
+  nombreCaso: string
+  nombreSolicitud: string
+  telefonoSolicitud: string
+  asignado: string
+  telefonoAsignado: string
+  fiscalAsignado: string
+  telefonoFiscal: string
+  etapaInvestigacion: null
+  resultado: null
+  fechaSolicitud: Date
+  usuario: null
+  departamento?: Departamento
+  grupo: Grupo
 }
 
-export interface Departamento {
-  id: number;
-  nombre: string;
+interface Departamento {
+  idDepartamento: number
+  abreviatura: string
+  descripcion: string
+  estado: string
 }
 
-export interface Grupo {
-  id: number;
-  distrital: Distrital;
+interface Grupo {
+  idGrupo: number
+  descripcion: string
+  estado: string
+  distrital: Distrital
 }
 
-export interface Distrital {
-  id: number;
-  unidad: Unidad;
+interface Distrital {
+  idDistrital: number
+  descripcion: string
+  estado: string
+  unidad: Unidad
 }
 
-export interface Unidad {
-  id: number;
-  descripcion: string;
+interface Unidad {
+  idUnidad: number
+  abreviatura: string
+  descripcion: string
+  abreviaturaIcia: string
+  es_operativa_admin: boolean
+  abreviaturaReporte: string
+  estado: string
 }
-
