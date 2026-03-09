@@ -21,10 +21,11 @@ import IconTxtFile from '@/components/Icon/IconTxtFile'
 import { DataTableSortStatus } from 'mantine-datatable'
 import React from 'react'
 import { sortBy } from 'lodash'
-import { RegistroTypeCRUD } from '../types/RegistroType'
 import { FormRegistro } from './FormRegistro'
 import { AlertaEstadoRegistro } from './AlertaEstadoRegistro'
 import { RegistroDetalle } from './RegistroDetalle'
+import { AsiganacionTable } from '../types/RegistroType'
+import { imprimir } from '@/utils/imprimir'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
@@ -45,13 +46,13 @@ export function RegistrosDataTable() {
     delete: true,
   })
 
-  const [selected, setSelected] = useState<RegistroTypeCRUD | null>(null)
+  const [selected, setSelected] = useState<AsiganacionTable | null>(null)
 
   const [openForm, setOpenForm] = useState(false)
   const [openDetalle, setOpenDetalle] = useState(false)
   const [openEstado, setOpenEstado] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
-  const [secciones, setSecciones] = useState<RegistroTypeCRUD[]>([])
+  const [secciones, setSecciones] = useState<AsiganacionTable[]>([])
   const [tipoNuevo, setTipoNuevo] = useState<'modulo' | 'seccion'>('modulo')
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
     columnAccessor: 'orden',
@@ -72,7 +73,8 @@ export function RegistrosDataTable() {
   /* FETCH */
   const obtenerRegistros = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseApiUrl}/asignaciones`,
+      url: `${Constantes.baseUrl}/asignaciones`,
+      withCredentials: true,
       // params: {
       //   pagina,
       //   limite,
@@ -81,11 +83,12 @@ export function RegistrosDataTable() {
       //   direccion: sortStatus.direction,
       // },
     })
-
-    return {
-      filas: res.data,
-      total: res.data.length,
-    }
+    imprimir('table', res)
+    return res.datos
+    // {
+    //   filas: res.data,
+    //   total: res.data.length,
+    // }
   }
 
   const { data, isFetching, refetch } = useQuery({
@@ -126,7 +129,7 @@ export function RegistrosDataTable() {
     'nombreOperativo',
     'asignadoA.nombreCompleto',
     'fiscalAsignado.nombreCompleto',
-  ] as const as readonly (keyof RegistroTypeCRUD)[]
+  ] as const as readonly (keyof AsiganacionTable)[]
 
   const exportExcel = () => {
     exportToExcel(filas, exportHeaders, exportColumns, 'caso_servicios')
@@ -147,16 +150,16 @@ export function RegistrosDataTable() {
       accessor: 'codigoServicio',
       title: 'Codigo Registro',
       sortable: true,
-      render: (row: RegistroTypeCRUD) => <span>{row?.id}</span>,
+      render: (row: AsiganacionTable) => <span>{row?.idAsignacion}</span>,
     },
 
     {
       accessor: 'departamento',
       title: 'Departamento',
       sortable: true,
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsiganacionTable) => (
         <div className="flex items-center gap-2">
-          <span>{row.departamento.nombre}</span>
+          <span>{row.departamento?.descripcion}</span>
         </div>
       ),
     },
@@ -164,7 +167,7 @@ export function RegistrosDataTable() {
     {
       accessor: 'unidad',
       title: 'Unidad',
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsiganacionTable) => (
         <div className="flex items-center gap-2">
           <span>{row.grupo.distrital.unidad.descripcion}</span>
         </div>
@@ -176,17 +179,17 @@ export function RegistrosDataTable() {
     {
       accessor: 'asignadoA',
       title: 'Asignado al caso',
-      render: (row: RegistroTypeCRUD) => row.asignado ?? '-',
+      render: (row: AsiganacionTable) => row.asignado ?? '-',
     },
     {
       accessor: 'fiscalAsignado',
       title: 'Fiscal asignado al caso',
-      render: (row: RegistroTypeCRUD) => row.fiscalAsignado ?? '-',
+      render: (row: AsiganacionTable) => row.fiscalAsignado ?? '-',
     },
     {
       accessor: 'acciones',
       title: 'Acciones',
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsiganacionTable) => (
         <>
           {permisos.read && (
             <button
@@ -248,7 +251,7 @@ export function RegistrosDataTable() {
           }}
         />
       </div>
-      <VristoDataTable<RegistroTypeCRUD>
+      <VristoDataTable<AsiganacionTable>
         rows={filasOrdenadas}
         total={total}
         page={pagina}
