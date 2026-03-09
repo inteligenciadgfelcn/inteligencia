@@ -25,38 +25,7 @@ interface DatosGeneralesFormProps {
     cargando?: boolean
 }
 
-interface DatosGeneralesPayload {
-    numeroOperativo: string
-    relevancia: string
-    numeroInforme: string
-    nombreCaso: string
-    unidad: string
-    distrital: string
-    grupo: string
-    quienRealiza: string
-    celularRealiza: string
-    asignado: string
-    celularAsignado: string
-    fiscal: string
-    celularFiscal: string
-    tipoDenuncia: string
-    tipoPenal: string
-    fechaHora: Date
-    departamento: string
-    provincia: string
-    municipio: string
-    localidad: string
-    operativoEn: string
-    tipoLugar: string
-    mando: string
-    plan: string
-    tipoOperativo: string
-    clan: string
-    organizacion: string
-    coordX: number
-    coordY: number
-    detalleOperativo: string
-}
+
 
 const ICON = icon({
     iconRetinaUrl: '/leaflet/marker-icon.png',
@@ -119,7 +88,7 @@ const toIsoDate = (value: unknown): string => {
 
 const mapCasoOperativoToForm = (
     data: CasoOperativoDetalle
-): Partial<DatosGeneralesPayload> => ({
+): Partial<OperativoPayload> => ({
     numeroOperativo:
         data.operativo?.numeroOperativo ??
         data.caso?.numeroOperativo ??
@@ -189,7 +158,7 @@ export function DatosGeneralesForm({
         cargarGrupos,
     } = useParametricas()
 
-    const { control, watch, setValue, getValues, reset, trigger } = useForm<DatosGeneralesPayload>({
+    const { control, watch, setValue, getValues, reset, trigger } = useForm<OperativoPayload>({
         defaultValues: DEFAULT_VALUES,
     })
     const reglaObligatorio = { required: 'Campo obligatorio' }
@@ -274,10 +243,10 @@ export function DatosGeneralesForm({
 
     const coordX = watch('coordX')
     const coordY = watch('coordY')
-    const departamentoSeleccionado = watch('departamento')
-    const provinciaSeleccionada = watch('provincia')
-    const unidadSeleccionada = watch('unidad')
-    const distritalSeleccionado = watch('distrital')
+    const departamentoSeleccionado = watch('idDepartamento')
+    const provinciaSeleccionada = watch('idProvincia')
+    const unidadSeleccionada = watch('idUnidad')
+    const distritalSeleccionado = watch('idDistrital')
     const mapRef = useRef(null)
 
     useEffect(() => {
@@ -315,8 +284,8 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(departamentoSeleccionado)
         if (id > 0) {
-            setValue('provincia', '')
-            setValue('municipio', '')
+            setValue('idProvincia', '')
+            setValue('idMunicipio', '')
             void cargarProvincias(id)
         }
     }, [departamentoSeleccionado, setValue, cargarProvincias])
@@ -324,7 +293,7 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(provinciaSeleccionada)
         if (id > 0) {
-            setValue('municipio', '')
+            setValue('idMunicipio', '')
             void cargarLocalidades(id)
         }
     }, [provinciaSeleccionada, setValue, cargarLocalidades])
@@ -332,8 +301,8 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(unidadSeleccionada)
         if (id > 0) {
-            setValue('distrital', '')
-            setValue('grupo', '')
+            setValue('idDistrital', '')
+            setValue('idGrupo', '')
             void cargarDistritales(id)
         }
     }, [unidadSeleccionada, setValue, cargarDistritales])
@@ -341,7 +310,7 @@ export function DatosGeneralesForm({
     useEffect(() => {
         const id = Number(distritalSeleccionado)
         if (id > 0) {
-            setValue('grupo', '')
+            setValue('idGrupo', '')
             void cargarGrupos(id)
         }
     }, [distritalSeleccionado, setValue, cargarGrupos])
@@ -364,28 +333,28 @@ export function DatosGeneralesForm({
             if (idCaso > 0) {
                 const payloadOperativo: OperativoPayload = {
                     numeroOperativo: payload.numeroOperativo,
-                    idTipoRelevancia: toNumberOrZero(payload.relevancia),
-                    idTipoDenuncia: toNumberOrZero(payload.tipoDenuncia),
-                    idTipoPenal: toNumberOrZero(payload.tipoPenal),
-                    fechaOperativo: toIsoDate(payload.fechaHora),
-                    idDepartamento: toNumberOrZero(payload.departamento),
-                    idProvincia: toNumberOrZero(payload.provincia),
-                    idLocalidad: toNumberOrZero(payload.municipio),
-                    lugar: payload.localidad,
-                    idCategoriaOperativo: toNumberOrZero(payload.tipoLugar),
-                    idItemOperativo: toNumberOrZero(payload.operativoEn),
-                    idUnidad: toNumberOrZero(payload.unidad),
-                    idDistrital: toNumberOrZero(payload.distrital),
-                    idGrupo: toNumberOrZero(payload.grupo),
+                    idTipoRelevancia: toNumberOrZero(payload.idTipoRelevancia),
+                    idTipoDenuncia: toNumberOrZero(payload.idTipoDenuncia),
+                    idTipoPenal: toNumberOrZero(payload.idTipoPenal),
+                    fechaOperativo: toIsoDate(payload.fechaOperativo),
+                    idDepartamento: toNumberOrZero(payload.idDepartamento),
+                    idProvincia: toNumberOrZero(payload.idProvincia),
+                    idLocalidad: toNumberOrZero(payload.idLocalidad),
+                    lugar: payload.lugar,
+                    idCategoriaOperativo: toNumberOrZero(payload.idCategoriaOperativo),
+                    idItemOperativo: toNumberOrZero(payload.idItemOperativo),
+                    idUnidad: toNumberOrZero(payload.idUnidad),
+                    idDistrital: toNumberOrZero(payload.idDistrital),
+                    idGrupo: toNumberOrZero(payload.idGrupo),
                     mando: payload.mando,
                     coordX: toNumberOrZero(payload.coordX),
                     coordY: toNumberOrZero(payload.coordY),
-                    idPlanOperacion: toNumberOrZero(payload.plan),
-                    breveDetalle: payload.detalleOperativo,
-                    descripcion: payload.detalleOperativo,
-                    idTipoOperacion: toNumberOrZero(payload.tipoOperativo),
+                    idPlanOperacion: toNumberOrZero(payload.idPlanOperacion),
+                    breveDetalle: payload.breveDetalle,
+                    descripcion: payload.descripcion,
+                    idTipoOperacion: toNumberOrZero(payload.idTipoOperacion),
                     organizacion: payload.organizacion,
-                    clanFamiliar: payload.clan,
+                    clanFamiliar: payload.clanFamiliar,
                 }
 
                 if (tieneOperativo) {
@@ -455,16 +424,16 @@ export function DatosGeneralesForm({
                 </div>
 
                 <FormInputText id="numeroOperativo" name="numeroOperativo" label="Numero de Operativo" control={control} rules={reglaObligatorio} />
-                <FormInputDropdown id="relevancia" name="relevancia" label="Relevancia" control={control} options={opcionesRelevancia} rules={reglaObligatorio} />
+                <FormInputDropdown id="idTipoRelevancia" name="idTipoRelevancia" label="Relevancia" control={control} options={opcionesRelevancia} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
                 <FormInputText id="numeroInforme" name="numeroInforme" label="Numero de Informe" control={control} rules={reglaObligatorio} />
                 <FormInputText id="nombreCaso" name="nombreCaso" label="Nombre del Caso" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputDropdown id="unidad" name="unidad" label="Unidad" control={control} options={opcionesUnidadEst} rules={reglaObligatorio} />
-                <FormInputDropdown id="distrital" name="distrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} rules={reglaObligatorio} />
-                <FormInputDropdown id="grupo" name="grupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="idUnidad" name="idUnidad" label="Unidad" control={control} options={opcionesUnidadEst} rules={reglaObligatorio} />
+                <FormInputDropdown id="idDistrital" name="idDistrital" label="Distrital" control={control} options={opcionesDistritalEst} disabled={opcionesDistritalEst.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="idGrupo" name="idGrupo" label="Grupo" control={control} options={opcionesGrupoEst} disabled={opcionesGrupoEst.length === 0} rules={reglaObligatorio} />
 
                 <FormInputText id="quienRealiza" name="quienRealiza" label="Quien Realiza la Solicitud" control={control} rules={reglaObligatorio} />
                 <FormInputText id="celularRealiza" name="celularRealiza" label="Nro. Celular" control={control} rules={reglaObligatorio} />
@@ -478,33 +447,33 @@ export function DatosGeneralesForm({
                 <FormInputText id="celularFiscal" name="celularFiscal" label="Nro. Celular" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputDropdown id="tipoDenuncia" name="tipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} rules={reglaObligatorio} />
-                <FormInputDropdown id="tipoPenal" name="tipoPenal" label="Tipo Penal" control={control} options={opcionesTipoPenal} rules={reglaObligatorio} />
-                <FormInputDate id="fechaHora" name="fechaHora" label="Fecha y Hora del Operativo" control={control} rules={reglaObligatorio} />
+                <FormInputDropdown id="idTipoDenuncia" name="idTipoDenuncia" label="Tipo de la Denuncia" control={control} options={opcionesTipoDenuncia} rules={reglaObligatorio} />
+                <FormInputDropdown id="idTipoPenal" name="idTipoPenal" label="Tipo Penal" control={control} options={opcionesTipoPenal} rules={reglaObligatorio} />
+                <FormInputDate id="fechaOperativo" name="fechaOperativo" label="Fecha y Hora del Operativo" control={control} rules={reglaObligatorio} />
 
-                <FormInputDropdown id="departamento" name="departamento" label="Departamento" control={control} options={opcionesDepartamento} rules={reglaObligatorio} />
-                <FormInputDropdown id="provincia" name="provincia" label="Provincia" control={control} options={opcionesProvicia} disabled={opcionesProvicia.length === 0} rules={reglaObligatorio} />
-                <FormInputDropdown id="municipio" name="municipio" label="Municipio" control={control} options={opcionesMunicipio} disabled={opcionesMunicipio.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="idDepartamento" name="idDepartamento" label="Departamento" control={control} options={opcionesDepartamento} rules={reglaObligatorio} />
+                <FormInputDropdown id="idProvincia" name="idProvincia" label="Provincia" control={control} options={opcionesProvicia} disabled={opcionesProvicia.length === 0} rules={reglaObligatorio} />
+                <FormInputDropdown id="idLocalidad" name="idLocalidad" label="Municipio" control={control} options={opcionesMunicipio} disabled={opcionesMunicipio.length === 0} rules={reglaObligatorio} />
 
                 <div className="col-span-1 lg:col-span-3">
                     <FormInputText
-                        id="localidad"
-                        name="localidad"
+                        id="lugar"
+                        name="lugar"
                         label="En la localidad, comunidad, direccion (Zona, Calle, Avenida, Barrio)"
                         control={control}
                         rules={reglaObligatorio}
                     />
                 </div>
 
-                <FormInputDropdown id="operativoEn" name="operativoEn" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} rules={reglaObligatorio} />
-                <FormInputDropdown id="tipoLugar" name="tipoLugar" label="Categoria Operativo" control={control} options={opcionesTipoLugar} rules={reglaObligatorio} />
+                <FormInputDropdown id="idItemOperativo" name="idItemOperativo" label="Operativo Realizado en" control={control} options={opcionesOperativoEn} rules={reglaObligatorio} />
+                <FormInputDropdown id="idCategoriaOperativo" name="idCategoriaOperativo" label="Categoria Operativo" control={control} options={opcionesTipoLugar} rules={reglaObligatorio} />
                 <FormInputText id="mando" name="mando" label="Al Mando de" control={control} rules={reglaObligatorio} />
 
-                <FormInputDropdown id="plan" name="plan" label="Plan de Operaciones" control={control} options={opcionesPlan} rules={reglaObligatorio} />
-                <FormInputDropdown id="tipoOperativo" name="tipoOperativo" label="El Operativo es de Tipo" control={control} options={opcionesTipoOperativo} rules={reglaObligatorio} />
+                <FormInputDropdown id="idPlanOperacion" name="idPlanOperacion" label="Plan de Operaciones" control={control} options={opcionesPlan} rules={reglaObligatorio} />
+                <FormInputDropdown id="idTipoOperacion" name="idTipoOperacion" label="El Operativo es de Tipo" control={control} options={opcionesTipoOperativo} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
-                <FormInputText id="clan" name="clan" label="Clan Familiar" control={control} rules={reglaObligatorio} />
+                <FormInputText id="clanFamiliar" name="clanFamiliar" label="Clan Familiar" control={control} rules={reglaObligatorio} />
                 <FormInputText id="organizacion" name="organizacion" label="Organizacion Criminal" control={control} rules={reglaObligatorio} />
                 <div className="hidden lg:block"></div>
 
@@ -531,8 +500,8 @@ export function DatosGeneralesForm({
 
                 <div className="col-span-1 lg:col-span-3 mt-4">
                     <FormInputText
-                        id="detalleOperativo"
-                        name="detalleOperativo"
+                        id="breveDetalle"
+                        name="breveDetalle"
                         label="Breve Detalle del Operativo"
                         control={control}
                         rules={reglaObligatorio}
