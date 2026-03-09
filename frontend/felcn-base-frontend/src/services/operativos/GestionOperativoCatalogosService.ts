@@ -14,4 +14,11 @@ export const GestionOperativoCatalogosService = {
             url: `${BASE_OPERATIVOS}/catalogos/estados-droga/${idTipoDroga}`,
         })
     },
+    obtenerItemsOperativo(
+        idCategoriaOperativo: number
+    ): Promise<RespuestaApi<CatalogoOperativoItem[]>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/catalogos/items-operativo/${idCategoriaOperativo}`,
+        })
+    },
 }
