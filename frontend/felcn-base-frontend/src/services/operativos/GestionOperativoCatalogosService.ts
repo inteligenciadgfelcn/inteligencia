@@ -15,10 +15,10 @@ export const GestionOperativoCatalogosService = {
         })
     },
     obtenerItemsOperativo(
-        idCategoriaOperativo: number
+        idItemOperativo: number
     ): Promise<RespuestaApi<CatalogoOperativoItem[]>> {
         return Servicios.get({
-            url: `${BASE_OPERATIVOS}/catalogos/items-operativo/${idCategoriaOperativo}`,
+            url: `${BASE_OPERATIVOS}/catalogos/items-operativo/${idItemOperativo}`,
         })
     },
 }
