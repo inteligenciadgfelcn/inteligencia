@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { DataTable } from 'mantine-datatable'
 import { Card } from '@/components/ui/Card'
@@ -25,61 +25,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     onRecuperar,
     cargando = false,
 }: SeccionFormProps) {
-    const formatearCantidad = (valor: number) => {
-        if (!Number.isFinite(valor)) return ''
-        if (Number.isInteger(valor)) return String(valor)
-        return valor.toFixed(12).replace(/\.?0+$/, '')
-    }
-
-    const parsearNumero = (valor: string) => {
-        const normalizado = valor
-            .trim()
-            .replace(/\s+/g, '')
-            .replace(',', '.')
-            .replace(/[^0-9.-]/g, '')
-
-        if (!normalizado) return null
-        const numero = Number(normalizado)
-        return Number.isFinite(numero) ? numero : null
-    }
-
-    const actualizarCantidades = (unidad: 'tn' | 'kg' | 'g' | 'mg', valor: string) => {
-        if (valor.trim().length === 0) {
-            setValue('cantidadTn', '')
-            setValue('cantidadKg', '')
-            setValue('cantidadG', '')
-            setValue('cantidadMg', '')
-            return
-        }
-
-        const numero = parsearNumero(valor)
-        if (numero === null) return
-
-        const kilos =
-            unidad === 'tn'
-                ? numero * 1000
-                : unidad === 'kg'
-                    ? numero
-                    : unidad === 'g'
-                        ? numero / 1000
-                        : numero / 1_000_000
-
-        const toneladas = kilos / 1000
-        const gramos = kilos * 1000
-        const miligramos = gramos * 1000
-
-        if (unidad !== 'tn') setValue('cantidadTn', formatearCantidad(toneladas))
-        if (unidad !== 'kg') setValue('cantidadKg', formatearCantidad(kilos))
-        if (unidad !== 'g') setValue('cantidadG', formatearCantidad(gramos))
-        if (unidad !== 'mg') setValue('cantidadMg', formatearCantidad(miligramos))
-    }
-
-    const onCambioCantidad =
-        (unidad: 'tn' | 'kg' | 'g' | 'mg') =>
-        (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            actualizarCantidades(unidad, event.target.value)
-        }
-
     const normalizarValorPais = (valor: string) =>
         valor
             .normalize('NFD')
@@ -378,8 +323,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     }
 
     return (
-        <div className="panel space-y-3">
-            <h3 className="text-base font-semibold">{titulo}</h3>
+        <div >
 
             {/* DRUGS SECTION */}
             <Card title="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES">
@@ -418,7 +362,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
-                                    onChange={onCambioCantidad('tn')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -429,7 +372,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
-                                    onChange={onCambioCantidad('kg')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -440,7 +382,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
-                                    onChange={onCambioCantidad('g')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -451,7 +392,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
-                                    onChange={onCambioCantidad('mg')}
                                 />
                             </div>
                         </div>
@@ -644,24 +584,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 </div>
             </Card>
 
-            <div className="flex gap-2">
-                <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => void onRecuperar()}
-                    disabled={cargando}
-                >
-                    Recuperar
-                </button>
-                <button
-                    type="button"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => void onGuardar(getValues() as SeccionPayloadBase)}
-                    disabled={cargando}
-                >
-                    Guardar Seccion 2
-                </button>
-            </div>
+          
         </div>
     )
 }
