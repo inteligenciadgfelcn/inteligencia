@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { DataTable } from 'mantine-datatable'
 import { Card } from '@/components/ui/Card'
@@ -25,6 +25,69 @@ export function SeccionDrogasFotografiaLogotiposForm({
     onRecuperar,
     cargando = false,
 }: SeccionFormProps) {
+    const formatearCantidad = (valor: number) => {
+        if (!Number.isFinite(valor)) return ''
+        if (Number.isInteger(valor)) return String(valor)
+        return valor.toFixed(12).replace(/\.?0+$/, '')
+    }
+
+    const parsearNumero = (valor: string) => {
+        const normalizado = valor
+            .trim()
+            .replace(/\s+/g, '')
+            .replace(',', '.')
+            .replace(/[^0-9.-]/g, '')
+
+        if (!normalizado) return null
+        const numero = Number(normalizado)
+        return Number.isFinite(numero) ? numero : null
+    }
+
+    const actualizarCantidades = (unidad: 'tn' | 'kg' | 'g' | 'mg', valor: string) => {
+        if (valor.trim().length === 0) {
+            setValue('cantidadTn', '')
+            setValue('cantidadKg', '')
+            setValue('cantidadG', '')
+            setValue('cantidadMg', '')
+            return
+        }
+
+        const numero = parsearNumero(valor)
+        if (numero === null) return
+
+        const kilos =
+            unidad === 'tn'
+                ? numero * 1000
+                : unidad === 'kg'
+                    ? numero
+                    : unidad === 'g'
+                        ? numero / 1000
+                        : numero / 1_000_000
+
+        const toneladas = kilos / 1000
+        const gramos = kilos * 1000
+        const miligramos = gramos * 1000
+
+        if (unidad !== 'tn') setValue('cantidadTn', formatearCantidad(toneladas))
+        if (unidad !== 'kg') setValue('cantidadKg', formatearCantidad(kilos))
+        if (unidad !== 'g') setValue('cantidadG', formatearCantidad(gramos))
+        if (unidad !== 'mg') setValue('cantidadMg', formatearCantidad(miligramos))
+    }
+
+    const onCambioCantidad =
+        (unidad: 'tn' | 'kg' | 'g' | 'mg') =>
+        (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            actualizarCantidades(unidad, event.target.value)
+        }
+
+    const normalizarValorPais = (valor: string) =>
+        valor
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+
     const { control, getValues, setValue, watch } = useForm({
         defaultValues: {
             tipoDroga: 'marihuana',
@@ -61,6 +124,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
         { id: 'terrestre', label: 'Terrestre', value: 'terrestre' },
         { id: 'aereo', label: 'Aereo', value: 'aereo' },
         { id: 'fluvial', label: 'Fluvial', value: 'fluvial' },
+    ])
+    const [opcionesPaises, setOpcionesPaises] = useState([
+        { id: 'bolivia', label: 'Bolivia', value: 'bolivia' },
     ])
     const tipoDrogaSeleccionada = watch('tipoDroga')
 
@@ -104,6 +170,63 @@ export function SeccionDrogasFotografiaLogotiposForm({
         }
 
         void cargarTiposDroga()
+
+        return () => {
+            activo = false
+        }
+    }, [getValues, setValue])
+
+    useEffect(() => {
+        let activo = true
+
+        const cargarPaises = async () => {
+            try {
+                const res = await SiiiLookupsService.obtenerPaises()
+                if (!activo || !res?.finalizado) return
+
+                const opciones = (res.datos ?? [])
+                    .map((item, index) => {
+                        const descripcion = String(item.descripcion ?? '').trim()
+                        const id = item.id ? String(item.id) : `pais-${index}`
+                        const value = normalizarValorPais(descripcion || id)
+
+                        return {
+                            id,
+                            value,
+                            label: descripcion || id,
+                        }
+                    })
+                    .filter((opcion) => opcion.label.length > 0)
+
+                if (opciones.length > 0) {
+                    setOpcionesPaises(opciones)
+
+                    const opcionBolivia =
+                        opciones.find((opcion) => opcion.value === 'bolivia') ??
+                        opciones[0]
+                    const procedenciaActual = String(getValues('procedencia') ?? '')
+                    const destinoActual = String(getValues('destino') ?? '')
+
+                    if (
+                        procedenciaActual.length === 0 ||
+                        !opciones.some((opcion) => opcion.value === procedenciaActual)
+                    ) {
+                        setValue('procedencia', opcionBolivia.value)
+                    }
+
+                    if (
+                        destinoActual.length === 0 ||
+                        !opciones.some((opcion) => opcion.value === destinoActual)
+                    ) {
+                        setValue('destino', opcionBolivia.value)
+                    }
+                }
+            } catch {
+                // Mantener fallback local si la consulta falla
+            }
+        }
+
+        void cargarPaises()
 
         return () => {
             activo = false
@@ -295,6 +418,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
+                                    onChange={onCambioCantidad('tn')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -305,6 +429,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
+                                    onChange={onCambioCantidad('kg')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -315,6 +440,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
+                                    onChange={onCambioCantidad('g')}
                                 />
                             </div>
                             <div className="flex items-center gap-1">
@@ -325,6 +451,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     label=""
                                     control={control}
                                     size="small"
+                                    onChange={onCambioCantidad('mg')}
                                 />
                             </div>
                         </div>
@@ -348,14 +475,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                         name="procedencia"
                         label="Procedencia"
                         control={control}
-                        options={[{ id: 'bolivia', label: 'Bolivia', value: 'bolivia' }]}
+                        options={opcionesPaises}
                     />
                     <FormInputDropdown
                         id="destino"
                         name="destino"
                         label="Destino"
                         control={control}
-                        options={[{ id: 'bolivia', label: 'Bolivia', value: 'bolivia' }]}
+                        options={opcionesPaises}
                     />
 
                     <div className="col-span-1 lg:col-span-3">

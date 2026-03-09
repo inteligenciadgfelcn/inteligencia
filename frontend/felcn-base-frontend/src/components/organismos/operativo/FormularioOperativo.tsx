@@ -14,6 +14,7 @@ import IconTrashLines from '@/components/Icon/IconTrashLines';
 import IconPlus from '@/components/Icon/IconPlus';
 import IconPencil from '@/components/Icon/IconPencil';
 import { useParametricas } from '@/hooks';
+import { SiiiLookupsService } from '@/services/parametricas';
 
 const ICON = icon({
     iconRetinaUrl: '/leaflet/marker-icon.png',
@@ -23,6 +24,69 @@ const ICON = icon({
 });
 
 export const FormularioOperativo = () => {
+    const formatearCantidad = (valor: number) => {
+        if (!Number.isFinite(valor)) return ''
+        if (Number.isInteger(valor)) return String(valor)
+        return valor.toFixed(12).replace(/\.?0+$/, '')
+    }
+
+    const parsearNumero = (valor: string) => {
+        const normalizado = valor
+            .trim()
+            .replace(/\s+/g, '')
+            .replace(',', '.')
+            .replace(/[^0-9.-]/g, '')
+
+        if (!normalizado) return null
+        const numero = Number(normalizado)
+        return Number.isFinite(numero) ? numero : null
+    }
+
+    const actualizarCantidades = (unidad: 'tn' | 'kg' | 'g' | 'mg', valor: string) => {
+        if (valor.trim().length === 0) {
+            setValue('cantidadTn', '')
+            setValue('cantidadKg', '')
+            setValue('cantidadG', '')
+            setValue('cantidadMg', '')
+            return
+        }
+
+        const numero = parsearNumero(valor)
+        if (numero === null) return
+
+        const kilos =
+            unidad === 'tn'
+                ? numero * 1000
+                : unidad === 'kg'
+                    ? numero
+                    : unidad === 'g'
+                        ? numero / 1000
+                        : numero / 1_000_000
+
+        const toneladas = kilos / 1000
+        const gramos = kilos * 1000
+        const miligramos = gramos * 1000
+
+        if (unidad !== 'tn') setValue('cantidadTn', formatearCantidad(toneladas))
+        if (unidad !== 'kg') setValue('cantidadKg', formatearCantidad(kilos))
+        if (unidad !== 'g') setValue('cantidadG', formatearCantidad(gramos))
+        if (unidad !== 'mg') setValue('cantidadMg', formatearCantidad(miligramos))
+    }
+
+    const onCambioCantidad =
+        (unidad: 'tn' | 'kg' | 'g' | 'mg') =>
+        (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            actualizarCantidades(unidad, event.target.value)
+        }
+
+    const normalizarValorPais = (valor: string) =>
+        valor
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '_')
+
     // ── Servicios paramétricos ────────────────────────────────────────────────
     const {
         departamentos,
@@ -116,6 +180,10 @@ export const FormularioOperativo = () => {
         value: String(p.id),
         label: String(p.descripcion ?? ''),
     }))
+
+    const [opcionesPaises, setOpcionesPaises] = useState<optionType[]>([
+        { id: 'bolivia', label: 'Bolivia', value: 'bolivia' },
+    ])
 
     const { control, watch, setValue, getValues } = useForm({
         defaultValues: {
@@ -357,6 +425,62 @@ export const FormularioOperativo = () => {
         }
     }, [distritalSeleccionado])
 
+    useEffect(() => {
+        let activo = true
+
+        const cargarPaises = async () => {
+            try {
+                const res = await SiiiLookupsService.obtenerPaises()
+                if (!activo || !res?.finalizado) return
+
+                const opciones: optionType[] = (res.datos ?? [])
+                    .map((item, index) => {
+                        const descripcion = String(item.descripcion ?? '').trim()
+                        const id = item.id ? String(item.id) : `pais-${index}`
+                        const value = normalizarValorPais(descripcion || id)
+
+                        return {
+                            id,
+                            value,
+                            label: descripcion || id,
+                        }
+                    })
+                    .filter((opcion) => opcion.label.length > 0)
+
+                if (opciones.length > 0) {
+                    setOpcionesPaises(opciones)
+                    const opcionBolivia =
+                        opciones.find((opcion) => opcion.value === 'bolivia') ??
+                        opciones[0]
+                    const procedenciaActual = String(getValues('procedencia') ?? '')
+                    const destinoActual = String(getValues('destino') ?? '')
+
+                    if (
+                        procedenciaActual.length === 0 ||
+                        !opciones.some((opcion) => opcion.value === procedenciaActual)
+                    ) {
+                        setValue('procedencia', opcionBolivia.value)
+                    }
+
+                    if (
+                        destinoActual.length === 0 ||
+                        !opciones.some((opcion) => opcion.value === destinoActual)
+                    ) {
+                        setValue('destino', opcionBolivia.value)
+                    }
+                }
+            } catch {
+                // Mantener fallback local si la consulta falla
+            }
+        }
+
+        void cargarPaises()
+
+        return () => {
+            activo = false
+        }
+    }, [getValues, setValue])
+
     const handleMapClick = (center: [number, number]) => {
         setValue('latitud', center[0]);
         setValue('longitud', center[1]);
@@ -499,19 +623,19 @@ export const FormularioOperativo = () => {
                         <div className="grid grid-cols-4 gap-2">
                             <div className="flex items-center gap-1">
                                 <span className="text-xs font-bold text-gray-500">Tn</span>
-                                <FormInputText id="cantidadTn" name="cantidadTn" label="" control={control} size="small" />
+                                <FormInputText id="cantidadTn" name="cantidadTn" label="" control={control} size="small" onChange={onCambioCantidad('tn')} />
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="text-xs font-bold text-gray-500">Kg</span>
-                                <FormInputText id="cantidadKg" name="cantidadKg" label="" control={control} size="small" />
+                                <FormInputText id="cantidadKg" name="cantidadKg" label="" control={control} size="small" onChange={onCambioCantidad('kg')} />
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="text-xs font-bold text-gray-500">g</span>
-                                <FormInputText id="cantidadG" name="cantidadG" label="" control={control} size="small" />
+                                <FormInputText id="cantidadG" name="cantidadG" label="" control={control} size="small" onChange={onCambioCantidad('g')} />
                             </div>
                             <div className="flex items-center gap-1">
                                 <span className="text-xs font-bold text-gray-500">Mg</span>
-                                <FormInputText id="cantidadMg" name="cantidadMg" label="" control={control} size="small" />
+                                <FormInputText id="cantidadMg" name="cantidadMg" label="" control={control} size="small" onChange={onCambioCantidad('mg')} />
                             </div>
                         </div>
                     </div>
@@ -520,8 +644,8 @@ export const FormularioOperativo = () => {
 
                     {/* Row 3 */}
                     <FormInputDropdown id="formaTransporte" name="formaTransporte" label="Forma de Transporte" control={control} options={[{ id: 'terrestre', label: 'Terrestre', value: 'terrestre' }, { id: 'aereo', label: 'Aereo', value: 'aereo' }, { id: 'fluvial', label: 'Fluvial', value: 'fluvial' }]} />
-                    <FormInputDropdown id="procedencia" name="procedencia" label="Procedencia" control={control} options={[{ id: 'bolivia', label: 'Bolivia', value: 'bolivia' }]} />
-                    <FormInputDropdown id="destino" name="destino" label="Destino" control={control} options={[{ id: 'bolivia', label: 'Bolivia', value: 'bolivia' }]} />
+                    <FormInputDropdown id="procedencia" name="procedencia" label="Procedencia" control={control} options={opcionesPaises} />
+                    <FormInputDropdown id="destino" name="destino" label="Destino" control={control} options={opcionesPaises} />
 
                     {/* Row 4 - File Upload 1 */}
                     <div className="col-span-1 lg:col-span-3">
