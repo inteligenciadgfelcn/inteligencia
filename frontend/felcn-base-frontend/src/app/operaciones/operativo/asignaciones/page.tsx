@@ -12,12 +12,12 @@ export default function AsignacionesPage() {
         <div className="flex flex-col gap-6">
             <AsignacionesDatatable
                 title="Asignaciones Aprobadas"
-                endpoint="/asignaciones/usuario/admin"
+                endpoint="/operativos/casos/usuario/:usuario"
                 queryKeyName="asignaciones-aprobadas"
             />
             <AsignacionesDatatable
                 title="Asignaciones No Aprobadas"
-                endpoint="/asignaciones/usuario/admin/no-aprobados"
+                endpoint="/operativos/casos/no-aprobados/usuario/:usuario"
                 queryKeyName="asignaciones-no-aprobadas"
             />
         </div>
