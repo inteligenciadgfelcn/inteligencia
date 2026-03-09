@@ -6,6 +6,9 @@ import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasF
 import { Seccion3Form } from './secciones/Seccion3Form'
 import { Seccion4Form } from './secciones/Seccion4Form'
 import { Seccion5Form } from './secciones/Seccion5Form'
+import { Seccion6Form } from './secciones/Seccion6Form'
+import { Seccion7Form } from './secciones/Seccion7Form'
+import { Seccion8Form } from './secciones/Seccion8Form'
 import { useGestionOperativoForm, type SeccionKey } from '../hooks/useGestionOperativoForm'
 import {
     useSeccion1,
@@ -13,6 +16,9 @@ import {
     useSeccion3,
     useSeccion4,
     useSeccion5,
+    useSeccion6,
+    useSeccion7,
+    useSeccion8,
 } from '../hooks/useGestionOperativoSecciones'
 
 interface FormGestionOperativoProps {
@@ -25,6 +31,9 @@ const SECCIONES: { key: SeccionKey; label: string }[] = [
     { key: 'seccion-3', label: 'Seccion 3' },
     { key: 'seccion-4', label: 'Seccion 4' },
     { key: 'seccion-5', label: 'Seccion 5' },
+    { key: 'seccion-6', label: 'Seccion 6' },
+    { key: 'seccion-7', label: 'Seccion 7' },
+    { key: 'seccion-8', label: 'Seccion 8' },
 ]
 
 export function FormGestionOperativo({
@@ -43,6 +52,9 @@ export function FormGestionOperativo({
     const seccion3 = useSeccion3(id)
     const seccion4 = useSeccion4(id)
     const seccion5 = useSeccion5(id)
+    const seccion6 = useSeccion6(id)
+    const seccion7 = useSeccion7(id)
+    const seccion8 = useSeccion8(id)
 
     const toggleSeccion = (key: SeccionKey) => {
         setSeccionActiva(key)
@@ -52,7 +64,7 @@ export function FormGestionOperativo({
         if (key === 'seccion-1') {
             return (
                 <DatosGeneralesForm
-                    titulo="Seccion 1"
+                    titulo="DATOS GENERALES"
                     onGuardar={seccion1.mutation.mutateAsync}
                     cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
                 />
@@ -62,7 +74,7 @@ export function FormGestionOperativo({
         if (key === 'seccion-2') {
             return (
                 <SeccionDrogasFotografiaLogotiposForm
-                    titulo="Seccion 2"
+                    titulo="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES"
                     onGuardar={seccion2.mutation.mutateAsync}
                     onRecuperar={() => seccion2.query.refetch()}
                     cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
@@ -73,7 +85,7 @@ export function FormGestionOperativo({
         if (key === 'seccion-3') {
             return (
                 <Seccion3Form
-                    titulo="Seccion 3"
+                    titulo="SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS"
                     onGuardar={seccion3.mutation.mutateAsync}
                     onRecuperar={() => seccion3.query.refetch()}
                     cargando={seccion3.mutation.isPending || seccion3.query.isFetching}
@@ -84,7 +96,7 @@ export function FormGestionOperativo({
         if (key === 'seccion-4') {
             return (
                 <Seccion4Form
-                    titulo="Seccion 4"
+                    titulo="SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS"
                     onGuardar={seccion4.mutation.mutateAsync}
                     onRecuperar={() => seccion4.query.refetch()}
                     cargando={seccion4.mutation.isPending || seccion4.query.isFetching}
@@ -92,12 +104,56 @@ export function FormGestionOperativo({
             )
         }
 
+        if (key === 'seccion-5') {
+            return (
+                <Seccion5Form
+                    titulo="LABORATORIOS Y FABRICAS"
+                    onGuardar={seccion5.mutation.mutateAsync}
+                    onRecuperar={() => seccion5.query.refetch()}
+                    cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-6') {
+            return (
+                <Seccion6Form
+                    titulo="PERSONAS: PRINCIPAL IMPLICADO / APREHENDIDAS / ARRESTADAS / LGI O PERDIDA DE DOMINIO"
+                    onGuardar={seccion6.mutation.mutateAsync}
+                    onRecuperar={() => seccion6.query.refetch()}
+                    cargando={seccion6.mutation.isPending || seccion6.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-7') {
+            return (
+                <Seccion7Form
+                    titulo="BIENES U OBJETOS SECUESTRADOS"
+                    onGuardar={seccion7.mutation.mutateAsync}
+                    onRecuperar={() => seccion7.query.refetch()}
+                    cargando={seccion7.mutation.isPending || seccion7.query.isFetching}
+                />
+            )
+        }
+
+        if (key === 'seccion-8') {
+            return (
+                <Seccion8Form
+                    titulo="GALERIA FOTOGRAFICA DEL OPERATIVO"
+                    onGuardar={seccion8.mutation.mutateAsync}
+                    onRecuperar={() => seccion8.query.refetch()}
+                    cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
+                />
+            )
+        }
+
         return (
-            <Seccion5Form
-                titulo="Seccion 5"
-                onGuardar={seccion5.mutation.mutateAsync}
-                onRecuperar={() => seccion5.query.refetch()}
-                cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
+            <Seccion8Form
+                titulo="Seccion 8"
+                onGuardar={seccion8.mutation.mutateAsync}
+                onRecuperar={() => seccion8.query.refetch()}
+                cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
             />
         )
     }
