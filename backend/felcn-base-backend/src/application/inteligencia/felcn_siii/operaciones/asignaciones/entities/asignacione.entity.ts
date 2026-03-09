@@ -83,7 +83,7 @@ export class Asignacion {
   @Column({
     name: 'codigo_servicio',
     type: 'varchar',
-    length: 100,
+    length: 30,
     comment: 'Código interno del servicio asociado a la asignación',
   })
   codigoServicio: string

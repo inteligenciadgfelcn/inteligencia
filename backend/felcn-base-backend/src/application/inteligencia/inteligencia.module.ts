@@ -11,6 +11,17 @@ import { GrupoModule } from './felcn_siii/parametricas/grupo/grupo.module'
 import { GradoModule } from './felcn_siii/parametricas/grado/grado.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
 import { PruebaModule } from './reportes/prueba/prueba.module'
+import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module';
+import { TipoDocumentoModule } from './felcn_siii/parametricas/tipo_documento/tipo_documento.module';
+import { ProfesionModule } from './felcn_siii/parametricas/profesion/profesion.module';
+import { EstadoCivilModule } from './felcn_siii/parametricas/estado_civil/estado_civil.module';
+import { TipoNarizModule } from './felcn_siii/parametricas/tipo_nariz/tipo_nariz.module';
+import { ColorPielModule } from './felcn_siii/parametricas/color_piel/color_piel.module';
+import { ColorCabelloModule } from './felcn_siii/parametricas/color_cabello/color_cabello.module';
+import { ColorOjosModule } from './felcn_siii/parametricas/color_ojos/color_ojos.module';
+import { TipoOjosModule } from './felcn_siii/parametricas/tipo_ojos/tipo_ojos.module';
+import { TipoCabelloModule } from './felcn_siii/parametricas/tipo_cabello/tipo_cabello.module';
+import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constitucion_corporal/constitucion_corporal.module'
 
 @Module({
   imports: [
@@ -25,6 +36,17 @@ import { PruebaModule } from './reportes/prueba/prueba.module'
     AsignacionesModule,
     ServicioModule,
     PruebaModule,
+    FiliacionModule,
+    TipoDocumentoModule,
+    ProfesionModule,
+    EstadoCivilModule,
+    TipoNarizModule,
+    ColorPielModule,
+    ColorCabelloModule,
+    ColorOjosModule,
+    TipoOjosModule,
+    ConstitucionCorporalModule,
+    TipoCabelloModule,
   ],
 })
 export class InteligenciaModule {}

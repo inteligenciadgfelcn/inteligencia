@@ -94,7 +94,7 @@ export class AsignacionesService {
       distrital: grupo.distrital,
       unidad: grupo.distrital.unidad,
       nroOperativo,
-      codigoServicio: 'SERV-001',
+      codigoServicio: dto.codigoServicio,
       nombreCaso: dto.nombreCaso,
       fechaSolicitud: dto.fechaSolicitud,
       nombreSolicitud: dto.nombreSolicitud,
@@ -103,6 +103,7 @@ export class AsignacionesService {
       telefonoAsignado: dto.telefonoAsignado,
       fiscalAsignado: dto.fiscalAsignado,
       telefonoFiscal: dto.telefonoFiscal,
+      usuario:dto.usuario
     })
 
     return await this.asignacionRepository.save(asignacion)
