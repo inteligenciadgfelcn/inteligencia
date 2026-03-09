@@ -137,39 +137,47 @@ export function GestionOperativoListado() {
     ]
 
     return (
-        <VristoDataTable<GestionOperativoItem>
-            title="Gestión de Operativos"
-            rows={filasPagina}
-            total={total}
-            page={page}
-            limit={limit}
-            onPageChange={setPage}
-            onLimitChange={(l) => { setLimit(l); setPage(1) }}
-            search={search}
-            onSearchChange={(v) => { setSearch(v); setPage(1) }}
-            columns={columns}
-            loading={isLoading}
-            onExportPrint={() => window.print()}
-            extraButtons={
-                <>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() =>
-                            router.push('/operaciones/operativo/gestion-operativo/registro')
-                        }
-                    >
-                        Nuevo Registro
-                    </Button>
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary btn-sm m-1"
-                        onClick={() => void refetch()}
-                    >
-                        Actualizar
-                    </button>
-                </>
-            }
-        />
+        <section className="space-y-5">
+            <div className="panel flex items-center p-3 text-primary">
+                <span className="text-lg font-semibold">Gestión de Operativos - Listado</span>
+            </div>
+
+            <div className="panel p-1 w-full">
+                <VristoDataTable<GestionOperativoItem>
+                    title="Gestión de Operativos"
+                    rows={filasPagina}
+                    total={total}
+                    page={page}
+                    limit={limit}
+                    onPageChange={setPage}
+                    onLimitChange={(l) => { setLimit(l); setPage(1) }}
+                    search={search}
+                    onSearchChange={(v) => { setSearch(v); setPage(1) }}
+                    columns={columns}
+                    loading={isLoading}
+                    onExportPrint={() => window.print()}
+                    extraButtons={
+                        <>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                    router.push('/operaciones/operativo/gestion-operativo/registro')
+                                }
+                            >
+                                Nuevo Registro
+                            </Button>
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm m-1"
+                                onClick={() => void refetch()}
+                            >
+                                Actualizar
+                            </button>
+                        </>
+                    }
+                />
+            </div>
+        </section>
     )
 }
