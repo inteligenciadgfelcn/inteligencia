@@ -12,54 +12,47 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { Detenido } from '../../detenido/entities/detenido.entity'
 
 @Entity({ name: 'fenotipo_detenido', schema: 'public' })
 export class FenotipoDetenido {
-  @PrimaryGeneratedColumn({
+  
+ @PrimaryGeneratedColumn({
     name: 'id_fenotipo_detenido',
     type: 'int',
-    comment: 'Clave primaria del registro',
   })
   idFenotipoDetenido: number
 
-  @Column({
-    name: 'id_detenido',
-    type: 'int',
-    nullable: true,
-    comment: 'Identificador del detenido',
-  })
-  idDetenido: number
+  @ManyToOne(() => Detenido)
+  @JoinColumn({ name: 'id_detenido' })
+  detenido: Detenido
 
   @Column({
     name: 'fecha',
-    type: 'timestamp',
-    comment: 'Fecha',
+    type: 'timestamp'
   })
   fecha: Date
 
   @Column({
     name: 'estatura',
     type: 'varchar',
-    length: 10,
-    comment: 'Estatura del detenido',
+    length: 10
   })
   estatura: string
 
   @Column({
-    name: 'peso',
+    name: 'peso_corporal',
     type: 'varchar',
     length: 10,
-    nullable: true,
-    comment: 'Peso del detenido',
+    nullable: true
   })
-  apellidoPaterno: string
+  pesoCorporal: string
 
   @Column({
     name: 'sena_particular',
     type: 'varchar',
     length: 255,
-    nullable: true,
-    comment: 'Señas particulares del detenido',
+    nullable: true
   })
   senasParticulares: string
 
@@ -67,51 +60,36 @@ export class FenotipoDetenido {
     name: 'tatuaje',
     type: 'varchar',
     length: 255,
-    nullable: true,
-    comment: 'Tatuajes del detenido',
+    nullable: true
   })
   tatuaje: string
 
-  @ManyToOne(() => TipoNariz, { nullable: true })
-  @JoinColumn({
-    name: 'id_tipo_nariz',
-  })
+  @ManyToOne(() => TipoNariz)
+  @JoinColumn({ name: 'id_tipo_nariz' })
   tipoNariz: TipoNariz
 
-  @ManyToOne(() => ConstitucionCorporal, { nullable: true })
-  @JoinColumn({
-    name: 'id_constitucion_coorporal',
-  })
+  @ManyToOne(() => ConstitucionCorporal)
+  @JoinColumn({ name: 'id_constitucion_corporal' })
   constitucionCorporal: ConstitucionCorporal
 
-  @ManyToOne(() => ColorPiel, { nullable: true })
-  @JoinColumn({
-    name: 'id_color_piel',
-  })
+  @ManyToOne(() => ColorPiel)
+  @JoinColumn({ name: 'id_color_piel' })
   colorPiel: ColorPiel
 
-  @ManyToOne(() => ColorCabello, { nullable: true })
-  @JoinColumn({
-    name: 'id_color_cabello',
-  })
+  @ManyToOne(() => ColorCabello)
+  @JoinColumn({ name: 'id_color_cabello' })
   colorCabello: ColorCabello
 
-  @ManyToOne(() => TipoCabello, { nullable: true })
-  @JoinColumn({
-    name: 'id_tipo_cabello',
-  })
+  @ManyToOne(() => TipoCabello)
+  @JoinColumn({ name: 'id_tipo_cabello' })
   tipoCabello: TipoCabello
 
-  @ManyToOne(() => ColorOjo, { nullable: true })
-  @JoinColumn({
-    name: 'id_tipo_cabello',
-  })
+  @ManyToOne(() => ColorOjo)
+  @JoinColumn({ name: 'id_color_ojos' })
   colorOjos: ColorOjo
 
-  @ManyToOne(() => TipoOjo, { nullable: true })
-  @JoinColumn({
-    name: 'id_tipo_cabello',
-  })
+  @ManyToOne(() => TipoOjo)
+  @JoinColumn({ name: 'id_tipo_ojos' })
   tipoOjos: TipoOjo
 
   @Column({

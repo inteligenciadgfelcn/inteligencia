@@ -7,15 +7,10 @@ import {
   MaxLength,
   IsBoolean,
   IsOptional,
+  IsDateString,
 } from 'class-validator'
 
 export class CreateDetenidoDto {
-  @ApiProperty({ example: 1, description: 'ID del operativo' })
-  @Type(() => Number)
-  @IsNumber()
-  @IsNotEmpty()
-  idOperativo: number
-
   @ApiProperty({ example: 'FELCN-2026-001', description: 'Número de caso' })
   @IsString()
   @MaxLength(50)
@@ -52,11 +47,10 @@ export class CreateDetenidoDto {
 
   @ApiProperty({ example: true, description: 'Indica si es masculino' })
   @IsBoolean()
-  esMasculino?: boolean
+  genero?: boolean
 
-  @ApiProperty({ example: '25-12-1996', description: 'Fecha de nacimiento' })
-  @IsString()
-  @MaxLength(20)
+  @ApiProperty({ example: '1996-12-25', description: 'Fecha de nacimiento' })
+  @IsDateString()
   fechaNacimiento?: string
 
   @ApiProperty({
@@ -94,7 +88,7 @@ export class CreateDetenidoDto {
   @ApiProperty({ example: true })
   @IsBoolean()
   @IsOptional()
-  condicionPersona?: boolean
+  estaVivo?: boolean
 
   @ApiProperty({ example: 'base64imagen', description: 'Foto frontal' })
   @IsString()

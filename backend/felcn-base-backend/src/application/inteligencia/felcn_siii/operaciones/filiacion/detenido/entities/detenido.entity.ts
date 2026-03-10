@@ -1,3 +1,4 @@
+
 import { EstadoCivil } from '@/application/inteligencia/felcn_siii/parametricas/estado_civil/entities/estado_civil.entity'
 import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
 import {
@@ -69,19 +70,19 @@ export class Detenido {
   })
   apellidoEsposo: string
 
-  @ManyToOne(() => Pais, { nullable: true })
+  @ManyToOne(() => Pais)
   @JoinColumn({
     name: 'id_pais',
   })
   pais: Pais
 
   @Column({
-    name: 'es_masculino',
+    name: 'genero',
     type: 'boolean',
     nullable: true,
     comment: 'Indica si el detenido es de sexo masculino',
   })
-  esMasculino: boolean
+  genero: boolean
 
   @Column({
     name: 'fecha_nacimiento',
@@ -91,7 +92,7 @@ export class Detenido {
   })
   fechaNacimiento: Date
 
-  @ManyToOne(() => EstadoCivil, { nullable: true })
+  @ManyToOne(() => EstadoCivil)
   @JoinColumn({
     name: 'id_estado_civil',
   })
@@ -188,14 +189,14 @@ export class Detenido {
   @Column({
     name: 'usuario',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que registró la información',
   })
   usuario: string
 
   @Column({
-    name: 'fecha_hora_actualizacion',
+    name: 'fecha_hora actualizacion',
     type: 'timestamp',
     nullable: true,
     comment: 'Fecha y hora de última actualización',
@@ -205,7 +206,7 @@ export class Detenido {
   @Column({
     name: 'usuario_actualizacion',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que realizó la última actualización',
   })

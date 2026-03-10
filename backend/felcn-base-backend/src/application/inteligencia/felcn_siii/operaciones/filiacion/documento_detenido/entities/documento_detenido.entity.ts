@@ -1,14 +1,25 @@
 import { TipoDocumento } from '@/application/inteligencia/felcn_siii/parametricas/tipo_documento/entities/tipo_documento.entity'
-import { PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne, Entity } from 'typeorm'
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  Entity,
+} from 'typeorm'
+import { Detenido } from '../../detenido/entities/detenido.entity'
 
-@Entity({ name: 'docuemnto_detenido', schema: 'public' })
+@Entity({ name: 'documento_detenido', schema: 'public' })
 export class DocumentoDetenido {
   @PrimaryGeneratedColumn({
-    name: 'id_detenido_auxiliar',
+    name: 'id_documento_detenido',
     type: 'int',
-    comment: 'Clave primaria del registro de filiación del detenido',
+    comment: 'Clave primaria del registro',
   })
-  idDetenidoAuxiliar: number
+  idDocumentoDetenido: number
+
+  @ManyToOne(() => Detenido)
+    @JoinColumn({ name: 'id_detenido' })
+    detenido: Detenido
 
   @Column({
     name: 'id_operativo',
@@ -18,10 +29,8 @@ export class DocumentoDetenido {
   })
   idOperativo: number
 
-  @ManyToOne(() => TipoDocumento, { nullable: true })
-  @JoinColumn({
-    name: 'id_tipo_documento',
-  })
+  @ManyToOne(() => TipoDocumento)
+  @JoinColumn({ name: 'id_tipo_documento' })
   tipoDocumento: TipoDocumento
 
   @Column({
@@ -53,7 +62,7 @@ export class DocumentoDetenido {
   @Column({
     name: 'usuario',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que registró la información',
   })
@@ -70,7 +79,7 @@ export class DocumentoDetenido {
   @Column({
     name: 'usuario_actualizacion',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que realizó la última actualización',
   })
