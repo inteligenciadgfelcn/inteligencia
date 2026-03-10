@@ -22,7 +22,7 @@ import { Grupo } from '../services/group.service'
 import { getNumeroRegistro } from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
-import { AsiganacionTable } from '../types/RegistroType'
+import { AsignacionTable } from '../types/RegistroType'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -68,7 +68,7 @@ export type FormValues = z.infer<typeof formSchema>
 /* ================= PROPS ================= */
 
 interface Props {
-  asignacion?: AsiganacionTable | null
+  asignacion?: AsignacionTable | null
   onSuccess: () => void
 }
 
@@ -165,13 +165,15 @@ export const FormRegistro = ({ onSuccess }: Props) => {
       //   "telefonoFiscal": "72000000"
       // }
       const payload = {
-        idDepartamento: values.departamento,
-        idGrupo: values.grupo,
+        codigoServicio: values.codigoServicio,
+        nroPase: values.nroPase,
+        idDepartamento: values.departamento.value,
+        idGrupo: values.grupo.value,
         nombreCaso: values.nombreOperativo,
         fechaSolicitud: values.fechaHoraOperativo,
-        nombreSolicitud: values.quienRealiza,
+        nombreSolicitud: values.quienRealiza.label,
         telefonoSolicitud: values.quienRealizaNum,
-        asignado: values.asignadoA,
+        asignado: values.asignadoA.label,
         telefonoAsignado: values.asignadoANum,
         fiscalAsignado: values.fiscalAsignado,
         telefonoFiscal: values.fiscalAsignadoNum,
