@@ -22,7 +22,7 @@ import { Grupo } from '../services/group.service'
 import { getNumeroRegistro } from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
-import { AsignacionTable } from '../types/RegistroType'
+import { AsignacionTable } from '../types/asignacion.table'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>

@@ -24,8 +24,9 @@ import { sortBy } from 'lodash'
 import { FormRegistro } from './FormRegistro'
 import { AlertaEstadoRegistro } from './AlertaEstadoRegistro'
 import { RegistroDetalle } from './RegistroDetalle'
-import { AsignacionTable } from '../types/RegistroType'
+import { AsignacionTable } from '../types/asignacion.table'
 import { imprimir } from '@/utils/imprimir'
+import IconTrash from '@/components/Icon/IconTrash'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
@@ -202,20 +203,16 @@ export function RegistrosDataTable() {
             </button>
           )}
 
-          {/* {permisos.update && (
-              <button
-                onClick={() => {
-                  setSelected(row)
-                  setOpenEstado(true)
-                }}
-              >
-                <IconRefresh
-                  className={`w-5 h-5 ${
-                    row.estado === 'ACTIVO' ? 'text-success' : 'text-danger'
-                  }`}
-                />
-              </button>
-            )} */}
+          {permisos.update && (
+            <button
+              onClick={() => {
+                setSelected(row)
+                setOpenEstado(true)
+              }}
+            >
+              <IconTrash className="ms-2 h-5 text-primary" />
+            </button>
+          )}
 
           {/* {permisos.update && (
             <button
@@ -305,7 +302,7 @@ export function RegistrosDataTable() {
       {openEstado && (
         <AlertaEstadoRegistro
           isOpen
-          registro={selected}
+          asignacion={selected}
           onClose={() => setOpenEstado(false)}
           onSuccess={() => {
             setOpenEstado(false)

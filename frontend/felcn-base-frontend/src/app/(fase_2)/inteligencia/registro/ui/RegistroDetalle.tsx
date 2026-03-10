@@ -3,7 +3,7 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import IconX from '@/components/Icon/IconX'
-import { AsignacionTable } from '../types/RegistroType'
+import { AsignacionTable } from '../types/asignacion.table'
 
 interface RegistroDetalleProps {
   isOpen: boolean
