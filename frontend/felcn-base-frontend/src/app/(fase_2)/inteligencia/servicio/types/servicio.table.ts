@@ -6,8 +6,6 @@ export interface ServicioTable {
   fechaIngreso: string
   fechaSalida: string
   estado: string
-  // TODO: agregar mas adelante
-  nombreUsuarioPrincipal: null
-  // TODO: agregar mas adelante
-  nombreUsuarioEmergencia: null
+  nombreUsuarioPrincipal: string
+  nombreUsuarioEmergencia: string
 }
