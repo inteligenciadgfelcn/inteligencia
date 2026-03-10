@@ -166,7 +166,7 @@ export const FormRegistro = ({ onSuccess }: Props) => {
       // }
       const payload = {
         codigoServicio: values.codigoServicio,
-        nroPase: values.nroPase,
+        usuario: values.nroPase,
         idDepartamento: values.departamento.value,
         idGrupo: values.grupo.value,
         nombreCaso: values.nombreOperativo,
@@ -186,7 +186,9 @@ export const FormRegistro = ({ onSuccess }: Props) => {
       })
 
       Alerta({
-        mensaje: InterpreteMensajes(resp),
+        mensaje: InterpreteMensajes({
+          mensaje: 'Caso registrado correctamente',
+        }),
         variant: 'success',
       })
 
