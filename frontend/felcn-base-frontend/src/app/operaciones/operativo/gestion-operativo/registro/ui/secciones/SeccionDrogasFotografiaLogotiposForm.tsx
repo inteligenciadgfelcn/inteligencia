@@ -9,21 +9,23 @@ import { FormInputDropdown, FormInputText } from '@/components/form'
 import FormInputFile from '@/components/form/FormInputFile'
 import IconTrashLines from '@/components/Icon/IconTrashLines'
 import { SiiiLookupsService } from '@/services/parametricas'
-import { GestionOperativoCatalogosService } from '@/services/operativos'
+import {
+  GestionOperativoCatalogosService,
+  GestionOperativoDrogasService,
+  GestionOperativoLogotiposService,
+} from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 
 interface SeccionFormProps {
   titulo: string
-  onGuardar: (payload: SeccionPayloadBase) => Promise<unknown>
-  onRecuperar: () => Promise<unknown>
+  onGuardar?: (payload: SeccionPayloadBase) => Promise<unknown>
+  onRecuperar?: () => Promise<unknown>
   cargando?: boolean
+  idCaso?: number
 }
 
 export function SeccionDrogasFotografiaLogotiposForm({
-  titulo,
-  onGuardar,
-  onRecuperar,
-  cargando = false,
+  idCaso = 0,
 }: SeccionFormProps) {
   const normalizarValorPais = (valor: string) =>
     valor
@@ -33,7 +35,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
       .toLowerCase()
       .replace(/\s+/g, '_')
 
-  const { control, getValues, setValue, watch } = useForm({
+  const {
+    control: controlDrogas,
+    getValues: getDrogasValues,
+    handleSubmit: handleSubmitDrogas,
+    setValue: setDrogasValue,
+    watch: watchDrogas,
+    reset: resetDrogas,
+  } = useForm({
     defaultValues: {
       tipoDroga: 'marihuana',
       estadoDroga: 'seco',
@@ -48,13 +57,22 @@ export function SeccionDrogasFotografiaLogotiposForm({
       destino: 'bolivia',
       fotoPruebaCampo: [],
       fotoCuantificacion: [],
+    },
+  })
+
+  const {
+    control: controlLogos,
+    handleSubmit: handleSubmitLogos,
+    reset: resetLogos,
+  } = useForm({
+    defaultValues: {
       logoImagen: '',
       logoDescripcion: '',
       logoOrganizacion: '',
       logoBlancos: '',
       logoObservacion: '',
       fotoLogo: [],
-    },
+    },          
   })
 
   const [opcionesTiposDroga, setOpcionesTiposDroga] = useState([
@@ -73,7 +91,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [opcionesPaises, setOpcionesPaises] = useState([
     { id: 'bolivia', label: 'Bolivia', value: 'bolivia' },
   ])
-  const tipoDrogaSeleccionada = watch('tipoDroga')
+  const tipoDrogaSeleccionada = watchDrogas('tipoDroga')
 
   useEffect(() => {
     let activo = true
@@ -106,9 +124,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesTiposDroga(opciones)
-          const tipoActual = String(getValues('tipoDroga') ?? '')
+          const tipoActual = String(getDrogasValues('tipoDroga') ?? '')
           if (!opciones.some((opcion) => opcion.value === tipoActual)) {
-            setValue('tipoDroga', opciones[0].value)
+            setDrogasValue('tipoDroga', opciones[0].value)
           }
         }
       } catch {
@@ -121,7 +139,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return () => {
       activo = false
     }
-  }, [getValues, setValue])
+  }, [getDrogasValues, setDrogasValue])
 
   useEffect(() => {
     let activo = true
@@ -150,21 +168,21 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
           const opcionBolivia =
             opciones.find((opcion) => opcion.value === 'bolivia') ?? opciones[0]
-          const procedenciaActual = String(getValues('procedencia') ?? '')
-          const destinoActual = String(getValues('destino') ?? '')
+          const procedenciaActual = String(getDrogasValues('procedencia') ?? '')
+          const destinoActual = String(getDrogasValues('destino') ?? '')
 
           if (
             procedenciaActual.length === 0 ||
             !opciones.some((opcion) => opcion.value === procedenciaActual)
           ) {
-            setValue('procedencia', opcionBolivia.value)
+            setDrogasValue('procedencia', opcionBolivia.value)
           }
 
           if (
             destinoActual.length === 0 ||
             !opciones.some((opcion) => opcion.value === destinoActual)
           ) {
-            setValue('destino', opcionBolivia.value)
+            setDrogasValue('destino', opcionBolivia.value)
           }
         }
       } catch {
@@ -177,7 +195,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return () => {
       activo = false
     }
-  }, [getValues, setValue])
+  }, [getDrogasValues, setDrogasValue])
 
   useEffect(() => {
     let activo = true
@@ -210,9 +228,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesFormasTransporte(opciones)
-          const formaActual = String(getValues('formaTransporte') ?? '')
+          const formaActual = String(getDrogasValues('formaTransporte') ?? '')
           if (!opciones.some((opcion) => opcion.value === formaActual)) {
-            setValue('formaTransporte', opciones[0].value)
+            setDrogasValue('formaTransporte', opciones[0].value)
           }
         }
       } catch {
@@ -225,7 +243,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return () => {
       activo = false
     }
-  }, [getValues, setValue])
+  }, [getDrogasValues, setDrogasValue])
 
   useEffect(() => {
     let activo = true
@@ -278,9 +296,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesEstadosDroga(opciones)
-          const estadoActual = String(getValues('estadoDroga') ?? '')
+          const estadoActual = String(getDrogasValues('estadoDroga') ?? '')
           if (!opciones.some((opcion) => opcion.value === estadoActual)) {
-            setValue('estadoDroga', opciones[0].value)
+            setDrogasValue('estadoDroga', opciones[0].value)
           }
         }
       } catch {
@@ -293,225 +311,373 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return () => {
       activo = false
     }
-  }, [getValues, opcionesTiposDroga, setValue, tipoDrogaSeleccionada])
+  }, [getDrogasValues, opcionesTiposDroga, setDrogasValue, tipoDrogaSeleccionada])
 
-  const [items, setItems] = useState<any[]>([])
+  const [drogasItems, setDrogasItems] = useState<any[]>([])
+  const [logotiposItems, setLogotiposItems] = useState<any[]>([])
+  const [cargandoDrogas, setCargandoDrogas] = useState(false)
+  const [cargandoLogotipos, setCargandoLogotipos] = useState(false)
+  const [drogaSeleccionadaId, setDrogaSeleccionadaId] = useState<number | null>(
+    null
+  )
 
-  const deleteItem = (id: any) => {
-    setItems(items.filter((d) => d.id !== id))
+  const parseNumber = (valor: unknown) => {
+    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0
+    const normalizado = Number(String(valor ?? '').replace(',', '.'))
+    return Number.isFinite(normalizado) ? normalizado : 0
   }
-const agregarLogo = (id: any) => {
-    // Lógica para agregar un logo al item con el id proporcionado
 
+  const resolverIdOpcion = (
+    valorSeleccionado: unknown,
+    opciones: { id: string; value: string }[]
+  ) => {
+    const valor = String(valorSeleccionado ?? '')
+    const idDirecto = Number(valor)
+    if (Number.isFinite(idDirecto) && idDirecto > 0) return idDirecto
+    const opcion = opciones.find((item) => item.value === valor)
+    const idOpcion = Number(opcion?.id ?? 0)
+    return Number.isFinite(idOpcion) ? idOpcion : 0
   }
-  const addItem = () => {
-    const data: any = getValues()
+
+  const obtenerIdDroga = (row: Record<string, unknown>) => {
+    const id = Number(row.id ?? row.idDroga ?? row.id_droga ?? 0)
+    return Number.isFinite(id) ? id : 0
+  }
+
+  const cargarDrogas = async () => {
+    if (!idCaso) return
+    setCargandoDrogas(true)
+    try {
+      const res = await GestionOperativoDrogasService.listar(idCaso)
+      if (res?.finalizado) {
+        const lista = Array.isArray(res.datos) ? res.datos : []
+        setDrogasItems(lista)
+        const primerId = lista.length > 0 ? obtenerIdDroga(lista[0]) : 0
+        if (primerId > 0) {
+          setDrogaSeleccionadaId((actual) => actual ?? primerId)
+        }
+      }
+    } finally {
+      setCargandoDrogas(false)
+    }
+  }
+
+  const cargarLogotipos = async (idDroga: number) => {
+    if (!idCaso || !idDroga) return
+    setCargandoLogotipos(true)
+    try {
+      const res = await GestionOperativoLogotiposService.listar(idCaso, idDroga)
+      if (res?.finalizado) {
+        setLogotiposItems(Array.isArray(res.datos) ? res.datos : [])
+      }
+    } finally {
+      setCargandoLogotipos(false)
+    }
+  }
+
+  useEffect(() => {
+    void cargarDrogas()
+  }, [idCaso])
+
+  useEffect(() => {
+    if (drogaSeleccionadaId) {
+      void cargarLogotipos(drogaSeleccionadaId)
+    }
+  }, [drogaSeleccionadaId, idCaso])
+
+  const deleteDrogaItem = (id: any) => {
+    setDrogasItems((prev) => prev.filter((d) => d.id !== id))
+  }
+
+  const deleteLogotipoItem = (id: any) => {
+    setLogotiposItems((prev) => prev.filter((d) => d.id !== id))
+  }
+
+  const onSubmitDrogas = async (data: Record<string, any>) => {
+    if (!idCaso) return
+
+    const idTipoDroga = resolverIdOpcion(data.tipoDroga, opcionesTiposDroga)
+    const idEstadoDroga = resolverIdOpcion(data.estadoDroga, opcionesEstadosDroga)
+    const idFormaTransporte = resolverIdOpcion(
+      data.formaTransporte,
+      opcionesFormasTransporte
+    )
+    const idPaisProcedencia = resolverIdOpcion(data.procedencia, opcionesPaises)
+    const idPaisDestino = resolverIdOpcion(data.destino, opcionesPaises)
+
+    const gramos =
+      parseNumber(data.cantidadTn) * 1_000_000 +
+      parseNumber(data.cantidadKg) * 1_000 +
+      parseNumber(data.cantidadG) +
+      parseNumber(data.cantidadMg) / 1000
+
     const pruebaCampoFile =
       data.fotoPruebaCampo && data.fotoPruebaCampo.length > 0
         ? data.fotoPruebaCampo[0]
-        : null
+        : undefined
     const cuantificacionFile =
       data.fotoCuantificacion && data.fotoCuantificacion.length > 0
         ? data.fotoCuantificacion[0]
-        : null
+        : undefined
 
-    const newItem = {
-      id: Math.floor(Math.random() * 100000),
-      tipoDroga: data.tipoDroga,
-      estadoDroga: data.estadoDroga,
-      cantidad: `${data.cantidadTn || 0} Tn ${data.cantidadKg || 0} Kg`,
-      nroPastillas: data.nroPastillas,
-      formaTransporte: data.formaTransporte,
-      procedencia: data.procedencia,
-      destino: data.destino,
-      pruebaCampoUrl: pruebaCampoFile
-        ? URL.createObjectURL(pruebaCampoFile)
-        : null,
-      cuantificacionUrl: cuantificacionFile
-        ? URL.createObjectURL(cuantificacionFile)
-        : null,
+    setCargandoDrogas(true)
+    try {
+      await GestionOperativoDrogasService.crear(idCaso, {
+        idTipoDroga,
+        idEstadoDroga,
+        cantidadGramos: gramos,
+        cantidadUnidades: parseNumber(data.nroPastillas),
+        idFormaTransporte,
+        idPaisProcedencia,
+        idPaisDestino,
+        observaciones: data.cocainaLiquida
+          ? `Cocaina liquida (lt): ${data.cocainaLiquida}`
+          : undefined,
+        pruebaCampo: pruebaCampoFile,
+        pesaje: cuantificacionFile,
+      })
+      await cargarDrogas()
+      resetDrogas()
+    } finally {
+      setCargandoDrogas(false)
     }
-    setItems([...items, newItem])
+  }
+
+  const onSubmitLogotipos = async (data: Record<string, any>) => {
+    if (!idCaso || !drogaSeleccionadaId) return
+
+    const fotoLogoFile =
+      data.fotoLogo && data.fotoLogo.length > 0 ? data.fotoLogo[0] : undefined
+
+    setCargandoLogotipos(true)
+    try {
+      await GestionOperativoLogotiposService.crear(idCaso, drogaSeleccionadaId, {
+        imagen: String(data.logoImagen ?? ''),
+        descripcionLogo: String(data.logoDescripcion ?? ''),
+        organizacion: String(data.logoOrganizacion ?? ''),
+        blanco: data.logoBlancos ? String(data.logoBlancos) : undefined,
+        observacion: data.logoObservacion ? String(data.logoObservacion) : undefined,
+        fotografia: fotoLogoFile,
+      })
+      await cargarLogotipos(drogaSeleccionadaId)
+      resetLogos()
+    } finally {
+      setCargandoLogotipos(false)
+    }
   }
 
   return (
     <div>
-      {/* DRUGS SECTION */}
-      <Card title="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <FormInputDropdown
-            id="tipoDroga"
-            name="tipoDroga"
-            label="Tipo de Droga"
-            control={control}
-            options={opcionesTiposDroga}
-          />
-          <FormInputDropdown
-            id="estadoDroga"
-            name="estadoDroga"
-            label="Estado de la Droga"
-            control={control}
-            options={opcionesEstadosDroga}
-          />
-          <FormInputText
-            id="cocainaLiquida"
-            name="cocainaLiquida"
-            label="Cocaina Liquida en Litros"
-            control={control}
-          />
+      <form onSubmit={handleSubmitDrogas(onSubmitDrogas)}>
+        <Card title="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <FormInputDropdown
+              id="tipoDroga"
+              name="tipoDroga"
+              label="Tipo de Droga"
+              control={controlDrogas}
+              options={opcionesTiposDroga}
+            />
+            <FormInputDropdown
+              id="estadoDroga"
+              name="estadoDroga"
+              label="Estado de la Droga"
+              control={controlDrogas}
+              options={opcionesEstadosDroga}
+            />
+            <FormInputText
+              id="cocainaLiquida"
+              name="cocainaLiquida"
+              label="Cocaina Liquida en Litros"
+              control={controlDrogas}
+            />
 
-          <div className="col-span-1 md:col-span-2 lg:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-              Cantidad
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Tn</span>
-                <FormInputText
-                  id="cantidadTn"
-                  name="cantidadTn"
-                  label=""
-                  control={control}
-                  size="small"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Kg</span>
-                <FormInputText
-                  id="cantidadKg"
-                  name="cantidadKg"
-                  label=""
-                  control={control}
-                  size="small"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">g</span>
-                <FormInputText
-                  id="cantidadG"
-                  name="cantidadG"
-                  label=""
-                  control={control}
-                  size="small"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Mg</span>
-                <FormInputText
-                  id="cantidadMg"
-                  name="cantidadMg"
-                  label=""
-                  control={control}
-                  size="small"
-                />
+            <div className="col-span-1 md:col-span-2 lg:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Cantidad
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Tn</span>
+                  <FormInputText
+                    id="cantidadTn"
+                    name="cantidadTn"
+                    label=""
+                    control={controlDrogas}
+                    size="small"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Kg</span>
+                  <FormInputText
+                    id="cantidadKg"
+                    name="cantidadKg"
+                    label=""
+                    control={controlDrogas}
+                    size="small"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">g</span>
+                  <FormInputText
+                    id="cantidadG"
+                    name="cantidadG"
+                    label=""
+                    control={controlDrogas}
+                    size="small"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Mg</span>
+                  <FormInputText
+                    id="cantidadMg"
+                    name="cantidadMg"
+                    label=""
+                    control={controlDrogas}
+                    size="small"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <FormInputText
-            id="nroPastillas"
-            name="nroPastillas"
-            label="Nro. Pastillas o Capsulas (Tragones)"
-            control={control}
-          />
-
-          <FormInputDropdown
-            id="formaTransporte"
-            name="formaTransporte"
-            label="Forma de Transporte"
-            control={control}
-            options={opcionesFormasTransporte}
-          />
-          <FormInputDropdown
-            id="procedencia"
-            name="procedencia"
-            label="Procedencia"
-            control={control}
-            options={opcionesPaises}
-          />
-          <FormInputDropdown
-            id="destino"
-            name="destino"
-            label="Destino"
-            control={control}
-            options={opcionesPaises}
-          />
-
-          <div className="col-span-1 lg:col-span-3">
-            <FormInputFile
-              id="fotoPruebaCampo"
-              name="fotoPruebaCampo"
-              label="Fotografia Prueba de Campo"
-              control={control}
-              limite={1}
-              tiposPermitidos={['image/*']}
+            <FormInputText
+              id="nroPastillas"
+              name="nroPastillas"
+              label="Nro. Pastillas o Capsulas (Tragones)"
+              control={controlDrogas}
             />
-          </div>
 
-          <div className="col-span-1 lg:col-span-3">
-            <FormInputFile
-              id="fotoCuantificacion"
-              name="fotoCuantificacion"
-              label="Fotografia Cuantificacion y Pesaje"
-              control={control}
-              limite={1}
-              tiposPermitidos={['image/*']}
+            <FormInputDropdown
+              id="formaTransporte"
+              name="formaTransporte"
+              label="Forma de Transporte"
+              control={controlDrogas}
+              options={opcionesFormasTransporte}
             />
-          </div>
+            <FormInputDropdown
+              id="procedencia"
+              name="procedencia"
+              label="Procedencia"
+              control={controlDrogas}
+              options={opcionesPaises}
+            />
+            <FormInputDropdown
+              id="destino"
+              name="destino"
+              label="Destino"
+              control={controlDrogas}
+              options={opcionesPaises}
+            />
 
-          <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-            <Button variant="primary" type="button" onClick={addItem}>
-              Guardar
-            </Button>
+            <div className="col-span-1 lg:col-span-3">
+              <FormInputFile
+                id="fotoPruebaCampo"
+                name="fotoPruebaCampo"
+                label="Fotografia Prueba de Campo"
+                control={controlDrogas}
+                limite={1}
+                tiposPermitidos={['image/*']}
+              />
+            </div>
+
+            <div className="col-span-1 lg:col-span-3">
+              <FormInputFile
+                id="fotoCuantificacion"
+                name="fotoCuantificacion"
+                label="Fotografia Cuantificacion y Pesaje"
+                control={controlDrogas}
+                limite={1}
+                tiposPermitidos={['image/*']}
+              />
+            </div>
+
+            <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
+              <Button variant="primary" type="submit" disabled={cargandoDrogas}>
+                Guardar
+              </Button>
+            </div>
           </div>
+        </Card>
+      </form>
+
+      <Card className="mt-5" title="DATOS DE LA DROGA">
+        <div className="datatables">
+          <DataTable
+            withTableBorder={false}
+            className="table-hover whitespace-nowrap"
+            records={drogasItems}
+            columns={[
+              { accessor: 'id', title: 'Id' },
+              {
+                accessor: 'tipoDroga',
+                title: 'Tipo de Droga',
+                render: (row) => String(row.tipoDroga ?? row.idTipoDroga ?? ''),
+              },
+              {
+                accessor: 'estadoDroga',
+                title: 'Estado de la Droga',
+                render: (row) => String(row.estadoDroga ?? row.idEstadoDroga ?? ''),
+              },
+              {
+                accessor: 'cantidad',
+                title: 'Cantidad (gramos) / Litros',
+                render: (row) => String(row.cantidad ?? row.cantidadGramos ?? ''),
+              },
+              {
+                accessor: 'nroPastillas',
+                title: 'Nro. de Capsulas',
+                render: (row) => String(row.nroPastillas ?? row.cantidadUnidades ?? ''),
+              },
+              {
+                accessor: 'formaTransporte',
+                title: 'Forma de Transporte',
+                render: (row) =>
+                  String(row.formaTransporte ?? row.idFormaTransporte ?? ''),
+              },
+              {
+                accessor: 'procedencia',
+                title: 'Procedencia',
+                render: (row) =>
+                  String(row.procedencia ?? row.idPaisProcedencia ?? ''),
+              },
+              {
+                accessor: 'destino',
+                title: 'Destino',
+                render: (row) => String(row.destino ?? row.idPaisDestino ?? ''),
+              },
+              {
+                accessor: 'actions',
+                title: '',
+                render: (row) => (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline-primary"
+                      onClick={() => {
+                        const idDroga = obtenerIdDroga(row)
+                        if (idDroga > 0) {
+                          setDrogaSeleccionadaId(idDroga)
+                        }
+                      }}
+                    >
+                      Logotipos
+                    </Button>
+                    <button
+                      type="button"
+                      className="text-danger"
+                      onClick={() => deleteDrogaItem(row.id)}
+                    >
+                      <IconTrashLines />
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+            highlightOnHover
+          />
         </div>
       </Card>
-        {/* DATOS DE LA DROGA */}
-      <Card className="mt-5">
-        <div className="col-span-1 mt-5 lg:col-span-3">
-          <div className="datatables">
-            <DataTable
-              withTableBorder={false}
-              className="table-hover whitespace-nowrap"
-              records={items}
-              columns={[
-                { accessor: 'id', title: 'Id' },
-                { accessor: 'tipoDroga', title: 'Tipo de Droga' },
-                { accessor: 'estadoDroga', title: 'Estado de la Droga' },
-                { accessor: 'cantidad', title: 'Cantidad (gramos) / Litros' },
-                { accessor: 'nroPastillas', title: 'Nro. de Capsulas' },
-                { accessor: 'formaTransporte', title: 'Forma de Transporte' },
-                { accessor: 'procedencia', title: 'Procedencia' },
-                { accessor: 'destino', title: 'Destino' },
-                {
-                  accessor: 'actions',
-                  title: '',
-                  render: (row) => (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="text-danger"
-                        onClick={() => deleteItem(row.id)}
-                      >
-                        <IconTrashLines />
-                      </button>
-                      <button
-                        type="button"
-                        className="text-danger"
-                        onClick={() => agregarLogo(row.id)}
-                      >
-                        <IconTrashLines />
-                      </button>
-                    </div>
-                  ),
-                },
-              ]}
-              highlightOnHover
-            />
-          </div>
-        </div>
-      </Card>
 
-      {/* FOTO DATA SECTION */}
       <Card
         title="FOTOGRAFIA DE LA PRUEBA DE CAMPO Y LA CUANTIFICACION, PESAJE DE LA SUSTANCIA SECUESTRADA"
         className="mt-5"
@@ -520,10 +686,14 @@ const agregarLogo = (id: any) => {
           <DataTable
             withTableBorder={false}
             className="table-hover whitespace-nowrap"
-            records={items}
+            records={drogasItems}
             columns={[
               { accessor: 'id', title: 'Id' },
-              { accessor: 'tipoDroga', title: 'Tipo de Droga' },
+              {
+                accessor: 'tipoDroga',
+                title: 'Tipo de Droga',
+                render: (row) => String(row.tipoDroga ?? row.idTipoDroga ?? ''),
+              },
               {
                 accessor: 'pruebaCampo',
                 title: 'Prueba de Campo',
@@ -554,90 +724,126 @@ const agregarLogo = (id: any) => {
         </div>
       </Card>
 
-      {/* LOGOTIPOS SECTION */}
-      <Card title="LOGOTIPOS" className="mt-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <FormInputText
-            id="logoImagen"
-            name="logoImagen"
-            label="Imagen"
-            control={control}
-          />
-          <FormInputText
-            id="logoDescripcion"
-            name="logoDescripcion"
-            label="Descripcion del Logo"
-            control={control}
-          />
-          <FormInputText
-            id="logoOrganizacion"
-            name="logoOrganizacion"
-            label="Organizacion Criminal"
-            control={control}
-          />
-
-          <FormInputText
-            id="logoBlancos"
-            name="logoBlancos"
-            label="Posibles Blancos"
-            control={control}
-          />
-          <FormInputText
-            id="logoObservacion"
-            name="logoObservacion"
-            label="Observacion"
-            control={control}
-          />
-          <div className="hidden lg:block" />
-
-          <div className="col-span-1 lg:col-span-3">
-            <FormInputFile
-              id="fotoLogo"
-              name="fotoLogo"
-              label="Fotografia"
-              control={control}
-              limite={1}
-              tiposPermitidos={['image/*']}
+      <form onSubmit={handleSubmitLogos(onSubmitLogotipos)}>
+        <Card
+          title={
+            drogaSeleccionadaId
+              ? `LOGOTIPOS (Droga #${drogaSeleccionadaId})`
+              : 'LOGOTIPOS'
+          }
+          className="mt-5"
+        >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <FormInputText
+              id="logoImagen"
+              name="logoImagen"
+              label="Imagen"
+              control={controlLogos}
             />
-          </div>
+            <FormInputText
+              id="logoDescripcion"
+              name="logoDescripcion"
+              label="Descripcion del Logo"
+              control={controlLogos}
+            />
+            <FormInputText
+              id="logoOrganizacion"
+              name="logoOrganizacion"
+              label="Organizacion Criminal"
+              control={controlLogos}
+            />
 
-          <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-            <Button variant="primary" type="button">
-              Guardar Logo
-            </Button>
+            <FormInputText
+              id="logoBlancos"
+              name="logoBlancos"
+              label="Posibles Blancos"
+              control={controlLogos}
+            />
+            <FormInputText
+              id="logoObservacion"
+              name="logoObservacion"
+              label="Observacion"
+              control={controlLogos}
+            />
+            <div className="hidden lg:block" />
+
+            <div className="col-span-1 lg:col-span-3">
+              <FormInputFile
+                id="fotoLogo"
+                name="fotoLogo"
+                label="Fotografia"
+                control={controlLogos}
+                limite={1}
+                tiposPermitidos={['image/*']}
+              />
+            </div>
+
+            <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
+              <Button variant="primary" type="submit" disabled={cargandoLogotipos}>
+                Guardar Logo
+              </Button>
+            </div>
           </div>
-        </div>
-      </Card>
-      {/* FOTO DATA SECTION */}
-      <Card
-        title="Detalle de Logotipos, Organizaciones Criminales, Posibles Blancos y Observaciones"
-        className="mt-5"
-      >
+        </Card>
+      </form>
+
+      <Card className="mt-5" title="DETALLE DE LOGOTIPOS">
         <div className="datatables">
           <DataTable
             withTableBorder={false}
             className="table-hover whitespace-nowrap"
-            records={items}
+            records={logotiposItems}
             columns={[
               { accessor: 'id', title: 'Id' },
-              { accessor: 'tipoDroga', title: 'Tipo de Droga' },
               {
-                accessor: 'organizacionCriminal',
-                title: 'Organizacion Criminal',
+                accessor: 'descripcionLogo',
+                title: 'Descripcion',
+                render: (row) => String(row.descripcionLogo ?? row.descripcion ?? ''),
               },
-              { accessor: 'posiblesBlancos', title: 'Posibles Blancos' },
-              { accessor: 'observacion', title: 'Observacion' },
               {
-                accessor: 'fotografia',
-                title: 'Fotografia',
-                render: (row) =>
-                  row.fotografiaUrl ? (
+                accessor: 'organizacion',
+                title: 'Organizacion',
+                render: (row) => String(row.organizacion ?? ''),
+              },
+              {
+                accessor: 'blanco',
+                title: 'Blancos',
+                render: (row) => String(row.blanco ?? ''),
+              },
+              {
+                accessor: 'observacion',
+                title: 'Observacion',
+                render: (row) => String(row.observacion ?? ''),
+              },
+              {
+                accessor: 'foto',
+                title: 'Foto',
+                render: (row) => {
+                  const fotoUrl =
+                    row.fotografiaUrl ?? row.urlFotografia ?? row.fotografia
+                  return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
                     <img
-                      src={row.fotografiaUrl}
-                      alt="Fotografia del Logo"
+                      src={fotoUrl}
+                      alt="Logotipo"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
-                  ) : null,
+                  ) : null
+                },
+              },
+              {
+                accessor: 'actions',
+                title: '',
+                render: (row) => (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="text-danger"
+                      onClick={() => deleteLogotipoItem(row.id)}
+                    >
+                      <IconTrashLines />
+                    </button>
+                  </div>
+                ),
               },
             ]}
             highlightOnHover
