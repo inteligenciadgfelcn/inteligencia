@@ -22,7 +22,7 @@ export class DocumentoDetenido {
   @JoinColumn({
     name: 'id_tipo_documento',
   })
-  pais: TipoDocumento
+  tipoDocumento: TipoDocumento
 
   @Column({
     name: 'numero_documento',

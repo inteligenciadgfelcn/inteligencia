@@ -1,5 +1,11 @@
 import { Profesion } from '@/application/inteligencia/felcn_siii/parametricas/profesion/entities/profesion.entity'
-import { PrimaryGeneratedColumn, Column, JoinColumn, ManyToOne, Entity } from 'typeorm'
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  JoinColumn,
+  ManyToOne,
+  Entity,
+} from 'typeorm'
 
 @Entity({ name: 'alias_detenido', schema: 'public' })
 export class AliasDetenido {
@@ -44,10 +50,10 @@ export class AliasDetenido {
   usuario: string
 
   @ManyToOne(() => Profesion, { nullable: true })
-    @JoinColumn({
-      name: 'id_profesion',
-    })
-    profesion: Profesion
+  @JoinColumn({
+    name: 'id_profesion',
+  })
+  profesion: Profesion
 
   @Column({
     name: 'fecha_hora_actualizacion',
