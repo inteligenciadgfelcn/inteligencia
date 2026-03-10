@@ -1,21 +1,27 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { EstadoCivil } from "../../../parametricas/estado_civil/entities/estado_civil.entity";
-import { Pais } from "../../../parametricas/pais/entities/pais.entity";
+import { EstadoCivil } from '@/application/inteligencia/felcn_siii/parametricas/estado_civil/entities/estado_civil.entity'
+import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Entity,
+} from 'typeorm'
 
-@Entity({ name: 'detenido_auxiliar', schema: 'public' })
-export class Filiacion {
+@Entity({ name: 'detenido', schema: 'public' })
+export class Detenido {
   @PrimaryGeneratedColumn({
-    name: 'id_detenido_auxiliar',
+    name: 'id_detenido',
     type: 'int',
-    comment: 'Clave primaria del registro de filiación del detenido'
+    comment: 'Clave primaria del registro de filiación del detenido',
   })
-  idDetenidoAuxiliar: number
+  idDetenido: number
 
   @Column({
     name: 'id_operativo',
     type: 'int',
     nullable: true,
-    comment: 'Identificador del operativo relacionado'
+    comment: 'Identificador del operativo relacionado',
   })
   idOperativo: number
 
@@ -24,7 +30,7 @@ export class Filiacion {
     type: 'varchar',
     length: 50,
     nullable: true,
-    comment: 'Número de caso asociado'
+    comment: 'Número de caso asociado',
   })
   numeroCaso: string
 
@@ -32,7 +38,7 @@ export class Filiacion {
     name: 'nombres',
     type: 'varchar',
     length: 150,
-    comment: 'Nombres del detenido'
+    comment: 'Nombres del detenido',
   })
   nombres: string
 
@@ -41,7 +47,7 @@ export class Filiacion {
     type: 'varchar',
     length: 150,
     nullable: true,
-    comment: 'Apellido paterno del detenido'
+    comment: 'Apellido paterno del detenido',
   })
   apellidoPaterno: string
 
@@ -50,7 +56,7 @@ export class Filiacion {
     type: 'varchar',
     length: 150,
     nullable: true,
-    comment: 'Apellido materno del detenido'
+    comment: 'Apellido materno del detenido',
   })
   apellidoMaterno: string
 
@@ -59,7 +65,7 @@ export class Filiacion {
     type: 'varchar',
     length: 150,
     nullable: true,
-    comment: 'Apellido de esposo en caso de corresponder'
+    comment: 'Apellido de esposo en caso de corresponder',
   })
   apellidoEsposo: string
 
@@ -73,7 +79,7 @@ export class Filiacion {
     name: 'es_masculino',
     type: 'boolean',
     nullable: true,
-    comment: 'Indica si el detenido es de sexo masculino'
+    comment: 'Indica si el detenido es de sexo masculino',
   })
   esMasculino: boolean
 
@@ -81,11 +87,11 @@ export class Filiacion {
     name: 'fecha_nacimiento',
     type: 'date',
     nullable: true,
-    comment: 'Fecha de nacimiento del detenido'
+    comment: 'Fecha de nacimiento del detenido',
   })
   fechaNacimiento: Date
 
-    @ManyToOne(() => EstadoCivil, { nullable: true })
+  @ManyToOne(() => EstadoCivil, { nullable: true })
   @JoinColumn({
     name: 'id_estado_civil',
   })
@@ -95,7 +101,7 @@ export class Filiacion {
     name: 'foto_frente',
     type: 'text',
     nullable: true,
-    comment: 'Fotografía frontal del detenido'
+    comment: 'Fotografía frontal del detenido',
   })
   fotoFrente: string
 
@@ -103,7 +109,7 @@ export class Filiacion {
     name: 'foto_perfil_derecho',
     type: 'text',
     nullable: true,
-    comment: 'Fotografía del perfil derecho'
+    comment: 'Fotografía del perfil derecho',
   })
   fotoPerfilDerecho: string
 
@@ -111,7 +117,7 @@ export class Filiacion {
     name: 'foto_perfil_izquierdo',
     type: 'text',
     nullable: true,
-    comment: 'Fotografía del perfil izquierdo'
+    comment: 'Fotografía del perfil izquierdo',
   })
   fotoPerfilIzquierdo: string
 
@@ -119,7 +125,7 @@ export class Filiacion {
     name: 'direccion',
     type: 'text',
     nullable: true,
-    comment: 'Dirección del detenido'
+    comment: 'Dirección del detenido',
   })
   direccion: string
 
@@ -127,7 +133,7 @@ export class Filiacion {
     name: 'observaciones',
     type: 'text',
     nullable: true,
-    comment: 'Observaciones generales'
+    comment: 'Observaciones generales',
   })
   observaciones: string
 
@@ -135,7 +141,7 @@ export class Filiacion {
     name: 'es_actual',
     type: 'boolean',
     nullable: true,
-    comment: 'Indica si el registro es el actual'
+    comment: 'Indica si el registro es el actual',
   })
   esActual: boolean
 
@@ -143,7 +149,7 @@ export class Filiacion {
     name: 'es_revision_icia',
     type: 'boolean',
     nullable: true,
-    comment: 'Indica si está en revisión ICIA'
+    comment: 'Indica si está en revisión ICIA',
   })
   esRevisionIcia: boolean
 
@@ -151,7 +157,7 @@ export class Filiacion {
     name: 'tiene_tarjeta',
     type: 'boolean',
     nullable: true,
-    comment: 'Indica si tiene tarjeta de registro'
+    comment: 'Indica si tiene tarjeta de registro',
   })
   tieneTarjeta: boolean
 
@@ -159,7 +165,7 @@ export class Filiacion {
     name: 'esta_vivo',
     type: 'boolean',
     nullable: true,
-    comment: 'Indica si el detenido se encuentra con vida'
+    comment: 'Indica si el detenido se encuentra con vida',
   })
   estaVivo: boolean
 
@@ -167,7 +173,7 @@ export class Filiacion {
     name: 'observaciones_adicionales',
     type: 'text',
     nullable: true,
-    comment: 'Observaciones adicionales del registro'
+    comment: 'Observaciones adicionales del registro',
   })
   observacionesAdicionales: string
 
@@ -175,7 +181,7 @@ export class Filiacion {
     name: 'fecha_hora_ingreso',
     type: 'timestamp',
     nullable: true,
-    comment: 'Fecha y hora de ingreso del registro'
+    comment: 'Fecha y hora de ingreso del registro',
   })
   fechaHoraIngreso: Date
 
@@ -184,7 +190,7 @@ export class Filiacion {
     type: 'varchar',
     length: 50,
     nullable: true,
-    comment: 'Usuario que registró la información'
+    comment: 'Usuario que registró la información',
   })
   usuario: string
 
@@ -192,7 +198,7 @@ export class Filiacion {
     name: 'fecha_hora_actualizacion',
     type: 'timestamp',
     nullable: true,
-    comment: 'Fecha y hora de última actualización'
+    comment: 'Fecha y hora de última actualización',
   })
   fechaHoraActualizacion: Date
 
@@ -201,8 +207,7 @@ export class Filiacion {
     type: 'varchar',
     length: 50,
     nullable: true,
-    comment: 'Usuario que realizó la última actualización'
+    comment: 'Usuario que realizó la última actualización',
   })
   usuarioActualizacion: string
-
 }

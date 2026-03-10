@@ -1,9 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { Type } from "class-transformer"
-import { IsNumber, IsNotEmpty, IsString, MaxLength, IsBoolean, IsOptional } from "class-validator"
+import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
+import {
+  IsNumber,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  IsBoolean,
+  IsOptional,
+} from 'class-validator'
 
-export class CreateDetenidoAuxiliarDto {
- @ApiProperty({ example: 1, description: 'ID del operativo' })
+export class CreateDetenidoDto {
+  @ApiProperty({ example: 1, description: 'ID del operativo' })
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()

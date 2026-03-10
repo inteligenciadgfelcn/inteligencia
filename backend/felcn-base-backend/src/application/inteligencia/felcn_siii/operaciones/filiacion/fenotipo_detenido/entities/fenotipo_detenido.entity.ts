@@ -1,3 +1,10 @@
+import { ColorCabello } from '@/application/inteligencia/felcn_siii/parametricas/color_cabello/entities/color_cabello.entity'
+import { ColorOjo } from '@/application/inteligencia/felcn_siii/parametricas/color_ojos/entities/color_ojo.entity'
+import { ColorPiel } from '@/application/inteligencia/felcn_siii/parametricas/color_piel/entities/color_piel.entity'
+import { ConstitucionCorporal } from '@/application/inteligencia/felcn_siii/parametricas/constitucion_corporal/entities/constitucion_corporal.entity'
+import { TipoCabello } from '@/application/inteligencia/felcn_siii/parametricas/tipo_cabello/entities/tipo_cabello.entity'
+import { TipoNariz } from '@/application/inteligencia/felcn_siii/parametricas/tipo_nariz/entities/tipo_nariz.entity'
+import { TipoOjo } from '@/application/inteligencia/felcn_siii/parametricas/tipo_ojos/entities/tipo_ojo.entity'
 import {
   Column,
   Entity,
@@ -5,18 +12,9 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { EstadoCivil } from '../../../parametricas/estado_civil/entities/estado_civil.entity'
-import { Pais } from '../../../parametricas/pais/entities/pais.entity'
-import { TipoNariz } from '../../../parametricas/tipo_nariz/entities/tipo_nariz.entity'
-import { ConstitucionCorporal } from '../../../parametricas/constitucion_corporal/entities/constitucion_corporal.entity'
-import { ColorPiel } from '../../../parametricas/color_piel/entities/color_piel.entity'
-import { ColorCabello } from '../../../parametricas/color_cabello/entities/color_cabello.entity'
-import { TipoCabello } from '../../../parametricas/tipo_cabello/entities/tipo_cabello.entity'
-import { ColorOjo } from '../../../parametricas/color_ojos/entities/color_ojo.entity'
-import { TipoOjo } from '../../../parametricas/tipo_ojos/entities/tipo_ojo.entity'
 
 @Entity({ name: 'fenotipo_detenido', schema: 'public' })
-export class Filiacion {
+export class FenotipoDetenido {
   @PrimaryGeneratedColumn({
     name: 'id_fenotipo_detenido',
     type: 'int',
