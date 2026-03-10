@@ -1,21 +1,10 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { RespuestaApi } from './types'
+import type { DrogaCasoPayload, RespuestaApi } from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
-export interface DrogaCasoPayload {
-    idTipoDroga: number
-    idEstadoDroga: number
-    cantidadGramos: number
-    cantidadUnidades: number
-    idFormaTransporte: number
-    idPaisProcedencia: number
-    idPaisDestino: number
-    observaciones?: string
-    pruebaCampo?: File
-    pesaje?: File
-}
+
 
 const buildFormData = (payload: DrogaCasoPayload) => {
     const formData = new FormData()
