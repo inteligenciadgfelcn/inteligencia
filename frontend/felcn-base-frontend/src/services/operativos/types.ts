@@ -54,3 +54,12 @@ export interface OperativoPayload {
     organizacion: string
     clanFamiliar: string
 }
+
+export interface LogotipoCasoPayload {
+  imagen: string
+  descripcionLogo: string
+  organizacion: string
+  blanco?: string
+  observacion?: string
+  fotografia?: File
+}

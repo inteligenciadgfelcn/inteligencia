@@ -12,3 +12,5 @@ export * from './GestionOperativoSeccion8Service'
 export * from './GestionOperativoSeccion9Service'
 export * from './GestionOperativoSeccion10Service'
 export * from './GestionOperativoDrogasService'
+export * from './GestionOperativoLogotiposService'
+
