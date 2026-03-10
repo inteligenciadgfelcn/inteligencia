@@ -58,9 +58,6 @@ export function ServiciosDatatable() {
         responseType: 'arraybuffer',
       })
 
-      imprimir('response', response)
-      imprimir('response', response.status)
-
       const blob = new Blob([response], { type: 'application/pdf' })
 
       const url = URL.createObjectURL(blob)
