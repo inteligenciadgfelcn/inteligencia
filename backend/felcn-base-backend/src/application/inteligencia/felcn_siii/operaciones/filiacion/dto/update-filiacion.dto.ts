@@ -1,45 +1,45 @@
-import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IsOptional, ValidateNested } from 'class-validator'
-import { Type } from 'class-transformer'
-import { UpdateAliasDetenidoDto } from './update/update-alias-detenido.dto'
-import { UpdateDetenidoAuxiliarDto } from './update/update-detenido-auxiliat.dto'
-import { UpdateDocumentoDetenidoDto } from './update/update-documento-detenido.dto'
-import { UpdateFenotipoDetenidoDto } from './update/update-fenotipodetenido.dto'
-import { UpdateProfesionDetenidoDto } from './update/update-profesion-detenido.dto'
+import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { CreateFiliacionDto } from './create-filiacion.dto';
+import { Type } from 'class-transformer';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { UpdateAliasDetenidoDto } from '../alias_detenido/dto/update-alias_detenido.dto';
+import { UpdateDocumentoDetenidoDto } from '../documento_detenido/dto/update-documento_detenido.dto';
+import { UpdateFenotipoDetenidoDto } from '../fenotipo_detenido/dto/update-fenotipo_detenido.dto';
+import { UpdateProfesionDetenidoDto } from '../profesion_detenido/dto/update-profesion_detenido.dto';
+import { UpdateDetenidoDto } from '../detenido/dto/update-detenido.dto';
 
-export class UpdateFiliacionDto {
-
-  @ApiPropertyOptional()
+export class UpdateFiliacionDto extends PartialType(CreateFiliacionDto) {
+    @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdateDetenidoAuxiliarDto)
-  detenido?: UpdateDetenidoAuxiliarDto
+  @Type(() => UpdateDetenidoDto)
+  detenidoUpdate?: UpdateDetenidoDto
 
 
   @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateAliasDetenidoDto)
-  alias?: UpdateAliasDetenidoDto
+  aliasUpdate?: UpdateAliasDetenidoDto
 
 
   @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateDocumentoDetenidoDto)
-  documento?: UpdateDocumentoDetenidoDto
+  documentoUpdate?: UpdateDocumentoDetenidoDto
 
 
   @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateFenotipoDetenidoDto)
-  fenotipo?: UpdateFenotipoDetenidoDto
+  fenotipoUpdate?: UpdateFenotipoDetenidoDto
 
 
   @ApiPropertyOptional()
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateProfesionDetenidoDto)
-  profesion?: UpdateProfesionDetenidoDto
+  profesionUpdate?: UpdateProfesionDetenidoDto
 }
