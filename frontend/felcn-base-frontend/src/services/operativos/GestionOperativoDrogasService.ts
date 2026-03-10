@@ -44,6 +44,12 @@ const buildFormData = (payload: DrogaCasoPayload) => {
 }
 
 export const GestionOperativoDrogasService = {
+    listar(idCaso: number): Promise<RespuestaApi<unknown[]>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/caso/${idCaso}/drogas`,
+        })
+    },
+
     crear(
         idCaso: number,
         payload: DrogaCasoPayload
