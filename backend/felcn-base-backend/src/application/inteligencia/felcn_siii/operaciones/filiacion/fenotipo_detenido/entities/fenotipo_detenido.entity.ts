@@ -33,8 +33,6 @@ export class FenotipoDetenido {
   @Column({
     name: 'fecha',
     type: 'timestamp',
-    length: 50,
-    nullable: true,
     comment: 'Fecha',
   })
   fecha: Date

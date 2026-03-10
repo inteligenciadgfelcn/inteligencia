@@ -85,7 +85,7 @@ export class Detenido {
 
   @Column({
     name: 'fecha_nacimiento',
-    type: 'date',
+    type: 'timestamp',
     nullable: true,
     comment: 'Fecha de nacimiento del detenido',
   })
