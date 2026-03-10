@@ -153,12 +153,16 @@ export function ServiciosDatatable() {
     {
       accessor: 'usuarioPrincipal',
       title: 'Servicio entrante',
-      render: (row: ServicioTable) => <span>{row?.usuarioPrincipal}</span>,
+      render: (row: ServicioTable) => (
+        <span>{row?.nombreUsuarioPrincipal}</span>
+      ),
     },
     {
       accessor: 'usuarioEmergencia',
       title: 'Servicio auxiliar',
-      render: (row: ServicioTable) => <span>{row?.usuarioEmergencia}</span>,
+      render: (row: ServicioTable) => (
+        <span>{row?.nombreUsuarioEmergencia}</span>
+      ),
     },
     {
       accessor: 'fechaIngreso',

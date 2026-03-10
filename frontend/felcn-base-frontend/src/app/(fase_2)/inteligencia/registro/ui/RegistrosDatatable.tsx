@@ -24,7 +24,7 @@ import { sortBy } from 'lodash'
 import { FormRegistro } from './FormRegistro'
 import { AlertaEstadoRegistro } from './AlertaEstadoRegistro'
 import { RegistroDetalle } from './RegistroDetalle'
-import { AsiganacionTable } from '../types/RegistroType'
+import { AsignacionTable } from '../types/RegistroType'
 import { imprimir } from '@/utils/imprimir'
 
 export function RegistrosDataTable() {
@@ -46,13 +46,13 @@ export function RegistrosDataTable() {
     delete: true,
   })
 
-  const [selected, setSelected] = useState<AsiganacionTable | null>(null)
+  const [selected, setSelected] = useState<AsignacionTable | null>(null)
 
   const [openForm, setOpenForm] = useState(false)
   const [openDetalle, setOpenDetalle] = useState(false)
   const [openEstado, setOpenEstado] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
-  const [secciones, setSecciones] = useState<AsiganacionTable[]>([])
+  const [secciones, setSecciones] = useState<AsignacionTable[]>([])
   const [tipoNuevo, setTipoNuevo] = useState<'modulo' | 'seccion'>('modulo')
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
     columnAccessor: 'orden',
@@ -129,7 +129,7 @@ export function RegistrosDataTable() {
     'nombreOperativo',
     'asignadoA.nombreCompleto',
     'fiscalAsignado.nombreCompleto',
-  ] as const as readonly (keyof AsiganacionTable)[]
+  ] as const as readonly (keyof AsignacionTable)[]
 
   const exportExcel = () => {
     exportToExcel(filas, exportHeaders, exportColumns, 'caso_servicios')
@@ -150,14 +150,14 @@ export function RegistrosDataTable() {
       accessor: 'codigoServicio',
       title: 'Codigo Registro',
       sortable: true,
-      render: (row: AsiganacionTable) => <span>{row?.idAsignacion}</span>,
+      render: (row: AsignacionTable) => <span>{row?.idAsignacion}</span>,
     },
 
     {
       accessor: 'departamento',
       title: 'Departamento',
       sortable: true,
-      render: (row: AsiganacionTable) => (
+      render: (row: AsignacionTable) => (
         <div className="flex items-center gap-2">
           <span>{row.departamento?.descripcion}</span>
         </div>
@@ -167,7 +167,7 @@ export function RegistrosDataTable() {
     {
       accessor: 'unidad',
       title: 'Unidad',
-      render: (row: AsiganacionTable) => (
+      render: (row: AsignacionTable) => (
         <div className="flex items-center gap-2">
           <span>{row.grupo.distrital.unidad.descripcion}</span>
         </div>
@@ -179,17 +179,17 @@ export function RegistrosDataTable() {
     {
       accessor: 'asignadoA',
       title: 'Asignado al caso',
-      render: (row: AsiganacionTable) => row.asignado ?? '-',
+      render: (row: AsignacionTable) => row.asignado ?? '-',
     },
     {
       accessor: 'fiscalAsignado',
       title: 'Fiscal asignado al caso',
-      render: (row: AsiganacionTable) => row.fiscalAsignado ?? '-',
+      render: (row: AsignacionTable) => row.fiscalAsignado ?? '-',
     },
     {
       accessor: 'acciones',
       title: 'Acciones',
-      render: (row: AsiganacionTable) => (
+      render: (row: AsignacionTable) => (
         <>
           {permisos.read && (
             <button
@@ -251,7 +251,7 @@ export function RegistrosDataTable() {
           }}
         />
       </div>
-      <VristoDataTable<AsiganacionTable>
+      <VristoDataTable<AsignacionTable>
         rows={filasOrdenadas}
         total={total}
         page={pagina}

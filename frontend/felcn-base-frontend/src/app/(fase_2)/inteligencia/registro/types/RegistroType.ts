@@ -1,4 +1,4 @@
-export interface AsiganacionTable {
+export interface AsignacionTable {
   idAsignacion: string
   letra: null
   nroCaso: null

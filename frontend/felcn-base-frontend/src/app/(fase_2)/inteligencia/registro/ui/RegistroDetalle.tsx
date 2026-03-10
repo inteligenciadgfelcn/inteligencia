@@ -3,13 +3,12 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import IconX from '@/components/Icon/IconX'
-import CustomMensajeEstado from '@/components/estados/CustomMensajeEstado'
-import { RegistroTypeCRUD } from '../types/RegistroType'
+import { AsignacionTable } from '../types/RegistroType'
 
 interface RegistroDetalleProps {
   isOpen: boolean
   onClose: () => void
-  registro: RegistroTypeCRUD | null
+  registro: AsignacionTable | null
 }
 
 export const RegistroDetalle = ({
@@ -64,71 +63,94 @@ export const RegistroDetalle = ({
                 {/* BODY */}
                 <div className="p-5">
                   <div className="grid grid-cols-12 gap-y-3 text-sm">
-                    <div className="col-span-3 font-semibold">
+                    <div className="col-span-4 font-semibold">
                       Nro de Registro:
                     </div>
-                    <div className="col-span-9">{registro?.id}</div>
-                    <div className="col-span-3 font-semibold">
-                      Código de servicio:
+                    <div className="col-span-8">
+                      {registro?.idAsignacion ?? '-'}
                     </div>
-                    <div className="col-span-3">{registro?.nroOperativo}</div>
-                    {/* <div className="col-span-3 font-semibold">Nro de pase:</div>
-                    <div className="col-span-3">{registro?.nroPase}</div> */}
 
-                    <div className="col-span-3 font-semibold">
+                    <div className="col-span-4 font-semibold">
+                      Codigo de servicio:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.codigoServicio ?? '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">
+                      Nro Operativo:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.nroOperativo ?? '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">
                       Departamento:
                     </div>
-                    <div className="col-span-3">
-                      {registro?.departamento.nombre}
-                    </div>
-                    <div className="col-span-3 font-semibold">Unidad:</div>
-                    <div className="col-span-3">
-                      {registro?.grupo.distrital.unidad.descripcion}
+                    <div className="col-span-8">
+                      {registro?.departamento?.descripcion ?? '-'}
                     </div>
 
-                    {/* <div className="col-span-3 font-semibold">Distrital:</div>
-                    <div className="col-span-3">{registro?.distrital}</div>
-                    <div className="col-span-3 font-semibold">Grupo:</div>
-                    <div className="col-span-3">{registro?.grupo}</div> */}
+                    <div className="col-span-4 font-semibold">Unidad:</div>
+                    <div className="col-span-8">
+                      {registro?.grupo?.distrital?.unidad?.descripcion ?? '-'}
+                    </div>
 
                     <div className="col-span-4 font-semibold">
-                      Nombre operativo:
+                      Nombre del caso:
                     </div>
-                    <div className="col-span-8">{registro?.nombreCaso}</div>
-                    <div className="col-span-4 font-semibold">
-                      Fecha y Hora:
+                    <div className="col-span-8">
+                      {registro?.nombreCaso ?? '-'}
                     </div>
-                    <div className="col-span-8">{registro?.fechaSolicitud}</div>
 
-                    {/* <div className="col-span-4 font-semibold">
+                    <div className="col-span-4 font-semibold">
+                      Fecha y hora:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.fechaSolicitud
+                        ? new Date(registro.fechaSolicitud).toLocaleString()
+                        : '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">
                       Solicitado por:
                     </div>
                     <div className="col-span-8">
-                      {registro?.asignado}
-                    </div> */}
+                      {registro?.nombreSolicitud ?? '-'}
+                    </div>
 
-                    <div className="col-span-4 font-semibold">Asignado a::</div>
-                    <div className="col-span-8">{registro?.asignado}</div>
+                    <div className="col-span-4 font-semibold">
+                      Telefono solicitante:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.telefonoSolicitud ?? '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">Asignado a:</div>
+                    <div className="col-span-8">
+                      {registro?.asignado ?? '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">
+                      Telefono asignado:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.telefonoAsignado ?? '-'}
+                    </div>
 
                     <div className="col-span-4 font-semibold">
                       Fiscal asignado:
                     </div>
-                    <div className="col-span-8">{registro?.fiscalAsignado}</div>
-
-                    {/* <div className="col-span-4 font-semibold">Estado:</div>
                     <div className="col-span-8">
-                      <CustomMensajeEstado
-                        titulo={registro?.estado}
-                        descripcion={registro?.estado}
-                        color={
-                          registro?.estado === 'ACTIVO'
-                            ? 'success'
-                            : registro?.estado === 'INACTIVO'
-                              ? 'error'
-                              : 'info'
-                        }
-                      />
-                    </div> */}
+                      {registro?.fiscalAsignado ?? '-'}
+                    </div>
+
+                    <div className="col-span-4 font-semibold">
+                      Telefono fiscal:
+                    </div>
+                    <div className="col-span-8">
+                      {registro?.telefonoFiscal ?? '-'}
+                    </div>
                   </div>
                 </div>
 
