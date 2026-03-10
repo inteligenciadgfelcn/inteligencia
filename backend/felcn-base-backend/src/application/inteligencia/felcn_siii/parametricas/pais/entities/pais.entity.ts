@@ -11,6 +11,7 @@ import {
 import { Continente } from '../../continente/entities/continente.entity'
 import { Departamento } from '../../departamento/entities/departamento.entity'
 import { Estado } from '../../../estado.enum'
+import { Detenido } from '../../../operaciones/filiacion/detenido/entities/detenido.entity'
 
 @Entity({
   name: 'pais',
@@ -57,4 +58,7 @@ export class Pais {
 
   @OneToMany(() => Departamento, (departamento) => departamento.pais)
   departamentos: Departamento[]
+
+  @OneToMany(() => Detenido, (detenido) => detenido.pais)
+  detenidos: Detenido[]
 }

@@ -6,6 +6,7 @@ import {
   ManyToOne,
   Entity,
 } from 'typeorm'
+import { Detenido } from '../../detenido/entities/detenido.entity'
 
 @Entity({ name: 'alias_detenido', schema: 'public' })
 export class AliasDetenido {
@@ -16,18 +17,14 @@ export class AliasDetenido {
   })
   idAliasDetenido: number
 
-  @Column({
-    name: 'id_detenido',
-    type: 'int',
-    nullable: true,
-    comment: 'Identificador del detenido',
-  })
-  idDetenido: number
+  @ManyToOne(() => Detenido)
+  @JoinColumn({ name: 'id_detenido' })
+  detenido: Detenido
 
   @Column({
     name: 'descripcion',
     type: 'varchar',
-    length: 10,
+    length: 150,
     comment: 'descripción de alias de detenido',
   })
   descripcion: string
@@ -43,17 +40,11 @@ export class AliasDetenido {
   @Column({
     name: 'usuario',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que registró la información',
   })
   usuario: string
-
-  @ManyToOne(() => Profesion, { nullable: true })
-  @JoinColumn({
-    name: 'id_profesion',
-  })
-  profesion: Profesion
 
   @Column({
     name: 'fecha_hora_actualizacion',
@@ -66,7 +57,7 @@ export class AliasDetenido {
   @Column({
     name: 'usuario_actualizacion',
     type: 'varchar',
-    length: 50,
+    length: 15,
     nullable: true,
     comment: 'Usuario que realizó la última actualización',
   })
