@@ -5,14 +5,17 @@ import { useForm } from 'react-hook-form'
 import { DataTable } from 'mantine-datatable'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
 import { FormInputDropdown, FormInputText } from '@/components/form'
 import FormInputFile from '@/components/form/FormInputFile'
 import IconTrashLines from '@/components/Icon/IconTrashLines'
 import { SiiiLookupsService } from '@/services/parametricas'
 import {
+  DrogaCasoPayload,
   GestionOperativoCatalogosService,
   GestionOperativoDrogasService,
   GestionOperativoLogotiposService,
+  LogotipoCasoPayload,
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 
@@ -44,19 +47,16 @@ export function SeccionDrogasFotografiaLogotiposForm({
     reset: resetDrogas,
   } = useForm({
     defaultValues: {
-      tipoDroga: 'marihuana',
-      estadoDroga: 'seco',
-      cocainaLiquida: '',
-      cantidadTn: '',
-      cantidadKg: '',
-      cantidadG: '',
-      cantidadMg: '',
-      nroPastillas: '',
-      formaTransporte: 'terrestre',
-      procedencia: 'bolivia',
-      destino: 'bolivia',
-      fotoPruebaCampo: [],
-      fotoCuantificacion: [],
+      idTipoDroga: '',
+      idEstadoDroga: '',
+      cantidadGramos: '',
+      cantidadUnidades: '',
+      idFormaTransporte: '',
+      idPaisProcedencia: '',
+      idPaisDestino: '',
+      observaciones: '',
+      pruebaCampo: [],
+      pesaje: [],
     },
   })
 
@@ -66,13 +66,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
     reset: resetLogos,
   } = useForm({
     defaultValues: {
-      logoImagen: '',
-      logoDescripcion: '',
-      logoOrganizacion: '',
-      logoBlancos: '',
-      logoObservacion: '',
-      fotoLogo: [],
-    },          
+      imagen: '',
+      descripcionLogo: '',
+      organizacion: '',
+      blanco: '',
+      observacion: '',
+      fotografia: [],
+    },
   })
 
   const [opcionesTiposDroga, setOpcionesTiposDroga] = useState([
@@ -91,7 +91,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [opcionesPaises, setOpcionesPaises] = useState([
     { id: 'bolivia', label: 'Bolivia', value: 'bolivia' },
   ])
-  const tipoDrogaSeleccionada = watchDrogas('tipoDroga')
+  const tipoDrogaSeleccionada = watchDrogas('idTipoDroga')
 
   useEffect(() => {
     let activo = true
@@ -124,9 +124,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesTiposDroga(opciones)
-          const tipoActual = String(getDrogasValues('tipoDroga') ?? '')
+          const tipoActual = String(getDrogasValues('idTipoDroga') ?? '')
           if (!opciones.some((opcion) => opcion.value === tipoActual)) {
-            setDrogasValue('tipoDroga', opciones[0].value)
+            setDrogasValue('idTipoDroga', opciones[0].value)
           }
         }
       } catch {
@@ -168,21 +168,23 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
           const opcionBolivia =
             opciones.find((opcion) => opcion.value === 'bolivia') ?? opciones[0]
-          const procedenciaActual = String(getDrogasValues('procedencia') ?? '')
-          const destinoActual = String(getDrogasValues('destino') ?? '')
+          const procedenciaActual = String(
+            getDrogasValues('idPaisProcedencia') ?? ''
+          )
+          const destinoActual = String(getDrogasValues('idPaisDestino') ?? '')
 
           if (
             procedenciaActual.length === 0 ||
             !opciones.some((opcion) => opcion.value === procedenciaActual)
           ) {
-            setDrogasValue('procedencia', opcionBolivia.value)
+            setDrogasValue('idPaisProcedencia', opcionBolivia.value)
           }
 
           if (
             destinoActual.length === 0 ||
             !opciones.some((opcion) => opcion.value === destinoActual)
           ) {
-            setDrogasValue('destino', opcionBolivia.value)
+            setDrogasValue('idPaisDestino', opcionBolivia.value)
           }
         }
       } catch {
@@ -228,9 +230,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesFormasTransporte(opciones)
-          const formaActual = String(getDrogasValues('formaTransporte') ?? '')
+          const formaActual = String(getDrogasValues('idFormaTransporte') ?? '')
           if (!opciones.some((opcion) => opcion.value === formaActual)) {
-            setDrogasValue('formaTransporte', opciones[0].value)
+            setDrogasValue('idFormaTransporte', opciones[0].value)
           }
         }
       } catch {
@@ -296,9 +298,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
         if (opciones.length > 0) {
           setOpcionesEstadosDroga(opciones)
-          const estadoActual = String(getDrogasValues('estadoDroga') ?? '')
+          const estadoActual = String(getDrogasValues('idEstadoDroga') ?? '')
           if (!opciones.some((opcion) => opcion.value === estadoActual)) {
-            setDrogasValue('estadoDroga', opciones[0].value)
+            setDrogasValue('idEstadoDroga', opciones[0].value)
           }
         }
       } catch {
@@ -311,15 +313,27 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return () => {
       activo = false
     }
-  }, [getDrogasValues, opcionesTiposDroga, setDrogasValue, tipoDrogaSeleccionada])
+  }, [
+    getDrogasValues,
+    opcionesTiposDroga,
+    setDrogasValue,
+    tipoDrogaSeleccionada,
+  ])
 
   const [drogasItems, setDrogasItems] = useState<any[]>([])
-  const [logotiposItems, setLogotiposItems] = useState<any[]>([])
+  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
+    []
+  )
   const [cargandoDrogas, setCargandoDrogas] = useState(false)
   const [cargandoLogotipos, setCargandoLogotipos] = useState(false)
   const [drogaSeleccionadaId, setDrogaSeleccionadaId] = useState<number | null>(
     null
   )
+
+  const [cantidadTn, setCantidadTn] = useState('')
+  const [cantidadKg, setCantidadKg] = useState('')
+  const [cantidadG, setCantidadG] = useState('')
+  const [cantidadMg, setCantidadMg] = useState('')
 
   const parseNumber = (valor: unknown) => {
     if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0
@@ -350,12 +364,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
     try {
       const res = await GestionOperativoDrogasService.listar(idCaso)
       if (res?.finalizado) {
-        const lista = Array.isArray(res.datos) ? res.datos : []
+        const lista = Array.isArray(res.datos)
+          ? (res.datos as DrogaCasoPayload[])
+          : []
         setDrogasItems(lista)
-        const primerId = lista.length > 0 ? obtenerIdDroga(lista[0]) : 0
-        if (primerId > 0) {
-          setDrogaSeleccionadaId((actual) => actual ?? primerId)
-        }
+        lista.forEach((item) => {
+          const idDroga = item.id
+          void cargarLogotipos(idDroga)
+        })
       }
     } finally {
       setCargandoDrogas(false)
@@ -368,7 +384,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     try {
       const res = await GestionOperativoLogotiposService.listar(idCaso, idDroga)
       if (res?.finalizado) {
-        setLogotiposItems(Array.isArray(res.datos) ? res.datos : [])
+        setLogotiposItems(res.datos ? (res.datos as LogotipoCasoPayload[]) : [])
       }
     } finally {
       setCargandoLogotipos(false)
@@ -396,48 +412,59 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const onSubmitDrogas = async (data: Record<string, any>) => {
     if (!idCaso) return
 
-    const idTipoDroga = resolverIdOpcion(data.tipoDroga, opcionesTiposDroga)
-    const idEstadoDroga = resolverIdOpcion(data.estadoDroga, opcionesEstadosDroga)
+    const idTipoDroga = resolverIdOpcion(data.idTipoDroga, opcionesTiposDroga)
+    const idEstadoDroga = resolverIdOpcion(
+      data.idEstadoDroga,
+      opcionesEstadosDroga
+    )
     const idFormaTransporte = resolverIdOpcion(
-      data.formaTransporte,
+      data.idFormaTransporte,
       opcionesFormasTransporte
     )
-    const idPaisProcedencia = resolverIdOpcion(data.procedencia, opcionesPaises)
-    const idPaisDestino = resolverIdOpcion(data.destino, opcionesPaises)
+    const idPaisProcedencia = resolverIdOpcion(
+      data.idPaisProcedencia,
+      opcionesPaises
+    )
+    const idPaisDestino = resolverIdOpcion(data.idPaisDestino, opcionesPaises)
 
     const gramos =
-      parseNumber(data.cantidadTn) * 1_000_000 +
-      parseNumber(data.cantidadKg) * 1_000 +
-      parseNumber(data.cantidadG) +
-      parseNumber(data.cantidadMg) / 1000
+      parseNumber(cantidadTn) * 1_000_000 +
+      parseNumber(cantidadKg) * 1_000 +
+      parseNumber(cantidadG) +
+      parseNumber(cantidadMg) / 1000
 
     const pruebaCampoFile =
-      data.fotoPruebaCampo && data.fotoPruebaCampo.length > 0
-        ? data.fotoPruebaCampo[0]
+      data.pruebaCampo && data.pruebaCampo.length > 0
+        ? data.pruebaCampo[0]
         : undefined
-    const cuantificacionFile =
-      data.fotoCuantificacion && data.fotoCuantificacion.length > 0
-        ? data.fotoCuantificacion[0]
-        : undefined
+    const pesajeFile =
+      data.pesaje && data.pesaje.length > 0 ? data.pesaje[0] : undefined
 
     setCargandoDrogas(true)
     try {
-      await GestionOperativoDrogasService.crear(idCaso, {
+      const respuesta = await GestionOperativoDrogasService.crear(idCaso, {
+        id: 0,
         idTipoDroga,
         idEstadoDroga,
         cantidadGramos: gramos,
-        cantidadUnidades: parseNumber(data.nroPastillas),
+        cantidadUnidades: parseNumber(data.cantidadUnidades),
         idFormaTransporte,
         idPaisProcedencia,
         idPaisDestino,
-        observaciones: data.cocainaLiquida
-          ? `Cocaina liquida (lt): ${data.cocainaLiquida}`
+        observaciones: data.observaciones
+          ? String(data.observaciones)
           : undefined,
         pruebaCampo: pruebaCampoFile,
-        pesaje: cuantificacionFile,
+        pesaje: pesajeFile,
       })
-      await cargarDrogas()
-      resetDrogas()
+      if (respuesta?.finalizado) {
+        await cargarDrogas()
+        resetDrogas()
+        setCantidadTn('')
+        setCantidadKg('')
+        setCantidadG('')
+        setCantidadMg('')
+      }
     } finally {
       setCargandoDrogas(false)
     }
@@ -447,20 +474,39 @@ export function SeccionDrogasFotografiaLogotiposForm({
     if (!idCaso || !drogaSeleccionadaId) return
 
     const fotoLogoFile =
-      data.fotoLogo && data.fotoLogo.length > 0 ? data.fotoLogo[0] : undefined
+      data.fotografia && data.fotografia.length > 0
+        ? data.fotografia[0]
+        : undefined
 
     setCargandoLogotipos(true)
     try {
-      await GestionOperativoLogotiposService.crear(idCaso, drogaSeleccionadaId, {
-        imagen: String(data.logoImagen ?? ''),
-        descripcionLogo: String(data.logoDescripcion ?? ''),
-        organizacion: String(data.logoOrganizacion ?? ''),
-        blanco: data.logoBlancos ? String(data.logoBlancos) : undefined,
-        observacion: data.logoObservacion ? String(data.logoObservacion) : undefined,
-        fotografia: fotoLogoFile,
-      })
-      await cargarLogotipos(drogaSeleccionadaId)
-      resetLogos()
+      const respuesta = await GestionOperativoLogotiposService.crear(
+        idCaso,
+        drogaSeleccionadaId,
+        {
+          id: 0,
+          imagen: String(data.imagen ?? ''),
+          descripcionLogo: String(data.descripcionLogo ?? ''),
+          organizacion: String(data.organizacion ?? ''),
+          blanco: data.blanco ? String(data.blanco) : undefined,
+          observacion: data.observacion ? String(data.observacion) : undefined,
+          fotografia: fotoLogoFile,
+        }
+      )
+      if (respuesta?.finalizado) {
+        await agregarLogotipoLocal( respuesta.datos? respuesta.datos as LogotipoCasoPayload : [])
+        await cargarLogotipos(drogaSeleccionadaId)
+        resetLogos()
+      }
+    } finally {
+      setCargandoLogotipos(false)
+    }
+  }
+  const agregarLogotipoLocal = async (data: LogotipoCasoPayload) => {
+    if (!data) return
+    setCargandoLogotipos(true)
+    try {
+      setLogotiposItems((prev) => [...prev, data])
     } finally {
       setCargandoLogotipos(false)
     }
@@ -472,23 +518,23 @@ export function SeccionDrogasFotografiaLogotiposForm({
         <Card title="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <FormInputDropdown
-              id="tipoDroga"
-              name="tipoDroga"
+              id="idTipoDroga"
+              name="idTipoDroga"
               label="Tipo de Droga"
               control={controlDrogas}
               options={opcionesTiposDroga}
             />
             <FormInputDropdown
-              id="estadoDroga"
-              name="estadoDroga"
+              id="idEstadoDroga"
+              name="idEstadoDroga"
               label="Estado de la Droga"
               control={controlDrogas}
               options={opcionesEstadosDroga}
             />
             <FormInputText
-              id="cocainaLiquida"
-              name="cocainaLiquida"
-              label="Cocaina Liquida en Litros"
+              id="observaciones"
+              name="observaciones"
+              label="Observaciones"
               control={controlDrogas}
             />
 
@@ -499,70 +545,70 @@ export function SeccionDrogasFotografiaLogotiposForm({
               <div className="grid grid-cols-4 gap-2">
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-gray-500">Tn</span>
-                  <FormInputText
+                  <Input
                     id="cantidadTn"
-                    name="cantidadTn"
-                    label=""
-                    control={controlDrogas}
-                    size="small"
+                    value={cantidadTn}
+                    onChange={(event) => setCantidadTn(event.target.value)}
+                    size="sm"
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-gray-500">Kg</span>
-                  <FormInputText
+                  <Input
                     id="cantidadKg"
-                    name="cantidadKg"
-                    label=""
-                    control={controlDrogas}
-                    size="small"
+                    value={cantidadKg}
+                    onChange={(event) => setCantidadKg(event.target.value)}
+                    size="sm"
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-gray-500">g</span>
-                  <FormInputText
+                  <Input
                     id="cantidadG"
-                    name="cantidadG"
-                    label=""
-                    control={controlDrogas}
-                    size="small"
+                    value={cantidadG}
+                    onChange={(event) => setCantidadG(event.target.value)}
+                    size="sm"
+                    className="w-full"
                   />
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs font-bold text-gray-500">Mg</span>
-                  <FormInputText
+                  <Input
                     id="cantidadMg"
-                    name="cantidadMg"
-                    label=""
-                    control={controlDrogas}
-                    size="small"
+                    value={cantidadMg}
+                    onChange={(event) => setCantidadMg(event.target.value)}
+                    size="sm"
+                    className="w-full"
                   />
                 </div>
               </div>
             </div>
             <FormInputText
-              id="nroPastillas"
-              name="nroPastillas"
-              label="Nro. Pastillas o Capsulas (Tragones)"
+              id="cantidadUnidades"
+              name="cantidadUnidades"
+              label="Cantidad de Unidades"
               control={controlDrogas}
             />
 
             <FormInputDropdown
-              id="formaTransporte"
-              name="formaTransporte"
+              id="idFormaTransporte"
+              name="idFormaTransporte"
               label="Forma de Transporte"
               control={controlDrogas}
               options={opcionesFormasTransporte}
             />
             <FormInputDropdown
-              id="procedencia"
-              name="procedencia"
+              id="idPaisProcedencia"
+              name="idPaisProcedencia"
               label="Procedencia"
               control={controlDrogas}
               options={opcionesPaises}
             />
             <FormInputDropdown
-              id="destino"
-              name="destino"
+              id="idPaisDestino"
+              name="idPaisDestino"
               label="Destino"
               control={controlDrogas}
               options={opcionesPaises}
@@ -570,8 +616,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
             <div className="col-span-1 lg:col-span-3">
               <FormInputFile
-                id="fotoPruebaCampo"
-                name="fotoPruebaCampo"
+                id="pruebaCampo"
+                name="pruebaCampo"
                 label="Fotografia Prueba de Campo"
                 control={controlDrogas}
                 limite={1}
@@ -581,8 +627,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
             <div className="col-span-1 lg:col-span-3">
               <FormInputFile
-                id="fotoCuantificacion"
-                name="fotoCuantificacion"
+                id="pesaje"
+                name="pesaje"
                 label="Fotografia Cuantificacion y Pesaje"
                 control={controlDrogas}
                 limite={1}
@@ -615,17 +661,18 @@ export function SeccionDrogasFotografiaLogotiposForm({
               {
                 accessor: 'estadoDroga',
                 title: 'Estado de la Droga',
-                render: (row) => String(row.estadoDroga ?? row.idEstadoDroga ?? ''),
+                render: (row) =>
+                  String(row.estadoDroga ?? row.idEstadoDroga ?? ''),
               },
               {
-                accessor: 'cantidad',
-                title: 'Cantidad (gramos) / Litros',
-                render: (row) => String(row.cantidad ?? row.cantidadGramos ?? ''),
+                accessor: 'cantidadGramos',
+                title: 'Cantidad (gramos)',
+                render: (row) => String(row.cantidadGramos ?? ''),
               },
               {
-                accessor: 'nroPastillas',
-                title: 'Nro. de Capsulas',
-                render: (row) => String(row.nroPastillas ?? row.cantidadUnidades ?? ''),
+                accessor: 'cantidadUnidades',
+                title: 'Cantidad de Unidades',
+                render: (row) => String(row.cantidadUnidades ?? ''),
               },
               {
                 accessor: 'formaTransporte',
@@ -707,12 +754,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                   ) : null,
               },
               {
-                accessor: 'cuantificacion',
+                accessor: 'pesaje',
                 title: 'Cuantificacion y Pesaje',
                 render: (row) =>
-                  row.cuantificacionUrl ? (
+                  row.pesajeUrl ? (
                     <img
-                      src={row.cuantificacionUrl}
+                      src={row.pesajeUrl}
                       alt="Cuantificacion"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
@@ -735,33 +782,33 @@ export function SeccionDrogasFotografiaLogotiposForm({
         >
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <FormInputText
-              id="logoImagen"
-              name="logoImagen"
+              id="imagen"
+              name="imagen"
               label="Imagen"
               control={controlLogos}
             />
             <FormInputText
-              id="logoDescripcion"
-              name="logoDescripcion"
+              id="descripcionLogo"
+              name="descripcionLogo"
               label="Descripcion del Logo"
               control={controlLogos}
             />
             <FormInputText
-              id="logoOrganizacion"
-              name="logoOrganizacion"
+              id="organizacion"
+              name="organizacion"
               label="Organizacion Criminal"
               control={controlLogos}
             />
 
             <FormInputText
-              id="logoBlancos"
-              name="logoBlancos"
+              id="blanco"
+              name="blanco"
               label="Posibles Blancos"
               control={controlLogos}
             />
             <FormInputText
-              id="logoObservacion"
-              name="logoObservacion"
+              id="observacion"
+              name="observacion"
               label="Observacion"
               control={controlLogos}
             />
@@ -769,8 +816,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
             <div className="col-span-1 lg:col-span-3">
               <FormInputFile
-                id="fotoLogo"
-                name="fotoLogo"
+                id="fotografia"
+                name="fotografia"
                 label="Fotografia"
                 control={controlLogos}
                 limite={1}
@@ -779,7 +826,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
             </div>
 
             <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-              <Button variant="primary" type="submit" disabled={cargandoLogotipos}>
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={cargandoLogotipos}
+              >
                 Guardar Logo
               </Button>
             </div>
@@ -798,7 +849,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
               {
                 accessor: 'descripcionLogo',
                 title: 'Descripcion',
-                render: (row) => String(row.descripcionLogo ?? row.descripcion ?? ''),
+                render: (row) =>
+                  String(row.descripcionLogo ?? row.descripcion ?? ''),
               },
               {
                 accessor: 'organizacion',
