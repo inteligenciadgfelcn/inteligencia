@@ -74,17 +74,20 @@ export class FiliacionService {
     }
 
     //  Profesión
-    if (profesion) {
-      operations.push(
-        manager.save(
-          ProfesionDetenido,
-          manager.create(ProfesionDetenido, {
-            ...profesion,
-            detenido,
-          })
-        )
-      )
-    }
+   if (profesion) {
+  const { idProfesion, ...profData } = profesion
+
+  operations.push(
+    manager.save(
+      ProfesionDetenido,
+      manager.create(ProfesionDetenido, {
+        ...profData,
+        detenido,
+        idProfesion: { idProfesion },
+      })
+    )
+  )
+}
 
     // Ejecutar operaciones
     await Promise.all(operations)
