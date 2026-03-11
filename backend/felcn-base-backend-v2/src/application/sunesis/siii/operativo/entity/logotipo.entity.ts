@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
 
@@ -16,6 +23,9 @@ export class Logotipo {
 
   @Column({ name: 'id_operativo', type: 'bigint' })
   idOperativo: string
+
+  @Column({ name: 'id_droga', type: 'bigint', nullable: true })
+  idDroga?: string
 
   @Column({ name: 'numero_caso', type: 'varchar', length: 20 })
   numeroCaso: string

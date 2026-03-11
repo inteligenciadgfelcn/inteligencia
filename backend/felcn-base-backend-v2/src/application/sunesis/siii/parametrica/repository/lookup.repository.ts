@@ -48,16 +48,23 @@ import { CocaDescripcion } from '../entity/sustancia/coca-descripcion.entity'
 import { Bienes } from '../entity/bien/bienes.entity'
 import { CalidadBien } from '../entity/bien/calidad-bien.entity'
 
+// Estructura organizacional
+import { Unidad } from '../entity/estructura/unidad.entity'
+import { Distrital } from '../entity/estructura/distrital.entity'
+import { Grupo } from '../entity/estructura/grupo.entity'
+
 @Injectable()
 export class LookupRepository {
   constructor(
     @InjectDataSource(DB_SIII)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   // Geografía
   async listarContinentes(): Promise<Continente[]> {
-    return this.dataSource.getRepository(Continente).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(Continente)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarPaises(): Promise<Pais[]> {
@@ -76,7 +83,9 @@ export class LookupRepository {
   }
 
   async listarPaisesDestino(): Promise<PaisDestino[]> {
-    return this.dataSource.getRepository(PaisDestino).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(PaisDestino)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarDepartamentos(): Promise<Departamento[]> {
@@ -101,7 +110,9 @@ export class LookupRepository {
     })
   }
 
-  async listarProvinciasPorDepartamento(idDepartamento: number): Promise<Provincia[]> {
+  async listarProvinciasPorDepartamento(
+    idDepartamento: number
+  ): Promise<Provincia[]> {
     return this.dataSource.getRepository(Provincia).find({
       where: { idDepartamento },
       relations: ['departamento'],
@@ -116,7 +127,9 @@ export class LookupRepository {
     })
   }
 
-  async listarLocalidadesPorProvincia(idProvincia: number): Promise<Localidad[]> {
+  async listarLocalidadesPorProvincia(
+    idProvincia: number
+  ): Promise<Localidad[]> {
     return this.dataSource.getRepository(Localidad).find({
       where: { idProvincia },
       relations: ['provincia'],
@@ -126,115 +139,188 @@ export class LookupRepository {
 
   // Tipos
   async listarTiposDroga(): Promise<TipoDroga[]> {
-    return this.dataSource.getRepository(TipoDroga).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoDroga)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposOperacion(): Promise<TipoOperacion[]> {
-    return this.dataSource.getRepository(TipoOperacion).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoOperacion)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposPenal(): Promise<TipoPenal[]> {
-    return this.dataSource.getRepository(TipoPenal).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoPenal)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposRelevancia(): Promise<TipoRelevancia[]> {
-    return this.dataSource.getRepository(TipoRelevancia).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoRelevancia)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposPersona(): Promise<TipoPersona[]> {
-    return this.dataSource.getRepository(TipoPersona).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoPersona)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarEstadosCiviles(): Promise<EstadoCivil[]> {
-    return this.dataSource.getRepository(EstadoCivil).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(EstadoCivil)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarCategoriasOperativo(): Promise<CategoriaOperativo[]> {
-    return this.dataSource.getRepository(CategoriaOperativo).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(CategoriaOperativo)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   // Nuevos tipos
   async listarTiposDenuncia(): Promise<TipoDenuncia[]> {
-    return this.dataSource.getRepository(TipoDenuncia).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoDenuncia)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposFabrica(): Promise<TipoFabrica[]> {
-    return this.dataSource.getRepository(TipoFabrica).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoFabrica)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposDocumento(): Promise<TipoDocumento[]> {
-    return this.dataSource.getRepository(TipoDocumento).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoDocumento)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposImplicado(): Promise<TipoImplicado[]> {
-    return this.dataSource.getRepository(TipoImplicado).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoImplicado)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   // Operativo params
   async listarPlanesOperaciones(): Promise<PlanOperaciones[]> {
-    return this.dataSource.getRepository(PlanOperaciones).find({ order: { nombre: 'ASC' } })
+    return this.dataSource
+      .getRepository(PlanOperaciones)
+      .find({ order: { nombre: 'ASC' } })
   }
 
   async listarFormasTransporte(): Promise<FormaTransporte[]> {
-    return this.dataSource.getRepository(FormaTransporte).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(FormaTransporte)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarEtapas(): Promise<Etapa[]> {
-    return this.dataSource.getRepository(Etapa).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(Etapa)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarEtapasInvestigacion(): Promise<EtapaInvestigacion[]> {
-    return this.dataSource.getRepository(EtapaInvestigacion).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(EtapaInvestigacion)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarRecursos(): Promise<Recurso[]> {
-    return this.dataSource.getRepository(Recurso).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(Recurso)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   // Sustancias
   async listarSustanciasSolidasDesc(): Promise<SustanciaSolidaDescripcion[]> {
-    return this.dataSource.getRepository(SustanciaSolidaDescripcion).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(SustanciaSolidaDescripcion)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarSustanciasLiquidasDesc(): Promise<SustanciaLiquidaDescripcion[]> {
-    return this.dataSource.getRepository(SustanciaLiquidaDescripcion).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(SustanciaLiquidaDescripcion)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarCocaProcedencias(): Promise<CocaProcedencia[]> {
-    return this.dataSource.getRepository(CocaProcedencia).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(CocaProcedencia)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarCocaEstados(): Promise<CocaEstado[]> {
-    return this.dataSource.getRepository(CocaEstado).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(CocaEstado)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarCocaDescripciones(): Promise<CocaDescripcion[]> {
-    return this.dataSource.getRepository(CocaDescripcion).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(CocaDescripcion)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   // Bienes
   async listarBienes(): Promise<Bienes[]> {
-    return this.dataSource.getRepository(Bienes).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(Bienes)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarCalidadesBien(): Promise<CalidadBien[]> {
-    return this.dataSource.getRepository(CalidadBien).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(CalidadBien)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   // Persona - colores
   async listarColoresPiel(): Promise<ColorPiel[]> {
-    return this.dataSource.getRepository(ColorPiel).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(ColorPiel)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarColoresOjos(): Promise<ColorOjos[]> {
-    return this.dataSource.getRepository(ColorOjos).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(ColorOjos)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarColoresCabello(): Promise<ColorCabello[]> {
-    return this.dataSource.getRepository(ColorCabello).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(ColorCabello)
+      .find({ order: { descripcion: 'ASC' } })
   }
 
   async listarTiposCabello(): Promise<TipoCabello[]> {
-    return this.dataSource.getRepository(TipoCabello).find({ order: { descripcion: 'ASC' } })
+    return this.dataSource
+      .getRepository(TipoCabello)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  // Estructura organizacional
+  async listarUnidades(): Promise<Unidad[]> {
+    return this.dataSource
+      .getRepository(Unidad)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarDistritalesPorUnidad(idUnidad: number): Promise<Distrital[]> {
+    return this.dataSource
+      .getRepository(Distrital)
+      .find({ where: { idUnidad }, order: { descripcion: 'ASC' } })
+  }
+
+  async listarGruposPorDistrital(idDistrital: number): Promise<Grupo[]> {
+    return this.dataSource
+      .getRepository(Grupo)
+      .find({ where: { idDistrital }, order: { descripcion: 'ASC' } })
   }
 }

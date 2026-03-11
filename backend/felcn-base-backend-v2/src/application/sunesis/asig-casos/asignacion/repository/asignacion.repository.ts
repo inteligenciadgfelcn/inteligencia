@@ -14,7 +14,7 @@ import { DB_ASIG_CASOS } from '../../../shared/constants'
 export class AsignacionRepository {
   constructor(
     @InjectDataSource(DB_ASIG_CASOS)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   private get repository() {
@@ -33,9 +33,7 @@ export class AsignacionRepository {
     return this.repository.save(asignacion)
   }
 
-  async listar(
-    filtros: FiltrosAsignacionDto,
-  ): Promise<[Asignacion[], number]> {
+  async listar(filtros: FiltrosAsignacionDto): Promise<[Asignacion[], number]> {
     const query = this.crearQueryBase()
 
     if (filtros.numeroCaso) {
@@ -101,7 +99,9 @@ export class AsignacionRepository {
    * Implementa: WHERE Usuario = ? AND RTRIM(NroCaso) = ''
    * Corresponde a muestranoaprob() del FRM-OP-ING.aspx.cs
    */
-  async buscarNoAprobadosPorUsuario(usuarioLogin: string): Promise<Asignacion[]> {
+  async buscarNoAprobadosPorUsuario(
+    usuarioLogin: string
+  ): Promise<Asignacion[]> {
     return this.crearQueryBase()
       .where('asignacion.usuarioLogin = :usuarioLogin', { usuarioLogin })
       .andWhere("TRIM(asignacion.numeroCaso) = ''")
@@ -116,7 +116,7 @@ export class AsignacionRepository {
   }
 
   async buscarPorNumeroOperativo(
-    numeroOperativo: string,
+    numeroOperativo: string
   ): Promise<Asignacion | null> {
     return this.crearQueryBase()
       .where('asignacion.numeroOperativo = :numeroOperativo', {

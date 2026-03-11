@@ -7,6 +7,46 @@ import {
   MaxLength,
 } from 'class-validator'
 
+/**
+ * DTO simplificado para crear un logotipo desde la modal de una droga.
+ * idTipoDroga, idPaisOrigen, idPaisDestino se resuelven automáticamente
+ * desde el contexto de la droga (idDroga en la URL).
+ */
+export class CreateLogotipoDrogaDto {
+  @ApiProperty({ description: 'Nombre/código del logotipo', example: 'CALI-01' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(50)
+  imagen: string
+
+  @ApiProperty({ description: 'Descripción del logotipo' })
+  @IsNotEmpty()
+  @IsString()
+  descripcionLogo: string
+
+  @ApiProperty({ description: 'Organización criminal', example: 'CARTEL LOCAL' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(50)
+  organizacion: string
+
+  @ApiPropertyOptional({ description: 'Posibles blancos/objetivos' })
+  @IsOptional()
+  @IsString()
+  blanco?: string
+
+  @ApiPropertyOptional({ description: 'Observaciones' })
+  @IsOptional()
+  @IsString()
+  observacion?: string
+
+  @ApiPropertyOptional({ description: 'Enlace relacionado' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  enlace?: string
+}
+
 export class CreateLogotipoDto {
   @ApiProperty({ description: 'Número de caso', example: 'CASO-2024-001' })
   @IsNotEmpty()
@@ -36,7 +76,10 @@ export class CreateLogotipoDto {
   @IsString()
   descripcion: string
 
-  @ApiProperty({ description: 'Nombre del archivo de imagen', example: 'logo001.png' })
+  @ApiProperty({
+    description: 'Nombre del archivo de imagen',
+    example: 'logo001.png',
+  })
   @IsNotEmpty()
   @IsString()
   @MaxLength(50)

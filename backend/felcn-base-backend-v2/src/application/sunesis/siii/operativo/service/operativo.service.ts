@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common'
 import { BaseService } from '@/common/base'
-import { Status } from '@/common/constants'
 import { OperativoRepository } from '../repository/operativo.repository'
+import { AsignacionSiiiRepository } from '../../asignacion/repository/asignacion-siii.repository'
 
 // Entities
 import { Operativo } from '../entity/operativo.entity'
@@ -10,51 +14,136 @@ import { SustanciaSolida } from '../entity/sustancia-solida.entity'
 import { SustanciaLiquida } from '../entity/sustancia-liquida.entity'
 import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
+import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
 import { DetenidoAuxiliar } from '../entity/detenido-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
 
 // DTOs
 import {
-  CreateOperativoDto,
+  OperativoDto,
   CreateDrogaDto,
   CreateDetenidoDto,
   CreateBienSecuestradoDto,
+  CreateBienCaracteristicaDto,
   CreateFabricaDto,
   CreateSustanciaSolidaDto,
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  CreateLogotipoDrogaDto,
 } from '../dto'
 
 @Injectable()
 export class OperativoService extends BaseService {
-  constructor(private readonly operativoRepository: OperativoRepository) {
+  constructor(
+    private readonly operativoRepository: OperativoRepository,
+    private readonly asignacionSiiiRepository: AsignacionSiiiRepository
+  ) {
     super()
   }
 
-  // ==================== OPERATIVO ====================
+  // ==================== HELPERS PRIVADOS ====================
 
-  async crear(data: CreateOperativoDto, usuario: string): Promise<Operativo> {
-    // Calcular coordenadas decimales
-    const coordX = (data.gradosX + data.minX / 60 + data.segX / 3600) * -1
-    const coordY = (data.gradosY + data.minY / 60 + data.segY / 3600) * -1
+  /**
+   * Resuelve idCaso → idOperativo. Lanza 409 si se quiere crear y ya existe,
+   * o 404 si se quiere operar sobre secciones sin operativo.
+   */
+  private async resolverIdOperativo(idCaso: string): Promise<string> {
+    const operativo = await this.operativoRepository.resolverPorCaso(idCaso)
+    if (!operativo) {
+      throw new NotFoundException(
+        `No existe operativo para el caso ${idCaso}. Debe crearlo primero.`
+      )
+    }
+    return operativo.id
+  }
+
+  /**
+   * Como resolverIdOperativo pero retorna null en vez de lanzar —
+   * para GET de secciones (retorna [] si no hay operativo).
+   */
+  private async resolverIdOperativoOpcional(
+    idCaso: string
+  ): Promise<string | null> {
+    const operativo = await this.operativoRepository.resolverPorCaso(idCaso)
+    return operativo ? operativo.id : null
+  }
+
+  // ==================== OPERATIVO PRINCIPAL ====================
+
+  /**
+   * GET unificado: datos del caso (de asignacion, siempre frescos) +
+   * operativo (null si aún no existe, entity completo si existe).
+   * El frontend determina nuevo vs edición verificando operativo === null.
+   */
+  async getOrInit(idCaso: string): Promise<any> {
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+    if (!asignacion) {
+      throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
+    }
+
+    // caso: datos de referencia del sistema SIII (asignacion), siempre frescos,
+    // nunca se envían en POST/PATCH — son solo contexto de lectura para el formulario.
+    const caso = {
+      idCaso: asignacion.idCaso,
+      numeroOperativo: asignacion.numeroOperativo,
+      nombreCaso: asignacion.nombreCaso,
+      fiscalSolicitud: asignacion.fiscalSolicitud,
+      telefonoSolicitud: asignacion.telefonoSolicitud,
+      asignadoCaso: asignacion.asignadoCaso,
+      telefonoAsignado: asignacion.telefonoAsignado,
+      fiscalAsignadoCaso: asignacion.fiscalAsignadoCaso,
+      telefonoFiscal: asignacion.telefonoFiscal,
+    }
+
+    // operativo: lo que el usuario guardó en la tabla operativo.
+    // null si aún no existe → formulario nuevo.
+    const operativo = await this.operativoRepository.resolverPorCaso(idCaso)
+
+    return { caso, operativo }
+  }
+
+  /**
+   * POST /caso/:idCaso — crea el operativo.
+   * Toma numeroOperativo de asignacion. Lanza 409 si ya existe.
+   */
+  async crear(idCaso: string, dto: OperativoDto, usuario: string): Promise<Operativo> {
+    const existente = await this.operativoRepository.resolverPorCaso(idCaso)
+    if (existente) {
+      throw new ConflictException(
+        `El operativo para el caso ${idCaso} ya existe. Use PATCH para actualizar.`
+      )
+    }
+
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+    if (!asignacion) {
+      throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
+    }
 
     const operativo = new Operativo({
-      ...data,
-      fechaOperativo: new Date(data.fechaOperativo),
-      coordX,
-      coordY,
-      esRevisado: false,
-      esPositivo: true,
-      esAprehendido: false,
-      esArrestado: false,
-      esIcia: true,
-      esParteDiario: false,
+      ...dto,
+      idCaso,
+      fechaOperativo: new Date(dto.fechaOperativo),
       usuario,
-      estado: Status.ACTIVE,
     })
     return this.operativoRepository.crearOperativo(operativo)
+  }
+
+  /**
+   * PATCH /caso/:idCaso — actualiza el operativo.
+   * Resuelve idCaso → idOperativo internamente. Lanza 404 si no existe.
+   */
+  async actualizar(
+    idCaso: string,
+    dto: OperativoDto,
+    usuarioModificacion: string
+  ): Promise<Operativo> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const operativo = await this.buscarPorId(idOperativo)
+
+    Object.assign(operativo, { ...dto, fechaOperativo: new Date(dto.fechaOperativo) })
+    return this.operativoRepository.actualizarOperativo(operativo)
   }
 
   async listar(): Promise<Operativo[]> {
@@ -74,158 +163,316 @@ export class OperativoService extends BaseService {
   }
 
   async buscarPorNumeroOperativo(numeroOperativo: string): Promise<Operativo> {
-    const operativo = await this.operativoRepository.buscarPorNumeroOperativo(numeroOperativo)
+    const operativo =
+      await this.operativoRepository.buscarPorNumeroOperativo(numeroOperativo)
     if (!operativo) {
-      throw new NotFoundException(`Operativo con número ${numeroOperativo} no encontrado`)
+      throw new NotFoundException(
+        `Operativo con número ${numeroOperativo} no encontrado`
+      )
     }
     return operativo
   }
 
-  async actualizar(id: string, data: Partial<Operativo>, usuarioModificacion: string): Promise<Operativo> {
-    const operativo = await this.buscarPorId(id)
-
-    // Recalcular coordenadas si cambian
-    if (data.gradosX !== undefined || data.minX !== undefined || data.segX !== undefined) {
-      const gx = data.gradosX ?? operativo.gradosX
-      const mx = data.minX ?? operativo.minX
-      const sx = data.segX ?? operativo.segX
-      data.coordX = (gx + mx / 60 + sx / 3600) * -1
-    }
-    if (data.gradosY !== undefined || data.minY !== undefined || data.segY !== undefined) {
-      const gy = data.gradosY ?? operativo.gradosY
-      const my = data.minY ?? operativo.minY
-      const sy = data.segY ?? operativo.segY
-      data.coordY = (gy + my / 60 + sy / 3600) * -1
-    }
-
-    Object.assign(operativo, data, { usuarioModificacion })
-    return this.operativoRepository.actualizarOperativo(operativo)
-  }
-
-  async inactivar(id: string, usuarioModificacion: string): Promise<Operativo> {
-    const operativo = await this.buscarPorId(id)
-    operativo.estado = Status.INACTIVE
-    operativo.usuarioModificacion = usuarioModificacion
-    return this.operativoRepository.actualizarOperativo(operativo)
-  }
 
   // ==================== DROGAS ====================
 
-  async agregarDroga(idOperativo: string, data: CreateDrogaDto, usuario: string): Promise<Droga> {
-    await this.buscarPorId(idOperativo) // Verificar que existe
-    const droga = new Droga({
+  async agregarDroga(
+    idCaso: string,
+    data: CreateDrogaDto,
+    pruebaCampo: Buffer,
+    pesaje: Buffer,
+    usuario: string
+  ): Promise<any> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const drogaEntity = new Droga({
       idOperativo,
       ...data,
+      fotoPruebaCampo: pruebaCampo.length ? pruebaCampo : undefined,
+      fotoPesaje: pesaje.length ? pesaje : undefined,
       usuario,
     })
-    return this.operativoRepository.crearDroga(droga)
+    const droga = await this.operativoRepository.crearDroga(drogaEntity)
+    const { fotoPruebaCampo, fotoPesaje, ...resto } = droga
+    return {
+      ...resto,
+      urlFotoPruebaCampo: fotoPruebaCampo?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${droga.id}/fotos/prueba-campo`
+        : null,
+      urlFotoPesaje: fotoPesaje?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${droga.id}/fotos/pesaje`
+        : null,
+    }
   }
 
-  async listarDrogas(idOperativo: string): Promise<Droga[]> {
-    return this.operativoRepository.listarDrogasPorOperativo(idOperativo)
+  async listarDrogas(idCaso: string): Promise<any[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
+    const drogas = await this.operativoRepository.listarDrogasPorOperativo(idOperativo)
+    return drogas.map(({ fotoPruebaCampo, fotoPesaje, ...d }) => ({
+      ...d,
+      urlFotoPruebaCampo: fotoPruebaCampo?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/prueba-campo`
+        : null,
+      urlFotoPesaje: fotoPesaje?.length
+        ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/pesaje`
+        : null,
+    }))
   }
 
-  async eliminarDroga(idOperativo: string, idDroga: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarDroga(idCaso: string, idDroga: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
+    // Cascade: primero eliminar todos los logotipos asociados a esta droga
+    await this.operativoRepository.eliminarLogotiposPorDroga(idDroga)
     await this.operativoRepository.eliminarDroga(idDroga)
   }
 
-  async obtenerPesajeDrogas(idOperativo: string): Promise<any> {
+  async obtenerPesajeDrogas(idCaso: string): Promise<any> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return { totalGramos: 0, totalRegistros: 0 }
     return this.operativoRepository.obtenerResumenDrogas(idOperativo)
+  }
+
+  async obtenerFotoDroga(
+    idCaso: string,
+    idDroga: string,
+    tipo: 'prueba-campo' | 'pesaje'
+  ): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const droga = await this.operativoRepository.buscarDrogaPorId(idDroga)
+    if (!droga) {
+      throw new NotFoundException(`Droga con ID ${idDroga} no encontrada`)
+    }
+    if (droga.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La droga ${idDroga} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    return tipo === 'prueba-campo'
+      ? droga.fotoPruebaCampo || Buffer.alloc(0)
+      : droga.fotoPesaje || Buffer.alloc(0)
+  }
+
+  async listarLogotiposPorDroga(
+    idCaso: string,
+    idDroga: string
+  ): Promise<any[]> {
+    await this.resolverIdOperativo(idCaso)
+    const logotipos = await this.operativoRepository.listarLogotiposPorDroga(idDroga)
+    return logotipos.map(({ fotografia, ...l }) => ({
+      ...l,
+      urlFotografia: fotografia?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
+        : null,
+    }))
+  }
+
+  async agregarLogotipoDroga(
+    idCaso: string,
+    idDroga: string,
+    data: CreateLogotipoDrogaDto,
+    fotografia: Buffer,
+    usuario: string
+  ): Promise<any> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const droga = await this.operativoRepository.buscarDrogaPorId(idDroga)
+    if (!droga) {
+      throw new NotFoundException(`Droga con ID ${idDroga} no encontrada`)
+    }
+    if (droga.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La droga ${idDroga} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    const operativo = await this.buscarPorId(idOperativo)
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+
+    const logotipoEntity = new Logotipo({
+      idOperativo,
+      idDroga,
+      numeroCaso: asignacion?.nombreCaso || '',
+      numeroOperativo: operativo.numeroOperativo,
+      fechaOperativo: operativo.fechaOperativo,
+      nombreCaso: asignacion?.nombreCaso || '',
+      descripcion: operativo.descripcion,
+      imagen: data.imagen,
+      descripcionLogo: data.descripcionLogo,
+      idTipoDroga: droga.estadoDroga!.idTipoDroga,
+      idPaisOrigen: droga.idPaisProcedencia,
+      idPaisDestino: droga.idPaisDestino,
+      organizacion: data.organizacion,
+      blanco: data.blanco || '',
+      observacion: data.observacion || '',
+      enlace: data.enlace || '',
+      fotografia,
+      usuario,
+    })
+    const logotipo = await this.operativoRepository.crearLogotipo(logotipoEntity)
+    const { fotografia: foto, ...resto } = logotipo
+    return {
+      ...resto,
+      urlFotografia: foto?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${logotipo.id}/foto`
+        : null,
+    }
   }
 
   // ==================== SUSTANCIAS SÓLIDAS ====================
 
-  async agregarSustanciaSolida(idOperativo: string, data: CreateSustanciaSolidaDto, usuario: string): Promise<SustanciaSolida> {
-    await this.buscarPorId(idOperativo)
-    const sustancia = new SustanciaSolida({
-      idOperativo,
-      ...data,
-      usuario,
-    })
+  async agregarSustanciaSolida(
+    idCaso: string,
+    data: CreateSustanciaSolidaDto,
+    usuario: string
+  ): Promise<SustanciaSolida> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const sustancia = new SustanciaSolida({ idOperativo, ...data, usuario })
     return this.operativoRepository.crearSustanciaSolida(sustancia)
   }
 
-  async listarSustanciasSolidas(idOperativo: string): Promise<SustanciaSolida[]> {
+  async listarSustanciasSolidas(idCaso: string): Promise<SustanciaSolida[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarSustanciasSolidasPorOperativo(idOperativo)
   }
 
-  async eliminarSustanciaSolida(idOperativo: string, idSustancia: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarSustanciaSolida(idCaso: string, idSustancia: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarSustanciaSolida(idSustancia)
   }
 
   // ==================== SUSTANCIAS LÍQUIDAS ====================
 
-  async agregarSustanciaLiquida(idOperativo: string, data: CreateSustanciaLiquidaDto, usuario: string): Promise<SustanciaLiquida> {
-    await this.buscarPorId(idOperativo)
-    const sustancia = new SustanciaLiquida({
-      idOperativo,
-      ...data,
-      usuario,
-    })
+  async agregarSustanciaLiquida(
+    idCaso: string,
+    data: CreateSustanciaLiquidaDto,
+    usuario: string
+  ): Promise<SustanciaLiquida> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const sustancia = new SustanciaLiquida({ idOperativo, ...data, usuario })
     return this.operativoRepository.crearSustanciaLiquida(sustancia)
   }
 
-  async listarSustanciasLiquidas(idOperativo: string): Promise<SustanciaLiquida[]> {
+  async listarSustanciasLiquidas(idCaso: string): Promise<SustanciaLiquida[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarSustanciasLiquidasPorOperativo(idOperativo)
   }
 
-  async eliminarSustanciaLiquida(idOperativo: string, idSustancia: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarSustanciaLiquida(idCaso: string, idSustancia: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarSustanciaLiquida(idSustancia)
   }
 
   // ==================== FÁBRICAS ====================
 
-  async agregarFabrica(idOperativo: string, data: CreateFabricaDto, usuario: string): Promise<Fabrica> {
-    await this.buscarPorId(idOperativo)
-    const fabrica = new Fabrica({
-      idOperativo,
-      ...data,
-      usuario,
-    })
+  async agregarFabrica(
+    idCaso: string,
+    data: CreateFabricaDto,
+    usuario: string
+  ): Promise<Fabrica> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const fabrica = new Fabrica({ idOperativo, ...data, usuario })
     return this.operativoRepository.crearFabrica(fabrica)
   }
 
-  async listarFabricas(idOperativo: string): Promise<Fabrica[]> {
+  async listarFabricas(idCaso: string): Promise<Fabrica[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarFabricasPorOperativo(idOperativo)
   }
 
-  async eliminarFabrica(idOperativo: string, idFabrica: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarFabrica(idCaso: string, idFabrica: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarFabrica(idFabrica)
   }
 
   // ==================== BIENES SECUESTRADOS ====================
 
-  async agregarBien(idOperativo: string, data: CreateBienSecuestradoDto, usuario: string): Promise<ItemBienSecuestrado> {
-    await this.buscarPorId(idOperativo)
-    const bien = new ItemBienSecuestrado({
-      idOperativo,
-      ...data,
-      usuario,
-    })
+  async agregarBien(
+    idCaso: string,
+    data: CreateBienSecuestradoDto,
+    usuario: string
+  ): Promise<ItemBienSecuestrado> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const bien = new ItemBienSecuestrado({ idOperativo, ...data, usuario })
     return this.operativoRepository.crearBien(bien)
   }
 
-  async listarBienes(idOperativo: string): Promise<ItemBienSecuestrado[]> {
+  async listarBienes(idCaso: string): Promise<ItemBienSecuestrado[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarBienesPorOperativo(idOperativo)
   }
 
-  async eliminarBien(idOperativo: string, idBien: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarBien(idCaso: string, idBien: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarBien(idBien)
+  }
+
+  // ==================== CARACTERÍSTICAS DE BIENES ====================
+
+  async agregarCaracteristicaBien(
+    idCaso: string,
+    idBien: string,
+    data: CreateBienCaracteristicaDto,
+    usuario: string
+  ): Promise<ItemBienCaracteristica> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const bienes = await this.operativoRepository.listarBienesPorOperativo(idOperativo)
+    if (!bienes.find((b) => b.id === idBien)) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado`)
+    }
+    const caracteristica = new ItemBienCaracteristica({
+      idItemBienSecuestrado: idBien,
+      ...data,
+      usuario,
+    })
+    return this.operativoRepository.crearBienCaracteristica(caracteristica)
+  }
+
+  async listarCaracteristicasBien(
+    idCaso: string,
+    idBien: string
+  ): Promise<ItemBienCaracteristica[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
+    return this.operativoRepository.listarCaracteristicasPorBien(idBien)
+  }
+
+  async eliminarCaracteristicaBien(
+    idCaso: string,
+    idBien: string,
+    idCaracteristica: string
+  ): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
+    const caracteristica =
+      await this.operativoRepository.buscarBienCaracteristica(idCaracteristica)
+    if (!caracteristica) {
+      throw new NotFoundException(
+        `Característica con ID ${idCaracteristica} no encontrada`
+      )
+    }
+    if (caracteristica.idItemBienSecuestrado !== idBien) {
+      throw new NotFoundException(
+        `La característica ${idCaracteristica} no pertenece al bien ${idBien}`
+      )
+    }
+    await this.operativoRepository.eliminarBienCaracteristica(idCaracteristica)
   }
 
   // ==================== DETENIDOS ====================
 
-  async agregarDetenido(idOperativo: string, data: CreateDetenidoDto, usuario: string): Promise<DetenidoAuxiliar> {
-    await this.buscarPorId(idOperativo)
+  async agregarDetenido(
+    idCaso: string,
+    data: CreateDetenidoDto,
+    usuario: string
+  ): Promise<DetenidoAuxiliar> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
     const detenido = new DetenidoAuxiliar({
       idOperativo,
       ...data,
-      fechaNacimiento: data.fechaNacimiento ? new Date(data.fechaNacimiento) : undefined,
+      fechaNacimiento: data.fechaNacimiento
+        ? new Date(data.fechaNacimiento)
+        : undefined,
       apellidoMaterno: data.apellidoMaterno || '*',
       apellidoEsposo: data.apellidoEsposo || '*',
       serie: data.serie || '',
@@ -242,41 +489,51 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearDetenido(detenido)
   }
 
-  async listarDetenidos(idOperativo: string): Promise<DetenidoAuxiliar[]> {
+  async listarDetenidos(idCaso: string): Promise<DetenidoAuxiliar[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarDetenidosPorOperativo(idOperativo)
   }
 
-  async eliminarDetenido(idOperativo: string, idDetenido: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarDetenido(idCaso: string, idDetenido: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarDetenido(idDetenido)
   }
 
   // ==================== GALERÍA ====================
 
-  async agregarFotoGaleria(idOperativo: string, data: CreateGaleriaDto, foto: Buffer, usuario: string): Promise<Galeria> {
-    await this.buscarPorId(idOperativo)
-    const galeria = new Galeria({
-      idOperativo,
-      descripcion: data.descripcion,
-      foto,
-    })
+  async agregarFotoGaleria(
+    idCaso: string,
+    data: CreateGaleriaDto,
+    foto: Buffer,
+    usuario: string
+  ): Promise<Galeria> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const galeria = new Galeria({ idOperativo, descripcion: data.descripcion, foto })
     return this.operativoRepository.crearGaleria(galeria)
   }
 
-  async listarGaleria(idOperativo: string): Promise<Galeria[]> {
+  async listarGaleria(idCaso: string): Promise<Galeria[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
     return this.operativoRepository.listarGaleriaPorOperativo(idOperativo)
   }
 
-  async eliminarFotoGaleria(idOperativo: string, idGaleria: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarFotoGaleria(idCaso: string, idGaleria: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarGaleria(idGaleria)
   }
 
   // ==================== LOGOTIPOS ====================
 
-  async agregarLogotipo(idOperativo: string, data: CreateLogotipoDto, fotografia: Buffer, usuario: string): Promise<Logotipo> {
-    await this.buscarPorId(idOperativo)
-    const logotipo = new Logotipo({
+  async agregarLogotipo(
+    idCaso: string,
+    data: CreateLogotipoDto,
+    fotografia: Buffer,
+    usuario: string
+  ): Promise<any> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const logotipoEntity = new Logotipo({
       idOperativo,
       numeroCaso: data.numeroCaso,
       numeroOperativo: data.numeroOperativo,
@@ -295,15 +552,30 @@ export class OperativoService extends BaseService {
       fotografia,
       usuario,
     })
-    return this.operativoRepository.crearLogotipo(logotipo)
+    const logotipo = await this.operativoRepository.crearLogotipo(logotipoEntity)
+    const { fotografia: foto, ...resto } = logotipo
+    return {
+      ...resto,
+      urlFotografia: foto?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${logotipo.id}/foto`
+        : null,
+    }
   }
 
-  async listarLogotipos(idOperativo: string): Promise<Logotipo[]> {
-    return this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
+  async listarLogotipos(idCaso: string): Promise<any[]> {
+    const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
+    if (!idOperativo) return []
+    const logotipos = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
+    return logotipos.map(({ fotografia, ...l }) => ({
+      ...l,
+      urlFotografia: fotografia?.length
+        ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
+        : null,
+    }))
   }
 
-  async eliminarLogotipo(idOperativo: string, idLogotipo: string): Promise<void> {
-    await this.buscarPorId(idOperativo)
+  async eliminarLogotipo(idCaso: string, idLogotipo: string): Promise<void> {
+    await this.resolverIdOperativo(idCaso)
     await this.operativoRepository.eliminarLogotipo(idLogotipo)
   }
 
@@ -318,7 +590,9 @@ export class OperativoService extends BaseService {
   }
 
   async listarItemsOperativo(idCategoriaOperativo: number) {
-    return this.operativoRepository.listarItemsOperativoPorCategoria(idCategoriaOperativo)
+    return this.operativoRepository.listarItemsOperativoPorCategoria(
+      idCategoriaOperativo
+    )
   }
 
   async listarCatalogoClases(idBien: number) {
@@ -330,34 +604,89 @@ export class OperativoService extends BaseService {
   }
 
   async listarCatalogoCaracteristicas(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(idCatalogoClase)
+    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(
+      idCatalogoClase
+    )
   }
 
-  // ==================== OPERATIVO COMPLETO ====================
+  // ==================== CASOS DE USUARIO ====================
 
-  async obtenerOperativoCompleto(id: string): Promise<any> {
-    const operativo = await this.buscarPorId(id)
-    const [drogas, sustanciasSolidas, sustanciasLiquidas, fabricas, bienes, detenidos, galeria, logotipos] = await Promise.all([
-      this.listarDrogas(id),
-      this.listarSustanciasSolidas(id),
-      this.listarSustanciasLiquidas(id),
-      this.listarFabricas(id),
-      this.listarBienes(id),
-      this.listarDetenidos(id),
-      this.listarGaleria(id),
-      this.listarLogotipos(id),
-    ])
+  async listarCasosPorUsuario(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarTodosPorUsuario(usuario)
+  }
 
-    return {
-      operativo,
-      drogas,
-      sustanciasSolidas,
-      sustanciasLiquidas,
-      fabricas,
-      bienes,
-      detenidos,
-      galeria,
-      logotipos,
+  async listarCasosNoAprobados(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarNoAprobadosPorUsuario(usuario)
+  }
+
+  // ==================== IMÁGENES (LAZY LOADING) ====================
+
+  async obtenerFotoGaleria(idCaso: string, idFoto: string): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const galeria = await this.operativoRepository.buscarGaleriaPorId(idFoto)
+    if (!galeria) {
+      throw new NotFoundException(`Foto de galería con ID ${idFoto} no encontrada`)
     }
+    if (galeria.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `La foto ${idFoto} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    return galeria.foto
+  }
+
+  async obtenerFotoDetenido(
+    idCaso: string,
+    idDetenido: string,
+    tipo: 'frente' | 'perfil-derecho' | 'perfil-izquierdo'
+  ): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    if (!detenido) {
+      throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
+    }
+    if (detenido.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El detenido ${idDetenido} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    switch (tipo) {
+      case 'frente':
+        return detenido.fotoFrente || Buffer.alloc(0)
+      case 'perfil-derecho':
+        return detenido.fotoPerfilDerecho || Buffer.alloc(0)
+      case 'perfil-izquierdo':
+        return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
+      default:
+        throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
+    }
+  }
+
+  async obtenerFotoBien(idCaso: string, idBien: string): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const bien = await this.operativoRepository.buscarBienPorId(idBien)
+    if (!bien) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado`)
+    }
+    if (bien.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El bien ${idBien} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    return bien.fotoBien || Buffer.alloc(0)
+  }
+
+  async obtenerFotoLogotipo(idCaso: string, idLogotipo: string): Promise<Buffer> {
+    const idOperativo = await this.resolverIdOperativo(idCaso)
+    const logotipo = await this.operativoRepository.buscarLogotipoPorId(idLogotipo)
+    if (!logotipo) {
+      throw new NotFoundException(`Logotipo con ID ${idLogotipo} no encontrado`)
+    }
+    if (logotipo.idOperativo !== idOperativo) {
+      throw new NotFoundException(
+        `El logotipo ${idLogotipo} no pertenece al operativo del caso ${idCaso}`
+      )
+    }
+    return logotipo.fotografia || Buffer.alloc(0)
   }
 }

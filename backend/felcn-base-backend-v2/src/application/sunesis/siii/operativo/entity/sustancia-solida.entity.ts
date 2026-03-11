@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
 
@@ -21,12 +28,6 @@ export class SustanciaSolida {
 
   @Column({ name: 'cantidad', type: 'double precision' })
   cantidad: number
-
-  @Column({ name: 'unidad_medida', type: 'varchar', length: 20 })
-  unidadMedida: string
-
-  @Column({ name: 'observaciones', type: 'text', nullable: true })
-  observaciones?: string
 
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date

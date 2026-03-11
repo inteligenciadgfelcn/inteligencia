@@ -50,7 +50,9 @@ export class AsignacionController extends BaseController {
     return this.successList(asignacion)
   }
 
-  @ApiOperation({ summary: 'Obtener asignaciones por usuario (muestraoperativos)' })
+  @ApiOperation({
+    summary: 'Obtener asignaciones por usuario (muestraoperativos)',
+  })
   @Get('usuario/:usuarioLogin')
   async buscarPorUsuario(@Param('usuarioLogin') usuarioLogin: string) {
     const asignaciones =
@@ -60,10 +62,12 @@ export class AsignacionController extends BaseController {
 
   @ApiOperation({
     summary: 'Obtener casos no aprobados por usuario (muestranoaprob)',
-    description: 'Retorna asignaciones donde numero_caso está vacío'
+    description: 'Retorna asignaciones donde numero_caso está vacío',
   })
   @Get('usuario/:usuarioLogin/no-aprobados')
-  async buscarNoAprobadosPorUsuario(@Param('usuarioLogin') usuarioLogin: string) {
+  async buscarNoAprobadosPorUsuario(
+    @Param('usuarioLogin') usuarioLogin: string
+  ) {
     const asignaciones =
       await this.asignacionService.buscarNoAprobadosPorUsuario(usuarioLogin)
     return this.successList(asignaciones)
@@ -80,7 +84,7 @@ export class AsignacionController extends BaseController {
   @ApiOperation({ summary: 'Buscar asignación por número de operativo' })
   @Get('numero-operativo/:numeroOperativo')
   async buscarPorNumeroOperativo(
-    @Param('numeroOperativo') numeroOperativo: string,
+    @Param('numeroOperativo') numeroOperativo: string
   ) {
     const asignacion =
       await this.asignacionService.buscarPorNumeroOperativo(numeroOperativo)
@@ -99,7 +103,7 @@ export class AsignacionController extends BaseController {
   @Patch(':id')
   async actualizar(
     @Param('id') id: string,
-    @Body() dto: ActualizarAsignacionDto,
+    @Body() dto: ActualizarAsignacionDto
   ) {
     const asignacion = await this.asignacionService.actualizar(id, dto)
     return this.successUpdate(asignacion)

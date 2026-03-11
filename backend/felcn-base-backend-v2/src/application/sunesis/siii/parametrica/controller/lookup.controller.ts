@@ -32,7 +32,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar países por continente' })
   @Get('paises/continente/:id')
   async listarPaisesPorContinente(@Param('id') id: string) {
-    return this.successList(await this.lookupService.listarPaisesPorContinente(parseInt(id)))
+    return this.successList(
+      await this.lookupService.listarPaisesPorContinente(parseInt(id))
+    )
   }
 
   @ApiOperation({ summary: 'Listar países destino' })
@@ -50,7 +52,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar departamentos por país' })
   @Get('departamentos/pais/:id')
   async listarDepartamentosPorPais(@Param('id') id: string) {
-    return this.successList(await this.lookupService.listarDepartamentosPorPais(parseInt(id)))
+    return this.successList(
+      await this.lookupService.listarDepartamentosPorPais(parseInt(id))
+    )
   }
 
   @ApiOperation({ summary: 'Listar provincias' })
@@ -62,7 +66,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar provincias por departamento' })
   @Get('provincias/departamento/:id')
   async listarProvinciasPorDepartamento(@Param('id') id: string) {
-    return this.successList(await this.lookupService.listarProvinciasPorDepartamento(parseInt(id)))
+    return this.successList(
+      await this.lookupService.listarProvinciasPorDepartamento(parseInt(id))
+    )
   }
 
   @ApiOperation({ summary: 'Listar localidades' })
@@ -74,7 +80,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar localidades por provincia' })
   @Get('localidades/provincia/:id')
   async listarLocalidadesPorProvincia(@Param('id') id: string) {
-    return this.successList(await this.lookupService.listarLocalidadesPorProvincia(parseInt(id)))
+    return this.successList(
+      await this.lookupService.listarLocalidadesPorProvincia(parseInt(id))
+    )
   }
 
   // Tipos
@@ -117,7 +125,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar categorías de operativo' })
   @Get('categorias-operativo')
   async listarCategoriasOperativo() {
-    return this.successList(await this.lookupService.listarCategoriasOperativo())
+    return this.successList(
+      await this.lookupService.listarCategoriasOperativo()
+    )
   }
 
   // ==================== NUEVOS TIPOS ====================
@@ -169,7 +179,9 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar etapas de investigación' })
   @Get('etapas-investigacion')
   async listarEtapasInvestigacion() {
-    return this.successList(await this.lookupService.listarEtapasInvestigacion())
+    return this.successList(
+      await this.lookupService.listarEtapasInvestigacion()
+    )
   }
 
   @ApiOperation({ summary: 'Listar recursos' })
@@ -183,13 +195,17 @@ export class LookupController extends BaseController {
   @ApiOperation({ summary: 'Listar descripciones de sustancias sólidas' })
   @Get('sustancias-solidas-desc')
   async listarSustanciasSolidasDesc() {
-    return this.successList(await this.lookupService.listarSustanciasSolidasDesc())
+    return this.successList(
+      await this.lookupService.listarSustanciasSolidasDesc()
+    )
   }
 
   @ApiOperation({ summary: 'Listar descripciones de sustancias líquidas' })
   @Get('sustancias-liquidas-desc')
   async listarSustanciasLiquidasDesc() {
-    return this.successList(await this.lookupService.listarSustanciasLiquidasDesc())
+    return this.successList(
+      await this.lookupService.listarSustanciasLiquidasDesc()
+    )
   }
 
   @ApiOperation({ summary: 'Listar procedencias de coca' })
@@ -248,5 +264,29 @@ export class LookupController extends BaseController {
   @Get('tipos-cabello')
   async listarTiposCabello() {
     return this.successList(await this.lookupService.listarTiposCabello())
+  }
+
+  // ==================== ESTRUCTURA ORGANIZACIONAL ====================
+
+  @ApiOperation({ summary: 'Listar unidades' })
+  @Get('unidades')
+  async listarUnidades() {
+    return this.successList(await this.lookupService.listarUnidades())
+  }
+
+  @ApiOperation({ summary: 'Listar distritales por unidad' })
+  @Get('distritales/unidad/:id')
+  async listarDistritalesPorUnidad(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarDistritalesPorUnidad(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar grupos por distrital' })
+  @Get('grupos/distrital/:id')
+  async listarGruposPorDistrital(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarGruposPorDistrital(parseInt(id))
+    )
   }
 }
