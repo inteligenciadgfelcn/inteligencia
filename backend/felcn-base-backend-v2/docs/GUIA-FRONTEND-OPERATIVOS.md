@@ -360,11 +360,37 @@ GET /api/operativos/catalogos/caracteristicas/{idCatalogoClase}
 |---|---|---|
 | `cbosussol` | `GET /api/siii-lookups/sustancias-solidas-desc` | — |
 
+**Regla de cantidad — campo `cantidad` (almacenado en KG):**
+
+| El usuario ingresa | Cálculo | `cantidad` a enviar |
+|---|---|---|
+| 2 Kg | — | `2` |
+| 500 g | 500 / 1.000 | `0.5` |
+| 2 Kg + 750 g | 2 + 0,75 | `2.75` |
+
+```javascript
+const cantidad = (kg || 0) + (gramos || 0) / 1_000
+// Enviar: { "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }
+```
+
 ### SEC4 — Sustancias Líquidas
 
 | Combo ASP | API lookup | Dependencia |
 |---|---|---|
 | `cbosusliq` | `GET /api/siii-lookups/sustancias-liquidas-desc` | — |
+
+**Regla de cantidad — campo `cantidad` (almacenado en LT):**
+
+| El usuario ingresa | Cálculo | `cantidad` a enviar |
+|---|---|---|
+| 15 Lt | — | `15` |
+| 500 ml | 500 / 1.000 | `0.5` |
+| 15 Lt + 500 ml | 15 + 0,5 | `15.5` |
+
+```javascript
+const cantidad = (litros || 0) + (ml || 0) / 1_000
+// Enviar: { "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }
+```
 
 ### SEC5 — Fábricas / Pozas
 
@@ -506,26 +532,21 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID" \
 
 ```bash
 # === DROGAS ===
-# POST es multipart/form-data — incluye las dos fotos opcionales
+# POST es multipart/form-data — pruebaCampo y pesaje son OBLIGATORIAS (JPG/JPEG)
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -F "idTipoDroga=1" \
   -F "idEstadoDroga=3" \
-  -F "cantidadGramos=1500.5" \
+  -F "cantidadGramos=1500" \
   -F "cantidadUnidades=0" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=70" \
   -F "observaciones=Droga en estado sólido prensado" \
-  -F "pruebaCampo=@/ruta/foto_prueba.jpg" \
-  -F "pesaje=@/ruta/foto_pesaje.jpg"
+  -F "pruebaCampo=@/ruta/foto_prueba.jpg;type=image/jpeg" \
+  -F "pesaje=@/ruta/foto_pesaje.jpg;type=image/jpeg"
 # → 201: { "datos": { "id": "101", ... } }
 DROGA_ID=101
 
 curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"   # resumen total
-
-# Ver fotos de la droga (al expandir fila)
-curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/prueba-campo"
-curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/pesaje"
 
 # Logotipos de la droga (al expandir fila)
 curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos"
@@ -544,12 +565,12 @@ curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
 # === SUSTANCIAS SÓLIDAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-solidas" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.750, "unidadMedida": "KG", "observaciones": "Acetona" }'
+  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }'
 
 # === SUSTANCIAS LÍQUIDAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5, "unidadMedida": "LT", "observaciones": "Éter etílico" }'
+  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }'
 
 # === FÁBRICAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/fabricas" \
@@ -744,8 +765,8 @@ curl -X PATCH "$BASE/operativos/caso/$CASO_ID" \
 ### FASE 4 — Editar sub-entidades
 
 ```bash
-# Agregar
-curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" -H "Content-Type: application/json" -d '{...}'
+# Agregar (multipart — ver sección 7.3 para curl completo con imágenes requeridas)
+curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" -F "idEstadoDroga=3" -F "cantidadGramos=1500" -F "cantidadUnidades=0" -F "idFormaTransporte=2" -F "idPaisProcedencia=70" -F "idPaisDestino=70" -F "pruebaCampo=@/ruta/prueba.jpg;type=image/jpeg" -F "pesaje=@/ruta/pesaje.jpg;type=image/jpeg"
 
 # Eliminar
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/101"
@@ -775,17 +796,19 @@ curl "$BASE/operativos/caso/$CASO_ID/logotipos/1/foto"
 ┌──────────────────────────────────────────────────────────────┐
 │  DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES                     │
 │                                                              │
-│  Tipo droga [combo] Estado [combo]  Cantidad Tn[ ] Kg[ ]    │
-│                                              g [ ] Mg[ ]    │
-│  Forma transporte [combo]  Procedencia [combo]  Destino [combo]│
-│  Foto Prueba Campo [file]   Foto Pesaje [file]               │
+│  Tipo droga [combo]  Estado [combo]                          │
+│    si Estado ≠ 5:  Cantidad  Tn[ ]  Kg[ ]  g[ ]  Mg[ ]      │
+│    si Estado = 5:  Cocaína Líquida  Litros[ ]                │
+│  Forma transporte [combo]  Procedencia [combo]  Destino[combo]│
+│  Foto Prueba Campo [file]*  Foto Pesaje [file]*              │
+│  (* ambas obligatorias — solo JPG/JPEG)                      │
 │  [Guardar droga]                                             │
 │                                                              │
 │  ┌──────┬──────────┬──────┬────────┬──────────┬────────────┐ │
 │  │  #   │ Tipo     │ Cant │ Origen │  Fotos   │  Acciones  │ │
 │  ├──────┼──────────┼──────┼────────┼──────────┼────────────┤ │
 │  │  1   │ Cocaína  │2500g │ Chile  │ [PC][PS] │    [🗑]    │ │
-│  │  2   │Marihuana │ 500g │ Perú   │  [PC]    │    [🗑]    │ │
+│  │  2   │Marihuana │ 500g │ Perú   │ [PC][PS] │    [🗑]    │ │
 │  └──────┴──────────┴──────┴────────┴──────────┴────────────┘ │
 │                                                              │
 │  LOGOTIPOS                                                   │
@@ -798,8 +821,8 @@ curl "$BASE/operativos/caso/$CASO_ID/logotipos/1/foto"
 └──────────────────────────────────────────────────────────────┘
 ```
 
-> `[PC]` = botón/thumbnail Prueba de Campo · `[PS]` = Pesaje.
-> Se renderizan solo si `urlFotoPruebaCampo` / `urlFotoPesaje` no es `null`.
+> `[PC]` = botón Prueba de Campo · `[PS]` = Pesaje.
+> Ambas fotos son **obligatorias** — la grilla siempre muestra los dos botones.
 
 ---
 
@@ -824,7 +847,6 @@ Los buffers binarios **nunca se incluyen** en el JSON.
 {
   "id": "101",
   "idOperativo": "42",
-  "idTipoDroga": 1,
   "idEstadoDroga": 3,
   "cantidadGramos": 1500.5,
   "cantidadUnidades": 0,
@@ -835,15 +857,19 @@ Los buffers binarios **nunca se incluyen** en el JSON.
   "fechaHoraIngreso": "2024-03-15T14:22:00.000Z",
   "usuario": "SISTEMA",
   "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-  "urlFotoPesaje": null
+  "urlFotoPesaje": "/api/operativos/caso/7/drogas/101/fotos/pesaje"
 }
 ```
 
-> `url*` es `null` si no hay imagen guardada. Usar para habilitar/deshabilitar
-> el botón de visualización en la grilla sin hacer una petición extra.
+> Ambas fotos son obligatorias, por lo que `urlFotoPruebaCampo` y `urlFotoPesaje`
+> siempre son strings (nunca `null`) en registros válidos.
 >
-> Los campos `idTipoDroga`, `idEstadoDroga`, etc. son IDs numéricos. El frontend
+> Los campos `idEstadoDroga`, `idFormaTransporte`, etc. son IDs numéricos. El frontend
 > los resuelve contra los lookups estáticos (ver sección 3) para mostrar texto.
+>
+> **Unidad de `cantidadGramos` cuando `idEstadoDroga == 5`:** el valor almacenado
+> son litros, no gramos (herencia de la BD original — mismo campo `Dg_Cantidad`).
+> Mostrar la unidad correcta en la grilla según el estado.
 
 #### Curl
 
@@ -856,9 +882,9 @@ curl "$BASE/operativos/caso/$CASO_ID/drogas"
 #     "finalizado": true,
 #     "datos": [
 #       {
-#         "id": "101", "idTipoDroga": 1, "cantidadGramos": 1500.5,
+#         "id": "101", "cantidadGramos": 1500.5,
 #         "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-#         "urlFotoPesaje": null
+#         "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
 #       }
 #     ]
 #   }
@@ -869,125 +895,263 @@ curl "$BASE/operativos/caso/$CASO_ID/drogas"
 
 ### 7.3 CRUD drogas
 
+#### Endpoints CRUD
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **CREATE** | POST | `/caso/:idCaso/drogas` | `multipart/form-data` — campos + `pruebaCampo` + `pesaje` (ambos requeridos) |
+| **READ lista** | GET | `/caso/:idCaso/drogas` | Lista con metadatos — alimenta la grilla |
+| **READ pesaje** | GET | `/caso/:idCaso/drogas/pesaje` | Resumen de peso total por tipo de droga |
+| **DELETE** | DELETE | `/caso/:idCaso/drogas/:id` | Elimina en cascada (borra sus logotipos primero) |
+
+> No existe PATCH. Corrección = DELETE + POST.
+
+#### SEC2 — Drogas (lookups de la sección)
+
+| Combo ASP | API lookup | Dependencia | Nota |
+|---|---|---|---|
+| `cbotipodrogas` | `GET /api/siii-lookups/tipos-droga` | — | — |
+| `cboestadodroga` | `GET /api/operativos/catalogos/estados-droga/:id` | → cbotipodrogas | `idEstadoDroga=5` activa modo Cocaína Líquida |
+| `cboformatran` | `GET /api/siii-lookups/formas-transporte` | — | — |
+| `cboproceden` | `GET /api/siii-lookups/paises` | — | Default: id=70 (Bolivia) |
+| `cbodestino` | `GET /api/siii-lookups/paises` | — | Misma lista |
+
+---
+
 #### CREATE — POST multipart/form-data
 
 ##### Por qué multipart y no JSON
 
-El formulario de alta envía **datos + 2 archivos de imagen** en una sola petición.
-`Content-Type: application/json` no puede transportar binarios. La alternativa
-correcta es `multipart/form-data`, donde cada campo (texto o archivo) va en una
-parte separada del body.
+El formulario envía **datos de texto y 2 fotos en una sola petición**. `application/json`
+no puede transportar binarios; la alternativa correcta es `multipart/form-data`.
+En este formato, todos los campos —texto y archivos— viajan juntos en el mismo
+body POST; el browser genera automáticamente un delimitador (`boundary`) que
+separa internamente cada campo dentro de él.
+
+##### Reglas de cantidad: cómo calcular y qué enviar
+
+La cantidad siempre va en el campo `cantidadGramos` del FormData, pero
+**el input que se muestra y el cálculo dependen del estado seleccionado**.
+
+---
+
+###### CASO A — Estado sólido (`idEstadoDroga ≠ 5`)
+
+Mostrar **4 inputs**: Tn · Kg · g · mg. Convertir todo a gramos y sumar:
+
+```
+cantidadGramos = (Tn × 1.000.000) + (Kg × 1.000) + g + (mg / 1.000)
+```
+
+| El usuario ingresa | Cálculo | `cantidadGramos` a enviar |
+|---|---|---|
+| 1 Tn | 1 × 1.000.000 | `1000000` |
+| 1 Kg | 1 × 1.000 | `1000` |
+| 2 Kg + 500 g | 2.000 + 500 | `2500` |
+| 500 mg | 500 / 1.000 | `0.5` |
+| 1 Tn + 2 Kg + 500 g + 250 mg | 1.000.000 + 2.000 + 500 + 0,25 | `1002500.25` |
+
+```javascript
+// Conversión para estado sólido
+const cantidadGramos =
+  (tn || 0) * 1_000_000 +
+  (kg || 0) * 1_000     +
+  (g  || 0)             +
+  (mg || 0) / 1_000
+
+formData.append('cantidadGramos', String(cantidadGramos))
+```
+
+---
+
+###### CASO B — Estado líquido (`idEstadoDroga = 5` — "Cocaína Líquida")
+
+Mostrar **1 solo input**: Litros (label original: *"Cocaina Liquida en Litros"*).
+Enviar el valor **directamente, sin ninguna conversión**.
+
+> `cantidadGramos` almacena litros en este caso — herencia del campo único
+> `Dg_Cantidad` en la BD original. En la grilla, mostrar "Lts" en vez de "g"
+> cuando `idEstadoDroga == 5`.
+
+| El usuario ingresa | `cantidadGramos` a enviar |
+|---|---|
+| 25,5 litros | `25.5` |
+| 100 litros | `100` |
+
+```javascript
+// Sin conversión para estado líquido
+const cantidadGramos = litros  // valor directo del input
+
+formData.append('cantidadGramos', String(cantidadGramos))
+```
+
+---
+
+###### Campo adicional: `cantidadUnidades` (cápsulas / pastillas / unidades contables)
+
+Campo independiente del peso. Cuenta unidades físicas (cápsulas, bolsas, etc.).
+Si no aplica, enviar `0`.
+
+| El usuario ingresa | `cantidadUnidades` a enviar |
+|---|---|
+| vacío / no aplica | `0` |
+| 100 cápsulas | `100` |
+
+```javascript
+formData.append('cantidadUnidades', String(cantidadUnidades || 0))
+```
+
+---
+
+##### Imágenes — ambas obligatorias (JPG/JPEG únicamente)
+
+Las dos fotos son **requeridas**. El formulario no debe permitir guardar si falta
+alguna. Solo se aceptan archivos `.jpg` / `.jpeg`. Esta es la misma regla del
+formulario ASP original: si alguna foto no se adjuntaba, el registro no se insertaba.
+
+> **Swagger no muestra los campos de archivo** (`pruebaCampo`, `pesaje`) porque
+> son recibidos vía `@UploadedFiles()` fuera del DTO — Swagger solo documenta lo
+> que está en el DTO. Para probar con imágenes se debe usar curl o Postman.
 
 ##### Cómo construye el frontend el multipart
 
 ```javascript
-// El usuario completa el form y selecciona los archivos
-const formData = new FormData()
-
-// Campos de texto — mismos nombres que el DTO
-formData.append('idTipoDroga',      '1')
-formData.append('idEstadoDroga',    '3')
-formData.append('cantidadGramos',   '1500.5')  // ya convertido a gramos (ver sección 8)
-formData.append('cantidadUnidades', '0')
-formData.append('idFormaTransporte','2')
-formData.append('idPaisProcedencia','70')
-formData.append('idPaisDestino',    '70')
-formData.append('observaciones',    'Droga en estado sólido prensado')
-
-// Archivos — nombres exactos que espera NestJS en FileFieldsInterceptor
+// ── Validaciones previas al envío ────────────────────────────────────────────
 const filePrueba = document.querySelector('#inputPruebaCampo').files[0]
 const filePesaje = document.querySelector('#inputPesaje').files[0]
-if (filePrueba) formData.append('pruebaCampo', filePrueba)  // campo opcional
-if (filePesaje) formData.append('pesaje',      filePesaje)  // campo opcional
 
-// Enviar — NO poner Content-Type manualmente; el browser lo genera con el boundary
+if (!filePrueba || !filePesaje) {
+  mostrarError('Debe adjuntar la foto de prueba de campo y la foto de pesaje')
+  return
+}
+const ext = f => f.name.split('.').pop().toLowerCase()
+if (!['jpg','jpeg'].includes(ext(filePrueba)) || !['jpg','jpeg'].includes(ext(filePesaje))) {
+  mostrarError('Solo se aceptan imágenes JPG/JPEG')
+  return
+}
+
+// ── Cantidad según estado ─────────────────────────────────────────────────────
+let cantidadGramos
+if (idEstadoDroga === 5) {
+  // Cocaína líquida: enviar litros directamente
+  cantidadGramos = litros
+} else {
+  // Sólido: convertir Tn/Kg/g/mg a gramos
+  cantidadGramos =
+    (tn || 0) * 1_000_000 +
+    (kg || 0) * 1_000     +
+    (g  || 0)             +
+    (mg || 0) / 1_000
+}
+
+// ── Construir FormData ────────────────────────────────────────────────────────
+const formData = new FormData()
+// Campos de texto — mismos nombres que el DTO
+formData.append('idEstadoDroga',     String(idEstadoDroga))
+formData.append('cantidadGramos',    String(cantidadGramos))
+formData.append('cantidadUnidades',  String(cantidadUnidades || 0))
+formData.append('idFormaTransporte', String(idFormaTransporte))
+formData.append('idPaisProcedencia', String(idPaisProcedencia))
+formData.append('idPaisDestino',     String(idPaisDestino))
+if (observaciones) formData.append('observaciones', observaciones)
+
+// Archivos — nombres exactos que espera el FileFieldsInterceptor
+formData.append('pruebaCampo', filePrueba)
+formData.append('pesaje',      filePesaje)
+
+// ── Enviar — NO poner Content-Type; fetch lo genera con el boundary correcto ──
 const res = await fetch(`/api/operativos/caso/${idCaso}/drogas`, {
   method: 'POST',
+  headers: { Authorization: `Bearer ${TOKEN}` },
   body: formData,
-  // headers: NO agregar Content-Type — fetch lo pone solo con el boundary correcto
 })
 const { datos } = await res.json()
-// datos.urlFotoPruebaCampo → URL si se subió la foto, null si no
+// datos.urlFotoPruebaCampo y datos.urlFotoPesaje → siempre strings (no null)
 ```
 
 ##### Cómo lo recibe NestJS
 
-El controller usa `FileFieldsInterceptor` que registra dos campos de archivo:
+El controller usa `FileFieldsInterceptor` con dos campos de archivo registrados:
 
 ```
-pruebaCampo  → guardado en droga.foto_prueba_campo (bytea en PostgreSQL)
-pesaje       → guardado en droga.foto_pesaje        (bytea en PostgreSQL)
+pruebaCampo  → droga.foto_prueba_campo (bytea en PostgreSQL)
+pesaje       → droga.foto_pesaje        (bytea en PostgreSQL)
 ```
 
 Los campos de texto llegan en `@Body()` como strings que NestJS valida con el DTO.
 Los archivos llegan en `@UploadedFiles()` como objetos `Multer.File` con `.buffer`.
-Ambos son **opcionales**: si el usuario no adjunta una imagen, el campo queda `null`.
 
-##### Curl equivalente
+---
+
+#### Curls CRUD completos
 
 ```bash
-# -F "campo=valor"         → campo de texto en multipart
-# -F "campo=@/ruta/foto"   → archivo binario en multipart
+BASE="http://localhost:3000/api"
+CASO_ID=7
 
+# ─── CREATE — estado sólido (idEstadoDroga ≠ 5) ──────────────────────────────
+# cantidadGramos = suma de Tn/Kg/g/mg convertida a gramos
+# Ejemplo: 1 Kg + 500 g = 1500 g
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -F "idTipoDroga=1" \
   -F "idEstadoDroga=3" \
-  -F "cantidadGramos=1500.5" \
+  -F "cantidadGramos=1500" \
   -F "cantidadUnidades=0" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=70" \
   -F "observaciones=Droga en estado sólido prensado" \
-  -F "pruebaCampo=@/home/user/fotos/prueba_campo.jpg;type=image/jpeg" \
-  -F "pesaje=@/home/user/fotos/pesaje.jpg;type=image/jpeg"
-
-# Respuesta 201:
+  -F "pruebaCampo=@/ruta/prueba_campo.jpg;type=image/jpeg" \
+  -F "pesaje=@/ruta/pesaje.jpg;type=image/jpeg"
+# → 201:
 # {
 #   "finalizado": true,
 #   "datos": {
 #     "id": "101",
 #     "idOperativo": "42",
-#     "idTipoDroga": 1,
-#     "cantidadGramos": 1500.5,
+#     "idEstadoDroga": 3,
+#     "cantidadGramos": 1500,
+#     "cantidadUnidades": 0,
 #     "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-#     "urlFotoPesaje": "/api/operativos/caso/7/drogas/101/fotos/pesaje",
+#     "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje",
 #     "fechaHoraIngreso": "2024-03-15T14:22:00.000Z"
 #   }
 # }
 DROGA_ID=101
 
-# Sin imágenes (también válido):
+# ─── CREATE — estado líquido (idEstadoDroga = 5, Cocaína Líquida) ────────────
+# cantidadGramos lleva litros directamente (mismo campo, unidad distinta)
+# Ejemplo: 25.5 litros
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -F "idTipoDroga=1" \
-  -F "idEstadoDroga=3" \
-  -F "cantidadGramos=500" \
+  -F "idEstadoDroga=5" \
+  -F "cantidadGramos=25.5" \
   -F "cantidadUnidades=0" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
-  -F "idPaisDestino=70"
-# → urlFotoPruebaCampo: null, urlFotoPesaje: null
-```
+  -F "idPaisDestino=70" \
+  -F "observaciones=Cocaína líquida en recipientes" \
+  -F "pruebaCampo=@/ruta/prueba_campo.jpg;type=image/jpeg" \
+  -F "pesaje=@/ruta/pesaje.jpg;type=image/jpeg"
+# → 201 igual; en grilla mostrar "25.5 Lts" cuando idEstadoDroga == 5
 
-#### READ — GET lista (grilla)
-
-```bash
+# ─── READ — lista grilla ──────────────────────────────────────────────────────
 curl "$BASE/operativos/caso/$CASO_ID/drogas"
-# → 200 con array enriquecido (ver sección 7.2)
-```
+# → {
+#     "finalizado": true,
+#     "datos": [
+#       {
+#         "id": "101", "idEstadoDroga": 3,
+#         "cantidadGramos": 1500, "cantidadUnidades": 0,
+#         "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+#         "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
+#       }
+#     ]
+#   }
 
-#### DELETE con cascade
+# ─── READ — resumen de pesaje ─────────────────────────────────────────────────
+curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"
+# → { "finalizado": true, "datos": [ { "tipoDroga": "Cocaína", "totalGramos": 1500 }, ... ] }
 
-Al eliminar una droga, el backend borra **en orden**:
-
-```
-1. DELETE logotipos WHERE id_droga = :idDroga   ← todos los logos de esa droga
-2. DELETE droga WHERE id_droga = :idDroga
-```
-
-Esto garantiza integridad sin depender de constraints de BD. El frontend
-simplemente llama al DELETE y refresca la grilla.
-
-```bash
+# ─── DELETE (cascade: borra logotipos de esa droga primero) ──────────────────
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
 # → 200: { "finalizado": true }
 # Después: refrescar GET /caso/:idCaso/drogas
@@ -1280,7 +1444,130 @@ async function eliminarLogotipo(idCaso, idLogotipo) {
 
 ---
 
-## 8. Reglas de negocio y validaciones
+## 8. SUSTANCIAS — CRUD
+
+### 8.1 Sustancias Sólidas
+
+Precursores sólidos (acetona, éter sólido, etc.) secuestrados en el operativo.
+
+#### Endpoints
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **LIST** | GET | `/caso/:idCaso/sustancias-solidas` | Lista del operativo |
+| **CREATE** | POST | `/caso/:idCaso/sustancias-solidas` | Agregar (`application/json`) |
+| **DELETE** | DELETE | `/caso/:idCaso/sustancias-solidas/:id` | Eliminar |
+
+> No existe PATCH. Corrección = DELETE + POST.
+
+#### Body POST
+
+```json
+{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }
+```
+
+> `cantidad` siempre en **KG** — ver regla de conversión en SEC3 (sección 3).
+
+#### Respuesta GET (lista)
+
+```json
+[
+  {
+    "id": "10",
+    "idOperativo": "42",
+    "idSustanciaSolidaDescripcion": 5,
+    "cantidad": 2.75,
+    "fechaHoraIngreso": "2024-03-15T14:00:00.000Z",
+    "usuario": "JPEREZ"
+  }
+]
+```
+
+#### Curls
+
+```bash
+BASE="http://localhost:3000/api"
+CASO_ID=7
+
+# LIST
+curl "$BASE/operativos/caso/$CASO_ID/sustancias-solidas"
+
+# CREATE — 2 Kg + 750 g → cantidad = 2.75
+curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-solidas" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }'
+# → 201: { "finalizado": true, "datos": { "id": "10", "cantidad": 2.75, ... } }
+SUST_SOL_ID=10
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-solidas/$SUST_SOL_ID" \
+  -H "Authorization: Bearer $TOKEN"
+# → 200: { "finalizado": true }
+```
+
+---
+
+### 8.2 Sustancias Líquidas
+
+Precursores líquidos (éter etílico, ácido clorhídrico, etc.) secuestrados en el operativo.
+
+#### Endpoints
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **LIST** | GET | `/caso/:idCaso/sustancias-liquidas` | Lista del operativo |
+| **CREATE** | POST | `/caso/:idCaso/sustancias-liquidas` | Agregar (`application/json`) |
+| **DELETE** | DELETE | `/caso/:idCaso/sustancias-liquidas/:id` | Eliminar |
+
+> No existe PATCH. Corrección = DELETE + POST.
+
+#### Body POST
+
+```json
+{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }
+```
+
+> `cantidad` siempre en **LT** — ver regla de conversión en SEC4 (sección 3).
+
+#### Respuesta GET (lista)
+
+```json
+[
+  {
+    "id": "11",
+    "idOperativo": "42",
+    "idSustanciaLiquidaDescripcion": 3,
+    "cantidad": 15.5,
+    "fechaHoraIngreso": "2024-03-15T14:05:00.000Z",
+    "usuario": "JPEREZ"
+  }
+]
+```
+
+#### Curls
+
+```bash
+# LIST
+curl "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas"
+
+# CREATE — 15 Lt + 500 ml → cantidad = 15.5
+curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }'
+# → 201: { "finalizado": true, "datos": { "id": "11", "cantidad": 15.5, ... } }
+SUST_LIQ_ID=11
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas/$SUST_LIQ_ID" \
+  -H "Authorization: Bearer $TOKEN"
+# → 200: { "finalizado": true }
+```
+
+---
+
+## 9. Reglas de negocio y validaciones
 
 ### Comportamiento por operación
 
@@ -1302,23 +1589,6 @@ async function eliminarLogotipo(idCaso, idLogotipo) {
 - `txtnroinf` (`dto.numeroOperativo`) es editado por el usuario y **sí va en el body** de POST/PATCH.
 - `coordX`/`coordY` van en el body — el frontend ya los entrega en decimal.
 
-### Conversiones que hace el frontend
-
-```javascript
-// Peso de drogas: convertir a gramos
-const cantidadGramos =
-  (toneladas  || 0) * 1_000_000 +
-  (kilos      || 0) * 1_000 +
-  (gramos     || 0) +
-  (miligramos || 0) / 1_000
-
-// Sustancia sólida → KG
-const cantidadKg = (kilos || 0) + (gramos || 0) / 1_000
-
-// Sustancia líquida → LT
-const cantidadLt = (litros || 0) + (ml || 0) / 1_000
-```
-
 ### Defaults que aplica el frontend
 
 ```javascript
@@ -1331,7 +1601,7 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-## 9. Referencia de endpoints
+## 10. Referencia de endpoints
 
 ### Formato de response estándar
 
@@ -1368,7 +1638,7 @@ numeroDocumento = numeroDocumento || 'SN'
 |---|---|---|
 | GET | `/operativos/caso/:idCaso/drogas` | Listar — alimenta la grilla (`[]` si no hay operativo) |
 | GET | `/operativos/caso/:idCaso/drogas/pesaje` | Resumen peso total |
-| POST | `/operativos/caso/:idCaso/drogas` | Crear (**multipart**: datos + `pruebaCampo?` + `pesaje?`) |
+| POST | `/operativos/caso/:idCaso/drogas` | Crear (**multipart**: datos + `pruebaCampo` + `pesaje` — ambos requeridos, JPG/JPEG) |
 | DELETE | `/operativos/caso/:idCaso/drogas/:id` | Eliminar **en cascada** (borra sus logotipos primero) |
 | GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/prueba-campo` | Foto prueba de campo (binaria — usar como `<img src>`) |
 | GET | `/operativos/caso/:idCaso/drogas/:idDroga/fotos/pesaje` | Foto cuantificación/pesaje (binaria — usar como `<img src>`) |
@@ -1458,7 +1728,7 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-## 10. Flujo de prueba: Servicio → Asignación → Operativo (curls completos)
+## 11. Flujo de prueba: Servicio → Asignación → Operativo (curls completos)
 
 Esta sección contiene los curls para simular el flujo completo de alta desde cero.
 Ejecutarlos **en orden**. Los IDs retornados en cada paso se usan en el siguiente.
@@ -1652,7 +1922,6 @@ curl "$BASE/operativos/caso/$CASO_ID"
 ```bash
 # Con fotos:
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -F "idTipoDroga=1" \
   -F "idEstadoDroga=3" \
   -F "cantidadGramos=2500.5" \
   -F "cantidadUnidades=0" \
@@ -1669,7 +1938,6 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
 #   "datos": {
 #     "id": "101",            ← GUARDAR ESTE ID (idDroga)
 #     "idOperativo": "42",
-#     "idTipoDroga": 1,
 #     "cantidadGramos": 2500.5,
 #     "urlFotoPruebaCampo": "/api/operativos/caso/3/drogas/101/fotos/prueba-campo",
 #     "urlFotoPesaje": "/api/operativos/caso/3/drogas/101/fotos/pesaje"
@@ -1680,7 +1948,6 @@ DROGA_ID=101
 
 # Sin fotos (también válido):
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
-  -F "idTipoDroga=2" \
   -F "idEstadoDroga=1" \
   -F "cantidadGramos=500" \
   -F "cantidadUnidades=0" \
