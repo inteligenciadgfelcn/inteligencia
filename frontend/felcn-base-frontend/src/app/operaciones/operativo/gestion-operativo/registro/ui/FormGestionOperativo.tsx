@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
-import { Seccion3Form } from './secciones/Seccion3Form'
-import { Seccion4Form } from './secciones/Seccion4Form'
+import { SustanciasSolidas } from './secciones/SustanciasSolidas'
+import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
 import { Seccion5Form } from './secciones/Seccion5Form'
 import { Seccion6Form } from './secciones/Seccion6Form'
 import { Seccion7Form } from './secciones/Seccion7Form'
@@ -87,22 +87,26 @@ export function FormGestionOperativo({
 
         if (key === 'seccion-3') {
             return (
-                <Seccion3Form
+                <SustanciasSolidas
                     titulo="SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS"
                     onGuardar={seccion3.mutation.mutateAsync}
+                    onEliminar={seccion3.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion3.query.refetch()}
-                    cargando={seccion3.mutation.isPending || seccion3.query.isFetching}
+                    datos={seccion3.query.data?.datos ?? []}
+                    cargando={seccion3.mutation.isPending || seccion3.query.isFetching || seccion3.deleteMutation.isPending}
                 />
             )
         }
 
         if (key === 'seccion-4') {
             return (
-                <Seccion4Form
+                <SustanciasLiquidas
                     titulo="SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS"
                     onGuardar={seccion4.mutation.mutateAsync}
+                    onEliminar={seccion4.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion4.query.refetch()}
-                    cargando={seccion4.mutation.isPending || seccion4.query.isFetching}
+                    datos={seccion4.query.data?.datos ?? []}
+                    cargando={seccion4.mutation.isPending || seccion4.query.isFetching || seccion4.deleteMutation.isPending}
                 />
             )
         }
