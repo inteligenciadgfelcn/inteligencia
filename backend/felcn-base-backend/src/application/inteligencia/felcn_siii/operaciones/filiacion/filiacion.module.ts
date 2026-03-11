@@ -1,19 +1,25 @@
 import { Module } from '@nestjs/common';
 import { FiliacionService } from './filiacion.service';
 import { FiliacionController } from './filiacion.controller';
-import { Filiacion } from './entities/filiacion.entity';
-import { DB_SIII } from '@/core/config/database/database.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PersonasRepository } from './repository/personas.repository';
-import { Pais } from '../../parametricas/pais/entities/pais.entity';
-import { TipoDocumento } from '../../parametricas/tipo_documento/entities/tipo_documento.entity';
+import { Detenido } from './detenido/entities/detenido.entity';
+import { DocumentoDetenido } from './documento_detenido/entities/documento_detenido.entity';
+import { AliasDetenido } from './alias_detenido/entities/alias_detenido.entity';
+import { ProfesionDetenido } from './profesion_detenido/entities/profesion_detenido.entity';
+import { FenotipoDetenido } from './fenotipo_detenido/entities/fenotipo_detenido.entity';
+import { DB_SIII } from '@/core/config/database/database.module';
 
 @Module({
    imports: [
-      TypeOrmModule.forFeature([Filiacion,Pais,TipoDocumento], DB_SIII),
-    ],
+    TypeOrmModule.forFeature([
+      Detenido,
+      AliasDetenido,
+      ProfesionDetenido,
+      DocumentoDetenido,
+      FenotipoDetenido,
+    ],DB_SIII,),
+  ],
   controllers: [FiliacionController],
-  providers: [FiliacionService,PersonasRepository],
-  exports:[FiliacionService]
+  providers: [FiliacionService],
 })
 export class FiliacionModule {}
