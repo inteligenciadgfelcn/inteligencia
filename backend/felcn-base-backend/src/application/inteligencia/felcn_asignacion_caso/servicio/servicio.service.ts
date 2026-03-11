@@ -223,6 +223,7 @@ export class ServicioService {
         { filtro: `%${filtro}%` }
       )
     }
+
     const [servicios, total] = await query.getManyAndCount()
 
     const usuariosIds = [
@@ -230,21 +231,31 @@ export class ServicioService {
       ...servicios.map((s) => s.usuarioEmergencia),
     ]
 
-    const usuarios: Usuario[] = await this.usuarioRepository.findBy({
-      usuario: In(usuariosIds),
+    const usuarios: Usuario[] = await this.usuarioRepository.find({
+      where: { usuario: In(usuariosIds) },
+      relations: ['grado'],
     })
 
     const usuariosMap = new Map(usuarios.map((u) => [u.usuario, u]))
 
-    const resultado = servicios.map((servicio) => ({
-      ...servicio,
-      fechaIngreso: formatearFecha(servicio.fechaIngreso),
-      fechaSalida: formatearFecha(servicio.fechaSalida),
-      nombreUsuarioPrincipal:
-        usuariosMap.get(servicio.usuarioPrincipal)?.nombres ?? null,
-      nombreUsuarioEmergencia:
-        usuariosMap.get(servicio.usuarioEmergencia)?.nombres ?? null,
-    }))
+    const resultado = servicios.map((servicio) => {
+      const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
+      const usuarioEmergencia = usuariosMap.get(servicio.usuarioEmergencia)
+
+      return {
+        ...servicio,
+        fechaIngreso: formatearFecha(servicio.fechaIngreso),
+        fechaSalida: formatearFecha(servicio.fechaSalida),
+
+        nombreUsuarioPrincipal: usuarioPrincipal
+          ? `${usuarioPrincipal.grado?.abreviatura} ${usuarioPrincipal.nombres}`
+          : null,
+
+        nombreUsuarioEmergencia: usuarioEmergencia
+          ? `${usuarioEmergencia.grado?.abreviatura} ${usuarioEmergencia.nombres}`
+          : null,
+      }
+    })
 
     return [resultado, total]
   }
