@@ -7,41 +7,27 @@ import {
   Param,
   Delete,
   UseGuards,
-  Query,
 } from '@nestjs/common'
 import { FiliacionService } from './filiacion.service'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
 import { UpdateFiliacionDto } from './dto/update-filiacion.dto'
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Filiacion de personas')
+@ApiTags('SII - Filiacion')
 @Controller('filiacion')
 export class FiliacionController extends BaseController {
   constructor(private readonly filiacionService: FiliacionService) {
     super()
   }
 
-@Get('personas/:caso')
-@ApiOperation({ summary: 'Listar personas para filiación' })
-async obtenerPersonas(
-  @Param('caso') caso: string,
-  @Query() pagination: PaginacionQueryDto
-) {
-  const result =
-    await this.filiacionService.obtenerPersonasPorCaso(
-      caso,
-      pagination
-    )
-
-  return this.successListRows(result)
-}
-
   @Post()
+  @ApiOperation({
+    summary: 'Registrar formulario de Filiación de personas',
+  })
   create(@Body() createFiliacionDto: CreateFiliacionDto) {
     return this.filiacionService.create(createFiliacionDto)
   }

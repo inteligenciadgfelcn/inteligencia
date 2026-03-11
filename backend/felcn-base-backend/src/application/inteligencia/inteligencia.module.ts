@@ -11,7 +11,6 @@ import { GrupoModule } from './felcn_siii/parametricas/grupo/grupo.module'
 import { GradoModule } from './felcn_siii/parametricas/grado/grado.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
 import { PruebaModule } from './reportes/prueba/prueba.module'
-import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module';
 import { TipoDocumentoModule } from './felcn_siii/parametricas/tipo_documento/tipo_documento.module';
 import { ProfesionModule } from './felcn_siii/parametricas/profesion/profesion.module';
 import { EstadoCivilModule } from './felcn_siii/parametricas/estado_civil/estado_civil.module';
@@ -22,6 +21,12 @@ import { ColorOjosModule } from './felcn_siii/parametricas/color_ojos/color_ojos
 import { TipoOjosModule } from './felcn_siii/parametricas/tipo_ojos/tipo_ojos.module';
 import { TipoCabelloModule } from './felcn_siii/parametricas/tipo_cabello/tipo_cabello.module';
 import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constitucion_corporal/constitucion_corporal.module'
+import { DetenidoModule } from './felcn_siii/operaciones/filiacion/detenido/detenido.module';
+import { AliasDetenidoModule } from './felcn_siii/operaciones/filiacion/alias_detenido/alias_detenido.module';
+import { DocumentoDetenidoModule } from './felcn_siii/operaciones/filiacion/documento_detenido/documento_detenido.module';
+import { FenotipoDetenidoModule } from './felcn_siii/operaciones/filiacion/fenotipo_detenido/fenotipo_detenido.module';
+import { ProfesionDetenidoModule } from './felcn_siii/operaciones/filiacion/profesion_detenido/profesion_detenido.module';
+import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module'
 
 @Module({
   imports: [
@@ -36,7 +41,6 @@ import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constituci
     AsignacionesModule,
     ServicioModule,
     PruebaModule,
-    FiliacionModule,
     TipoDocumentoModule,
     ProfesionModule,
     EstadoCivilModule,
@@ -47,6 +51,12 @@ import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constituci
     TipoOjosModule,
     ConstitucionCorporalModule,
     TipoCabelloModule,
+    DetenidoModule,
+    AliasDetenidoModule,
+    DocumentoDetenidoModule,
+    FenotipoDetenidoModule,
+    ProfesionDetenidoModule,
+    FiliacionModule,
   ],
 })
 export class InteligenciaModule {}
