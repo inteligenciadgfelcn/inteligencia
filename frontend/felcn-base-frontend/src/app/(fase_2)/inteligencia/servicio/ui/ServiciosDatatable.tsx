@@ -9,7 +9,6 @@ import { useAuth } from '@/context/AuthProvider'
 import { Constantes } from '@/config/Constantes'
 import { CasbinTypes } from '@/types'
 
-import IconEye from '@/components/Icon/IconEye'
 import IconRefresh from '@/components/Icon/IconRefresh'
 
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
@@ -17,7 +16,6 @@ import { exportToExcel, exportToPrint } from '@/utils/tableExport'
 import { DataTableSortStatus } from 'mantine-datatable'
 import React from 'react'
 import { sortBy } from 'lodash'
-import { imprimir } from '@/utils/imprimir'
 import { ServicioTable } from '../types/servicio.table'
 import { getServicios } from '../services/servicio.service'
 import { dateToStringAmPm } from '@/utils/fechas'
@@ -89,14 +87,21 @@ export function ServiciosDatatable() {
   /* FETCH */
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['servicios', pagina, limite, search, sortStatus],
-    queryFn: () => getServicios(),
+    queryFn: () =>
+      getServicios({
+        pagina: pagina,
+        limite: limite,
+        filtro: search || undefined,
+        ordenar: sortStatus.columnAccessor,
+        direccion: sortStatus.direction,
+      }),
     placeholderData: keepPreviousData,
   })
 
   const filas = useMemo(() => data?.datos.filas ?? [], [data])
   const total = useMemo(() => data?.datos.total ?? 0, [data])
 
-  const filasOrdenadas = React.useMemo(() => {
+  const filasOrdenadas = useMemo(() => {
     if (!filas.length) return filas
 
     const sorted = sortBy(filas, sortStatus.columnAccessor as string)
@@ -104,42 +109,7 @@ export function ServiciosDatatable() {
     return sortStatus.direction === 'desc' ? sorted.reverse() : sorted
   }, [filas, sortStatus])
 
-  /* EXPORT CONFIG */
-  const exportHeaders = [
-    'Codigo Servicio',
-    'Servicio entrante',
-    'Servicio auxiliar',
-    'Fecha y Hora de Ingreso',
-    'Fecha y Hora de Salida',
-  ]
-
-  const exportColumns = [
-    'codigoServicio',
-    'usuarioPrincipal',
-    'usuarioEmergencia',
-    'fechaIngreso',
-    'fechaSalida',
-  ] as const as readonly (keyof ServicioTable)[]
-
-  const exportExcel = () => {
-    exportToExcel(filas, exportHeaders, exportColumns, 'caso_servicios')
-  }
-
-  const exportPrint = () => {
-    exportToPrint(
-      filas,
-      exportHeaders,
-      exportColumns,
-      'Gestión de Casos Servicios'
-    )
-  }
-
   /* COLUMNAS */
-  // "codigoServicio": "ICIA-0303032026",
-  //       "usuarioPrincipal": "TMR-0097       ",
-  //       "usuarioEmergencia": "TMR-0097       ",
-  //       "fechaIngreso": "2026-09-03 05:00:00",
-  //       "fechaSalida": "2026-10-03 04:59:00",
   const columns = [
     {
       accessor: 'codigoServicio',
@@ -231,7 +201,6 @@ export function ServiciosDatatable() {
   ]
 
   /* RENDER */
-
   return (
     <div>
       <VristoDataTable<ServicioTable>
@@ -245,8 +214,6 @@ export function ServiciosDatatable() {
         onSearchChange={setSearch}
         columns={columns}
         loading={isFetching}
-        // onExportExcel={exportExcel}
-        // onExportPrint={exportPrint}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
         extraButtons={

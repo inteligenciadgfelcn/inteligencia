@@ -9,7 +9,12 @@ import { Constantes } from '@/config/Constantes'
 import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
-import { nowDateToString } from '@/utils/fechas'
+import {
+  dateToString,
+  dateToStringAmPm,
+  dateUtcToString,
+  nowDateToString,
+} from '@/utils/fechas'
 import { useDepartments } from '../hooks/use.departments'
 import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
 import { Departamento } from '../services/departments.service'
@@ -73,7 +78,7 @@ interface Props {
 }
 
 /* ================= COMPONENT ================= */
-export const FormRegistro = ({ onSuccess }: Props) => {
+export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   const [loading, setLoading] = useState(false)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
@@ -91,27 +96,53 @@ export const FormRegistro = ({ onSuccess }: Props) => {
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // codigoServicio: registro?.codigoServicio || '',
-      // nroPase: registro?.nroPase || '',
-      // departamento: 0,
-      // unidad: 0,
-      // distrital: 0,
-      // grupo: 0,
-      // nroRegistro: registro?.nroRegistro || '',
-      // nombreOperativo: registro?.nombreOperativo || '',
-      fechaHoraOperativo: nowDateToString(),
-      // quienRealiza: {
-      //   nombreCompleto: registro?.quienRealiza?.nombreCompleto || '',
-      //   nroCelular: registro?.quienRealiza?.nroCelular || '',
-      // },
-      // asignadoA: {
-      //   nombreCompleto: registro?.asignadoA?.nombreCompleto || '',
-      //   nroCelular: registro?.asignadoA?.nroCelular || '',
-      // },
-      // fiscalAsignado: {
-      //   nombreCompleto: registro?.fiscalAsignado?.nombreCompleto || '',
-      //   nroCelular: registro?.fiscalAsignado?.nroCelular || '',
-      // },
+      codigoServicio: asignacion?.codigoServicio || '',
+      nroPase: asignacion?.usuario || '',
+      departamento: asignacion?.departamento
+        ? {
+            value: asignacion.departamento?.idDepartamento,
+            label: asignacion.departamento?.descripcion,
+          }
+        : undefined,
+      unidad: asignacion?.grupo
+        ? {
+            value: asignacion.grupo.distrital.unidad.idUnidad,
+            label: asignacion.grupo.distrital.unidad.descripcion,
+          }
+        : undefined,
+      distrital: asignacion?.grupo
+        ? {
+            value: asignacion.grupo.distrital.idDistrital,
+            label: asignacion.grupo.distrital.descripcion,
+          }
+        : undefined,
+      grupo: asignacion?.grupo
+        ? {
+            value: asignacion.grupo.idGrupo,
+            label: asignacion.grupo.descripcion,
+          }
+        : undefined,
+      nroRegistro: asignacion?.nroOperativo || '',
+      nombreOperativo: asignacion?.nombreCaso || '',
+      fechaHoraOperativo: asignacion?.fechaSolicitud
+        ? dateToStringAmPm(asignacion.fechaSolicitud)
+        : nowDateToString(),
+      quienRealiza: asignacion?.nombreSolicitud
+        ? {
+            value: Number(asignacion.telefonoSolicitud),
+            label: asignacion.nombreSolicitud,
+          }
+        : undefined,
+      asignadoA: asignacion?.asignado
+        ? {
+            value: Number(asignacion.telefonoAsignado),
+            label: asignacion.asignado,
+          }
+        : undefined,
+      fiscalAsignado: asignacion?.fiscalAsignado || '',
+      quienRealizaNum: asignacion?.telefonoSolicitud || '',
+      asignadoANum: asignacion?.telefonoAsignado || '',
+      fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
     },
   })
 
@@ -126,6 +157,60 @@ export const FormRegistro = ({ onSuccess }: Props) => {
   const { data: distritales } = useDistritales(unidadSeleccionada?.value)
   const { data: grupos } = useGroups(distritalSeleccionado?.value)
   const { data: usuarios } = useUsers(grupoSeleccionado?.value)
+
+  useEffect(() => {
+    if (asignacion) {
+      reset({
+        codigoServicio: asignacion?.codigoServicio || '',
+        nroPase: asignacion?.usuario || '',
+        departamento: asignacion?.departamento
+          ? {
+              value: asignacion.departamento?.idDepartamento,
+              label: asignacion.departamento?.descripcion,
+            }
+          : undefined,
+        unidad: asignacion?.grupo
+          ? {
+              value: asignacion.grupo.distrital.unidad.idUnidad,
+              label: asignacion.grupo.distrital.unidad.descripcion,
+            }
+          : undefined,
+        distrital: asignacion?.grupo
+          ? {
+              value: asignacion.grupo.distrital.idDistrital,
+              label: asignacion.grupo.distrital.descripcion,
+            }
+          : undefined,
+        grupo: asignacion?.grupo
+          ? {
+              value: asignacion.grupo.idGrupo,
+              label: asignacion.grupo.descripcion,
+            }
+          : undefined,
+        nroRegistro: asignacion?.nroOperativo || '',
+        nombreOperativo: asignacion?.nombreCaso || '',
+        fechaHoraOperativo: asignacion?.fechaSolicitud
+          ? dateUtcToString(asignacion.fechaSolicitud)
+          : nowDateToString(),
+        quienRealiza: asignacion?.nombreSolicitud
+          ? {
+              value: Number(asignacion.telefonoSolicitud),
+              label: asignacion.nombreSolicitud,
+            }
+          : undefined,
+        asignadoA: asignacion?.asignado
+          ? {
+              value: Number(asignacion.telefonoAsignado),
+              label: asignacion.asignado,
+            }
+          : undefined,
+        fiscalAsignado: asignacion?.fiscalAsignado || '',
+        quienRealizaNum: asignacion?.telefonoSolicitud || '',
+        asignadoANum: asignacion?.telefonoAsignado || '',
+        fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      })
+    }
+  }, [asignacion])
 
   useEffect(() => {
     resetField('distrital')
