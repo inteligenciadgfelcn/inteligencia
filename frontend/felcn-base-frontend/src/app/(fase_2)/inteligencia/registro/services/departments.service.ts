@@ -1,4 +1,4 @@
-import { usePeticion } from '@/app/(fase_2)/hooks/usePeticion'
+import { usePeticion } from '@/hooks'
 import { Constantes } from '@/config/Constantes'
 
 export interface Departamento {
