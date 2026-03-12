@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAlerts, useSession } from '@/hooks'
-import { Constantes } from '@/config/Constantes'
 import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
@@ -14,10 +13,10 @@ import {
   nowDateToString,
   tomorrowDateToString,
 } from '@/utils/fechas'
-import { useUsersInteligencia } from '../hooks/use.users.inteligencia'
-import { CreateServiceBody, postServicio } from '../services/servicio.service'
+import { useUsersInteligencia } from '../../servicio/hooks/use.users.inteligencia'
 import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
-import { Usuario } from '../services/users.service'
+import { Usuario } from '../../servicio/services/users.service'
+import { CreateServiceBody, postServicio } from '../services/creacion.service'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>

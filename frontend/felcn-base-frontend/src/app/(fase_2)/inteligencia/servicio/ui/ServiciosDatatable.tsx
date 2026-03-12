@@ -12,7 +12,6 @@ import { CasbinTypes } from '@/types'
 import IconRefresh from '@/components/Icon/IconRefresh'
 
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import { exportToExcel, exportToPrint } from '@/utils/tableExport'
 import { DataTableSortStatus } from 'mantine-datatable'
 import React from 'react'
 import { sortBy } from 'lodash'
