@@ -77,6 +77,20 @@ export interface DrogaCasoPayload {
   pruebaCampo?: File
   pesaje?: File
 }
+export interface ResponseDroga {
+  id: number;
+  idOperativo: string;
+  idEstadoDroga: number;
+  cantidadGramos: number;
+  cantidadUnidades: number;
+  idFormaTransporte: number;
+  idPaisProcedencia: number;
+  idPaisDestino: number;
+  fechaHoraIngreso: string;
+  usuario: string;
+  urlFotoPruebaCampo: string;
+  urlFotoPesaje: string;
+}
 
 export interface SustanciaPayload {
     cantidad: number
