@@ -1,4 +1,4 @@
-import { usePeticion } from '@/app/(fase_2)/hooks/usePeticion'
+import { usePeticion } from '@/hooks/usePeticion'
 import { Constantes } from '@/config/Constantes'
 import { Distrital } from './distrital.service'
 
