@@ -17,6 +17,7 @@ import {
   GestionOperativoDrogasService,
   GestionOperativoLogotiposService,
   LogotipoCasoPayload,
+  ResponseDroga,
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 import { useParametricas } from '@/hooks'
@@ -62,14 +63,6 @@ function ImagenAutenticada({
 export function SeccionDrogasFotografiaLogotiposForm({
   idCaso = 0,
 }: SeccionFormProps) {
-  const normalizarValorPais = (valor: string) =>
-    valor
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-
   const {
     control: controlDrogas,
     getValues: getDrogasValues,
@@ -166,7 +159,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     },
   })
 
-  const [drogasItems, setDrogasItems] = useState<any[]>([])
+  const [drogasItems, setDrogasItems] = useState<ResponseDroga[]>([])
   const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
     []
   )
@@ -187,12 +180,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return Number.isFinite(normalizado) ? normalizado : 0
   }
 
-  
-  const obtenerIdDroga = (row: Record<string, unknown>) => {
-    const id = Number(row.id ?? row.idDroga ?? row.id_droga ?? 0)
-    return Number.isFinite(id) ? id : 0
-  }
-
   const cargarDrogas = async () => {
     if (!idCaso) return
     setCargandoDrogas(true)
@@ -200,13 +187,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
       const res = await GestionOperativoDrogasService.listar(idCaso)
       if (res?.finalizado) {
         const lista = Array.isArray(res.datos)
-          ? (res.datos as DrogaCasoPayload[])
+          ? (res.datos as ResponseDroga[])
           : []
         setDrogasItems(lista)
-        lista.forEach((item) => {
-          const idDroga = item.id
-          void cargarLogotipos(idDroga)
-        })
       }
     } finally {
       setCargandoDrogas(false)
@@ -236,12 +219,16 @@ export function SeccionDrogasFotografiaLogotiposForm({
     }
   }, [drogaSeleccionadaId, idCaso])
 
-  const deleteDrogaItem = (id: any) => {
-    setDrogasItems((prev) => prev.filter((d) => d.id !== id))
+  const deleteDrogaItem = async (id: number) => {
+    if (!idCaso) return
+    await GestionOperativoDrogasService.eliminar(idCaso, id)
+    await cargarDrogas()
   }
 
-  const deleteLogotipoItem = (id: any) => {
-    setLogotiposItems((prev) => prev.filter((d) => d.id !== id))
+  const deleteLogotipoItem = async (id: number) => {
+    if (!idCaso || !drogaSeleccionadaId) return
+    await GestionOperativoLogotiposService.eliminar(idCaso, drogaSeleccionadaId, id)
+    await cargarLogotipos(drogaSeleccionadaId)
   }
 
   const onSubmitDrogas = async (data: Record<string, any>) => {
@@ -312,20 +299,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
           fotografia: fotoLogoFile,
         }
       )
-      if (respuesta?.finalizado && respuesta.datos) {
-        await agregarLogotipoLocal(respuesta.datos as LogotipoCasoPayload)
+      if (respuesta?.finalizado) {
         await cargarLogotipos(drogaSeleccionadaId)
         resetLogos()
       }
-    } finally {
-      setCargandoLogotipos(false)
-    }
-  }
-  const agregarLogotipoLocal = async (data: LogotipoCasoPayload) => {
-    if (!data) return
-    setCargandoLogotipos(true)
-    try {
-      setLogotiposItems((prev) => [...prev, data])
     } finally {
       setCargandoLogotipos(false)
     }
@@ -472,16 +449,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
             records={drogasItems}
             columns={[
               { accessor: 'id', title: 'Id' },
-              {
-                accessor: 'tipoDroga',
-                title: 'Tipo de Droga',
-                render: (row) => String(row.tipoDroga ?? row.idTipoDroga ?? ''),
-              },
+             
               {
                 accessor: 'estadoDroga',
                 title: 'Estado de la Droga',
                 render: (row) =>
-                  String(row.estadoDroga ?? row.idEstadoDroga ?? ''),
+                  String(row.idEstadoDroga ?? row.idEstadoDroga ?? ''),
               },
               {
                 accessor: 'cantidadGramos',
@@ -497,18 +470,18 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 accessor: 'formaTransporte',
                 title: 'Forma de Transporte',
                 render: (row) =>
-                  String(row.formaTransporte ?? row.idFormaTransporte ?? ''),
+                  String(row.idFormaTransporte ?? row.idFormaTransporte ?? ''),
               },
               {
                 accessor: 'procedencia',
                 title: 'Procedencia',
                 render: (row) =>
-                  String(row.procedencia ?? row.idPaisProcedencia ?? ''),
+                  String(row.idPaisProcedencia ?? row.idPaisProcedencia ?? ''),
               },
               {
                 accessor: 'destino',
                 title: 'Destino',
-                render: (row) => String(row.destino ?? row.idPaisDestino ?? ''),
+                render: (row) => String(row.idPaisDestino ?? row.idPaisDestino ?? ''),
               },
               {
                 accessor: 'actions',
@@ -520,7 +493,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                       size="sm"
                       variant="outline-primary"
                       onClick={() => {
-                        const idDroga = obtenerIdDroga(row)
+                        const idDroga = row.id
                         if (idDroga > 0) {
                           setDrogaSeleccionadaId(idDroga)
                         }
@@ -555,18 +528,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
             records={drogasItems}
             columns={[
               { accessor: 'id', title: 'Id' },
-              {
-                accessor: 'tipoDroga',
-                title: 'Tipo de Droga',
-                render: (row) => String(row.tipoDroga ?? row.idTipoDroga ?? ''),
-              },
+         
               {
                 accessor: 'pruebaCampo',
                 title: 'Prueba de Campo',
                 render: (row) =>
-                  row.pruebaCampoUrl ? (
+                  row.urlFotoPruebaCampo ? (
                     <ImagenAutenticada
-                      path={row.pruebaCampoUrl}
+                      path={row.urlFotoPruebaCampo}
                       alt="Prueba de Campo"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
@@ -576,9 +545,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 accessor: 'pesaje',
                 title: 'Cuantificacion y Pesaje',
                 render: (row) =>
-                  row.pesajeUrl ? (
+                  row.urlFotoPesaje ? (
                     <ImagenAutenticada
-                      path={row.pesajeUrl}
+                      path={row.urlFotoPesaje}
                       alt="Cuantificacion"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
