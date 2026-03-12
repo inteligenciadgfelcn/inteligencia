@@ -27,6 +27,7 @@ import { RegistroDetalle } from './RegistroDetalle'
 import { AsignacionTable } from '../types/asignacion.table'
 import { imprimir } from '@/utils/imprimir'
 import IconTrash from '@/components/Icon/IconTrash'
+import IconEdit from '@/components/Icon/IconEdit'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
@@ -76,13 +77,13 @@ export function RegistrosDataTable() {
     const res = await sesionPeticion({
       url: `${Constantes.baseUrl}/asignaciones`,
       withCredentials: true,
-      // params: {
-      //   pagina,
-      //   limite,
-      //   filtro: search || undefined,
-      //   ordenar: sortStatus.columnAccessor,
-      //   direccion: sortStatus.direction,
-      // },
+      params: {
+        pagina,
+        limite,
+        filtro: search || undefined,
+        ordenar: sortStatus.columnAccessor,
+        direccion: sortStatus.direction,
+      },
     })
     imprimir('table', res)
     return res.datos
@@ -94,7 +95,7 @@ export function RegistrosDataTable() {
 
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['solicitud_registros', pagina, limite, search, sortStatus],
-    queryFn: obtenerRegistros,
+    queryFn: () => obtenerRegistros(),
     placeholderData: keepPreviousData,
   })
 
@@ -109,46 +110,10 @@ export function RegistrosDataTable() {
     return sortStatus.direction === 'desc' ? sorted.reverse() : sorted
   }, [filas, sortStatus])
 
-  /* EXPORT CONFIG */
-  const exportHeaders = [
-    'Codigo Registro',
-    'Departamento',
-    'Unidad',
-    'Numero de Registro',
-    'Fecha y Hora de la Operacion',
-    'Nombre del Caso',
-    'Asignado al Caso',
-    'Fiscal Asignado al Caso',
-  ]
-
-  const exportColumns = [
-    'codigoServicio',
-    'departamento',
-    'unidad',
-    'nroRegistro',
-    'fechaHoraOperativo',
-    'nombreOperativo',
-    'asignadoA.nombreCompleto',
-    'fiscalAsignado.nombreCompleto',
-  ] as const as readonly (keyof AsignacionTable)[]
-
-  const exportExcel = () => {
-    exportToExcel(filas, exportHeaders, exportColumns, 'caso_servicios')
-  }
-
-  const exportPrint = () => {
-    exportToPrint(
-      filas,
-      exportHeaders,
-      exportColumns,
-      'Gestión de Casos Servicios'
-    )
-  }
-
   /* COLUMNAS */
   const columns = [
     {
-      accessor: 'codigoServicio',
+      accessor: 'idAsignacion',
       title: 'Codigo Registro',
       sortable: true,
       render: (row: AsignacionTable) => <span>{row?.idAsignacion}</span>,
@@ -207,10 +172,9 @@ export function RegistrosDataTable() {
             <button
               onClick={() => {
                 setSelected(row)
-                setOpenEstado(true)
               }}
             >
-              <IconTrash className="ms-2 h-5 text-primary" />
+              <IconEdit className="ms-2 h-5 text-primary" />
             </button>
           )}
 
@@ -242,6 +206,7 @@ export function RegistrosDataTable() {
       }
       <div className="panel p-1 mb-5 w-full">
         <FormRegistro
+          asignacion={selected}
           onSuccess={() => {
             setOpenForm(false)
             refetch()
