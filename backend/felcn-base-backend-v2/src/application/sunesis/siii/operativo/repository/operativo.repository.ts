@@ -96,7 +96,7 @@ export class OperativoRepository {
   }
 
   async buscarDrogaPorId(id: string): Promise<Droga | null> {
-    return this.drogaRepo.findOne({ where: { id } })
+    return this.drogaRepo.findOne({ where: { id }, relations: ['estadoDroga'] })
   }
 
   async eliminarDroga(id: string): Promise<void> {

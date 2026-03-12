@@ -296,7 +296,7 @@ export class OperativoService extends BaseService {
       descripcion: operativo.descripcion,
       imagen: data.imagen,
       descripcionLogo: data.descripcionLogo,
-      idTipoDroga: droga.idTipoDroga,
+      idTipoDroga: droga.estadoDroga!.idTipoDroga,
       idPaisOrigen: droga.idPaisProcedencia,
       idPaisDestino: droga.idPaisDestino,
       organizacion: data.organizacion,

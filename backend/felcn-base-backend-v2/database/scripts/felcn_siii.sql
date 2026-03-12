@@ -831,7 +831,7 @@ CREATE TABLE public.logotipo (
         REFERENCES parametricas.pais (id_pais),
     CONSTRAINT fk_logotipo_pais_destino
         FOREIGN KEY (id_pais_destino)
-        REFERENCES parametricas.pais_destino (id_pais_destino)
+        REFERENCES parametricas.pais (id_pais)
 );
 
 CREATE TABLE public.servidor_policial (
@@ -996,34 +996,32 @@ CREATE TABLE public.arrestado_auxiliar (
 CREATE TABLE public.droga (
     id_droga BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_operativo BIGINT NOT NULL,
-    id_tipo_droga INTEGER NOT NULL,
     id_estado_droga INTEGER NOT NULL,
-    cantidad_gramos DOUBLE PRECISION NOT NULL,
-    cantidad_unidades INTEGER DEFAULT 0,
+    cantidad DOUBLE PRECISION NOT NULL,
+    capsulas INTEGER NOT NULL,
     id_forma_transporte INTEGER NOT NULL,
-    id_pais_procedencia INTEGER NOT NULL,
+    id_pais INTEGER NOT NULL,
     id_pais_destino INTEGER NOT NULL,
-    foto_prueba_campo BYTEA,
-    foto_pesaje BYTEA,
-    observaciones TEXT,
-    fecha_hora_ingreso TIMESTAMP NOT NULL,
+    prueba BYTEA,
+    pesaje BYTEA,
+    fecha_hora_ingreso TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     usuario VARCHAR(15) NOT NULL,
+    CONSTRAINT droga_pkey PRIMARY KEY (id_droga),
     CONSTRAINT fk_droga_operativo
         FOREIGN KEY (id_operativo)
         REFERENCES public.operativo (id_operativo)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
-    CONSTRAINT fk_droga_tipo_droga
-        FOREIGN KEY (id_tipo_droga)
-        REFERENCES parametricas.tipo_droga (id_tipo_droga),
     CONSTRAINT fk_droga_estado_droga
         FOREIGN KEY (id_estado_droga)
-        REFERENCES public.estado_droga (id_estado_droga),
+        REFERENCES public.estado_droga (id_estado_droga)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
     CONSTRAINT fk_droga_forma_transporte
         FOREIGN KEY (id_forma_transporte)
         REFERENCES parametricas.forma_transporte (id_forma_transporte),
-    CONSTRAINT fk_droga_pais_procedencia
-        FOREIGN KEY (id_pais_procedencia)
+    CONSTRAINT fk_droga_pais_origen
+        FOREIGN KEY (id_pais)
         REFERENCES parametricas.pais (id_pais),
     CONSTRAINT fk_droga_pais_destino
         FOREIGN KEY (id_pais_destino)
@@ -1040,10 +1038,9 @@ CREATE TABLE public.sustancia_solida (
     id_operativo BIGINT NOT NULL,
     id_sustancia_solida_descripcion INTEGER NOT NULL,
     cantidad DOUBLE PRECISION NOT NULL,
-    unidad_medida VARCHAR(20) NOT NULL,
-    observaciones TEXT,
-    fecha_hora_ingreso TIMESTAMP NOT NULL,
+    fecha_hora_ingreso TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     usuario VARCHAR(15) NOT NULL,
+    CONSTRAINT sustancia_solida_pkey PRIMARY KEY (id_sustancia_solida),
     CONSTRAINT fk_sustancia_solida_operativo
         FOREIGN KEY (id_operativo)
         REFERENCES public.operativo (id_operativo)
@@ -1064,10 +1061,9 @@ CREATE TABLE public.sustancia_liquida (
     id_operativo BIGINT NOT NULL,
     id_sustancia_liquida_descripcion INTEGER NOT NULL,
     cantidad DOUBLE PRECISION NOT NULL,
-    unidad_medida VARCHAR(20) NOT NULL,
-    observaciones TEXT,
-    fecha_hora_ingreso TIMESTAMP NOT NULL,
+    fecha_hora_ingreso TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     usuario VARCHAR(15) NOT NULL,
+    CONSTRAINT sustancia_liquida_pkey PRIMARY KEY (id_sustancia_liquida),
     CONSTRAINT fk_sustancia_liquida_operativo
         FOREIGN KEY (id_operativo)
         REFERENCES public.operativo (id_operativo)
