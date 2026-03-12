@@ -51,4 +51,11 @@ export const GestionOperativoDrogasService = {
             },
         })
     },
+
+    obtenerFoto(path: string): Promise<Blob> {
+        return Servicios.get<Blob>({
+            url: `${Constantes.baseUrl}${path}`,
+            responseType: 'blob',
+        })
+    },
 }

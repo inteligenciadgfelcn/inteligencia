@@ -6,18 +6,20 @@ import { DataTable } from 'mantine-datatable'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { FormInputDropdown, FormInputText } from '@/components/form'
+import { FormInputDropdown, FormInputText, optionType } from '@/components/form'
 import FormInputFile from '@/components/form/FormInputFile'
 import IconTrashLines from '@/components/Icon/IconTrashLines'
-import { SiiiLookupsService } from '@/services/parametricas'
+
 import {
   DrogaCasoPayload,
+  EstadoDroga,
   GestionOperativoCatalogosService,
   GestionOperativoDrogasService,
   GestionOperativoLogotiposService,
   LogotipoCasoPayload,
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
+import { useParametricas } from '@/hooks'
 
 interface SeccionFormProps {
   titulo: string
@@ -25,6 +27,36 @@ interface SeccionFormProps {
   onRecuperar?: () => Promise<unknown>
   cargando?: boolean
   idCaso?: number
+}
+
+function ImagenAutenticada({
+  path,
+  alt,
+  className,
+}: {
+  path: string
+  alt: string
+  className?: string
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    let objectUrl: string
+
+    GestionOperativoDrogasService.obtenerFoto(path)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob)
+        setSrc(objectUrl)
+      })
+      .catch(() => setSrc(null))
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [path])
+
+  if (!src) return null
+  return <img src={src} alt={alt} className={className} />
 }
 
 export function SeccionDrogasFotografiaLogotiposForm({
@@ -61,6 +93,65 @@ export function SeccionDrogasFotografiaLogotiposForm({
   })
 
   const {
+    paises,
+    tiposDroga,
+    cargarPaises,
+    cargarTiposDroga,
+    formasTransporte,
+    cargarFormasTransporte,
+  } = useParametricas()
+
+  useEffect(() => {
+    cargarPaises(), cargarTiposDroga(), cargarFormasTransporte()
+  }, [])
+
+  const opcionesPaises: optionType[] = paises.map((t) => ({
+    id: String(t.id),
+    value: String(t.id),
+    label: t.descripcion,
+  }))
+  const opcionesTiposDroga: optionType[] = tiposDroga.map((t) => ({
+    id: String(t.id),
+    value: String(t.id),
+    label: t.descripcion,
+  }))
+
+  const opcionesFormasTransporte: optionType[] = formasTransporte.map((t) => ({
+    id: String(t.id),
+    value: String(t.id),
+    label: t.descripcion,
+  }))
+
+  const tipoDrogaSeleccionada = watchDrogas('idTipoDroga')
+  const [estadosDroga, setEstadosDroga] = useState<EstadoDroga[]>([])
+
+  const cargarEstadosDroga = async (idTipoDroga: number) => {
+    try {
+      const res = await GestionOperativoCatalogosService.obtenerEstadosDroga(idTipoDroga)
+      if (res?.finalizado) {
+        setEstadosDroga(Array.isArray(res.datos) ? res.datos : [])
+      }
+    } catch {
+      setEstadosDroga([])
+    }
+  }
+
+  useEffect(() => {
+    if (tipoDrogaSeleccionada) {
+      setDrogasValue('idEstadoDroga', '')
+      void cargarEstadosDroga(Number(tipoDrogaSeleccionada))
+    } else {
+      setEstadosDroga([])
+    }
+  }, [tipoDrogaSeleccionada])
+
+  const opcionesEstadosDroga: optionType[] = estadosDroga.map((e) => ({
+    id: String(e.id),
+    value: String(e.id),
+    label: e.descripcion,
+  }))
+
+  const {
     control: controlLogos,
     handleSubmit: handleSubmitLogos,
     reset: resetLogos,
@@ -74,251 +165,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
       fotografia: [],
     },
   })
-
-  const [opcionesTiposDroga, setOpcionesTiposDroga] = useState([
-    { id: 'marihuana', label: 'Marihuana', value: 'marihuana' },
-    { id: 'cocaina', label: 'Cocaina', value: 'cocaina' },
-  ])
-  const [opcionesEstadosDroga, setOpcionesEstadosDroga] = useState([
-    { id: 'seco', label: 'Seco', value: 'seco' },
-    { id: 'humedo', label: 'Humedo', value: 'humedo' },
-  ])
-  const [opcionesFormasTransporte, setOpcionesFormasTransporte] = useState([
-    { id: 'terrestre', label: 'Terrestre', value: 'terrestre' },
-    { id: 'aereo', label: 'Aereo', value: 'aereo' },
-    { id: 'fluvial', label: 'Fluvial', value: 'fluvial' },
-  ])
-  const [opcionesPaises, setOpcionesPaises] = useState([
-    { id: 'bolivia', label: 'Bolivia', value: 'bolivia' },
-  ])
-  const tipoDrogaSeleccionada = watchDrogas('idTipoDroga')
-
-  useEffect(() => {
-    let activo = true
-
-    const cargarTiposDroga = async () => {
-      try {
-        const res = await SiiiLookupsService.obtenerTiposDroga()
-        if (!activo || !res?.finalizado) return
-
-        const opciones = (res.datos ?? [])
-          .map((item: Record<string, unknown>, index: number) => {
-            const idRaw =
-              item.id ?? item.codigo ?? item.valor ?? item.value ?? index
-            const valueRaw =
-              item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
-            const labelRaw =
-              item.descripcion ??
-              item.nombre ??
-              item.detalle ??
-              item.label ??
-              valueRaw
-
-            return {
-              id: String(idRaw),
-              value: String(valueRaw),
-              label: String(labelRaw),
-            }
-          })
-          .filter((opcion) => opcion.value.length > 0)
-
-        if (opciones.length > 0) {
-          setOpcionesTiposDroga(opciones)
-          const tipoActual = String(getDrogasValues('idTipoDroga') ?? '')
-          if (!opciones.some((opcion) => opcion.value === tipoActual)) {
-            setDrogasValue('idTipoDroga', opciones[0].value)
-          }
-        }
-      } catch {
-        // Mantener fallback local si la consulta falla
-      }
-    }
-
-    void cargarTiposDroga()
-
-    return () => {
-      activo = false
-    }
-  }, [getDrogasValues, setDrogasValue])
-
-  useEffect(() => {
-    let activo = true
-
-    const cargarPaises = async () => {
-      try {
-        const res = await SiiiLookupsService.obtenerPaises()
-        if (!activo || !res?.finalizado) return
-
-        const opciones = (res.datos ?? [])
-          .map((item, index) => {
-            const descripcion = String(item.descripcion ?? '').trim()
-            const id = item.id ? String(item.id) : `pais-${index}`
-            const value = normalizarValorPais(descripcion || id)
-
-            return {
-              id,
-              value,
-              label: descripcion || id,
-            }
-          })
-          .filter((opcion) => opcion.label.length > 0)
-
-        if (opciones.length > 0) {
-          setOpcionesPaises(opciones)
-
-          const opcionBolivia =
-            opciones.find((opcion) => opcion.value === 'bolivia') ?? opciones[0]
-          const procedenciaActual = String(
-            getDrogasValues('idPaisProcedencia') ?? ''
-          )
-          const destinoActual = String(getDrogasValues('idPaisDestino') ?? '')
-
-          if (
-            procedenciaActual.length === 0 ||
-            !opciones.some((opcion) => opcion.value === procedenciaActual)
-          ) {
-            setDrogasValue('idPaisProcedencia', opcionBolivia.value)
-          }
-
-          if (
-            destinoActual.length === 0 ||
-            !opciones.some((opcion) => opcion.value === destinoActual)
-          ) {
-            setDrogasValue('idPaisDestino', opcionBolivia.value)
-          }
-        }
-      } catch {
-        // Mantener fallback local si la consulta falla
-      }
-    }
-
-    void cargarPaises()
-
-    return () => {
-      activo = false
-    }
-  }, [getDrogasValues, setDrogasValue])
-
-  useEffect(() => {
-    let activo = true
-
-    const cargarFormasTransporte = async () => {
-      try {
-        const res = await SiiiLookupsService.obtenerFormasTransporte()
-        if (!activo || !res?.finalizado) return
-
-        const opciones = (res.datos ?? [])
-          .map((item: Record<string, unknown>, index: number) => {
-            const idRaw =
-              item.id ?? item.codigo ?? item.valor ?? item.value ?? index
-            const valueRaw =
-              item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
-            const labelRaw =
-              item.descripcion ??
-              item.nombre ??
-              item.detalle ??
-              item.label ??
-              valueRaw
-
-            return {
-              id: String(idRaw),
-              value: String(valueRaw),
-              label: String(labelRaw),
-            }
-          })
-          .filter((opcion) => opcion.value.length > 0)
-
-        if (opciones.length > 0) {
-          setOpcionesFormasTransporte(opciones)
-          const formaActual = String(getDrogasValues('idFormaTransporte') ?? '')
-          if (!opciones.some((opcion) => opcion.value === formaActual)) {
-            setDrogasValue('idFormaTransporte', opciones[0].value)
-          }
-        }
-      } catch {
-        // Mantener fallback local si la consulta falla
-      }
-    }
-
-    void cargarFormasTransporte()
-
-    return () => {
-      activo = false
-    }
-  }, [getDrogasValues, setDrogasValue])
-
-  useEffect(() => {
-    let activo = true
-
-    const cargarEstadosDroga = async () => {
-      const tipoSeleccionado = String(tipoDrogaSeleccionada ?? '')
-      const idDesdeValor = Number(tipoSeleccionado)
-      const idDesdeOpcion = Number(
-        opcionesTiposDroga.find((opcion) => opcion.value === tipoSeleccionado)
-          ?.id
-      )
-      const idTipoDroga =
-        Number.isFinite(idDesdeValor) && idDesdeValor > 0
-          ? idDesdeValor
-          : Number.isFinite(idDesdeOpcion) && idDesdeOpcion > 0
-            ? idDesdeOpcion
-            : 0
-
-      if (idTipoDroga <= 0) {
-        return
-      }
-
-      try {
-        const res =
-          await GestionOperativoCatalogosService.obtenerEstadosDroga(
-            idTipoDroga
-          )
-        if (!activo || !res?.finalizado) return
-
-        const opciones = (res.datos ?? [])
-          .map((item: Record<string, unknown>, index: number) => {
-            const idRaw =
-              item.id ?? item.codigo ?? item.valor ?? item.value ?? index
-            const valueRaw =
-              item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
-            const labelRaw =
-              item.descripcion ??
-              item.nombre ??
-              item.detalle ??
-              item.label ??
-              valueRaw
-
-            return {
-              id: String(idRaw),
-              value: String(valueRaw),
-              label: String(labelRaw),
-            }
-          })
-          .filter((opcion) => opcion.value.length > 0)
-
-        if (opciones.length > 0) {
-          setOpcionesEstadosDroga(opciones)
-          const estadoActual = String(getDrogasValues('idEstadoDroga') ?? '')
-          if (!opciones.some((opcion) => opcion.value === estadoActual)) {
-            setDrogasValue('idEstadoDroga', opciones[0].value)
-          }
-        }
-      } catch {
-        // Mantener fallback local si la consulta falla
-      }
-    }
-
-    void cargarEstadosDroga()
-
-    return () => {
-      activo = false
-    }
-  }, [
-    getDrogasValues,
-    opcionesTiposDroga,
-    setDrogasValue,
-    tipoDrogaSeleccionada,
-  ])
 
   const [drogasItems, setDrogasItems] = useState<any[]>([])
   const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
@@ -341,18 +187,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     return Number.isFinite(normalizado) ? normalizado : 0
   }
 
-  const resolverIdOpcion = (
-    valorSeleccionado: unknown,
-    opciones: { id: string; value: string }[]
-  ) => {
-    const valor = String(valorSeleccionado ?? '')
-    const idDirecto = Number(valor)
-    if (Number.isFinite(idDirecto) && idDirecto > 0) return idDirecto
-    const opcion = opciones.find((item) => item.value === valor)
-    const idOpcion = Number(opcion?.id ?? 0)
-    return Number.isFinite(idOpcion) ? idOpcion : 0
-  }
-
+  
   const obtenerIdDroga = (row: Record<string, unknown>) => {
     const id = Number(row.id ?? row.idDroga ?? row.id_droga ?? 0)
     return Number.isFinite(id) ? id : 0
@@ -411,22 +246,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
   const onSubmitDrogas = async (data: Record<string, any>) => {
     if (!idCaso) return
-
-    const idTipoDroga = resolverIdOpcion(data.idTipoDroga, opcionesTiposDroga)
-    const idEstadoDroga = resolverIdOpcion(
-      data.idEstadoDroga,
-      opcionesEstadosDroga
-    )
-    const idFormaTransporte = resolverIdOpcion(
-      data.idFormaTransporte,
-      opcionesFormasTransporte
-    )
-    const idPaisProcedencia = resolverIdOpcion(
-      data.idPaisProcedencia,
-      opcionesPaises
-    )
-    const idPaisDestino = resolverIdOpcion(data.idPaisDestino, opcionesPaises)
-
     const gramos =
       parseNumber(cantidadTn) * 1_000_000 +
       parseNumber(cantidadKg) * 1_000 +
@@ -444,13 +263,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
     try {
       const respuesta = await GestionOperativoDrogasService.crear(idCaso, {
         id: 0,
-        idTipoDroga,
-        idEstadoDroga,
+        idTipoDroga: data.idTipoDroga,
+        idEstadoDroga: data.idEstadoDroga,
         cantidadGramos: gramos,
         cantidadUnidades: parseNumber(data.cantidadUnidades),
-        idFormaTransporte,
-        idPaisProcedencia,
-        idPaisDestino,
+        idFormaTransporte: data.idFormaTransporte,
+        idPaisProcedencia: data.idPaisProcedencia,
+        idPaisDestino: data.idPaisDestino,
         observaciones: data.observaciones
           ? String(data.observaciones)
           : undefined,
@@ -493,8 +312,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
           fotografia: fotoLogoFile,
         }
       )
-      if (respuesta?.finalizado) {
-        await agregarLogotipoLocal( respuesta.datos? respuesta.datos as LogotipoCasoPayload : [])
+      if (respuesta?.finalizado && respuesta.datos) {
+        await agregarLogotipoLocal(respuesta.datos as LogotipoCasoPayload)
         await cargarLogotipos(drogaSeleccionadaId)
         resetLogos()
       }
@@ -746,8 +565,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 title: 'Prueba de Campo',
                 render: (row) =>
                   row.pruebaCampoUrl ? (
-                    <img
-                      src={row.pruebaCampoUrl}
+                    <ImagenAutenticada
+                      path={row.pruebaCampoUrl}
                       alt="Prueba de Campo"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
@@ -758,8 +577,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 title: 'Cuantificacion y Pesaje',
                 render: (row) =>
                   row.pesajeUrl ? (
-                    <img
-                      src={row.pesajeUrl}
+                    <ImagenAutenticada
+                      path={row.pesajeUrl}
                       alt="Cuantificacion"
                       className="h-20 w-32 rounded object-cover shadow-sm"
                     />
@@ -849,8 +668,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
               {
                 accessor: 'descripcionLogo',
                 title: 'Descripcion',
-                render: (row) =>
-                  String(row.descripcionLogo ?? row.descripcion ?? ''),
+                render: (row) => String(row.descripcionLogo ?? ''),
               },
               {
                 accessor: 'organizacion',
@@ -871,8 +689,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 accessor: 'foto',
                 title: 'Foto',
                 render: (row) => {
-                  const fotoUrl =
-                    row.fotografiaUrl ?? row.urlFotografia ?? row.fotografia
+                  const fotoUrl = (row as unknown as Record<string, unknown>).fotografiaUrl ?? (row as unknown as Record<string, unknown>).urlFotografia
                   return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
                     <img
                       src={fotoUrl}

@@ -132,7 +132,7 @@ export const SiiiLookupsService = {
         return Servicios.get({ url: `${BASE}/planes-operaciones` })
     },
 
-    obtenerFormasTransporte(): Promise<RespuestaAPI<LookupGenerico>> {
+    obtenerFormasTransporte(): Promise<RespuestaAPI<LookupBasico>> {
         return Servicios.get({ url: `${BASE}/formas-transporte` })
     },
 
