@@ -1,5 +1,5 @@
-import { usePeticion } from '@/app/(fase_2)/hooks/usePeticion'
 import { Constantes } from '@/config/Constantes'
+import { usePeticion } from '@/hooks'
 
 export interface LetraInicial {
   idLetra: number
