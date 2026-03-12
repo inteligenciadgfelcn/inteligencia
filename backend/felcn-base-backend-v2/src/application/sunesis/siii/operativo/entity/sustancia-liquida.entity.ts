@@ -29,12 +29,6 @@ export class SustanciaLiquida {
   @Column({ name: 'cantidad', type: 'double precision' })
   cantidad: number
 
-  @Column({ name: 'unidad_medida', type: 'varchar', length: 20 })
-  unidadMedida: string
-
-  @Column({ name: 'observaciones', type: 'text', nullable: true })
-  observaciones?: string
-
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
 
