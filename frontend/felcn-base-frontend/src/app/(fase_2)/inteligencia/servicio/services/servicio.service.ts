@@ -2,6 +2,7 @@ import { usePeticion } from '@/app/(fase_2)/hooks/usePeticion'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
 import { ServicioTable } from '../types/servicio.table'
+import { DataTableParams } from '@/services'
 
 export interface CreateResponse {
   mensaje?: string
@@ -60,9 +61,13 @@ export async function postServicio(
     }
   }
 }
-export async function getServicios(): Promise<ServiciosResponse> {
+
+export async function getServicios(
+  params: DataTableParams
+): Promise<ServiciosResponse> {
   const response = await sesionPeticion({
     url: `${Constantes.baseUrl}/servicio`,
+    params: params,
     withCredentials: true,
   })
 
