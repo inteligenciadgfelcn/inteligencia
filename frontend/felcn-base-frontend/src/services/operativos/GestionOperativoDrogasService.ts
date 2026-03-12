@@ -52,9 +52,16 @@ export const GestionOperativoDrogasService = {
         })
     },
 
+    eliminar(idCaso: number, idDroga: number): Promise<RespuestaApi<unknown>> {
+        return Servicios.delete({
+            url: `${BASE_OPERATIVOS}/caso/${idCaso}/drogas/${idDroga}`,
+        })
+    },
+
     obtenerFoto(path: string): Promise<Blob> {
+        const pathNormalizado = path.replace(/^\/api/, '')
         return Servicios.get<Blob>({
-            url: `${Constantes.baseUrl}${path}`,
+            url: `${Constantes.baseUrl}${pathNormalizado}`,
             responseType: 'blob',
         })
     },
