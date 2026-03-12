@@ -16,6 +16,8 @@ export interface Pais {
     id: number
     idContinente: number
     descripcion: string
+    continente: LookupBasico;
+    
 }
 
 export interface Departamento {
@@ -42,7 +44,6 @@ export interface Localidad {
 export interface LookupBasico {
     id: number | string
     descripcion: string
-    [key: string]: unknown
 }
 
 export interface PlanOperacion {

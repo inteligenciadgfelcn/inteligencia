@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/Button'
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
 import { SustanciasSolidas } from './secciones/SustanciasSolidas'
@@ -27,21 +25,19 @@ interface FormGestionOperativoProps {
 }
 
 const SECCIONES: { key: SeccionKey; label: string }[] = [
-    { key: 'seccion-1', label: 'Seccion 1' },
-    { key: 'seccion-2', label: 'Seccion 2' },
-    { key: 'seccion-3', label: 'Seccion 3' },
-    { key: 'seccion-4', label: 'Seccion 4' },
-    { key: 'seccion-5', label: 'Seccion 5' },
-    { key: 'seccion-6', label: 'Seccion 6' },
-    { key: 'seccion-7', label: 'Seccion 7' },
-    { key: 'seccion-8', label: 'Seccion 8' },
+    { key: 'seccion-1', label: 'Datos Generales' },
+    { key: 'seccion-2', label: 'Drogas' },
+    { key: 'seccion-3', label: 'Sust. Sólidas' },
+    { key: 'seccion-4', label: 'Sust. Líquidas' },
+    { key: 'seccion-5', label: 'Laboratorios' },
+    { key: 'seccion-6', label: 'Personas' },
+    { key: 'seccion-7', label: 'Bienes' },
+    { key: 'seccion-8', label: 'Galería' },
 ]
 
 export function FormGestionOperativo({
     idGestionOperativo,
 }: FormGestionOperativoProps) {
-    const [mostrarTodasLasSecciones, setMostrarTodasLasSecciones] = useState(false)
-
     const {
         idGestionOperativo: id,
         esEdicion,
@@ -59,111 +55,85 @@ export function FormGestionOperativo({
     const seccion7 = useSeccion7(id)
     const seccion8 = useSeccion8(id)
 
-    const toggleSeccion = (key: SeccionKey) => {
-        setSeccionActiva(key)
-    }
-
     const renderSeccion = (key: SeccionKey) => {
-        if (key === 'seccion-1') {
-            return (
-                <DatosGeneralesForm
-                    titulo="DATOS GENERALES"
-                    onGuardar={seccion1.mutation.mutateAsync}
-                    cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
-                />
-            )
+        switch (key) {
+            case 'seccion-1':
+                return (
+                    <DatosGeneralesForm
+                        titulo="DATOS GENERALES"
+                        onGuardar={seccion1.mutation.mutateAsync}
+                        cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
+                    />
+                )
+            case 'seccion-2':
+                return (
+                    <SeccionDrogasFotografiaLogotiposForm
+                        titulo="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES"
+                        onGuardar={seccion2.mutation.mutateAsync}
+                        onRecuperar={() => seccion2.query.refetch()}
+                        cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
+                        idCaso={id}
+                    />
+                )
+            case 'seccion-3':
+                return (
+                    <SustanciasSolidas
+                        titulo="SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS"
+                        onGuardar={seccion3.mutation.mutateAsync}
+                        onEliminar={seccion3.deleteMutation.mutateAsync}
+                        onRecuperar={() => seccion3.query.refetch()}
+                        datos={seccion3.query.data?.datos ?? []}
+                        cargando={seccion3.mutation.isPending || seccion3.query.isFetching || seccion3.deleteMutation.isPending}
+                    />
+                )
+            case 'seccion-4':
+                return (
+                    <SustanciasLiquidas
+                        titulo="SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS"
+                        onGuardar={seccion4.mutation.mutateAsync}
+                        onEliminar={seccion4.deleteMutation.mutateAsync}
+                        onRecuperar={() => seccion4.query.refetch()}
+                        datos={seccion4.query.data?.datos ?? []}
+                        cargando={seccion4.mutation.isPending || seccion4.query.isFetching || seccion4.deleteMutation.isPending}
+                    />
+                )
+            case 'seccion-5':
+                return (
+                    <Seccion5Form
+                        titulo="LABORATORIOS Y FABRICAS"
+                        onGuardar={seccion5.mutation.mutateAsync}
+                        onRecuperar={() => seccion5.query.refetch()}
+                        cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
+                    />
+                )
+            case 'seccion-6':
+                return (
+                    <Seccion6Form
+                        titulo="PERSONAS: PRINCIPAL IMPLICADO / APREHENDIDAS / ARRESTADAS / LGI O PERDIDA DE DOMINIO"
+                        onGuardar={seccion6.mutation.mutateAsync}
+                        onRecuperar={() => seccion6.query.refetch()}
+                        cargando={seccion6.mutation.isPending || seccion6.query.isFetching}
+                    />
+                )
+            case 'seccion-7':
+                return (
+                    <Seccion7Form
+                        titulo="BIENES U OBJETOS SECUESTRADOS"
+                        onGuardar={seccion7.mutation.mutateAsync}
+                        onRecuperar={() => seccion7.query.refetch()}
+                        cargando={seccion7.mutation.isPending || seccion7.query.isFetching}
+                    />
+                )
+            case 'seccion-8':
+                return (
+                    <Seccion8Form
+                        titulo="GALERIA FOTOGRAFICA DEL OPERATIVO"
+                        onGuardar={seccion8.mutation.mutateAsync}
+                        onRecuperar={() => seccion8.query.refetch()}
+                        cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
+                    />
+                )
         }
-
-        if (key === 'seccion-2') {
-            return (
-                <SeccionDrogasFotografiaLogotiposForm
-                    titulo="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES"
-                    onGuardar={seccion2.mutation.mutateAsync}
-                    onRecuperar={() => seccion2.query.refetch()}
-                    cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
-                    idCaso={id}
-                />
-            )
-        }
-
-        if (key === 'seccion-3') {
-            return (
-                <SustanciasSolidas
-                    titulo="SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS"
-                    onGuardar={seccion3.mutation.mutateAsync}
-                    onEliminar={seccion3.deleteMutation.mutateAsync}
-                    onRecuperar={() => seccion3.query.refetch()}
-                    datos={seccion3.query.data?.datos ?? []}
-                    cargando={seccion3.mutation.isPending || seccion3.query.isFetching || seccion3.deleteMutation.isPending}
-                />
-            )
-        }
-
-        if (key === 'seccion-4') {
-            return (
-                <SustanciasLiquidas
-                    titulo="SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS"
-                    onGuardar={seccion4.mutation.mutateAsync}
-                    onEliminar={seccion4.deleteMutation.mutateAsync}
-                    onRecuperar={() => seccion4.query.refetch()}
-                    datos={seccion4.query.data?.datos ?? []}
-                    cargando={seccion4.mutation.isPending || seccion4.query.isFetching || seccion4.deleteMutation.isPending}
-                />
-            )
-        }
-
-        if (key === 'seccion-5') {
-            return (
-                <Seccion5Form
-                    titulo="LABORATORIOS Y FABRICAS"
-                    onGuardar={seccion5.mutation.mutateAsync}
-                    onRecuperar={() => seccion5.query.refetch()}
-                    cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
-                />
-            )
-        }
-
-        if (key === 'seccion-6') {
-            return (
-                <Seccion6Form
-                    titulo="PERSONAS: PRINCIPAL IMPLICADO / APREHENDIDAS / ARRESTADAS / LGI O PERDIDA DE DOMINIO"
-                    onGuardar={seccion6.mutation.mutateAsync}
-                    onRecuperar={() => seccion6.query.refetch()}
-                    cargando={seccion6.mutation.isPending || seccion6.query.isFetching}
-                />
-            )
-        }
-
-        if (key === 'seccion-7') {
-            return (
-                <Seccion7Form
-                    titulo="BIENES U OBJETOS SECUESTRADOS"
-                    onGuardar={seccion7.mutation.mutateAsync}
-                    onRecuperar={() => seccion7.query.refetch()}
-                    cargando={seccion7.mutation.isPending || seccion7.query.isFetching}
-                />
-            )
-        }
-
-        if (key === 'seccion-8') {
-            return (
-                <Seccion8Form
-                    titulo="GALERIA FOTOGRAFICA DEL OPERATIVO"
-                    onGuardar={seccion8.mutation.mutateAsync}
-                    onRecuperar={() => seccion8.query.refetch()}
-                    cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
-                />
-            )
-        }
-
-        return (
-            <Seccion8Form
-                titulo="Seccion 8"
-                onGuardar={seccion8.mutation.mutateAsync}
-                onRecuperar={() => seccion8.query.refetch()}
-                cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
-            />
-        )
     }
 
     return (
@@ -178,37 +148,29 @@ export function FormGestionOperativo({
                 {guardandoCabecera && (
                     <p className="text-xs text-primary mt-2">Guardando cabecera...</p>
                 )}
-                <label className="mt-3 inline-flex items-center gap-2 text-sm text-gray-700">
-                    <input
-                        type="checkbox"
-                        className="form-checkbox"
-                        checked={mostrarTodasLasSecciones}
-                        onChange={(event) => setMostrarTodasLasSecciones(event.target.checked)}
-                    />
-                    Mostrar todas las secciones
-                </label>
             </div>
 
-            <div className="space-y-3">
-                {SECCIONES.map((seccion) => {
-                    const abierta = mostrarTodasLasSecciones || seccionActiva === seccion.key
+            <div className="panel p-0">
+                <div className="flex overflow-x-auto border-b border-gray-200">
+                    {SECCIONES.map((seccion) => (
+                        <button
+                            key={seccion.key}
+                            type="button"
+                            className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                                seccionActiva === seccion.key
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                            onClick={() => setSeccionActiva(seccion.key)}
+                        >
+                            {seccion.label}
+                        </button>
+                    ))}
+                </div>
 
-                    return (
-                        <div key={seccion.key} className="panel p-3">
-                            <Button
-                                type="button"
-                                variant={abierta ? 'primary' : 'outline-primary'}
-                                size="sm"
-                                className="w-full justify-between"
-                                onClick={() => toggleSeccion(seccion.key)}
-                            >
-                                <span>{seccion.label}</span>
-                                <span className="text-xs">{abierta ? 'Ocultar' : 'Mostrar'}</span>
-                            </Button>
-                            {abierta && <div className="mt-3">{renderSeccion(seccion.key)}</div>}
-                        </div>
-                    )
-                })}
+                <div className="p-4">
+                    {renderSeccion(seccionActiva)}
+                </div>
             </div>
         </div>
     )

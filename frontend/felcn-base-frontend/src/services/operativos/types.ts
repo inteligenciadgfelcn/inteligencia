@@ -96,4 +96,15 @@ export interface SustanciaLiquidaRespuesta {
     idSustanciaLiquidaDescripcion: number
     cantidad: number
 }
+export interface EstadoDroga {
+    id: number
+    idTipoDroga: number
+    descripcion: string 
+}
+
+export interface ItemCategoriaOperativo {
+    id: number
+    idCategoriaOperativo: number  
+    descripcion: string
+}
 
