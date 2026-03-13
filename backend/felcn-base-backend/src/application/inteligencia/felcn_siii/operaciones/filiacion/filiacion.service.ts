@@ -10,12 +10,14 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DB_SIII } from '@/core/config/database/database.module'
 import { FenotipoDetenido } from './fenotipo_detenido/entities/fenotipo_detenido.entity'
 import { mapFenotipoDtoToEntity } from './fenotipo_detenido/mappers/fenotipo-mapper'
+import { PersonaRepository } from './repositories/persona.repository'
 
 @Injectable()
 export class FiliacionService {
   constructor(
     @InjectDataSource(DB_SIII)
-    private dataSource: DataSource
+    private dataSource: DataSource,
+    private personaRepository: PersonaRepository
   ) {}
 
   async create(createFiliacionDto: CreateFiliacionDto) {
@@ -99,6 +101,14 @@ export class FiliacionService {
 
   })
 }
+
+   async findAllPersonasSinFiliar(numeroCaso: string) {
+    return this.personaRepository.findPersonasSinFiliar(numeroCaso)
+  }
+
+  findOnePersona(id: number) {
+    return `This action returns a #${id} filiacion`
+  }
 
   findAll() {
     return `This action returns all filiacion`

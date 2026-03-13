@@ -51,11 +51,11 @@ import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.mo
     TipoOjosModule,
     ConstitucionCorporalModule,
     TipoCabelloModule,
-    DetenidoModule,
+   /* DetenidoModule,
     AliasDetenidoModule,
     DocumentoDetenidoModule,
     FenotipoDetenidoModule,
-    ProfesionDetenidoModule,
+    ProfesionDetenidoModule,*/
     FiliacionModule,
   ],
 })

@@ -32,6 +32,11 @@ export class FiliacionController extends BaseController {
     return this.filiacionService.create(createFiliacionDto)
   }
 
+  @Get('personasSinFiliar/:numeroCaso')
+  findAllPersonaSinFiliar(@Param('numeroCaso') numeroCaso: string) {
+    return this.filiacionService.findAllPersonasSinFiliar(numeroCaso)
+  }
+
   @Get()
   findAll() {
     return this.filiacionService.findAll()

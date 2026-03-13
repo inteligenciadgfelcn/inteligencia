@@ -8,6 +8,7 @@ import { AliasDetenido } from './alias_detenido/entities/alias_detenido.entity';
 import { ProfesionDetenido } from './profesion_detenido/entities/profesion_detenido.entity';
 import { FenotipoDetenido } from './fenotipo_detenido/entities/fenotipo_detenido.entity';
 import { DB_SIII } from '@/core/config/database/database.module';
+import { PersonaRepository } from './repositories/persona.repository';
 
 @Module({
    imports: [
@@ -20,6 +21,6 @@ import { DB_SIII } from '@/core/config/database/database.module';
     ],DB_SIII,),
   ],
   controllers: [FiliacionController],
-  providers: [FiliacionService],
+  providers: [FiliacionService, PersonaRepository],
 })
 export class FiliacionModule {}
