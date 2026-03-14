@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { TipoDroga } from '../../parametrica/entity/tipo/tipo-droga.entity'
 
 /**
  * Entidad Estado Droga
@@ -18,6 +19,10 @@ export class EstadoDroga {
 
   @Column({ name: 'descripcion', type: 'varchar', length: 50 })
   descripcion: string
+
+  @ManyToOne(() => TipoDroga)
+  @JoinColumn({ name: 'id_tipo_droga' })
+  tipoDroga?: TipoDroga
 
   constructor(data?: Partial<EstadoDroga>) {
     if (data) Object.assign(this, data)

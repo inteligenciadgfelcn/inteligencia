@@ -8,6 +8,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { SustanciaLiquidaDescripcion } from '../../parametrica/entity/sustancia/sustancia-liquida-descripcion.entity'
 
 /**
  * Entidad Sustancia Líquida
@@ -29,6 +30,9 @@ export class SustanciaLiquida {
   @Column({ name: 'cantidad', type: 'double precision' })
   cantidad: number
 
+  @Column({ name: 'costo', type: 'double precision', default: 0 })
+  costo: number
+
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
 
@@ -38,6 +42,10 @@ export class SustanciaLiquida {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => SustanciaLiquidaDescripcion)
+  @JoinColumn({ name: 'id_sustancia_liquida_descripcion' })
+  descripcionRef?: SustanciaLiquidaDescripcion
 
   @BeforeInsert()
   insertarFechaIngreso() {

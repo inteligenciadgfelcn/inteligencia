@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { Bienes } from '../../parametrica/entity/bien/bienes.entity'
 
 /**
  * Entidad Catálogo Clase
@@ -21,6 +22,10 @@ export class CatalogoClase {
 
   @Column({ name: 'es_fungible', type: 'boolean', nullable: true })
   esFungible?: boolean
+
+  @ManyToOne(() => Bienes)
+  @JoinColumn({ name: 'id_bien' })
+  bien?: Bienes
 
   constructor(data?: Partial<CatalogoClase>) {
     if (data) Object.assign(this, data)
