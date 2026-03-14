@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
@@ -13,8 +14,9 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiConsumes, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto'
 import { OperativoService } from '../service/operativo.service'
 
 // DTOs
@@ -29,7 +31,6 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
-  CreateLogotipoDrogaDto,
 } from '../dto'
 
 // TODO: Reactivar guards para producción
@@ -171,9 +172,9 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Listar todos los operativos (admin)' })
   @Get()
-  async listar() {
-    const datos = await this.operativoService.listar()
-    return this.successList(datos)
+  async listar(@Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listar(paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Obtener operativo por ID interno (admin/debug)' })
@@ -186,10 +187,14 @@ export class OperativoController extends BaseController {
   // ==================== DROGAS ====================
 
   @ApiOperation({ summary: 'Listar drogas del caso ([] si operativo no existe)' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: idTipoDroga, descripcionEstadoDroga, descripcionTipoDroga, urlFotoPruebaCampo, urlFotoPesaje' })
   @Get('caso/:idCaso/drogas')
-  async listarDrogas(@Param('idCaso') idCaso: string) {
-    const drogas = await this.operativoService.listarDrogas(idCaso)
-    return this.successList(drogas)
+  async listarDrogas(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarDrogas(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del caso' })
@@ -268,49 +273,6 @@ export class OperativoController extends BaseController {
     res.send(foto)
   }
 
-  @ApiOperation({
-    summary: 'Listar logotipos de una droga específica',
-    description:
-      'Retorna solo los logotipos asociados a esa droga (fila expandida en la grilla).',
-  })
-  @Get('caso/:idCaso/drogas/:idDroga/logotipos')
-  async listarLogotiposDroga(
-    @Param('idCaso') idCaso: string,
-    @Param('idDroga') idDroga: string
-  ) {
-    const logotipos = await this.operativoService.listarLogotiposPorDroga(
-      idCaso,
-      idDroga
-    )
-    return this.successList(logotipos)
-  }
-
-  @ApiOperation({
-    summary: 'Agregar logotipo a una droga (modal)',
-    description:
-      'idTipoDroga, idPaisOrigen e idPaisDestino se resuelven automáticamente desde la droga. ' +
-      'Enviar como multipart/form-data con archivo fotografia.',
-  })
-  @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/drogas/:idDroga/logotipos')
-  @UseInterceptors(FileInterceptor('fotografia'))
-  async agregarLogotipoDroga(
-    @Param('idCaso') idCaso: string,
-    @Param('idDroga') idDroga: string,
-    @Body() data: CreateLogotipoDrogaDto,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipoDroga(
-      idCaso,
-      idDroga,
-      data,
-      fotografia,
-      'SISTEMA'
-    )
-    return this.successCreate(logotipo)
-  }
-
   @ApiOperation({ summary: 'Eliminar droga del caso' })
   @Delete('caso/:idCaso/drogas/:idDroga')
   async eliminarDroga(
@@ -324,10 +286,14 @@ export class OperativoController extends BaseController {
   // ==================== SUSTANCIAS SÓLIDAS ====================
 
   @ApiOperation({ summary: 'Listar sustancias sólidas del caso' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: descripcionSustancia' })
   @Get('caso/:idCaso/sustancias-solidas')
-  async listarSustanciasSolidas(@Param('idCaso') idCaso: string) {
-    const sustancias = await this.operativoService.listarSustanciasSolidas(idCaso)
-    return this.successList(sustancias)
+  async listarSustanciasSolidas(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarSustanciasSolidas(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar sustancia sólida al caso' })
@@ -357,10 +323,14 @@ export class OperativoController extends BaseController {
   // ==================== SUSTANCIAS LÍQUIDAS ====================
 
   @ApiOperation({ summary: 'Listar sustancias líquidas del caso' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: descripcionSustancia' })
   @Get('caso/:idCaso/sustancias-liquidas')
-  async listarSustanciasLiquidas(@Param('idCaso') idCaso: string) {
-    const sustancias = await this.operativoService.listarSustanciasLiquidas(idCaso)
-    return this.successList(sustancias)
+  async listarSustanciasLiquidas(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarSustanciasLiquidas(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar sustancia líquida al caso' })
@@ -390,10 +360,14 @@ export class OperativoController extends BaseController {
   // ==================== FÁBRICAS ====================
 
   @ApiOperation({ summary: 'Listar fábricas del caso' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: idTipoFabrica, descripcionFabricaModelo, descripcionTipoFabrica' })
   @Get('caso/:idCaso/fabricas')
-  async listarFabricas(@Param('idCaso') idCaso: string) {
-    const fabricas = await this.operativoService.listarFabricas(idCaso)
-    return this.successList(fabricas)
+  async listarFabricas(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarFabricas(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar fábrica al caso' })
@@ -419,10 +393,14 @@ export class OperativoController extends BaseController {
   // ==================== BIENES SECUESTRADOS ====================
 
   @ApiOperation({ summary: 'Listar bienes secuestrados del caso' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: idCatalogoClase, idBien, descripcionCatalogoTipo, descripcionCatalogoClase, descripcionBien, urlFotoBien' })
   @Get('caso/:idCaso/bienes')
-  async listarBienes(@Param('idCaso') idCaso: string) {
-    const bienes = await this.operativoService.listarBienes(idCaso)
-    return this.successList(bienes)
+  async listarBienes(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarBienes(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar bien secuestrado al caso' })
@@ -448,16 +426,23 @@ export class OperativoController extends BaseController {
   // ==================== CARACTERÍSTICAS DE BIENES ====================
 
   @ApiOperation({ summary: 'Listar características de un bien' })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada: { total, filas }. Campos planos: descripcionCaracteristica' })
   @Get('caso/:idCaso/bienes/:idBien/caracteristicas')
   async listarCaracteristicasBien(
     @Param('idCaso') idCaso: string,
-    @Param('idBien') idBien: string
+    @Param('idBien') idBien: string,
+    @Query() paginacion: PaginacionQueryDto
   ) {
-    const caracteristicas = await this.operativoService.listarCaracteristicasBien(
+    const resultado = await this.operativoService.listarCaracteristicasBien(
       idCaso,
-      idBien
+      idBien,
+      paginacion
     )
-    return this.successList(caracteristicas)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar característica a un bien' })
@@ -504,9 +489,9 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Listar detenidos del caso' })
   @Get('caso/:idCaso/detenidos')
-  async listarDetenidos(@Param('idCaso') idCaso: string) {
-    const detenidos = await this.operativoService.listarDetenidos(idCaso)
-    return this.successList(detenidos)
+  async listarDetenidos(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarDetenidos(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar detenido al caso' })
@@ -621,9 +606,9 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Listar galería del caso' })
   @Get('caso/:idCaso/galeria')
-  async listarGaleria(@Param('idCaso') idCaso: string) {
-    const galeria = await this.operativoService.listarGaleria(idCaso)
-    return this.successList(galeria)
+  async listarGaleria(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarGaleria(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar foto a la galería del caso' })
@@ -700,9 +685,9 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Listar logotipos del caso' })
   @Get('caso/:idCaso/logotipos')
-  async listarLogotipos(@Param('idCaso') idCaso: string) {
-    const logotipos = await this.operativoService.listarLogotipos(idCaso)
-    return this.successList(logotipos)
+  async listarLogotipos(@Param('idCaso') idCaso: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarLogotipos(idCaso, paginacion)
+    return this.successListRows(resultado)
   }
 
   @ApiOperation({ summary: 'Agregar logotipo al caso' })
