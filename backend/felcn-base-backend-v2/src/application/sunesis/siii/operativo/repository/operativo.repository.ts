@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
+import { PaginacionQueryDto } from '@/common/dto'
 
 // Entities
 import { Operativo } from '../entity/operativo.entity'
@@ -43,11 +44,12 @@ export class OperativoRepository {
     return this.operativoRepo.save(operativo)
   }
 
-  async listar(): Promise<Operativo[]> {
-    return this.operativoRepo
-      .createQueryBuilder('operativo')
-      .orderBy('operativo.fechaOperativo', 'DESC')
-      .getMany()
+  async listar(paginacion: PaginacionQueryDto): Promise<[Operativo[], number]> {
+    return this.operativoRepo.findAndCount({
+      order: { fechaOperativo: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
+    })
   }
 
   async buscarPorId(id: string): Promise<Operativo | null> {
@@ -88,10 +90,13 @@ export class OperativoRepository {
     return this.drogaRepo.save(droga)
   }
 
-  async listarDrogasPorOperativo(idOperativo: string): Promise<Droga[]> {
-    return this.drogaRepo.find({
+  async listarDrogasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Droga[], number]> {
+    return this.drogaRepo.findAndCount({
       where: { idOperativo },
+      relations: ['estadoDroga', 'estadoDroga.tipoDroga', 'formaTransporte', 'paisProcedencia', 'paisDestino'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -116,11 +121,15 @@ export class OperativoRepository {
   }
 
   async listarSustanciasSolidasPorOperativo(
-    idOperativo: string
-  ): Promise<SustanciaSolida[]> {
-    return this.sustanciaSolidaRepo.find({
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[SustanciaSolida[], number]> {
+    return this.sustanciaSolidaRepo.findAndCount({
       where: { idOperativo },
+      relations: ['descripcionRef'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -141,11 +150,15 @@ export class OperativoRepository {
   }
 
   async listarSustanciasLiquidasPorOperativo(
-    idOperativo: string
-  ): Promise<SustanciaLiquida[]> {
-    return this.sustanciaLiquidaRepo.find({
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[SustanciaLiquida[], number]> {
+    return this.sustanciaLiquidaRepo.findAndCount({
       where: { idOperativo },
+      relations: ['descripcionRef'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -163,10 +176,13 @@ export class OperativoRepository {
     return this.fabricaRepo.save(fabrica)
   }
 
-  async listarFabricasPorOperativo(idOperativo: string): Promise<Fabrica[]> {
-    return this.fabricaRepo.find({
+  async listarFabricasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Fabrica[], number]> {
+    return this.fabricaRepo.findAndCount({
       where: { idOperativo },
+      relations: ['fabricaModelo', 'fabricaModelo.tipoFabrica'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -185,11 +201,15 @@ export class OperativoRepository {
   }
 
   async listarBienesPorOperativo(
-    idOperativo: string
-  ): Promise<ItemBienSecuestrado[]> {
-    return this.bienRepo.find({
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[ItemBienSecuestrado[], number]> {
+    return this.bienRepo.findAndCount({
       where: { idOperativo },
+      relations: ['catalogoTipo', 'catalogoTipo.catalogoClase', 'catalogoTipo.catalogoClase.bien'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -210,11 +230,15 @@ export class OperativoRepository {
   }
 
   async listarCaracteristicasPorBien(
-    idItemBienSecuestrado: string
-  ): Promise<ItemBienCaracteristica[]> {
-    return this.bienCaracteristicaRepo.find({
+    idItemBienSecuestrado: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[ItemBienCaracteristica[], number]> {
+    return this.bienCaracteristicaRepo.findAndCount({
       where: { idItemBienSecuestrado },
+      relations: ['catalogoCaracteristica'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -239,11 +263,15 @@ export class OperativoRepository {
   }
 
   async listarDetenidosPorOperativo(
-    idOperativo: string
-  ): Promise<DetenidoAuxiliar[]> {
-    return this.detenidoRepo.find({
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[DetenidoAuxiliar[], number]> {
+    return this.detenidoRepo.findAndCount({
       where: { idOperativo },
+      relations: ['paisNacionalidad', 'estadoCivil'],
       order: { fechaHoraIngreso: 'DESC' },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -261,9 +289,11 @@ export class OperativoRepository {
     return this.galeriaRepo.save(galeria)
   }
 
-  async listarGaleriaPorOperativo(idOperativo: string): Promise<Galeria[]> {
-    return this.galeriaRepo.find({
+  async listarGaleriaPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Galeria[], number]> {
+    return this.galeriaRepo.findAndCount({
       where: { idOperativo },
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
   }
 
@@ -281,21 +311,13 @@ export class OperativoRepository {
     return this.logotipoRepo.save(logotipo)
   }
 
-  async listarLogotiposPorOperativo(idOperativo: string): Promise<Logotipo[]> {
-    return this.logotipoRepo.find({
+  async listarLogotiposPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Logotipo[], number]> {
+    return this.logotipoRepo.findAndCount({
       where: { idOperativo },
+      relations: ['tipoDroga', 'paisOrigen', 'paisDestino'],
+      skip: paginacion.saltar,
+      take: paginacion.limite,
     })
-  }
-
-  async listarLogotiposPorDroga(idDroga: string): Promise<Logotipo[]> {
-    return this.logotipoRepo.find({
-      where: { idDroga },
-      order: { fechaHoraIngreso: 'DESC' },
-    })
-  }
-
-  async eliminarLogotiposPorDroga(idDroga: string): Promise<void> {
-    await this.logotipoRepo.delete({ idDroga })
   }
 
   async eliminarLogotipo(id: string): Promise<void> {

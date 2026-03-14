@@ -8,6 +8,8 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { Pais } from '../../parametrica/entity/geografia/pais.entity'
+import { EstadoCivil } from '../../parametrica/entity/persona/estado-civil.entity'
 
 /**
  * Entidad Detenido Auxiliar
@@ -102,6 +104,14 @@ export class DetenidoAuxiliar {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais' })
+  paisNacionalidad?: Pais
+
+  @ManyToOne(() => EstadoCivil)
+  @JoinColumn({ name: 'id_estado_civil' })
+  estadoCivil?: EstadoCivil
 
   @BeforeInsert()
   insertarFechaIngreso() {

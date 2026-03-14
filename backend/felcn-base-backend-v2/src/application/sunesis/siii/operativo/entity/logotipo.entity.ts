@@ -8,6 +8,8 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { TipoDroga } from '../../parametrica/entity/tipo/tipo-droga.entity'
+import { Pais } from '../../parametrica/entity/geografia/pais.entity'
 
 /**
  * Entidad Logotipo
@@ -23,9 +25,6 @@ export class Logotipo {
 
   @Column({ name: 'id_operativo', type: 'bigint' })
   idOperativo: string
-
-  @Column({ name: 'id_droga', type: 'bigint', nullable: true })
-  idDroga?: string
 
   @Column({ name: 'numero_caso', type: 'varchar', length: 20 })
   numeroCaso: string
@@ -81,6 +80,18 @@ export class Logotipo {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => TipoDroga)
+  @JoinColumn({ name: 'id_tipo_droga' })
+  tipoDroga?: TipoDroga
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais_origen' })
+  paisOrigen?: Pais
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais_destino' })
+  paisDestino?: Pais
 
   @BeforeInsert()
   insertarFechaIngreso() {

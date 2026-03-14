@@ -1,7 +1,7 @@
 # GUÍA FRONTEND — MÓDULO OPERATIVOS
 
-**Versión:** 4.5 — Sección 10: curls flujo completo Servicio → Asignación → Operativo para pruebas
-**Fecha:** 2026-03-08
+**Versión:** 4.8 — Logotipos desacoplados de drogas: sección independiente `/caso/:idCaso/logotipos`
+**Fecha:** 2026-03-14
 **Base URL:** `http://localhost:3000/api`
 
 ---
@@ -14,10 +14,14 @@
 4. [Tabla completa: API lookup → Combo del formulario](#4-tabla-completa-api-lookup--combo-del-formulario)
 5. [Flujo completo NUEVO operativo — curl](#5-flujo-completo-nuevo-operativo--curl)
 6. [Flujo completo EDICIÓN operativo — curl](#6-flujo-completo-edición-operativo--curl)
-7. [Flujo DROGAS: CRUD + imágenes vía URL](#7-flujo-drogas-crud--imágenes-vía-url)
-8. [Reglas de negocio y validaciones](#8-reglas-de-negocio-y-validaciones)
-9. [Referencia de endpoints](#9-referencia-de-endpoints)
-10. [Flujo de prueba: Servicio → Asignación → Operativo (curls completos)](#10-flujo-de-prueba-servicio--asignación--operativo-curls-completos)
+7. [DROGAS — CRUD + imágenes vía URL](#7-drogas--crud--imágenes-vía-url)
+8. [SUSTANCIAS — CRUD](#8-sustancias--crud) (8.1 Sólidas · 8.2 Líquidas)
+9. [FÁBRICAS — CRUD](#9-fábricas--crud)
+10. [BIENES SECUESTRADOS — CRUD](#10-bienes-secuestrados--crud)
+11. [PERSONAS / DETENIDOS — CRUD](#11-personas--detenidos--crud)
+12. [Reglas de negocio y validaciones](#12-reglas-de-negocio-y-validaciones)
+13. [Referencia de endpoints](#13-referencia-de-endpoints)
+14. [Flujo de prueba: Servicio → Asignación → Operativo (curls completos)](#14-flujo-de-prueba-servicio--asignación--operativo-curls-completos)
 
 ---
 
@@ -353,12 +357,20 @@ GET /api/operativos/catalogos/caracteristicas/{idCatalogoClase}
 | `cboformatran` | `GET /api/siii-lookups/formas-transporte` | — | — |
 | `cboproceden` | `GET /api/siii-lookups/paises` | — | Default: id=70 (Bolivia) |
 | `cbodestino` | `GET /api/siii-lookups/paises` | — | Misma lista |
+| `txtcosto` | — | — | Nuevo campo `costo` (Bs), opcional |
+
+> **Respuesta GET plana:** la lista de drogas ya incluye `descripcionEstadoDroga` y
+> `descripcionTipoDroga` — no es necesario resolver estos IDs contra los lookups para
+> mostrar texto en la grilla. Los lookups solo se usan para los combos del formulario.
 
 ### SEC3 — Sustancias Sólidas
 
 | Combo ASP | API lookup | Dependencia |
 |---|---|---|
 | `cbosussol` | `GET /api/siii-lookups/sustancias-solidas-desc` | — |
+| `txtcosto` | — | Nuevo campo `costo` (Bs), opcional |
+
+> **Respuesta GET plana:** la lista incluye `descripcionSustancia` directamente.
 
 **Regla de cantidad — campo `cantidad` (almacenado en KG):**
 
@@ -370,7 +382,7 @@ GET /api/operativos/catalogos/caracteristicas/{idCatalogoClase}
 
 ```javascript
 const cantidad = (kg || 0) + (gramos || 0) / 1_000
-// Enviar: { "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }
+// Enviar: { "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75, "costo": 120.50 }
 ```
 
 ### SEC4 — Sustancias Líquidas
@@ -378,6 +390,9 @@ const cantidad = (kg || 0) + (gramos || 0) / 1_000
 | Combo ASP | API lookup | Dependencia |
 |---|---|---|
 | `cbosusliq` | `GET /api/siii-lookups/sustancias-liquidas-desc` | — |
+| `txtcosto` | — | Nuevo campo `costo` (Bs), opcional |
+
+> **Respuesta GET plana:** la lista incluye `descripcionSustancia` directamente.
 
 **Regla de cantidad — campo `cantidad` (almacenado en LT):**
 
@@ -389,7 +404,7 @@ const cantidad = (kg || 0) + (gramos || 0) / 1_000
 
 ```javascript
 const cantidad = (litros || 0) + (ml || 0) / 1_000
-// Enviar: { "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }
+// Enviar: { "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5, "costo": 45.00 }
 ```
 
 ### SEC5 — Fábricas / Pozas
@@ -548,29 +563,17 @@ DROGA_ID=101
 
 curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"   # resumen total
 
-# Logotipos de la droga (al expandir fila)
-curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos"
-
-# Crear logotipo desde la modal
-curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
-  -F "imagen=CALI-01" \
-  -F "descripcionLogo=Marca cartel en embalaje" \
-  -F "organizacion=CARTEL CALI" \
-  -F "blanco=Mercado europeo" \
-  -F "observacion=Encontrado en bolsas negras" \
-  -F "fotografia=@/ruta/logo.jpg"
-
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
 
 # === SUSTANCIAS SÓLIDAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-solidas" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }'
+  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75, "costo": 120.50 }'
 
 # === SUSTANCIAS LÍQUIDAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }'
+  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5, "costo": 45.00 }'
 
 # === FÁBRICAS ===
 curl -X POST "$BASE/operativos/caso/$CASO_ID/fabricas" \
@@ -619,12 +622,13 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/galeria" \
   -F "descripcion=Vista exterior del laboratorio" \
   -F "foto=@/ruta/foto.jpg"
 
-# === LOGOTIPOS (nuevo flujo — desde la modal de una droga específica) ===
-# El backend resuelve idTipoDroga, idPaisOrigen, idPaisDestino desde la droga.
-# Ver sección 7 para flujo completo.
-curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+# === LOGOTIPOS (sección independiente del operativo) ===
+curl -X POST "$BASE/operativos/caso/$CASO_ID/logotipos" \
   -F "imagen=CALI-01" \
   -F "descripcionLogo=Marca cartel en embalaje" \
+  -F "idTipoDroga=1" \
+  -F "idPaisOrigen=70" \
+  -F "idPaisDestino=80" \
   -F "organizacion=CARTEL LOCAL" \
   -F "blanco=Mercado europeo" \
   -F "observacion=Encontrado en bolsas negras" \
@@ -843,33 +847,51 @@ Los buffers binarios **nunca se incluyen** en el JSON.
 
 #### Estructura de cada elemento en la lista
 
+La respuesta es **paginada** (`{ total, filas }`) y **plana** — no hay sub-objetos anidados.
+Los campos de texto de catálogo vienen directamente junto al ID:
+
 ```json
 {
-  "id": "101",
-  "idOperativo": "42",
-  "idEstadoDroga": 3,
-  "cantidadGramos": 1500.5,
-  "cantidadUnidades": 0,
-  "idFormaTransporte": 2,
-  "idPaisProcedencia": 70,
-  "idPaisDestino": 70,
-  "observaciones": "Droga en estado sólido prensado",
-  "fechaHoraIngreso": "2024-03-15T14:22:00.000Z",
-  "usuario": "SISTEMA",
-  "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-  "urlFotoPesaje": "/api/operativos/caso/7/drogas/101/fotos/pesaje"
+  "total": 2,
+  "filas": [
+    {
+      "id": "101",
+      "idOperativo": "42",
+      "idEstadoDroga": 3,
+      "idTipoDroga": 1,
+      "descripcionEstadoDroga": "Prensada",
+      "descripcionTipoDroga": "Cocaína",
+      "idFormaTransporte": 2,
+      "descripcionFormaTransporte": "Persona",
+      "idPaisProcedencia": 70,
+      "descripcionPaisProcedencia": "Bolivia",
+      "idPaisDestino": 70,
+      "descripcionPaisDestino": "Bolivia",
+      "cantidadGramos": 1500.5,
+      "cantidadUnidades": 0,
+      "costo": 5000.0,
+      "fechaHoraIngreso": "2024-03-15T14:22:00.000Z",
+      "usuario": "SISTEMA",
+      "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+      "urlFotoPesaje": "/api/operativos/caso/7/drogas/101/fotos/pesaje"
+    }
+  ]
 }
 ```
 
-> Ambas fotos son obligatorias, por lo que `urlFotoPruebaCampo` y `urlFotoPesaje`
-> siempre son strings (nunca `null`) en registros válidos.
+> **Respuesta 100 % plana:** todos los campos de catálogo vienen con su `id` y su
+> `descripcion` juntos — el frontend **no necesita resolver ningún ID contra lookups**
+> para mostrar texto en la grilla. Los lookups solo se usan para llenar los combos
+> del formulario de alta.
 >
-> Los campos `idEstadoDroga`, `idFormaTransporte`, etc. son IDs numéricos. El frontend
-> los resuelve contra los lookups estáticos (ver sección 3) para mostrar texto.
+> **`costo`:** costo estimado en Bs. Puede ser `0` si no se ingresó.
 >
 > **Unidad de `cantidadGramos` cuando `idEstadoDroga == 5`:** el valor almacenado
-> son litros, no gramos (herencia de la BD original — mismo campo `Dg_Cantidad`).
-> Mostrar la unidad correcta en la grilla según el estado.
+> son litros (herencia de la BD original). Mostrar "Lts" en la grilla cuando
+> `idEstadoDroga == 5`.
+>
+> **Paginación:** usar `?pagina=1&limite=10` (default). Respuesta siempre como
+> `{ total, filas }` dentro de `datos`.
 
 #### Curl
 
@@ -877,18 +899,28 @@ Los buffers binarios **nunca se incluyen** en el JSON.
 BASE="http://localhost:3000/api"
 CASO_ID=7
 
-curl "$BASE/operativos/caso/$CASO_ID/drogas"
+# Lista paginada (page 1, 10 registros)
+curl "$BASE/operativos/caso/$CASO_ID/drogas?pagina=1&limite=10"
 # → {
 #     "finalizado": true,
-#     "datos": [
-#       {
-#         "id": "101", "cantidadGramos": 1500.5,
-#         "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-#         "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
-#       }
-#     ]
+#     "datos": {
+#       "total": 2,
+#       "filas": [
+#         {
+#           "id": "101",
+#           "idEstadoDroga": 3,        "descripcionEstadoDroga": "Prensada",
+#           "idTipoDroga": 1,          "descripcionTipoDroga": "Cocaína",
+#           "idFormaTransporte": 2,    "descripcionFormaTransporte": "Persona",
+#           "idPaisProcedencia": 70,   "descripcionPaisProcedencia": "Bolivia",
+#           "idPaisDestino": 70,       "descripcionPaisDestino": "Bolivia",
+#           "cantidadGramos": 1500.5, "cantidadUnidades": 0, "costo": 5000.0,
+#           "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+#           "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
+#         }
+#       ]
+#     }
 #   }
-# Si el operativo no existe aún → datos: []  (no es error)
+# Si el operativo no existe aún → datos: { total: 0, filas: [] }  (no es error)
 ```
 
 ---
@@ -902,7 +934,7 @@ curl "$BASE/operativos/caso/$CASO_ID/drogas"
 | **CREATE** | POST | `/caso/:idCaso/drogas` | `multipart/form-data` — campos + `pruebaCampo` + `pesaje` (ambos requeridos) |
 | **READ lista** | GET | `/caso/:idCaso/drogas` | Lista con metadatos — alimenta la grilla |
 | **READ pesaje** | GET | `/caso/:idCaso/drogas/pesaje` | Resumen de peso total por tipo de droga |
-| **DELETE** | DELETE | `/caso/:idCaso/drogas/:id` | Elimina en cascada (borra sus logotipos primero) |
+| **DELETE** | DELETE | `/caso/:idCaso/drogas/:id` | Elimina la droga (logotipos son independientes, no se borran) |
 
 > No existe PATCH. Corrección = DELETE + POST.
 
@@ -1053,7 +1085,7 @@ formData.append('cantidadUnidades',  String(cantidadUnidades || 0))
 formData.append('idFormaTransporte', String(idFormaTransporte))
 formData.append('idPaisProcedencia', String(idPaisProcedencia))
 formData.append('idPaisDestino',     String(idPaisDestino))
-if (observaciones) formData.append('observaciones', observaciones)
+if (costo != null) formData.append('costo', String(costo))
 
 // Archivos — nombres exactos que espera el FileFieldsInterceptor
 formData.append('pruebaCampo', filePrueba)
@@ -1099,7 +1131,7 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=70" \
-  -F "observaciones=Droga en estado sólido prensado" \
+  -F "costo=5000" \
   -F "pruebaCampo=@/ruta/prueba_campo.jpg;type=image/jpeg" \
   -F "pesaje=@/ruta/pesaje.jpg;type=image/jpeg"
 # → 201:
@@ -1111,6 +1143,7 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
 #     "idEstadoDroga": 3,
 #     "cantidadGramos": 1500,
 #     "cantidadUnidades": 0,
+#     "costo": 5000,
 #     "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
 #     "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje",
 #     "fechaHoraIngreso": "2024-03-15T14:22:00.000Z"
@@ -1128,28 +1161,36 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=70" \
-  -F "observaciones=Cocaína líquida en recipientes" \
+  -F "costo=0" \
   -F "pruebaCampo=@/ruta/prueba_campo.jpg;type=image/jpeg" \
   -F "pesaje=@/ruta/pesaje.jpg;type=image/jpeg"
 # → 201 igual; en grilla mostrar "25.5 Lts" cuando idEstadoDroga == 5
 
-# ─── READ — lista grilla ──────────────────────────────────────────────────────
-curl "$BASE/operativos/caso/$CASO_ID/drogas"
+# ─── READ — lista paginada (respuesta plana) ──────────────────────────────────
+curl "$BASE/operativos/caso/$CASO_ID/drogas?pagina=1&limite=10"
 # → {
 #     "finalizado": true,
-#     "datos": [
-#       {
-#         "id": "101", "idEstadoDroga": 3,
-#         "cantidadGramos": 1500, "cantidadUnidades": 0,
-#         "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
-#         "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
-#       }
-#     ]
+#     "datos": {
+#       "total": 2,
+#       "filas": [
+#         {
+#           "id": "101",
+#           "idEstadoDroga": 3,      "descripcionEstadoDroga": "Prensada",
+#           "idTipoDroga": 1,        "descripcionTipoDroga": "Cocaína",
+#           "idFormaTransporte": 2,  "descripcionFormaTransporte": "Persona",
+#           "idPaisProcedencia": 70, "descripcionPaisProcedencia": "Bolivia",
+#           "idPaisDestino": 70,     "descripcionPaisDestino": "Bolivia",
+#           "cantidadGramos": 1500, "cantidadUnidades": 0, "costo": 5000,
+#           "urlFotoPruebaCampo": "/api/operativos/caso/7/drogas/101/fotos/prueba-campo",
+#           "urlFotoPesaje":      "/api/operativos/caso/7/drogas/101/fotos/pesaje"
+#         }
+#       ]
+#     }
 #   }
 
 # ─── READ — resumen de pesaje ─────────────────────────────────────────────────
 curl "$BASE/operativos/caso/$CASO_ID/drogas/pesaje"
-# → { "finalizado": true, "datos": [ { "tipoDroga": "Cocaína", "totalGramos": 1500 }, ... ] }
+# → { "finalizado": true, "datos": { "totalGramos": 1500, "totalRegistros": 1 } }
 
 # ─── DELETE (cascade: borra logotipos de esa droga primero) ──────────────────
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID"
@@ -1227,43 +1268,60 @@ function renderFilaDroga(droga) {
 
 ### 7.5 CRUD logotipos
 
+> Los logotipos son una **sección independiente** del operativo — ya no están vinculados a una droga específica.
+> El frontend los gestiona desde `/caso/:idCaso/logotipos` directamente.
+
 #### Estructura de la respuesta `GET /caso/:idCaso/logotipos`
 
-Al igual que drogas, la lista de logotipos incluye campos `tiene*` + `url*`:
+Lista paginada y plana, con descripciones de todas las relaciones:
 
 ```json
 {
-  "id": "5",
-  "idOperativo": "42",
-  "idDroga": "101",
-  "imagen": "CALI-01",
-  "descripcionLogo": "Marca utilizada por el cartel...",
-  "organizacion": "CARTEL CALI",
-  "idTipoDroga": 1,
-  "idPaisOrigen": 70,
-  "idPaisDestino": 70,
-  "blanco": "Mercado europeo",
-  "observacion": "Logotipo encontrado en embalaje...",
-  "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
-  "urlFotografia": "/api/operativos/caso/7/logotipos/5/foto"
+  "finalizado": true,
+  "datos": {
+    "total": 1,
+    "filas": [
+      {
+        "id": "5",
+        "idOperativo": "42",
+        "numeroCaso": "CASO-2024-007",
+        "numeroOperativo": "IC-042/2026",
+        "imagen": "CALI-01",
+        "descripcion": "Descripción general del operativo...",
+        "descripcionLogo": "Marca utilizada por el cartel...",
+        "organizacion": "CARTEL CALI",
+        "idTipoDroga": 1,
+        "descripcionTipoDroga": "Cocaina",
+        "idPaisOrigen": 70,
+        "descripcionPaisOrigen": "Bolivia",
+        "idPaisDestino": 80,
+        "descripcionPaisDestino": "Brasil",
+        "blanco": "Mercado europeo",
+        "observacion": "Logotipo encontrado en embalaje...",
+        "enlace": "",
+        "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
+        "urlFotografia": "/api/operativos/caso/7/logotipos/5/foto"
+      }
+    ]
+  }
 }
 ```
 
-```bash
-curl "$BASE/operativos/caso/$CASO_ID/logotipos"
-# → { "finalizado": true, "datos": [ {...}, {...} ] }
-# Si no hay logotipos → datos: []
-```
+> `numeroCaso`, `numeroOperativo`, `fechaOperativo`, `nombreCaso` y `descripcion`
+> se auto-completan desde el operativo/asignación — el frontend **no los envía**.
 
 #### CREATE — POST logotipo
 
-El backend resuelve automáticamente `idTipoDroga`, `idPaisOrigen`, `idPaisDestino`
-desde la droga asociada — el frontend **no los envía**.
+El frontend envía: `imagen`, `descripcionLogo`, `idTipoDroga`, `idPaisOrigen`, `idPaisDestino`, `organizacion` + opcionales.
+El backend auto-completa: `numeroCaso`, `numeroOperativo`, `fechaOperativo`, `nombreCaso`, `descripcion`.
 
 ```bash
-curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
+curl -X POST "$BASE/operativos/caso/$CASO_ID/logotipos" \
   -F "imagen=CALI-01" \
   -F "descripcionLogo=Marca utilizada por el cartel para identificar cargamentos" \
+  -F "idTipoDroga=1" \
+  -F "idPaisOrigen=70" \
+  -F "idPaisDestino=80" \
   -F "organizacion=CARTEL CALI" \
   -F "blanco=Mercado europeo" \
   -F "observacion=Logotipo encontrado en embalaje de plástico negro" \
@@ -1274,14 +1332,13 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/logotipos" \
 #   "finalizado": true,
 #   "datos": {
 #     "id": "5",
-#     "idDroga": "101",
 #     "idOperativo": "42",
 #     "imagen": "CALI-01",
 #     "descripcionLogo": "Marca utilizada...",
 #     "organizacion": "CARTEL CALI",
 #     "idTipoDroga": 1,
 #     "idPaisOrigen": 70,
-#     "idPaisDestino": 70,
+#     "idPaisDestino": 80,
 #     "urlFotografia": "/api/operativos/caso/7/logotipos/5/foto",
 #     "fechaHoraIngreso": "2024-03-15T14:30:00.000Z"
 #   }
@@ -1292,17 +1349,20 @@ LOGO_ID=5
 **FormData en el frontend:**
 
 ```javascript
-async function guardarLogotipo(idCaso, idDroga, datos, archivoFoto) {
+async function guardarLogotipo(idCaso, datos, archivoFoto) {
   const body = new FormData()
-  body.append('imagen',        datos.imagen)
-  body.append('descripcionLogo', datos.descripcionLogo)
-  body.append('organizacion',  datos.organizacion)
+  body.append('imagen',           datos.imagen)
+  body.append('descripcionLogo',  datos.descripcionLogo)
+  body.append('idTipoDroga',      String(datos.idTipoDroga))
+  body.append('idPaisOrigen',     String(datos.idPaisOrigen))
+  body.append('idPaisDestino',    String(datos.idPaisDestino))
+  body.append('organizacion',     datos.organizacion)
   if (datos.blanco)      body.append('blanco',      datos.blanco)
   if (datos.observacion) body.append('observacion', datos.observacion)
   if (datos.enlace)      body.append('enlace',      datos.enlace)
   if (archivoFoto)       body.append('fotografia',  archivoFoto)  // File object
 
-  const res = await fetch(`/api/operativos/caso/${idCaso}/drogas/${idDroga}/logotipos`, {
+  const res = await fetch(`/api/operativos/caso/${idCaso}/logotipos`, {
     method: 'POST',
     body,  // NO poner Content-Type — fetch lo genera con el boundary correcto
   })
@@ -1327,9 +1387,8 @@ curl -X DELETE "$BASE/operativos/caso/$CASO_ID/logotipos/$LOGO_ID"
 
 | Operación | Método | Endpoint | Body |
 |---|---|---|---|
-| Crear (desde droga) | POST | `/caso/:idCaso/drogas/:idDroga/logotipos` | multipart: campos + `fotografia` |
-| Listar todos del caso | GET | `/caso/:idCaso/logotipos` | — |
-| Listar por droga (futuro) | GET | `/caso/:idCaso/drogas/:idDroga/logotipos` | — |
+| Listar del caso | GET | `/caso/:idCaso/logotipos` | — |
+| Crear | POST | `/caso/:idCaso/logotipos` | multipart: campos + `fotografia` |
 | Ver foto | GET | `/caso/:idCaso/logotipos/:id/foto` | — (binario) |
 | Eliminar | DELETE | `/caso/:idCaso/logotipos/:id` | — |
 
@@ -1349,13 +1408,17 @@ async function cargarImagenProtegida(url, imgEl) {
   imgEl.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true })
 }
 
-// ─── Inicialización — carga grilla drogas y logotipos ────────────────────
+// ─── Inicialización — carga grilla drogas ────────────────────────────────
 async function inicializarSeccionDrogas(idCaso) {
-  const [drogas, logotipos] = await Promise.all([
-    fetch(`/api/operativos/caso/${idCaso}/drogas`).then(r => r.json()).then(r => r.datos),
-    fetch(`/api/operativos/caso/${idCaso}/logotipos`).then(r => r.json()).then(r => r.datos),
-  ])
+  const drogas = await fetch(`/api/operativos/caso/${idCaso}/drogas`)
+    .then(r => r.json()).then(r => r.datos)
   renderGrillaDrogas(drogas)
+}
+
+// ─── Inicialización — carga grilla logotipos (sección independiente) ─────
+async function inicializarSeccionLogotipos(idCaso) {
+  const logotipos = await fetch(`/api/operativos/caso/${idCaso}/logotipos`)
+    .then(r => r.json()).then(r => r.datos)
   renderGrillaLogotipos(logotipos)
 }
 
@@ -1463,24 +1526,32 @@ Precursores sólidos (acetona, éter sólido, etc.) secuestrados en el operativo
 #### Body POST
 
 ```json
-{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }
+{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75, "costo": 120.50 }
 ```
 
 > `cantidad` siempre en **KG** — ver regla de conversión en SEC3 (sección 3).
+> `costo` es opcional (default `0`).
 
-#### Respuesta GET (lista)
+#### Respuesta GET (lista) — paginada y plana
+
+La respuesta incluye `descripcionSustancia` directamente (sin objeto anidado):
 
 ```json
-[
-  {
-    "id": "10",
-    "idOperativo": "42",
-    "idSustanciaSolidaDescripcion": 5,
-    "cantidad": 2.75,
-    "fechaHoraIngreso": "2024-03-15T14:00:00.000Z",
-    "usuario": "JPEREZ"
-  }
-]
+{
+  "total": 1,
+  "filas": [
+    {
+      "id": "10",
+      "idOperativo": "42",
+      "idSustanciaSolidaDescripcion": 5,
+      "descripcionSustancia": "Acetona",
+      "cantidad": 2.75,
+      "costo": 120.50,
+      "fechaHoraIngreso": "2024-03-15T14:00:00.000Z",
+      "usuario": "JPEREZ"
+    }
+  ]
+}
 ```
 
 #### Curls
@@ -1489,20 +1560,19 @@ Precursores sólidos (acetona, éter sólido, etc.) secuestrados en el operativo
 BASE="http://localhost:3000/api"
 CASO_ID=7
 
-# LIST
-curl "$BASE/operativos/caso/$CASO_ID/sustancias-solidas"
+# LIST — paginada
+curl "$BASE/operativos/caso/$CASO_ID/sustancias-solidas?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "10", "descripcionSustancia": "Acetona", "cantidad": 2.75, "costo": 120.50, ... }] } }
 
 # CREATE — 2 Kg + 750 g → cantidad = 2.75
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-solidas" \
-  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75 }'
-# → 201: { "finalizado": true, "datos": { "id": "10", "cantidad": 2.75, ... } }
+  -d '{ "idSustanciaSolidaDescripcion": 5, "cantidad": 2.75, "costo": 120.50 }'
+# → 201: { "finalizado": true, "datos": { "id": "10", "cantidad": 2.75, "costo": 120.50, ... } }
 SUST_SOL_ID=10
 
 # DELETE
-curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-solidas/$SUST_SOL_ID" \
-  -H "Authorization: Bearer $TOKEN"
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-solidas/$SUST_SOL_ID"
 # → 200: { "finalizado": true }
 ```
 
@@ -1525,49 +1595,422 @@ Precursores líquidos (éter etílico, ácido clorhídrico, etc.) secuestrados e
 #### Body POST
 
 ```json
-{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }
+{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5, "costo": 45.00 }
 ```
 
 > `cantidad` siempre en **LT** — ver regla de conversión en SEC4 (sección 3).
+> `costo` es opcional (default `0`).
 
-#### Respuesta GET (lista)
+#### Respuesta GET (lista) — paginada y plana
+
+La respuesta incluye `descripcionSustancia` directamente (sin objeto anidado):
 
 ```json
-[
-  {
-    "id": "11",
-    "idOperativo": "42",
-    "idSustanciaLiquidaDescripcion": 3,
-    "cantidad": 15.5,
-    "fechaHoraIngreso": "2024-03-15T14:05:00.000Z",
-    "usuario": "JPEREZ"
-  }
-]
+{
+  "total": 1,
+  "filas": [
+    {
+      "id": "11",
+      "idOperativo": "42",
+      "idSustanciaLiquidaDescripcion": 3,
+      "descripcionSustancia": "Éter etílico",
+      "cantidad": 15.5,
+      "costo": 45.00,
+      "fechaHoraIngreso": "2024-03-15T14:05:00.000Z",
+      "usuario": "JPEREZ"
+    }
+  ]
+}
 ```
 
 #### Curls
 
 ```bash
-# LIST
-curl "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas"
+# LIST — paginada
+curl "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "11", "descripcionSustancia": "Éter etílico", "cantidad": 15.5, "costo": 45.00, ... }] } }
 
 # CREATE — 15 Lt + 500 ml → cantidad = 15.5
 curl -X POST "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas" \
-  -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5 }'
-# → 201: { "finalizado": true, "datos": { "id": "11", "cantidad": 15.5, ... } }
+  -d '{ "idSustanciaLiquidaDescripcion": 3, "cantidad": 15.5, "costo": 45.00 }'
+# → 201: { "finalizado": true, "datos": { "id": "11", "cantidad": 15.5, "costo": 45.00, ... } }
 SUST_LIQ_ID=11
 
 # DELETE
-curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas/$SUST_LIQ_ID" \
-  -H "Authorization: Bearer $TOKEN"
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/sustancias-liquidas/$SUST_LIQ_ID"
 # → 200: { "finalizado": true }
 ```
 
 ---
 
-## 9. Reglas de negocio y validaciones
+## 9. FÁBRICAS — CRUD
+
+Laboratorios clandestinos / pozas de maceración secuestrados en el operativo.
+
+### Endpoints
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **LIST** | GET | `/caso/:idCaso/fabricas` | Lista paginada del operativo |
+| **CREATE** | POST | `/caso/:idCaso/fabricas` | Agregar (`application/json`) |
+| **DELETE** | DELETE | `/caso/:idCaso/fabricas/:id` | Eliminar |
+
+> No existe PATCH. Corrección = DELETE + POST.
+
+### Cascada de combos
+
+```
+cbotipofl  → GET /api/siii-lookups/tipos-fabrica
+cbocaracfl → GET /api/operativos/catalogos/fabrica-modelos/:idTipoFabrica
+```
+
+### Body POST
+
+```json
+{ "idFabricaModelo": 4, "cantidad": 1, "observaciones": "Laboratorio rudimentario" }
+```
+
+### Respuesta GET (lista) — paginada y plana
+
+Los campos de texto de catálogo vienen directamente (sin objeto anidado):
+
+```json
+{
+  "total": 1,
+  "filas": [
+    {
+      "id": "20",
+      "idOperativo": "42",
+      "idFabricaModelo": 4,
+      "idTipoFabrica": 2,
+      "descripcionFabricaModelo": "Laboratorio básico maceración",
+      "descripcionTipoFabrica": "Laboratorio",
+      "cantidad": 1,
+      "observaciones": "Laboratorio rudimentario en habitación trasera",
+      "fechaHoraIngreso": "2024-03-15T14:10:00.000Z",
+      "usuario": "JPEREZ"
+    }
+  ]
+}
+```
+
+### Curls
+
+```bash
+BASE="http://localhost:3000/api"
+CASO_ID=7
+
+# LIST — paginada
+curl "$BASE/operativos/caso/$CASO_ID/fabricas?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "20", "descripcionFabricaModelo": "...", "descripcionTipoFabrica": "...", ... }] } }
+
+# CREATE
+curl -X POST "$BASE/operativos/caso/$CASO_ID/fabricas" \
+  -H "Content-Type: application/json" \
+  -d '{ "idFabricaModelo": 4, "cantidad": 1, "observaciones": "Laboratorio rudimentario" }'
+# → 201: { "finalizado": true, "datos": { "id": "20", "cantidad": 1, ... } }
+FABRICA_ID=20
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/fabricas/$FABRICA_ID"
+# → 200: { "finalizado": true }
+```
+
+---
+
+## 10. BIENES SECUESTRADOS — CRUD
+
+### 10.1 Bienes (item_bien_secuestrado)
+
+Vehículos, equipos, dinero y otros bienes secuestrados en el operativo.
+
+#### Endpoints
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **LIST** | GET | `/caso/:idCaso/bienes` | Lista paginada del operativo |
+| **CREATE** | POST | `/caso/:idCaso/bienes` | Agregar (`application/json` o `multipart/form-data` con `fotoBien`) |
+| **DELETE** | DELETE | `/caso/:idCaso/bienes/:idBien` | Eliminar |
+
+> No existe PATCH. Corrección = DELETE + POST.
+
+#### Cascada de combos (triple)
+
+```
+cbobien   → GET /api/siii-lookups/bienes
+cboclase  → GET /api/operativos/catalogos/clases/:idBien
+cbotipo   → GET /api/operativos/catalogos/tipos/:idCatalogoClase
+```
+
+#### Body POST
+
+```json
+{
+  "idCatalogoTipo": 22,
+  "cantidad": 1,
+  "costoAproximado": 25000,
+  "costoCuantificado": 0,
+  "esInvestigacion": false,
+  "observaciones": "Vehículo Toyota Hilux sin placa"
+}
+```
+
+#### Respuesta GET (lista) — paginada y plana
+
+Los campos de texto de catálogo vienen directamente (sin objetos anidados):
+
+```json
+{
+  "total": 1,
+  "filas": [
+    {
+      "id": "88",
+      "idOperativo": "42",
+      "idCatalogoTipo": 22,
+      "idCatalogoClase": 7,
+      "idBien": 3,
+      "descripcionCatalogoTipo": "Camioneta",
+      "descripcionCatalogoClase": "Vehículos terrestres",
+      "descripcionBien": "Vehículo",
+      "cantidad": 1,
+      "costoAproximado": 25000,
+      "costoCuantificado": 0,
+      "esInvestigacion": false,
+      "observaciones": "Vehículo Toyota Hilux sin placa",
+      "fechaHoraIngreso": "2024-03-15T14:15:00.000Z",
+      "usuario": "JPEREZ",
+      "urlFotoBien": "/api/operativos/caso/7/bienes/88/foto"
+    }
+  ]
+}
+```
+
+> `urlFotoBien` es `null` si no se adjuntó foto.
+
+#### Curls
+
+```bash
+BASE="http://localhost:3000/api"
+CASO_ID=7
+
+# LIST — paginada
+curl "$BASE/operativos/caso/$CASO_ID/bienes?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "88", "descripcionBien": "Vehículo", "descripcionCatalogoClase": "...", "descripcionCatalogoTipo": "Camioneta", ... }] } }
+
+# CREATE
+curl -X POST "$BASE/operativos/caso/$CASO_ID/bienes" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idCatalogoTipo": 22, "cantidad": 1,
+    "costoAproximado": 25000, "costoCuantificado": 0,
+    "esInvestigacion": false,
+    "observaciones": "Vehículo Toyota Hilux sin placa"
+  }'
+# → 201: { "finalizado": true, "datos": { "id": "88", ... } }
+BIEN_ID=88
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID"
+# → 200: { "finalizado": true }
+
+# VER FOTO
+curl "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/foto" --output bien.jpg
+```
+
+---
+
+### 10.2 Características del bien (item_bien_caracteristica)
+
+Atributos adicionales de un bien: color, modelo, serie, etc.
+
+#### Endpoints
+
+| Operación | Método | Endpoint | Descripción |
+|---|---|---|---|
+| **LIST** | GET | `/caso/:idCaso/bienes/:idBien/caracteristicas` | Lista paginada del bien |
+| **CREATE** | POST | `/caso/:idCaso/bienes/:idBien/caracteristicas` | Agregar |
+| **DELETE** | DELETE | `/caso/:idCaso/bienes/:idBien/caracteristicas/:id` | Eliminar |
+
+#### Body POST
+
+```json
+{ "idCatalogoCaracteristica": 7, "descripcion": "BLANCO" }
+```
+
+> `idCatalogoCaracteristica` se obtiene de:
+> `GET /api/operativos/catalogos/caracteristicas/:idCatalogoClase`
+
+#### Respuesta GET (lista) — paginada y plana
+
+```json
+{
+  "total": 1,
+  "filas": [
+    {
+      "id": "33",
+      "idItemBienSecuestrado": "88",
+      "idCatalogoCaracteristica": 7,
+      "descripcionCaracteristica": "Color",
+      "descripcion": "BLANCO",
+      "fechaHoraIngreso": "2024-03-15T14:16:00.000Z",
+      "usuario": "JPEREZ"
+    }
+  ]
+}
+```
+
+#### Curls
+
+```bash
+BIEN_ID=88
+
+# LIST — paginada
+curl "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "33", "descripcionCaracteristica": "Color", "descripcion": "BLANCO", ... }] } }
+
+# CREATE
+curl -X POST "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas" \
+  -H "Content-Type: application/json" \
+  -d '{ "idCatalogoCaracteristica": 7, "descripcion": "BLANCO" }'
+# → 201: { "finalizado": true, "datos": { "id": "33", ... } }
+CARACT_ID=33
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas/$CARACT_ID"
+# → 200: { "finalizado": true }
+```
+
+---
+
+## 11. PERSONAS / DETENIDOS — CRUD
+
+### Endpoints
+
+| Método | URL | Descripción |
+|---|---|---|
+| GET | `/caso/:idCaso/detenidos` | Listar (paginado) |
+| POST | `/caso/:idCaso/detenidos` | Agregar detenido |
+| DELETE | `/caso/:idCaso/detenidos/:id` | Eliminar |
+| POST | `/caso/:idCaso/detenidos/:id/fotos/frente` | Subir foto frente |
+| GET | `/caso/:idCaso/detenidos/:id/fotos/frente` | Obtener foto frente |
+| POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Subir perfil derecho |
+| GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Obtener perfil derecho |
+| POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Subir perfil izquierdo |
+| GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Obtener perfil izquierdo |
+
+### Respuesta GET (lista) — paginada y plana
+
+```json
+{
+  "finalizado": true,
+  "datos": {
+    "total": 1,
+    "filas": [
+      {
+        "id": "55",
+        "idOperativo": "42",
+        "numeroCaso": "CASO-2024-007",
+        "nombres": "CARLOS",
+        "apellidoPaterno": "MAMANI",
+        "apellidoMaterno": "QUISPE",
+        "apellidoEsposo": "*",
+        "idPais": 70,
+        "descripcionPais": "Bolivia",
+        "esMasculino": true,
+        "fechaNacimiento": "1985-06-15T00:00:00.000Z",
+        "idEstadoCivil": 1,
+        "descripcionEstadoCivil": "Soltero(a)",
+        "serie": "LP",
+        "seccion": "A",
+        "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
+        "observaciones": "Aprehendido en flagrancia",
+        "esActual": true,
+        "esRevisionIcia": false,
+        "tieneTarjeta": false,
+        "estaVivo": true,
+        "observacionesAdicionales": "",
+        "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
+        "urlFotoFrente": "/api/operativos/caso/7/personas/55/fotos/frente",
+        "urlFotoPerfilDerecho": null,
+        "urlFotoPerfilIzquierdo": null
+      }
+    ]
+  }
+}
+```
+
+> Las fotos son binarias. Se sirven vía URL — no se incluyen en bytes en la lista.
+> `urlFoto*` es `null` cuando no tiene foto registrada.
+
+### Body POST
+
+```json
+{
+  "numeroCaso": "CASO-2024-007",
+  "nombres": "CARLOS",
+  "apellidoPaterno": "MAMANI",
+  "apellidoMaterno": "QUISPE",
+  "idPais": 70,
+  "esMasculino": true,
+  "fechaNacimiento": "1985-06-15",
+  "idEstadoCivil": 1,
+  "serie": "LP",
+  "seccion": "A",
+  "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
+  "observaciones": "Aprehendido en flagrancia"
+}
+```
+
+### Curls
+
+```bash
+BASE="http://localhost:3000/api"
+CASO_ID=7
+
+# LIST (paginado)
+curl "$BASE/operativos/caso/$CASO_ID/detenidos?pagina=1&limite=10"
+# → { "finalizado": true, "datos": { "total": 1, "filas": [...] } }
+
+# CREATE
+curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "numeroCaso": "CASO-2024-007",
+    "nombres": "CARLOS",
+    "apellidoPaterno": "MAMANI",
+    "apellidoMaterno": "QUISPE",
+    "idPais": 70,
+    "esMasculino": true,
+    "fechaNacimiento": "1985-06-15",
+    "idEstadoCivil": 1,
+    "serie": "LP",
+    "seccion": "A",
+    "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
+    "observaciones": "Aprehendido en flagrancia"
+  }'
+# → 201: { "finalizado": true, "datos": { "id": "55", ... } }
+DET_ID=55
+
+# FOTOS (multipart)
+curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" \
+  -F "foto=@/ruta/foto_frente.jpg"
+curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/perfil-derecho" \
+  -F "foto=@/ruta/foto_der.jpg"
+curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/perfil-izquierdo" \
+  -F "foto=@/ruta/foto_izq.jpg"
+
+# Obtener foto (respuesta: image/jpeg)
+curl "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" --output frente.jpg
+
+# DELETE
+curl -X DELETE "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID"
+# → 200: { "finalizado": true }
+```
+
+---
+
+## 12. Reglas de negocio y validaciones
 
 ### Comportamiento por operación
 
@@ -1601,7 +2044,7 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-## 10. Referencia de endpoints
+## 13. Referencia de endpoints
 
 ### Formato de response estándar
 
@@ -1728,7 +2171,7 @@ numeroDocumento = numeroDocumento || 'SN'
 
 ---
 
-## 11. Flujo de prueba: Servicio → Asignación → Operativo (curls completos)
+## 14. Flujo de prueba: Servicio → Asignación → Operativo (curls completos)
 
 Esta sección contiene los curls para simular el flujo completo de alta desde cero.
 Ejecutarlos **en orden**. Los IDs retornados en cada paso se usan en el siguiente.
@@ -1920,7 +2363,7 @@ curl "$BASE/operativos/caso/$CASO_ID"
 ### PASO 5 — Agregar Droga (multipart/form-data)
 
 ```bash
-# Con fotos:
+# Con fotos y costo:
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idEstadoDroga=3" \
   -F "cantidadGramos=2500.5" \
@@ -1928,7 +2371,7 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idFormaTransporte=2" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=70" \
-  -F "observaciones=Droga en polvo, embalada en bolsas plasticas" \
+  -F "costo=8000" \
   -F "pruebaCampo=@/tmp/prueba_campo.jpg;type=image/jpeg" \
   -F "pesaje=@/tmp/pesaje.jpg;type=image/jpeg"
 
@@ -1939,6 +2382,7 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
 #     "id": "101",            ← GUARDAR ESTE ID (idDroga)
 #     "idOperativo": "42",
 #     "cantidadGramos": 2500.5,
+#     "costo": 8000,
 #     "urlFotoPruebaCampo": "/api/operativos/caso/3/drogas/101/fotos/prueba-campo",
 #     "urlFotoPesaje": "/api/operativos/caso/3/drogas/101/fotos/pesaje"
 #   }
@@ -1946,7 +2390,7 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
 
 DROGA_ID=101
 
-# Sin fotos (también válido):
+# Sin fotos ni costo (campos opcionales):
 curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idEstadoDroga=1" \
   -F "cantidadGramos=500" \
@@ -1954,10 +2398,11 @@ curl -X POST "$BASE/operativos/caso/$CASO_ID/drogas" \
   -F "idFormaTransporte=1" \
   -F "idPaisProcedencia=70" \
   -F "idPaisDestino=71"
-# → urlFotoPruebaCampo: null, urlFotoPesaje: null
+# → urlFotoPruebaCampo: null, urlFotoPesaje: null, costo: 0
 
-# Listar drogas:
-curl "$BASE/operativos/caso/$CASO_ID/drogas"
+# Listar drogas (paginada, respuesta 100% plana):
+curl "$BASE/operativos/caso/$CASO_ID/drogas?pagina=1&limite=10"
+# → { total, filas: [{ ..., descripcionEstadoDroga, descripcionTipoDroga, descripcionFormaTransporte, descripcionPaisProcedencia, descripcionPaisDestino, costo, ... }] }
 
 # Recuperar foto (binaria):
 curl "$BASE/operativos/caso/$CASO_ID/drogas/$DROGA_ID/fotos/prueba-campo" --output prueba.jpg
@@ -2066,5 +2511,5 @@ curl -X PATCH "$BASE/operativos/caso/$CASO_ID" \
 
 ---
 
-**Última actualización:** 2026-03-08
-**Versión:** 4.5 — Sección 10: curls flujo completo Servicio → Asignación → Operativo para pruebas. Coordenadas: solo coordX/coordY decimal.
+**Última actualización:** 2026-03-14
+**Versión:** 4.8 — Logotipos desacoplados de drogas: sección independiente `POST/GET /caso/:idCaso/logotipos`. Frontend envía `idTipoDroga`, `idPaisOrigen`, `idPaisDestino`; backend auto-completa datos del operativo.

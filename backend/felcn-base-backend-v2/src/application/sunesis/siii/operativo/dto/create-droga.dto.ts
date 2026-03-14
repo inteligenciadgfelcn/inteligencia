@@ -39,4 +39,10 @@ export class CreateDrogaDto {
   @IsNumber()
   idPaisDestino: number
 
+  @ApiPropertyOptional({ description: 'Costo estimado de la droga', example: 5000.0 })
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  costo?: number
+
 }
