@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common'
 import { BaseService } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto'
 import { OperativoRepository } from '../repository/operativo.repository'
 import { AsignacionSiiiRepository } from '../../asignacion/repository/asignacion-siii.repository'
 
@@ -31,7 +32,6 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
-  CreateLogotipoDrogaDto,
 } from '../dto'
 
 @Injectable()
@@ -146,8 +146,8 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.actualizarOperativo(operativo)
   }
 
-  async listar(): Promise<Operativo[]> {
-    return this.operativoRepository.listar()
+  async listar(paginacion: PaginacionQueryDto): Promise<[Operativo[], number]> {
+    return this.operativoRepository.listar(paginacion)
   }
 
   async buscarPorId(id: string): Promise<Operativo> {
@@ -204,12 +204,18 @@ export class OperativoService extends BaseService {
     }
   }
 
-  async listarDrogas(idCaso: string): Promise<any[]> {
+  async listarDrogas(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    const drogas = await this.operativoRepository.listarDrogasPorOperativo(idOperativo)
-    return drogas.map(({ fotoPruebaCampo, fotoPesaje, ...d }) => ({
+    if (!idOperativo) return [[], 0]
+    const [drogas, total] = await this.operativoRepository.listarDrogasPorOperativo(idOperativo, paginacion)
+    const filas = drogas.map(({ fotoPruebaCampo, fotoPesaje, estadoDroga, formaTransporte, paisProcedencia, paisDestino, operativo, ...d }) => ({
       ...d,
+      idTipoDroga: estadoDroga?.idTipoDroga ?? null,
+      descripcionEstadoDroga: estadoDroga?.descripcion ?? null,
+      descripcionTipoDroga: estadoDroga?.tipoDroga?.descripcion ?? null,
+      descripcionFormaTransporte: formaTransporte?.descripcion ?? null,
+      descripcionPaisProcedencia: paisProcedencia?.descripcion ?? null,
+      descripcionPaisDestino: paisDestino?.descripcion ?? null,
       urlFotoPruebaCampo: fotoPruebaCampo?.length
         ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/prueba-campo`
         : null,
@@ -217,12 +223,11 @@ export class OperativoService extends BaseService {
         ? `/api/operativos/caso/${idCaso}/drogas/${d.id}/fotos/pesaje`
         : null,
     }))
+    return [filas, total]
   }
 
   async eliminarDroga(idCaso: string, idDroga: string): Promise<void> {
     await this.resolverIdOperativo(idCaso)
-    // Cascade: primero eliminar todos los logotipos asociados a esta droga
-    await this.operativoRepository.eliminarLogotiposPorDroga(idDroga)
     await this.operativoRepository.eliminarDroga(idDroga)
   }
 
@@ -252,70 +257,6 @@ export class OperativoService extends BaseService {
       : droga.fotoPesaje || Buffer.alloc(0)
   }
 
-  async listarLogotiposPorDroga(
-    idCaso: string,
-    idDroga: string
-  ): Promise<any[]> {
-    await this.resolverIdOperativo(idCaso)
-    const logotipos = await this.operativoRepository.listarLogotiposPorDroga(idDroga)
-    return logotipos.map(({ fotografia, ...l }) => ({
-      ...l,
-      urlFotografia: fotografia?.length
-        ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
-        : null,
-    }))
-  }
-
-  async agregarLogotipoDroga(
-    idCaso: string,
-    idDroga: string,
-    data: CreateLogotipoDrogaDto,
-    fotografia: Buffer,
-    usuario: string
-  ): Promise<any> {
-    const idOperativo = await this.resolverIdOperativo(idCaso)
-    const droga = await this.operativoRepository.buscarDrogaPorId(idDroga)
-    if (!droga) {
-      throw new NotFoundException(`Droga con ID ${idDroga} no encontrada`)
-    }
-    if (droga.idOperativo !== idOperativo) {
-      throw new NotFoundException(
-        `La droga ${idDroga} no pertenece al operativo del caso ${idCaso}`
-      )
-    }
-    const operativo = await this.buscarPorId(idOperativo)
-    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
-
-    const logotipoEntity = new Logotipo({
-      idOperativo,
-      idDroga,
-      numeroCaso: asignacion?.nombreCaso || '',
-      numeroOperativo: operativo.numeroOperativo,
-      fechaOperativo: operativo.fechaOperativo,
-      nombreCaso: asignacion?.nombreCaso || '',
-      descripcion: operativo.descripcion,
-      imagen: data.imagen,
-      descripcionLogo: data.descripcionLogo,
-      idTipoDroga: droga.estadoDroga!.idTipoDroga,
-      idPaisOrigen: droga.idPaisProcedencia,
-      idPaisDestino: droga.idPaisDestino,
-      organizacion: data.organizacion,
-      blanco: data.blanco || '',
-      observacion: data.observacion || '',
-      enlace: data.enlace || '',
-      fotografia,
-      usuario,
-    })
-    const logotipo = await this.operativoRepository.crearLogotipo(logotipoEntity)
-    const { fotografia: foto, ...resto } = logotipo
-    return {
-      ...resto,
-      urlFotografia: foto?.length
-        ? `/api/operativos/caso/${idCaso}/logotipos/${logotipo.id}/foto`
-        : null,
-    }
-  }
-
   // ==================== SUSTANCIAS SÓLIDAS ====================
 
   async agregarSustanciaSolida(
@@ -328,10 +269,15 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearSustanciaSolida(sustancia)
   }
 
-  async listarSustanciasSolidas(idCaso: string): Promise<SustanciaSolida[]> {
+  async listarSustanciasSolidas(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarSustanciasSolidasPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    const [sustancias, total] = await this.operativoRepository.listarSustanciasSolidasPorOperativo(idOperativo, paginacion)
+    const filas = sustancias.map(({ descripcionRef, operativo, ...s }) => ({
+      ...s,
+      descripcionSustancia: descripcionRef?.descripcion ?? null,
+    }))
+    return [filas, total]
   }
 
   async eliminarSustanciaSolida(idCaso: string, idSustancia: string): Promise<void> {
@@ -351,10 +297,15 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearSustanciaLiquida(sustancia)
   }
 
-  async listarSustanciasLiquidas(idCaso: string): Promise<SustanciaLiquida[]> {
+  async listarSustanciasLiquidas(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarSustanciasLiquidasPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    const [sustancias, total] = await this.operativoRepository.listarSustanciasLiquidasPorOperativo(idOperativo, paginacion)
+    const filas = sustancias.map(({ descripcionRef, operativo, ...s }) => ({
+      ...s,
+      descripcionSustancia: descripcionRef?.descripcion ?? null,
+    }))
+    return [filas, total]
   }
 
   async eliminarSustanciaLiquida(idCaso: string, idSustancia: string): Promise<void> {
@@ -374,10 +325,17 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearFabrica(fabrica)
   }
 
-  async listarFabricas(idCaso: string): Promise<Fabrica[]> {
+  async listarFabricas(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarFabricasPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    const [fabricas, total] = await this.operativoRepository.listarFabricasPorOperativo(idOperativo, paginacion)
+    const filas = fabricas.map(({ fabricaModelo, operativo, ...f }) => ({
+      ...f,
+      idTipoFabrica: fabricaModelo?.idTipoFabrica ?? null,
+      descripcionFabricaModelo: fabricaModelo?.descripcion ?? null,
+      descripcionTipoFabrica: fabricaModelo?.tipoFabrica?.descripcion ?? null,
+    }))
+    return [filas, total]
   }
 
   async eliminarFabrica(idCaso: string, idFabrica: string): Promise<void> {
@@ -397,10 +355,22 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearBien(bien)
   }
 
-  async listarBienes(idCaso: string): Promise<ItemBienSecuestrado[]> {
+  async listarBienes(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarBienesPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    const [bienes, total] = await this.operativoRepository.listarBienesPorOperativo(idOperativo, paginacion)
+    const filas = bienes.map(({ fotoBien, catalogoTipo, operativo, ...b }) => ({
+      ...b,
+      idCatalogoClase: catalogoTipo?.idCatalogoClase ?? null,
+      idBien: catalogoTipo?.catalogoClase?.idBien ?? null,
+      descripcionCatalogoTipo: catalogoTipo?.descripcion ?? null,
+      descripcionCatalogoClase: catalogoTipo?.catalogoClase?.descripcion ?? null,
+      descripcionBien: catalogoTipo?.catalogoClase?.bien?.descripcion ?? null,
+      urlFotoBien: fotoBien?.length
+        ? `/api/operativos/caso/${idCaso}/bienes/${b.id}/foto`
+        : null,
+    }))
+    return [filas, total]
   }
 
   async eliminarBien(idCaso: string, idBien: string): Promise<void> {
@@ -417,8 +387,8 @@ export class OperativoService extends BaseService {
     usuario: string
   ): Promise<ItemBienCaracteristica> {
     const idOperativo = await this.resolverIdOperativo(idCaso)
-    const bienes = await this.operativoRepository.listarBienesPorOperativo(idOperativo)
-    if (!bienes.find((b) => b.id === idBien)) {
+    const bien = await this.operativoRepository.buscarBienPorId(idBien)
+    if (!bien || bien.idOperativo !== idOperativo) {
       throw new NotFoundException(`Bien con ID ${idBien} no encontrado`)
     }
     const caracteristica = new ItemBienCaracteristica({
@@ -431,11 +401,17 @@ export class OperativoService extends BaseService {
 
   async listarCaracteristicasBien(
     idCaso: string,
-    idBien: string
-  ): Promise<ItemBienCaracteristica[]> {
+    idBien: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarCaracteristicasPorBien(idBien)
+    if (!idOperativo) return [[], 0]
+    const [caracteristicas, total] = await this.operativoRepository.listarCaracteristicasPorBien(idBien, paginacion)
+    const filas = caracteristicas.map(({ catalogoCaracteristica, itemBienSecuestrado, ...c }) => ({
+      ...c,
+      descripcionCaracteristica: catalogoCaracteristica?.descripcion ?? null,
+    }))
+    return [filas, total]
   }
 
   async eliminarCaracteristicaBien(
@@ -489,10 +465,25 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearDetenido(detenido)
   }
 
-  async listarDetenidos(idCaso: string): Promise<DetenidoAuxiliar[]> {
+  async listarDetenidos(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarDetenidosPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    const [detenidos, total] = await this.operativoRepository.listarDetenidosPorOperativo(idOperativo, paginacion)
+    const filas = detenidos.map(({ fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo, paisNacionalidad, estadoCivil, operativo, ...d }) => ({
+      ...d,
+      descripcionPais: paisNacionalidad?.descripcion ?? null,
+      descripcionEstadoCivil: estadoCivil?.descripcion ?? null,
+      urlFotoFrente: fotoFrente?.length
+        ? `/api/operativos/caso/${idCaso}/personas/${d.id}/fotos/frente`
+        : null,
+      urlFotoPerfilDerecho: fotoPerfilDerecho?.length
+        ? `/api/operativos/caso/${idCaso}/personas/${d.id}/fotos/perfil-derecho`
+        : null,
+      urlFotoPerfilIzquierdo: fotoPerfilIzquierdo?.length
+        ? `/api/operativos/caso/${idCaso}/personas/${d.id}/fotos/perfil-izquierdo`
+        : null,
+    }))
+    return [filas, total]
   }
 
   async eliminarDetenido(idCaso: string, idDetenido: string): Promise<void> {
@@ -513,10 +504,10 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.crearGaleria(galeria)
   }
 
-  async listarGaleria(idCaso: string): Promise<Galeria[]> {
+  async listarGaleria(idCaso: string, paginacion: PaginacionQueryDto): Promise<[Galeria[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    return this.operativoRepository.listarGaleriaPorOperativo(idOperativo)
+    if (!idOperativo) return [[], 0]
+    return this.operativoRepository.listarGaleriaPorOperativo(idOperativo, paginacion)
   }
 
   async eliminarFotoGaleria(idCaso: string, idGaleria: string): Promise<void> {
@@ -533,13 +524,16 @@ export class OperativoService extends BaseService {
     usuario: string
   ): Promise<any> {
     const idOperativo = await this.resolverIdOperativo(idCaso)
+    const operativo = await this.buscarPorId(idOperativo)
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+
     const logotipoEntity = new Logotipo({
       idOperativo,
-      numeroCaso: data.numeroCaso,
-      numeroOperativo: data.numeroOperativo,
-      fechaOperativo: new Date(data.fechaOperativo),
-      nombreCaso: data.nombreCaso,
-      descripcion: data.descripcion,
+      numeroCaso: asignacion?.nombreCaso || '',
+      numeroOperativo: operativo.numeroOperativo,
+      fechaOperativo: operativo.fechaOperativo,
+      nombreCaso: asignacion?.nombreCaso || '',
+      descripcion: operativo.descripcion,
       imagen: data.imagen,
       descripcionLogo: data.descripcionLogo,
       idTipoDroga: data.idTipoDroga,
@@ -562,16 +556,20 @@ export class OperativoService extends BaseService {
     }
   }
 
-  async listarLogotipos(idCaso: string): Promise<any[]> {
+  async listarLogotipos(idCaso: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const idOperativo = await this.resolverIdOperativoOpcional(idCaso)
-    if (!idOperativo) return []
-    const logotipos = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo)
-    return logotipos.map(({ fotografia, ...l }) => ({
+    if (!idOperativo) return [[], 0]
+    const [logotipos, total] = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo, paginacion)
+    const filas = logotipos.map(({ fotografia, tipoDroga, paisOrigen, paisDestino, operativo, ...l }) => ({
       ...l,
+      descripcionTipoDroga: tipoDroga?.descripcion ?? null,
+      descripcionPaisOrigen: paisOrigen?.descripcion ?? null,
+      descripcionPaisDestino: paisDestino?.descripcion ?? null,
       urlFotografia: fotografia?.length
         ? `/api/operativos/caso/${idCaso}/logotipos/${l.id}/foto`
         : null,
     }))
+    return [filas, total]
   }
 
   async eliminarLogotipo(idCaso: string, idLogotipo: string): Promise<void> {
