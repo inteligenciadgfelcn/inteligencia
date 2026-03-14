@@ -9,6 +9,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { CatalogoTipo } from './catalogo-tipo.entity'
 
 /**
  * Entidad Item Bien Secuestrado
@@ -54,6 +55,10 @@ export class ItemBienSecuestrado {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => CatalogoTipo)
+  @JoinColumn({ name: 'id_catalogo_tipo' })
+  catalogoTipo?: CatalogoTipo
 
   @BeforeInsert()
   insertarFechaIngreso() {

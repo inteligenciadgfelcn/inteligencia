@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsNumber } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
 
 export class CreateSustanciaSolidaDto {
   @ApiProperty({ description: 'ID sustancia sólida descripción', example: 1 })
@@ -11,6 +11,11 @@ export class CreateSustanciaSolidaDto {
   @IsNotEmpty()
   @IsNumber()
   cantidad: number
+
+  @ApiPropertyOptional({ description: 'Costo estimado', example: 100.0 })
+  @IsOptional()
+  @IsNumber()
+  costo?: number
 }
 
 export class CreateSustanciaLiquidaDto {
@@ -23,4 +28,9 @@ export class CreateSustanciaLiquidaDto {
   @IsNotEmpty()
   @IsNumber()
   cantidad: number
+
+  @ApiPropertyOptional({ description: 'Costo estimado', example: 100.0 })
+  @IsOptional()
+  @IsNumber()
+  costo?: number
 }
