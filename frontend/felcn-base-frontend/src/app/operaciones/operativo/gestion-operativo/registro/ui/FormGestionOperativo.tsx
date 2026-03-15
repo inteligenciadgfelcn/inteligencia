@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
 import { SustanciasSolidas } from './secciones/SustanciasSolidas'
