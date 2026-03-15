@@ -221,6 +221,7 @@ export function SustanciasSolidas({
                                 {
                                     accessor: 'actions',
                                     title: 'Acciones',
+                                    textAlign: 'center',
                                     render: (row: any) => (
                                         <button
                                             type="button"
