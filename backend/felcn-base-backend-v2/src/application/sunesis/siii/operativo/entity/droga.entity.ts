@@ -9,6 +9,8 @@ import {
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
 import { EstadoDroga } from './estado-droga.entity'
+import { FormaTransporte } from '../../parametrica/entity/operativo/forma-transporte.entity'
+import { Pais } from '../../parametrica/entity/geografia/pais.entity'
 
 /**
  * Entidad Droga
@@ -48,6 +50,9 @@ export class Droga {
   @Column({ name: 'pesaje', type: 'bytea', nullable: true })
   fotoPesaje?: Buffer
 
+  @Column({ name: 'costo', type: 'double precision', default: 0 })
+  costo: number
+
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
 
@@ -61,6 +66,18 @@ export class Droga {
   @ManyToOne(() => EstadoDroga)
   @JoinColumn({ name: 'id_estado_droga' })
   estadoDroga?: EstadoDroga
+
+  @ManyToOne(() => FormaTransporte)
+  @JoinColumn({ name: 'id_forma_transporte' })
+  formaTransporte?: FormaTransporte
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais' })
+  paisProcedencia?: Pais
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais_destino' })
+  paisDestino?: Pais
 
   @BeforeInsert()
   insertarFechaIngreso() {
