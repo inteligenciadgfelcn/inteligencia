@@ -12,6 +12,7 @@ import type {
 } from './types'
 
 const BASE = `${Constantes.baseUrl}/siii-lookups`
+const BASE_OPERATIVO = `${Constantes.baseUrl}/operativos`
 type LookupGenerico = Record<string, unknown>
 
 /**
@@ -118,6 +119,11 @@ export const SiiiLookupsService = {
 
     obtenerTiposFabrica(): Promise<RespuestaAPI<LookupGenerico>> {
         return Servicios.get({ url: `${BASE}/tipos-fabrica` })
+    },
+
+    //TODO: cambiar a parametricas
+    obtenerModelosFabrica(idTipoFabrica: number): Promise<RespuestaAPI<LookupGenerico>> {
+        return Servicios.get({ url: `${BASE_OPERATIVO}/catalogos/fabrica-modelos/${idTipoFabrica}` })
     },
 
     obtenerTiposDocumento(): Promise<RespuestaAPI<LookupGenerico>> {
