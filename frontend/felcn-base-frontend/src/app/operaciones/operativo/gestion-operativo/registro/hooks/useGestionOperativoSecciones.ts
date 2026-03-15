@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, keepPreviousData } from '@tanstack/react-query'
 import {
     GestionOperativosDatosGeneralesService,
     GestionOperativoSeccion2Service,
     GestionOperativoSustanciasSolidasService,
     GestionOperativoSustanciasLiquidasService,
-    GestionOperativoSeccion5Service,
+    GestionOperativoLaboratorioService,
     GestionOperativoSeccion6Service,
     GestionOperativoSeccion7Service,
     GestionOperativoSeccion8Service,
@@ -45,11 +45,12 @@ export function useSeccion2(idGestionOperativo: number) {
     return { query, mutation }
 }
 
-export function useSeccion3(idGestionOperativo: number) {
+export function useSeccion3(idGestionOperativo: number, page: number = 1, limit: number = 10) {
     const query = useQuery({
-        queryKey: ['gestion-operativo-seccion-3', idGestionOperativo],
-        queryFn: () => GestionOperativoSustanciasSolidasService.listar(idGestionOperativo),
+        queryKey: ['gestion-operativo-seccion-3', idGestionOperativo, page, limit],
+        queryFn: () => GestionOperativoSustanciasSolidasService.listar(idGestionOperativo, page, limit),
         enabled: idGestionOperativo > 0,
+        placeholderData: keepPreviousData,
     })
 
     const mutation = useMutation({
@@ -71,11 +72,12 @@ export function useSeccion3(idGestionOperativo: number) {
     return { query, mutation, deleteMutation }
 }
 
-export function useSeccion4(idGestionOperativo: number) {
+export function useSeccion4(idGestionOperativo: number, page: number = 1, limit: number = 10) {
     const query = useQuery({
-        queryKey: ['gestion-operativo-seccion-4', idGestionOperativo],
-        queryFn: () => GestionOperativoSustanciasLiquidasService.listar(idGestionOperativo),
+        queryKey: ['gestion-operativo-seccion-4', idGestionOperativo, page, limit],
+        queryFn: () => GestionOperativoSustanciasLiquidasService.listar(idGestionOperativo, page, limit),
         enabled: idGestionOperativo > 0,
+        placeholderData: keepPreviousData,
     })
 
     const mutation = useMutation({
@@ -97,19 +99,31 @@ export function useSeccion4(idGestionOperativo: number) {
     return { query, mutation, deleteMutation }
 }
 
-export function useSeccion5(idGestionOperativo: number) {
+export function useSeccion5(idGestionOperativo: number, page: number = 1, limit: number = 10) {
     const query = useQuery({
-        queryKey: ['gestion-operativo-seccion-5', idGestionOperativo],
-        queryFn: () => GestionOperativoSeccion5Service.obtener(idGestionOperativo),
+        queryKey: ['gestion-operativo-seccion-5', idGestionOperativo, page, limit],
+        queryFn: () => GestionOperativoLaboratorioService.listar(idGestionOperativo, page, limit),
         enabled: idGestionOperativo > 0,
+        placeholderData: keepPreviousData,
     })
 
     const mutation = useMutation({
-        mutationFn: (payload: SeccionPayloadBase) =>
-            GestionOperativoSeccion5Service.guardar(idGestionOperativo, payload),
+        mutationFn: (payload: any) =>
+            GestionOperativoLaboratorioService.crear(idGestionOperativo, payload),
+        onSuccess: () => {
+            query.refetch()
+        },
     })
 
-    return { query, mutation }
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) =>
+            GestionOperativoLaboratorioService.eliminar(idGestionOperativo, id),
+        onSuccess: () => {
+            query.refetch()
+        },
+    })
+
+    return { query, mutation, deleteMutation }
 }
 
 export function useSeccion6(idGestionOperativo: number) {

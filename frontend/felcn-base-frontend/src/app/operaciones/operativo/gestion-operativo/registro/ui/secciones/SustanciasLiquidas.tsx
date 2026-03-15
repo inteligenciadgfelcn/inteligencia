@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
+import { DataTable } from 'mantine-datatable'
 
 interface SeccionFormProps {
     titulo: string
@@ -10,6 +11,11 @@ interface SeccionFormProps {
     onEliminar: (id: number) => Promise<unknown>
     onRecuperar: () => Promise<unknown>
     datos: any[]
+    totalRegistros?: number
+    pagina?: number
+    limite?: number
+    onCambioPagina?: (page: number) => void
+    onCambioLimite?: (limit: number) => void
     cargando?: boolean
 }
 
@@ -19,11 +25,17 @@ export function SustanciasLiquidas({
     onEliminar,
     onRecuperar,
     datos = [],
+    totalRegistros,
+    pagina = 1,
+    limite = 10,
+    onCambioPagina,
+    onCambioLimite,
     cargando = false,
 }: SeccionFormProps) {
     const [tipoSustancia, setTipoSustancia] = useState('')
     const [litros, setLitros] = useState('')
     const [mililitros, setMililitros] = useState('')
+    const [costo, setCosto] = useState('')
     const [opciones, setOpciones] = useState<{ id: string; label: string; value: string }[]>([])
 
     useEffect(() => {
@@ -59,6 +71,7 @@ export function SustanciasLiquidas({
         const nuevaSustancia = {
             idSustanciaLiquidaDescripcion: parseInt(tipoSustancia),
             cantidad: totalLitros,
+            costo: parseFloat(costo || '0'),
         }
 
         await onGuardar(nuevaSustancia)
@@ -66,6 +79,7 @@ export function SustanciasLiquidas({
         setTipoSustancia('')
         setLitros('')
         setMililitros('')
+        setCosto('')
     }
 
     const handleEliminar = async (id: number) => {
@@ -135,6 +149,27 @@ export function SustanciasLiquidas({
                         />
                     </div>
 
+                    <div>
+                        <label htmlFor="sustanciaLiquidaCosto" className="mb-1 block text-sm font-medium">
+                            Costo
+                        </label>
+                        <input
+                            id="sustanciaLiquidaCosto"
+                            type="number"
+                            className="form-input w-full"
+                            value={costo}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+                                    setCosto(val)
+                                }
+                            }}
+                            placeholder="0"
+                            min="0"
+                            step="0.01"
+                        />
+                    </div>
+
                     <div className="col-span-1 mt-2 lg:col-span-4">
                         <button
                             type="button"
@@ -147,39 +182,62 @@ export function SustanciasLiquidas({
                     </div>
                 </div>
 
-                {datos.length > 0 && (
-                    <div className="mt-4 overflow-x-auto">
-                        <table className="table-auto min-w-full border-collapse text-sm">
-                            <thead>
-                                <tr className="border-b border-[#e0e6ed]">
-                                    <th className="px-2 py-2 text-left">Tipo de Sustancia</th>
-                                    <th className="px-2 py-2 text-right">Cantidad en litros</th>
-                                    <th className="px-2 py-2 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {datos.map((item, index) => {
-                                    return (
-                                        <tr key={`${index}`} className="border-b border-[#e0e6ed]">
-                                            <td className="px-2 py-2">{item.idSustanciaLiquidaDescripcion}</td>
-                                            <td className="px-2 py-2 text-right">{Number(item.cantidad ?? 0).toFixed(3)}</td>
-                                            <td className="px-2 py-2 text-center">
-                                                <button
-                                                    type="button"
-                                                    className="text-danger hover:text-danger/80"
-                                                    onClick={() => handleEliminar(item.id)}
-                                                    disabled={cargando}
-                                                >
-                                                    <IconTrash className="w-5 h-5 mx-auto" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                <div className="mt-5">
+                    <div className="datatables">
+                        <DataTable
+                            fetching={cargando}
+                            withTableBorder={false}
+                            className="whitespace-nowrap table-hover"
+                            records={datos}
+                            totalRecords={totalRegistros !== undefined ? totalRegistros : datos.length}
+                            recordsPerPage={limite}
+                            page={pagina}
+                            onPageChange={onCambioPagina ?? (() => { })}
+                            recordsPerPageOptions={[10, 20, 50]}
+                            onRecordsPerPageChange={onCambioLimite ?? (() => { })}
+                            columns={[
+                                {
+                                    accessor: 'descripcionSustancia',
+                                    title: 'Tipo de Sustancia',
+                                    footer: <span className="font-bold text-sm">Total Costo:</span>,
+                                },
+                                {
+                                    accessor: 'cantidad',
+                                    title: 'Cantidad en litros',
+                                    textAlign: 'right',
+                                    render: (row: any) => Number(row.cantidad ?? 0).toFixed(3),
+                                },
+                                {
+                                    accessor: 'costo',
+                                    title: 'Costo',
+                                    textAlign: 'right',
+                                    render: (row: any) => Number(row.costo ?? 0).toFixed(2),
+                                    footer: (
+                                        <span className="font-bold text-sm">
+                                            {datos.reduce((sum, item) => sum + Number(item.costo ?? 0), 0).toFixed(2)}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    accessor: 'actions',
+                                    title: 'Acciones',
+                                    textAlign: 'center',
+                                    render: (row: any) => (
+                                        <button
+                                            type="button"
+                                            className="text-danger hover:text-danger/80 flex justify-center w-full"
+                                            onClick={() => handleEliminar(row.id as number)}
+                                            disabled={cargando}
+                                        >
+                                            <IconTrash className="w-5 h-5" />
+                                        </button>
+                                    ),
+                                },
+                            ]}
+                            highlightOnHover
+                        />
                     </div>
-                )}
+                </div>
             </div>
         </div>
     )
