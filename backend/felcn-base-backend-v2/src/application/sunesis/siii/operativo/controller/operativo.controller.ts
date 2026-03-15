@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
@@ -13,8 +14,9 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiConsumes, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto'
 import { OperativoService } from '../service/operativo.service'
 
 // DTOs
@@ -29,7 +31,6 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
-  CreateLogotipoDrogaDto,
 } from '../dto'
 
 // TODO: Reactivar guards para producción
@@ -72,70 +73,55 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Listar estados de droga por tipo' })
   @Get('catalogos/estados-droga/:idTipoDroga')
   async listarEstadosDroga(@Param('idTipoDroga') idTipoDroga: string) {
-    const estados = await this.operativoService.listarEstadosDroga(
-      parseInt(idTipoDroga)
-    )
+    const estados = await this.operativoService.listarEstadosDroga(parseInt(idTipoDroga))
     return this.successList(estados)
   }
 
   @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
   @Get('catalogos/fabrica-modelos/:idTipoFabrica')
   async listarFabricaModelos(@Param('idTipoFabrica') idTipoFabrica: string) {
-    const modelos = await this.operativoService.listarFabricaModelos(
-      parseInt(idTipoFabrica)
-    )
+    const modelos = await this.operativoService.listarFabricaModelos(parseInt(idTipoFabrica))
     return this.successList(modelos)
   }
 
   @ApiOperation({ summary: 'Listar items de operativo por categoría' })
   @Get('catalogos/items-operativo/:idCategoriaOperativo')
-  async listarItemsOperativo(
-    @Param('idCategoriaOperativo') idCategoriaOperativo: string
-  ) {
-    const items = await this.operativoService.listarItemsOperativo(
-      parseInt(idCategoriaOperativo)
-    )
+  async listarItemsOperativo(@Param('idCategoriaOperativo') idCategoriaOperativo: string) {
+    const items = await this.operativoService.listarItemsOperativo(parseInt(idCategoriaOperativo))
     return this.successList(items)
   }
 
   @ApiOperation({ summary: 'Listar clases de catálogo por bien' })
   @Get('catalogos/clases/:idBien')
   async listarCatalogoClases(@Param('idBien') idBien: string) {
-    const clases = await this.operativoService.listarCatalogoClases(
-      parseInt(idBien)
-    )
+    const clases = await this.operativoService.listarCatalogoClases(parseInt(idBien))
     return this.successList(clases)
   }
 
   @ApiOperation({ summary: 'Listar tipos de catálogo por clase' })
   @Get('catalogos/tipos/:idCatalogoClase')
   async listarCatalogoTipos(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const tipos = await this.operativoService.listarCatalogoTipos(
-      parseInt(idCatalogoClase)
-    )
+    const tipos = await this.operativoService.listarCatalogoTipos(parseInt(idCatalogoClase))
     return this.successList(tipos)
   }
 
   @ApiOperation({ summary: 'Listar características de catálogo por clase' })
   @Get('catalogos/caracteristicas/:idCatalogoClase')
-  async listarCatalogoCaracteristicas(
-    @Param('idCatalogoClase') idCatalogoClase: string
-  ) {
-    const caracteristicas =
-      await this.operativoService.listarCatalogoCaracteristicas(
-        parseInt(idCatalogoClase)
-      )
+  async listarCatalogoCaracteristicas(@Param('idCatalogoClase') idCatalogoClase: string) {
+    const caracteristicas = await this.operativoService.listarCatalogoCaracteristicas(parseInt(idCatalogoClase))
     return this.successList(caracteristicas)
   }
 
-  // ==================== OPERATIVO PRINCIPAL (keyed by idCaso) ====================
+  // ==================== CASO (1:N) ====================
 
   @ApiOperation({
-    summary: 'Obtener caso + operativo unificado',
+    summary: 'Obtener caso + lista de operativos',
     description:
-      'Retorna datos del caso desde asignacion y, si existe, el operativo con estadísticas. ' +
-      'esNuevo:true si no hay operativo aún, esNuevo:false si ya existe.',
+      'Retorna datos del caso desde asignacion y la lista de todos sus operativos. ' +
+      'Si no hay operativos, retorna lista vacía. Usar idOperativo de cada operativo para las secciones.',
   })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso (asignacion)' })
+  @ApiResponse({ status: 200, description: '{ caso: {...}, operativos: [...] }' })
   @Get('caso/:idCaso')
   async getOrInit(@Param('idCaso') idCaso: string) {
     const datos = await this.operativoService.getOrInit(idCaso)
@@ -145,68 +131,75 @@ export class OperativoController extends BaseController {
   @ApiOperation({
     summary: 'Crear operativo para un caso',
     description:
-      'El numeroOperativo se toma de asignacion automáticamente. ' +
-      'Retorna 409 si ya existe un operativo para ese caso.',
+      'Un caso puede tener múltiples operativos. ' +
+      'Retorna el operativo con su id (idOperativo) para usar en todas las secciones.',
   })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso (asignacion)' })
   @Post('caso/:idCaso')
   async crear(@Param('idCaso') idCaso: string, @Body() data: OperativoDto) {
-    const usuario = 'SISTEMA'
-    const operativo = await this.operativoService.crear(idCaso, data, usuario)
+    const operativo = await this.operativoService.crear(idCaso, data, 'SISTEMA')
     return this.successCreate(operativo)
   }
 
-  @ApiOperation({
-    summary: 'Actualizar operativo de un caso',
-    description:
-      'Resuelve idCaso → idOperativo internamente. Retorna 404 si no existe operativo.',
-  })
-  @Patch('caso/:idCaso')
-  async actualizar(@Param('idCaso') idCaso: string, @Body() data: OperativoDto) {
-    const usuario = 'SISTEMA'
-    const operativo = await this.operativoService.actualizar(idCaso, data, usuario)
-    return this.successUpdate(operativo)
-  }
-
-  // ==================== ADMIN: operativo por ID interno ====================
+  // ==================== ADMIN ====================
 
   @ApiOperation({ summary: 'Listar todos los operativos (admin)' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
   @Get()
-  async listar() {
-    const datos = await this.operativoService.listar()
-    return this.successList(datos)
+  async listar(@Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listar(paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Obtener operativo por ID interno (admin/debug)' })
-  @Get(':id')
-  async buscarPorId(@Param('id') id: string) {
-    const operativo = await this.operativoService.buscarPorId(id)
+  // ==================== OPERATIVO POR ID ====================
+
+  @ApiOperation({ summary: 'Obtener operativo por ID' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo')
+  async buscarPorId(@Param('idOperativo') idOperativo: string) {
+    const operativo = await this.operativoService.buscarPorId(idOperativo)
     return this.successList(operativo)
+  }
+
+  @ApiOperation({ summary: 'Actualizar operativo por ID' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Patch(':idOperativo')
+  async actualizar(@Param('idOperativo') idOperativo: string, @Body() data: OperativoDto) {
+    const operativo = await this.operativoService.actualizar(idOperativo, data, 'SISTEMA')
+    return this.successUpdate(operativo)
   }
 
   // ==================== DROGAS ====================
 
-  @ApiOperation({ summary: 'Listar drogas del caso ([] si operativo no existe)' })
-  @Get('caso/:idCaso/drogas')
-  async listarDrogas(@Param('idCaso') idCaso: string) {
-    const drogas = await this.operativoService.listarDrogas(idCaso)
-    return this.successList(drogas)
-  }
-
-  @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del caso' })
-  @Get('caso/:idCaso/drogas/pesaje')
-  async obtenerPesaje(@Param('idCaso') idCaso: string) {
-    const pesaje = await this.operativoService.obtenerPesajeDrogas(idCaso)
+  @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/drogas/pesaje')
+  async obtenerPesaje(@Param('idOperativo') idOperativo: string) {
+    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
     return this.successList(pesaje)
   }
 
+  @ApiOperation({ summary: 'Listar drogas del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: idTipoDroga, descripcionEstadoDroga, descripcionTipoDroga, descripcionFormaTransporte, descripcionPaisProcedencia, descripcionPaisDestino, urlFotoPruebaCampo, urlFotoPesaje' })
+  @Get(':idOperativo/drogas')
+  async listarDrogas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarDrogas(idOperativo, paginacion)
+    return this.successListRows(resultado)
+  }
+
   @ApiOperation({
-    summary: 'Agregar droga al caso (requiere operativo existente)',
+    summary: 'Agregar droga al operativo',
     description:
-      'Enviar como multipart/form-data. Campos de texto como campos del form. ' +
+      'Enviar como multipart/form-data. ' +
       'Archivos opcionales: pruebaCampo (foto prueba de campo) y pesaje (foto cuantificación/pesaje).',
   })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/drogas')
+  @Post(':idOperativo/drogas')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'pruebaCampo', maxCount: 1 },
@@ -214,7 +207,7 @@ export class OperativoController extends BaseController {
     ])
   )
   async agregarDroga(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateDrogaDto,
     @UploadedFiles()
     files: {
@@ -224,357 +217,313 @@ export class OperativoController extends BaseController {
   ) {
     const pruebaCampo = files?.pruebaCampo?.[0]?.buffer || Buffer.alloc(0)
     const pesaje = files?.pesaje?.[0]?.buffer || Buffer.alloc(0)
-    const droga = await this.operativoService.agregarDroga(
-      idCaso,
-      data,
-      pruebaCampo,
-      pesaje,
-      'SISTEMA'
-    )
+    const droga = await this.operativoService.agregarDroga(idOperativo, data, pruebaCampo, pesaje, 'SISTEMA')
     return this.successCreate(droga)
   }
 
   @ApiOperation({ summary: 'Obtener foto prueba de campo de una droga' })
-  @Get('caso/:idCaso/drogas/:idDroga/fotos/prueba-campo')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
+  @Get(':idOperativo/drogas/:idDroga/fotos/prueba-campo')
   async obtenerFotoPruebaCampo(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('idDroga') idDroga: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDroga(
-      idCaso,
-      idDroga,
-      'prueba-campo'
-    )
+    const foto = await this.operativoService.obtenerFotoDroga(idOperativo, idDroga, 'prueba-campo')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
   @ApiOperation({ summary: 'Obtener foto cuantificación/pesaje de una droga' })
-  @Get('caso/:idCaso/drogas/:idDroga/fotos/pesaje')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
+  @Get(':idOperativo/drogas/:idDroga/fotos/pesaje')
   async obtenerFotoPesaje(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('idDroga') idDroga: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDroga(
-      idCaso,
-      idDroga,
-      'pesaje'
-    )
+    const foto = await this.operativoService.obtenerFotoDroga(idOperativo, idDroga, 'pesaje')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
-  @ApiOperation({
-    summary: 'Listar logotipos de una droga específica',
-    description:
-      'Retorna solo los logotipos asociados a esa droga (fila expandida en la grilla).',
-  })
-  @Get('caso/:idCaso/drogas/:idDroga/logotipos')
-  async listarLogotiposDroga(
-    @Param('idCaso') idCaso: string,
-    @Param('idDroga') idDroga: string
-  ) {
-    const logotipos = await this.operativoService.listarLogotiposPorDroga(
-      idCaso,
-      idDroga
-    )
-    return this.successList(logotipos)
-  }
-
-  @ApiOperation({
-    summary: 'Agregar logotipo a una droga (modal)',
-    description:
-      'idTipoDroga, idPaisOrigen e idPaisDestino se resuelven automáticamente desde la droga. ' +
-      'Enviar como multipart/form-data con archivo fotografia.',
-  })
-  @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/drogas/:idDroga/logotipos')
-  @UseInterceptors(FileInterceptor('fotografia'))
-  async agregarLogotipoDroga(
-    @Param('idCaso') idCaso: string,
-    @Param('idDroga') idDroga: string,
-    @Body() data: CreateLogotipoDrogaDto,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipoDroga(
-      idCaso,
-      idDroga,
-      data,
-      fotografia,
-      'SISTEMA'
-    )
-    return this.successCreate(logotipo)
-  }
-
-  @ApiOperation({ summary: 'Eliminar droga del caso' })
-  @Delete('caso/:idCaso/drogas/:idDroga')
+  @ApiOperation({ summary: 'Eliminar droga del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
+  @Delete(':idOperativo/drogas/:idDroga')
   async eliminarDroga(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('idDroga') idDroga: string
   ) {
-    await this.operativoService.eliminarDroga(idCaso, idDroga)
+    await this.operativoService.eliminarDroga(idOperativo, idDroga)
     return this.successDelete(null)
   }
 
   // ==================== SUSTANCIAS SÓLIDAS ====================
 
-  @ApiOperation({ summary: 'Listar sustancias sólidas del caso' })
-  @Get('caso/:idCaso/sustancias-solidas')
-  async listarSustanciasSolidas(@Param('idCaso') idCaso: string) {
-    const sustancias = await this.operativoService.listarSustanciasSolidas(idCaso)
-    return this.successList(sustancias)
+  @ApiOperation({ summary: 'Listar sustancias sólidas del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: descripcionSustancia' })
+  @Get(':idOperativo/sustancias-solidas')
+  async listarSustanciasSolidas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarSustanciasSolidas(idOperativo, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Agregar sustancia sólida al caso' })
-  @Post('caso/:idCaso/sustancias-solidas')
+  @ApiOperation({ summary: 'Agregar sustancia sólida al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/sustancias-solidas')
   async agregarSustanciaSolida(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateSustanciaSolidaDto
   ) {
-    const sustancia = await this.operativoService.agregarSustanciaSolida(
-      idCaso,
-      data,
-      'SISTEMA'
-    )
+    const sustancia = await this.operativoService.agregarSustanciaSolida(idOperativo, data, 'SISTEMA')
     return this.successCreate(sustancia)
   }
 
-  @ApiOperation({ summary: 'Eliminar sustancia sólida del caso' })
-  @Delete('caso/:idCaso/sustancias-solidas/:id')
+  @ApiOperation({ summary: 'Eliminar sustancia sólida del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/sustancias-solidas/:id')
   async eliminarSustanciaSolida(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarSustanciaSolida(idCaso, id)
+    await this.operativoService.eliminarSustanciaSolida(idOperativo, id)
     return this.successDelete(null)
   }
 
   // ==================== SUSTANCIAS LÍQUIDAS ====================
 
-  @ApiOperation({ summary: 'Listar sustancias líquidas del caso' })
-  @Get('caso/:idCaso/sustancias-liquidas')
-  async listarSustanciasLiquidas(@Param('idCaso') idCaso: string) {
-    const sustancias = await this.operativoService.listarSustanciasLiquidas(idCaso)
-    return this.successList(sustancias)
+  @ApiOperation({ summary: 'Listar sustancias líquidas del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: descripcionSustancia' })
+  @Get(':idOperativo/sustancias-liquidas')
+  async listarSustanciasLiquidas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarSustanciasLiquidas(idOperativo, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Agregar sustancia líquida al caso' })
-  @Post('caso/:idCaso/sustancias-liquidas')
+  @ApiOperation({ summary: 'Agregar sustancia líquida al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/sustancias-liquidas')
   async agregarSustanciaLiquida(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateSustanciaLiquidaDto
   ) {
-    const sustancia = await this.operativoService.agregarSustanciaLiquida(
-      idCaso,
-      data,
-      'SISTEMA'
-    )
+    const sustancia = await this.operativoService.agregarSustanciaLiquida(idOperativo, data, 'SISTEMA')
     return this.successCreate(sustancia)
   }
 
-  @ApiOperation({ summary: 'Eliminar sustancia líquida del caso' })
-  @Delete('caso/:idCaso/sustancias-liquidas/:id')
+  @ApiOperation({ summary: 'Eliminar sustancia líquida del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/sustancias-liquidas/:id')
   async eliminarSustanciaLiquida(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarSustanciaLiquida(idCaso, id)
+    await this.operativoService.eliminarSustanciaLiquida(idOperativo, id)
     return this.successDelete(null)
   }
 
   // ==================== FÁBRICAS ====================
 
-  @ApiOperation({ summary: 'Listar fábricas del caso' })
-  @Get('caso/:idCaso/fabricas')
-  async listarFabricas(@Param('idCaso') idCaso: string) {
-    const fabricas = await this.operativoService.listarFabricas(idCaso)
-    return this.successList(fabricas)
+  @ApiOperation({ summary: 'Listar fábricas del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: idTipoFabrica, descripcionFabricaModelo, descripcionTipoFabrica' })
+  @Get(':idOperativo/fabricas')
+  async listarFabricas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarFabricas(idOperativo, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Agregar fábrica al caso' })
-  @Post('caso/:idCaso/fabricas')
+  @ApiOperation({ summary: 'Agregar fábrica al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/fabricas')
   async agregarFabrica(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateFabricaDto
   ) {
-    const fabrica = await this.operativoService.agregarFabrica(idCaso, data, 'SISTEMA')
+    const fabrica = await this.operativoService.agregarFabrica(idOperativo, data, 'SISTEMA')
     return this.successCreate(fabrica)
   }
 
-  @ApiOperation({ summary: 'Eliminar fábrica del caso' })
-  @Delete('caso/:idCaso/fabricas/:id')
+  @ApiOperation({ summary: 'Eliminar fábrica del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/fabricas/:id')
   async eliminarFabrica(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarFabrica(idCaso, id)
+    await this.operativoService.eliminarFabrica(idOperativo, id)
     return this.successDelete(null)
   }
 
   // ==================== BIENES SECUESTRADOS ====================
 
-  @ApiOperation({ summary: 'Listar bienes secuestrados del caso' })
-  @Get('caso/:idCaso/bienes')
-  async listarBienes(@Param('idCaso') idCaso: string) {
-    const bienes = await this.operativoService.listarBienes(idCaso)
-    return this.successList(bienes)
+  @ApiOperation({ summary: 'Listar bienes secuestrados del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: idCatalogoClase, idBien, descripcionCatalogoTipo, descripcionCatalogoClase, descripcionBien, urlFotoBien' })
+  @Get(':idOperativo/bienes')
+  async listarBienes(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarBienes(idOperativo, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Agregar bien secuestrado al caso' })
-  @Post('caso/:idCaso/bienes')
+  @ApiOperation({ summary: 'Agregar bien secuestrado al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/bienes')
   async agregarBien(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateBienSecuestradoDto
   ) {
-    const bien = await this.operativoService.agregarBien(idCaso, data, 'SISTEMA')
+    const bien = await this.operativoService.agregarBien(idOperativo, data, 'SISTEMA')
     return this.successCreate(bien)
   }
 
-  @ApiOperation({ summary: 'Eliminar bien secuestrado del caso' })
-  @Delete('caso/:idCaso/bienes/:idBien')
-  async eliminarBien(
-    @Param('idCaso') idCaso: string,
-    @Param('idBien') idBien: string
-  ) {
-    await this.operativoService.eliminarBien(idCaso, idBien)
-    return this.successDelete(null)
-  }
-
-  // ==================== CARACTERÍSTICAS DE BIENES ====================
-
-  @ApiOperation({ summary: 'Listar características de un bien' })
-  @Get('caso/:idCaso/bienes/:idBien/caracteristicas')
-  async listarCaracteristicasBien(
-    @Param('idCaso') idCaso: string,
-    @Param('idBien') idBien: string
-  ) {
-    const caracteristicas = await this.operativoService.listarCaracteristicasBien(
-      idCaso,
-      idBien
-    )
-    return this.successList(caracteristicas)
-  }
-
-  @ApiOperation({ summary: 'Agregar característica a un bien' })
-  @Post('caso/:idCaso/bienes/:idBien/caracteristicas')
-  async agregarCaracteristicaBien(
-    @Param('idCaso') idCaso: string,
-    @Param('idBien') idBien: string,
-    @Body() data: CreateBienCaracteristicaDto
-  ) {
-    const caracteristica = await this.operativoService.agregarCaracteristicaBien(
-      idCaso,
-      idBien,
-      data,
-      'SISTEMA'
-    )
-    return this.successCreate(caracteristica)
-  }
-
-  @ApiOperation({ summary: 'Eliminar característica de un bien' })
-  @Delete('caso/:idCaso/bienes/:idBien/caracteristicas/:id')
-  async eliminarCaracteristicaBien(
-    @Param('idCaso') idCaso: string,
-    @Param('idBien') idBien: string,
-    @Param('id') id: string
-  ) {
-    await this.operativoService.eliminarCaracteristicaBien(idCaso, idBien, id)
-    return this.successDelete(null)
-  }
-
   @ApiOperation({ summary: 'Obtener foto de bien secuestrado' })
-  @Get('caso/:idCaso/bienes/:idBien/foto')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Get(':idOperativo/bienes/:idBien/foto')
   async obtenerFotoBien(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('idBien') idBien: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoBien(idCaso, idBien)
+    const foto = await this.operativoService.obtenerFotoBien(idOperativo, idBien)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
-  // ==================== DETENIDOS ====================
-
-  @ApiOperation({ summary: 'Listar detenidos del caso' })
-  @Get('caso/:idCaso/detenidos')
-  async listarDetenidos(@Param('idCaso') idCaso: string) {
-    const detenidos = await this.operativoService.listarDetenidos(idCaso)
-    return this.successList(detenidos)
-  }
-
-  @ApiOperation({ summary: 'Agregar detenido al caso' })
-  @Post('caso/:idCaso/detenidos')
-  async agregarDetenido(
-    @Param('idCaso') idCaso: string,
-    @Body() data: CreateDetenidoDto
+  @ApiOperation({ summary: 'Listar características de un bien' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @ApiResponse({ status: 200, description: 'Lista paginada. Campos planos: descripcionCaracteristica' })
+  @Get(':idOperativo/bienes/:idBien/caracteristicas')
+  async listarCaracteristicasBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string,
+    @Query() paginacion: PaginacionQueryDto
   ) {
-    const detenido = await this.operativoService.agregarDetenido(
-      idCaso,
-      data,
-      'SISTEMA'
-    )
-    return this.successCreate(detenido)
+    const resultado = await this.operativoService.listarCaracteristicasBien(idOperativo, idBien, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Eliminar detenido del caso' })
-  @Delete('caso/:idCaso/detenidos/:id')
-  async eliminarDetenido(
-    @Param('idCaso') idCaso: string,
+  @ApiOperation({ summary: 'Agregar característica a un bien' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Post(':idOperativo/bienes/:idBien/caracteristicas')
+  async agregarCaracteristicaBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string,
+    @Body() data: CreateBienCaracteristicaDto
+  ) {
+    const caracteristica = await this.operativoService.agregarCaracteristicaBien(idOperativo, idBien, data, 'SISTEMA')
+    return this.successCreate(caracteristica)
+  }
+
+  @ApiOperation({ summary: 'Eliminar característica de un bien' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Delete(':idOperativo/bienes/:idBien/caracteristicas/:id')
+  async eliminarCaracteristicaBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarDetenido(idCaso, id)
+    await this.operativoService.eliminarCaracteristicaBien(idOperativo, idBien, id)
     return this.successDelete(null)
   }
 
+  @ApiOperation({ summary: 'Eliminar bien secuestrado del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Delete(':idOperativo/bienes/:idBien')
+  async eliminarBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string
+  ) {
+    await this.operativoService.eliminarBien(idOperativo, idBien)
+    return this.successDelete(null)
+  }
+
+  // ==================== DETENIDOS ====================
+
+  @ApiOperation({ summary: 'Listar detenidos del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @Get(':idOperativo/detenidos')
+  async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
+    return this.successListRows(resultado)
+  }
+
+  @ApiOperation({ summary: 'Agregar detenido al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/detenidos')
+  async agregarDetenido(
+    @Param('idOperativo') idOperativo: string,
+    @Body() data: CreateDetenidoDto
+  ) {
+    const detenido = await this.operativoService.agregarDetenido(idOperativo, data, 'SISTEMA')
+    return this.successCreate(detenido)
+  }
+
   @ApiOperation({ summary: 'Obtener foto de detenido (frente)' })
-  @Get('caso/:idCaso/detenidos/:id/fotos/frente')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'id', description: 'ID del detenido' })
+  @Get(':idOperativo/detenidos/:id/fotos/frente')
   async obtenerFotoDetenidoFrente(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDetenido(idCaso, id, 'frente')
+    const foto = await this.operativoService.obtenerFotoDetenido(idOperativo, id, 'frente')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
   @ApiOperation({ summary: 'Obtener foto de detenido (perfil derecho)' })
-  @Get('caso/:idCaso/detenidos/:id/fotos/perfil-derecho')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'id', description: 'ID del detenido' })
+  @Get(':idOperativo/detenidos/:id/fotos/perfil-derecho')
   async obtenerFotoDetenidoPerfilDerecho(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDetenido(
-      idCaso,
-      id,
-      'perfil-derecho'
-    )
+    const foto = await this.operativoService.obtenerFotoDetenido(idOperativo, id, 'perfil-derecho')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
   @ApiOperation({ summary: 'Obtener foto de detenido (perfil izquierdo)' })
-  @Get('caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'id', description: 'ID del detenido' })
+  @Get(':idOperativo/detenidos/:id/fotos/perfil-izquierdo')
   async obtenerFotoDetenidoPerfilIzquierdo(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDetenido(
-      idCaso,
-      id,
-      'perfil-izquierdo'
-    )
+    const foto = await this.operativoService.obtenerFotoDetenido(idOperativo, id, 'perfil-izquierdo')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
@@ -582,23 +531,22 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Subir foto de detenido (frente)' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/detenidos/:id/fotos/frente')
+  @Post(':idOperativo/detenidos/:id/fotos/frente')
   @UseInterceptors(FileInterceptor('foto'))
   async subirFotoDetenidoFrente(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
-    // TODO: implementar guardado de foto de detenido en la entidad
     return this.successCreate({ mensaje: 'Foto recibida (pendiente de implementar)' })
   }
 
   @ApiOperation({ summary: 'Subir foto de detenido (perfil derecho)' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/detenidos/:id/fotos/perfil-derecho')
+  @Post(':idOperativo/detenidos/:id/fotos/perfil-derecho')
   @UseInterceptors(FileInterceptor('foto'))
   async subirFotoDetenidoPerfilDerecho(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
@@ -607,143 +555,156 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Subir foto de detenido (perfil izquierdo)' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo')
+  @Post(':idOperativo/detenidos/:id/fotos/perfil-izquierdo')
   @UseInterceptors(FileInterceptor('foto'))
   async subirFotoDetenidoPerfilIzquierdo(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
     return this.successCreate({ mensaje: 'Foto recibida (pendiente de implementar)' })
   }
 
-  // ==================== GALERÍA ====================
-
-  @ApiOperation({ summary: 'Listar galería del caso' })
-  @Get('caso/:idCaso/galeria')
-  async listarGaleria(@Param('idCaso') idCaso: string) {
-    const galeria = await this.operativoService.listarGaleria(idCaso)
-    return this.successList(galeria)
+  @ApiOperation({ summary: 'Eliminar detenido del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/detenidos/:id')
+  async eliminarDetenido(
+    @Param('idOperativo') idOperativo: string,
+    @Param('id') id: string
+  ) {
+    await this.operativoService.eliminarDetenido(idOperativo, id)
+    return this.successDelete(null)
   }
 
-  @ApiOperation({ summary: 'Agregar foto a la galería del caso' })
+  // ==================== GALERÍA ====================
+
+  @ApiOperation({ summary: 'Listar galería del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @Get(':idOperativo/galeria')
+  async listarGaleria(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarGaleria(idOperativo, paginacion)
+    return this.successListRows(resultado)
+  }
+
+  @ApiOperation({ summary: 'Agregar foto a la galería del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/galeria')
+  @Post(':idOperativo/galeria')
   @UseInterceptors(FileInterceptor('foto'))
   async agregarFotoGaleria(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateGaleriaDto,
     @UploadedFile() file: Express.Multer.File
   ) {
     const foto = file?.buffer || Buffer.alloc(0)
-    const galeria = await this.operativoService.agregarFotoGaleria(
-      idCaso,
-      data,
-      foto,
-      'SISTEMA'
-    )
+    const galeria = await this.operativoService.agregarFotoGaleria(idOperativo, data, foto, 'SISTEMA')
     return this.successCreate(galeria)
   }
 
-  @ApiOperation({ summary: 'Eliminar foto de la galería del caso' })
-  @Delete('caso/:idCaso/galeria/:id')
-  async eliminarFotoGaleria(
-    @Param('idCaso') idCaso: string,
-    @Param('id') id: string
-  ) {
-    await this.operativoService.eliminarFotoGaleria(idCaso, id)
-    return this.successDelete(null)
-  }
-
   @ApiOperation({ summary: 'Obtener foto de galería (thumbnail)' })
-  @Get('caso/:idCaso/galeria/:id/thumbnail')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/galeria/:id/thumbnail')
   async obtenerGaleriaThumbnail(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    // TODO: Implementar procesamiento de imagen con sharp para thumbnail 50x50px
-    const foto = await this.operativoService.obtenerFotoGaleria(idCaso, id)
+    const foto = await this.operativoService.obtenerFotoGaleria(idOperativo, id)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
   @ApiOperation({ summary: 'Obtener foto de galería (medium)' })
-  @Get('caso/:idCaso/galeria/:id/medium')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/galeria/:id/medium')
   async obtenerGaleriaMedium(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    // TODO: Implementar procesamiento de imagen con sharp 400x400px
-    const foto = await this.operativoService.obtenerFotoGaleria(idCaso, id)
+    const foto = await this.operativoService.obtenerFotoGaleria(idOperativo, id)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
   @ApiOperation({ summary: 'Obtener foto de galería (full)' })
-  @Get('caso/:idCaso/galeria/:id/full')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/galeria/:id/full')
   async obtenerGaleriaFull(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoGaleria(idCaso, id)
+    const foto = await this.operativoService.obtenerFotoGaleria(idOperativo, id)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Eliminar foto de la galería del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/galeria/:id')
+  async eliminarFotoGaleria(
+    @Param('idOperativo') idOperativo: string,
+    @Param('id') id: string
+  ) {
+    await this.operativoService.eliminarFotoGaleria(idOperativo, id)
+    return this.successDelete(null)
   }
 
   // ==================== LOGOTIPOS ====================
 
-  @ApiOperation({ summary: 'Listar logotipos del caso' })
-  @Get('caso/:idCaso/logotipos')
-  async listarLogotipos(@Param('idCaso') idCaso: string) {
-    const logotipos = await this.operativoService.listarLogotipos(idCaso)
-    return this.successList(logotipos)
+  @ApiOperation({ summary: 'Listar logotipos del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
+  @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
+  @Get(':idOperativo/logotipos')
+  async listarLogotipos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarLogotipos(idOperativo, paginacion)
+    return this.successListRows(resultado)
   }
 
-  @ApiOperation({ summary: 'Agregar logotipo al caso' })
+  @ApiOperation({ summary: 'Agregar logotipo al operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
-  @Post('caso/:idCaso/logotipos')
+  @Post(':idOperativo/logotipos')
   @UseInterceptors(FileInterceptor('fotografia'))
   async agregarLogotipo(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Body() data: CreateLogotipoDto,
     @UploadedFile() file: Express.Multer.File
   ) {
     const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipo(
-      idCaso,
-      data,
-      fotografia,
-      'SISTEMA'
-    )
+    const logotipo = await this.operativoService.agregarLogotipo(idOperativo, data, fotografia, 'SISTEMA')
     return this.successCreate(logotipo)
   }
 
-  @ApiOperation({ summary: 'Eliminar logotipo del caso' })
-  @Delete('caso/:idCaso/logotipos/:id')
-  async eliminarLogotipo(
-    @Param('idCaso') idCaso: string,
-    @Param('id') id: string
-  ) {
-    await this.operativoService.eliminarLogotipo(idCaso, id)
-    return this.successDelete(null)
-  }
-
   @ApiOperation({ summary: 'Obtener foto de logotipo' })
-  @Get('caso/:idCaso/logotipos/:id/foto')
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/logotipos/:id/foto')
   async obtenerFotoLogotipo(
-    @Param('idCaso') idCaso: string,
+    @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoLogotipo(idCaso, id)
+    const foto = await this.operativoService.obtenerFotoLogotipo(idOperativo, id)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
+  }
+
+  @ApiOperation({ summary: 'Eliminar logotipo del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Delete(':idOperativo/logotipos/:id')
+  async eliminarLogotipo(
+    @Param('idOperativo') idOperativo: string,
+    @Param('id') id: string
+  ) {
+    await this.operativoService.eliminarLogotipo(idOperativo, id)
+    return this.successDelete(null)
   }
 }
