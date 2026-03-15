@@ -5,8 +5,13 @@ export interface RespuestaApi<T> {
 }
 
 export interface RespuestaApiPaginada<T> {
-    total: number
     filas: T[]
+    page: {
+        size: number
+        number: number
+        totalElements: number
+        totalPages: number
+    }
 }
 
 export interface GestionOperativoResumen {
