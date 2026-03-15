@@ -102,11 +102,9 @@ export function FormGestionOperativo({
                     onEliminar={seccion3.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion3.query.refetch()}
                     datos={
-                        Array.isArray(seccion3.query.data?.datos)
-                            ? seccion3.query.data.datos
-                            : (seccion3.query.data?.datos as any)?.filas ?? []
+                        (seccion3.query.data?.datos as any)?.filas ?? []
                     }
-                    totalRegistros={(seccion3.query.data?.datos as any)?.total ?? 0}
+                    totalRegistros={(seccion3.query.data?.datos as any)?.page?.totalElements ?? 0}
                     pagina={pageS3}
                     limite={limitS3}
                     onCambioPagina={setPageS3}
@@ -124,11 +122,9 @@ export function FormGestionOperativo({
                     onEliminar={seccion4.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion4.query.refetch()}
                     datos={
-                        Array.isArray(seccion4.query.data?.datos)
-                            ? seccion4.query.data.datos
-                            : (seccion4.query.data?.datos as any)?.filas ?? []
+                        (seccion4.query.data?.datos as any)?.filas ?? []
                     }
-                    totalRegistros={(seccion4.query.data?.datos as any)?.total ?? 0}
+                    totalRegistros={(seccion4.query.data?.datos as any)?.page?.totalElements ?? 0}
                     pagina={pageS4}
                     limite={limitS4}
                     onCambioPagina={setPageS4}
@@ -146,11 +142,9 @@ export function FormGestionOperativo({
                     onEliminar={seccion5.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion5.query.refetch()}
                     datos={
-                        Array.isArray(seccion5.query.data?.datos)
-                            ? seccion5.query.data.datos
-                            : (seccion5.query.data?.datos as any)?.filas ?? []
+                        (seccion5.query.data?.datos as any)?.filas ?? []
                     }
-                    totalRegistros={(seccion5.query.data?.datos as any)?.total ?? 0}
+                    totalRegistros={(seccion5.query.data?.datos as any)?.page?.totalElements ?? 0}
                     pagina={pageS5}
                     limite={limitS5}
                     onCambioPagina={setPageS5}
