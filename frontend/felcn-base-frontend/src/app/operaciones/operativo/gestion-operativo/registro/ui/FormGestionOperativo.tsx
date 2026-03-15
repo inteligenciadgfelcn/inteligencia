@@ -6,7 +6,7 @@ import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
 import { SustanciasSolidas } from './secciones/SustanciasSolidas'
 import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
-import { Seccion5Form } from './secciones/Seccion5Form'
+import { Laboratorio } from './secciones/Laboratorio'
 import { Seccion6Form } from './secciones/Seccion6Form'
 import { Seccion7Form } from './secciones/Seccion7Form'
 import { Seccion8Form } from './secciones/Seccion8Form'
@@ -52,9 +52,18 @@ export function FormGestionOperativo({
 
     const seccion1 = useSeccion1(id)
     const seccion2 = useSeccion2(id)
-    const seccion3 = useSeccion3(id)
-    const seccion4 = useSeccion4(id)
-    const seccion5 = useSeccion5(id)
+    
+    const [pageS3, setPageS3] = useState(1)
+    const [limitS3, setLimitS3] = useState(10)
+    const seccion3 = useSeccion3(id, pageS3, limitS3)
+
+    const [pageS4, setPageS4] = useState(1)
+    const [limitS4, setLimitS4] = useState(10)
+    const seccion4 = useSeccion4(id, pageS4, limitS4)
+
+    const [pageS5, setPageS5] = useState(1)
+    const [limitS5, setLimitS5] = useState(10)
+    const seccion5 = useSeccion5(id, pageS5, limitS5)
     const seccion6 = useSeccion6(id)
     const seccion7 = useSeccion7(id)
     const seccion8 = useSeccion8(id)
@@ -92,7 +101,16 @@ export function FormGestionOperativo({
                     onGuardar={seccion3.mutation.mutateAsync}
                     onEliminar={seccion3.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion3.query.refetch()}
-                    datos={seccion3.query.data?.datos ?? []}
+                    datos={
+                        Array.isArray(seccion3.query.data?.datos)
+                            ? seccion3.query.data.datos
+                            : (seccion3.query.data?.datos as any)?.filas ?? []
+                    }
+                    totalRegistros={(seccion3.query.data?.datos as any)?.total ?? 0}
+                    pagina={pageS3}
+                    limite={limitS3}
+                    onCambioPagina={setPageS3}
+                    onCambioLimite={(l: number) => { setLimitS3(l); setPageS3(1); }}
                     cargando={seccion3.mutation.isPending || seccion3.query.isFetching || seccion3.deleteMutation.isPending}
                 />
             )
@@ -105,7 +123,16 @@ export function FormGestionOperativo({
                     onGuardar={seccion4.mutation.mutateAsync}
                     onEliminar={seccion4.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion4.query.refetch()}
-                    datos={seccion4.query.data?.datos ?? []}
+                    datos={
+                        Array.isArray(seccion4.query.data?.datos)
+                            ? seccion4.query.data.datos
+                            : (seccion4.query.data?.datos as any)?.filas ?? []
+                    }
+                    totalRegistros={(seccion4.query.data?.datos as any)?.total ?? 0}
+                    pagina={pageS4}
+                    limite={limitS4}
+                    onCambioPagina={setPageS4}
+                    onCambioLimite={(l: number) => { setLimitS4(l); setPageS4(1); }}
                     cargando={seccion4.mutation.isPending || seccion4.query.isFetching || seccion4.deleteMutation.isPending}
                 />
             )
@@ -113,11 +140,22 @@ export function FormGestionOperativo({
 
         if (key === 'seccion-5') {
             return (
-                <Seccion5Form
+                <Laboratorio
                     titulo="LABORATORIOS Y FABRICAS"
                     onGuardar={seccion5.mutation.mutateAsync}
+                    onEliminar={seccion5.deleteMutation.mutateAsync}
                     onRecuperar={() => seccion5.query.refetch()}
-                    cargando={seccion5.mutation.isPending || seccion5.query.isFetching}
+                    datos={
+                        Array.isArray(seccion5.query.data?.datos)
+                            ? seccion5.query.data.datos
+                            : (seccion5.query.data?.datos as any)?.filas ?? []
+                    }
+                    totalRegistros={(seccion5.query.data?.datos as any)?.total ?? 0}
+                    pagina={pageS5}
+                    limite={limitS5}
+                    onCambioPagina={setPageS5}
+                    onCambioLimite={(l: number) => { setLimitS5(l); setPageS5(1); }}
+                    cargando={seccion5.mutation.isPending || seccion5.query.isFetching || seccion5.deleteMutation.isPending}
                 />
             )
         }
