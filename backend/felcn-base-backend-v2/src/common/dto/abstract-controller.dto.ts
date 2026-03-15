@@ -57,6 +57,18 @@ export abstract class AbstractController {
     return this.makeResponse({ total, filas }, message)
   }
 
+  successPagedRows<T>(
+    data: ListaCantidadType<T>,
+    paginacion: { pagina?: number; limite?: number },
+    message = Messages.SUCCESS_LIST
+  ): SuccessResponseDto<{ filas: Array<T>; page: { size: number; number: number; totalElements: number; totalPages: number } }> {
+    const [filas, totalElements] = data
+    const size = paginacion?.limite ?? 10
+    const number = paginacion?.pagina ?? 1
+    const totalPages = size > 0 ? Math.ceil(totalElements / size) : 1
+    return this.makeResponse({ filas, page: { size, number, totalElements, totalPages } }, message)
+  }
+
   getUser(req) {
     if (req?.user?.id) {
       return req.user.id
