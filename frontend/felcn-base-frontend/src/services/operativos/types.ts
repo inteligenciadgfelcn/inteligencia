@@ -54,3 +54,23 @@ export interface OperativoPayload {
     organizacion: string
     clanFamiliar: string
 }
+
+export interface SustanciaPayload {
+    cantidad: number
+}
+
+export interface SustanciaSolidaPayload extends SustanciaPayload {
+    idSustanciaSolidaDescripcion: number
+}
+
+export interface SustanciaLiquidaPayload extends SustanciaPayload {
+    idSustanciaLiquidaDescripcion: number
+}
+
+export interface SustanciaLiquidaRespuesta {
+    id: number
+    idOerativo: number
+    idSustanciaLiquidaDescripcion: number
+    cantidad: number
+}
+
