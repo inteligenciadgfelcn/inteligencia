@@ -4,6 +4,11 @@ export interface RespuestaApi<T> {
     datos: T
 }
 
+export interface RespuestaApiPaginada<T> {
+    total: number
+    filas: T[]
+}
+
 export interface GestionOperativoResumen {
     id: number
     codigo: string
@@ -57,10 +62,20 @@ export interface OperativoPayload {
 
 export interface SustanciaPayload {
     cantidad: number
+    costo: number
 }
 
 export interface SustanciaSolidaPayload extends SustanciaPayload {
     idSustanciaSolidaDescripcion: number
+}
+
+export interface SustanciaSolidaRespuesta {
+    id: number
+    idOerativo: number
+    idSustanciaSolidaDescripcion: number
+    descripcionSustancia: string
+    cantidad: number
+    costo: number
 }
 
 export interface SustanciaLiquidaPayload extends SustanciaPayload {
@@ -71,6 +86,23 @@ export interface SustanciaLiquidaRespuesta {
     id: number
     idOerativo: number
     idSustanciaLiquidaDescripcion: number
+    descripcionSustancia: string
     cantidad: number
+    costo: number
 }
 
+export interface FabricaPayload {
+    idTipoFabrica: number
+    idFabricaModelo: number
+    cantidad: number
+    costo: number
+}
+
+export interface FabricaRespuesta {
+    id: number
+    idOerativo: number
+    idFabricaModelo: number
+    fabricaModelo: string
+    cantidad: number
+    costo: number
+}

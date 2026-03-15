@@ -19,7 +19,7 @@ interface SeccionFormProps {
     cargando?: boolean
 }
 
-export function SustanciasSolidas({
+export function Laboratorio({
     titulo,
     onGuardar,
     onEliminar,
@@ -32,17 +32,17 @@ export function SustanciasSolidas({
     onCambioLimite,
     cargando = false,
 }: SeccionFormProps) {
-    const [tipoSustancia, setTipoSustancia] = useState('')
-    const [kilos, setKilos] = useState('')
-    const [gramos, setGramos] = useState('')
-    const [costo, setCosto] = useState('')
-    const [opciones, setOpciones] = useState<{ id: string; label: string; value: string }[]>([])
+    const [tipoFabrica, setTipoFabrica] = useState('')
+    const [modeloFabrica, setModeloFabrica] = useState('')
+    const [cantidad, setCantidad] = useState('')
+    const [opcionesTipos, setOpcionesTipos] = useState<{ id: string; label: string; value: string }[]>([])
+    const [opcionesModelos, setOpcionesModelos] = useState<{ id: string; label: string; value: string }[]>([])
 
     useEffect(() => {
         let activo = true
-        const cargarOpciones = async () => {
+        const cargarTiposFabrica = async () => {
             try {
-                const res = await SiiiLookupsService.obtenerSustanciasSolidasDesc()
+                const res = await SiiiLookupsService.obtenerTiposFabrica()
                 if (!activo || !res?.finalizado) return
 
                 const items = (res.datos ?? []).map((item: any) => ({
@@ -50,36 +50,63 @@ export function SustanciasSolidas({
                     value: String(item.id),
                     label: String(item.descripcion),
                 }))
-                setOpciones(items)
+                setOpcionesTipos(items)
             } catch {
-                // Silently fail or use fallback
+                // Silencioso
             }
         }
-        void cargarOpciones()
+        void cargarTiposFabrica()
         return () => {
             activo = false
         }
     }, [])
 
-    const agregarSustancia = async () => {
-        if (!tipoSustancia || (!kilos && !gramos)) {
+    useEffect(() => {
+        let activo = true
+        setModeloFabrica('')
+        setOpcionesModelos([])
+
+        const cargarModelos = async () => {
+            if (!tipoFabrica) return
+            try {
+                const res = await SiiiLookupsService.obtenerModelosFabrica(parseInt(tipoFabrica))
+                if (!activo || !res?.finalizado) return
+
+                const items = (res.datos ?? []).map((item: any) => ({
+                    id: String(item.id),
+                    value: String(item.id),
+                    label: String(item.descripcion),
+                }))
+                setOpcionesModelos(items)
+            } catch {
+                // Silencioso
+            }
+        }
+        void cargarModelos()
+        return () => {
+            activo = false
+        }
+    }, [tipoFabrica])
+
+    const agregarFabrica = async () => {
+        if (!tipoFabrica || !modeloFabrica || !cantidad) {
             return
         }
 
-        const totalKilos = parseFloat(kilos || '0') + parseFloat(gramos || '0') / 1000
-
-        const nuevaSustancia = {
-            idSustanciaSolidaDescripcion: parseInt(tipoSustancia),
-            cantidad: totalKilos,
-            costo: parseFloat(costo || '0'),
+        // const modeloOpcion = opcionesModelos.find(o => o.value === modeloFabrica)
+        const nuevaFabrica = {
+            //idTipoFabrica: parseInt(tipoFabrica),
+            // tipoFabrica: opcionesTipos.find(o => o.value === tipoFabrica)?.label || tipoFabrica,
+            idFabricaModelo: parseInt(modeloFabrica),
+            // fabricaModelo: modeloOpcion?.label || modeloFabrica,
+            cantidad: parseInt(cantidad),
         }
 
-        await onGuardar(nuevaSustancia)
+        await onGuardar(nuevaFabrica)
 
-        setTipoSustancia('')
-        setKilos('')
-        setGramos('')
-        setCosto('')
+        setTipoFabrica('')
+        setModeloFabrica('')
+        setCantidad('')
     }
 
     const handleEliminar = async (id: number) => {
@@ -90,23 +117,22 @@ export function SustanciasSolidas({
 
     return (
         <div>
-
-            {/* SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS */}
-            <div className="rounded-md border border-[#e0e6ed] p-4">
-                <h4 className="mb-4 text-sm font-semibold">SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS</h4>
+            {/* LABORATORIOS Y FABRICAS */}
+            <div className="rounded-md border border-[#e0e6ed] p-4 mt-5">
+                <h4 className="mb-4 text-sm font-semibold">{titulo || 'LABORATORIOS Y FABRICAS'}</h4>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <label htmlFor="sustanciaQuimicaSolidaTipo" className="mb-1 block text-sm font-medium">
-                            Tipo de Sustancia
+                        <label htmlFor="laboratorioTipoFabrica" className="mb-1 block text-sm font-medium">
+                            Tipo de Fábrica/Laboratorio
                         </label>
                         <select
-                            id="sustanciaQuimicaSolidaTipo"
+                            id="laboratorioTipoFabrica"
                             className="form-select w-full"
-                            value={tipoSustancia}
-                            onChange={(e) => setTipoSustancia(e.target.value)}
+                            value={tipoFabrica}
+                            onChange={(e) => setTipoFabrica(e.target.value)}
                         >
                             <option value="">Seleccione un Dato</option>
-                            {opciones.map((opt) => (
+                            {opcionesTipos.map((opt) => (
                                 <option key={opt.id} value={opt.value}>
                                     {opt.label}
                                 </option>
@@ -115,58 +141,37 @@ export function SustanciasSolidas({
                     </div>
 
                     <div>
-                        <label htmlFor="sustanciaQuimicaSolidaKilos" className="mb-1 block text-sm font-medium">
-                            Kilos
+                        <label htmlFor="laboratorioModeloFabrica" className="mb-1 block text-sm font-medium">
+                            Modelo de Fábrica
                         </label>
-                        <input
-                            id="sustanciaQuimicaSolidaKilos"
-                            type="number"
-                            className="form-input w-full"
-                            value={kilos}
-                            onChange={(e) => setKilos(e.target.value)}
-                            placeholder="0"
-                        />
+                        <select
+                            id="laboratorioModeloFabrica"
+                            className="form-select w-full"
+                            value={modeloFabrica}
+                            onChange={(e) => setModeloFabrica(e.target.value)}
+                            disabled={!tipoFabrica || opcionesModelos.length === 0}
+                        >
+                            <option value="">Seleccione un Dato</option>
+                            {opcionesModelos.map((opt) => (
+                                <option key={opt.id} value={opt.value}>
+                                    {opt.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div>
-                        <label htmlFor="sustanciaQuimicaSolidaGramos" className="mb-1 block text-sm font-medium">
-                            Gramos
+                        <label htmlFor="laboratorioCantidad" className="mb-1 block text-sm font-medium">
+                            Cantidad
                         </label>
                         <input
-                            id="sustanciaQuimicaSolidaGramos"
+                            id="laboratorioCantidad"
                             type="number"
                             className="form-input w-full"
-                            value={gramos}
-                            onChange={(e) => {
-                                const val = e.target.value
-                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                                    setGramos(val)
-                                }
-                            }}
+                            value={cantidad}
+                            onChange={(e) => setCantidad(e.target.value)}
                             placeholder="0"
                             min="0"
-                            max="999"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="sustanciaSolidaCosto" className="mb-1 block text-sm font-medium">
-                            Costo
-                        </label>
-                        <input
-                            id="sustanciaSolidaCosto"
-                            type="number"
-                            className="form-input w-full"
-                            value={costo}
-                            onChange={(e) => {
-                                const val = e.target.value
-                                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
-                                    setCosto(val)
-                                }
-                            }}
-                            placeholder="0"
-                            min="0"
-                            step="0.01"
                         />
                     </div>
 
@@ -174,10 +179,10 @@ export function SustanciasSolidas({
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
-                            onClick={agregarSustancia}
+                            onClick={agregarFabrica}
                             disabled={cargando}
                         >
-                            Agregar Sustancia
+                            Agregar Laboratorio/Fabrica
                         </button>
                     </div>
                 </div>
@@ -196,31 +201,21 @@ export function SustanciasSolidas({
                             recordsPerPageOptions={[10, 20, 50]}
                             onRecordsPerPageChange={onCambioLimite ?? (() => { })}
                             columns={[
+                                { accessor: 'descripcionTipoFabrica', title: 'Tipo Fabrica' },
                                 {
-                                    accessor: 'descripcionSustancia',
-                                    title: 'Tipo de Sustancia',
-                                    footer: <span className="font-bold text-sm">Total Costo:</span>,
+                                    accessor: 'descripcionFabricaModelo',
+                                    title: 'Modelo Fabrica',
                                 },
                                 {
                                     accessor: 'cantidad',
-                                    title: 'Cantidad en Kilos',
+                                    title: 'Cantidad',
                                     textAlign: 'right',
-                                    render: (row: any) => Number(row.cantidad ?? 0).toFixed(3),
-                                },
-                                {
-                                    accessor: 'costo',
-                                    title: 'Costo',
-                                    textAlign: 'right',
-                                    render: (row: any) => Number(row.costo ?? 0).toFixed(2),
-                                    footer: (
-                                        <span className="font-bold text-sm">
-                                            {datos.reduce((sum, item) => sum + Number(item.costo ?? 0), 0).toFixed(2)}
-                                        </span>
-                                    ),
+                                    render: (row: any) => row.cantidad,
                                 },
                                 {
                                     accessor: 'actions',
                                     title: 'Acciones',
+                                    textAlign: 'center',
                                     render: (row: any) => (
                                         <button
                                             type="button"
