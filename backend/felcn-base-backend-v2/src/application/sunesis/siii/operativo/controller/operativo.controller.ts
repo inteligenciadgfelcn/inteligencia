@@ -149,7 +149,7 @@ export class OperativoController extends BaseController {
   @Get()
   async listar(@Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listar(paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   // ==================== OPERATIVO POR ID ====================
@@ -188,7 +188,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/drogas')
   async listarDrogas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarDrogas(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({
@@ -273,7 +273,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/sustancias-solidas')
   async listarSustanciasSolidas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarSustanciasSolidas(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar sustancia sólida al operativo' })
@@ -308,7 +308,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/sustancias-liquidas')
   async listarSustanciasLiquidas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarSustanciasLiquidas(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar sustancia líquida al operativo' })
@@ -343,7 +343,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/fabricas')
   async listarFabricas(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarFabricas(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar fábrica al operativo' })
@@ -378,7 +378,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/bienes')
   async listarBienes(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarBienes(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar bien secuestrado al operativo' })
@@ -420,7 +420,7 @@ export class OperativoController extends BaseController {
     @Query() paginacion: PaginacionQueryDto
   ) {
     const resultado = await this.operativoService.listarCaracteristicasBien(idOperativo, idBien, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar característica a un bien' })
@@ -470,7 +470,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/detenidos')
   async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar detenido al operativo' })
@@ -585,7 +585,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/galeria')
   async listarGaleria(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarGaleria(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar foto a la galería del operativo' })
@@ -665,7 +665,7 @@ export class OperativoController extends BaseController {
   @Get(':idOperativo/logotipos')
   async listarLogotipos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarLogotipos(idOperativo, paginacion)
-    return this.successListRows(resultado)
+    return this.successPagedRows(resultado, paginacion)
   }
 
   @ApiOperation({ summary: 'Agregar logotipo al operativo' })
