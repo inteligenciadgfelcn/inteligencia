@@ -34,10 +34,12 @@ function ImagenAutenticada({
   path,
   alt,
   className,
+  onClick,
 }: {
   path: string
   alt: string
   className?: string
+  onClick?: (src: string) => void
 }) {
   const [src, setSrc] = useState<string | null>(null)
 
@@ -57,7 +59,16 @@ function ImagenAutenticada({
   }, [path])
 
   if (!src) return null
-  return <img src={src} alt={alt} className={className} />
+  // blob URLs no son compatibles con next/image — se usa <img> intencionalmente
+  // eslint-disable-next-line @next/next/no-img-element
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={onClick ? `${className ?? ''} cursor-zoom-in` : className}
+      onClick={() => onClick?.(src)}
+    />
+  )
 }
 
 export function SeccionDrogasFotografiaLogotiposForm({
@@ -65,7 +76,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
 }: SeccionFormProps) {
   const {
     control: controlDrogas,
-    getValues: getDrogasValues,
     handleSubmit: handleSubmitDrogas,
     setValue: setDrogasValue,
     watch: watchDrogas,
@@ -169,6 +179,22 @@ export function SeccionDrogasFotografiaLogotiposForm({
     null
   )
 
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
+  const [idBolivia, setIdBolivia] = useState('')
+
+  useEffect(() => {
+    if (paises.length > 0) {
+      const bolivia = paises.find(
+        (p) => p.descripcion.trim().toLowerCase() === 'bolivia'
+      )
+      if (bolivia) {
+        setIdBolivia(String(bolivia.id))
+        setDrogasValue('idPaisProcedencia', String(bolivia.id))
+        setDrogasValue('idPaisDestino', String(bolivia.id))
+      }
+    }
+  }, [paises, setDrogasValue])
+
   const [cantidadTn, setCantidadTn] = useState('')
   const [cantidadKg, setCantidadKg] = useState('')
   const [cantidadG, setCantidadG] = useState('')
@@ -265,7 +291,18 @@ export function SeccionDrogasFotografiaLogotiposForm({
       })
       if (respuesta?.finalizado) {
         await cargarDrogas()
-        resetDrogas()
+        resetDrogas({
+          idTipoDroga: '',
+          idEstadoDroga: '',
+          cantidadGramos: '',
+          cantidadUnidades: '',
+          idFormaTransporte: '',
+          idPaisProcedencia: idBolivia,
+          idPaisDestino: idBolivia,
+          observaciones: '',
+          pruebaCampo: [],
+          pesaje: [],
+        })
         setCantidadTn('')
         setCantidadKg('')
         setCantidadG('')
@@ -309,9 +346,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }
 
   return (
-    <div>
+    <div className="space-y-5">
+      {/* ── 1. Formulario de registro ── */}
       <form onSubmit={handleSubmitDrogas(onSubmitDrogas)}>
-        <Card title="DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES">
+        <Card title="REGISTRO DE DROGA">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             <FormInputDropdown
               id="idTipoDroga"
@@ -381,13 +419,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 </div>
               </div>
             </div>
+
             <FormInputText
               id="cantidadUnidades"
               name="cantidadUnidades"
               label="Cantidad de Unidades"
               control={controlDrogas}
             />
-
             <FormInputDropdown
               id="idFormaTransporte"
               name="idFormaTransporte"
@@ -411,77 +449,103 @@ export function SeccionDrogasFotografiaLogotiposForm({
             />
 
             <div className="col-span-1 lg:col-span-3">
-              <FormInputFile
-                id="pruebaCampo"
-                name="pruebaCampo"
-                label="Fotografia Prueba de Campo"
-                control={controlDrogas}
-                limite={1}
-                tiposPermitidos={['image/*']}
-              />
-            </div>
-
-            <div className="col-span-1 lg:col-span-3">
-              <FormInputFile
-                id="pesaje"
-                name="pesaje"
-                label="Fotografia Cuantificacion y Pesaje"
-                control={controlDrogas}
-                limite={1}
-                tiposPermitidos={['image/*']}
-              />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormInputFile
+                  id="pruebaCampo"
+                  name="pruebaCampo"
+                  label="Fotografia Prueba de Campo"
+                  control={controlDrogas}
+                  limite={1}
+                  tiposPermitidos={['image/*']}
+                />
+                <FormInputFile
+                  id="pesaje"
+                  name="pesaje"
+                  label="Fotografia Cuantificacion y Pesaje"
+                  control={controlDrogas}
+                  limite={1}
+                  tiposPermitidos={['image/*']}
+                />
+              </div>
             </div>
 
             <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
               <Button variant="primary" type="submit" disabled={cargandoDrogas}>
-                Guardar
+                Guardar Droga
               </Button>
             </div>
           </div>
         </Card>
       </form>
 
-      <Card className="mt-5" title="DATOS DE LA DROGA">
+      {/* ── 2. Tabla de drogas con fotos integradas ── */}
+      <Card title="DROGAS REGISTRADAS">
         <div className="datatables">
           <DataTable
             withTableBorder={false}
             className="table-hover whitespace-nowrap"
             records={drogasItems}
             columns={[
-              { accessor: 'id', title: 'Id' },
-             
+              { accessor: 'id', title: '#' },
               {
-                accessor: 'estadoDroga',
-                title: 'Estado de la Droga',
-                render: (row) =>
-                  String(row.idEstadoDroga ?? row.idEstadoDroga ?? ''),
+                accessor: 'idEstadoDroga',
+                title: 'Estado',
+                render: (row) => String(row.idEstadoDroga ?? ''),
               },
               {
                 accessor: 'cantidadGramos',
-                title: 'Cantidad (gramos)',
+                title: 'Gramos',
                 render: (row) => String(row.cantidadGramos ?? ''),
               },
               {
                 accessor: 'cantidadUnidades',
-                title: 'Cantidad de Unidades',
+                title: 'Unidades',
                 render: (row) => String(row.cantidadUnidades ?? ''),
               },
               {
-                accessor: 'formaTransporte',
-                title: 'Forma de Transporte',
-                render: (row) =>
-                  String(row.idFormaTransporte ?? row.idFormaTransporte ?? ''),
+                accessor: 'idFormaTransporte',
+                title: 'Transporte',
+                render: (row) => String(row.idFormaTransporte ?? ''),
               },
               {
-                accessor: 'procedencia',
+                accessor: 'idPaisProcedencia',
                 title: 'Procedencia',
-                render: (row) =>
-                  String(row.idPaisProcedencia ?? row.idPaisProcedencia ?? ''),
+                render: (row) => String(row.idPaisProcedencia ?? ''),
               },
               {
-                accessor: 'destino',
+                accessor: 'idPaisDestino',
                 title: 'Destino',
-                render: (row) => String(row.idPaisDestino ?? row.idPaisDestino ?? ''),
+                render: (row) => String(row.idPaisDestino ?? ''),
+              },
+              {
+                accessor: 'urlFotoPruebaCampo',
+                title: 'Prueba Campo',
+                render: (row) =>
+                  row.urlFotoPruebaCampo ? (
+                    <ImagenAutenticada
+                      path={row.urlFotoPruebaCampo}
+                      alt="Prueba de Campo"
+                      className="h-14 w-20 rounded object-cover shadow-sm"
+                      onClick={setImagenAmpliada}
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  ),
+              },
+              {
+                accessor: 'urlFotoPesaje',
+                title: 'Pesaje',
+                render: (row) =>
+                  row.urlFotoPesaje ? (
+                    <ImagenAutenticada
+                      path={row.urlFotoPesaje}
+                      alt="Pesaje"
+                      className="h-14 w-20 rounded object-cover shadow-sm"
+                      onClick={setImagenAmpliada}
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  ),
               },
               {
                 accessor: 'actions',
@@ -491,20 +555,23 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     <Button
                       type="button"
                       size="sm"
-                      variant="outline-primary"
-                      onClick={() => {
-                        const idDroga = row.id
-                        if (idDroga > 0) {
-                          setDrogaSeleccionadaId(idDroga)
-                        }
-                      }}
+                      variant={
+                        drogaSeleccionadaId === row.id
+                          ? 'primary'
+                          : 'outline-primary'
+                      }
+                      onClick={() =>
+                        setDrogaSeleccionadaId(
+                          drogaSeleccionadaId === row.id ? null : row.id
+                        )
+                      }
                     >
                       Logotipos
                     </Button>
                     <button
                       type="button"
                       className="text-danger"
-                      onClick={() => deleteDrogaItem(row.id)}
+                      onClick={() => { void deleteDrogaItem(row.id) }}
                     >
                       <IconTrashLines />
                     </button>
@@ -517,177 +584,188 @@ export function SeccionDrogasFotografiaLogotiposForm({
         </div>
       </Card>
 
-      <Card
-        title="FOTOGRAFIA DE LA PRUEBA DE CAMPO Y LA CUANTIFICACION, PESAJE DE LA SUSTANCIA SECUESTRADA"
-        className="mt-5"
-      >
-        <div className="datatables">
-          <DataTable
-            withTableBorder={false}
-            className="table-hover whitespace-nowrap"
-            records={drogasItems}
-            columns={[
-              { accessor: 'id', title: 'Id' },
-         
-              {
-                accessor: 'pruebaCampo',
-                title: 'Prueba de Campo',
-                render: (row) =>
-                  row.urlFotoPruebaCampo ? (
-                    <ImagenAutenticada
-                      path={row.urlFotoPruebaCampo}
-                      alt="Prueba de Campo"
-                      className="h-20 w-32 rounded object-cover shadow-sm"
-                    />
-                  ) : null,
-              },
-              {
-                accessor: 'pesaje',
-                title: 'Cuantificacion y Pesaje',
-                render: (row) =>
-                  row.urlFotoPesaje ? (
-                    <ImagenAutenticada
-                      path={row.urlFotoPesaje}
-                      alt="Cuantificacion"
-                      className="h-20 w-32 rounded object-cover shadow-sm"
-                    />
-                  ) : null,
-              },
-            ]}
-            highlightOnHover
-          />
-        </div>
-      </Card>
+      {/* ── 3. Panel anidado de logotipos (visible al seleccionar una droga) ── */}
+      {drogaSeleccionadaId && (
+        <div className="relative ml-6 border-l-2 border-primary pl-6">
+          {/* Conector visual */}
+          <div className="absolute -left-[9px] top-5 h-4 w-4 rounded-full border-2 border-primary bg-white dark:bg-black" />
 
-      <form onSubmit={handleSubmitLogos(onSubmitLogotipos)}>
-        <Card
-          title={
-            drogaSeleccionadaId
-              ? `LOGOTIPOS (Droga #${drogaSeleccionadaId})`
-              : 'LOGOTIPOS'
-          }
-          className="mt-5"
-        >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <FormInputText
-              id="imagen"
-              name="imagen"
-              label="Imagen"
-              control={controlLogos}
-            />
-            <FormInputText
-              id="descripcionLogo"
-              name="descripcionLogo"
-              label="Descripcion del Logo"
-              control={controlLogos}
-            />
-            <FormInputText
-              id="organizacion"
-              name="organizacion"
-              label="Organizacion Criminal"
-              control={controlLogos}
-            />
-
-            <FormInputText
-              id="blanco"
-              name="blanco"
-              label="Posibles Blancos"
-              control={controlLogos}
-            />
-            <FormInputText
-              id="observacion"
-              name="observacion"
-              label="Observacion"
-              control={controlLogos}
-            />
-            <div className="hidden lg:block" />
-
-            <div className="col-span-1 lg:col-span-3">
-              <FormInputFile
-                id="fotografia"
-                name="fotografia"
-                label="Fotografia"
-                control={controlLogos}
-                limite={1}
-                tiposPermitidos={['image/*']}
-              />
+          {/* Cabecera del panel */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-white">
+                Droga #{drogaSeleccionadaId}
+              </span>
+              <span className="text-sm font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                Logotipos asociados
+              </span>
             </div>
-
-            <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={cargandoLogotipos}
-              >
-                Guardar Logo
-              </Button>
-            </div>
+            <button
+              type="button"
+              className="text-xs text-gray-400 hover:text-danger"
+              onClick={() => setDrogaSeleccionadaId(null)}
+            >
+              ✕ Cerrar
+            </button>
           </div>
-        </Card>
-      </form>
 
-      <Card className="mt-5" title="DETALLE DE LOGOTIPOS">
-        <div className="datatables">
-          <DataTable
-            withTableBorder={false}
-            className="table-hover whitespace-nowrap"
-            records={logotiposItems}
-            columns={[
-              { accessor: 'id', title: 'Id' },
-              {
-                accessor: 'descripcionLogo',
-                title: 'Descripcion',
-                render: (row) => String(row.descripcionLogo ?? ''),
-              },
-              {
-                accessor: 'organizacion',
-                title: 'Organizacion',
-                render: (row) => String(row.organizacion ?? ''),
-              },
-              {
-                accessor: 'blanco',
-                title: 'Blancos',
-                render: (row) => String(row.blanco ?? ''),
-              },
-              {
-                accessor: 'observacion',
-                title: 'Observacion',
-                render: (row) => String(row.observacion ?? ''),
-              },
-              {
-                accessor: 'foto',
-                title: 'Foto',
-                render: (row) => {
-                  const fotoUrl = (row as unknown as Record<string, unknown>).fotografiaUrl ?? (row as unknown as Record<string, unknown>).urlFotografia
-                  return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
-                    <img
-                      src={fotoUrl}
-                      alt="Logotipo"
-                      className="h-20 w-32 rounded object-cover shadow-sm"
+          <div className="space-y-4">
+            {/* Formulario de logotipo */}
+            <form onSubmit={handleSubmitLogos(onSubmitLogotipos)}>
+              <Card title="REGISTRAR LOGOTIPO">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <FormInputText
+                    id="imagen"
+                    name="imagen"
+                    label="Imagen"
+                    control={controlLogos}
+                  />
+                  <FormInputText
+                    id="descripcionLogo"
+                    name="descripcionLogo"
+                    label="Descripcion del Logo"
+                    control={controlLogos}
+                  />
+                  <FormInputText
+                    id="organizacion"
+                    name="organizacion"
+                    label="Organizacion Criminal"
+                    control={controlLogos}
+                  />
+                  <FormInputText
+                    id="blanco"
+                    name="blanco"
+                    label="Posibles Blancos"
+                    control={controlLogos}
+                  />
+                  <FormInputText
+                    id="observacion"
+                    name="observacion"
+                    label="Observacion"
+                    control={controlLogos}
+                  />
+                  <div className="hidden lg:block" />
+
+                  <div className="col-span-1 lg:col-span-3">
+                    <FormInputFile
+                      id="fotografia"
+                      name="fotografia"
+                      label="Fotografia"
+                      control={controlLogos}
+                      limite={1}
+                      tiposPermitidos={['image/*']}
                     />
-                  ) : null
-                },
-              },
-              {
-                accessor: 'actions',
-                title: '',
-                render: (row) => (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      className="text-danger"
-                      onClick={() => deleteLogotipoItem(row.id)}
-                    >
-                      <IconTrashLines />
-                    </button>
                   </div>
-                ),
-              },
-            ]}
-            highlightOnHover
-          />
+
+                  <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      disabled={cargandoLogotipos}
+                    >
+                      Guardar Logotipo
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </form>
+
+            {/* Tabla de logotipos */}
+            <Card title="LOGOTIPOS REGISTRADOS">
+              <div className="datatables">
+                <DataTable
+                  withTableBorder={false}
+                  className="table-hover whitespace-nowrap"
+                  records={logotiposItems}
+                  columns={[
+                    { accessor: 'id', title: '#' },
+                    {
+                      accessor: 'descripcionLogo',
+                      title: 'Descripcion',
+                      render: (row) => String(row.descripcionLogo ?? ''),
+                    },
+                    {
+                      accessor: 'organizacion',
+                      title: 'Organizacion',
+                      render: (row) => String(row.organizacion ?? ''),
+                    },
+                    {
+                      accessor: 'blanco',
+                      title: 'Blancos',
+                      render: (row) => String(row.blanco ?? ''),
+                    },
+                    {
+                      accessor: 'observacion',
+                      title: 'Observacion',
+                      render: (row) => String(row.observacion ?? ''),
+                    },
+                    {
+                      accessor: 'foto',
+                      title: 'Foto',
+                      render: (row) => {
+                        const fotoUrl =
+                          (row as unknown as Record<string, unknown>)
+                            .fotografiaUrl ??
+                          (row as unknown as Record<string, unknown>)
+                            .urlFotografia
+                        return typeof fotoUrl === 'string' &&
+                          fotoUrl.length > 0 ? (
+                          <ImagenAutenticada
+                            path={fotoUrl}
+                            alt="Logotipo"
+                            className="h-14 w-20 rounded object-cover shadow-sm"
+                            onClick={setImagenAmpliada}
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )
+                      },
+                    },
+                    {
+                      accessor: 'actions',
+                      title: '',
+                      render: (row) => (
+                        <button
+                          type="button"
+                          className="text-danger"
+                          onClick={() => { void deleteLogotipoItem(row.id) }}
+                        >
+                          <IconTrashLines />
+                        </button>
+                      ),
+                    },
+                  ]}
+                  highlightOnHover
+                />
+              </div>
+            </Card>
+          </div>
         </div>
-      </Card>
+      )}
+
+      {/* ── Lightbox ── */}
+      {imagenAmpliada && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setImagenAmpliada(null)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imagenAmpliada}
+              alt="Vista ampliada"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            <button
+              type="button"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setImagenAmpliada(null)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
