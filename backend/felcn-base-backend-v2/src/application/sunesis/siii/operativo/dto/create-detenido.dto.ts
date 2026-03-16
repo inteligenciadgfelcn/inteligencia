@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Type, Transform } from 'class-transformer'
 import {
   IsNotEmpty,
   IsNumber,
@@ -37,11 +38,13 @@ export class CreateDetenidoDto {
   apellidoEsposo?: string
 
   @ApiProperty({ description: 'ID país (nacionalidad)', example: 70 })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsNumber()
   idPais: number
 
   @ApiProperty({ description: 'ID tipo de documento', example: 1 })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsNumber()
   idTipoDocumento: number
@@ -52,17 +55,16 @@ export class CreateDetenidoDto {
   @MaxLength(35)
   nroDocumento: string
 
-  @ApiPropertyOptional({
-    description: 'Fecha de nacimiento',
-    example: '1985-05-15',
-  })
+  @ApiPropertyOptional({ description: 'Fecha de nacimiento', example: '1985-05-15' })
   @IsOptional()
   @IsDateString()
   fechaNacimiento?: string
 
-  @ApiProperty({
-    description: 'Género (true = Masculino, false = Femenino)',
-    example: true,
+  @ApiProperty({ description: 'Género (true = Masculino, false = Femenino)', example: true })
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true
+    if (value === 'false' || value === false) return false
+    return value
   })
   @IsNotEmpty()
   @IsBoolean()
