@@ -4,7 +4,7 @@ set -e -o errtrace
 trap "echo -e '\n\nERROR: Ocurrió un error mientras se ejecutaba el script :(\n\n'" ERR
 
 # Manejo de argumentos para el nombre del contenedor
-dockerContainer="${1:-pg16}"
+dockerContainer="${1:-postgres16}"
 
 echo -e "\n\n >>> Creando Base de datos en $dockerContainer...\n"
 sleep 2;

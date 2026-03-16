@@ -15,4 +15,14 @@ export class UsuarioDto {
   ciudadaniaDigital?: boolean
 
   usuarioCreacion?: string
+
+  nombreApp?: string | null
+
+  telefonoCelular?: string | null
+
+  telefonoCorporativo?: string | null
+
+  idGrado?: number | null
+
+  idGrupo?: number | null
 }

@@ -31,6 +31,8 @@ export class UsuarioRepository {
         estado: RolEstado.ACTIVE,
       })
       .leftJoinAndSelect('usuario.persona', 'persona')
+      .leftJoin('usuario.grado', 'grado')
+      .leftJoin('usuario.grupo', 'grupo')
       .select([
         'usuario.id',
         'usuario.usuario',
@@ -38,6 +40,9 @@ export class UsuarioRepository {
         'usuario.estado',
         'usuario.ciudadaniaDigital',
         'usuario.fechaCreacion',
+        'usuario.nombreApp',
+        'usuario.idGrado',
+        'usuario.idGrupo',
         'usuarioRol',
         'rol.id',
         'rol.rol',
@@ -49,6 +54,11 @@ export class UsuarioRepository {
         'persona.fechaNacimiento',
         'persona.tipoDocumento',
         'persona.telefono',
+        'grado.id',
+        'grado.abreviatura',
+        'grado.descripcion',
+        'grupo.id',
+        'grupo.descripcion',
       ])
       .take(limite)
       .skip(saltar)
@@ -150,6 +160,10 @@ export class UsuarioRepository {
       .leftJoinAndSelect('usuario.usuarioRol', 'usuarioRol')
       .leftJoinAndSelect('usuarioRol.rol', 'rol')
       .leftJoinAndSelect('usuario.persona', 'persona')
+      .leftJoin('usuario.grado', 'grado')
+      .leftJoin('usuario.grupo', 'grupo')
+      .leftJoin('grupo.distrital', 'distrital')
+      .leftJoin('distrital.unidad', 'unidad')
       .select([
         'usuario.id',
         'usuario.usuario',
@@ -157,6 +171,11 @@ export class UsuarioRepository {
         'usuario.estado',
         'usuario.ciudadaniaDigital',
         'usuario.fechaCreacion',
+        'usuario.nombreApp',
+        'usuario.telefonoCelular',
+        'usuario.telefonoCorporativo',
+        'usuario.idGrado',
+        'usuario.idGrupo',
         'usuarioRol',
         'rol.id',
         'rol.rol',
@@ -166,6 +185,17 @@ export class UsuarioRepository {
         'persona.segundoApellido',
         'persona.fechaNacimiento',
         'persona.tipoDocumento',
+        'persona.telefono',
+        'grado.id',
+        'grado.abreviatura',
+        'grado.descripcion',
+        'grupo.id',
+        'grupo.descripcion',
+        'distrital.id',
+        'distrital.descripcion',
+        'unidad.id',
+        'unidad.abreviatura',
+        'unidad.descripcion',
       ])
       .where('usuarioRol.estado = :estado', { estado: UsuarioRolEstado.ACTIVE })
       .andWhere('usuario.id = :id', { id })
@@ -208,6 +238,8 @@ export class UsuarioRepository {
       .leftJoinAndSelect('usuarioRol.rol', 'rol', 'rol.estado = :estado', {
         estado: RolEstado.ACTIVE,
       })
+      .leftJoin('usuario.grado', 'grado')
+      .leftJoin('usuario.grupo', 'grupo')
       .select([
         'usuario.id',
         'usuario.usuario',
@@ -216,6 +248,9 @@ export class UsuarioRepository {
         'usuario.estado',
         'usuario.ciudadaniaDigital',
         'usuario.urlFoto',
+        'usuario.nombreApp',
+        'usuario.idGrado',
+        'usuario.idGrupo',
         'persona.nombres',
         'persona.primerApellido',
         'persona.segundoApellido',
@@ -225,6 +260,11 @@ export class UsuarioRepository {
         'persona.telefono',
         'usuarioRol',
         'rol',
+        'grado.id',
+        'grado.abreviatura',
+        'grado.descripcion',
+        'grupo.id',
+        'grupo.descripcion',
       ])
       .where({ id })
       .getOne()
@@ -287,6 +327,11 @@ export class UsuarioRepository {
           usuarioDto?.contrasena ??
           (await TextService.encrypt(TextService.generateUuid())),
         ciudadaniaDigital: usuarioDto?.ciudadaniaDigital ?? false,
+        nombreApp: usuarioDto?.nombreApp,
+        telefonoCelular: usuarioDto?.telefonoCelular,
+        telefonoCorporativo: usuarioDto?.telefonoCorporativo,
+        idGrado: usuarioDto?.idGrado,
+        idGrupo: usuarioDto?.idGrupo,
         usuarioCreacion: usuarioAuditoria,
       })
     )
@@ -317,6 +362,11 @@ export class UsuarioRepository {
       usuarioModificacion: usuarioAuditoria,
       ciudadaniaDigital: usuarioDto.ciudadaniaDigital || undefined,
       urlFoto: usuarioDto.urlFoto,
+      nombreApp: usuarioDto.nombreApp,
+      telefonoCelular: usuarioDto.telefonoCelular,
+      telefonoCorporativo: usuarioDto.telefonoCorporativo,
+      idGrado: usuarioDto.idGrado,
+      idGrupo: usuarioDto.idGrupo,
     })
     return await repo.update(idUsuario, datosActualizar)
   }

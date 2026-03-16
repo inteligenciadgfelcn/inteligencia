@@ -4,6 +4,8 @@ import { AuthorizationModule } from './authorization/authorization.module'
 import { ConfigCoreModule } from './config/config.module'
 import { ExternalServicesModule } from './external-services/external.module'
 import { FileModule } from '@/core/file/file.module'
+import { EstructuraModule } from './estructura/estructura.module'
+import { AuditoriaModule } from './auditoria/auditoria.module'
 
 @Module({
   imports: [
@@ -12,7 +14,9 @@ import { FileModule } from '@/core/file/file.module'
     AuthorizationModule,
     AuthenticationModule,
     FileModule,
+    EstructuraModule,
+    AuditoriaModule,
   ],
-  exports: [ExternalServicesModule],
+  exports: [ExternalServicesModule, AuditoriaModule],
 })
 export class CoreModule {}

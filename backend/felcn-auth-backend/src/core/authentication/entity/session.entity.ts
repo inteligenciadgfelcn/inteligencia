@@ -4,7 +4,7 @@ import { ISession } from 'connect-typeorm'
 
 dotenv.config()
 
-@Entity()
+@Entity({ name: 'session', schema: process.env.DB_SCHEMA_USUARIO })
 export class Session implements ISession {
   @Index()
   @Column('bigint', { comment: 'Fecha de expiración de sesión' })
