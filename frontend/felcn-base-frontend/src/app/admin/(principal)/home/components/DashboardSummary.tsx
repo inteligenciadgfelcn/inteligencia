@@ -45,7 +45,7 @@ export default function DashboardSummary() {
     queryKey: ['users'],
     queryFn: () =>
       sesionPeticion<UsuariosResponse>({
-        url: `${Constantes.baseUrl}/usuarios`,
+        url: `${Constantes.authUrl}/usuarios`,
         method: 'get',
         params: { pagina: 1, limite: 10 },
       }),
@@ -56,7 +56,7 @@ export default function DashboardSummary() {
     queryKey: ['roles'],
     queryFn: () =>
       sesionPeticion<RolesResponse>({
-        url: `${Constantes.baseUrl}/autorizacion/roles/todos`,
+        url: `${Constantes.authUrl}/autorizacion/roles/todos`,
         method: 'get',
         params: { pagina: 1, limite: 10 },
       }),
@@ -67,7 +67,7 @@ export default function DashboardSummary() {
     queryKey: ['modules'],
     queryFn: () =>
       sesionPeticion<ModulosResponse>({
-        url: `${Constantes.baseUrl}/autorizacion/modulos`,
+        url: `${Constantes.authUrl}/autorizacion/modulos`,
         method: 'get',
         params: { pagina: 1, limite: 10 },
       }),

@@ -43,7 +43,7 @@ export const AlertaRestablecerContrasena: React.FC<
       setLoading(true)
       await delay(1000) // Simular carga
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/${usuario.id}/restauracion`,
+        url: `${Constantes.authUrl}/usuarios/${usuario.id}/restauracion`,
         method: 'patch',
       })
       imprimir(`respuesta restablecer contraseña: ${respuesta}`)

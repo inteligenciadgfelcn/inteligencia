@@ -69,7 +69,7 @@ export default function RegisterVristo() {
       setLoading(true)
 
       const resp = await Servicios.peticion({
-        url: `${Constantes.baseUrl}/usuarios/crear-cuenta`,
+        url: `${Constantes.authUrl}/usuarios/crear-cuenta`,
         method: 'post',
         body: {
           correoElectronico: data.correoElectronico,

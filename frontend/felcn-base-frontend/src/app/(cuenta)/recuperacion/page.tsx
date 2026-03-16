@@ -65,7 +65,7 @@ export default function RecuperacionPage() {
       await delay(1000)
 
       const respuesta = await Servicios.post({
-        url: `${Constantes.baseUrl}/usuarios/recuperar`,
+        url: `${Constantes.authUrl}/usuarios/recuperar`,
         body: { correoElectronico },
       })
 
@@ -85,7 +85,7 @@ export default function RecuperacionPage() {
       await delay(1000)
 
       const respuesta = await Servicios.post({
-        url: `${Constantes.baseUrl}/usuarios/validar-recuperar`,
+        url: `${Constantes.authUrl}/usuarios/validar-recuperar`,
         body: { codigo },
       })
 
