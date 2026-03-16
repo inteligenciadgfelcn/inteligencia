@@ -19,7 +19,7 @@ import { CatalogoCaracteristica } from './catalogo-caracteristica.entity'
 @Entity({ name: 'item_bien_caracteristica', schema: SCHEMA_PUBLIC })
 export class ItemBienCaracteristica {
   @PrimaryGeneratedColumn({
-    type: 'bigint',
+    type: 'integer',
     name: 'id_item_bien_caracteristica',
   })
   id: string
@@ -30,7 +30,7 @@ export class ItemBienCaracteristica {
   @Column({ name: 'id_catalogo_caracteristica', type: 'integer' })
   idCatalogoCaracteristica: number
 
-  @Column({ name: 'descripcion', type: 'varchar', length: 255 })
+  @Column({ name: 'descripcion', type: 'varchar', length: 50 })
   descripcion: string
 
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })

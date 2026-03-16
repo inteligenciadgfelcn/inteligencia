@@ -266,6 +266,26 @@ export class LookupController extends BaseController {
     return this.successList(await this.lookupService.listarTiposCabello())
   }
 
+  // ==================== LOOKUPS ESTÁTICOS ====================
+
+  @ApiOperation({
+    summary: 'Listar géneros',
+    description: 'Valores configurados en .env (LOOKUP_GENERO). Retorna id y descripcion.',
+  })
+  @Get('generos')
+  listarGeneros() {
+    return this.successList(this.lookupService.listarGenero())
+  }
+
+  @ApiOperation({
+    summary: 'Listar estados del sujeto del operativo',
+    description: 'Valores configurados en .env (LOOKUP_ESTADO_SUJETO). Retorna id y descripcion.',
+  })
+  @Get('estados-sujeto')
+  listarEstadosSujeto() {
+    return this.successList(this.lookupService.listarEstadoSujeto())
+  }
+
   // ==================== ESTRUCTURA ORGANIZACIONAL ====================
 
   @ApiOperation({ summary: 'Listar unidades' })
