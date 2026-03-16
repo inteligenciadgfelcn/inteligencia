@@ -1,5 +1,9 @@
+import { ColorCabello } from '@/application/inteligencia/felcn_siii/parametricas/color_cabello/entities/color_cabello.entity'
+import { ColorOjo } from '@/application/inteligencia/felcn_siii/parametricas/color_ojos/entities/color_ojo.entity'
+import { ColorPiel } from '@/application/inteligencia/felcn_siii/parametricas/color_piel/entities/color_piel.entity'
 import { EstadoCivil } from '@/application/inteligencia/felcn_siii/parametricas/estado_civil/entities/estado_civil.entity'
 import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
+import { TipoCabello } from '@/application/inteligencia/felcn_siii/parametricas/tipo_cabello/entities/tipo_cabello.entity'
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -8,14 +12,22 @@ import {
   Entity,
 } from 'typeorm'
 
-@Entity({ name: 'detenido', schema: 'public' })
-export class Detenido {
+@Entity({ name: 'arrestado_auxiliar', schema: 'public' })
+export class ArrestadoAuxiliar {
   @PrimaryGeneratedColumn({
-    name: 'id_detenido',
+    name: 'id_arrestado_auxiliar',
     type: 'int',
-    comment: 'Clave primaria del registro de filiación del detenido',
+    comment: 'Clave primaria del registro de arrestado auxiliar',
   })
-  idDetenido: number
+  idArrestadoAuxiliar: number
+
+  @Column({
+    name: 'id_operativo',
+    type: 'int',
+    nullable: true,
+    comment: 'Identificador del operativo relacionado',
+  })
+  idOperativo: number
 
   @Column({
     name: 'numero_caso',
@@ -61,6 +73,14 @@ export class Detenido {
   })
   apellidoEsposo: string
 
+  @Column({
+    name: 'es_masculino',
+    type: 'boolean',
+    nullable: true,
+    comment: 'Indica si el detenido es de sexo masculino',
+  })
+  genero: boolean
+
   @ManyToOne(() => Pais)
   @JoinColumn({
     name: 'id_pais',
@@ -68,12 +88,12 @@ export class Detenido {
   pais: Pais
 
   @Column({
-    name: 'genero',
-    type: 'boolean',
+    name: 'numero_documento',
+    type: 'varchar',
     nullable: true,
-    comment: 'Indica si el detenido es de sexo masculino',
+    comment: 'Numero de documento de identificación',
   })
-  genero: boolean
+  numeroDocumento: string
 
   @Column({
     name: 'fecha_nacimiento',
@@ -83,6 +103,14 @@ export class Detenido {
   })
   fechaNacimiento: Date
 
+  @Column({
+    name: 'lugar_nacimiento',
+    type: 'varchar',
+    nullable: true,
+    comment: 'Fecha de nacimiento del detenido',
+  })
+  lugarNacimiento: Date
+
   @ManyToOne(() => EstadoCivil)
   @JoinColumn({
     name: 'id_estado_civil',
@@ -90,46 +118,12 @@ export class Detenido {
   estadoCivil: EstadoCivil
 
   @Column({
-    name: 'serie',
+    name: 'ocupacion',
     type: 'varchar',
-    length: 50,
-    nullable: false,
-    comment: 'Serie de licencia de conducir',
-  })
-  serie: string
-
-  @Column({
-    name: 'seccion',
-    type: 'varchar',
-    nullable: false,
-    length: 50,
-    comment: '',
-  })
-  seccion: string
-
-  @Column({
-    name: 'foto_frente',
-    type: 'text',
     nullable: true,
-    comment: 'Fotografía frontal del detenido',
+    comment: 'Profesión del arrestado',
   })
-  fotoFrente: string
-
-  @Column({
-    name: 'foto_perfil_derecho',
-    type: 'text',
-    nullable: true,
-    comment: 'Fotografía del perfil derecho',
-  })
-  fotoPerfilDerecho: string
-
-  @Column({
-    name: 'foto_perfil_izquierdo',
-    type: 'text',
-    nullable: true,
-    comment: 'Fotografía del perfil izquierdo',
-  })
-  fotoPerfilIzquierdo: string
+  ocupacion: string
 
   @Column({
     name: 'direccion',
@@ -140,12 +134,67 @@ export class Detenido {
   direccion: string
 
   @Column({
-    name: 'lugar_operativo',
+    name: 'estatura',
+    type: 'varchar',
+    length: 10,
+  })
+  estatura: string
+
+  @Column({
+    name: 'foto_frente',
     type: 'text',
     nullable: true,
-    comment: 'Dirección del detenido',
+    comment: 'Fotografía frontal del detenido',
   })
-  lugarOperativo: string
+  fotoFrente: string
+
+  @Column({
+    name: 'foto_dedo_derecho',
+    type: 'text',
+    nullable: true,
+    comment: 'Fotografía del dedo derecho',
+  })
+  fotoDedoDerecho: string
+
+  @Column({
+    name: 'foto_dedo_izquierdo',
+    type: 'text',
+    nullable: true,
+    comment: 'Fotografía del dedo izquierdo',
+  })
+  fotoDedoIzquierdo: string
+
+  @ManyToOne(() => ColorPiel)
+  @JoinColumn({ name: 'id_color_piel' })
+  colorPiel: ColorPiel
+
+  @ManyToOne(() => ColorOjo)
+  @JoinColumn({ name: 'id_color_ojos' })
+  colorOjos: ColorOjo
+
+  @ManyToOne(() => TipoCabello)
+  @JoinColumn({ name: 'id_tipo_cabello' })
+  tipoCabello: TipoCabello
+
+  @ManyToOne(() => ColorCabello)
+  @JoinColumn({ name: 'id_color_cabello' })
+  colorCabello: ColorCabello
+
+  @Column({
+    name: 'senas',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  senasParticulares: string
+
+  @Column({
+    name: 'lugar_arresto',
+    type: 'varchar',
+    nullable: true,
+    comment: 'Lugar de arresto',
+  })
+  lugarArresto: string
 
   @Column({
     name: 'observaciones',
@@ -154,47 +203,6 @@ export class Detenido {
     comment: 'Observaciones generales',
   })
   observaciones: string
-
-  @Column({
-    name: 'es_actual',
-    type: 'boolean',
-    nullable: true,
-    comment: 'Indica si el registro es el actual',
-  })
-  esActual: boolean
-
-  @Column({
-    name: 'es_revision_icia',
-    type: 'boolean',
-    nullable: true,
-    comment: 'Indica si está en revisión ICIA',
-  })
-  esRevisionIcia: boolean
-
-  @Column({
-    name: 'tiene_tarjeta',
-    type: 'boolean',
-    nullable: true,
-    comment: 'Indica si tiene tarjeta de registro',
-  })
-  tieneTarjeta: boolean
-
-  @Column({
-    name: 'esta_vivo',
-    type: 'boolean',
-    nullable: true,
-    comment: 'Indica si el detenido se encuentra con vida',
-  })
-  estaVivo: boolean
-
-  @Column({
-    name: 'observaciones_adicionales',
-    type: 'text',
-    nullable: true,
-    comment: 'Observaciones adicionales del registro',
-  })
-  observacionesAdicionales: string
-
   @Column({
     name: 'fecha_hora_ingreso',
     type: 'timestamp',
@@ -213,7 +221,7 @@ export class Detenido {
   usuario: string
 
   @Column({
-    name: 'fecha_hora actualizacion',
+    name: 'fecha_hora_actualizacion',
     type: 'timestamp',
     nullable: true,
     comment: 'Fecha y hora de última actualización',
