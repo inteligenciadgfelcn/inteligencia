@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
@@ -21,6 +21,7 @@ import {
     useSeccion7,
     useSeccion8,
 } from '../hooks/useGestionOperativoSecciones'
+import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
 
 interface FormGestionOperativoProps {
     idGestionOperativo?: string
@@ -48,23 +49,57 @@ export function FormGestionOperativo({
         guardandoCabecera,
     } = useGestionOperativoForm(idGestionOperativo)
 
-    const seccion1 = useSeccion1(id)
-    const seccion2 = useSeccion2(id)
+    const [tieneOperativo, setTieneOperativo] = useState<boolean | null>(null)
+    const [idOperativo, setIdOperativo] = useState<number>(0)
+
+    const [seccionesVisitadas, setSeccionesVisitadas] = useState<Set<SeccionKey>>(
+        new Set(['seccion-1'])
+    )
+
+    const handleSetSeccionActiva = useCallback((key: SeccionKey) => {
+        setSeccionActiva(key)
+        setSeccionesVisitadas((prev) => {
+            if (prev.has(key)) return prev
+            const siguiente = new Set(prev)
+            siguiente.add(key)
+            return siguiente
+        })
+    }, [setSeccionActiva])
+
+    const verificarOperativo = useCallback(async () => {
+        if (id <= 0) return
+        try {
+            const resp = await GestionOperativosDatosGeneralesService.obtenerPorUsuario(id)
+            const operativoExiste = resp?.datos?.operativos && resp.datos.operativos.length > 0
+            setTieneOperativo(operativoExiste)
+            setIdOperativo(operativoExiste ? resp.datos.operativos[0].id : 0)
+        } catch {
+            setTieneOperativo(false)
+            setIdOperativo(0)
+        }
+    }, [id])
+
+    useEffect(() => {
+        void verificarOperativo()
+    }, [verificarOperativo])
+
+    const seccion1 = useSeccion1(id, seccionesVisitadas.has('seccion-1'))
+    const seccion2 = useSeccion2(idOperativo, seccionesVisitadas.has('seccion-2'))
 
     const [pageS3, setPageS3] = useState(1)
     const [limitS3, setLimitS3] = useState(10)
-    const seccion3 = useSeccion3(id, pageS3, limitS3)
+    const seccion3 = useSeccion3(idOperativo, pageS3, limitS3, seccionesVisitadas.has('seccion-3'))
 
     const [pageS4, setPageS4] = useState(1)
     const [limitS4, setLimitS4] = useState(10)
-    const seccion4 = useSeccion4(id, pageS4, limitS4)
+    const seccion4 = useSeccion4(idOperativo, pageS4, limitS4, seccionesVisitadas.has('seccion-4'))
 
     const [pageS5, setPageS5] = useState(1)
     const [limitS5, setLimitS5] = useState(10)
-    const seccion5 = useSeccion5(id, pageS5, limitS5)
-    const seccion6 = useSeccion6(id)
-    const seccion7 = useSeccion7(id)
-    const seccion8 = useSeccion8(id)
+    const seccion5 = useSeccion5(idOperativo, pageS5, limitS5, seccionesVisitadas.has('seccion-5'))
+    const seccion6 = useSeccion6(idOperativo, seccionesVisitadas.has('seccion-6'))
+    const seccion7 = useSeccion7(idOperativo, seccionesVisitadas.has('seccion-7'))
+    const seccion8 = useSeccion8(idOperativo, seccionesVisitadas.has('seccion-8'))
 
     const renderSeccion = (key: SeccionKey) => {
         if (key === 'seccion-1') {
@@ -72,7 +107,9 @@ export function FormGestionOperativo({
                 <DatosGeneralesForm
                     titulo="DATOS GENERALES"
                     onGuardar={seccion1.mutation.mutateAsync}
+                    onOperativoGuardado={verificarOperativo}
                     cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
+                    datosCaso={seccion1.query.data?.datos ?? null}
                 />
             )
         }
@@ -84,6 +121,7 @@ export function FormGestionOperativo({
                     onGuardar={seccion2.mutation.mutateAsync}
                     onRecuperar={() => seccion2.query.refetch()}
                     cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
+                    idoperativo={idOperativo}
                 />
             )
         }
@@ -198,19 +236,26 @@ export function FormGestionOperativo({
 
             <div className="panel p-0">
                 <div className="flex overflow-x-auto border-b border-gray-200">
-                    {SECCIONES.map((seccion) => (
-                        <button
-                            key={seccion.key}
-                            type="button"
-                            className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${seccionActiva === seccion.key
-                                    ? 'border-primary text-primary'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    {SECCIONES.map((seccion) => {
+                        const deshabilitada = seccion.key !== 'seccion-1' && !tieneOperativo
+                        return (
+                            <button
+                                key={seccion.key}
+                                type="button"
+                                disabled={deshabilitada}
+                                className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                                    deshabilitada
+                                        ? 'cursor-not-allowed border-transparent text-gray-300'
+                                        : seccionActiva === seccion.key
+                                          ? 'border-primary text-primary'
+                                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }`}
-                            onClick={() => setSeccionActiva(seccion.key)}
-                        >
-                            {seccion.label}
-                        </button>
-                    ))}
+                                onClick={() => !deshabilitada && handleSetSeccionActiva(seccion.key)}
+                            >
+                                {seccion.label}
+                            </button>
+                        )
+                    })}
                 </div>
 
                 <div className="p-4">
