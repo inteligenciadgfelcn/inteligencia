@@ -268,7 +268,7 @@ export class OperativoRepository {
   ): Promise<[DetenidoAuxiliar[], number]> {
     return this.detenidoRepo.findAndCount({
       where: { idOperativo },
-      relations: ['paisNacionalidad', 'estadoCivil'],
+      relations: ['paisNacionalidad', 'tipoDocumento'],
       order: { fechaHoraIngreso: 'DESC' },
       skip: paginacion.saltar,
       take: paginacion.limite,
@@ -277,6 +277,14 @@ export class OperativoRepository {
 
   async eliminarDetenido(id: string): Promise<void> {
     await this.detenidoRepo.delete(id)
+  }
+
+  async actualizarFotoDetenido(
+    id: string,
+    campo: 'foto_frente' | 'foto_perfil_derecho' | 'foto_perfil_izquierdo',
+    foto: Buffer
+  ): Promise<void> {
+    await this.detenidoRepo.update(id, { [campo]: foto } as any)
   }
 
   // ==================== GALERÍA ====================
