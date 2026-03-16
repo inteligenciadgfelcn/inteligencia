@@ -381,14 +381,21 @@ export class OperativoController extends BaseController {
     return this.successPagedRows(resultado, paginacion)
   }
 
-  @ApiOperation({ summary: 'Agregar bien secuestrado al operativo' })
+  @ApiOperation({
+    summary: 'Agregar bien secuestrado al operativo',
+    description: 'Enviar como multipart/form-data. Campo opcional: foto (jpg/jpeg del bien).',
+  })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/bienes')
+  @UseInterceptors(FileInterceptor('foto'))
   async agregarBien(
     @Param('idOperativo') idOperativo: string,
-    @Body() data: CreateBienSecuestradoDto
+    @Body() data: CreateBienSecuestradoDto,
+    @UploadedFile() file: Express.Multer.File
   ) {
-    const bien = await this.operativoService.agregarBien(idOperativo, data, 'SISTEMA')
+    const foto = file?.buffer || undefined
+    const bien = await this.operativoService.agregarBien(idOperativo, data, 'SISTEMA', foto)
     return this.successCreate(bien)
   }
 
@@ -538,7 +545,8 @@ export class OperativoController extends BaseController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
-    return this.successCreate({ mensaje: 'Foto recibida (pendiente de implementar)' })
+    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'frente', file?.buffer || Buffer.alloc(0))
+    return this.successCreate({ mensaje: 'Foto frente guardada' })
   }
 
   @ApiOperation({ summary: 'Subir foto de detenido (perfil derecho)' })
@@ -550,7 +558,8 @@ export class OperativoController extends BaseController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
-    return this.successCreate({ mensaje: 'Foto recibida (pendiente de implementar)' })
+    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'perfil-derecho', file?.buffer || Buffer.alloc(0))
+    return this.successCreate({ mensaje: 'Foto perfil derecho guardada' })
   }
 
   @ApiOperation({ summary: 'Subir foto de detenido (perfil izquierdo)' })
@@ -562,7 +571,8 @@ export class OperativoController extends BaseController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
-    return this.successCreate({ mensaje: 'Foto recibida (pendiente de implementar)' })
+    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'perfil-izquierdo', file?.buffer || Buffer.alloc(0))
+    return this.successCreate({ mensaje: 'Foto perfil izquierdo guardada' })
   }
 
   @ApiOperation({ summary: 'Eliminar detenido del operativo' })

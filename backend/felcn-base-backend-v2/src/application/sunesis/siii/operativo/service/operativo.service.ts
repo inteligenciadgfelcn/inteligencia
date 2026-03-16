@@ -270,9 +270,19 @@ export class OperativoService extends BaseService {
   async agregarBien(
     idOperativo: string,
     data: CreateBienSecuestradoDto,
-    usuario: string
+    usuario: string,
+    foto?: Buffer
   ): Promise<ItemBienSecuestrado> {
-    const bien = new ItemBienSecuestrado({ idOperativo, ...data, usuario })
+    const bien = new ItemBienSecuestrado({
+      idOperativo,
+      idCatalogoTipo: data.idCatalogoTipo,
+      cantidadBien: data.cantidadBien,
+      costoAproximado: data.costoAproximado ?? 0,
+      costoCuantificado: data.costoCuantificado ?? 0,
+      enInvestigacion: data.enInvestigacion ?? false,
+      fotoBien: foto?.length ? foto : undefined,
+      usuario,
+    })
     return this.operativoRepository.crearBien(bien)
   }
 
@@ -353,30 +363,28 @@ export class OperativoService extends BaseService {
   ): Promise<DetenidoAuxiliar> {
     const detenido = new DetenidoAuxiliar({
       idOperativo,
-      ...data,
+      idPais: data.idPais,
+      idTipoDocumento: data.idTipoDocumento,
+      nombres: data.nombres,
+      apellidoPaterno: data.apellidoPaterno,
+      apellidoMaterno: data.apellidoMaterno ?? '',
+      apellidoEsposo: data.apellidoEsposo ?? '',
+      nroDocumento: data.nroDocumento,
       fechaNacimiento: data.fechaNacimiento ? new Date(data.fechaNacimiento) : undefined,
-      apellidoMaterno: data.apellidoMaterno || '*',
-      apellidoEsposo: data.apellidoEsposo || '*',
-      serie: data.serie || '',
-      seccion: data.seccion || '',
-      observaciones: data.observaciones || '',
-      esActual: true,
-      esRevisionIcia: false,
-      tieneTarjeta: false,
-      estaVivo: true,
-      observacionesAdicionales: '',
+      genero: data.genero,
+      direccion: data.direccion,
+      estado: data.estado,
       usuario,
-      usuarioActualizacion: usuario,
     })
     return this.operativoRepository.crearDetenido(detenido)
   }
 
   async listarDetenidos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const [detenidos, total] = await this.operativoRepository.listarDetenidosPorOperativo(idOperativo, paginacion)
-    const filas = detenidos.map(({ fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo, paisNacionalidad, estadoCivil, operativo, ...d }) => ({
+    const filas = detenidos.map(({ fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo, paisNacionalidad, tipoDocumento, operativo, ...d }) => ({
       ...d,
       descripcionPais: paisNacionalidad?.descripcion ?? null,
-      descripcionEstadoCivil: estadoCivil?.descripcion ?? null,
+      descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
       urlFotoFrente: fotoFrente?.length
         ? `/api/operativos/${idOperativo}/detenidos/${d.id}/fotos/frente`
         : null,
@@ -392,6 +400,24 @@ export class OperativoService extends BaseService {
 
   async eliminarDetenido(idOperativo: string, idDetenido: string): Promise<void> {
     await this.operativoRepository.eliminarDetenido(idDetenido)
+  }
+
+  async actualizarFotoDetenido(
+    idOperativo: string,
+    idDetenido: string,
+    tipo: 'frente' | 'perfil-derecho' | 'perfil-izquierdo',
+    foto: Buffer
+  ): Promise<void> {
+    const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    if (!detenido || detenido.idOperativo !== idOperativo) {
+      throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
+    }
+    const campoMap = {
+      'frente': 'foto_frente',
+      'perfil-derecho': 'foto_perfil_derecho',
+      'perfil-izquierdo': 'foto_perfil_izquierdo',
+    } as const
+    await this.operativoRepository.actualizarFotoDetenido(idDetenido, campoMap[tipo], foto)
   }
 
   // ==================== GALERÍA ====================

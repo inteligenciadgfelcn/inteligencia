@@ -3,7 +3,6 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsString,
   IsBoolean,
 } from 'class-validator'
 
@@ -13,10 +12,10 @@ export class CreateBienSecuestradoDto {
   @IsNumber()
   idCatalogoTipo: number
 
-  @ApiProperty({ description: 'Cantidad', example: 2 })
+  @ApiProperty({ description: 'Cantidad de bienes', example: 2 })
   @IsNotEmpty()
   @IsNumber()
-  cantidad: number
+  cantidadBien: number
 
   @ApiPropertyOptional({ description: 'Costo aproximado', example: 15000 })
   @IsOptional()
@@ -28,13 +27,8 @@ export class CreateBienSecuestradoDto {
   @IsNumber()
   costoCuantificado?: number
 
-  @ApiPropertyOptional({ description: 'Es para investigación', example: false })
+  @ApiPropertyOptional({ description: 'En investigación', example: false })
   @IsOptional()
   @IsBoolean()
-  esInvestigacion?: boolean
-
-  @ApiPropertyOptional({ description: 'Observaciones' })
-  @IsOptional()
-  @IsString()
-  observaciones?: string
+  enInvestigacion?: boolean
 }
