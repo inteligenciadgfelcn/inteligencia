@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Marker } from 'react-leaflet'
 import { icon } from 'leaflet'
@@ -24,7 +24,8 @@ import {
 import { SiiiLookupsService } from '@/services/parametricas'
 import type {
   CasoOperativoDetalle,
-  ItemCategoriaOperativo,
+  CasoResumen,
+  OperativoResponse,
 } from '@/services/operativos'
 import type { OperativoPayload } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
@@ -33,7 +34,9 @@ import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 interface DatosGeneralesFormProps {
   titulo: string
   onGuardar: (payload: SeccionPayloadBase) => Promise<unknown>
+  onOperativoGuardado?: () => void
   cargando?: boolean
+  datosCaso?: CasoOperativoDetalle | null
 }
 
 interface DatosLectura {
@@ -102,42 +105,45 @@ const toIsoDate = (value: unknown): string => {
 }
 
 const mapCasoOperativoToForm = (
-  data: CasoOperativoDetalle
+  caso: CasoResumen,
+  operativo: OperativoResponse | null
 ): Partial<OperativoPayload> => ({
   numeroOperativo:
-    data.operativo?.numeroOperativo ??
-    data.caso?.numeroOperativo ??
+    operativo?.numeroOperativo ??
+    caso?.numeroOperativo ??
     DEFAULT_VALUES.numeroOperativo,
-  idTipoRelevancia: toNumberOrZero(data.operativo?.idTipoRelevancia),
-  idTipoDenuncia: toNumberOrZero(data.operativo?.idTipoDenuncia),
-  idTipoPenal: toNumberOrZero(data.operativo?.idTipoPenal),
-  fechaOperativo: data.operativo?.fechaOperativo
-    ? new Date(data.operativo.fechaOperativo).toISOString()
+  idTipoRelevancia: toNumberOrZero(operativo?.idTipoRelevancia),
+  idTipoDenuncia: toNumberOrZero(operativo?.idTipoDenuncia),
+  idTipoPenal: toNumberOrZero(operativo?.idTipoPenal),
+  fechaOperativo: operativo?.fechaOperativo
+    ? new Date(operativo.fechaOperativo).toISOString()
     : DEFAULT_VALUES.fechaOperativo,
-  idDepartamento: toNumberOrZero(data.operativo?.idDepartamento),
-  idProvincia: toNumberOrZero(data.operativo?.idProvincia),
-  idLocalidad: toNumberOrZero(data.operativo?.idLocalidad),
-  lugar: data.operativo?.lugar ?? '',
-  idUnidad: toNumberOrZero(data.operativo?.idUnidad),
-  idDistrital: toNumberOrZero(data.operativo?.idDistrital),
-  idGrupo: toNumberOrZero(data.operativo?.idGrupo),
-  mando: data.operativo?.mando ?? '',
-  idPlanOperacion: toNumberOrZero(data.operativo?.idPlanOperacion),
-  idTipoOperacion: toNumberOrZero(data.operativo?.idTipoOperacion),
-  clanFamiliar: data.operativo?.clanFamiliar ?? '',
-  organizacion: data.operativo?.organizacion ?? '',
-  coordX: data.operativo?.coordX ?? DEFAULT_VALUES.coordX,
-  coordY: data.operativo?.coordY ?? DEFAULT_VALUES.coordY,
+  idDepartamento: toNumberOrZero(operativo?.idDepartamento),
+  idProvincia: toNumberOrZero(operativo?.idProvincia),
+  idLocalidad: toNumberOrZero(operativo?.idLocalidad),
+  lugar: operativo?.lugar ?? '',
+  idUnidad: toNumberOrZero(operativo?.idUnidad),
+  idDistrital: toNumberOrZero(operativo?.idDistrital),
+  idGrupo: toNumberOrZero(operativo?.idGrupo),
+  mando: operativo?.mando ?? '',
+  idPlanOperacion: toNumberOrZero(operativo?.idPlanOperacion),
+  idTipoOperacion: toNumberOrZero(operativo?.idTipoOperacion),
+  clanFamiliar: operativo?.clanFamiliar ?? '',
+  organizacion: operativo?.organizacion ?? '',
+  coordX: operativo?.coordX ?? DEFAULT_VALUES.coordX,
+  coordY: operativo?.coordY ?? DEFAULT_VALUES.coordY,
   breveDetalle:
-    data.operativo?.breveDetalle ?? data.operativo?.descripcion ?? '',
+    operativo?.breveDetalle ?? operativo?.descripcion ?? '',
   descripcion:
-    data.operativo?.descripcion ?? data.operativo?.breveDetalle ?? '',
+    operativo?.descripcion ?? operativo?.breveDetalle ?? '',
 })
 
 export function DatosGeneralesForm({
   titulo,
   onGuardar,
+  onOperativoGuardado,
   cargando = false,
+  datosCaso = null,
 }: DatosGeneralesFormProps) {
   const searchParams = useSearchParams()
   const { Alerta } = useAlerts()
@@ -258,8 +264,7 @@ export function DatosGeneralesForm({
     value: String(p.id),
     label: String(p.nombre ?? ''),
   }))
-  const obtenerLabel = (options: optionType[], value: string) =>
-    options.find((option) => option.value === value)?.label ?? value
+
 
   const coordX = watch('coordX')
   const coordY = watch('coordY')
@@ -269,6 +274,7 @@ export function DatosGeneralesForm({
   const unidadSeleccionada = watch('idUnidad')
   const distritalSeleccionado = watch('idDistrital')
   const mapRef = useRef(null)
+  const cargandoDesdePropsRef = useRef(false)
 
   useEffect(() => {
     let activo = true
@@ -392,8 +398,10 @@ export function DatosGeneralesForm({
   useEffect(() => {
     const id = Number(departamentoSeleccionado)
     if (id > 0) {
-      setValue('idProvincia', 0)
-      setValue('idLocalidad', 0)
+      if (!cargandoDesdePropsRef.current) {
+        setValue('idProvincia', 0)
+        setValue('idLocalidad', 0)
+      }
       void cargarProvincias(id)
     }
   }, [departamentoSeleccionado, setValue, cargarProvincias])
@@ -401,7 +409,9 @@ export function DatosGeneralesForm({
   useEffect(() => {
     const id = Number(provinciaSeleccionada)
     if (id > 0) {
-      setValue('idLocalidad', 0)
+      if (!cargandoDesdePropsRef.current) {
+        setValue('idLocalidad', 0)
+      }
       void cargarLocalidades(id)
     }
   }, [provinciaSeleccionada, setValue, cargarLocalidades])
@@ -409,8 +419,10 @@ export function DatosGeneralesForm({
   useEffect(() => {
     const id = Number(unidadSeleccionada)
     if (id > 0) {
-      setValue('idDistrital', 0)
-      setValue('idGrupo', 0)
+      if (!cargandoDesdePropsRef.current) {
+        setValue('idDistrital', 0)
+        setValue('idGrupo', 0)
+      }
       void cargarDistritales(id)
     }
   }, [unidadSeleccionada, setValue, cargarDistritales])
@@ -418,7 +430,9 @@ export function DatosGeneralesForm({
   useEffect(() => {
     const id = Number(distritalSeleccionado)
     if (id > 0) {
-      setValue('idGrupo', 0)
+      if (!cargandoDesdePropsRef.current) {
+        setValue('idGrupo', 0)
+      }
       void cargarGrupos(id)
     }
   }, [distritalSeleccionado, setValue, cargarGrupos])
@@ -484,6 +498,7 @@ export function DatosGeneralesForm({
             variant: 'success',
           })
         }
+        onOperativoGuardado?.()
         return
       }
 
@@ -494,50 +509,58 @@ export function DatosGeneralesForm({
     }
   }
 
-  const cargarDatosCaso = useCallback(async () => {
-    let datosCasoOperativo: Partial<OperativoPayload> = {}
-    const idCaso = Number(searchParams.get('id') ?? 0)
-    setTieneOperativo(false)
-
-    if (idCaso > 0) {
-      const respuestaCaso =
-        await GestionOperativosDatosGeneralesService.obtenerPorUsuario(idCaso)
-
-      if (respuestaCaso?.datos) {
-        setTieneOperativo(Boolean(respuestaCaso.datos.operativo))
-        datosCasoOperativo = mapCasoOperativoToForm(respuestaCaso.datos)
-        setDatosLectura({
-          numeroInforme: '',
-          nombreCaso: respuestaCaso.datos.caso?.nombreCaso ?? '',
-          unidad: toStringOrEmpty(respuestaCaso.datos.operativo?.idUnidad),
-          distrital: toStringOrEmpty(
-            respuestaCaso.datos.operativo?.idDistrital
-          ),
-          grupo: toStringOrEmpty(respuestaCaso.datos.operativo?.idGrupo),
-          quienRealiza: respuestaCaso.datos.caso?.fiscalSolicitud ?? '',
-          celularRealiza: respuestaCaso.datos.caso?.telefonoSolicitud ?? '',
-          asignado: respuestaCaso.datos.caso?.asignadoCaso ?? '',
-          celularAsignado: respuestaCaso.datos.caso?.telefonoAsignado ?? '',
-          fiscal: respuestaCaso.datos.caso?.fiscalAsignadoCaso ?? '',
-          celularFiscal: respuestaCaso.datos.caso?.telefonoFiscal ?? '',
-        })
-      }
-    }
-
-    if (Object.keys(datosCasoOperativo).length > 0) {
-      reset({
-        ...DEFAULT_VALUES,
-        ...datosCasoOperativo,
-      })
-    }
-  }, [reset, searchParams])
-
   useEffect(() => {
-    if (!parametricasBaseListas) {
-      return
-    }
-    void cargarDatosCaso()
-  }, [cargarDatosCaso, parametricasBaseListas])
+    if (!parametricasBaseListas || !datosCaso) return
+  const caso=datosCaso.caso
+  const operativo=datosCaso.operativos?.[0]??null
+    const mapped = mapCasoOperativoToForm(caso, operativo )
+
+    setTieneOperativo(Boolean(datosCaso.operativos))
+    setDatosLectura({
+      numeroInforme: '',
+      nombreCaso: caso?.nombreCaso ?? '',
+      unidad: caso?.asignadoCaso ?? '',
+      distrital: toStringOrEmpty(operativo?.idDistrital ?? caso?.telefonoSolicitud),
+      grupo: toStringOrEmpty(operativo?.idGrupo ?? caso?.telefonoSolicitud),
+      quienRealiza: caso?.fiscalSolicitud ?? '',
+      celularRealiza: caso?.telefonoSolicitud ?? '',
+      asignado: caso?.asignadoCaso   ?? '',
+      celularAsignado: caso?.telefonoAsignado ?? '',
+      fiscal: caso?.fiscalAsignadoCaso ?? '',
+      celularFiscal: caso?.telefonoFiscal ?? '',
+    })
+
+    // Bloquea los useEffect de cascada para que no limpien los valores al hacer reset()
+    cargandoDesdePropsRef.current = true
+    reset({ ...DEFAULT_VALUES, ...mapped })
+
+    // Carga las opciones dependientes y restaura los valores seleccionados
+    void (async () => {
+      const idDepto = toNumberOrZero(mapped.idDepartamento)
+      const idProv = toNumberOrZero(mapped.idProvincia)
+      const idUnidad = toNumberOrZero(mapped.idUnidad)
+      const idDistrital = toNumberOrZero(mapped.idDistrital)
+
+      if (idDepto > 0) {
+        await cargarProvincias(idDepto)
+        setValue('idProvincia', idProv)
+      }
+      if (idProv > 0) {
+        await cargarLocalidades(idProv)
+        setValue('idLocalidad', toNumberOrZero(mapped.idLocalidad))
+      }
+      if (idUnidad > 0) {
+        await cargarDistritales(idUnidad)
+        setValue('idDistrital', idDistrital)
+      }
+      if (idDistrital > 0) {
+        await cargarGrupos(idDistrital)
+        setValue('idGrupo', toNumberOrZero(mapped.idGrupo))
+      }
+
+      cargandoDesdePropsRef.current = false
+    })()
+  }, [datosCaso, parametricasBaseListas, reset, setValue, cargarProvincias, cargarLocalidades, cargarDistritales, cargarGrupos])
 
   if (!parametricasBaseListas) {
     return <FullScreenLoading mensaje="Cargando parámetros del formulario..." />

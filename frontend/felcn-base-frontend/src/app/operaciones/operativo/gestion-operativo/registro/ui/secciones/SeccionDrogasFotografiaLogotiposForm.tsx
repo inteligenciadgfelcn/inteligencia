@@ -27,7 +27,7 @@ interface SeccionFormProps {
   onGuardar?: (payload: SeccionPayloadBase) => Promise<unknown>
   onRecuperar?: () => Promise<unknown>
   cargando?: boolean
-  idCaso?: number
+  idoperativo?: number
 }
 
 function ImagenAutenticada({
@@ -72,7 +72,7 @@ function ImagenAutenticada({
 }
 
 export function SeccionDrogasFotografiaLogotiposForm({
-  idCaso = 0,
+  idoperativo = 0,
 }: SeccionFormProps) {
   const {
     control: controlDrogas,
@@ -86,6 +86,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
       idEstadoDroga: '',
       cantidadGramos: '',
       cantidadUnidades: '',
+      costo: '',
       idFormaTransporte: '',
       idPaisProcedencia: '',
       idPaisDestino: '',
@@ -130,7 +131,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
   const cargarEstadosDroga = async (idTipoDroga: number) => {
     try {
-      const res = await GestionOperativoCatalogosService.obtenerEstadosDroga(idTipoDroga)
+      const res =
+        await GestionOperativoCatalogosService.obtenerEstadosDroga(idTipoDroga)
       if (res?.finalizado) {
         setEstadosDroga(Array.isArray(res.datos) ? res.datos : [])
       }
@@ -207,15 +209,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }
 
   const cargarDrogas = async () => {
-    if (!idCaso) return
+    if (!idoperativo) return
     setCargandoDrogas(true)
     try {
-      const res = await GestionOperativoDrogasService.listar(idCaso)
+      const res = await GestionOperativoDrogasService.listar(idoperativo)
       if (res?.finalizado) {
-        const lista = Array.isArray(res.datos)
-          ? (res.datos as ResponseDroga[])
-          : []
-        setDrogasItems(lista)
+        setDrogasItems(res.datos?.filas ?? [])
       }
     } finally {
       setCargandoDrogas(false)
@@ -223,12 +222,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }
 
   const cargarLogotipos = async (idDroga: number) => {
-    if (!idCaso || !idDroga) return
+    if (!idoperativo || !idDroga) return
     setCargandoLogotipos(true)
     try {
-      const res = await GestionOperativoLogotiposService.listar(idCaso, idDroga)
+      const res = await GestionOperativoLogotiposService.listar(idoperativo, idDroga)
       if (res?.finalizado) {
-        setLogotiposItems(res.datos ? (res.datos as LogotipoCasoPayload[]) : [])
+        setLogotiposItems((res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? [])
       }
     } finally {
       setCargandoLogotipos(false)
@@ -237,28 +236,32 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
   useEffect(() => {
     void cargarDrogas()
-  }, [idCaso])
+  }, [idoperativo])
 
   useEffect(() => {
     if (drogaSeleccionadaId) {
       void cargarLogotipos(drogaSeleccionadaId)
     }
-  }, [drogaSeleccionadaId, idCaso])
+  }, [drogaSeleccionadaId, idoperativo])
 
   const deleteDrogaItem = async (id: number) => {
-    if (!idCaso) return
-    await GestionOperativoDrogasService.eliminar(idCaso, id)
+    if (!idoperativo) return
+    await GestionOperativoDrogasService.eliminar(idoperativo, id)
     await cargarDrogas()
   }
 
   const deleteLogotipoItem = async (id: number) => {
-    if (!idCaso || !drogaSeleccionadaId) return
-    await GestionOperativoLogotiposService.eliminar(idCaso, drogaSeleccionadaId, id)
+    if (!idoperativo || !drogaSeleccionadaId) return
+    await GestionOperativoLogotiposService.eliminar(
+      idoperativo,
+      drogaSeleccionadaId,
+      id
+    )
     await cargarLogotipos(drogaSeleccionadaId)
   }
 
   const onSubmitDrogas = async (data: Record<string, any>) => {
-    if (!idCaso) return
+    if (!idoperativo) return
     const gramos =
       parseNumber(cantidadTn) * 1_000_000 +
       parseNumber(cantidadKg) * 1_000 +
@@ -274,12 +277,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
     setCargandoDrogas(true)
     try {
-      const respuesta = await GestionOperativoDrogasService.crear(idCaso, {
+      const respuesta = await GestionOperativoDrogasService.crear(idoperativo, {
         id: 0,
         idTipoDroga: data.idTipoDroga,
         idEstadoDroga: data.idEstadoDroga,
         cantidadGramos: gramos,
         cantidadUnidades: parseNumber(data.cantidadUnidades),
+        costo: data.costo !== '' ? parseNumber(data.costo) : undefined,
         idFormaTransporte: data.idFormaTransporte,
         idPaisProcedencia: data.idPaisProcedencia,
         idPaisDestino: data.idPaisDestino,
@@ -296,6 +300,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
           idEstadoDroga: '',
           cantidadGramos: '',
           cantidadUnidades: '',
+          costo: '',
           idFormaTransporte: '',
           idPaisProcedencia: idBolivia,
           idPaisDestino: idBolivia,
@@ -314,7 +319,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }
 
   const onSubmitLogotipos = async (data: Record<string, any>) => {
-    if (!idCaso || !drogaSeleccionadaId) return
+    if (!idoperativo || !drogaSeleccionadaId) return
 
     const fotoLogoFile =
       data.fotografia && data.fotografia.length > 0
@@ -324,7 +329,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setCargandoLogotipos(true)
     try {
       const respuesta = await GestionOperativoLogotiposService.crear(
-        idCaso,
+        idoperativo,
         drogaSeleccionadaId,
         {
           id: 0,
@@ -366,12 +371,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
               options={opcionesEstadosDroga}
             />
             <FormInputText
-              id="observaciones"
-              name="observaciones"
-              label="Observaciones"
+              id="cantidadUnidades"
+              name="cantidadUnidades"
+              label="Cantidad de Unidades"
               control={controlDrogas}
             />
-
             <div className="col-span-1 md:col-span-2 lg:col-span-2">
               <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
                 Cantidad
@@ -421,9 +425,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
             </div>
 
             <FormInputText
-              id="cantidadUnidades"
-              name="cantidadUnidades"
-              label="Cantidad de Unidades"
+              id="costo"
+              name="costo"
+              label="Costo (Bs.)"
               control={controlDrogas}
             />
             <FormInputDropdown
@@ -447,7 +451,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
               control={controlDrogas}
               options={opcionesPaises}
             />
-
+            <FormInputText
+              id="observaciones"
+              name="observaciones"
+              label="Observaciones"
+              control={controlDrogas}
+            />
             <div className="col-span-1 lg:col-span-3">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormInputFile
@@ -501,6 +510,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 accessor: 'cantidadUnidades',
                 title: 'Unidades',
                 render: (row) => String(row.cantidadUnidades ?? ''),
+              },
+              {
+                accessor: 'costo',
+                title: 'Costo (Bs.)',
+                render: (row) => (row.costo != null ? String(row.costo) : '—'),
               },
               {
                 accessor: 'idFormaTransporte',
@@ -571,7 +585,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     <button
                       type="button"
                       className="text-danger"
-                      onClick={() => { void deleteDrogaItem(row.id) }}
+                      onClick={() => {
+                        void deleteDrogaItem(row.id)
+                      }}
                     >
                       <IconTrashLines />
                     </button>
@@ -728,7 +744,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
                         <button
                           type="button"
                           className="text-danger"
-                          onClick={() => { void deleteLogotipoItem(row.id) }}
+                          onClick={() => {
+                            void deleteLogotipoItem(row.id)
+                          }}
                         >
                           <IconTrashLines />
                         </button>
