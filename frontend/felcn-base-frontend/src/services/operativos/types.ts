@@ -151,9 +151,54 @@ export interface EstadoDroga {
     descripcion: string 
 }
 
+export interface CatalogoBien {
+    id: number
+    descripcion: string
+}
+
+export interface CatalogoClaseBien {
+    id: number
+    idBien: number
+    descripcion: string
+    esFungible: boolean
+}
+
+export interface CatalogoTipoBien {
+    id: number
+    idCatalogoClase: number
+    descripcion: string
+}
+
+export interface BienPayload {
+    idCatalogoTipo: number
+    cantidadBien: number
+    costoAproximado: number
+    costoCuantificado: number
+    enInvestigacion: boolean
+    fotoBien?: File
+}
+
+export interface BienResponse {
+    id: string
+    idOperativo: string
+    idCatalogoTipo: number
+    cantidadBien: string
+    costoAproximado: number
+    costoCuantificado: number
+    enInvestigacion: boolean
+    fechaHoraIngreso: string
+    usuario: string
+    idCatalogoClase: number
+    idBien: number
+    descripcionCatalogoTipo: string
+    descripcionCatalogoClase: string
+    descripcionBien: string
+    urlFotoBien: string | null
+}
+
 export interface ItemCategoriaOperativo {
     id: number
-    idCategoriaOperativo: number  
+    idCategoriaOperativo: number
     descripcion: string
 }
 
