@@ -13,10 +13,10 @@ export class CreateBienCaracteristicaDto {
   @ApiProperty({
     description: 'Descripción de la característica',
     example: 'Color rojo',
-    maxLength: 255,
+    maxLength: 50,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
+  @MaxLength(50)
   descripcion: string
 }

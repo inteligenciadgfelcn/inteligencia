@@ -1730,7 +1730,7 @@ Vehículos, equipos, dinero y otros bienes secuestrados en el operativo.
 | Operación | Método | Endpoint | Descripción |
 |---|---|---|---|
 | **LIST** | GET | `/caso/:idCaso/bienes` | Lista paginada del operativo |
-| **CREATE** | POST | `/caso/:idCaso/bienes` | Agregar (`application/json` o `multipart/form-data` con `fotoBien`) |
+| **CREATE** | POST | `/caso/:idCaso/bienes` | Agregar (`application/json` o `multipart/form-data` con campo `foto`) |
 | **DELETE** | DELETE | `/caso/:idCaso/bienes/:idBien` | Eliminar |
 
 > No existe PATCH. Corrección = DELETE + POST.
@@ -1748,13 +1748,20 @@ cbotipo   → GET /api/operativos/catalogos/tipos/:idCatalogoClase
 ```json
 {
   "idCatalogoTipo": 22,
-  "cantidad": 1,
+  "cantidadBien": 1,
   "costoAproximado": 25000,
   "costoCuantificado": 0,
-  "esInvestigacion": false,
-  "observaciones": "Vehículo Toyota Hilux sin placa"
+  "enInvestigacion": false
 }
 ```
+
+| Campo | Tipo | Req | Descripción |
+|---|---|---|---|
+| `idCatalogoTipo` | number | ✓ | ID del tipo de catálogo (cascada: bien → clase → tipo) |
+| `cantidadBien` | number | ✓ | Cantidad de unidades |
+| `costoAproximado` | number | — | Costo aproximado (default 0) |
+| `costoCuantificado` | number | — | Costo cuantificado (default 0) |
+| `enInvestigacion` | boolean | — | Si está en investigación (default false) |
 
 #### Respuesta GET (lista) — paginada y plana
 
@@ -1773,11 +1780,10 @@ Los campos de texto de catálogo vienen directamente (sin objetos anidados):
       "descripcionCatalogoTipo": "Camioneta",
       "descripcionCatalogoClase": "Vehículos terrestres",
       "descripcionBien": "Vehículo",
-      "cantidad": 1,
+      "cantidadBien": 1,
       "costoAproximado": 25000,
       "costoCuantificado": 0,
-      "esInvestigacion": false,
-      "observaciones": "Vehículo Toyota Hilux sin placa",
+      "enInvestigacion": false,
       "fechaHoraIngreso": "2024-03-15T14:15:00.000Z",
       "usuario": "JPEREZ",
       "urlFotoBien": "/api/operativos/caso/7/bienes/88/foto"
@@ -1796,23 +1802,30 @@ CASO_ID=7
 
 # LIST — paginada
 curl "$BASE/operativos/caso/$CASO_ID/bienes?pagina=1&limite=10"
-# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "88", "descripcionBien": "Vehículo", "descripcionCatalogoClase": "...", "descripcionCatalogoTipo": "Camioneta", ... }] } }
 
-# CREATE
+# CREATE (JSON)
 curl -X POST "$BASE/operativos/caso/$CASO_ID/bienes" \
   -H "Content-Type: application/json" \
   -d '{
-    "idCatalogoTipo": 22, "cantidad": 1,
-    "costoAproximado": 25000, "costoCuantificado": 0,
-    "esInvestigacion": false,
-    "observaciones": "Vehículo Toyota Hilux sin placa"
+    "idCatalogoTipo": 22,
+    "cantidadBien": 1,
+    "costoAproximado": 25000,
+    "costoCuantificado": 0,
+    "enInvestigacion": false
   }'
 # → 201: { "finalizado": true, "datos": { "id": "88", ... } }
 BIEN_ID=88
 
+# CREATE con foto (multipart)
+curl -X POST "$BASE/operativos/caso/$CASO_ID/bienes" \
+  -F "idCatalogoTipo=22" \
+  -F "cantidadBien=1" \
+  -F "costoAproximado=25000" \
+  -F "foto=@/ruta/foto_bien.jpg"
+# → 201: { "finalizado": true, "datos": { "id": "88", ... } }
+
 # DELETE
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID"
-# → 200: { "finalizado": true }
 
 # VER FOTO
 curl "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/foto" --output bien.jpg
@@ -1838,8 +1851,10 @@ Atributos adicionales de un bien: color, modelo, serie, etc.
 { "idCatalogoCaracteristica": 7, "descripcion": "BLANCO" }
 ```
 
-> `idCatalogoCaracteristica` se obtiene de:
-> `GET /api/operativos/catalogos/caracteristicas/:idCatalogoClase`
+| Campo | Tipo | Req | Descripción |
+|---|---|---|---|
+| `idCatalogoCaracteristica` | number | ✓ | De `GET /api/operativos/catalogos/caracteristicas/:idCatalogoClase` |
+| `descripcion` | string | ✓ | Valor de la característica (max 50 chars) |
 
 #### Respuesta GET (lista) — paginada y plana
 
@@ -1867,7 +1882,6 @@ BIEN_ID=88
 
 # LIST — paginada
 curl "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas?pagina=1&limite=10"
-# → { "finalizado": true, "datos": { "total": 1, "filas": [{ "id": "33", "descripcionCaracteristica": "Color", "descripcion": "BLANCO", ... }] } }
 
 # CREATE
 curl -X POST "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas" \
@@ -1878,26 +1892,82 @@ CARACT_ID=33
 
 # DELETE
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas/$CARACT_ID"
-# → 200: { "finalizado": true }
 ```
 
 ---
 
 ## 11. PERSONAS / DETENIDOS — CRUD
 
+Tabla: `persona_auxiliar`. Personas implicadas en el operativo con su estado de participación.
+
+### Lookups previos
+
+```bash
+# Géneros (true=Masculino, false=Femenino)
+curl "$BASE/siii-lookups/generos"
+# → { "datos": [{ "id": true, "descripcion": "Masculino" }, { "id": false, "descripcion": "Femenino" }] }
+
+# Estados del sujeto (enum persona_auxiliar)
+curl "$BASE/siii-lookups/estados-sujeto"
+# → { "datos": [
+#     { "id": "Principal Implicado", "descripcion": "Principal Implicado" },
+#     { "id": "Aprehendido", "descripcion": "Aprehendido" },
+#     { "id": "Arrestado", "descripcion": "Arrestado" },
+#     { "id": "LGI O Perdida de Dominio", "descripcion": "LGI O Perdida de Dominio" }
+#   ] }
+
+# Tipos de documento
+curl "$BASE/siii-lookups/tipos-documento"
+
+# Países (nacionalidad — preseleccionar id=70 Bolivia)
+curl "$BASE/siii-lookups/paises"
+```
+
 ### Endpoints
 
 | Método | URL | Descripción |
 |---|---|---|
 | GET | `/caso/:idCaso/detenidos` | Listar (paginado) |
-| POST | `/caso/:idCaso/detenidos` | Agregar detenido |
+| POST | `/caso/:idCaso/detenidos` | Agregar persona |
 | DELETE | `/caso/:idCaso/detenidos/:id` | Eliminar |
-| POST | `/caso/:idCaso/detenidos/:id/fotos/frente` | Subir foto frente |
-| GET | `/caso/:idCaso/detenidos/:id/fotos/frente` | Obtener foto frente |
+| POST | `/caso/:idCaso/detenidos/:id/fotos/frente` | Subir foto frente (`multipart`, campo `foto`) |
+| GET | `/caso/:idCaso/detenidos/:id/fotos/frente` | Obtener foto frente (binaria `image/jpeg`) |
 | POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Subir perfil derecho |
 | GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Obtener perfil derecho |
 | POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Subir perfil izquierdo |
 | GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Obtener perfil izquierdo |
+
+### Body POST
+
+```json
+{
+  "nombres": "CARLOS",
+  "apellidoPaterno": "MAMANI",
+  "apellidoMaterno": "QUISPE",
+  "apellidoEsposo": "",
+  "idPais": 70,
+  "idTipoDocumento": 1,
+  "nroDocumento": "5432198-1A",
+  "fechaNacimiento": "1985-06-15",
+  "genero": true,
+  "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
+  "estado": "Aprehendido"
+}
+```
+
+| Campo | Tipo | Req | Descripción |
+|---|---|---|---|
+| `nombres` | string | ✓ | Nombres (max 50) |
+| `apellidoPaterno` | string | ✓ | Apellido paterno (max 50) |
+| `apellidoMaterno` | string | — | Apellido materno (max 50) |
+| `apellidoEsposo` | string | — | Apellido de esposo (max 50) |
+| `idPais` | number | ✓ | ID país nacionalidad |
+| `idTipoDocumento` | number | ✓ | ID tipo de documento |
+| `nroDocumento` | string | ✓ | Número de documento (max 35) |
+| `fechaNacimiento` | string (ISO) | — | Fecha de nacimiento |
+| `genero` | boolean | ✓ | `true` = Masculino, `false` = Femenino |
+| `direccion` | string | ✓ | Dirección (max 255) |
+| `estado` | enum | ✓ | `"Principal Implicado"` \| `"Aprehendido"` \| `"Arrestado"` \| `"LGI O Perdida de Dominio"` |
 
 ### Respuesta GET (lista) — paginada y plana
 
@@ -1910,28 +1980,22 @@ curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas/$
       {
         "id": "55",
         "idOperativo": "42",
-        "numeroCaso": "CASO-2024-007",
+        "idPais": 70,
+        "descripcionPais": "Bolivia",
+        "idTipoDocumento": 1,
+        "descripcionTipoDocumento": "Cédula de Identidad",
         "nombres": "CARLOS",
         "apellidoPaterno": "MAMANI",
         "apellidoMaterno": "QUISPE",
-        "apellidoEsposo": "*",
-        "idPais": 70,
-        "descripcionPais": "Bolivia",
-        "esMasculino": true,
+        "apellidoEsposo": "",
+        "nroDocumento": "5432198-1A",
         "fechaNacimiento": "1985-06-15T00:00:00.000Z",
-        "idEstadoCivil": 1,
-        "descripcionEstadoCivil": "Soltero(a)",
-        "serie": "LP",
-        "seccion": "A",
+        "genero": true,
         "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
-        "observaciones": "Aprehendido en flagrancia",
-        "esActual": true,
-        "esRevisionIcia": false,
-        "tieneTarjeta": false,
-        "estaVivo": true,
-        "observacionesAdicionales": "",
+        "estado": "Aprehendido",
         "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
-        "urlFotoFrente": "/api/operativos/caso/7/personas/55/fotos/frente",
+        "usuario": "JPEREZ",
+        "urlFotoFrente": "/api/operativos/caso/7/detenidos/55/fotos/frente",
         "urlFotoPerfilDerecho": null,
         "urlFotoPerfilIzquierdo": null
       }
@@ -1943,25 +2007,6 @@ curl -X DELETE "$BASE/operativos/caso/$CASO_ID/bienes/$BIEN_ID/caracteristicas/$
 > Las fotos son binarias. Se sirven vía URL — no se incluyen en bytes en la lista.
 > `urlFoto*` es `null` cuando no tiene foto registrada.
 
-### Body POST
-
-```json
-{
-  "numeroCaso": "CASO-2024-007",
-  "nombres": "CARLOS",
-  "apellidoPaterno": "MAMANI",
-  "apellidoMaterno": "QUISPE",
-  "idPais": 70,
-  "esMasculino": true,
-  "fechaNacimiento": "1985-06-15",
-  "idEstadoCivil": 1,
-  "serie": "LP",
-  "seccion": "A",
-  "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
-  "observaciones": "Aprehendido en flagrancia"
-}
-```
-
 ### Curls
 
 ```bash
@@ -1970,29 +2015,26 @@ CASO_ID=7
 
 # LIST (paginado)
 curl "$BASE/operativos/caso/$CASO_ID/detenidos?pagina=1&limite=10"
-# → { "finalizado": true, "datos": { "total": 1, "filas": [...] } }
 
 # CREATE
 curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos" \
   -H "Content-Type: application/json" \
   -d '{
-    "numeroCaso": "CASO-2024-007",
     "nombres": "CARLOS",
     "apellidoPaterno": "MAMANI",
     "apellidoMaterno": "QUISPE",
     "idPais": 70,
-    "esMasculino": true,
+    "idTipoDocumento": 1,
+    "nroDocumento": "5432198-1A",
     "fechaNacimiento": "1985-06-15",
-    "idEstadoCivil": 1,
-    "serie": "LP",
-    "seccion": "A",
+    "genero": true,
     "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
-    "observaciones": "Aprehendido en flagrancia"
+    "estado": "Aprehendido"
   }'
 # → 201: { "finalizado": true, "datos": { "id": "55", ... } }
 DET_ID=55
 
-# FOTOS (multipart)
+# FOTOS (multipart, campo: foto)
 curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" \
   -F "foto=@/ruta/foto_frente.jpg"
 curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/perfil-derecho" \
@@ -2005,7 +2047,6 @@ curl "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" --output fr
 
 # DELETE
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID"
-# → 200: { "finalizado": true }
 ```
 
 ---
@@ -2035,11 +2076,11 @@ curl -X DELETE "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID"
 ### Defaults que aplica el frontend
 
 ```javascript
-apellidoMaterno = apellidoMaterno || '*'
-apellidoEsposo  = apellidoEsposo  || '*'
-serie           = serie           || ''
-numeroDocumento = numeroDocumento || 'SN'
-// País: preseleccionar id=70 (Bolivia) en detenidos, procedencia y destino de droga
+apellidoMaterno = apellidoMaterno || ''
+apellidoEsposo  = apellidoEsposo  || ''
+// País: preseleccionar id=70 (Bolivia) en personas, procedencia y destino de droga
+// Género: preseleccionar true (Masculino)
+// Estado persona: preseleccionar "Aprehendido"
 ```
 
 ---
