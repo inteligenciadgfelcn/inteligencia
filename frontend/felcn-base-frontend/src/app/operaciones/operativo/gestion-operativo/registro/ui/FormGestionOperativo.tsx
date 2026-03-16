@@ -8,7 +8,7 @@ import { SustanciasSolidas } from './secciones/SustanciasSolidas'
 import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
 import { Laboratorio } from './secciones/Laboratorio'
 import { Seccion6Form } from './secciones/Seccion6Form'
-import { Seccion7Form } from './secciones/Seccion7Form'
+import { SeccionBienesForm } from './secciones/SeccionBienesForm'
 import { Seccion8Form } from './secciones/Seccion8Form'
 import { SeccionLogotiposForm } from './secciones/SeccionLogotiposForm'
 import { useGestionOperativoForm, type SeccionKey } from '../hooks/useGestionOperativoForm'
@@ -19,7 +19,6 @@ import {
     useSeccion4,
     useSeccion5,
     useSeccion6,
-    useSeccion7,
     useSeccion8,
 } from '../hooks/useGestionOperativoSecciones'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
@@ -100,7 +99,6 @@ export function FormGestionOperativo({
     const [limitS5, setLimitS5] = useState(10)
     const seccion5 = useSeccion5(idOperativo, pageS5, limitS5, seccionesVisitadas.has('seccion-5'))
     const seccion6 = useSeccion6(idOperativo, seccionesVisitadas.has('seccion-6'))
-    const seccion7 = useSeccion7(idOperativo, seccionesVisitadas.has('seccion-7'))
     const seccion8 = useSeccion8(idOperativo, seccionesVisitadas.has('seccion-8'))
 
     const renderSeccion = (key: SeccionKey) => {
@@ -201,11 +199,9 @@ export function FormGestionOperativo({
 
         if (key === 'seccion-7') {
             return (
-                <Seccion7Form
+                <SeccionBienesForm
                     titulo="BIENES U OBJETOS SECUESTRADOS"
-                    onGuardar={seccion7.mutation.mutateAsync}
-                    onRecuperar={() => seccion7.query.refetch()}
-                    cargando={seccion7.mutation.isPending || seccion7.query.isFetching}
+                    idoperativo={idOperativo}
                 />
             )
         }

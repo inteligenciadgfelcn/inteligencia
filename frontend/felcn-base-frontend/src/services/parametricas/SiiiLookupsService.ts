@@ -174,7 +174,7 @@ export const SiiiLookupsService = {
         return Servicios.get({ url: `${BASE}/coca-descripciones` })
     },
 
-    obtenerBienes(): Promise<RespuestaAPI<LookupGenerico>> {
+    obtenerBienes(): Promise<RespuestaAPI<LookupBasico>> {
         return Servicios.get({ url: `${BASE}/bienes` })
     },
 
