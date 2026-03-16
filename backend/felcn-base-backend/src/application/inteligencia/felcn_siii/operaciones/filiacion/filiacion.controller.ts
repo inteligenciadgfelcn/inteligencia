@@ -3,17 +3,17 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
   UseGuards,
+  Query,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { FiliacionService } from './filiacion.service'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
-import { UpdateFiliacionDto } from './dto/update-filiacion.dto'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -24,6 +24,32 @@ export class FiliacionController extends BaseController {
     super()
   }
 
+  @Get('personas/:caso/:filiado')
+  @ApiOperation({ summary: 'Listar personas para filiación' })
+  @ApiParam({
+    name: 'caso',
+    example: 'BN-C-1/26',
+    description: 'Número de caso',
+  })
+  @ApiParam({
+    name: 'filiado',
+    example: 1,
+    description: 'Estado de filiación: 1 = Filiado, 0 = No Filiado',
+  })
+  async obtenerPersonas(
+    @Param('caso') caso: string,
+    @Param('filiado', ParseIntPipe) filiado: number,
+    @Query() pagination: PaginacionQueryDto
+  ) {
+    const result = await this.filiacionService.obtenerPersonasPorCaso(
+      caso,
+      filiado,
+      pagination
+    )
+
+    return this.successListRows(result)
+  }
+
   @Post()
   @ApiOperation({
     summary: 'Registrar formulario de Filiación de personas',
@@ -32,26 +58,14 @@ export class FiliacionController extends BaseController {
     return this.filiacionService.create(createFiliacionDto)
   }
 
-  @Get()
-  findAll() {
-    return this.filiacionService.findAll()
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.filiacionService.findOne(+id)
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateFiliacionDto: UpdateFiliacionDto
-  ) {
-    return this.filiacionService.update(+id, updateFiliacionDto)
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.filiacionService.remove(+id)
+  @Get('persona/:id')
+  @ApiOperation({ summary: 'Obtener información de una persona auxiliar' })
+  @ApiParam({
+    name: 'id',
+    example: 421,
+    description: 'ID de la persona auxiliar',
+  })
+  async obtenerPersona(@Param('id', ParseIntPipe) id: number) {
+    return await this.filiacionService.obtenerPersona(id)
   }
 }
