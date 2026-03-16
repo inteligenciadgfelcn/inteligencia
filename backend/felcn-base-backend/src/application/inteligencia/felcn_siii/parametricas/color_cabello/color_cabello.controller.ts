@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } f
 import { ColorCabelloService } from './color_cabello.service';
 import { CreateColorCabelloDto } from './dto/create-color_cabello.dto';
 import { UpdateColorCabelloDto } from './dto/update-color_cabello.dto';
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BaseController } from '@/common/base';
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard';
