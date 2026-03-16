@@ -32,6 +32,7 @@ import { TipoNariz, getTiposNariz } from '../services/tipo.nariz.service'
 import { TipoOjos, getTiposOjos } from '../services/tipo.ojos.service'
 
 import { useAlerts, useSession } from '@/hooks'
+import FileInputWithPreview from '@/components/form/FormInputFileWithPrefix'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -83,13 +84,15 @@ export const formSchema = z.object({
   tipoCabello: selectSchema('El tipo de cabello es obligatorio'),
   colorOjos: selectSchema('El color de ojos es obligatorio'),
   tipoOjos: selectSchema('El tipo de ojos es obligatorio'),
-  fotoFrontal: z.string().min(1, 'La foto frontal es obligatoria'),
-  fotoPerfilIzquierdo: z
-    .string()
-    .min(1, 'La foto de perfil izquierdo es obligatoria'),
-  fotoPerfilDerecho: z
-    .string()
-    .min(1, 'La foto de perfil derecho es obligatoria'),
+  fotoFrontal: z.custom<File>((value) => value instanceof File, {
+    message: 'La foto frontal es obligatoria',
+  }),
+  fotoPerfilIzquierdo: z.custom<File>((value) => value instanceof File, {
+    message: 'La foto de perfil izquierdo es obligatoria',
+  }),
+  fotoPerfilDerecho: z.custom<File>((value) => value instanceof File, {
+    message: 'La foto de perfil derecho es obligatoria',
+  }),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -100,8 +103,10 @@ interface OpcionBasica {
 }
 
 const ESTADO_PERSONA_OPTIONS: OpcionBasica[] = [
-  { id: 1, descripcion: 'Desconocido' },
-  { id: 2, descripcion: 'Identificado' },
+  { id: 1, descripcion: 'Arrestado' },
+  { id: 2, descripcion: 'Aprehendido' },
+  { id: 3, descripcion: 'LGI o Perdida de Dominio' },
+  { id: 4, descripcion: 'Principal aprendido' },
 ]
 
 const NACIONALIDAD_OPTIONS: OpcionBasica[] = [
@@ -124,12 +129,7 @@ const TARJETA_PRONTUARIO_OPTIONS: OpcionBasica[] = [
   { id: 2, descripcion: 'No' },
 ]
 
-const CONDICION_PERSONA_OPTIONS: OpcionBasica[] = [
-  { id: 1, descripcion: 'Arrestado' },
-  { id: 2, descripcion: 'Aprehendido' },
-  { id: 3, descripcion: 'LGI o Perdida de Dominio' },
-  { id: 4, descripcion: 'Principal aprendido' },
-]
+const CONDICION_PERSONA_OPTIONS: OpcionBasica[] = []
 
 /* ================= PROPS ================= */
 interface Props {
@@ -207,7 +207,7 @@ export const FormFiliacion = () => {
     handleSubmit,
     register,
     control,
-    watch,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -231,7 +231,7 @@ export const FormFiliacion = () => {
 
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-12 p-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-12 p-4 gap-4">
             <div className="col-span-6">
               <AsyncSearchSelect<OpcionBasica>
                 name="estadoPersona"
@@ -585,27 +585,34 @@ export const FormFiliacion = () => {
               />
             </div>
             <div className="col-span-4">
-              <InputWithPrefix
+              <FileInputWithPreview
+                showPreview
                 name="fotoFrontal"
+                register={register}
+                setValue={setValue}
+                accept=".webp,.png,.jpg"
                 prefix="Foto Frontal"
-                register={register}
-                error={errors.fotoFrontal?.message as string}
+                error={errors.fotoFrontal?.message}
               />
             </div>
             <div className="col-span-4">
-              <InputWithPrefix
+              <FileInputWithPreview
                 name="fotoPerfilIzquierdo"
-                prefix="Foto Perfil Izquierdo"
                 register={register}
-                error={errors.fotoPerfilIzquierdo?.message as string}
+                setValue={setValue}
+                accept=".webp,.png,.jpg"
+                prefix="Foto Perfil Izquierdo"
+                error={errors.fotoPerfilIzquierdo?.message}
               />
             </div>
             <div className="col-span-4">
-              <InputWithPrefix
+              <FileInputWithPreview
                 name="fotoPerfilDerecho"
-                prefix="Foto Perfil Derecho"
                 register={register}
-                error={errors.fotoPerfilDerecho?.message as string}
+                setValue={setValue}
+                accept=".webp,.png,.jpg"
+                prefix="Foto Perfil Derecho"
+                error={errors.fotoPerfilDerecho?.message}
               />
             </div>
           </div>
