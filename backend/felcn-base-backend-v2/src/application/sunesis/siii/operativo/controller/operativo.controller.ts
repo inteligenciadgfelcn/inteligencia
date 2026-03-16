@@ -468,33 +468,55 @@ export class OperativoController extends BaseController {
     return this.successDelete(null)
   }
 
-  // ==================== DETENIDOS ====================
+  // ==================== APREHENDIDOS ====================
 
-  @ApiOperation({ summary: 'Listar detenidos del operativo' })
+  @ApiOperation({ summary: 'Listar aprehendidos del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
   @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
-  @Get(':idOperativo/detenidos')
+  @Get(':idOperativo/aprehendidos')
   async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
     return this.successPagedRows(resultado, paginacion)
   }
 
-  @ApiOperation({ summary: 'Agregar detenido al operativo' })
+  @ApiOperation({
+    summary: 'Agregar aprehendido al operativo',
+    description: 'Enviar como multipart/form-data. Campos opcionales de archivo: fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo (jpg/jpeg).',
+  })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/detenidos')
+  @ApiConsumes('multipart/form-data')
+  @Post(':idOperativo/aprehendidos')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'fotoFrente', maxCount: 1 },
+      { name: 'fotoPerfilDerecho', maxCount: 1 },
+      { name: 'fotoPerfilIzquierdo', maxCount: 1 },
+    ])
+  )
   async agregarDetenido(
     @Param('idOperativo') idOperativo: string,
-    @Body() data: CreateDetenidoDto
+    @Body() data: CreateDetenidoDto,
+    @UploadedFiles()
+    files: {
+      fotoFrente?: Express.Multer.File[]
+      fotoPerfilDerecho?: Express.Multer.File[]
+      fotoPerfilIzquierdo?: Express.Multer.File[]
+    }
   ) {
-    const detenido = await this.operativoService.agregarDetenido(idOperativo, data, 'SISTEMA')
-    return this.successCreate(detenido)
+    const fotoFrente = files?.fotoFrente?.[0]?.buffer
+    const fotoPerfilDerecho = files?.fotoPerfilDerecho?.[0]?.buffer
+    const fotoPerfilIzquierdo = files?.fotoPerfilIzquierdo?.[0]?.buffer
+    const aprehendido = await this.operativoService.agregarDetenido(
+      idOperativo, data, 'SISTEMA', fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo
+    )
+    return this.successCreate(aprehendido)
   }
 
-  @ApiOperation({ summary: 'Obtener foto de detenido (frente)' })
+  @ApiOperation({ summary: 'Obtener foto de aprehendido (frente)' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @ApiParam({ name: 'id', description: 'ID del detenido' })
-  @Get(':idOperativo/detenidos/:id/fotos/frente')
+  @ApiParam({ name: 'id', description: 'ID del aprehendido' })
+  @Get(':idOperativo/aprehendidos/:id/fotos/frente')
   async obtenerFotoDetenidoFrente(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -506,10 +528,10 @@ export class OperativoController extends BaseController {
     res.send(foto)
   }
 
-  @ApiOperation({ summary: 'Obtener foto de detenido (perfil derecho)' })
+  @ApiOperation({ summary: 'Obtener foto de aprehendido (perfil derecho)' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @ApiParam({ name: 'id', description: 'ID del detenido' })
-  @Get(':idOperativo/detenidos/:id/fotos/perfil-derecho')
+  @ApiParam({ name: 'id', description: 'ID del aprehendido' })
+  @Get(':idOperativo/aprehendidos/:id/fotos/perfil-derecho')
   async obtenerFotoDetenidoPerfilDerecho(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -521,10 +543,10 @@ export class OperativoController extends BaseController {
     res.send(foto)
   }
 
-  @ApiOperation({ summary: 'Obtener foto de detenido (perfil izquierdo)' })
+  @ApiOperation({ summary: 'Obtener foto de aprehendido (perfil izquierdo)' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @ApiParam({ name: 'id', description: 'ID del detenido' })
-  @Get(':idOperativo/detenidos/:id/fotos/perfil-izquierdo')
+  @ApiParam({ name: 'id', description: 'ID del aprehendido' })
+  @Get(':idOperativo/aprehendidos/:id/fotos/perfil-izquierdo')
   async obtenerFotoDetenidoPerfilIzquierdo(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -536,48 +558,9 @@ export class OperativoController extends BaseController {
     res.send(foto)
   }
 
-  @ApiOperation({ summary: 'Subir foto de detenido (frente)' })
-  @ApiConsumes('multipart/form-data')
-  @Post(':idOperativo/detenidos/:id/fotos/frente')
-  @UseInterceptors(FileInterceptor('foto'))
-  async subirFotoDetenidoFrente(
-    @Param('idOperativo') idOperativo: string,
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'frente', file?.buffer || Buffer.alloc(0))
-    return this.successCreate({ mensaje: 'Foto frente guardada' })
-  }
-
-  @ApiOperation({ summary: 'Subir foto de detenido (perfil derecho)' })
-  @ApiConsumes('multipart/form-data')
-  @Post(':idOperativo/detenidos/:id/fotos/perfil-derecho')
-  @UseInterceptors(FileInterceptor('foto'))
-  async subirFotoDetenidoPerfilDerecho(
-    @Param('idOperativo') idOperativo: string,
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'perfil-derecho', file?.buffer || Buffer.alloc(0))
-    return this.successCreate({ mensaje: 'Foto perfil derecho guardada' })
-  }
-
-  @ApiOperation({ summary: 'Subir foto de detenido (perfil izquierdo)' })
-  @ApiConsumes('multipart/form-data')
-  @Post(':idOperativo/detenidos/:id/fotos/perfil-izquierdo')
-  @UseInterceptors(FileInterceptor('foto'))
-  async subirFotoDetenidoPerfilIzquierdo(
-    @Param('idOperativo') idOperativo: string,
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    await this.operativoService.actualizarFotoDetenido(idOperativo, id, 'perfil-izquierdo', file?.buffer || Buffer.alloc(0))
-    return this.successCreate({ mensaje: 'Foto perfil izquierdo guardada' })
-  }
-
-  @ApiOperation({ summary: 'Eliminar detenido del operativo' })
+  @ApiOperation({ summary: 'Eliminar aprehendido del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Delete(':idOperativo/detenidos/:id')
+  @Delete(':idOperativo/aprehendidos/:id')
   async eliminarDetenido(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
