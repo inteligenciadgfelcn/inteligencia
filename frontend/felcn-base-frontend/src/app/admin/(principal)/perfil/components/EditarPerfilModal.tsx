@@ -64,7 +64,7 @@ export const EditarPerfilModal = ({
   const onSubmit = async (values: FormValues) => {
     try {
       await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/perfil`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
         method: 'patch',
         body: values,
       })

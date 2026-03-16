@@ -22,7 +22,7 @@ export default function DesbloqueoPage() {
   const desbloquearCuenta = async () => {
     await delay(1000)
     return await Servicios.get({
-      url: `${Constantes.baseUrl}/usuarios/cuenta/desbloqueo`,
+      url: `${Constantes.authUrl}/usuarios/cuenta/desbloqueo`,
       params: {
         id: codigoDesbloqueo,
       },

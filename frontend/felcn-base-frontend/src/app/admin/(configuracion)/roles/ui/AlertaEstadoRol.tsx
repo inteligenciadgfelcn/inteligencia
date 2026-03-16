@@ -38,7 +38,7 @@ export const AlertaEstadoRol = ({
       await delay(800)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/roles/${rol.id}/${
+        url: `${Constantes.authUrl}/autorizacion/roles/${rol.id}/${
           rol.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',

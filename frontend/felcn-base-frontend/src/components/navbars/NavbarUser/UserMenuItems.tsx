@@ -48,7 +48,7 @@ export const UserMenuItems: React.FC<UserMenuItemsProps> = ({
           <div className="relative w-[60px] h-[60px] rounded-full overflow-hidden bg-secondary">
             {usuario?.urlFoto ? (
               <Image
-                src={`${Constantes.baseUrl}${usuario?.urlFoto}`}
+                src={`${Constantes.authUrl}${usuario?.urlFoto}`}
                 alt={'Foto de perfil'}
                 fill
                 sizes="100vw"

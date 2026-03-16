@@ -23,7 +23,7 @@ export default function ActivacionPage() {
   const activarCuenta = async () => {
     await delay(1000)
     return await Servicios.patch({
-      url: `${Constantes.baseUrl}/usuarios/cuenta/activacion`,
+      url: `${Constantes.authUrl}/usuarios/cuenta/activacion`,
       body: {
         codigo: codigoActivar,
       },
