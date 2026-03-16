@@ -21,12 +21,8 @@ import { ColorOjosModule } from './felcn_siii/parametricas/color_ojos/color_ojos
 import { TipoOjosModule } from './felcn_siii/parametricas/tipo_ojos/tipo_ojos.module';
 import { TipoCabelloModule } from './felcn_siii/parametricas/tipo_cabello/tipo_cabello.module';
 import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constitucion_corporal/constitucion_corporal.module'
-import { DetenidoModule } from './felcn_siii/operaciones/filiacion/detenido/detenido.module';
-import { AliasDetenidoModule } from './felcn_siii/operaciones/filiacion/alias_detenido/alias_detenido.module';
-import { DocumentoDetenidoModule } from './felcn_siii/operaciones/filiacion/documento_detenido/documento_detenido.module';
-import { FenotipoDetenidoModule } from './felcn_siii/operaciones/filiacion/fenotipo_detenido/fenotipo_detenido.module';
-import { ProfesionDetenidoModule } from './felcn_siii/operaciones/filiacion/profesion_detenido/profesion_detenido.module';
 import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module'
+import { ArrestadoAuxiliarModule } from './felcn_siii/operaciones/filiacion/arrestado_auxiliar/arrestado_auxiliar.module';
 
 @Module({
   imports: [
@@ -51,11 +47,6 @@ import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.mo
     TipoOjosModule,
     ConstitucionCorporalModule,
     TipoCabelloModule,
-    DetenidoModule,
-    AliasDetenidoModule,
-    DocumentoDetenidoModule,
-    FenotipoDetenidoModule,
-    ProfesionDetenidoModule,
     FiliacionModule,
   ],
 })
