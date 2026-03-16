@@ -52,6 +52,15 @@ export class DocumentoDetenido {
   expedido: string
 
   @Column({
+    name: 'contrastado_segip',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    comment: 'Si fue verificado con el segip',
+  })
+  contrastadoSegip: string
+
+  @Column({
     name: 'fecha_hora_ingreso',
     type: 'timestamp',
     nullable: true,
