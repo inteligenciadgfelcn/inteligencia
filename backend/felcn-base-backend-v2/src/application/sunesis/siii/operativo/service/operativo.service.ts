@@ -359,7 +359,10 @@ export class OperativoService extends BaseService {
   async agregarDetenido(
     idOperativo: string,
     data: CreateDetenidoDto,
-    usuario: string
+    usuario: string,
+    fotoFrente?: Buffer,
+    fotoPerfilDerecho?: Buffer,
+    fotoPerfilIzquierdo?: Buffer
   ): Promise<DetenidoAuxiliar> {
     const detenido = new DetenidoAuxiliar({
       idOperativo,
@@ -374,6 +377,9 @@ export class OperativoService extends BaseService {
       genero: data.genero,
       direccion: data.direccion,
       estado: data.estado,
+      fotoFrente: fotoFrente?.length ? fotoFrente : undefined,
+      fotoPerfilDerecho: fotoPerfilDerecho?.length ? fotoPerfilDerecho : undefined,
+      fotoPerfilIzquierdo: fotoPerfilIzquierdo?.length ? fotoPerfilIzquierdo : undefined,
       usuario,
     })
     return this.operativoRepository.crearDetenido(detenido)
@@ -386,13 +392,13 @@ export class OperativoService extends BaseService {
       descripcionPais: paisNacionalidad?.descripcion ?? null,
       descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
       urlFotoFrente: fotoFrente?.length
-        ? `/api/operativos/${idOperativo}/detenidos/${d.id}/fotos/frente`
+        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/frente`
         : null,
       urlFotoPerfilDerecho: fotoPerfilDerecho?.length
-        ? `/api/operativos/${idOperativo}/detenidos/${d.id}/fotos/perfil-derecho`
+        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/perfil-derecho`
         : null,
       urlFotoPerfilIzquierdo: fotoPerfilIzquierdo?.length
-        ? `/api/operativos/${idOperativo}/detenidos/${d.id}/fotos/perfil-izquierdo`
+        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/perfil-izquierdo`
         : null,
     }))
     return [filas, total]
