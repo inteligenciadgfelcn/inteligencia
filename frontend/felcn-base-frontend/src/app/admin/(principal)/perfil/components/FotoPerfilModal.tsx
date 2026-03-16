@@ -61,7 +61,7 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
 
     try {
       await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/foto`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/foto`,
         method: 'patch',
         body: formData,
         headers: {
@@ -91,7 +91,7 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
     setIsUploading(true)
     try {
       await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/foto`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/foto`,
         method: 'delete',
       })
 
@@ -160,7 +160,7 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
               src={
                 previewUrl.startsWith('blob:')
                   ? previewUrl
-                  : `${Constantes.baseUrl}${previewUrl}`
+                  : `${Constantes.authUrl}${previewUrl}`
               }
               alt="Vista previa"
               layout="fill"

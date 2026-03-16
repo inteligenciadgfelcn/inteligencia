@@ -60,6 +60,12 @@ export interface UnidadAsig {
 
 // ─── estructura ────────────────────────────────────────────────────────────────
 
+export interface Grado {
+    id: number
+    descripcion: string
+    abreviatura: string
+}
+
 export interface UnidadEstructura {
     id: number
     descripcion: string

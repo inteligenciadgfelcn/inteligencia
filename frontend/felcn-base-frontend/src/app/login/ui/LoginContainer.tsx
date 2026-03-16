@@ -121,7 +121,7 @@ export default function LoginContainer() {
             text="Ingresa con Ciudadanía"
             logoSrc="/logo_ciudadania_redondo.svg"
             onClick={() => {
-              window.location.href = `${Constantes.baseUrl}/ciudadania-auth`
+              window.location.href = `${Constantes.authUrl}/ciudadania-auth`
             }}
           />
         </div>
