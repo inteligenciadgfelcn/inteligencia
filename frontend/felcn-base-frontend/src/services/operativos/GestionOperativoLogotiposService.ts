@@ -1,6 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { LogotipoCasoPayload, RespuestaApi } from './types'
+import type { LogotipoCasoPayload, RespuestaApi, RespuestaApiPaginada } from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
@@ -28,9 +28,9 @@ const buildFormData = (payload: LogotipoCasoPayload) => {
 }
 
 export const GestionOperativoLogotiposService = {
-  listar(idCaso: number, idDroga: number): Promise<RespuestaApi<unknown[]>> {
+  listar(idCaso: number, idDroga: number, pagina: number = 1, limite: number = 10): Promise<RespuestaApi<RespuestaApiPaginada<unknown>>> {
     return Servicios.get({
-      url: `${BASE_OPERATIVOS}/caso/${idCaso}/drogas/${idDroga}/logotipos`,
+      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos?pagina=${pagina}&limite=${limite}`,
     })
   },
 
@@ -40,7 +40,7 @@ export const GestionOperativoLogotiposService = {
     payload: LogotipoCasoPayload
   ): Promise<RespuestaApi<unknown>> {
     return Servicios.post({
-      url: `${BASE_OPERATIVOS}/caso/${idCaso}/drogas/${idDroga}/logotipos`,
+      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos`,
       body: buildFormData(payload),
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -54,7 +54,7 @@ export const GestionOperativoLogotiposService = {
     idLogotipo: number
   ): Promise<RespuestaApi<unknown>> {
     return Servicios.delete({
-      url: `${BASE_OPERATIVOS}/caso/${idCaso}/drogas/${idDroga}/logotipos/${idLogotipo}`,
+      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos/${idLogotipo}`,
     })
   },
 }

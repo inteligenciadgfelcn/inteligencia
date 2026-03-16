@@ -15,11 +15,11 @@ import {
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../types'
 
-export function useSeccion1(idGestionOperativo: number) {
+export function useSeccion1(idGestionOperativo: number, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-1', idGestionOperativo],
         queryFn: () => GestionOperativosDatosGeneralesService.obtenerPorUsuario(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
     })
 
     const mutation = useMutation({
@@ -30,11 +30,11 @@ export function useSeccion1(idGestionOperativo: number) {
     return { query, mutation }
 }
 
-export function useSeccion2(idGestionOperativo: number) {
+export function useSeccion2(idGestionOperativo: number, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-2', idGestionOperativo],
         queryFn: () => GestionOperativoSeccion2Service.obtener(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
     })
 
     const mutation = useMutation({
@@ -45,11 +45,11 @@ export function useSeccion2(idGestionOperativo: number) {
     return { query, mutation }
 }
 
-export function useSeccion3(idGestionOperativo: number, page: number = 1, limit: number = 10) {
+export function useSeccion3(idGestionOperativo: number, page: number = 1, limit: number = 10, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-3', idGestionOperativo, page, limit],
         queryFn: () => GestionOperativoSustanciasSolidasService.listar(idGestionOperativo, page, limit),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
         placeholderData: keepPreviousData,
     })
 
@@ -72,11 +72,11 @@ export function useSeccion3(idGestionOperativo: number, page: number = 1, limit:
     return { query, mutation, deleteMutation }
 }
 
-export function useSeccion4(idGestionOperativo: number, page: number = 1, limit: number = 10) {
+export function useSeccion4(idGestionOperativo: number, page: number = 1, limit: number = 10, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-4', idGestionOperativo, page, limit],
         queryFn: () => GestionOperativoSustanciasLiquidasService.listar(idGestionOperativo, page, limit),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
         placeholderData: keepPreviousData,
     })
 
@@ -99,11 +99,11 @@ export function useSeccion4(idGestionOperativo: number, page: number = 1, limit:
     return { query, mutation, deleteMutation }
 }
 
-export function useSeccion5(idGestionOperativo: number, page: number = 1, limit: number = 10) {
+export function useSeccion5(idGestionOperativo: number, page: number = 1, limit: number = 10, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-5', idGestionOperativo, page, limit],
         queryFn: () => GestionOperativoLaboratorioService.listar(idGestionOperativo, page, limit),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
         placeholderData: keepPreviousData,
     })
 
@@ -126,11 +126,11 @@ export function useSeccion5(idGestionOperativo: number, page: number = 1, limit:
     return { query, mutation, deleteMutation }
 }
 
-export function useSeccion6(idGestionOperativo: number) {
+export function useSeccion6(idGestionOperativo: number, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-6', idGestionOperativo],
         queryFn: () => GestionOperativoSeccion6Service.obtener(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
     })
 
     const mutation = useMutation({
@@ -141,11 +141,11 @@ export function useSeccion6(idGestionOperativo: number) {
     return { query, mutation }
 }
 
-export function useSeccion7(idGestionOperativo: number) {
+export function useSeccion7(idGestionOperativo: number, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-7', idGestionOperativo],
         queryFn: () => GestionOperativoSeccion7Service.obtener(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
     })
 
     const mutation = useMutation({
@@ -156,11 +156,11 @@ export function useSeccion7(idGestionOperativo: number) {
     return { query, mutation }
 }
 
-export function useSeccion8(idGestionOperativo: number) {
+export function useSeccion8(idGestionOperativo: number, enabled = true) {
     const query = useQuery({
         queryKey: ['gestion-operativo-seccion-8', idGestionOperativo],
         queryFn: () => GestionOperativoSeccion8Service.obtener(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
+        enabled: idGestionOperativo > 0 && enabled,
     })
 
     const mutation = useMutation({

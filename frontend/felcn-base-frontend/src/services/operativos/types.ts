@@ -39,6 +39,17 @@ export interface SeccionPayload {
   [key: string]: unknown
 }
 
+export interface CasoResumen {
+    idCaso: string
+    numeroOperativo: string
+    nombreCaso: string
+    fiscalSolicitud: string
+    telefonoSolicitud: string
+    asignadoCaso: string
+    telefonoAsignado: string
+    fiscalAsignadoCaso: string
+    telefonoFiscal: string
+}
 export interface OperativoPayload {
   numeroOperativo: string
   idTipoRelevancia: number
@@ -80,6 +91,7 @@ export interface DrogaCasoPayload {
   idEstadoDroga: number
   cantidadGramos: number
   cantidadUnidades: number
+  costo?: number
   idFormaTransporte: number
   idPaisProcedencia: number
   idPaisDestino: number
@@ -93,6 +105,7 @@ export interface ResponseDroga {
   idEstadoDroga: number;
   cantidadGramos: number;
   cantidadUnidades: number;
+  costo?: number;
   idFormaTransporte: number;
   idPaisProcedencia: number;
   idPaisDestino: number;
@@ -158,4 +171,62 @@ export interface FabricaRespuesta {
     fabricaModelo: string
     cantidad: number
     costo: number
+}
+export interface OperativoResponse {
+  gradosX: number;
+  minX: number;
+  segX: number;
+
+  gradosY: number;
+  minY: number;
+  segY: number;
+
+  esRevisado: boolean;
+  esPositivo: boolean;
+  esAprehendido: boolean;
+  esArrestado: boolean;
+  esIcia: boolean;
+  esParteDiario: boolean;
+
+  id: number;
+  idCaso: string;
+
+  idTipoRelevancia: number;
+  numeroOperativo: string;
+  idTipoDenuncia: number;
+  idTipoPenal: number;
+
+  fechaOperativo: string; // o Date si lo transformas
+
+  idDepartamento: number;
+  idProvincia: number;
+  idLocalidad: number;
+
+  lugar: string;
+
+  idCategoriaOperativo: number;
+  idItemOperativo: number;
+
+  idUnidad: number;
+  idDistrital: number;
+  idGrupo: number;
+
+  mando: string;
+
+  coordX: number;
+  coordY: number;
+
+  idPlanOperacion: number;
+
+  breveDetalle: string;
+  descripcion: string;
+
+  idTipoOperacion: number;
+
+  organizacion: string;
+  clanFamiliar: string;
+
+  fechaHoraIngreso: string; // o Date
+
+  usuario: string;
 }
