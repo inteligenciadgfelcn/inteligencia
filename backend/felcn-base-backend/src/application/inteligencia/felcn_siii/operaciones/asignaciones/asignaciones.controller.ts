@@ -68,4 +68,20 @@ export class AsignacionesController extends BaseController {
     const result = await this.service.findAllPaginado(pagination)
     return this.successListRows(result)
   }
+
+  @Get('operativos')
+  @ApiOperation({ summary: 'Operativos registrados o no registrados' })
+  async operativos(
+    @Query('codigo') codigo: string,
+    @Query('registrados') registrados: boolean,
+    @Query() pagination: PaginacionQueryDto
+  ) {
+    const result = await this.service.findOperativos(
+      codigo,
+      registrados,
+      pagination
+    )
+
+    return this.successListRows(result)
+  }
 }
