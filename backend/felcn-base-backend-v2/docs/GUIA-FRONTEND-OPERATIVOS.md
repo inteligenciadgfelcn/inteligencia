@@ -1927,33 +1927,16 @@ curl "$BASE/siii-lookups/paises"
 
 | Método | URL | Descripción |
 |---|---|---|
-| GET | `/caso/:idCaso/detenidos` | Listar (paginado) |
-| POST | `/caso/:idCaso/detenidos` | Agregar persona |
-| DELETE | `/caso/:idCaso/detenidos/:id` | Eliminar |
-| POST | `/caso/:idCaso/detenidos/:id/fotos/frente` | Subir foto frente (`multipart`, campo `foto`) |
-| GET | `/caso/:idCaso/detenidos/:id/fotos/frente` | Obtener foto frente (binaria `image/jpeg`) |
-| POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Subir perfil derecho |
-| GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` | Obtener perfil derecho |
-| POST | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Subir perfil izquierdo |
-| GET | `/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` | Obtener perfil izquierdo |
+| GET | `/caso/:idCaso/aprehendidos` | Listar (paginado) |
+| POST | `/caso/:idCaso/aprehendidos` | Agregar (`multipart/form-data`, datos + 3 fotos opcionales) |
+| DELETE | `/caso/:idCaso/aprehendidos/:id` | Eliminar |
+| GET | `/caso/:idCaso/aprehendidos/:id/fotos/frente` | Obtener foto frente (binaria `image/jpeg`) |
+| GET | `/caso/:idCaso/aprehendidos/:id/fotos/perfil-derecho` | Obtener perfil derecho |
+| GET | `/caso/:idCaso/aprehendidos/:id/fotos/perfil-izquierdo` | Obtener perfil izquierdo |
 
-### Body POST
+### Body POST — `multipart/form-data`
 
-```json
-{
-  "nombres": "CARLOS",
-  "apellidoPaterno": "MAMANI",
-  "apellidoMaterno": "QUISPE",
-  "apellidoEsposo": "",
-  "idPais": 70,
-  "idTipoDocumento": 1,
-  "nroDocumento": "5432198-1A",
-  "fechaNacimiento": "1985-06-15",
-  "genero": true,
-  "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
-  "estado": "Aprehendido"
-}
-```
+Campos de texto + archivos opcionales en un solo request:
 
 | Campo | Tipo | Req | Descripción |
 |---|---|---|---|
@@ -1968,6 +1951,9 @@ curl "$BASE/siii-lookups/paises"
 | `genero` | boolean | ✓ | `true` = Masculino, `false` = Femenino |
 | `direccion` | string | ✓ | Dirección (max 255) |
 | `estado` | enum | ✓ | `"Principal Implicado"` \| `"Aprehendido"` \| `"Arrestado"` \| `"LGI O Perdida de Dominio"` |
+| `fotoFrente` | file (jpg) | — | Foto de frente |
+| `fotoPerfilDerecho` | file (jpg) | — | Foto perfil derecho |
+| `fotoPerfilIzquierdo` | file (jpg) | — | Foto perfil izquierdo |
 
 ### Respuesta GET (lista) — paginada y plana
 
@@ -1995,7 +1981,7 @@ curl "$BASE/siii-lookups/paises"
         "estado": "Aprehendido",
         "fechaHoraIngreso": "2024-03-15T14:30:00.000Z",
         "usuario": "JPEREZ",
-        "urlFotoFrente": "/api/operativos/caso/7/detenidos/55/fotos/frente",
+        "urlFotoFrente": "/api/operativos/42/aprehendidos/55/fotos/frente",
         "urlFotoPerfilDerecho": null,
         "urlFotoPerfilIzquierdo": null
       }
@@ -2004,8 +1990,7 @@ curl "$BASE/siii-lookups/paises"
 }
 ```
 
-> Las fotos son binarias. Se sirven vía URL — no se incluyen en bytes en la lista.
-> `urlFoto*` es `null` cuando no tiene foto registrada.
+> Las fotos se sirven vía URL — `null` cuando no tiene foto registrada.
 
 ### Curls
 
@@ -2014,36 +1999,39 @@ BASE="http://localhost:3000/api"
 CASO_ID=7
 
 # LIST (paginado)
-curl "$BASE/operativos/caso/$CASO_ID/detenidos?pagina=1&limite=10"
+curl "$BASE/operativos/caso/$CASO_ID/aprehendidos?pagina=1&limite=10"
 
-# CREATE
-curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres": "CARLOS",
-    "apellidoPaterno": "MAMANI",
-    "apellidoMaterno": "QUISPE",
-    "idPais": 70,
-    "idTipoDocumento": 1,
-    "nroDocumento": "5432198-1A",
-    "fechaNacimiento": "1985-06-15",
-    "genero": true,
-    "direccion": "AV. HEROINAS N 123 ZONA CENTRAL",
-    "estado": "Aprehendido"
-  }'
+# CREATE — sin fotos
+curl -X POST "$BASE/operativos/caso/$CASO_ID/aprehendidos" \
+  -F "nombres=CARLOS" \
+  -F "apellidoPaterno=MAMANI" \
+  -F "apellidoMaterno=QUISPE" \
+  -F "idPais=70" \
+  -F "idTipoDocumento=1" \
+  -F "nroDocumento=5432198-1A" \
+  -F "fechaNacimiento=1985-06-15" \
+  -F "genero=true" \
+  -F "direccion=AV. HEROINAS N 123 ZONA CENTRAL" \
+  -F "estado=Aprehendido"
 # → 201: { "finalizado": true, "datos": { "id": "55", ... } }
-DET_ID=55
 
-# FOTOS (multipart, campo: foto)
-curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" \
-  -F "foto=@/ruta/foto_frente.jpg"
-curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/perfil-derecho" \
-  -F "foto=@/ruta/foto_der.jpg"
-curl -X POST "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/perfil-izquierdo" \
-  -F "foto=@/ruta/foto_izq.jpg"
+# CREATE — con las 3 fotos
+curl -X POST "$BASE/operativos/caso/$CASO_ID/aprehendidos" \
+  -F "nombres=CARLOS" \
+  -F "apellidoPaterno=MAMANI" \
+  -F "idPais=70" \
+  -F "idTipoDocumento=1" \
+  -F "nroDocumento=5432198-1A" \
+  -F "genero=true" \
+  -F "direccion=AV. HEROINAS N 123" \
+  -F "estado=Aprehendido" \
+  -F "fotoFrente=@/ruta/frente.jpg" \
+  -F "fotoPerfilDerecho=@/ruta/der.jpg" \
+  -F "fotoPerfilIzquierdo=@/ruta/izq.jpg"
+APR_ID=55
 
 # Obtener foto (respuesta: image/jpeg)
-curl "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID/fotos/frente" --output frente.jpg
+curl "$BASE/operativos/$CASO_ID/aprehendidos/$APR_ID/fotos/frente" --output frente.jpg
 
 # DELETE
 curl -X DELETE "$BASE/operativos/caso/$CASO_ID/detenidos/$DET_ID"
@@ -2139,9 +2127,9 @@ apellidoEsposo  = apellidoEsposo  || ''
 | GET | `/operativos/caso/:idCaso/fabricas` | Listar |
 | POST | `/operativos/caso/:idCaso/fabricas` | Agregar |
 | DELETE | `/operativos/caso/:idCaso/fabricas/:id` | Eliminar |
-| GET | `/operativos/caso/:idCaso/detenidos` | Listar |
-| POST | `/operativos/caso/:idCaso/detenidos` | Agregar |
-| DELETE | `/operativos/caso/:idCaso/detenidos/:id` | Eliminar |
+| GET | `/operativos/caso/:idCaso/aprehendidos` | Listar |
+| POST | `/operativos/caso/:idCaso/aprehendidos` | Agregar (`multipart/form-data`) |
+| DELETE | `/operativos/caso/:idCaso/aprehendidos/:id` | Eliminar |
 | GET | `/operativos/caso/:idCaso/bienes` | Listar |
 | POST | `/operativos/caso/:idCaso/bienes` | Agregar |
 | DELETE | `/operativos/caso/:idCaso/bienes/:idBien` | Eliminar |
@@ -2164,12 +2152,9 @@ apellidoEsposo  = apellidoEsposo  || ''
 | GET | `/operativos/caso/:idCaso/galeria/:id/thumbnail` |
 | GET | `/operativos/caso/:idCaso/galeria/:id/medium` |
 | GET | `/operativos/caso/:idCaso/galeria/:id/full` |
-| POST | `/operativos/caso/:idCaso/detenidos/:id/fotos/frente` |
-| GET | `/operativos/caso/:idCaso/detenidos/:id/fotos/frente` |
-| POST | `/operativos/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` |
-| GET | `/operativos/caso/:idCaso/detenidos/:id/fotos/perfil-derecho` |
-| POST | `/operativos/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` |
-| GET | `/operativos/caso/:idCaso/detenidos/:id/fotos/perfil-izquierdo` |
+| GET | `/operativos/caso/:idCaso/aprehendidos/:id/fotos/frente` |
+| GET | `/operativos/caso/:idCaso/aprehendidos/:id/fotos/perfil-derecho` |
+| GET | `/operativos/caso/:idCaso/aprehendidos/:id/fotos/perfil-izquierdo` |
 | GET | `/operativos/caso/:idCaso/bienes/:idBien/foto` |
 | GET | `/operativos/caso/:idCaso/logotipos/:id/foto` |
 
