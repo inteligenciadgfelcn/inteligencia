@@ -3,8 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import {InjectRepository } from '@nestjs/typeorm'
-import {Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { Asignacion } from './entities/asignacione.entity'
 import { CreateAsignacionDto } from './dto/create-asignacione.dto'
 import { UpdateAsignacionDto } from './dto/update-asignacione.dto'
@@ -13,6 +13,7 @@ import { Departamento } from '../../parametricas/departamento/entities/departame
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { Grupo } from '../../parametricas/grupo/entities/grupo.entity'
 import { Estado } from '../../estado.enum'
+import { AsignacionesRepository } from './repository/asignaciones.repository'
 
 @Injectable()
 export class AsignacionesService {
@@ -24,7 +25,9 @@ export class AsignacionesService {
     private readonly departamentoRepository: Repository<Departamento>,
 
     @InjectRepository(Grupo, DB_SIII)
-    private readonly grupoRepository: Repository<Grupo>
+    private readonly grupoRepository: Repository<Grupo>,
+
+    private readonly asignacionesRepository: AsignacionesRepository
   ) {}
 
   async generarCodigoRegistro(idDepartamento: number, idGrupo: number) {
@@ -88,25 +91,12 @@ export class AsignacionesService {
       dto.idGrupo
     )
 
-    const asignacion = this.asignacionRepository.create({
-      departamento: departamento,
-      grupo: grupo,
-      distrital: grupo.distrital,
-      unidad: grupo.distrital.unidad,
-      nroOperativo,
-      codigoServicio: dto.codigoServicio,
-      nombreCaso: dto.nombreCaso,
-      fechaSolicitud: dto.fechaSolicitud,
-      nombreSolicitud: dto.nombreSolicitud,
-      telefonoSolicitud: dto.telefonoSolicitud,
-      asignado: dto.asignado,
-      telefonoAsignado: dto.telefonoAsignado,
-      fiscalAsignado: dto.fiscalAsignado,
-      telefonoFiscal: dto.telefonoFiscal,
-      usuario:dto.usuario
-    })
-
-    return await this.asignacionRepository.save(asignacion)
+    return this.asignacionesRepository.crearAsignacionDual(
+      dto,
+      departamento,
+      grupo,
+      nroOperativo
+    )
   }
 
   async findByCodigoResumen(nroOperativo: string) {
@@ -173,5 +163,17 @@ export class AsignacionesService {
     }
 
     return await query.getManyAndCount()
+  }
+
+  async findOperativos(
+    codigo: string,
+    registrados: boolean,
+    pagination: PaginacionQueryDto
+  ) {
+    return this.asignacionesRepository.findOperativos(
+      codigo,
+      registrados,
+      pagination
+    )
   }
 }
