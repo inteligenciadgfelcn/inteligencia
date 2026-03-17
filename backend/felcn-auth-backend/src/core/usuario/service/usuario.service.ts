@@ -273,7 +273,7 @@ export class UsuarioService extends BaseService {
         transaction
       )
 
-      correoActivacion = usuarioNuevo.correoElectronico
+      correoActivacion = usuarioNuevo.correoElectronico ?? null
       templateActivacion =
         TemplateEmailService.armarPlantillaActivacionCuentaManual(
           urlActivacion.toString()
@@ -291,7 +291,7 @@ export class UsuarioService extends BaseService {
         .sendEmail(
           correoActivacion,
           Messages.NEW_USER_ACCOUNT_VERIFY,
-          templateActivacion
+          templateActivacion!
         )
         .catch((err) => {
           const mensaje = `Falló al enviar el correo de activación de cuenta`
