@@ -10,7 +10,7 @@ type OptionBase = {
   descripcion: string
 }
 
-type ParentezcoFormValues = {
+type ParentescoFormValues = {
   nombres: string
   apPaterno: string
   apMaterno: string
@@ -41,12 +41,12 @@ const IMPLICADO_OPTIONS: OptionBase[] = [
   { id: 2, descripcion: 'NO' },
 ]
 
-export function FormParentezco() {
+export function FormParentesco() {
   const {
-    register: registerParentezco,
+    register: registerParentesco,
     control: controlParentezco,
-    handleSubmit: handleSubmitParentezco,
-  } = useForm<ParentezcoFormValues>({
+    handleSubmit: handleSubmitParentesco,
+  } = useForm<ParentescoFormValues>({
     defaultValues: {
       estado: null,
       implicado: null,
@@ -56,7 +56,7 @@ export function FormParentezco() {
   const { register: registerSupuestos, handleSubmit: handleSubmitSupuestos } =
     useForm<NombresSupuestosFormValues>()
 
-  const onSubmitParentezco = (_values: ParentezcoFormValues) => {
+  const onSubmitParentezco = (_values: ParentescoFormValues) => {
     // Placeholder submit handler until endpoint integration is defined.
   }
 
@@ -69,27 +69,27 @@ export function FormParentezco() {
       <div className="panel p-4">
         <h2 className="text-lg font-semibold text-primary mb-4">PARENTESCOS</h2>
 
-        <form onSubmit={handleSubmitParentezco(onSubmitParentezco)}>
+        <form onSubmit={handleSubmitParentesco(onSubmitParentezco)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div className="md:col-span-4">
               <InputWithPrefix
                 name="nombres"
                 prefix="Nombre(s)"
-                register={registerParentezco}
+                register={registerParentesco}
               />
             </div>
             <div className="md:col-span-4">
               <InputWithPrefix
                 name="apPaterno"
                 prefix="Ap. Paterno"
-                register={registerParentezco}
+                register={registerParentesco}
               />
             </div>
             <div className="md:col-span-4">
               <InputWithPrefix
                 name="apMaterno"
                 prefix="Ap. Materno"
-                register={registerParentezco}
+                register={registerParentesco}
               />
             </div>
 
@@ -97,7 +97,7 @@ export function FormParentezco() {
               <InputWithPrefix
                 name="edad"
                 prefix="Edad"
-                register={registerParentezco}
+                register={registerParentesco}
                 onlyNumbers
               />
             </div>
@@ -105,14 +105,14 @@ export function FormParentezco() {
               <InputWithPrefix
                 name="direccion"
                 prefix="Direccion"
-                register={registerParentezco}
+                register={registerParentesco}
               />
             </div>
             <div className="md:col-span-4">
               <InputWithPrefix
                 name="telefono"
                 prefix="Telefono"
-                register={registerParentezco}
+                register={registerParentesco}
                 onlyNumbers
               />
             </div>

@@ -214,6 +214,7 @@ export function RegistrosDataTable() {
         />
       </div>
       <VristoDataTable<AsignacionTable>
+        titleBreadcrumb="Casos operativos"
         rows={filasOrdenadas}
         total={total}
         page={pagina}
