@@ -66,7 +66,7 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
       setLoading(true)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/contrasena`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/contrasena`,
         method: 'patch',
         body: {
           contrasenaActual: encodeBase64(encodeURI(data.oldPassword)),

@@ -141,7 +141,7 @@ export const ModalModulo = ({
       }
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/modulos${
+        url: `${Constantes.authUrl}/autorizacion/modulos${
           modulo?.id ? `/${modulo.id}` : ''
         }`,
         method: modulo?.id ? 'patch' : 'post',

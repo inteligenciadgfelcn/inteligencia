@@ -16,6 +16,7 @@ import {
     ListItemText,
     Chip,
     FormHelperText,
+    FormControl,
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import { useAlerts, useSession } from '@/hooks'
@@ -72,12 +73,16 @@ const formSchema = z.object({
     roles: z.array(z.string()).min(1, {
         message: 'Debe seleccionar al menos un rol.',
     }),
+    idGrado: z.number().nullable().optional(),
+    idGrupo: z.number().nullable().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
 export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     const [loading, setLoading] = useState<boolean>(false)
+    const [idUnidad, setIdUnidad] = useState<number | null>(null)
+    const [idDistrital, setIdDistrital] = useState<number | null>(null)
     const { Alerta } = useAlerts()
     const { sesionPeticion } = useSession()
     const router = useRouter()
@@ -85,14 +90,14 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     const obtenerUsuario = async () => {
         if (!usuarioId) return null
         const respuesta = await sesionPeticion({
-            url: `${Constantes.baseUrl}/usuarios/${usuarioId}`,
+            url: `${Constantes.authUrl}/usuarios/${usuarioId}`,
         })
         return respuesta.datos
     }
 
     const obtenerRoles = async () => {
         const respuesta = await sesionPeticion({
-            url: `${Constantes.baseUrl}/autorizacion/roles`,
+            url: `${Constantes.authUrl}/autorizacion/roles`,
         })
         return respuesta.datos
     }
@@ -106,6 +111,56 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     const { data: roles = [] } = useQuery({
         queryKey: ['roles'],
         queryFn: obtenerRoles,
+    })
+
+    const obtenerGrados = async () => {
+        const respuesta = await sesionPeticion({
+            url: `${Constantes.authUrl}/lookups/grados`,
+        })
+        return respuesta.datos ?? []
+    }
+
+    const obtenerUnidades = async () => {
+        const respuesta = await sesionPeticion({
+            url: `${Constantes.authUrl}/lookups/unidades`,
+        })
+        return respuesta.datos ?? []
+    }
+
+    const obtenerDistritales = async () => {
+        const respuesta = await sesionPeticion({
+            url: `${Constantes.authUrl}/lookups/distritales/unidad/${idUnidad}`,
+        })
+        return respuesta.datos ?? []
+    }
+
+    const obtenerGrupos = async () => {
+        const respuesta = await sesionPeticion({
+            url: `${Constantes.authUrl}/lookups/grupos/distrital/${idDistrital}`,
+        })
+        return respuesta.datos ?? []
+    }
+
+    const { data: grados = [] } = useQuery({
+        queryKey: ['lookups-grados'],
+        queryFn: obtenerGrados,
+    })
+
+    const { data: unidades = [] } = useQuery({
+        queryKey: ['lookups-unidades'],
+        queryFn: obtenerUnidades,
+    })
+
+    const { data: distritales = [] } = useQuery({
+        queryKey: ['lookups-distritales', idUnidad],
+        queryFn: obtenerDistritales,
+        enabled: !!idUnidad,
+    })
+
+    const { data: grupos = [] } = useQuery({
+        queryKey: ['lookups-grupos', idDistrital],
+        queryFn: obtenerGrupos,
+        enabled: !!idDistrital,
     })
 
     const {
@@ -127,6 +182,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
             correoElectronico: '',
             telefono: '',
             roles: [],
+            idGrado: null,
+            idGrupo: null,
         },
     })
 
@@ -141,7 +198,14 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                 correoElectronico: usuario.correoElectronico,
                 telefono: usuario.persona.telefono,
                 roles: usuario.usuarioRol.map((value: any) => value.rol.id),
+                idGrado: usuario.idGrado ?? null,
+                idGrupo: usuario.idGrupo ?? null,
             })
+            // Pre-populate cascade: unidad → distrital → grupo
+            const unidadId = usuario.grupo?.distrital?.idUnidad ?? null
+            const distritalId = usuario.grupo?.idDistrital ?? null
+            setIdUnidad(unidadId)
+            setIdDistrital(distritalId)
         }
     }, [usuario, reset])
 
@@ -149,7 +213,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         try {
             setLoading(true)
             const respuesta = await sesionPeticion({
-                url: `${Constantes.baseUrl}/usuarios${usuarioId ? `/${usuarioId}` : ''}`,
+                url: `${Constantes.authUrl}/usuarios${usuarioId ? `/${usuarioId}` : ''}`,
                 method: usuarioId ? 'patch' : 'post',
                 body: {
                     ...values,
@@ -348,6 +412,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                     />
                                 </Grid>
                             </Grid>
+
                             <Typography variant="h6" fontWeight={'600'}>
                                 Datos de usuario
                             </Typography>
@@ -394,6 +459,145 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                     {errors.roles && (
                                         <FormHelperText error>{errors.roles.message}</FormHelperText>
                                     )}
+                                </Grid>
+                            </Grid>
+
+                            <Typography variant="h6" fontWeight={'600'}>
+                                Datos FELCN
+                            </Typography>
+
+                            <Grid container spacing={2}>
+                                {/* Grado — independiente */}
+                                <Grid size={{ xs: 12, sm: 6 }}>
+                                    <InputLabel
+                                        htmlFor={'idGrado'}
+                                        sx={{ color: 'text.primary', fontWeight: '500', mb: 1 }}
+                                    >
+                                        Grado
+                                    </InputLabel>
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            id="idGrado"
+                                            value={watch('idGrado') ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                setValue('idGrado', val === '' ? null : Number(val), {
+                                                    shouldValidate: true,
+                                                })
+                                            }}
+                                            displayEmpty
+                                            disabled={loading}
+                                        >
+                                            <MenuItem value="">
+                                                <em>Sin grado</em>
+                                            </MenuItem>
+                                            {grados.map((g) => (
+                                                <MenuItem key={g.id} value={g.id}>
+                                                    {g.abreviatura} — {g.descripcion}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Unidad — estado local, controla cascada */}
+                                <Grid size={{ xs: 12, sm: 6 }}>
+                                    <InputLabel
+                                        htmlFor={'idUnidad'}
+                                        sx={{ color: 'text.primary', fontWeight: '500', mb: 1 }}
+                                    >
+                                        Unidad
+                                    </InputLabel>
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            id="idUnidad"
+                                            value={idUnidad ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                const newId = val === '' ? null : Number(val)
+                                                setIdUnidad(newId)
+                                                setIdDistrital(null)
+                                                setValue('idGrupo', null)
+                                            }}
+                                            displayEmpty
+                                            disabled={loading}
+                                        >
+                                            <MenuItem value="">
+                                                <em>Sin unidad</em>
+                                            </MenuItem>
+                                            {unidades.map((u) => (
+                                                <MenuItem key={u.id} value={u.id}>
+                                                    {u.descripcion}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Distrital — dependiente de Unidad, estado local */}
+                                <Grid size={{ xs: 12, sm: 6 }}>
+                                    <InputLabel
+                                        htmlFor={'idDistrital'}
+                                        sx={{ color: 'text.primary', fontWeight: '500', mb: 1 }}
+                                    >
+                                        Distrital
+                                    </InputLabel>
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            id="idDistrital"
+                                            value={idDistrital ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                const newId = val === '' ? null : Number(val)
+                                                setIdDistrital(newId)
+                                                setValue('idGrupo', null)
+                                            }}
+                                            displayEmpty
+                                            disabled={loading || !idUnidad}
+                                        >
+                                            <MenuItem value="">
+                                                <em>{idUnidad ? 'Sin distrital' : 'Seleccione una unidad'}</em>
+                                            </MenuItem>
+                                            {distritales.map((d) => (
+                                                <MenuItem key={d.id} value={d.id}>
+                                                    {d.descripcion}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+
+                                {/* Grupo — dependiente de Distrital, se envía al backend */}
+                                <Grid size={{ xs: 12, sm: 6 }}>
+                                    <InputLabel
+                                        htmlFor={'idGrupo'}
+                                        sx={{ color: 'text.primary', fontWeight: '500', mb: 1 }}
+                                    >
+                                        Grupo
+                                    </InputLabel>
+                                    <FormControl fullWidth size="small">
+                                        <Select
+                                            id="idGrupo"
+                                            value={watch('idGrupo') ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value
+                                                setValue('idGrupo', val === '' ? null : Number(val), {
+                                                    shouldValidate: true,
+                                                })
+                                            }}
+                                            displayEmpty
+                                            disabled={loading || !idDistrital}
+                                        >
+                                            <MenuItem value="">
+                                                <em>{idDistrital ? 'Sin grupo' : 'Seleccione un distrital'}</em>
+                                            </MenuItem>
+                                            {grupos.map((g) => (
+                                                <MenuItem key={g.id} value={g.id}>
+                                                    {g.descripcion}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
                                 </Grid>
                             </Grid>
 

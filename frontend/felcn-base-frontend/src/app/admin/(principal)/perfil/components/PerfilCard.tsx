@@ -32,7 +32,7 @@ export const PerfilCard = ({
 
           {usuario?.urlFoto ? (
             <Image
-              src={`${Constantes.baseUrl}${usuario.urlFoto}`}
+              src={`${Constantes.authUrl}${usuario.urlFoto}`}
               alt="Perfil"
               fill
               className="object-cover"

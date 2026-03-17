@@ -13,7 +13,7 @@ import { ParametroEstado } from '../constant'
 dotenv.config()
 
 @Check(UtilService.buildStatusCheck(ParametroEstado))
-@Entity({ name: 'parametros', schema: process.env.DB_SCHEMA_PARAMETRICAS })
+@Entity({ name: 'parametro', schema: process.env.DB_SCHEMA_PARAMETRO })
 export class Parametro extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',

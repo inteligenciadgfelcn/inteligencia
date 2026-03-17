@@ -140,7 +140,7 @@ export const ModalUsuarios = ({
     try {
       setLoading(true)
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios${usuario ? `/${usuario.id}` : ''}`,
+        url: `${Constantes.authUrl}/usuarios${usuario ? `/${usuario.id}` : ''}`,
         method: usuario ? 'patch' : 'post',
         body: {
           ...values,

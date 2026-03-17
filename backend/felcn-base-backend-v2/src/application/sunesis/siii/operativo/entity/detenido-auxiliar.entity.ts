@@ -84,8 +84,8 @@ export class DetenidoAuxiliar {
   @Column({ name: 'foto_frente', type: 'bytea', nullable: true })
   fotoFrente?: Buffer
 
-  @Column({ name: 'foto_perfil_derecho', type: 'bytea', nullable: true })
-  fotoPerfilDerecho?: Buffer
+  @Column({ name: 'foto_documento', type: 'bytea', nullable: true })
+  fotoDocumento?: Buffer
 
   @Column({ name: 'foto_perfil_izquierdo', type: 'bytea', nullable: true })
   fotoPerfilIzquierdo?: Buffer

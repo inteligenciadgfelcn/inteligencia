@@ -34,7 +34,7 @@ export const AlertaEstadoCasoServicio = ({
       await delay(800)
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/casos_servicio/${casoServicio.id}/${
+        url: `${Constantes.authUrl}/casos_servicio/${casoServicio.id}/${
           casoServicio.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',
