@@ -124,8 +124,8 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
               error={errors.letrasPrincipalAprendido?.message as string}
               originalData={letras ?? []}
               mapOption={(item) => ({
-                label: item.letra,
-                value: item.idLetra,
+                label: item.descripcion,
+                value: item.descripcion,
                 original: item,
               })}
             />
