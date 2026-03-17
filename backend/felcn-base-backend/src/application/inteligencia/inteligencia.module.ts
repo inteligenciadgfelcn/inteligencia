@@ -22,7 +22,7 @@ import { TipoOjosModule } from './felcn_siii/parametricas/tipo_ojos/tipo_ojos.mo
 import { TipoCabelloModule } from './felcn_siii/parametricas/tipo_cabello/tipo_cabello.module';
 import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constitucion_corporal/constitucion_corporal.module'
 import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module'
-import { ArrestadoAuxiliarModule } from './felcn_siii/operaciones/filiacion/arrestado_auxiliar/arrestado_auxiliar.module';
+import { LetraModule } from './felcn_siii/parametricas/letra/letra.module';
 
 @Module({
   imports: [
@@ -48,6 +48,7 @@ import { ArrestadoAuxiliarModule } from './felcn_siii/operaciones/filiacion/arre
     ConstitucionCorporalModule,
     TipoCabelloModule,
     FiliacionModule,
+    LetraModule,
   ],
 })
 export class InteligenciaModule {}
