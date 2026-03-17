@@ -10,7 +10,6 @@ import {
     GestionOperativoSeccion6Service,
     GestionOperativoSeccion7Service,
     GestionOperativoSeccion8Service,
-    GestionOperativoSeccion9Service,
     GestionOperativoSeccion10Service,
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../types'
@@ -166,21 +165,6 @@ export function useSeccion8(idGestionOperativo: number, enabled = true) {
     const mutation = useMutation({
         mutationFn: (payload: SeccionPayloadBase) =>
             GestionOperativoSeccion8Service.guardar(idGestionOperativo, payload),
-    })
-
-    return { query, mutation }
-}
-
-export function useSeccion9(idGestionOperativo: number) {
-    const query = useQuery({
-        queryKey: ['gestion-operativo-seccion-9', idGestionOperativo],
-        queryFn: () => GestionOperativoSeccion9Service.obtener(idGestionOperativo),
-        enabled: idGestionOperativo > 0,
-    })
-
-    const mutation = useMutation({
-        mutationFn: (payload: SeccionPayloadBase) =>
-            GestionOperativoSeccion9Service.guardar(idGestionOperativo, payload),
     })
 
     return { query, mutation }

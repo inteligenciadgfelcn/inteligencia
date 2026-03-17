@@ -10,7 +10,6 @@ import { Laboratorio } from './secciones/Laboratorio'
 import { Seccion6Form } from './secciones/Seccion6Form'
 import { SeccionBienesForm } from './secciones/SeccionBienesForm'
 import { Seccion8Form } from './secciones/Seccion8Form'
-import { SeccionLogotiposForm } from './secciones/SeccionLogotiposForm'
 import { useGestionOperativoForm, type SeccionKey } from '../hooks/useGestionOperativoForm'
 import {
     useSeccion1,
@@ -36,7 +35,6 @@ const SECCIONES: { key: SeccionKey; label: string }[] = [
     { key: 'seccion-6', label: 'Personas' },
     { key: 'seccion-7', label: 'Bienes' },
     { key: 'seccion-8', label: 'Galería' },
-    { key: 'seccion-9', label: 'Logotipos' },
 ]
 
 export function FormGestionOperativo({
@@ -217,14 +215,6 @@ export function FormGestionOperativo({
             )
         }
 
-        if (key === 'seccion-9') {
-            return (
-                <SeccionLogotiposForm
-                    titulo="LOGOTIPOS"
-                    idoperativo={idOperativo}
-                />
-            )
-        }
     }
 
     return (
