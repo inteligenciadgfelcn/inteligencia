@@ -14,7 +14,6 @@ export type SeccionKey =
     | 'seccion-6'
     | 'seccion-7'
     | 'seccion-8'
-    | 'seccion-9'
     | 'seccion-10'
 
 export function useGestionOperativoForm(idGestionOperativo?: string) {
