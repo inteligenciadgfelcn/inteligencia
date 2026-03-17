@@ -69,7 +69,7 @@ export function RolesDatatable() {
 
   const obtenerRoles = async () => {
     const respuesta = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/roles/todos`,
+      url: `${Constantes.authUrl}/autorizacion/roles/todos`,
       params: {
         pagina,
         limite,

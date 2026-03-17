@@ -80,7 +80,7 @@ export const CambioPass = ({ code }: CambioPassParams) => {
       setLoading(true)
       await delay(1000)
       const respuesta = await Servicios.peticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/nueva-contrasena`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/nueva-contrasena`,
         method: 'patch',
         body: {
           codigo: code,

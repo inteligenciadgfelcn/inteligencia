@@ -75,7 +75,7 @@ export const UsuariosDatatable: React.FC = () => {
         (sortModel[0].sort === 'desc' ? '-' : '') + sortModel[0].field
     }
     const respuesta = await sesionPeticion({
-      url: `${Constantes.baseUrl}/usuarios`,
+      url: `${Constantes.authUrl}/usuarios`,
       params: {
         pagina: pagina,
         limite: limite,
@@ -89,7 +89,7 @@ export const UsuariosDatatable: React.FC = () => {
 
   const obtenerRoles = async () => {
     const respuesta = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/roles`,
+      url: `${Constantes.authUrl}/autorizacion/roles`,
     })
     return respuesta.datos
   }

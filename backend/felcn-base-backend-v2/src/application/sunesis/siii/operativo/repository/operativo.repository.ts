@@ -281,7 +281,7 @@ export class OperativoRepository {
 
   async actualizarFotoDetenido(
     id: string,
-    campo: 'foto_frente' | 'foto_perfil_derecho' | 'foto_perfil_izquierdo',
+    campo: 'foto_frente' | 'foto_documento' | 'foto_perfil_izquierdo',
     foto: Buffer
   ): Promise<void> {
     await this.detenidoRepo.update(id, { [campo]: foto } as any)
@@ -319,10 +319,9 @@ export class OperativoRepository {
     return this.logotipoRepo.save(logotipo)
   }
 
-  async listarLogotiposPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Logotipo[], number]> {
+  async listarLogotiposPorDroga(idDroga: string, paginacion: PaginacionQueryDto): Promise<[Logotipo[], number]> {
     return this.logotipoRepo.findAndCount({
-      where: { idOperativo },
-      relations: ['tipoDroga', 'paisOrigen', 'paisDestino'],
+      where: { idDroga },
       skip: paginacion.saltar,
       take: paginacion.limite,
     })
@@ -399,7 +398,6 @@ export class OperativoRepository {
       cantidadBienes,
       cantidadDetenidos,
       cantidadGaleria,
-      cantidadLogotipos,
     ] = await Promise.all([
       this.drogaRepo.count({ where: { idOperativo } }),
       this.sustanciaSolidaRepo.count({ where: { idOperativo } }),
@@ -408,7 +406,6 @@ export class OperativoRepository {
       this.bienRepo.count({ where: { idOperativo } }),
       this.detenidoRepo.count({ where: { idOperativo } }),
       this.galeriaRepo.count({ where: { idOperativo } }),
-      this.logotipoRepo.count({ where: { idOperativo } }),
     ])
 
     return {
@@ -419,7 +416,6 @@ export class OperativoRepository {
       bienes: cantidadBienes,
       detenidos: cantidadDetenidos,
       galeria: cantidadGaleria,
-      logotipos: cantidadLogotipos,
     }
   }
 

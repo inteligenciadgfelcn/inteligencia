@@ -23,7 +23,7 @@ export default function ModulesByRole() {
     queryKey: ['politicas-modulos'],
     queryFn: async () => {
       const response = await sesionPeticion<PoliticasResponse>({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: 'get',
         params: { pagina: 1, limite: 50 },
       })

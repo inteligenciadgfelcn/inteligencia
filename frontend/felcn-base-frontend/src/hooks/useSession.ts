@@ -78,7 +78,7 @@ export const useSession = () => {
           accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        url: `${Constantes.baseUrl}/logout`,
+        url: `${Constantes.authUrl}/logout`,
       })
       imprimir(`finalizando con respuesta`, respuesta)
 
@@ -100,7 +100,7 @@ export const useSession = () => {
 
     try {
       const respuesta = await Servicios.post({
-        url: `${Constantes.baseUrl}/token`,
+        url: `${Constantes.authUrl}/token`,
         body: {
           token: leerCookie('token'),
         },

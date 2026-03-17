@@ -69,7 +69,7 @@ export function ParametrosDatatable() {
 
   const obtenerParametros = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/parametros`,
+      url: `${Constantes.authUrl}/parametros`,
       params: {
         pagina,
         limite,
