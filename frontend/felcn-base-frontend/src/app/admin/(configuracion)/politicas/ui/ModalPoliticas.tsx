@@ -115,7 +115,7 @@ export const ModalPolitica = ({
       }
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: politica ? 'patch' : 'post',
         body: submitData,
         params: politica,

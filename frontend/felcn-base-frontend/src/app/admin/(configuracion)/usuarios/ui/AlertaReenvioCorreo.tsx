@@ -46,7 +46,7 @@ export const AlertaReenvioCorreo: React.FC<AlertaReenvioCorreoProps> = ({
       setLoading(true)
       await delay(1000) // Simular carga
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/${usuario.id}/reenviar`,
+        url: `${Constantes.authUrl}/usuarios/${usuario.id}/reenviar`,
         method: 'patch',
       })
       imprimir(`respuesta reenviar correo: ${respuesta}`)

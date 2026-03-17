@@ -249,7 +249,7 @@ export const NavbarUser: React.FC = () => {
                 <div className="w-[30px] h-[30px] rounded-full overflow-hidden bg-secondary relative">
                   {usuario?.urlFoto ? (
                     <Image
-                      src={`${Constantes.baseUrl}${usuario?.urlFoto}`}
+                      src={`${Constantes.authUrl}${usuario?.urlFoto}`}
                       alt={'Foto de perfil'}
                       fill
                       sizes="100vw"

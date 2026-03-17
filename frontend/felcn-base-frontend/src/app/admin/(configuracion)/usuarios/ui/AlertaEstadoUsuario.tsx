@@ -46,7 +46,7 @@ export const AlertaEstadoUsuario: React.FC<AlertaEstadoUsuarioProps> = ({
       setLoading(true)
       await delay(1000) // Simular carga
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/${usuario.id}/${
+        url: `${Constantes.authUrl}/usuarios/${usuario.id}/${
           usuario.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',

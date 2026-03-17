@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   const actualizarPerfilCompleto = async () => {
     try {
       const respuestaUsuario = await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/perfil`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
       })
 
       setUser(respuestaUsuario.datos)
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
       await delay(1000)
       const respuesta = await Servicios.post({
-        url: `${Constantes.baseUrl}/auth`,
+        url: `${Constantes.authUrl}/auth`,
         // TODO: Change when use https
         // body: { usuario, contrasena: encodeBase64(contrasena) },
         body: { usuario, contrasena: contrasena },
@@ -183,7 +183,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   const actualizarRol = async ({ idRol }: idRolType) => {
     const respuestaUsuario = await sesionPeticion({
       method: 'patch',
-      url: `${Constantes.baseUrl}/cambiarRol`,
+      url: `${Constantes.authUrl}/cambiarRol`,
       body: {
         idRol,
       },
@@ -200,7 +200,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
   const obtenerPermisos = async () => {
     const respuestaPermisos = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/permisos`,
+      url: `${Constantes.authUrl}/autorizacion/permisos`,
     })
 
     setEnforcer(await inicializarCasbin(respuestaPermisos.datos))
@@ -208,7 +208,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
   const obtenerUsuarioRol = async () => {
     const respuestaUsuario = await sesionPeticion({
-      url: `${Constantes.baseUrl}/usuarios/cuenta/perfil`,
+      url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
     })
 
     setUser(respuestaUsuario.datos)

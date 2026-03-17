@@ -71,7 +71,7 @@ export function PoliticasDatatable() {
 
   const obtenerPoliticas = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/politicas`,
+      url: `${Constantes.authUrl}/autorizacion/politicas`,
       params: {
         pagina,
         limite,
@@ -114,7 +114,7 @@ export function PoliticasDatatable() {
 
   const obtenerRoles = async (): Promise<RolType[]> => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/roles`,
+      url: `${Constantes.authUrl}/autorizacion/roles`,
     })
     return res.datos
   }

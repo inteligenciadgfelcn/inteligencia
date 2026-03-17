@@ -70,7 +70,7 @@ export const ModalParametros = ({
       setLoading(true)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/parametros${
+        url: `${Constantes.authUrl}/parametros${
           parametro ? `/${parametro.id}` : ''
         }`,
         method: parametro ? 'patch' : 'post',

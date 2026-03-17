@@ -482,7 +482,7 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({
     summary: 'Agregar aprehendido al operativo',
-    description: 'Enviar como multipart/form-data. Campos opcionales de archivo: fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo (jpg/jpeg).',
+    description: 'Enviar como multipart/form-data. Campos opcionales de archivo: fotoFrente, fotoDocumento, fotoPerfilIzquierdo (jpg/jpeg).',
   })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
@@ -490,7 +490,7 @@ export class OperativoController extends BaseController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'fotoFrente', maxCount: 1 },
-      { name: 'fotoPerfilDerecho', maxCount: 1 },
+      { name: 'fotoDocumento', maxCount: 1 },
       { name: 'fotoPerfilIzquierdo', maxCount: 1 },
     ])
   )
@@ -500,15 +500,15 @@ export class OperativoController extends BaseController {
     @UploadedFiles()
     files: {
       fotoFrente?: Express.Multer.File[]
-      fotoPerfilDerecho?: Express.Multer.File[]
+      fotoDocumento?: Express.Multer.File[]
       fotoPerfilIzquierdo?: Express.Multer.File[]
     }
   ) {
     const fotoFrente = files?.fotoFrente?.[0]?.buffer
-    const fotoPerfilDerecho = files?.fotoPerfilDerecho?.[0]?.buffer
+    const fotoDocumento = files?.fotoDocumento?.[0]?.buffer
     const fotoPerfilIzquierdo = files?.fotoPerfilIzquierdo?.[0]?.buffer
     const aprehendido = await this.operativoService.agregarDetenido(
-      idOperativo, data, 'SISTEMA', fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo
+      idOperativo, data, 'SISTEMA', fotoFrente, fotoDocumento, fotoPerfilIzquierdo
     )
     return this.successCreate(aprehendido)
   }
@@ -528,16 +528,16 @@ export class OperativoController extends BaseController {
     res.send(foto)
   }
 
-  @ApiOperation({ summary: 'Obtener foto de aprehendido (perfil derecho)' })
+  @ApiOperation({ summary: 'Obtener foto de documento del aprehendido' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiParam({ name: 'id', description: 'ID del aprehendido' })
-  @Get(':idOperativo/aprehendidos/:id/fotos/perfil-derecho')
-  async obtenerFotoDetenidoPerfilDerecho(
+  @Get(':idOperativo/aprehendidos/:id/fotos/foto-documento')
+  async obtenerFotoDetenidoDocumento(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoDetenido(idOperativo, id, 'perfil-derecho')
+    const foto = await this.operativoService.obtenerFotoDetenido(idOperativo, id, 'foto-documento')
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
@@ -651,53 +651,65 @@ export class OperativoController extends BaseController {
 
   // ==================== LOGOTIPOS ====================
 
-  @ApiOperation({ summary: 'Listar logotipos del operativo' })
+  @ApiOperation({ summary: 'Listar logotipos de una droga' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
   @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
   @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
-  @Get(':idOperativo/logotipos')
-  async listarLogotipos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
-    const resultado = await this.operativoService.listarLogotipos(idOperativo, paginacion)
+  @Get(':idOperativo/drogas/:idDroga/logotipos')
+  async listarLogotipos(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idDroga') idDroga: string,
+    @Query() paginacion: PaginacionQueryDto
+  ) {
+    const resultado = await this.operativoService.listarLogotipos(idDroga, paginacion)
     return this.successPagedRows(resultado, paginacion)
   }
 
-  @ApiOperation({ summary: 'Agregar logotipo al operativo' })
+  @ApiOperation({ summary: 'Agregar logotipo a una droga' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
   @ApiConsumes('multipart/form-data')
-  @Post(':idOperativo/logotipos')
+  @Post(':idOperativo/drogas/:idDroga/logotipos')
   @UseInterceptors(FileInterceptor('fotografia'))
   async agregarLogotipo(
     @Param('idOperativo') idOperativo: string,
+    @Param('idDroga') idDroga: string,
     @Body() data: CreateLogotipoDto,
     @UploadedFile() file: Express.Multer.File
   ) {
     const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipo(idOperativo, data, fotografia, 'SISTEMA')
+    const logotipo = await this.operativoService.agregarLogotipo(idDroga, data, fotografia, 'SISTEMA')
     return this.successCreate(logotipo)
   }
 
   @ApiOperation({ summary: 'Obtener foto de logotipo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/logotipos/:id/foto')
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
+  @ApiParam({ name: 'id', description: 'ID del logotipo' })
+  @Get(':idOperativo/drogas/:idDroga/logotipos/:id/foto')
   async obtenerFotoLogotipo(
     @Param('idOperativo') idOperativo: string,
+    @Param('idDroga') idDroga: string,
     @Param('id') id: string,
     @Res() res: Response
   ) {
-    const foto = await this.operativoService.obtenerFotoLogotipo(idOperativo, id)
+    const foto = await this.operativoService.obtenerFotoLogotipo(idDroga, id)
     res.setHeader('Content-Type', 'image/jpeg')
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
     res.send(foto)
   }
 
-  @ApiOperation({ summary: 'Eliminar logotipo del operativo' })
+  @ApiOperation({ summary: 'Eliminar logotipo de una droga' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Delete(':idOperativo/logotipos/:id')
+  @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
+  @Delete(':idOperativo/drogas/:idDroga/logotipos/:id')
   async eliminarLogotipo(
     @Param('idOperativo') idOperativo: string,
+    @Param('idDroga') idDroga: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarLogotipo(idOperativo, id)
+    await this.operativoService.eliminarLogotipo(id)
     return this.successDelete(null)
   }
 }

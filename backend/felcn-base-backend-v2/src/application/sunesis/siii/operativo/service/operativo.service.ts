@@ -361,7 +361,7 @@ export class OperativoService extends BaseService {
     data: CreateDetenidoDto,
     usuario: string,
     fotoFrente?: Buffer,
-    fotoPerfilDerecho?: Buffer,
+    fotoDocumento?: Buffer,
     fotoPerfilIzquierdo?: Buffer
   ): Promise<DetenidoAuxiliar> {
     const detenido = new DetenidoAuxiliar({
@@ -378,7 +378,7 @@ export class OperativoService extends BaseService {
       direccion: data.direccion,
       estado: data.estado,
       fotoFrente: fotoFrente?.length ? fotoFrente : undefined,
-      fotoPerfilDerecho: fotoPerfilDerecho?.length ? fotoPerfilDerecho : undefined,
+      fotoDocumento: fotoDocumento?.length ? fotoDocumento : undefined,
       fotoPerfilIzquierdo: fotoPerfilIzquierdo?.length ? fotoPerfilIzquierdo : undefined,
       usuario,
     })
@@ -387,15 +387,15 @@ export class OperativoService extends BaseService {
 
   async listarDetenidos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const [detenidos, total] = await this.operativoRepository.listarDetenidosPorOperativo(idOperativo, paginacion)
-    const filas = detenidos.map(({ fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo, paisNacionalidad, tipoDocumento, operativo, ...d }) => ({
+    const filas = detenidos.map(({ fotoFrente, fotoDocumento, fotoPerfilIzquierdo, paisNacionalidad, tipoDocumento, operativo, ...d }) => ({
       ...d,
       descripcionPais: paisNacionalidad?.descripcion ?? null,
       descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
       urlFotoFrente: fotoFrente?.length
         ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/frente`
         : null,
-      urlFotoPerfilDerecho: fotoPerfilDerecho?.length
-        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/perfil-derecho`
+      urlFotoDocumento: fotoDocumento?.length
+        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/foto-documento`
         : null,
       urlFotoPerfilIzquierdo: fotoPerfilIzquierdo?.length
         ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/perfil-izquierdo`
@@ -411,7 +411,7 @@ export class OperativoService extends BaseService {
   async actualizarFotoDetenido(
     idOperativo: string,
     idDetenido: string,
-    tipo: 'frente' | 'perfil-derecho' | 'perfil-izquierdo',
+    tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo',
     foto: Buffer
   ): Promise<void> {
     const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
@@ -420,7 +420,7 @@ export class OperativoService extends BaseService {
     }
     const campoMap = {
       'frente': 'foto_frente',
-      'perfil-derecho': 'foto_perfil_derecho',
+      'foto-documento': 'foto_documento',
       'perfil-izquierdo': 'foto_perfil_izquierdo',
     } as const
     await this.operativoRepository.actualizarFotoDetenido(idDetenido, campoMap[tipo], foto)
@@ -449,30 +449,18 @@ export class OperativoService extends BaseService {
   // ==================== LOGOTIPOS ====================
 
   async agregarLogotipo(
-    idOperativo: string,
+    idDroga: string,
     data: CreateLogotipoDto,
     fotografia: Buffer,
     usuario: string
   ): Promise<any> {
-    const operativo = await this.buscarPorId(idOperativo)
-    const asignacion = await this.asignacionSiiiRepository.buscarPorId(operativo.idCaso)
-
     const logotipoEntity = new Logotipo({
-      idOperativo,
-      numeroCaso: asignacion?.nombreCaso || '',
-      numeroOperativo: operativo.numeroOperativo,
-      fechaOperativo: operativo.fechaOperativo,
-      nombreCaso: asignacion?.nombreCaso || '',
-      descripcion: operativo.descripcion,
+      idDroga,
       imagen: data.imagen,
       descripcionLogo: data.descripcionLogo,
-      idTipoDroga: data.idTipoDroga,
-      idPaisOrigen: data.idPaisOrigen,
-      idPaisDestino: data.idPaisDestino,
       organizacion: data.organizacion,
-      blanco: data.blanco || '',
-      observacion: data.observacion || '',
-      enlace: data.enlace || '',
+      blanco: data.blanco,
+      observacion: data.observacion,
       fotografia,
       usuario,
     })
@@ -481,26 +469,23 @@ export class OperativoService extends BaseService {
     return {
       ...resto,
       urlFotografia: foto?.length
-        ? `/api/operativos/${idOperativo}/logotipos/${logotipo.id}/foto`
+        ? `/api/operativos/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
         : null,
     }
   }
 
-  async listarLogotipos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
-    const [logotipos, total] = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo, paginacion)
-    const filas = logotipos.map(({ fotografia, tipoDroga, paisOrigen, paisDestino, operativo, ...l }) => ({
+  async listarLogotipos(idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+    const [logotipos, total] = await this.operativoRepository.listarLogotiposPorDroga(idDroga, paginacion)
+    const filas = logotipos.map(({ fotografia, droga, ...l }) => ({
       ...l,
-      descripcionTipoDroga: tipoDroga?.descripcion ?? null,
-      descripcionPaisOrigen: paisOrigen?.descripcion ?? null,
-      descripcionPaisDestino: paisDestino?.descripcion ?? null,
       urlFotografia: fotografia?.length
-        ? `/api/operativos/${idOperativo}/logotipos/${l.id}/foto`
+        ? `/api/operativos/drogas/${idDroga}/logotipos/${l.id}/foto`
         : null,
     }))
     return [filas, total]
   }
 
-  async eliminarLogotipo(idOperativo: string, idLogotipo: string): Promise<void> {
+  async eliminarLogotipo(idLogotipo: string): Promise<void> {
     await this.operativoRepository.eliminarLogotipo(idLogotipo)
   }
 
@@ -553,15 +538,15 @@ export class OperativoService extends BaseService {
   async obtenerFotoDetenido(
     idOperativo: string,
     idDetenido: string,
-    tipo: 'frente' | 'perfil-derecho' | 'perfil-izquierdo'
+    tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo'
   ): Promise<Buffer> {
     const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
     if (!detenido || detenido.idOperativo !== idOperativo) {
       throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
     }
     switch (tipo) {
-      case 'frente':        return detenido.fotoFrente || Buffer.alloc(0)
-      case 'perfil-derecho':  return detenido.fotoPerfilDerecho || Buffer.alloc(0)
+      case 'frente':           return detenido.fotoFrente || Buffer.alloc(0)
+      case 'foto-documento':   return detenido.fotoDocumento || Buffer.alloc(0)
       case 'perfil-izquierdo': return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
       default: throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
     }
@@ -575,9 +560,9 @@ export class OperativoService extends BaseService {
     return bien.fotoBien || Buffer.alloc(0)
   }
 
-  async obtenerFotoLogotipo(idOperativo: string, idLogotipo: string): Promise<Buffer> {
+  async obtenerFotoLogotipo(idDroga: string, idLogotipo: string): Promise<Buffer> {
     const logotipo = await this.operativoRepository.buscarLogotipoPorId(idLogotipo)
-    if (!logotipo || logotipo.idOperativo !== idOperativo) {
+    if (!logotipo || logotipo.idDroga !== idDroga) {
       throw new NotFoundException(`Logotipo con ID ${idLogotipo} no encontrado`)
     }
     return logotipo.fotografia || Buffer.alloc(0)

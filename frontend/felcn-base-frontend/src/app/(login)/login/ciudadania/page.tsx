@@ -42,7 +42,7 @@ export default function CiudadaniaPage() {
       }
 
       const respuesta = await Servicios.get({
-        url: `${Constantes.baseUrl}/ciudadania-autorizar`,
+        url: `${Constantes.authUrl}/ciudadania-autorizar`,
         body: {},
         params: params,
         headers: {

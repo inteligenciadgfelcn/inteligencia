@@ -3,6 +3,7 @@ import {
   CorreoLista,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   ValidateNested,
 } from '@/common/validation'
 import { PersonaDto } from './persona.dto'
@@ -28,4 +29,24 @@ export class CrearUsuarioDto {
   @ApiProperty({ example: ['1'] })
   roles: Array<string>
   usuarioCreacion?: string
+
+  @IsOptional()
+  @ApiProperty({ example: 'CNEL. JUAN PÉREZ MAMANI', required: false })
+  nombreApp?: string | null
+
+  @IsOptional()
+  @ApiProperty({ example: '71234567', required: false })
+  telefonoCelular?: string | null
+
+  @IsOptional()
+  @ApiProperty({ example: '2234567', required: false })
+  telefonoCorporativo?: string | null
+
+  @IsOptional()
+  @ApiProperty({ example: 1, required: false, description: 'ID del grado policial/militar' })
+  idGrado?: number | null
+
+  @IsOptional()
+  @ApiProperty({ example: 1, required: false, description: 'ID del grupo organizacional' })
+  idGrupo?: number | null
 }
