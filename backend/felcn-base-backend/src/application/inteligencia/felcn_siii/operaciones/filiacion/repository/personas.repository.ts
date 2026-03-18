@@ -25,7 +25,7 @@ export class PersonasRepository {
       .leftJoin('operativo', 'o', 'p.id_operativo = o.id_operativo')
       .leftJoin('pais', 'pa', 'p.id_pais = pa.id_pais')
       .leftJoin('tipo_documento', 'td', 'p.id_tipo_documento = td.id_tipo_documento')
-      .leftJoin('asignacion', 'a', 'o.id_caso = a.id_caso')
+      .leftJoin('asignacion', 'a', 'o.numero_operativo = a.numero_operativo')
       .where('TRIM(a.numero_caso) = :caso', { caso: nroCaso.trim() })
       .andWhere('p.enviado = :enviado', { enviado: filiado })
 
