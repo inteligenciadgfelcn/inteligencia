@@ -61,7 +61,7 @@ export const dateToString = (date: Date) => {
 export const nowDateToString = () => {
   const now = new Date()
   const pad = (n: number) => n.toString().padStart(2, '0')
-  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} 05:00:00`
 
   return formatted
 }
@@ -70,7 +70,7 @@ export const tomorrowDateToString = () => {
   const now = new Date()
   now.setDate(now.getDate() + 1)
   const pad = (n: number) => n.toString().padStart(2, '0')
-  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+  const formatted = `${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()} 05:00:00`
 
   return formatted
 }

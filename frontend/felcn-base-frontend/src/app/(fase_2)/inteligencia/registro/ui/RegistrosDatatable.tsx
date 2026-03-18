@@ -197,14 +197,12 @@ export function RegistrosDataTable() {
 
   return (
     <div>
-      {
-        <div className="panel flex items-center p-3 text-primary mb-5">
-          <span className="text-lg font-semibold">
-            Registro de casos en operativos antinarcóticos
-          </span>
-        </div>
-      }
-      <div className="panel p-1 mb-5 w-full">
+      <div className="panel flex items-center p-3 text-primary mb-5">
+        <span className="text-lg font-semibold">
+          Registro de casos en operativos antinarcóticos
+        </span>
+      </div>
+      <div className="panel p-1 mb-12 w-full">
         <FormRegistro
           asignacion={selected}
           onSuccess={() => {
@@ -214,7 +212,7 @@ export function RegistrosDataTable() {
         />
       </div>
       <VristoDataTable<AsignacionTable>
-        titleBreadcrumb="Casos operativos"
+        title="Casos operativos"
         rows={filasOrdenadas}
         total={total}
         page={pagina}
