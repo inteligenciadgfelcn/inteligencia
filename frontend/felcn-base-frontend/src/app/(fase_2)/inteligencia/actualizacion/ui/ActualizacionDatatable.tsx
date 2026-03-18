@@ -158,9 +158,9 @@ export function ActualizacionDataTable() {
   ]
 
   return (
-    <div>
+    <div className="mb-4">
       <VristoDataTable<CasoActualizacionTable>
-        titleBreadcrumb="CASOS INGRESADOS"
+        title="CASOS INGRESADOS"
         rows={filasFiltradas}
         total={total}
         page={pagina}

@@ -158,12 +158,8 @@ export function PendientesDataTable() {
 
   return (
     <div>
-      {
-        <button className="mb-4 bg-primary text-white-light p-1.5 ltr:pl-6 rtl:pr-6 ltr:pr-2 rtl:pl-2 relative  h-full flex items-center before:absolute ltr:before:-right-[15px] rtl:before:-left-[15px] rtl:before:rotate-180 before:inset-y-0 before:m-auto before:w-0 before:h-0 before:border-[16px] before:border-l-[15px] before:border-r-0 before:border-t-transparent before:border-b-transparent before:border-l-primary before:z-[1]">
-          {'CASOS PENDIENTES DE REGISTRO'}
-        </button>
-      }
       <VristoDataTable<CasoActualizacionTable>
+        title="Casos pendiente de registro"
         rows={filasFiltradas}
         total={total}
         page={pagina}

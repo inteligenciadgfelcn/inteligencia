@@ -203,6 +203,7 @@ export function ServiciosDatatable() {
   return (
     <div>
       <VristoDataTable<ServicioTable>
+        title="Servicios registrados"
         rows={filasOrdenadas}
         total={total}
         page={pagina}
