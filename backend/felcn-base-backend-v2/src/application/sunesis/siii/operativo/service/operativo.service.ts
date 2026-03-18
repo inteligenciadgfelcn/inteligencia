@@ -431,16 +431,56 @@ export class OperativoService extends BaseService {
     data: CreateGaleriaDto,
     foto: Buffer,
     usuario: string
-  ): Promise<Galeria> {
-    const galeria = new Galeria({ idOperativo, descripcion: data.descripcion, foto })
-    return this.operativoRepository.crearGaleria(galeria)
+  ): Promise<any> {
+    const galeriaEntity = new Galeria({
+      idOperativo,
+      descripcion: data.descripcion,
+      foto,
+    })
+    const galeria = await this.operativoRepository.crearGaleria(galeriaEntity)
+    const { foto: f, ...resto } = galeria
+    return {
+      ...resto,
+      urlFotoThumbnail: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/thumbnail`
+        : null,
+      urlFotoMedium: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/medium`
+        : null,
+      urlFotoFull: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/full`
+        : null,
+    }
   }
 
-  async listarGaleria(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Galeria[], number]> {
-    return this.operativoRepository.listarGaleriaPorOperativo(idOperativo, paginacion)
+  async listarGaleria(
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[any[], number]> {
+    const [galerias, total] =
+      await this.operativoRepository.listarGaleriaPorOperativo(
+        idOperativo,
+        paginacion
+      )
+    const filas = galerias.map(({ foto, operativo: _operativo, ...g }) => ({
+      ...g,
+      urlFotoThumbnail: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/thumbnail`
+        : null,
+      urlFotoMedium: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/medium`
+        : null,
+      urlFotoFull: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/full`
+        : null,
+    }))
+    return [filas, total]
   }
 
-  async eliminarFotoGaleria(idOperativo: string, idGaleria: string): Promise<void> {
+  async eliminarFotoGaleria(
+    idOperativo: string,
+    idGaleria: string
+  ): Promise<void> {
     await this.operativoRepository.eliminarGaleria(idGaleria)
   }
 
@@ -543,8 +583,8 @@ export class OperativoService extends BaseService {
       throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
     }
     switch (tipo) {
-      case 'frente':           return detenido.fotoFrente || Buffer.alloc(0)
-      case 'foto-documento':   return detenido.fotoDocumento || Buffer.alloc(0)
+      case 'frente': return detenido.fotoFrente || Buffer.alloc(0)
+      case 'foto-documento': return detenido.fotoDocumento || Buffer.alloc(0)
       case 'perfil-izquierdo': return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
       default: throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
     }
