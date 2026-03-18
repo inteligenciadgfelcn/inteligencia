@@ -20,6 +20,7 @@ import {
 } from '@/services/operativos'
 import type { SeccionPayloadBase } from '../../../types'
 import { useParametricas } from '@/hooks'
+import FormInputImage from '@/components/form/FormInputImage'
 
 const ITEMS_POR_PAGINA = 5
 
@@ -82,7 +83,9 @@ function LogotiposPanel({
     },
   })
 
-  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>([])
+  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
+    []
+  )
   const [cargando, setCargando] = useState(false)
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
   const [mostrarFormulario, setMostrarFormulario] = useState(false)
@@ -90,9 +93,14 @@ function LogotiposPanel({
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await GestionOperativoLogotiposService.listar(idoperativo, idDroga)
+      const res = await GestionOperativoLogotiposService.listar(
+        idoperativo,
+        idDroga
+      )
       if (res?.finalizado) {
-        setLogotiposItems((res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? [])
+        setLogotiposItems(
+          (res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? []
+        )
       }
     } finally {
       setCargando(false)
@@ -110,18 +118,24 @@ function LogotiposPanel({
 
   const onSubmit = async (data: Record<string, any>) => {
     const fotoLogoFile =
-      data.fotografia && data.fotografia.length > 0 ? data.fotografia[0] : undefined
+      data.fotografia && data.fotografia.length > 0
+        ? data.fotografia[0]
+        : undefined
     setCargando(true)
     try {
-      const respuesta = await GestionOperativoLogotiposService.crear(idoperativo, idDroga, {
-        id: 0,
-        imagen: String(data.imagen ?? ''),
-        descripcionLogo: String(data.descripcionLogo ?? ''),
-        organizacion: String(data.organizacion ?? ''),
-        blanco: data.blanco ? String(data.blanco) : undefined,
-        observacion: data.observacion ? String(data.observacion) : undefined,
-        fotografia: fotoLogoFile,
-      })
+      const respuesta = await GestionOperativoLogotiposService.crear(
+        idoperativo,
+        idDroga,
+        {
+          id: 0,
+          imagen: String(data.imagen ?? ''),
+          descripcionLogo: String(data.descripcionLogo ?? ''),
+          organizacion: String(data.organizacion ?? ''),
+          blanco: data.blanco ? String(data.blanco) : undefined,
+          observacion: data.observacion ? String(data.observacion) : undefined,
+          fotografia: fotoLogoFile,
+        }
+      )
       if (respuesta?.finalizado) {
         await cargar()
         reset()
@@ -139,53 +153,60 @@ function LogotiposPanel({
       </p>
 
       {/* Formulario */}
-      {mostrarFormulario && <form onSubmit={handleSubmit(onSubmit)}>
-        <Card title="REGISTRAR LOGOTIPO">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <FormInputText id="imagen" name="imagen" label="Imagen" control={control} />
-            <FormInputText
-              id="descripcionLogo"
-              name="descripcionLogo"
-              label="Descripcion del Logo"
-              control={control}
-            />
-            <FormInputText
-              id="organizacion"
-              name="organizacion"
-              label="Organizacion Criminal"
-              control={control}
-            />
-            <FormInputText
-              id="blanco"
-              name="blanco"
-              label="Posibles Blancos"
-              control={control}
-            />
-            <FormInputText
-              id="observacion"
-              name="observacion"
-              label="Observacion"
-              control={control}
-            />
-            <div className="hidden lg:block" />
-            <div className="col-span-1 lg:col-span-3">
-              <FormInputFile
-                id="fotografia"
-                name="fotografia"
-                label="Fotografia"
+      {mostrarFormulario && (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Card title="REGISTRAR LOGOTIPO">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <FormInputText
+                id="imagen"
+                name="imagen"
+                label="Imagen"
                 control={control}
-                limite={1}
-                tiposPermitidos={['image/*']}
               />
+              <FormInputText
+                id="descripcionLogo"
+                name="descripcionLogo"
+                label="Descripción del Logo"
+                control={control}
+              />
+              <FormInputText
+                id="organizacion"
+                name="organizacion"
+                label="Organización Criminal"
+                control={control}
+              />
+              <FormInputText
+                id="blanco"
+                name="blanco"
+                label="Posibles Blancos"
+                control={control}
+              />
+              <FormInputText
+                id="observacion"
+                name="observacion"
+                label="Observación"
+                control={control}
+              />
+              <div className="hidden lg:block" />
+              <div className="col-span-1 lg:col-span-3">
+                <FormInputFile
+                  id="fotografia"
+                  name="fotografia"
+                  label="Fotografía"
+                  control={control}
+                  limite={1}
+                  tiposPermitidos={['image/*']}
+                />
+              </div>
+              <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
+                <Button variant="primary" type="submit" disabled={cargando}>
+                  Guardar Logotipo
+                </Button>
+              </div>
             </div>
-            <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-              <Button variant="primary" type="submit" disabled={cargando}>
-                Guardar Logotipo
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </form>}
+          </Card>
+        </form>
+      )}
 
       {/* Tabla */}
       <Card
@@ -210,12 +231,12 @@ function LogotiposPanel({
               { accessor: 'id', title: '#' },
               {
                 accessor: 'descripcionLogo',
-                title: 'Descripcion',
+                title: 'Descripción',
                 render: (row) => String(row.descripcionLogo ?? ''),
               },
               {
                 accessor: 'organizacion',
-                title: 'Organizacion',
+                title: 'Organización',
                 render: (row) => String(row.organizacion ?? ''),
               },
               {
@@ -225,7 +246,7 @@ function LogotiposPanel({
               },
               {
                 accessor: 'observacion',
-                title: 'Observacion',
+                title: 'Observación',
                 render: (row) => String(row.observacion ?? ''),
               },
               {
@@ -312,7 +333,7 @@ function DrogaItem({
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
 
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="overflow-hidden border border-gray-200 dark:border-gray-700">
       {/* Cabecera del ítem */}
       <div
         className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-900"
@@ -327,7 +348,8 @@ function DrogaItem({
             <span className="font-medium">Gramos:</span> {droga.cantidadGramos}
           </span>
           <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-medium">Unidades:</span> {droga.cantidadUnidades}
+            <span className="font-medium">Unidades:</span>{' '}
+            {droga.cantidadUnidades}
           </span>
           {droga.costo != null && (
             <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -354,7 +376,11 @@ function DrogaItem({
             stroke="currentColor"
             strokeWidth={2}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </div>
       </div>
@@ -363,57 +389,60 @@ function DrogaItem({
       {expandido && (
         <div className="border-t border-gray-200 p-4 dark:border-gray-700">
           {/* Detalles */}
-          <div className="mb-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-3 lg:grid-cols-4">
-            <div>
-              <span className="font-medium text-gray-500">Transporte:</span>{' '}
-              {droga.idFormaTransporte}
+          <div className='grid grid-cols-3'>
+            <div className="mb-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-3 lg:grid-cols-4">
+              <div>
+                <span className="font-medium text-gray-500">Transporte:</span>{' '}
+                {droga.idFormaTransporte}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Procedencia:</span>{' '}
+                {droga.idPaisProcedencia}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Destino:</span>{' '}
+                {droga.idPaisDestino}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Ingreso:</span>{' '}
+                {droga.fechaHoraIngreso}
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">Usuario:</span>{' '}
+                {droga.usuario}
+              </div>
             </div>
-            <div>
-              <span className="font-medium text-gray-500">Procedencia:</span>{' '}
-              {droga.idPaisProcedencia}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Destino:</span>{' '}
-              {droga.idPaisDestino}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Ingreso:</span>{' '}
-              {droga.fechaHoraIngreso}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Usuario:</span>{' '}
-              {droga.usuario}
-            </div>
+
+            {/* Fotos de la droga */}
+            {(droga.urlFotoPruebaCampo || droga.urlFotoPesaje) && (
+              <div className="mb-4 flex gap-6">
+                {droga.urlFotoPruebaCampo && (
+                  <div className="text-center">
+                    <p className="mb-1 text-xs text-gray-500">
+                      Prueba de Campo
+                    </p>
+                    <ImagenAutenticada
+                      path={droga.urlFotoPruebaCampo}
+                      alt="Prueba de Campo"
+                      className="h-20 w-28 rounded object-cover shadow-sm"
+                      onClick={setImagenAmpliada}
+                    />
+                  </div>
+                )}
+                {droga.urlFotoPesaje && (
+                  <div className="text-center">
+                    <p className="mb-1 text-xs text-gray-500">Pesaje</p>
+                    <ImagenAutenticada
+                      path={droga.urlFotoPesaje}
+                      alt="Pesaje"
+                      className="h-20 w-28 rounded object-cover shadow-sm"
+                      onClick={setImagenAmpliada}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Fotos de la droga */}
-          {(droga.urlFotoPruebaCampo || droga.urlFotoPesaje) && (
-            <div className="mb-4 flex gap-6">
-              {droga.urlFotoPruebaCampo && (
-                <div className="text-center">
-                  <p className="mb-1 text-xs text-gray-500">Prueba de Campo</p>
-                  <ImagenAutenticada
-                    path={droga.urlFotoPruebaCampo}
-                    alt="Prueba de Campo"
-                    className="h-20 w-28 rounded object-cover shadow-sm"
-                    onClick={setImagenAmpliada}
-                  />
-                </div>
-              )}
-              {droga.urlFotoPesaje && (
-                <div className="text-center">
-                  <p className="mb-1 text-xs text-gray-500">Pesaje</p>
-                  <ImagenAutenticada
-                    path={droga.urlFotoPesaje}
-                    alt="Pesaje"
-                    className="h-20 w-28 rounded object-cover shadow-sm"
-                    onClick={setImagenAmpliada}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Logotipos anidados */}
           <LogotiposPanel idoperativo={idoperativo} idDroga={droga.id} />
         </div>
@@ -651,7 +680,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }
 
   // Paginación
-  const totalPaginas = Math.max(1, Math.ceil(drogasItems.length / ITEMS_POR_PAGINA))
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(drogasItems.length / ITEMS_POR_PAGINA)
+  )
   const itemsPagina = drogasItems.slice(
     (paginaActual - 1) * ITEMS_POR_PAGINA,
     paginaActual * ITEMS_POR_PAGINA
@@ -770,18 +802,18 @@ export function SeccionDrogasFotografiaLogotiposForm({
               />
               <div className="col-span-1 lg:col-span-3">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormInputFile
+                  <FormInputImage
                     id="pruebaCampo"
                     name="pruebaCampo"
-                    label="Fotografia Prueba de Campo"
+                    label="Fotografía Prueba de Campo"
                     control={controlDrogas}
                     limite={1}
                     tiposPermitidos={['image/*']}
                   />
-                  <FormInputFile
+                  <FormInputImage
                     id="pesaje"
                     name="pesaje"
-                    label="Fotografia Cuantificacion y Pesaje"
+                    label="Fotografía Cuantificación y Pesaje"
                     control={controlDrogas}
                     limite={1}
                     tiposPermitidos={['image/*']}
@@ -789,7 +821,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 </div>
               </div>
               <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-                <Button variant="primary" type="submit" disabled={cargandoDrogas}>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={cargandoDrogas}
+                >
                   Guardar Droga
                 </Button>
               </div>
@@ -814,9 +850,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
         {cargandoDrogas ? (
           <p className="py-6 text-center text-sm text-gray-400">Cargando...</p>
         ) : drogasItems.length === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-400">Sin registros</p>
+          <p className="py-6 text-center text-sm text-gray-400">
+            Sin registros
+          </p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-0">
             {itemsPagina.map((droga) => (
               <DrogaItem
                 key={droga.id}
@@ -832,7 +870,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
             {totalPaginas > 1 && (
               <div className="flex items-center justify-between pt-3">
                 <span className="text-xs text-gray-500">
-                  Página {paginaActual} de {totalPaginas} — {drogasItems.length} registros
+                  Página {paginaActual} de {totalPaginas} — {drogasItems.length}{' '}
+                  registros
                 </span>
                 <div className="flex gap-2">
                   <button

@@ -1,6 +1,12 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { BienPayload, BienResponse, RespuestaApi, RespuestaApiPaginada } from './types'
+import type {
+    BienCaracteristicaPayload,
+    BienPayload,
+    BienResponse,
+    RespuestaApi,
+    RespuestaApiPaginada,
+} from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
@@ -36,6 +42,17 @@ export const GestionOperativoBienesService = {
     eliminar(idOperativo: number, idBien: number): Promise<RespuestaApi<unknown>> {
         return Servicios.delete({
             url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}`,
+        })
+    },
+
+    crearCaracteristica(
+        idOperativo: number,
+        idBien: number,
+        payload: BienCaracteristicaPayload
+    ): Promise<RespuestaApi<unknown>> {
+        return Servicios.post({
+            url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas`,
+            body: payload,
         })
     },
 }
