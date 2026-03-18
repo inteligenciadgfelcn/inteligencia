@@ -11,9 +11,10 @@ const buildFormData = (payload: BienPayload) => {
     formData.append('costoAproximado', String(payload.costoAproximado))
     formData.append('costoCuantificado', String(payload.costoCuantificado))
     formData.append('enInvestigacion', String(payload.enInvestigacion))
-    if (payload.fotoBien) {
-        formData.append('fotoBien', payload.fotoBien)
+    if (payload.foto) {
+        formData.append('foto', payload.foto)
     }
+    console.log([...formData.entries()]);
     return formData
 }
 
