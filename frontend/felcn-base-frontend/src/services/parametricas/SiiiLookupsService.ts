@@ -134,6 +134,10 @@ export const SiiiLookupsService = {
         return Servicios.get({ url: `${BASE}/tipos-implicado` })
     },
 
+    obtenerEstadosSujeto(): Promise<RespuestaAPI<LookupGenerico>> {
+        return Servicios.get({ url: `${BASE}/estados-sujeto` })
+    },
+
     obtenerPlanesOperaciones(): Promise<RespuestaAPI<PlanOperacion>> {
         return Servicios.get({ url: `${BASE}/planes-operaciones` })
     },
