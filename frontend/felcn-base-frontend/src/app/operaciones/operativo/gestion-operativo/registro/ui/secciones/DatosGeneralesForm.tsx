@@ -205,7 +205,7 @@ export function DatosGeneralesForm({
     label: d.descripcion,
   }))
 
-  const opcionesProvicia: optionType[] = provincias.map((p) => ({
+  const opcionesProvincia: optionType[] = provincias.map((p) => ({
     id: String(p.id),
     value: String(p.id),
     label: p.descripcion,
@@ -568,15 +568,15 @@ export function DatosGeneralesForm({
 
   return (
     <Card>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div className="col-span-1 lg:col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="col-span-1 lg:col-span-4">
           <h3 className="text-base font-semibold">{titulo}</h3>
         </div>
 
         <FormInputText
           id="numeroOperativo"
           name="numeroOperativo"
-          label="Numero de Operativo"
+          label="Número de Operativo"
           control={control}
           rules={reglaObligatorio}
         />
@@ -592,7 +592,7 @@ export function DatosGeneralesForm({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Numero de Informe
+            Número de Informe
           </label>
           <input
             className="form-input w-full"
@@ -643,7 +643,7 @@ export function DatosGeneralesForm({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Quien Realiza la Solicitud
+            Quién Realiza la Solicitud
           </label>
           <input
             className="form-input w-full"
@@ -750,8 +750,8 @@ export function DatosGeneralesForm({
           name="idProvincia"
           label="Provincia"
           control={control}
-          options={opcionesProvicia}
-          disabled={opcionesProvicia.length === 0}
+          options={opcionesProvincia}
+          disabled={opcionesProvincia.length === 0}
           rules={reglaObligatorio}
         />
         <FormInputDropdown
@@ -764,11 +764,11 @@ export function DatosGeneralesForm({
           rules={reglaObligatorio}
         />
 
-        <div className="col-span-1 lg:col-span-3">
+        <div className="col-span-1 lg:col-span-4">
           <FormInputText
             id="lugar"
             name="lugar"
-            label="En la localidad, comunidad, direccion (Zona, Calle, Avenida, Barrio)"
+            label="En la localidad, comunidad, dirección (Zona, Calle, Avenida, Barrio)"
             control={control}
             rules={reglaObligatorio}
           />
@@ -777,7 +777,7 @@ export function DatosGeneralesForm({
         <FormInputDropdown
           id="idCategoriaOperativo"
           name="idCategoriaOperativo"
-          label="Categoria Operativo"
+          label="Categoría Operativo"
           control={control}
           options={opcionesCategoriaOperativo}
           rules={reglaObligatorio}
@@ -827,13 +827,13 @@ export function DatosGeneralesForm({
         <FormInputText
           id="organizacion"
           name="organizacion"
-          label="Organizacion Criminal"
+          label="Organización Criminal"
           control={control}
           rules={reglaObligatorio}
         />
         <div className="hidden lg:block"></div>
 
-        <div className="col-span-1 lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormInputText
             id="coordX"
             name="coordX"
@@ -850,7 +850,7 @@ export function DatosGeneralesForm({
           />
         </div>
 
-        <div className="col-span-1 lg:col-span-3 mt-4">
+        <div className="col-span-1 lg:col-span-4 mt-4">
           <Mapa
             id="mapa-operativo-seccion-1"
             mapRef={mapRef}
@@ -872,7 +872,7 @@ export function DatosGeneralesForm({
           />
         </div>
 
-        <div className="col-span-1 lg:col-span-3 mt-4">
+        <div className="col-span-1 lg:col-span-4 mt-4">
           <FormInputText
             id="breveDetalle"
             name="breveDetalle"
@@ -884,7 +884,7 @@ export function DatosGeneralesForm({
           />
         </div>
 
-        <div className="col-span-1 lg:col-span-3 flex justify-end mt-4">
+        <div className="col-span-1 lg:col-span-4 flex justify-end mt-4">
           <Button
             variant="primary"
             type="button"
