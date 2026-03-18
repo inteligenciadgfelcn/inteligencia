@@ -68,90 +68,61 @@ export class AsignacionesRepository {
   }
 
   async findOperativos(
-    codigo: string,
-    registrados: boolean,
-    pagination: PaginacionQueryDto
-  ): Promise<[any[], number]> {
-    const { limite, saltar } = pagination
+  codigo: string,
+  registrados: boolean,
+  pagination: PaginacionQueryDto
+): Promise<[any[], number]> {
+  const { limite, saltar } = pagination
 
-    // obtener asignaciones desde felcn_asignacion
-    const asignaciones = await this.asignacionAsigRepository
-      .createQueryBuilder('a')
-      .leftJoin('departamento', 'd', 'a.id_departamento = d.id_departamento')
-      .leftJoin('unidad', 'u', 'a.id_unidad = u.id_unidad')
-      .where('a.codigo_servicio = :codigo', { codigo })
-      .select([
-        'a.id_asignacion',
-        'a.codigo_servicio',
-        'a.numero_operativo ',
-        'a.numero_caso ',
-        'a.nombre_caso',
-        'a.fecha_operativo',
-        'd.descripcion as departamento ',
-        'u.descripcion as unidad',
-        'a.asignacion_caso ',
-        'a.fiscal_asignado ',
-      ])
-      .getRawMany()
+  const asignaciones = await this.asignacionAsigRepository
+    .createQueryBuilder('a')
+    .leftJoin('departamento', 'd', 'a.id_departamento = d.id_departamento')
+    .leftJoin('unidad', 'u', 'a.id_unidad = u.id_unidad')
+    .where('a.codigo_servicio = :codigo', { codigo })
+    .select([
+      'a.id_asignacion as "idAsignacion"',
+      'a.codigo_servicio as "codigoServicio"',
+      'a.numero_operativo as "numeroOperativo"',
+      'a.numero_caso as "numeroCaso"',
+      'a.nombre_caso as "nombreCaso"',
+      'a.fecha_operativo as "fechaOperativo"',
+      'd.descripcion as "departamento"',
+      'u.descripcion as "unidad"',
+      'a.asignacion_caso as "asignacionCaso"',
+      'a.fiscal_asignado as "fiscalAsignado"',
+    ])
+    .getRawMany()
 
-    if (!asignaciones.length) {
-      return [[], 0]
-    }
+  if (!asignaciones.length) return [[], 0]
 
-    // buscar en felcn_siii.asignacion para obtener id_caso
-    const numeros = asignaciones.map((a) => a.numeroOperativo)
+  const numeros = asignaciones.map((a) => a.numeroOperativo)
 
-    const casosSIII = await this.asignacionRepository
-      .createQueryBuilder('a2')
-      .select([
-        'a2.numero_operativo as numeroOperativo',
-        'a2.id_caso as idCaso',
-      ])
-      .where('a2.numero_operativo IN (:...numeros)', { numeros })
-      .getRawMany()
+  let setOperativos = new Set<string>()
 
-    const mapaCasos = new Map<string, number>()
-
-    casosSIII.forEach((c) => {
-      mapaCasos.set(c.numeroOperativo, c.idCaso)
-    })
-
-    const idsCaso = casosSIII.map((c) => c.idCaso)
-
-    // buscar operativos registrados
-    let setOperativos = new Set<number>()
-
-    if (idsCaso.length) {
-      const operativos = await this.asignacionRepository.query(
-        `
-      SELECT id_caso
+  if (numeros.length) {
+    const operativos = await this.asignacionRepository.query(
+      `
+      SELECT numero_operativo
       FROM operativo
-      WHERE id_caso = ANY($1)
-    `,
-        [idsCaso]
-      )
+      WHERE numero_operativo = ANY($1)
+      `,
+      [numeros]
+    )
 
-      setOperativos = new Set(operativos.map((o) => Number(o.id_caso)))
-    }
-
-    // aplicar lógica registrados / no registrados
-    const resultado = asignaciones.filter((a) => {
-      const idCaso = mapaCasos.get(a.numeroOperativo)
-
-      // si no existe en SIII → no registrado
-      if (!idCaso) {
-        return !registrados
-      }
-
-      const existeOperativo = setOperativos.has(idCaso)
-
-      return registrados ? existeOperativo : !existeOperativo
-    })
-
-    // paginación
-    const total = resultado.length
-    const data = resultado.slice(saltar, saltar + limite)
-
-    return [data, total]
+    setOperativos = new Set(
+      operativos.map((o) => o.numero_operativo)
+    )
   }
+
+  const resultado = asignaciones.filter((a) => {
+    const existe = setOperativos.has(a.numeroOperativo)
+
+    return registrados ? existe : !existe
+  })
+
+  const total = resultado.length
+  const data = resultado.slice(saltar, saltar + limite)
+
+  return [data, total]
+}
 }
