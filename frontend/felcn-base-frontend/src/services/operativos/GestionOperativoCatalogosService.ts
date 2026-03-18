@@ -1,6 +1,14 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { CatalogoBien, CatalogoClaseBien, CatalogoTipoBien, EstadoDroga, ItemCategoriaOperativo, RespuestaApi } from './types'
+import type {
+    CatalogoCaracteristica,
+    CatalogoBien,
+    CatalogoClaseBien,
+    CatalogoTipoBien,
+    EstadoDroga,
+    ItemCategoriaOperativo,
+    RespuestaApi,
+} from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
@@ -33,6 +41,14 @@ export const GestionOperativoCatalogosService = {
     obtenerTiposBien(idCatalogoClase: number): Promise<RespuestaApi<CatalogoTipoBien[]>> {
         return Servicios.get({
             url: `${BASE_OPERATIVOS}/catalogos/tipos/${idCatalogoClase}`,
+        })
+    },
+
+    obtenerCaracteristicasBien(
+        idCatalogoClase: number
+    ): Promise<RespuestaApi<CatalogoCaracteristica[]>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/catalogos/caracteristicas/${idCatalogoClase}`,
         })
     },
 }
