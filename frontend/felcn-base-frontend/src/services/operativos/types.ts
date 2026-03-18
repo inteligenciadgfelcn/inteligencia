@@ -318,3 +318,22 @@ export interface OperativoResponse {
 
   usuario: string;
 }
+
+export interface GaleriaPayload {
+    descripcion: string
+    idTipoTamano: number
+    foto?: File
+}
+
+export interface GaleriaResponse {
+    id: number
+    idOperativo: string
+    descripcion: string
+    idTipoTamano: number
+    descripcionTipoTamano: string
+    urlFotoThumbnail: string
+    urlFotoMedium: string
+    urlFotoFull: string
+    fechaHoraIngreso?: string
+    usuario?: string
+}
