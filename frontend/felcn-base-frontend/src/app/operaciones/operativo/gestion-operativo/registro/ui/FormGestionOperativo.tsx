@@ -9,7 +9,7 @@ import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
 import { Laboratorio } from './secciones/Laboratorio'
 import { Seccion6Form } from './secciones/Seccion6Form'
 import { SeccionBienesForm } from './secciones/SeccionBienesForm'
-import { Seccion8Form } from './secciones/Seccion8Form'
+import { Galeria } from './secciones/Galeria'
 import { useGestionOperativoForm, type SeccionKey } from '../hooks/useGestionOperativoForm'
 import {
     useSeccion1,
@@ -17,7 +17,6 @@ import {
     useSeccion3,
     useSeccion4,
     useSeccion5,
-    useSeccion8,
 } from '../hooks/useGestionOperativoSecciones'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
 
@@ -95,7 +94,6 @@ export function FormGestionOperativo({
     const [pageS5, setPageS5] = useState(1)
     const [limitS5, setLimitS5] = useState(10)
     const seccion5 = useSeccion5(idOperativo, pageS5, limitS5, seccionesVisitadas.has('seccion-5'))
-    const seccion8 = useSeccion8(idOperativo, seccionesVisitadas.has('seccion-8'))
 
     const renderSeccion = (key: SeccionKey) => {
         if (key === 'seccion-1') {
@@ -202,11 +200,9 @@ export function FormGestionOperativo({
 
         if (key === 'seccion-8') {
             return (
-                <Seccion8Form
+                <Galeria
                     titulo="GALERIA FOTOGRAFICA DEL OPERATIVO"
-                    onGuardar={seccion8.mutation.mutateAsync}
-                    onRecuperar={() => seccion8.query.refetch()}
-                    cargando={seccion8.mutation.isPending || seccion8.query.isFetching}
+                    idoperativo={idOperativo}
                 />
             )
         }
@@ -236,13 +232,12 @@ export function FormGestionOperativo({
                                 key={seccion.key}
                                 type="button"
                                 disabled={deshabilitada}
-                                className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                                    deshabilitada
+                                className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${deshabilitada
                                         ? 'cursor-not-allowed border-transparent text-gray-300'
                                         : seccionActiva === seccion.key
-                                          ? 'border-primary text-primary'
-                                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                }`}
+                                            ? 'border-primary text-primary'
+                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    }`}
                                 onClick={() => !deshabilitada && handleSetSeccionActiva(seccion.key)}
                             >
                                 {seccion.label}
