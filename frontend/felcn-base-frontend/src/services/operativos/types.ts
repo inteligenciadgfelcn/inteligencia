@@ -202,6 +202,49 @@ export interface ItemCategoriaOperativo {
     descripcion: string
 }
 
+export interface PersonaPayload {
+    nombres: string
+    apellidoPaterno: string
+    apellidoMaterno: string
+    apellidoCasada?: string
+    /** true = Masculino, false = Femenino */
+    genero: boolean
+    idTipoDocumento: number
+    nroDocumento: string
+    fechaNacimiento: string
+    direccion: string
+    /** Valor exacto del enum: "Principal Implicado" | "Aprehendido" | "Arrestado" | "LGI O Perdida de Dominio" */
+    estado: string
+    idPais?: number
+    fotoFrente?: File
+    fotoDocumento?: File
+    fotoPerfilIzquierdo?: File
+}
+
+export interface PersonaResponse {
+    id: string
+    idOperativo: string
+    idPais: number
+    idTipoDocumento: number
+    nombres: string
+    apellidoPaterno: string
+    apellidoMaterno: string
+    apellidoEsposo?: string
+    nroDocumento: string
+    fechaNacimiento: string
+    /** true = Masculino, false = Femenino */
+    genero: boolean
+    direccion: string
+    estado: string
+    descripcionPais: string
+    descripcionTipoDocumento: string
+    urlFotoFrente: string | null
+    urlFotoDocumento: string | null
+    urlFotoPerfilIzquierdo: string | null
+    fechaHoraIngreso?: string
+    usuario?: string
+}
+
 export interface FabricaPayload {
     idTipoFabrica: number
     idFabricaModelo: number
