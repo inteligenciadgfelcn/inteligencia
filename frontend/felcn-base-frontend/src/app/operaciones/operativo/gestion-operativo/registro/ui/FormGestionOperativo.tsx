@@ -17,6 +17,7 @@ import {
     useSeccion3,
     useSeccion4,
     useSeccion5,
+    useSeccion6,
     useSeccion8,
 } from '../hooks/useGestionOperativoSecciones'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
@@ -95,6 +96,7 @@ export function FormGestionOperativo({
     const [pageS5, setPageS5] = useState(1)
     const [limitS5, setLimitS5] = useState(10)
     const seccion5 = useSeccion5(idOperativo, pageS5, limitS5, seccionesVisitadas.has('seccion-5'))
+    const seccion6 = useSeccion6(idOperativo, seccionesVisitadas.has('seccion-6'))
     const seccion8 = useSeccion8(idOperativo, seccionesVisitadas.has('seccion-8'))
 
     const renderSeccion = (key: SeccionKey) => {
@@ -186,7 +188,9 @@ export function FormGestionOperativo({
             return (
                 <Seccion6Form
                     titulo="PERSONAS: PRINCIPAL IMPLICADO / APREHENDIDAS / ARRESTADAS / LGI O PERDIDA DE DOMINIO"
-                    idoperativo={idOperativo}
+                    onGuardar={seccion6.mutation.mutateAsync}
+                    onRecuperar={() => seccion6.query.refetch()}
+                    cargando={seccion6.mutation.isPending || seccion6.query.isFetching}
                 />
             )
         }
