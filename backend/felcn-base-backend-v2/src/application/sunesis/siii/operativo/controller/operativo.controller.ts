@@ -470,11 +470,11 @@ export class OperativoController extends BaseController {
 
   // ==================== APREHENDIDOS ====================
 
-  @ApiOperation({ summary: 'Listar aprehendidos del operativo' })
+  @ApiOperation({ summary: 'Listar personas del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
   @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
-  @Get(':idOperativo/aprehendidos')
+  @Get(':idOperativo/personas')
   async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
     const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
     return this.successPagedRows(resultado, paginacion)
@@ -486,7 +486,7 @@ export class OperativoController extends BaseController {
   })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
-  @Post(':idOperativo/aprehendidos')
+  @Post(':idOperativo/personas')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'fotoFrente', maxCount: 1 },
@@ -516,7 +516,7 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Obtener foto de aprehendido (frente)' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiParam({ name: 'id', description: 'ID del aprehendido' })
-  @Get(':idOperativo/aprehendidos/:id/fotos/frente')
+  @Get(':idOperativo/personas/:id/fotos/frente')
   async obtenerFotoDetenidoFrente(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -531,7 +531,7 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Obtener foto de documento del aprehendido' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiParam({ name: 'id', description: 'ID del aprehendido' })
-  @Get(':idOperativo/aprehendidos/:id/fotos/foto-documento')
+  @Get(':idOperativo/personas/:id/fotos/foto-documento')
   async obtenerFotoDetenidoDocumento(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -546,7 +546,7 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Obtener foto de aprehendido (perfil izquierdo)' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiParam({ name: 'id', description: 'ID del aprehendido' })
-  @Get(':idOperativo/aprehendidos/:id/fotos/perfil-izquierdo')
+  @Get(':idOperativo/personas/:id/fotos/perfil-izquierdo')
   async obtenerFotoDetenidoPerfilIzquierdo(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string,
@@ -560,7 +560,7 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({ summary: 'Eliminar aprehendido del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Delete(':idOperativo/aprehendidos/:id')
+  @Delete(':idOperativo/personas/:id')
   async eliminarDetenido(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
