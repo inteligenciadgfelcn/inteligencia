@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PARAMETRICAS } from '../../../../shared/constants'
 import { Provincia } from './provincia.entity'
 

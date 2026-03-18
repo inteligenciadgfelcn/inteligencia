@@ -12,7 +12,7 @@ import { UsuarioIcia } from '../entity/usuario-icia.entity'
 export class AsigLookupRepository {
   constructor(
     @InjectDataSource(DB_ASIG_CASOS)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   // Departamentos
@@ -25,7 +25,7 @@ export class AsigLookupRepository {
   }
 
   async buscarDepartamentoPorId(
-    idDepartamento: string,
+    idDepartamento: string
   ): Promise<DepartamentoCaso | null> {
     return this.dataSource
       .getRepository(DepartamentoCaso)
@@ -62,7 +62,9 @@ export class AsigLookupRepository {
   }
 
   // Usuario Unidad
-  async listarUnidadesPorUsuario(usuarioLogin: string): Promise<UsuarioUnidad[]> {
+  async listarUnidadesPorUsuario(
+    usuarioLogin: string
+  ): Promise<UsuarioUnidad[]> {
     return this.dataSource
       .getRepository(UsuarioUnidad)
       .createQueryBuilder('usuarioUnidad')

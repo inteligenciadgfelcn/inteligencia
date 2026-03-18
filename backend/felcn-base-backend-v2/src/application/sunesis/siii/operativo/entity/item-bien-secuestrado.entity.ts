@@ -1,6 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { CatalogoTipo } from './catalogo-tipo.entity'
 
 /**
  * Entidad Item Bien Secuestrado
@@ -19,8 +28,8 @@ export class ItemBienSecuestrado {
   @Column({ name: 'id_catalogo_tipo', type: 'integer' })
   idCatalogoTipo: number
 
-  @Column({ name: 'cantidad', type: 'integer' })
-  cantidad: number
+  @Column({ name: 'cantidad_bien', type: 'bigint' })
+  cantidadBien: number
 
   @Column({ name: 'costo_aproximado', type: 'double precision', default: 0 })
   costoAproximado: number
@@ -28,14 +37,11 @@ export class ItemBienSecuestrado {
   @Column({ name: 'costo_cuantificado', type: 'double precision', default: 0 })
   costoCuantificado: number
 
-  @Column({ name: 'es_investigacion', type: 'boolean', default: false })
-  esInvestigacion: boolean
+  @Column({ name: 'en_investigacion', type: 'boolean', default: false })
+  enInvestigacion: boolean
 
   @Column({ name: 'foto_bien', type: 'bytea', nullable: true })
   fotoBien?: Buffer
-
-  @Column({ name: 'observaciones', type: 'text', nullable: true })
-  observaciones?: string
 
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
@@ -46,6 +52,10 @@ export class ItemBienSecuestrado {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => CatalogoTipo)
+  @JoinColumn({ name: 'id_catalogo_tipo' })
+  catalogoTipo?: CatalogoTipo
 
   @BeforeInsert()
   insertarFechaIngreso() {

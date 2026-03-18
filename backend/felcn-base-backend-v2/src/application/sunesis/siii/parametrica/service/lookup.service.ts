@@ -1,11 +1,44 @@
 import { Injectable } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
 import { BaseService } from '@/common/base'
 import { LookupRepository } from '../repository/lookup.repository'
 
 @Injectable()
 export class LookupService extends BaseService {
-  constructor(private readonly lookupRepository: LookupRepository) {
+  constructor(
+    private readonly lookupRepository: LookupRepository,
+    private readonly configService: ConfigService
+  ) {
     super()
+  }
+
+  // ==================== LOOKUPS ESTÁTICOS (desde .env) ====================
+
+  /**
+   * Género para persona_auxiliar (genero bit(1): true=Masculino, false=Femenino).
+   * .env: LOOKUP_GENERO=1:Masculino,0:Femenino
+   */
+  listarGenero(): { id: boolean; descripcion: string }[] {
+    const raw = this.configService.get<string>('LOOKUP_GENERO', '1:Masculino,0:Femenino')
+    return raw.split(',').map((entry) => {
+      const [id, ...rest] = entry.trim().split(':')
+      return { id: id.trim() === '1', descripcion: rest.join(':') }
+    })
+  }
+
+  /**
+   * Estados para persona_auxiliar (enum estado_persona_auxiliar en BD).
+   * .env: LOOKUP_ESTADO_SUJETO=Principal Implicado,Aprehendido,Arrestado,LGI O Perdida de Dominio
+   */
+  listarEstadoSujeto(): { id: string; descripcion: string }[] {
+    const raw = this.configService.get<string>(
+      'LOOKUP_ESTADO_SUJETO',
+      'Principal Implicado,Aprehendido,Arrestado,LGI O Perdida de Dominio'
+    )
+    return raw.split(',').map((entry) => {
+      const val = entry.trim()
+      return { id: val, descripcion: val }
+    })
   }
 
   // Geografía
@@ -161,5 +194,18 @@ export class LookupService extends BaseService {
 
   async listarTiposCabello() {
     return this.lookupRepository.listarTiposCabello()
+  }
+
+  // Estructura organizacional
+  async listarUnidades() {
+    return this.lookupRepository.listarUnidades()
+  }
+
+  async listarDistritalesPorUnidad(idUnidad: number) {
+    return this.lookupRepository.listarDistritalesPorUnidad(idUnidad)
+  }
+
+  async listarGruposPorDistrital(idDistrital: number) {
+    return this.lookupRepository.listarGruposPorDistrital(idDistrital)
   }
 }

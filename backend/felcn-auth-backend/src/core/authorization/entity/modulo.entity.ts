@@ -22,7 +22,7 @@ export type Propiedades = {
 }
 
 @Check(UtilService.buildStatusCheck(ModuloEstado))
-@Entity({ name: 'modulos', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'modulo', schema: process.env.DB_SCHEMA_USUARIO })
 export class Modulo extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',

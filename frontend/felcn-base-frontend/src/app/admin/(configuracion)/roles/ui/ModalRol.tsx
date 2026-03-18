@@ -69,7 +69,7 @@ export const ModalRol = ({
       setLoading(true)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/roles${
+        url: `${Constantes.authUrl}/autorizacion/roles${
           rol ? `/${rol.id}` : ''
         }`,
         method: rol ? 'patch' : 'post',

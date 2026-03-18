@@ -17,7 +17,7 @@ dotenv.config()
 @Check(UtilService.buildStatusCheck(PersonaEstado))
 @Check(UtilService.buildCheck('tipo_documento', TiposDocumento))
 @Check(UtilService.buildCheck('genero', TiposGenero))
-@Entity({ name: 'personas', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'persona', schema: process.env.DB_SCHEMA_USUARIO })
 export class Persona extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',

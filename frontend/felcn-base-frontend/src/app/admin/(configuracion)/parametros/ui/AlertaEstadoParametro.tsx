@@ -34,7 +34,7 @@ export const AlertaEstadoParametro = ({
       await delay(800)
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/parametros/${parametro.id}/${
+        url: `${Constantes.authUrl}/parametros/${parametro.id}/${
           parametro.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',

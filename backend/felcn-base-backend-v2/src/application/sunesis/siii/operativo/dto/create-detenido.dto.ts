@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
+import { Type, Transform } from 'class-transformer'
 import {
   IsNotEmpty,
   IsNumber,
@@ -7,15 +8,11 @@ import {
   IsBoolean,
   IsDateString,
   MaxLength,
+  IsEnum,
 } from 'class-validator'
+import { EstadoPersonaAuxiliar } from '../entity/detenido-auxiliar.entity'
 
 export class CreateDetenidoDto {
-  @ApiProperty({ description: 'Número de caso', example: 'CASO-2024-001' })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(50)
-  numeroCaso: string
-
   @ApiProperty({ description: 'Nombres', example: 'JUAN CARLOS' })
   @IsNotEmpty()
   @IsString()
@@ -41,36 +38,37 @@ export class CreateDetenidoDto {
   apellidoEsposo?: string
 
   @ApiProperty({ description: 'ID país (nacionalidad)', example: 70 })
+  @Type(() => Number)
   @IsNotEmpty()
   @IsNumber()
   idPais: number
 
-  @ApiProperty({ description: 'Es masculino', example: true })
+  @ApiProperty({ description: 'ID tipo de documento', example: 1 })
+  @Type(() => Number)
   @IsNotEmpty()
-  @IsBoolean()
-  esMasculino: boolean
+  @IsNumber()
+  idTipoDocumento: number
+
+  @ApiProperty({ description: 'Número de documento', example: '5432198-1A' })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(35)
+  nroDocumento: string
 
   @ApiPropertyOptional({ description: 'Fecha de nacimiento', example: '1985-05-15' })
   @IsOptional()
   @IsDateString()
   fechaNacimiento?: string
 
-  @ApiProperty({ description: 'ID estado civil', example: 1 })
+  @ApiProperty({ description: 'Género (true = Masculino, false = Femenino)', example: true })
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true
+    if (value === 'false' || value === false) return false
+    return value
+  })
   @IsNotEmpty()
-  @IsNumber()
-  idEstadoCivil: number
-
-  @ApiPropertyOptional({ description: 'Serie del documento', example: 'LP' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  serie?: string
-
-  @ApiPropertyOptional({ description: 'Sección del documento', example: 'A' })
-  @IsOptional()
-  @IsString()
-  @MaxLength(50)
-  seccion?: string
+  @IsBoolean()
+  genero: boolean
 
   @ApiProperty({ description: 'Dirección', example: 'Av. 6 de Agosto #123' })
   @IsNotEmpty()
@@ -78,8 +76,12 @@ export class CreateDetenidoDto {
   @MaxLength(255)
   direccion: string
 
-  @ApiPropertyOptional({ description: 'Observaciones' })
-  @IsOptional()
-  @IsString()
-  observaciones?: string
+  @ApiProperty({
+    description: 'Estado de la persona en el operativo',
+    example: EstadoPersonaAuxiliar.APREHENDIDO,
+    enum: EstadoPersonaAuxiliar,
+  })
+  @IsNotEmpty()
+  @IsEnum(EstadoPersonaAuxiliar)
+  estado: EstadoPersonaAuxiliar
 }

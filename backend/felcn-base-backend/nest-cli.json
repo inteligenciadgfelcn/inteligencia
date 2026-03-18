@@ -12,6 +12,16 @@
       {
         "include": "**/*.csv",
         "outDir": "dist/src"
+      },
+      {
+        "include": "application/inteligencia/reportes/pdf/templates/**/*.hbs",
+        "outDir": "dist/src",
+        "watchAssets": true
+      },
+      {
+        "include": "application/inteligencia/reportes/assets/images/**/*.png",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ]
   }

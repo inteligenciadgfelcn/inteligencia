@@ -34,7 +34,7 @@ export const AlertaEstadoModulo = ({
       await delay(800)
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/modulos/${modulo.id}/${
+        url: `${Constantes.authUrl}/autorizacion/modulos/${modulo.id}/${
           modulo.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',
