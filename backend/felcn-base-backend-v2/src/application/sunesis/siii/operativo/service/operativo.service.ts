@@ -295,9 +295,7 @@ export class OperativoService extends BaseService {
       descripcionCatalogoTipo: catalogoTipo?.descripcion ?? null,
       descripcionCatalogoClase: catalogoTipo?.catalogoClase?.descripcion ?? null,
       descripcionBien: catalogoTipo?.catalogoClase?.bien?.descripcion ?? null,
-      urlFotoBien: fotoBien?.length
-        ? `/api/operativos/${idOperativo}/bienes/${b.id}/foto`
-        : null,
+      urlFotoBien: `/api/operativos/${idOperativo}/bienes/${b.id}/foto`,
     }))
     return [filas, total]
   }
@@ -392,13 +390,13 @@ export class OperativoService extends BaseService {
       descripcionPais: paisNacionalidad?.descripcion ?? null,
       descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
       urlFotoFrente: fotoFrente?.length
-        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/frente`
+        ? `/api/operativos/${idOperativo}/personas/${d.id}/fotos/frente`
         : null,
       urlFotoDocumento: fotoDocumento?.length
-        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/foto-documento`
+        ? `/api/operativos/${idOperativo}/personas/${d.id}/fotos/foto-documento`
         : null,
       urlFotoPerfilIzquierdo: fotoPerfilIzquierdo?.length
-        ? `/api/operativos/${idOperativo}/aprehendidos/${d.id}/fotos/perfil-izquierdo`
+        ? `/api/operativos/${idOperativo}/personas/${d.id}/fotos/perfil-izquierdo`
         : null,
     }))
     return [filas, total]
