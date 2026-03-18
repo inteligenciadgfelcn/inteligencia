@@ -107,7 +107,7 @@ const FormInputImage = <
   control,
   limite = 1000,
   multiple = false,
-  tiposPermitidos = ['png', 'jpg', 'jpeg', 'svg'],
+  tiposPermitidos = ['image/*'],
   label,
   labelVariant = 'subtitle2',
 }: FormInputImageProps<TFieldValues, TName>) => {

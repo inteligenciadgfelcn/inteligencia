@@ -75,7 +75,7 @@ export const FormInputDropdown = <
       <InputLabel htmlFor={id}>
         <Typography
           variant={labelVariant}
-          sx={{ pb: 1, color: 'text.primary', fontWeight: '600' }}
+          sx={{ pb: 0, color: 'text.primary', fontWeight: '500' }}
         >
           {label}
         </Typography>
