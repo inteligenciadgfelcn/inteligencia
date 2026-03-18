@@ -93,7 +93,7 @@ export class Operativo extends BaseEntity {
   esRevisado: boolean = false
 
   @Column({ name: 'es_positivo', type: 'boolean' })
-  esPositivo: boolean = false
+  esPositivo: boolean = true
 
   @Column({ name: 'es_aprehendido', type: 'boolean' })
   esAprehendido: boolean = false
@@ -102,7 +102,7 @@ export class Operativo extends BaseEntity {
   esArrestado: boolean = false
 
   @Column({ name: 'es_icia', type: 'boolean' })
-  esIcia: boolean = false
+  esIcia: boolean = true
 
   @Column({ name: 'es_parte_diario', type: 'boolean' })
   esParteDiario: boolean = false
