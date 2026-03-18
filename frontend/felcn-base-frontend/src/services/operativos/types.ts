@@ -175,7 +175,7 @@ export interface BienPayload {
     costoAproximado: number
     costoCuantificado: number
     enInvestigacion: boolean
-    fotoBien?: File
+    foto?: File
 }
 
 export interface BienResponse {
