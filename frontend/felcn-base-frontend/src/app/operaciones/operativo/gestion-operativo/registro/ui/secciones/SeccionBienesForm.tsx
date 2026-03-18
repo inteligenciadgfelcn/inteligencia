@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { FormInputDropdown, FormInputText } from '@/components/form'
 import FormInputFile from '@/components/form/FormInputFile'
 import IconTrashLines from '@/components/Icon/IconTrashLines'
+import { useAlerts } from '@/hooks/useAlerts'
 import {
     BienResponse,
     CatalogoBien,
@@ -17,6 +18,7 @@ import {
     GestionOperativoCatalogosService,
 } from '@/services/operativos'
 import { LookupBasico, SiiiLookupsService } from '@/services/parametricas'
+import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 
 interface SeccionFormProps {
     titulo: string
@@ -24,6 +26,7 @@ interface SeccionFormProps {
 }
 
 export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
+    const { Alerta } = useAlerts()
     const { control, handleSubmit, reset, setValue } = useForm({
         defaultValues: {
             idBien: '',
@@ -33,7 +36,7 @@ export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
             costoAproximado: '',
             costoCuantificado: '',
             enInvestigacion: '',
-            fotoBien: [],
+            foto: [],
         },
     })
 
@@ -97,7 +100,7 @@ export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
                 costoAproximado: Number(data.costoAproximado),
                 costoCuantificado: Number(data.costoCuantificado),
                 enInvestigacion: data.enInvestigacion === 'true',
-                fotoBien: fotoBienFile,
+                foto: fotoBienFile,
             })
             if (res?.finalizado) {
                 await cargarBienes()
@@ -112,8 +115,17 @@ export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
 
     const deleteBien = async (id: string) => {
         if (!idoperativo) return
-        await GestionOperativoBienesService.eliminar(idoperativo, Number(id))
-        await cargarBienes()
+        try {
+            const res = await GestionOperativoBienesService.eliminar(idoperativo, Number(id))
+            if (res?.finalizado) {
+                await cargarBienes()
+                Alerta({ mensaje: 'Bien eliminado correctamente', variant: 'success' })
+            } else {
+                Alerta({ mensaje: InterpreteMensajes(res), variant: 'error' })
+            }
+        } catch (e) {
+            Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+        }
     }
 
     return (
@@ -188,8 +200,8 @@ export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
                         />
                         <div className="col-span-1 lg:col-span-3">
                             <FormInputFile
-                                id="fotoBien"
-                                name="fotoBien"
+                                id="foto"
+                                name="foto"
                                 label="Fotografia del Bien"
                                 control={control}
                                 limite={1}
@@ -257,8 +269,11 @@ export function SeccionBienesForm({ idoperativo = 0 }: SeccionFormProps) {
                                         className="text-danger"
                                         onClick={() => void deleteBien(row.id)}
                                     >
+                                    
                                         <IconTrashLines />
+
                                     </button>
+                                    
                                 ),
                             },
                         ]}
