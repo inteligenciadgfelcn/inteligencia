@@ -5,10 +5,12 @@ import { Marker } from 'react-leaflet'
 import { icon, type Map as LeafletMap } from 'leaflet'
 import Mapa from './Mapa'
 
+const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
+
 const MARCADOR_ICON = icon({
-  iconRetinaUrl: '/leaflet/marker-icon.png',
-  iconUrl: '/leaflet/marker-icon.png',
-  shadowUrl: '/leaflet/marker-shadow.png',
+  iconRetinaUrl: `${base}/leaflet/marker-icon.png`,
+  iconUrl: `${base}/leaflet/marker-icon.png`,
+  shadowUrl: `${base}/leaflet/marker-shadow.png`,
   iconAnchor: [12.5, 41],
 })
 
