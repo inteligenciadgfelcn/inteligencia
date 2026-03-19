@@ -28,6 +28,7 @@ const nextConfig = {
     dirs: ['src', 'stories', 'test'],
   },
   images: {
+    unoptimized: true,
     remotePatterns: process.env.NEXT_PUBLIC_IMAGES_DOMAIN
       ? process.env.NEXT_PUBLIC_IMAGES_DOMAIN.split(',').map((domain) => ({
           protocol: domain === 'localhost' ? 'http' : 'https',
