@@ -108,12 +108,23 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.listar(paginacion)
   }
 
-  async buscarPorId(id: string): Promise<Operativo> {
+  async buscarPorId(id: string): Promise<any> {
     const operativo = await this.operativoRepository.buscarPorId(id)
     if (!operativo) {
       throw new NotFoundException(`Operativo con ID ${id} no encontrado`)
     }
-    return operativo
+    
+    const res: any = { ...operativo }
+    res.descripcionUnidad = operativo.unidad?.descripcion ?? null
+    res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
+    res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
+    
+    // Clean up relation objects if needed, but not strictly required
+    delete res.unidad
+    delete res.planOperacion
+    delete res.tipoOperacion
+
+    return res
   }
 
   async buscarPorCaso(idCaso: string): Promise<Operativo[]> {
