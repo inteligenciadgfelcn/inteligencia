@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Marker } from 'react-leaflet'
-import { icon } from 'leaflet'
+import { icon, Map as LeafletMap } from 'leaflet'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import Mapa from '@/components/mapas/Mapa'
@@ -161,6 +161,9 @@ export function DatosGeneralesForm({
   const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>(
     []
   )
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
     numeroInforme: '',
     nombreCaso: '',
@@ -213,7 +216,13 @@ export function DatosGeneralesForm({
   } = useForm<OperativoPayload>({
     defaultValues: DEFAULT_VALUES,
   })
-  const reglaObligatorio = { required: 'Campo obligatorio' }
+  const reglaObligatorio = {
+    required: 'Campo obligatorio',
+    validate: (value: any) => {
+      if (typeof value === 'number') return value !== 0 || 'Campo obligatorio'
+      return String(value ?? '').trim() !== '' || 'Campo obligatorio'
+    },
+  }
 
   const opcionesDepartamento: optionType[] = departamentos.map((d) => ({
     id: String(d.id),
@@ -288,7 +297,7 @@ export function DatosGeneralesForm({
   const provinciaSeleccionada = watch('idProvincia')
   const unidadSeleccionada = watch('idUnidad')
   const distritalSeleccionado = watch('idDistrital')
-  const mapRef = useRef(null)
+  const mapRef = useRef<LeafletMap>(null)
   const cargandoDesdePropsRef = useRef(false)
 
   useEffect(() => {
@@ -410,6 +419,36 @@ export function DatosGeneralesForm({
   const handleMapClick = (center: [number, number]) => {
     setValue('coordX', center[0])
     setValue('coordY', center[1])
+  }
+
+  const buscarDireccion = async () => {
+    if (!searchQuery.trim()) return
+    setIsSearching(true)
+    try {
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&countrycodes=bo`
+      )
+      const data = await resp.json()
+      setSearchResults(data)
+    } catch (error) {
+      console.error('Error buscando dirección', error)
+      Alerta({ mensaje: 'Hubo un error al buscar la dirección', variant: 'error' })
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const seleccionarDireccion = (item: any) => {
+    setValue('coordX', Number(item.lat))
+    setValue('coordY', Number(item.lon))
+    setValue('lugar', item.display_name)
+    setSearchResults([])
+    setSearchQuery('')
+    if (mapRef.current) {
+      mapRef.current.flyTo([Number(item.lat), Number(item.lon)], 16)
+    }
   }
 
   const handleGuardar = async () => {
@@ -576,25 +615,30 @@ export function DatosGeneralesForm({
               htmlFor="numeroOperativo"
               className="mb-1 block text-sm font-medium"
             >
-              Número de Operativo
+              Número de Operativo <span className="text-danger">*</span>
             </label>
             <input
               id="numeroOperativo"
               type="text"
-              className="form-input w-full"
+              className={`form-input w-full ${errors.numeroOperativo ? 'border-danger' : ''}`}
               {...register('numeroOperativo', reglaObligatorio)}
             />
+            {errors.numeroOperativo && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.numeroOperativo.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idTipoRelevancia"
               className="mb-1 block text-sm font-medium"
             >
-              Relevancia
+              Relevancia <span className="text-danger">*</span>
             </label>
             <select
               id="idTipoRelevancia"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idTipoRelevancia ? 'border-danger' : ''}`}
               {...register('idTipoRelevancia', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -604,6 +648,11 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idTipoRelevancia && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoRelevancia.message}
+              </div>
+            )}
           </div>
 
           <div>
@@ -679,11 +728,11 @@ export function DatosGeneralesForm({
               htmlFor="idUnidad"
               className="mb-2 block text-sm font-medium"
             >
-              Unidad
+              Unidad <span className="text-danger">*</span>
             </label>
             <select
               id="idUnidad"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idUnidad ? 'border-danger' : ''}`}
               {...register('idUnidad', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -693,17 +742,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idUnidad && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idUnidad.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idDistrital"
               className="mb-2 block text-sm font-medium"
             >
-              Distrital
+              Distrital <span className="text-danger">*</span>
             </label>
             <select
               id="idDistrital"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idDistrital ? 'border-danger' : ''}`}
               {...register('idDistrital', { ...reglaObligatorio, valueAsNumber: true })}
               disabled={opcionesDistritalEst.length === 0}
             >
@@ -714,14 +768,19 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idDistrital && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idDistrital.message}
+              </div>
+            )}
           </div>
           <div>
             <label htmlFor="idGrupo" className="mb-2 block text-sm font-medium">
-              Grupo
+              Grupo <span className="text-danger">*</span>
             </label>
             <select
               id="idGrupo"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idGrupo ? 'border-danger' : ''}`}
               {...register('idGrupo', { ...reglaObligatorio, valueAsNumber: true })}
               disabled={opcionesGrupoEst.length === 0}
             >
@@ -732,6 +791,11 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idGrupo && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idGrupo.message}
+              </div>
+            )}
           </div>
           <div className="hidden lg:block"></div>
 
@@ -740,11 +804,11 @@ export function DatosGeneralesForm({
               htmlFor="idTipoDenuncia"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo de la Denuncia
+              Tipo de la Denuncia <span className="text-danger">*</span>
             </label>
             <select
               id="idTipoDenuncia"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idTipoDenuncia ? 'border-danger' : ''}`}
               {...register('idTipoDenuncia', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -754,17 +818,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idTipoDenuncia && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoDenuncia.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idTipoPenal"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo Penal
+              Tipo Penal <span className="text-danger">*</span>
             </label>
             <select
               id="idTipoPenal"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idTipoPenal ? 'border-danger' : ''}`}
               {...register('idTipoPenal', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -774,20 +843,30 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idTipoPenal && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoPenal.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="fechaOperativo"
               className="mb-1 block text-sm font-medium"
             >
-              Fecha y Hora del Operativo
+              Fecha y Hora del Operativo <span className="text-danger">*</span>
             </label>
             <input
               id="fechaOperativo"
               type="datetime-local"
-              className="form-input w-full"
+              className={`form-input w-full ${errors.fechaOperativo ? 'border-danger' : ''}`}
               {...register('fechaOperativo', reglaObligatorio)}
             />
+            {errors.fechaOperativo && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.fechaOperativo.message}
+              </div>
+            )}
           </div>
           <div className="hidden lg:block"></div>
           <div>
@@ -795,11 +874,11 @@ export function DatosGeneralesForm({
               htmlFor="idDepartamento"
               className="mb-1 block text-sm font-medium"
             >
-              Departamento
+              Departamento <span className="text-danger">*</span>
             </label>
             <select
               id="idDepartamento"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idDepartamento ? 'border-danger' : ''}`}
               {...register('idDepartamento', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -809,17 +888,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idDepartamento && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idDepartamento.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idProvincia"
               className="mb-1 block text-sm font-medium"
             >
-              Provincia
+              Provincia <span className="text-danger">*</span>
             </label>
             <select
               id="idProvincia"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idProvincia ? 'border-danger' : ''}`}
               {...register('idProvincia', { ...reglaObligatorio, valueAsNumber: true })}
               disabled={opcionesProvincia.length === 0}
             >
@@ -830,17 +914,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idProvincia && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idProvincia.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idLocalidad"
               className="mb-1 block text-sm font-medium"
             >
-              Municipio
+              Municipio <span className="text-danger">*</span>
             </label>
             <select
               id="idLocalidad"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
               {...register('idLocalidad', { ...reglaObligatorio, valueAsNumber: true })}
               disabled={opcionesMunicipio.length === 0}
             >
@@ -851,20 +940,30 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idLocalidad && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idLocalidad.message}
+              </div>
+            )}
           </div>
 
           <div className="col-span-1 lg:col-span-4">
             <div>
               <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
                 En la localidad, comunidad, dirección (Zona, Calle, Avenida,
-                Barrio)
+                Barrio) <span className="text-danger">*</span>
               </label>
               <input
                 id="lugar"
                 type="text"
-                className="form-input w-full"
+                className={`form-input w-full ${errors.lugar ? 'border-danger' : ''}`}
                 {...register('lugar', reglaObligatorio)}
               />
+              {errors.lugar && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.lugar.message}
+                </div>
+              )}
             </div>
           </div>
 
@@ -873,11 +972,11 @@ export function DatosGeneralesForm({
               htmlFor="idCategoriaOperativo"
               className="mb-1 block text-sm font-medium"
             >
-              Categoría Operativo
+              Categoría Operativo <span className="text-danger">*</span>
             </label>
             <select
               id="idCategoriaOperativo"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idCategoriaOperativo ? 'border-danger' : ''}`}
               {...register('idCategoriaOperativo', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -887,17 +986,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idCategoriaOperativo && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idCategoriaOperativo.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idItemOperativo"
               className="mb-1 block text-sm font-medium"
             >
-              Operativo Realizado en
+              Operativo Realizado en <span className="text-danger">*</span>
             </label>
             <select
               id="idItemOperativo"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idItemOperativo ? 'border-danger' : ''}`}
               {...register('idItemOperativo', { ...reglaObligatorio, valueAsNumber: true })}
               disabled={opcionesOperativoEn.length === 0}
             >
@@ -908,17 +1012,27 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idItemOperativo && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idItemOperativo.message}
+              </div>
+            )}
           </div>
           <div>
             <label htmlFor="mando" className="mb-1 block text-sm font-medium">
-              Al Mando de
+              Al Mando de <span className="text-danger">*</span>
             </label>
             <input
               id="mando"
               type="text"
-              className="form-input w-full"
+              className={`form-input w-full ${errors.mando ? 'border-danger' : ''}`}
               {...register('mando', reglaObligatorio)}
             />
+            {errors.mando && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.mando.message}
+              </div>
+            )}
           </div>
           <div className="hidden lg:block"></div>
           <div>
@@ -926,11 +1040,11 @@ export function DatosGeneralesForm({
               htmlFor="idPlanOperacion"
               className="mb-1 block text-sm font-medium"
             >
-              Plan de Operaciones
+              Plan de Operaciones <span className="text-danger">*</span>
             </label>
             <select
               id="idPlanOperacion"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idPlanOperacion ? 'border-danger' : ''}`}
               {...register('idPlanOperacion', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -940,17 +1054,22 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idPlanOperacion && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idPlanOperacion.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="idTipoOperacion"
               className="mb-1 block text-sm font-medium"
             >
-              El Operativo es de Tipo
+              El Operativo es de Tipo <span className="text-danger">*</span>
             </label>
             <select
               id="idTipoOperacion"
-              className="form-select w-full"
+              className={`form-select w-full ${errors.idTipoOperacion ? 'border-danger' : ''}`}
               {...register('idTipoOperacion', { ...reglaObligatorio, valueAsNumber: true })}
             >
               <option value="">Seleccione un dato</option>
@@ -960,6 +1079,11 @@ export function DatosGeneralesForm({
                 </option>
               ))}
             </select>
+            {errors.idTipoOperacion && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoOperacion.message}
+              </div>
+            )}
           </div>
 
           <div>
@@ -967,28 +1091,38 @@ export function DatosGeneralesForm({
               htmlFor="clanFamiliar"
               className="mb-1 block text-sm font-medium"
             >
-              Clan Familiar
+              Clan Familiar <span className="text-danger">*</span>
             </label>
             <input
               id="clanFamiliar"
               type="text"
-              className="form-input w-full"
+              className={`form-input w-full ${errors.clanFamiliar ? 'border-danger' : ''}`}
               {...register('clanFamiliar', reglaObligatorio)}
             />
+            {errors.clanFamiliar && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.clanFamiliar.message}
+              </div>
+            )}
           </div>
           <div>
             <label
               htmlFor="organizacion"
               className="mb-1 block text-sm font-medium"
             >
-              Organización Criminal
+              Organización Criminal <span className="text-danger">*</span>
             </label>
             <input
               id="organizacion"
               type="text"
-              className="form-input w-full"
+              className={`form-input w-full ${errors.organizacion ? 'border-danger' : ''}`}
               {...register('organizacion', reglaObligatorio)}
             />
+            {errors.organizacion && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.organizacion.message}
+              </div>
+            )}
           </div>
           <div className="hidden lg:block"></div>
 
@@ -998,32 +1132,80 @@ export function DatosGeneralesForm({
                 htmlFor="coordX"
                 className="mb-1 block text-sm font-medium"
               >
-                Latitud
+                Latitud <span className="text-danger">*</span>
               </label>
               <input
                 id="coordX"
                 type="text"
-                className="form-input w-full"
+                className={`form-input w-full ${errors.coordX ? 'border-danger' : ''}`}
                 {...register('coordX', reglaObligatorio)}
               />
+              {errors.coordX && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.coordX.message}
+                </div>
+              )}
             </div>
             <div>
               <label
                 htmlFor="coordY"
                 className="mb-1 block text-sm font-medium"
               >
-                Longitud
+                Longitud <span className="text-danger">*</span>
               </label>
               <input
                 id="coordY"
                 type="text"
-                className="form-input w-full"
+                className={`form-input w-full ${errors.coordY ? 'border-danger' : ''}`}
                 {...register('coordY', reglaObligatorio)}
               />
+              {errors.coordY && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.coordY.message}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="col-span-1 lg:col-span-4 mt-4">
+            <div className="flex gap-2 mb-2 relative">
+              <input
+                type="text"
+                className="form-input flex-1"
+                placeholder="Buscar dirección, zona o calle..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    void buscarDireccion()
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-inline"
+                onClick={() => void buscarDireccion()}
+                disabled={isSearching}
+              >
+                {isSearching ? 'Buscando...' : 'Buscar'}
+              </button>
+
+              {searchResults.length > 0 && (
+                <ul className="absolute top-full left-0 mt-1 z-[1000] w-full bg-white dark:bg-[#1b2e4b] border border-[#e0e6ed] dark:border-[#1b2e4b] rounded-md shadow-lg max-h-60 overflow-auto">
+                  {searchResults.map((item, idx) => (
+                    <li
+                      key={idx}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer text-sm"
+                      onClick={() => seleccionarDireccion(item)}
+                    >
+                      {item.display_name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <Mapa
               id="mapa-operativo-seccion-1"
               mapRef={mapRef}
@@ -1051,14 +1233,19 @@ export function DatosGeneralesForm({
                 htmlFor="breveDetalle"
                 className="mb-1 block text-sm font-medium"
               >
-                Breve Detalle del Operativo
+                Breve Detalle del Operativo <span className="text-danger">*</span>
               </label>
               <textarea
                 id="breveDetalle"
-                className="form-textarea w-full"
+                className={`form-textarea w-full ${errors.breveDetalle ? 'border-danger text-danger' : ''}`}
                 rows={6}
                 {...register('breveDetalle', reglaObligatorio)}
               />
+              {errors.breveDetalle && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.breveDetalle.message}
+                </div>
+              )}
             </div>
           </div>
 
