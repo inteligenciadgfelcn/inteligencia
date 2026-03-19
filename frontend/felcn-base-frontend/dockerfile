@@ -9,7 +9,9 @@ RUN npm set registry https://registry.agcs.agetic.gob.bo/ && \
 
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_PATH=""
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_PUBLIC_PATH=${NEXT_PUBLIC_PATH}
 RUN node --run build
 
 FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS release
