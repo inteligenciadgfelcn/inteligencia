@@ -302,6 +302,103 @@ export function DatosGeneralesForm({
   const mapRef = useRef<any>(null)
   const cargandoDesdePropsRef = useRef(false)
 
+  const [latD, setLatD] = useState<string>('')
+  const [latM, setLatM] = useState<string>('')
+  const [latS, setLatS] = useState<string>('')
+
+  const [lngD, setLngD] = useState<string>('')
+  const [lngM, setLngM] = useState<string>('')
+  const [lngS, setLngS] = useState<string>('')
+
+  const lastEmittedLat = useRef<number | null>(null)
+  const lastEmittedLng = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (coordX !== null && coordX !== undefined) {
+      const num = Number(coordX)
+      if (!Number.isNaN(num) && num !== lastEmittedLat.current) {
+        const absolute = Math.abs(num)
+        const d = Math.trunc(absolute)
+        const m = Math.trunc((absolute - d) * 60)
+        const s = ((absolute - d) * 60 - m) * 60
+        const sign = num < 0 || Object.is(num, -0) ? '-' : ''
+        setLatD(`${sign}${d}`)
+        setLatM(String(m))
+        setLatS(parseFloat(s.toFixed(3)).toString())
+      }
+    } else {
+      setLatD('')
+      setLatM('')
+      setLatS('')
+    }
+  }, [coordX])
+
+  useEffect(() => {
+    if (coordY !== null && coordY !== undefined) {
+      const num = Number(coordY)
+      if (!Number.isNaN(num) && num !== lastEmittedLng.current) {
+        const absolute = Math.abs(num)
+        const d = Math.trunc(absolute)
+        const m = Math.trunc((absolute - d) * 60)
+        const s = ((absolute - d) * 60 - m) * 60
+        const sign = num < 0 || Object.is(num, -0) ? '-' : ''
+        setLngD(`${sign}${d}`)
+        setLngM(String(m))
+        setLngS(parseFloat(s.toFixed(3)).toString())
+      }
+    } else {
+      setLngD('')
+      setLngM('')
+      setLngS('')
+    }
+  }, [coordY])
+
+  const handleLatChange = (dStr: string, mStr: string, sStr: string) => {
+    setLatD(dStr)
+    setLatM(mStr)
+    setLatS(sStr)
+    if (dStr === '' && mStr === '' && sStr === '') {
+      lastEmittedLat.current = 0
+      setValue('coordX', 0, { shouldValidate: true })
+      return
+    }
+    const deg = Number(dStr) || 0
+    const min = Number(mStr) || 0
+    const sec = Number(sStr) || 0
+    const absoluteDeg = Math.abs(deg)
+    const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
+    const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
+    
+    if (!Number.isNaN(decimal)) {
+      const rounded = parseFloat(decimal.toFixed(7))
+      lastEmittedLat.current = rounded
+      setValue('coordX', rounded, { shouldValidate: true })
+    }
+  }
+
+  const handleLngChange = (dStr: string, mStr: string, sStr: string) => {
+    setLngD(dStr)
+    setLngM(mStr)
+    setLngS(sStr)
+    if (dStr === '' && mStr === '' && sStr === '') {
+      lastEmittedLng.current = 0
+      setValue('coordY', 0, { shouldValidate: true })
+      return
+    }
+    const deg = Number(dStr) || 0
+    const min = Number(mStr) || 0
+    const sec = Number(sStr) || 0
+    const absoluteDeg = Math.abs(deg)
+    const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
+    const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
+    
+    if (!Number.isNaN(decimal)) {
+      const rounded = parseFloat(decimal.toFixed(7))
+      lastEmittedLng.current = rounded
+      setValue('coordY', rounded, { shouldValidate: true })
+    }
+  }
+
   useEffect(() => {
     let activo = true
     const cargarParametricasBase = async () => {
@@ -1128,13 +1225,13 @@ export function DatosGeneralesForm({
           </div>
           <div className="hidden lg:block"></div>
 
-          <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label
                 htmlFor="coordX"
                 className="mb-1 block text-sm font-medium"
               >
-                Latitud <span className="text-danger">*</span>
+                Latitud (Decimal) <span className="text-danger">*</span>
               </label>
               <input
                 id="coordX"
@@ -1148,12 +1245,57 @@ export function DatosGeneralesForm({
                 </div>
               )}
             </div>
+               {/* Inputs independientes para Latitud DMS */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Latitud (DMS)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Grados"
+                    className="form-input w-full pr-8"
+                    value={latD}
+                    min={-90}
+                    max={90}
+                    onChange={(e) => handleLatChange(e.target.value, latM, latS)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Minutos"
+                    className="form-input w-full pr-8"
+                    value={latM}
+                    min={0}
+                    max={59}
+                    onChange={(e) => handleLatChange(latD, e.target.value, latS)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Segundos"
+                    className="form-input w-full pr-8"
+                    value={latS}
+                    min={0}
+                    max={59.999}
+                    step="any"
+                    onChange={(e) => handleLatChange(latD, latM, e.target.value)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
+                </div>
+              </div>
+            </div>
             <div>
               <label
                 htmlFor="coordY"
                 className="mb-1 block text-sm font-medium"
               >
-                Longitud <span className="text-danger">*</span>
+                Longitud (Decimal) <span className="text-danger">*</span>
               </label>
               <input
                 id="coordY"
@@ -1166,6 +1308,54 @@ export function DatosGeneralesForm({
                   {errors.coordY.message}
                 </div>
               )}
+            </div>
+
+         
+
+            {/* Inputs independientes para Longitud DMS */}
+            <div>
+              <label className="mb-1 block text-sm font-medium">
+                Longitud (DMS)
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Grados"
+                    className="form-input w-full pr-8"
+                    value={lngD}
+                    min={-180}
+                    max={180}
+                    onChange={(e) => handleLngChange(e.target.value, lngM, lngS)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Minutos"
+                    className="form-input w-full pr-8"
+                    value={lngM}
+                    min={0}
+                    max={59}
+                    onChange={(e) => handleLngChange(lngD, e.target.value, lngS)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    type="number"
+                    placeholder="Segundos"
+                    className="form-input w-full pr-8"
+                    value={lngS}
+                    min={0}
+                    max={59.999}
+                    step="any"
+                    onChange={(e) => handleLngChange(lngD, lngM, e.target.value)}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
+                </div>
+              </div>
             </div>
           </div>
 
