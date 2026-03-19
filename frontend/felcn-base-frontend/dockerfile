@@ -29,13 +29,13 @@ COPY --chown=node:node ./next.config.js ./next.config.js
 COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
 COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
 
-# Reemplazar el sharp del standalone (instalado con --ignore-scripts, sin binario nativo)
-# por el pre-instalado en /tmp (con binario nativo correcto)
+# Reemplazar sharp del standalone con el pre-instalado (binario nativo + todas sus dependencias)
 RUN rm -rf ./node_modules/sharp ./node_modules/@img && \
-    cp -r /tmp/sharp-pkg/node_modules/sharp ./node_modules/ && \
-    cp -r /tmp/sharp-pkg/node_modules/@img ./node_modules/ 2>/dev/null || true && \
-    chown -R node:node ./node_modules/sharp && \
-    chown -R node:node ./node_modules/@img 2>/dev/null || true
+    cp -rf /tmp/sharp-pkg/node_modules/. ./node_modules/ && \
+    find /tmp/sharp-pkg/node_modules -mindepth 1 -maxdepth 1 -type d | \
+      while read d; do \
+        chown -R node:node "./node_modules/$(basename "$d")" 2>/dev/null || true; \
+      done
 
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
