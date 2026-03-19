@@ -53,7 +53,10 @@ export class OperativoRepository {
   }
 
   async buscarPorId(id: string): Promise<Operativo | null> {
-    return this.operativoRepo.findOne({ where: { id } })
+    return this.operativoRepo.findOne({ 
+      where: { id },
+      relations: ['unidad', 'planOperacion', 'tipoOperacion']
+    })
   }
 
   async buscarPorCaso(idCaso: string): Promise<Operativo[]> {

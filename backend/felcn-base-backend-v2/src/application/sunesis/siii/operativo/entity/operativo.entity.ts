@@ -1,5 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BaseEntity } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BaseEntity, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { TipoOperacion } from '../../parametrica/entity/tipo/tipo-operacion.entity'
+import { Unidad } from '../../parametrica/entity/estructura/unidad.entity'
+import { PlanOperaciones } from '../../parametrica/entity/operativo/plan-operaciones.entity'
 
 /**
  * Entidad Operativo
@@ -142,6 +145,18 @@ export class Operativo extends BaseEntity {
       this.fechaHoraIngreso = new Date()
     }
   }
+
+  @ManyToOne(() => PlanOperaciones)
+  @JoinColumn({ name: 'id_plan_operacion' })
+  planOperacion: PlanOperaciones;
+
+  @ManyToOne(() => TipoOperacion)
+  @JoinColumn({ name: 'id_tipo_operacion' })
+  tipoOperacion: TipoOperacion;
+
+  @ManyToOne(() => Unidad)
+  @JoinColumn({ name: 'id_unidad' })
+  unidad: Unidad;
 
   constructor(data?: Partial<Operativo>) {
     super()
