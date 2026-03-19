@@ -22,6 +22,7 @@ const nextConfig = {
 
     return config
   },
+  trailingSlash: true,
   output: 'standalone',
   eslint: {
     dirs: ['src', 'stories', 'test'],
