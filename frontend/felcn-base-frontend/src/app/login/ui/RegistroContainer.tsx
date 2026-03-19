@@ -16,6 +16,7 @@ import { formatoFecha, validarFechaFormato } from '@/utils/fechas'
 import { useAlerts } from '@/hooks'
 import { useRouter } from 'next/navigation'
 import { NivelSeguridadPass } from '@/components/utils/NivelSeguridadPass'
+import { BASE_PATH } from '@/imageLoader'
 
 /* VALIDACIONES*/
 
@@ -101,12 +102,10 @@ export default function RegisterVristo() {
     }
   }
 
-  const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
-
   return (
     <div
       className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-      style={{ backgroundImage: `url(${base}/assets/images/auth/map.png)` }}
+      style={{ backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)` }}
     >
       <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
 

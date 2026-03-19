@@ -13,6 +13,7 @@ import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { CambioPass } from '@/app/login/ui/CambioPass'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { BASE_PATH } from '@/imageLoader'
 
 /*VALIDACION*/
 
@@ -110,14 +111,12 @@ export default function RecuperacionPage() {
 
   /* UI VRISTO*/
 
-  const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
-
   return (
     <>
       <title>{`Recupera tu cuenta - ${siteName()}`}</title>
       <div
         className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-        style={{ backgroundImage: `url(${base}/assets/images/auth/map.png)` }}
+        style={{ backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)` }}
       >
         <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {!code && (

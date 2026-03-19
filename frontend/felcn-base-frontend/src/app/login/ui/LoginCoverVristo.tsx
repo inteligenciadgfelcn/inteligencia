@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import { BASE_PATH } from '@/imageLoader'
 
 interface Props {
   children: React.ReactNode
 }
 
-const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
+const base = BASE_PATH
 
 const LoginCoverVristo = ({ children }: Props) => {
   return (

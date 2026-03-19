@@ -4,8 +4,9 @@ import { type RefObject } from 'react'
 import { Marker } from 'react-leaflet'
 import { icon, type Map as LeafletMap } from 'leaflet'
 import Mapa from './Mapa'
+import { BASE_PATH } from '@/imageLoader'
 
-const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
+const base = BASE_PATH
 
 const MARCADOR_ICON = icon({
   iconRetinaUrl: `${base}/leaflet/marker-icon.png`,
