@@ -18,6 +18,8 @@ import { UpdateAsignacionDto } from './dto/update-asignacione.dto'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { CrearNumeroCasoDto } from './dto/create_numeroCaso.dto'
+import { AsignarNumeroCasoDto } from './dto/asignarNumeroCaso.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -72,7 +74,7 @@ export class AsignacionesController extends BaseController {
   @Get('operativos')
   @ApiOperation({ summary: 'Operativos registrados o no registrados' })
   async operativos(
-    @Query('codigo') codigo: string,
+    @Query('codigoServicio') codigo: string,
     @Query('registrados') registrados: boolean,
     @Query() pagination: PaginacionQueryDto
   ) {
@@ -81,7 +83,22 @@ export class AsignacionesController extends BaseController {
       registrados,
       pagination
     )
-
     return this.successListRows(result)
+  }
+
+  @Post('generar-numero')
+  @ApiOperation({ summary: 'Generar número de caso' })
+  generar(@Body() dto: CrearNumeroCasoDto) {
+    return this.service.generarNumeroCaso(dto.codigoDepartamento, dto.letra)
+  }
+
+  @Post('asignar-numero-caso')
+  @ApiOperation({ summary: 'Guardar numero de caso' })
+  asignarNumeroCaso(@Body() dto: AsignarNumeroCasoDto) {
+    return this.service.asignarNumeroCaso(
+      dto.nroOperativo,
+      dto.abreviatura,
+      dto.letra
+    )
   }
 }
