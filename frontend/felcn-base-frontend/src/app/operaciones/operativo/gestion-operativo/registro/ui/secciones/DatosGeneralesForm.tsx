@@ -332,17 +332,19 @@ export function DatosGeneralesForm({
 
     const cargarItemsOperativo = async () => {
       const idCategoria = Number(categoriaOperativoSeleccionada)
+      
       if (idCategoria <= 0) {
-        setOpcionesOperativoEn([])
-        setValue('idItemOperativo', 0)
+        if (!cargandoDesdePropsRef.current) {
+          setOpcionesOperativoEn([])
+          setValue('idItemOperativo', 0)
+        }
         return
       }
 
+      if (cargandoDesdePropsRef.current) return
+
       try {
-        const respuesta =
-          await GestionOperativoCatalogosService.obtenerItemsOperativo(
-            idCategoria
-          )
+        const respuesta = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
         if (!activo || !respuesta?.finalizado) return
 
         const opciones = respuesta.datos.map((t) => ({
@@ -353,9 +355,8 @@ export function DatosGeneralesForm({
 
         setOpcionesOperativoEn(opciones)
         const idItemActual = Number(getValues('idItemOperativo'))
-        const existeItemActual = opciones.some(
-          (opcion) => Number(opcion.value) === idItemActual
-        )
+        const existeItemActual = opciones.some((opcion) => Number(opcion.value) === idItemActual)
+        
         if (!existeItemActual) {
           setValue('idItemOperativo', 0)
         }
@@ -374,42 +375,34 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     const id = Number(departamentoSeleccionado)
-    if (id > 0) {
-      if (!cargandoDesdePropsRef.current) {
-        setValue('idProvincia', 0)
-        setValue('idLocalidad', 0)
-      }
+    if (id > 0 && !cargandoDesdePropsRef.current) {
+      setValue('idProvincia', 0)
+      setValue('idLocalidad', 0)
       void cargarProvincias(id)
     }
   }, [departamentoSeleccionado, setValue, cargarProvincias])
 
   useEffect(() => {
     const id = Number(provinciaSeleccionada)
-    if (id > 0) {
-      if (!cargandoDesdePropsRef.current) {
-        setValue('idLocalidad', 0)
-      }
+    if (id > 0 && !cargandoDesdePropsRef.current) {
+      setValue('idLocalidad', 0)
       void cargarLocalidades(id)
     }
   }, [provinciaSeleccionada, setValue, cargarLocalidades])
 
   useEffect(() => {
     const id = Number(unidadSeleccionada)
-    if (id > 0) {
-      if (!cargandoDesdePropsRef.current) {
-        setValue('idDistrital', 0)
-        setValue('idGrupo', 0)
-      }
+    if (id > 0 && !cargandoDesdePropsRef.current) {
+      setValue('idDistrital', 0)
+      setValue('idGrupo', 0)
       void cargarDistritales(id)
     }
   }, [unidadSeleccionada, setValue, cargarDistritales])
 
   useEffect(() => {
     const id = Number(distritalSeleccionado)
-    if (id > 0) {
-      if (!cargandoDesdePropsRef.current) {
-        setValue('idGrupo', 0)
-      }
+    if (id > 0 && !cargandoDesdePropsRef.current) {
+      setValue('idGrupo', 0)
       void cargarGrupos(id)
     }
   }, [distritalSeleccionado, setValue, cargarGrupos])
@@ -508,16 +501,55 @@ export function DatosGeneralesForm({
       celularFiscal: caso?.telefonoFiscal ?? '',
     })
 
-    // Bloquea los useEffect de cascada para que no limpien los valores al hacer reset()
-    cargandoDesdePropsRef.current = true
-    reset({ ...DEFAULT_VALUES, ...mapped })
+    void (async () => {
+      // Bloquea temporalmente los useEffect de cascada para evitar limpiezas
+      cargandoDesdePropsRef.current = true
 
-    // Liberar el bloqueo después de que React procese los useEffects
-    const timerId = setTimeout(() => {
-      cargandoDesdePropsRef.current = false
-    }, 800)
+      const idDepto = Number(mapped.idDepartamento)
+      const idProv = Number(mapped.idProvincia)
+      const idUnidad = Number(mapped.idUnidad)
+      const idDistrital = Number(mapped.idDistrital)
+      const idCategoria = Number(mapped.idCategoriaOperativo)
 
-    return () => clearTimeout(timerId)
+      // Cargar primer nivel de dependencias (para no chocar estados de limpieza sincrona)
+      await Promise.all([
+        idDepto > 0 ? cargarProvincias(idDepto) : Promise.resolve(),
+        idUnidad > 0 ? cargarDistritales(idUnidad) : Promise.resolve(),
+      ])
+
+      // Cargar segundo nivel de dependencias e items
+      await Promise.all([
+        idProv > 0 ? cargarLocalidades(idProv) : Promise.resolve(),
+        idDistrital > 0 ? cargarGrupos(idDistrital) : Promise.resolve(),
+        idCategoria > 0
+          ? (async () => {
+              try {
+                const res = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
+                if (res?.finalizado) {
+                  setOpcionesOperativoEn(
+                    res.datos.map((t) => ({
+                      id: String(t.id),
+                      value: String(t.id),
+                      label: t.descripcion,
+                    }))
+                  )
+                }
+              } catch {
+                setOpcionesOperativoEn([])
+              }
+            })()
+          : Promise.resolve(),
+      ])
+
+      // Todas las opciones ya están precargadas.
+      // Hacer reset emparejará los values exactos en la UI porque las etiquetas ya existen en el render
+      reset({ ...DEFAULT_VALUES, ...mapped })
+
+      // Liberar el bloqueo después del ciclo de render de react-hook-form
+      setTimeout(() => {
+        cargandoDesdePropsRef.current = false
+      }, 300)
+    })()
   }, [
     datosCaso,
     parametricasBaseListas,
