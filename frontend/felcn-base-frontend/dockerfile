@@ -18,6 +18,10 @@ FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS release
 WORKDIR /home/node/app
 RUN apk add --no-cache libc6-compat
 
+# Pre-instalar sharp en directorio temporal ANTES de los COPY
+# Esta capa queda cacheada y solo se re-ejecuta si cambia la versión de sharp
+RUN npm i sharp@0.33.5 --prefix /tmp/sharp-pkg --progress=false --no-audit --legacy-peer-deps
+
 COPY --chown=node:node ./public ./public
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./next.config.js ./next.config.js
@@ -25,10 +29,13 @@ COPY --chown=node:node ./next.config.js ./next.config.js
 COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
 COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
 
-# Sharp se instala DESPUÉS del COPY standalone para no ser sobreescrito por node_modules del build
-RUN npm i sharp@0.33.5 --progress=false --no-audit --legacy-peer-deps
-
-RUN chown -R node:node /home/node/app
+# Reemplazar el sharp del standalone (instalado con --ignore-scripts, sin binario nativo)
+# por el pre-instalado en /tmp (con binario nativo correcto)
+RUN rm -rf ./node_modules/sharp ./node_modules/@img && \
+    cp -r /tmp/sharp-pkg/node_modules/sharp ./node_modules/ && \
+    cp -r /tmp/sharp-pkg/node_modules/@img ./node_modules/ 2>/dev/null || true && \
+    chown -R node:node ./node_modules/sharp && \
+    chown -R node:node ./node_modules/@img 2>/dev/null || true
 
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
