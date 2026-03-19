@@ -57,4 +57,12 @@ export const GestionOperativoLogotiposService = {
       url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos/${idLogotipo}`,
     })
   },
+
+  obtenerFoto(path: string): Promise<Blob> {
+    const pathNormalizado = path.replace(/^\/api/, '')
+    return Servicios.get<Blob>({
+      url: `${Constantes.baseUrl}${pathNormalizado}`,
+      responseType: 'blob',
+    })
+  },
 }

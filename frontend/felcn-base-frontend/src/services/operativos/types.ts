@@ -102,6 +102,7 @@ export interface DrogaCasoPayload {
 export interface ResponseDroga {
     id: number;
     idOperativo: string;
+    idTipoDroga?: number;
     idEstadoDroga: number;
     cantidadGramos: number;
     cantidadUnidades: number;
@@ -113,6 +114,12 @@ export interface ResponseDroga {
     usuario: string;
     urlFotoPruebaCampo: string;
     urlFotoPesaje: string;
+    // Campos descripción (join de API)
+    descripcionTipoDroga?: string;
+    descripcionEstadoDroga?: string;
+    descripcionFormaTransporte?: string;
+    descripcionPaisProcedencia?: string;
+    descripcionPaisDestino?: string;
 }
 
 export interface SustanciaPayload {
@@ -187,6 +194,13 @@ export interface BienPayload {
 export interface BienCaracteristicaPayload {
     idCatalogoCaracteristica: number
     descripcion: string
+}
+
+export interface BienCaracteristicaResponse {
+    id: number
+    idCatalogoCaracteristica: number
+    descripcion: string
+    descripcionCaracteristica: string
 }
 
 export interface BienResponse {
