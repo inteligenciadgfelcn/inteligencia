@@ -6,9 +6,17 @@ import { FormInputText, FormInputDropdown, FormInputDate } from '@/components/fo
 import { optionType } from '@/components/form/FormInputDropdown';
 import FormInputFile from '@/components/form/FormInputFile';
 import { Button } from '@/components/ui/Button';
-import Mapa from '@/components/mapas/Mapa';
-import { Marker } from 'react-leaflet';
-import { icon } from 'leaflet';
+import dynamic from 'next/dynamic';
+
+const MapaConMarcador = dynamic(
+    () => import('@/components/mapas/MapaConMarcador'),
+    {
+        ssr: false,
+        loading: () => (
+            <div className="h-[400px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+        ),
+    }
+)
 import { DataTable } from 'mantine-datatable';
 import IconTrashLines from '@/components/Icon/IconTrashLines';
 import IconPlus from '@/components/Icon/IconPlus';
@@ -16,12 +24,6 @@ import IconPencil from '@/components/Icon/IconPencil';
 import { useParametricas } from '@/hooks';
 import { SiiiLookupsService } from '@/services/parametricas';
 
-const ICON = icon({
-    iconRetinaUrl: '/leaflet/marker-icon.png',
-    iconUrl: '/leaflet/marker-icon.png',
-    shadowUrl: '/leaflet/marker-shadow.png',
-    iconAnchor: [12.5, 41],
-});
 
 export const FormularioOperativo = () => {
     const formatearCantidad = (valor: number) => {
@@ -578,15 +580,17 @@ export const FormularioOperativo = () => {
 
                     {/* Map Section */}
                     <div className="col-span-1 lg:col-span-3 mt-4">
-                        <Mapa
+                        <MapaConMarcador
                             id="mapa-operativo"
                             mapRef={mapRef}
                             centro={[Number(latitud) || -17.40, Number(longitud) || -66.15]}
                             zoom={15}
                             height={400}
                             onClick={handleMapClick}
-                            markers={
-                                latitud && longitud ? <Marker position={[Number(latitud), Number(longitud)]} icon={ICON} /> : null
+                            coordenadas={
+                                latitud && longitud
+                                    ? [Number(latitud), Number(longitud)]
+                                    : null
                             }
                         />
                     </div>
