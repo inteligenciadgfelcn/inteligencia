@@ -1,38 +1,32 @@
+import { usePeticion } from '@/hooks'
 import { CasoActualizacionTable } from '../types/caso.actualizacion.table'
+import { Constantes } from '@/config/Constantes'
+import { DataTableParams } from '@/services'
 
-const fakeData: CasoActualizacionTable[] = [
-  {
-    id: 1,
-    codigoRegistro: 'ICIA-0001-2026',
-    departamento: 'La Paz',
-    unidad: 'FELCN Central',
-    nroCaso: 'CASO-1001',
-    nroRegistro: 'REG-2026-001',
-    fechaHoraOperativo: '2026-03-10 08:30',
-    nombreCaso: 'Operativo Altiplano',
-    asignadoCaso: 'Tte. Juan Perez',
-    fiscalAsignado: 'Dra. Maria Flores',
-    codigoDepartamento: 'LP',
-  },
-  {
-    id: 2,
-    codigoRegistro: 'ICIA-0002-2026',
-    departamento: 'Cochabamba',
-    unidad: 'FELCN Sur',
-    nroCaso: undefined,
-    nroRegistro: 'REG-2026-002',
-    fechaHoraOperativo: '2026-03-09 15:20',
-    nombreCaso: 'Operativo Valle',
-    asignadoCaso: 'Cap. Ana Rojas',
-    fiscalAsignado: 'Dr. Carlos Mendez',
-    codigoDepartamento: 'CB',
-  },
-]
+export interface OpertaivosResponse {
+  finalizado: boolean
+  mensaje: string
+  datos: Datos
+}
 
-export const getActualizacionData = async (): Promise<
-  CasoActualizacionTable[]
-> => {
-  // Simulación de retraso en la respuesta
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return fakeData
+interface Datos {
+  total: number
+  filas: CasoActualizacionTable[]
+}
+const { sesionPeticion } = usePeticion()
+
+export const getActualizacionData = async (
+  registrados: boolean,
+  params: DataTableParams
+): Promise<OpertaivosResponse> => {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/asignaciones/operativos`,
+    params: {
+      ...params,
+      registrados: registrados ? 'true' : 'false',
+      codigo: 'ICIA-1818032026',
+    },
+    withCredentials: true,
+  })
+  return response
 }
