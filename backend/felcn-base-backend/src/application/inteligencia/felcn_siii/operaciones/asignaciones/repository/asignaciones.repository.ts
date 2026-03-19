@@ -66,61 +66,107 @@ export class AsignacionesRepository {
   }
 
   async findOperativos(
-  codigo: string,
-  registrados: boolean,
-  pagination: PaginacionQueryDto
-): Promise<[any[], number]> {
-  const { limite, saltar } = pagination
+    codigo: string,
+    registrados: boolean,
+    pagination: PaginacionQueryDto
+  ): Promise<[any[], number]> {
+    const { limite, saltar } = pagination
 
-  const asignaciones = await this.asignacionAsigRepository
-    .createQueryBuilder('a')
-    .leftJoin('departamento', 'd', 'a.id_departamento = d.id_departamento')
-    .leftJoin('unidad', 'u', 'a.id_unidad = u.id_unidad')
-    .where('a.codigo_servicio = :codigo', { codigo })
-    .select([
-      'a.id_asignacion as "idAsignacion"',
-      'a.codigo_servicio as "codigoServicio"',
-      'a.numero_operativo as "numeroOperativo"',
-      'a.numero_caso as "numeroCaso"',
-      'a.nombre_caso as "nombreCaso"',
-      'a.fecha_operativo as "fechaOperativo"',
-      'd.descripcion as "departamento"',
-      'u.descripcion as "unidad"',
-      'a.asignacion_caso as "asignacionCaso"',
-      'a.fiscal_asignado as "fiscalAsignado"',
-    ])
-    .getRawMany()
+    const asignaciones = await this.asignacionAsigRepository
+      .createQueryBuilder('a')
+      .leftJoin('departamento', 'd', 'a.id_departamento = d.id_departamento')
+      .leftJoin('unidad', 'u', 'a.id_unidad = u.id_unidad')
+      .where('a.codigo_servicio = :codigo', { codigo })
+      .select([
+        'a.id_asignacion as "idAsignacion"',
+        'a.codigo_servicio as "codigoServicio"',
+        'a.numero_operativo as "numeroOperativo"',
+        'a.numero_caso as "numeroCaso"',
+        'a.nombre_caso as "nombreCaso"',
+        'a.fecha_operativo as "fechaOperativo"',
+        'd.abreviatura as "abreviaturaDepartamento"',
+        'd.descripcion as "departamento"',
+        'u.descripcion as "unidad"',
+        'a.asignacion_caso as "asignacionCaso"',
+        'a.fiscal_asignado as "fiscalAsignado"',
+      ])
+      .getRawMany()
 
-  if (!asignaciones.length) return [[], 0]
+    if (!asignaciones.length) return [[], 0]
 
-  const numeros = asignaciones.map((a) => a.numeroOperativo)
+    const numeros = asignaciones.map((a) => a.numeroOperativo)
 
-  let setOperativos = new Set<string>()
+    let setOperativos = new Set<string>()
 
-  if (numeros.length) {
-    const operativos = await this.asignacionRepository.query(
-      `
+    if (numeros.length) {
+      const operativos = await this.asignacionRepository.query(
+        `
       SELECT numero_operativo
       FROM operativo
       WHERE numero_operativo = ANY($1)
       `,
-      [numeros]
-    )
+        [numeros]
+      )
 
-    setOperativos = new Set(
-      operativos.map((o) => o.numero_operativo)
-    )
+      setOperativos = new Set(operativos.map((o) => o.numero_operativo))
+    }
+
+    const resultado = asignaciones.filter((a) => {
+      const existe = setOperativos.has(a.numeroOperativo)
+
+      return registrados ? existe : !existe
+    })
+
+    const total = resultado.length
+    const data = resultado.slice(saltar, saltar + limite)
+
+    return [data, total]
   }
 
-  const resultado = asignaciones.filter((a) => {
-    const existe = setOperativos.has(a.numeroOperativo)
+  async obtenerMaxCorrelativo(
+    dpto: string,
+    letra: string,
+    year: string
+  ): Promise<number> {
+    const result = await this.asignacionRepository.query(
+      `
+    SELECT MAX(
+      CAST(
+        SPLIT_PART(SPLIT_PART(numero_caso, '-', 3), '/', 1) AS INTEGER
+      )
+    ) as max
+    FROM asignacion
+    WHERE abreviatura_departamento = $1
+      AND letras = $2
+      AND numero_caso LIKE $3
+    `,
+      [dpto, letra, `%/${year}`]
+    )
 
-    return registrados ? existe : !existe
-  })
+    return result[0].max ?? 0
+  }
 
-  const total = resultado.length
-  const data = resultado.slice(saltar, saltar + limite)
+  async actualizarNumeroCasoDual(
+    nroOperativo: string,
+    nroCaso: string,
+    letra: string
+  ) {
+    // SIII
+    await this.asignacionRepository.update(
+      { nroOperativo: nroOperativo },
+      {
+        nroCaso: nroCaso.toUpperCase(),
+        letra: letra,
+      }
+    )
 
-  return [data, total]
-}
+    // ASIG
+    await this.asignacionAsigRepository.update(
+      { nroOperativo },
+      {
+        nroCaso: nroCaso.toUpperCase(),
+        letra: letra,
+      }
+    )
+  }
 }
