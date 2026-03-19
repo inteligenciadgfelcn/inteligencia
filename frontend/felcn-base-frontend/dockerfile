@@ -25,9 +25,7 @@ COPY --chown=node:node ./next.config.js ./next.config.js
 COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
 COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
 
-RUN npm set registry https://registry.agcs.agetic.gob.bo/ && \
-    npm set strict-ssl false && \
-    npm i sharp@0.33.5 --progress=false --no-audit --legacy-peer-deps && \
+RUN npm i sharp@0.33.5 --progress=false --no-audit --legacy-peer-deps && \
     chown -R node:node /home/node/app
 
 ARG CI_COMMIT_SHORT_SHA
