@@ -18,6 +18,9 @@ FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS release
 WORKDIR /home/node/app
 RUN apk add --no-cache libc6-compat
 
+# Instalar sharp antes de los COPY para aprovechar el cache de Docker
+RUN npm i sharp@0.33.5 --progress=false --no-audit --legacy-peer-deps
+
 COPY --chown=node:node ./public ./public
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./next.config.js ./next.config.js
@@ -25,8 +28,7 @@ COPY --chown=node:node ./next.config.js ./next.config.js
 COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
 COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
 
-RUN npm i sharp@0.33.5 --progress=false --no-audit --legacy-peer-deps && \
-    chown -R node:node /home/node/app
+RUN chown -R node:node /home/node/app
 
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
