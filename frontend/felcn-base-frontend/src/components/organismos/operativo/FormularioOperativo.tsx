@@ -180,7 +180,7 @@ export const FormularioOperativo = () => {
     const opcionesPlan: optionType[] = planesOperaciones.map((p) => ({
         id: String(p.id),
         value: String(p.id),
-        label: String(p.descripcion ?? ''),
+        label: String(p.nombre ?? ''),
     }))
 
     const [opcionesPaises, setOpcionesPaises] = useState<optionType[]>([

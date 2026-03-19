@@ -617,7 +617,6 @@ export function Seccion6Form({ titulo, idoperativo }: Props) {
                             recordsPerPage={ITEMS_POR_PAGINA}
                             page={pagina}
                             onPageChange={handleCambioPagina}
-                            recordsPerPageOptions={[10, 20, 50]}
                             noRecordsText="Sin personas registradas"
                             highlightOnHover
                             columns={[

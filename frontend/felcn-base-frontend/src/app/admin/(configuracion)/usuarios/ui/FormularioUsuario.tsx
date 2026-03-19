@@ -491,7 +491,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                             <MenuItem value="">
                                                 <em>Sin grado</em>
                                             </MenuItem>
-                                            {grados.map((g) => (
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {grados.map((g: any) => (
                                                 <MenuItem key={g.id} value={g.id}>
                                                     {g.abreviatura} — {g.descripcion}
                                                 </MenuItem>
@@ -525,7 +526,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                             <MenuItem value="">
                                                 <em>Sin unidad</em>
                                             </MenuItem>
-                                            {unidades.map((u) => (
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {unidades.map((u: any) => (
                                                 <MenuItem key={u.id} value={u.id}>
                                                     {u.descripcion}
                                                 </MenuItem>
@@ -558,7 +560,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                             <MenuItem value="">
                                                 <em>{idUnidad ? 'Sin distrital' : 'Seleccione una unidad'}</em>
                                             </MenuItem>
-                                            {distritales.map((d) => (
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {distritales.map((d: any) => (
                                                 <MenuItem key={d.id} value={d.id}>
                                                     {d.descripcion}
                                                 </MenuItem>
@@ -591,7 +594,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                                             <MenuItem value="">
                                                 <em>{idDistrital ? 'Sin grupo' : 'Seleccione un distrital'}</em>
                                             </MenuItem>
-                                            {grupos.map((g) => (
+                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            {grupos.map((g: any) => (
                                                 <MenuItem key={g.id} value={g.id}>
                                                     {g.descripcion}
                                                 </MenuItem>
