@@ -19,7 +19,7 @@ const selectSchema = (message: string) =>
     (val) => (val === null ? undefined : val),
     z.object(
       {
-        value: z.number(),
+        value: z.string(),
         label: z.string(),
       },
       { required_error: message }
@@ -46,7 +46,7 @@ export interface FormActualizacionValues {
 
 interface Props {
   caso: CasoActualizacionTable | null
-  onActualizar: (values: FormActualizacionValues) => void
+  onActualizar: () => void
 }
 
 type FormState = z.infer<typeof formSchema>
@@ -66,23 +66,14 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
     handleSubmit,
     reset,
     formState: { errors },
-    watch,
     setValue,
   } = useForm<FormState>({
     resolver: zodResolver(formSchema),
   })
 
-  imprimir('caso en form', watch())
-
   const onSubmit = (values: FormState) => {
-    onActualizar({
-      letraPrincipalAprendido: values.letrasPrincipalAprendido?.label ?? '',
-      codigoDepartamento: values.codigoDepartamento,
-      nroRegistro: values.nroRegistro,
-      continuacionCaso,
-      newCode: values.newCode,
-      caso: caso!,
-    })
+    imprimir('Actualizando caso con data:')
+    onActualizar()
   }
 
   const onContinuacionChange = (value: boolean) => {
@@ -99,7 +90,7 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
       reset({
         letrasPrincipalAprendido: undefined,
         codigoDepartamento: caso.codigoDepartamento ?? '',
-        nroRegistro: caso.nroRegistro ?? '',
+        nroRegistro: caso.numeroOperativo ?? '',
         newCode: '',
       })
     } else {

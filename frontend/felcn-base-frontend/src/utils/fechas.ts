@@ -83,6 +83,7 @@ export const dateUtcToString = (date: string | Date) => {
   const validDate = new Date(date)
 
   if (isNaN(validDate.getTime())) {
+    imprimir('Fecha inválida:', date)
     throw new Error('Fecha inválida')
   }
 

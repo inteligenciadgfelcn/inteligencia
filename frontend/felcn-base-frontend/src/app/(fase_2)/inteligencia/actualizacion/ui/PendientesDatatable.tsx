@@ -9,6 +9,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { getActualizacionData } from '../services/actualizacion.service'
 import { DataTableSortStatus } from 'mantine-datatable'
 import IconRefresh from '@/components/Icon/IconRefresh'
+import { dateUtcToString } from '@/utils/fechas'
 
 export function PendientesDataTable() {
   const [pagina, setPagina] = useState(1)
@@ -42,13 +43,20 @@ export function PendientesDataTable() {
 
   /* FETCH */
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['casos', pagina, limite, search, sortStatus],
-    queryFn: getActualizacionData,
+    queryKey: ['casos_pendientes', pagina, limite, search, sortStatus],
+    queryFn: () =>
+      getActualizacionData(false, {
+        pagina: pagina,
+        limite: limite,
+        filtro: search || undefined,
+        ordenar: sortStatus.columnAccessor,
+        direccion: sortStatus.direction,
+      }),
     placeholderData: keepPreviousData,
   })
 
-  const filas = useMemo(() => data ?? [], [data])
-  const total = useMemo(() => data?.length ?? 0, [data])
+  const filas = useMemo(() => data?.datos.filas ?? [], [data])
+  const total = useMemo(() => data?.datos.total ?? 0, [data])
 
   const filasFiltradas = useMemo(() => {
     if (!search.trim()) return filas
@@ -57,15 +65,15 @@ export function PendientesDataTable() {
 
     return filas.filter((row) =>
       [
-        row.id,
-        row.codigoRegistro,
+        row.idAsignacion,
+        row.codigoServicio,
         row.departamento,
         row.unidad,
-        row.nroCaso ?? '',
-        row.nroRegistro,
-        row.fechaHoraOperativo,
+        row.numeroCaso ?? '',
+        row.numeroOperativo,
+        row.fechaOperativo,
         row.nombreCaso,
-        row.asignadoCaso,
+        row.asignacionCaso,
         row.fiscalAsignado,
       ]
         .join(' ')
@@ -75,20 +83,22 @@ export function PendientesDataTable() {
   }, [filas, search])
 
   const toggleSelected = (caso: CasoActualizacionTable) => {
-    setSelectedCaso((prev) => (prev?.id == caso.id ? null : caso))
+    setSelectedCaso((prev) =>
+      prev?.idAsignacion == caso.idAsignacion ? null : caso
+    )
   }
 
   const columns = [
     {
-      accessor: 'id',
+      accessor: 'idAsignacion',
       title: 'id',
-      render: (row: CasoActualizacionTable) => <span>{row.id}</span>,
+      render: (row: CasoActualizacionTable) => <span>{row.idAsignacion}</span>,
     },
     {
-      accessor: 'codigoRegistro',
-      title: 'Codigo de Registro',
+      accessor: 'codigoServicio',
+      title: 'Codigo de Servicio',
       render: (row: CasoActualizacionTable) => (
-        <span>{row.codigoRegistro}</span>
+        <span>{row.codigoServicio}</span>
       ),
     },
     {
@@ -102,20 +112,24 @@ export function PendientesDataTable() {
       render: (row: CasoActualizacionTable) => <span>{row.unidad}</span>,
     },
     {
-      accessor: 'nroCaso',
+      accessor: 'numeroCaso',
       title: 'Nro Caso',
-      render: (row: CasoActualizacionTable) => <span>{row.nroCaso ?? ''}</span>,
+      render: (row: CasoActualizacionTable) => (
+        <span>{row.numeroCaso ?? ''}</span>
+      ),
     },
     {
-      accessor: 'nroRegistro',
-      title: 'Nro Registro',
-      render: (row: CasoActualizacionTable) => <span>{row.nroRegistro}</span>,
+      accessor: 'numeroOperativo',
+      title: 'Nro Operativo',
+      render: (row: CasoActualizacionTable) => (
+        <span>{row.numeroOperativo}</span>
+      ),
     },
     {
       accessor: 'fechaHoraOperativo',
       title: 'Fecha y Hora del Operativo',
       render: (row: CasoActualizacionTable) => (
-        <span>{row.fechaHoraOperativo}</span>
+        <span>{dateUtcToString(row.fechaOperativo)}</span>
       ),
     },
     {
@@ -126,7 +140,9 @@ export function PendientesDataTable() {
     {
       accessor: 'asignadoCaso',
       title: 'Asignado al Caso',
-      render: (row: CasoActualizacionTable) => <span>{row.asignadoCaso}</span>,
+      render: (row: CasoActualizacionTable) => (
+        <span>{row.asignacionCaso}</span>
+      ),
     },
     {
       accessor: 'fiscalAsignado',
@@ -139,7 +155,7 @@ export function PendientesDataTable() {
       accessor: 'acciones',
       title: 'Acciones',
       render: (row: CasoActualizacionTable) => {
-        const isSelected = selectedCaso?.id == row.id
+        const isSelected = selectedCaso?.idAsignacion == row.idAsignacion
 
         return (
           <button
@@ -149,7 +165,7 @@ export function PendientesDataTable() {
             }`}
             onClick={() => toggleSelected(row)}
           >
-            {isSelected ? 'Deseleccionar' : 'Seleccionar'}
+            Mostrar
           </button>
         )
       },
@@ -173,7 +189,7 @@ export function PendientesDataTable() {
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
         rowClassName={(row) =>
-          selectedCaso?.id == row.id
+          selectedCaso?.idAsignacion == row.idAsignacion
             ? 'bg-primary/10 dark:bg-primary/20 transition-colors'
             : ''
         }
