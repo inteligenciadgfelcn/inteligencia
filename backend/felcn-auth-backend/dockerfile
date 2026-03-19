@@ -1,34 +1,47 @@
+# ----------- BUILD -----------
 FROM node:22-alpine AS build
 WORKDIR /home/node/app
 
 COPY package*.json ./
-
-RUN npm ci --prefer-offline --progress=false --no-audit
+RUN npm ci --prefer-offline --no-audit
 
 COPY . .
-
 RUN node --run build
 
+
+# ----------- PROD DEPS -----------
 FROM node:22-alpine AS prod-deps
 WORKDIR /home/node/app
+
 COPY package*.json ./
-RUN npm ci --omit=dev --prefer-offline --progress=false --no-audit
+RUN npm ci --omit=dev --prefer-offline --no-audit
 
-FROM node:22-alpine AS release
+
+# ----------- FINAL -----------
+FROM node:22-alpine AS app
 WORKDIR /home/node/app
-RUN chown -R node:node /home/node/app
 
-COPY --from=prod-deps --chown=node:node /home/node/app/node_modules ./node_modules
-COPY --from=build --chown=node:node /home/node/app/dist ./dist
+# 👇 crear carpeta de logs con permisos correctos
+RUN mkdir -p /tmp/logs && chown -R node:node /tmp/logs
 
+# copiar solo lo necesario
+COPY --from=prod-deps /home/node/app/node_modules ./node_modules
+COPY --from=build /home/node/app/dist ./dist
+
+# metadata (opcional)
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
 ARG CI_COMMIT_REF_NAME
-ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} \
-    CI_COMMIT_MESSAGE=${CI_COMMIT_MESSAGE} \
-    CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
 
-FROM release AS app
+ENV CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA \
+    CI_COMMIT_MESSAGE=$CI_COMMIT_MESSAGE \
+    CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME \
+    NODE_ENV=production
+
+# seguridad
 USER node
-CMD ["sh", "-c", "node dist/src/main"]
+
 EXPOSE 3000
+
+# 👇 más limpio que usar sh -c
+CMD ["node", "dist/src/main"]
