@@ -6,13 +6,6 @@ import { Marker } from 'react-leaflet'
 import { icon } from 'leaflet'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import {
-  FormInputDate,
-  FormInputDropdown,
-  FormInputText,
-} from '@/components/form'
-import type { optionType } from '@/components/form/FormInputDropdown'
 import Mapa from '@/components/mapas/Mapa'
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -21,7 +14,7 @@ import {
   GestionOperativoCatalogosService,
   GestionOperativosDatosGeneralesService,
 } from '@/services/operativos'
-import { SiiiLookupsService } from '@/services/parametricas'
+
 import type {
   CasoOperativoDetalle,
   CasoResumen,
@@ -37,6 +30,7 @@ interface DatosGeneralesFormProps {
   onOperativoGuardado?: () => void
   cargando?: boolean
   datosCaso?: CasoOperativoDetalle | null
+  tieneOperativo?: boolean
 }
 
 interface DatosLectura {
@@ -53,6 +47,12 @@ interface DatosLectura {
   celularFiscal: string
 }
 
+interface optionType {
+  id: string
+  value: string
+  label: string
+}
+
 const ICON = icon({
   iconRetinaUrl: '/leaflet/marker-icon.png',
   iconUrl: '/leaflet/marker-icon.png',
@@ -60,12 +60,20 @@ const ICON = icon({
   iconAnchor: [12.5, 41],
 })
 
+/** Convierte una fecha a formato YYYY-MM-DDTHH:mm requerido por datetime-local */
+const toDatetimeLocal = (value: unknown): string => {
+  const date = value instanceof Date ? value : new Date(String(value ?? ''))
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 const DEFAULT_VALUES: OperativoPayload = {
   numeroOperativo: 'CB-UM-363/25',
   idTipoRelevancia: 0,
   idTipoDenuncia: 0,
   idTipoPenal: 0,
-  fechaOperativo: new Date('2025-11-27T04:00:00').toISOString(),
+  fechaOperativo: toDatetimeLocal(new Date()),
   idDepartamento: 0,
   idProvincia: 0,
   idLocalidad: 0,
@@ -116,12 +124,14 @@ const mapCasoOperativoToForm = (
   idTipoDenuncia: toNumberOrZero(operativo?.idTipoDenuncia),
   idTipoPenal: toNumberOrZero(operativo?.idTipoPenal),
   fechaOperativo: operativo?.fechaOperativo
-    ? new Date(operativo.fechaOperativo).toISOString()
+    ? toDatetimeLocal(new Date(operativo.fechaOperativo))
     : DEFAULT_VALUES.fechaOperativo,
   idDepartamento: toNumberOrZero(operativo?.idDepartamento),
   idProvincia: toNumberOrZero(operativo?.idProvincia),
   idLocalidad: toNumberOrZero(operativo?.idLocalidad),
   lugar: operativo?.lugar ?? '',
+  idCategoriaOperativo: toNumberOrZero(operativo?.idCategoriaOperativo),
+  idItemOperativo: toNumberOrZero(operativo?.idItemOperativo),
   idUnidad: toNumberOrZero(operativo?.idUnidad),
   idDistrital: toNumberOrZero(operativo?.idDistrital),
   idGrupo: toNumberOrZero(operativo?.idGrupo),
@@ -132,10 +142,8 @@ const mapCasoOperativoToForm = (
   organizacion: operativo?.organizacion ?? '',
   coordX: operativo?.coordX ?? DEFAULT_VALUES.coordX,
   coordY: operativo?.coordY ?? DEFAULT_VALUES.coordY,
-  breveDetalle:
-    operativo?.breveDetalle ?? operativo?.descripcion ?? '',
-  descripcion:
-    operativo?.descripcion ?? operativo?.breveDetalle ?? '',
+  breveDetalle: operativo?.breveDetalle ?? operativo?.descripcion ?? '',
+  descripcion: operativo?.descripcion ?? operativo?.breveDetalle ?? '',
 })
 
 export function DatosGeneralesForm({
@@ -144,17 +152,15 @@ export function DatosGeneralesForm({
   onOperativoGuardado,
   cargando = false,
   datosCaso = null,
+  tieneOperativo = false,
 }: DatosGeneralesFormProps) {
   const searchParams = useSearchParams()
   const { Alerta } = useAlerts()
   const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
-  const [tieneOperativo, setTieneOperativo] = useState(false)
+
   const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>(
     []
   )
-  const [opcionesCategoriaOperativo, setOpcionesCategoriaOperativo] = useState<
-    optionType[]
-  >([])
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
     numeroInforme: '',
     nombreCaso: '',
@@ -178,6 +184,7 @@ export function DatosGeneralesForm({
     tiposOperacion,
     planesOperaciones,
     unidadesSiii,
+    categoriasOperativo,
     cargarDepartamentos,
     cargarProvincias,
     cargarLocalidades,
@@ -187,16 +194,25 @@ export function DatosGeneralesForm({
     cargarTiposOperacion,
     cargarPlanesOperaciones,
     cargarUnidadesSiii,
+    cargarCategoriasOperativo,
     distritales,
     grupos,
     cargarDistritales,
     cargarGrupos,
   } = useParametricas()
 
-  const { control, watch, setValue, getValues, reset, trigger } =
-    useForm<OperativoPayload>({
-      defaultValues: DEFAULT_VALUES,
-    })
+  const {
+    register,
+    formState: { errors },
+    control,
+    watch,
+    setValue,
+    getValues,
+    reset,
+    trigger,
+  } = useForm<OperativoPayload>({
+    defaultValues: DEFAULT_VALUES,
+  })
   const reglaObligatorio = { required: 'Campo obligatorio' }
 
   const opcionesDepartamento: optionType[] = departamentos.map((d) => ({
@@ -265,7 +281,6 @@ export function DatosGeneralesForm({
     label: String(p.nombre ?? ''),
   }))
 
-
   const coordX = watch('coordX')
   const coordY = watch('coordY')
   const categoriaOperativoSeleccionada = watch('idCategoriaOperativo')
@@ -287,6 +302,7 @@ export function DatosGeneralesForm({
         cargarTiposOperacion(),
         cargarPlanesOperaciones(),
         cargarUnidadesSiii(),
+        cargarCategoriasOperativo(),
       ])
 
       if (activo) {
@@ -306,49 +322,10 @@ export function DatosGeneralesForm({
     cargarTiposOperacion,
     cargarPlanesOperaciones,
     cargarUnidadesSiii,
+    cargarCategoriasOperativo,
   ])
 
-  useEffect(() => {
-    let activo = true
 
-    const cargarCategoriasOperativo = async () => {
-      try {
-        const respuesta = await SiiiLookupsService.obtenerCategoriasOperativo()
-        if (!activo || !respuesta?.finalizado) return
-
-        const opciones = (respuesta.datos ?? [])
-          .map((item: Record<string, unknown>, index: number) => {
-            const idRaw =
-              item.id ?? item.codigo ?? item.valor ?? item.value ?? index
-            const valueRaw =
-              item.valor ?? item.value ?? item.codigo ?? item.id ?? ''
-            const labelRaw =
-              item.descripcion ??
-              item.nombre ??
-              item.detalle ??
-              item.label ??
-              valueRaw
-
-            return {
-              id: String(idRaw),
-              value: String(valueRaw),
-              label: String(labelRaw),
-            }
-          })
-          .filter((opcion) => opcion.value.length > 0)
-
-        setOpcionesCategoriaOperativo(opciones)
-      } catch {
-        setOpcionesCategoriaOperativo([])
-      }
-    }
-
-    void cargarCategoriasOperativo()
-
-    return () => {
-      activo = false
-    }
-  }, [])
 
   useEffect(() => {
     let activo = true
@@ -511,20 +488,21 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     if (!parametricasBaseListas || !datosCaso) return
-  const caso=datosCaso.caso
-  const operativo=datosCaso.operativos?.[0]??null
-    const mapped = mapCasoOperativoToForm(caso, operativo )
+    const caso = datosCaso.caso
+    const operativo = datosCaso.operativos?.[0] ?? null
+    const mapped = mapCasoOperativoToForm(caso, operativo)
 
-    setTieneOperativo(Boolean(datosCaso.operativos))
     setDatosLectura({
       numeroInforme: '',
       nombreCaso: caso?.nombreCaso ?? '',
       unidad: caso?.asignadoCaso ?? '',
-      distrital: toStringOrEmpty(operativo?.idDistrital ?? caso?.telefonoSolicitud),
+      distrital: toStringOrEmpty(
+        operativo?.idDistrital ?? caso?.telefonoSolicitud
+      ),
       grupo: toStringOrEmpty(operativo?.idGrupo ?? caso?.telefonoSolicitud),
       quienRealiza: caso?.fiscalSolicitud ?? '',
       celularRealiza: caso?.telefonoSolicitud ?? '',
-      asignado: caso?.asignadoCaso   ?? '',
+      asignado: caso?.asignadoCaso ?? '',
       celularAsignado: caso?.telefonoAsignado ?? '',
       fiscal: caso?.fiscalAsignadoCaso ?? '',
       celularFiscal: caso?.telefonoFiscal ?? '',
@@ -534,367 +512,536 @@ export function DatosGeneralesForm({
     cargandoDesdePropsRef.current = true
     reset({ ...DEFAULT_VALUES, ...mapped })
 
-    // Carga las opciones dependientes y restaura los valores seleccionados
-    void (async () => {
-      const idDepto = toNumberOrZero(mapped.idDepartamento)
-      const idProv = toNumberOrZero(mapped.idProvincia)
-      const idUnidad = toNumberOrZero(mapped.idUnidad)
-      const idDistrital = toNumberOrZero(mapped.idDistrital)
-
-      if (idDepto > 0) {
-        await cargarProvincias(idDepto)
-        setValue('idProvincia', idProv)
-      }
-      if (idProv > 0) {
-        await cargarLocalidades(idProv)
-        setValue('idLocalidad', toNumberOrZero(mapped.idLocalidad))
-      }
-      if (idUnidad > 0) {
-        await cargarDistritales(idUnidad)
-        setValue('idDistrital', idDistrital)
-      }
-      if (idDistrital > 0) {
-        await cargarGrupos(idDistrital)
-        setValue('idGrupo', toNumberOrZero(mapped.idGrupo))
-      }
-
+    // Liberar el bloqueo después de que React procese los useEffects
+    const timerId = setTimeout(() => {
       cargandoDesdePropsRef.current = false
-    })()
-  }, [datosCaso, parametricasBaseListas, reset, setValue, cargarProvincias, cargarLocalidades, cargarDistritales, cargarGrupos])
+    }, 800)
+
+    return () => clearTimeout(timerId)
+  }, [
+    datosCaso,
+    parametricasBaseListas,
+    reset,
+    setValue,
+    cargarProvincias,
+    cargarLocalidades,
+    cargarDistritales,
+    cargarGrupos,
+  ])
 
   if (!parametricasBaseListas) {
     return <FullScreenLoading mensaje="Cargando parámetros del formulario..." />
   }
 
   return (
-    <Card>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="col-span-1 lg:col-span-4">
-          <h3 className="text-base font-semibold">{titulo}</h3>
-        </div>
+    <div>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
 
-        <FormInputText
-          id="numeroOperativo"
-          name="numeroOperativo"
-          label="Número de Operativo"
-          control={control}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idTipoRelevancia"
-          name="idTipoRelevancia"
-          label="Relevancia"
-          control={control}
-          options={opcionesRelevancia}
-          rules={reglaObligatorio}
-        />
-        <div className="hidden lg:block"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label
+              htmlFor="numeroOperativo"
+              className="mb-1 block text-sm font-medium"
+            >
+              Número de Operativo
+            </label>
+            <input
+              id="numeroOperativo"
+              type="text"
+              className="form-input w-full"
+              {...register('numeroOperativo', reglaObligatorio)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="idTipoRelevancia"
+              className="mb-1 block text-sm font-medium"
+            >
+              Relevancia
+            </label>
+            <select
+              id="idTipoRelevancia"
+              className="form-select w-full"
+              {...register('idTipoRelevancia', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesRelevancia.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Número de Informe
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.numeroInforme}
-            disabled
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Nombre del Caso
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.nombreCaso}
-            disabled
-            readOnly
-          />
-        </div>
-        <div className="hidden lg:block"></div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Número de Informe
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.numeroInforme}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Nombre del Caso
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.nombreCaso}
+              disabled
+              readOnly
+            />
+          </div>
 
-        <FormInputDropdown
-          id="idUnidad"
-          name="idUnidad"
-          label="Unidad"
-          control={control}
-          options={opcionesUnidadEst}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idDistrital"
-          name="idDistrital"
-          label="Distrital"
-          control={control}
-          options={opcionesDistritalEst}
-          disabled={opcionesDistritalEst.length === 0}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idGrupo"
-          name="idGrupo"
-          label="Grupo"
-          control={control}
-          options={opcionesGrupoEst}
-          disabled={opcionesGrupoEst.length === 0}
-          rules={reglaObligatorio}
-        />
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Asignado al Caso
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.asignado}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Nro. Celular
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.celularAsignado}
+              disabled
+              readOnly
+            />
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Quién Realiza la Solicitud
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.quienRealiza}
-            disabled
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Nro. Celular
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.celularRealiza}
-            disabled
-            readOnly
-          />
-        </div>
-        <div className="hidden lg:block"></div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Fiscal Asignado
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.fiscal}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium">
+              Quién Realiza la Solicitud
+            </label>
+            <input
+              className="form-input w-full"
+              value={datosLectura.quienRealiza}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="idUnidad"
+              className="mb-2 block text-sm font-medium"
+            >
+              Unidad
+            </label>
+            <select
+              id="idUnidad"
+              className="form-select w-full"
+              {...register('idUnidad', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesUnidadEst.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idDistrital"
+              className="mb-2 block text-sm font-medium"
+            >
+              Distrital
+            </label>
+            <select
+              id="idDistrital"
+              className="form-select w-full"
+              {...register('idDistrital', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesDistritalEst.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesDistritalEst.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="idGrupo" className="mb-2 block text-sm font-medium">
+              Grupo
+            </label>
+            <select
+              id="idGrupo"
+              className="form-select w-full"
+              {...register('idGrupo', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesGrupoEst.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesGrupoEst.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="hidden lg:block"></div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Asignado al Caso
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.asignado}
-            disabled
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Nro. Celular
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.celularAsignado}
-            disabled
-            readOnly
-          />
-        </div>
-        <div className="hidden lg:block"></div>
+          <div>
+            <label
+              htmlFor="idTipoDenuncia"
+              className="mb-1 block text-sm font-medium"
+            >
+              Tipo de la Denuncia
+            </label>
+            <select
+              id="idTipoDenuncia"
+              className="form-select w-full"
+              {...register('idTipoDenuncia', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesTipoDenuncia.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idTipoPenal"
+              className="mb-1 block text-sm font-medium"
+            >
+              Tipo Penal
+            </label>
+            <select
+              id="idTipoPenal"
+              className="form-select w-full"
+              {...register('idTipoPenal', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesTipoPenal.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="fechaOperativo"
+              className="mb-1 block text-sm font-medium"
+            >
+              Fecha y Hora del Operativo
+            </label>
+            <input
+              id="fechaOperativo"
+              type="datetime-local"
+              className="form-input w-full"
+              {...register('fechaOperativo', reglaObligatorio)}
+            />
+          </div>
+          <div className="hidden lg:block"></div>
+          <div>
+            <label
+              htmlFor="idDepartamento"
+              className="mb-1 block text-sm font-medium"
+            >
+              Departamento
+            </label>
+            <select
+              id="idDepartamento"
+              className="form-select w-full"
+              {...register('idDepartamento', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesDepartamento.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idProvincia"
+              className="mb-1 block text-sm font-medium"
+            >
+              Provincia
+            </label>
+            <select
+              id="idProvincia"
+              className="form-select w-full"
+              {...register('idProvincia', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesProvincia.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesProvincia.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idLocalidad"
+              className="mb-1 block text-sm font-medium"
+            >
+              Municipio
+            </label>
+            <select
+              id="idLocalidad"
+              className="form-select w-full"
+              {...register('idLocalidad', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesMunicipio.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesMunicipio.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Fiscal Asignado
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.fiscal}
-            disabled
-            readOnly
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Nro. Celular
-          </label>
-          <input
-            className="form-input w-full"
-            value={datosLectura.celularFiscal}
-            disabled
-            readOnly
-          />
-        </div>
-        <div className="hidden lg:block"></div>
+          <div className="col-span-1 lg:col-span-4">
+            <div>
+              <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
+                En la localidad, comunidad, dirección (Zona, Calle, Avenida,
+                Barrio)
+              </label>
+              <input
+                id="lugar"
+                type="text"
+                className="form-input w-full"
+                {...register('lugar', reglaObligatorio)}
+              />
+            </div>
+          </div>
 
-        <FormInputDropdown
-          id="idTipoDenuncia"
-          name="idTipoDenuncia"
-          label="Tipo de la Denuncia"
-          control={control}
-          options={opcionesTipoDenuncia}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idTipoPenal"
-          name="idTipoPenal"
-          label="Tipo Penal"
-          control={control}
-          options={opcionesTipoPenal}
-          rules={reglaObligatorio}
-        />
-        <FormInputDate
-          id="fechaOperativo"
-          name="fechaOperativo"
-          label="Fecha y Hora del Operativo"
-          control={control}
-          rules={reglaObligatorio}
-        />
+          <div>
+            <label
+              htmlFor="idCategoriaOperativo"
+              className="mb-1 block text-sm font-medium"
+            >
+              Categoría Operativo
+            </label>
+            <select
+              id="idCategoriaOperativo"
+              className="form-select w-full"
+              {...register('idCategoriaOperativo', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {categoriasOperativo.map((cat) => (
+                <option key={cat.id} value={Number(cat.id)}>
+                  {cat.descripcion}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idItemOperativo"
+              className="mb-1 block text-sm font-medium"
+            >
+              Operativo Realizado en
+            </label>
+            <select
+              id="idItemOperativo"
+              className="form-select w-full"
+              {...register('idItemOperativo', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesOperativoEn.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesOperativoEn.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="mando" className="mb-1 block text-sm font-medium">
+              Al Mando de
+            </label>
+            <input
+              id="mando"
+              type="text"
+              className="form-input w-full"
+              {...register('mando', reglaObligatorio)}
+            />
+          </div>
+          <div className="hidden lg:block"></div>
+          <div>
+            <label
+              htmlFor="idPlanOperacion"
+              className="mb-1 block text-sm font-medium"
+            >
+              Plan de Operaciones
+            </label>
+            <select
+              id="idPlanOperacion"
+              className="form-select w-full"
+              {...register('idPlanOperacion', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesPlan.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label
+              htmlFor="idTipoOperacion"
+              className="mb-1 block text-sm font-medium"
+            >
+              El Operativo es de Tipo
+            </label>
+            <select
+              id="idTipoOperacion"
+              className="form-select w-full"
+              {...register('idTipoOperacion', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesTipoOperativo.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <FormInputDropdown
-          id="idDepartamento"
-          name="idDepartamento"
-          label="Departamento"
-          control={control}
-          options={opcionesDepartamento}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idProvincia"
-          name="idProvincia"
-          label="Provincia"
-          control={control}
-          options={opcionesProvincia}
-          disabled={opcionesProvincia.length === 0}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idLocalidad"
-          name="idLocalidad"
-          label="Municipio"
-          control={control}
-          options={opcionesMunicipio}
-          disabled={opcionesMunicipio.length === 0}
-          rules={reglaObligatorio}
-        />
+          <div>
+            <label
+              htmlFor="clanFamiliar"
+              className="mb-1 block text-sm font-medium"
+            >
+              Clan Familiar
+            </label>
+            <input
+              id="clanFamiliar"
+              type="text"
+              className="form-input w-full"
+              {...register('clanFamiliar', reglaObligatorio)}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="organizacion"
+              className="mb-1 block text-sm font-medium"
+            >
+              Organización Criminal
+            </label>
+            <input
+              id="organizacion"
+              type="text"
+              className="form-input w-full"
+              {...register('organizacion', reglaObligatorio)}
+            />
+          </div>
+          <div className="hidden lg:block"></div>
 
-        <div className="col-span-1 lg:col-span-4">
-          <FormInputText
-            id="lugar"
-            name="lugar"
-            label="En la localidad, comunidad, dirección (Zona, Calle, Avenida, Barrio)"
-            control={control}
-            rules={reglaObligatorio}
-          />
-        </div>
+          <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="coordX"
+                className="mb-1 block text-sm font-medium"
+              >
+                Latitud
+              </label>
+              <input
+                id="coordX"
+                type="text"
+                className="form-input w-full"
+                {...register('coordX', reglaObligatorio)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="coordY"
+                className="mb-1 block text-sm font-medium"
+              >
+                Longitud
+              </label>
+              <input
+                id="coordY"
+                type="text"
+                className="form-input w-full"
+                {...register('coordY', reglaObligatorio)}
+              />
+            </div>
+          </div>
 
-        <FormInputDropdown
-          id="idCategoriaOperativo"
-          name="idCategoriaOperativo"
-          label="Categoría Operativo"
-          control={control}
-          options={opcionesCategoriaOperativo}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idItemOperativo"
-          name="idItemOperativo"
-          label="Operativo Realizado en"
-          control={control}
-          options={opcionesOperativoEn}
-          disabled={opcionesOperativoEn.length === 0}
-          rules={reglaObligatorio}
-        />
-        <FormInputText
-          id="mando"
-          name="mando"
-          label="Al Mando de"
-          control={control}
-          rules={reglaObligatorio}
-        />
+          <div className="col-span-1 lg:col-span-4 mt-4">
+            <Mapa
+              id="mapa-operativo-seccion-1"
+              mapRef={mapRef}
+              centro={[
+                Number(coordX) || -17.78507,
+                Number(coordY) || -63.1761788,
+              ]}
+              zoom={15.63}
+              height={400}
+              onClick={handleMapClick}
+              markers={
+                coordX && coordY ? (
+                  <Marker
+                    position={[Number(coordX), Number(coordY)]}
+                    icon={ICON}
+                  />
+                ) : null
+              }
+            />
+          </div>
 
-        <FormInputDropdown
-          id="idPlanOperacion"
-          name="idPlanOperacion"
-          label="Plan de Operaciones"
-          control={control}
-          options={opcionesPlan}
-          rules={reglaObligatorio}
-        />
-        <FormInputDropdown
-          id="idTipoOperacion"
-          name="idTipoOperacion"
-          label="El Operativo es de Tipo"
-          control={control}
-          options={opcionesTipoOperativo}
-          rules={reglaObligatorio}
-        />
-        <div className="hidden lg:block"></div>
+          <div className="col-span-1 lg:col-span-4 mt-4">
+            <div>
+              <label
+                htmlFor="breveDetalle"
+                className="mb-1 block text-sm font-medium"
+              >
+                Breve Detalle del Operativo
+              </label>
+              <textarea
+                id="breveDetalle"
+                className="form-textarea w-full"
+                rows={6}
+                {...register('breveDetalle', reglaObligatorio)}
+              />
+            </div>
+          </div>
 
-        <FormInputText
-          id="clanFamiliar"
-          name="clanFamiliar"
-          label="Clan Familiar"
-          control={control}
-          rules={reglaObligatorio}
-        />
-        <FormInputText
-          id="organizacion"
-          name="organizacion"
-          label="Organización Criminal"
-          control={control}
-          rules={reglaObligatorio}
-        />
-        <div className="hidden lg:block"></div>
-
-        <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormInputText
-            id="coordX"
-            name="coordX"
-            label="Latitud"
-            control={control}
-            rules={reglaObligatorio}
-          />
-          <FormInputText
-            id="coordY"
-            name="coordY"
-            label="Longitud"
-            control={control}
-            rules={reglaObligatorio}
-          />
-        </div>
-
-        <div className="col-span-1 lg:col-span-4 mt-4">
-          <Mapa
-            id="mapa-operativo-seccion-1"
-            mapRef={mapRef}
-            centro={[
-              Number(coordX) || -17.78507,
-              Number(coordY) || -63.1761788,
-            ]}
-            zoom={15.63}
-            height={400}
-            onClick={handleMapClick}
-            markers={
-              coordX && coordY ? (
-                <Marker
-                  position={[Number(coordX), Number(coordY)]}
-                  icon={ICON}
-                />
-              ) : null
-            }
-          />
-        </div>
-
-        <div className="col-span-1 lg:col-span-4 mt-4">
-          <FormInputText
-            id="breveDetalle"
-            name="breveDetalle"
-            label="Breve Detalle del Operativo"
-            control={control}
-            rules={reglaObligatorio}
-            multiline={true}
-            rows={6}
-          />
-        </div>
-
-        <div className="col-span-1 lg:col-span-4 flex justify-end mt-4">
-          <Button
-            variant="primary"
-            type="button"
-            onClick={() => void handleGuardar()}
-            disabled={cargando}
-          >
-            {tieneOperativo ? 'Actualizar' : 'Guardar'}
-          </Button>
+          <div className="col-span-1 mt-2 lg:col-span-3">
+            <button
+              type="button"
+              className="btn btn-success btn-sm"
+              onClick={() => void handleGuardar()}
+              disabled={cargando}
+            >
+              {tieneOperativo ? 'Actualizar' : 'Guardar'}
+            </button>
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
