@@ -104,6 +104,7 @@ export function FormGestionOperativo({
                     onOperativoGuardado={verificarOperativo}
                     cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
                     datosCaso={seccion1.query.data?.datos ?? null}
+                    tieneOperativo={tieneOperativo ?? undefined}
                 />
             )
         }
