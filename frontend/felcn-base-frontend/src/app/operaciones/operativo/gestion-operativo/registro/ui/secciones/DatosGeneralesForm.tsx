@@ -2,11 +2,19 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Marker } from 'react-leaflet'
-import { icon, Map as LeafletMap } from 'leaflet'
 import { useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
-import Mapa from '@/components/mapas/Mapa'
+
+const MapaConMarcador = dynamic(
+  () => import('@/components/mapas/MapaConMarcador'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+    ),
+  }
+)
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
@@ -52,13 +60,6 @@ interface optionType {
   value: string
   label: string
 }
-
-const ICON = icon({
-  iconRetinaUrl: '/leaflet/marker-icon.png',
-  iconUrl: '/leaflet/marker-icon.png',
-  shadowUrl: '/leaflet/marker-shadow.png',
-  iconAnchor: [12.5, 41],
-})
 
 /** Convierte una fecha a formato YYYY-MM-DDTHH:mm requerido por datetime-local */
 const toDatetimeLocal = (value: unknown): string => {
@@ -297,7 +298,8 @@ export function DatosGeneralesForm({
   const provinciaSeleccionada = watch('idProvincia')
   const unidadSeleccionada = watch('idUnidad')
   const distritalSeleccionado = watch('idDistrital')
-  const mapRef = useRef<LeafletMap>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null)
   const cargandoDesdePropsRef = useRef(false)
 
   useEffect(() => {
@@ -1206,7 +1208,7 @@ export function DatosGeneralesForm({
               )}
             </div>
 
-            <Mapa
+            <MapaConMarcador
               id="mapa-operativo-seccion-1"
               mapRef={mapRef}
               centro={[
@@ -1216,13 +1218,10 @@ export function DatosGeneralesForm({
               zoom={15.63}
               height={400}
               onClick={handleMapClick}
-              markers={
-                coordX && coordY ? (
-                  <Marker
-                    position={[Number(coordX), Number(coordY)]}
-                    icon={ICON}
-                  />
-                ) : null
+              coordenadas={
+                coordX && coordY
+                  ? [Number(coordX), Number(coordY)]
+                  : null
               }
             />
           </div>
