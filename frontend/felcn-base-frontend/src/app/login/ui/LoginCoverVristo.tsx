@@ -6,19 +6,24 @@ interface Props {
   children: React.ReactNode
 }
 
+const base = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
+
 const LoginCoverVristo = ({ children }: Props) => {
   return (
     <div>
       {/* Fondo */}
       <div className="absolute inset-0">
         <img
-          src="/assets/images/auth/bg-gradient.png"
+          src={`${base}/assets/images/auth/bg-gradient.png`}
           alt="bg"
           className="h-full w-full object-cover"
         />
       </div>
 
-      <div className="relative flex min-h-screen items-center justify-center bg-[url(/assets/images/auth/map.png)] bg-cover bg-center px-6 py-10 dark:bg-[#060818]">
+      <div
+        className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6 py-10 dark:bg-[#060818]"
+        style={{ backgroundImage: `url(${base}/assets/images/auth/map.png)` }}
+      >
 
         <div className="relative flex w-full max-w-[1500px] flex-col overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:min-h-[750px] lg:flex-row">
 
@@ -28,13 +33,13 @@ const LoginCoverVristo = ({ children }: Props) => {
             <div>
               <Link href="/" className="block w-56">
                 <img
-                  src="/assets/images/auth/logo-white.svg"
+                  src={`${base}/assets/images/auth/logo-white.svg`}
                   alt="logo"
                 />
               </Link>
 
               <img
-                src="/assets/images/auth/login.svg"
+                src={`${base}/assets/images/auth/login.svg`}
                 alt="login"
                 className="mt-20 max-w-md"
               />
