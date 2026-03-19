@@ -2,11 +2,14 @@ import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
 import type {
     BienCaracteristicaPayload,
+    BienCaracteristicaResponse,
     BienPayload,
     BienResponse,
     RespuestaApi,
     RespuestaApiPaginada,
 } from './types'
+
+
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
@@ -20,7 +23,6 @@ const buildFormData = (payload: BienPayload) => {
     if (payload.foto) {
         formData.append('foto', payload.foto)
     }
-    console.log([...formData.entries()]);
     return formData
 }
 
@@ -45,6 +47,15 @@ export const GestionOperativoBienesService = {
         })
     },
 
+    listarCaracteristicas(
+        idOperativo: number,
+        idBien: number
+    ): Promise<RespuestaApi<RespuestaApiPaginada<BienCaracteristicaResponse>>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas`,
+        })
+    },
+
     crearCaracteristica(
         idOperativo: number,
         idBien: number,
@@ -53,6 +64,25 @@ export const GestionOperativoBienesService = {
         return Servicios.post({
             url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas`,
             body: payload,
+            headers: { 'Content-Type': 'application/json' },
+        })
+    },
+
+    eliminarCaracteristica(
+        idOperativo: number,
+        idBien: number,
+        idCaracteristica: number
+    ): Promise<RespuestaApi<unknown>> {
+        return Servicios.delete({
+            url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas/${idCaracteristica}`,
+        })
+    },
+
+    obtenerFoto(path: string): Promise<Blob> {
+        const pathNormalizado = path.replace(/^\/api/, '')
+        return Servicios.get<Blob>({
+            url: `${Constantes.baseUrl}${pathNormalizado}`,
+            responseType: 'blob',
         })
     },
 }
