@@ -17,6 +17,7 @@ import { useDebouncedCallback } from 'use-debounce'
 import { NavbarSearch } from '@/components/navbars/NavbarUser/NavbarSearch'
 import { useAuth } from '@/context/AuthProvider'
 import AppMenuHorizontal from './HorizontalMenu'
+import { BASE_PATH } from '@/imageLoader'
 
 const Header = () => {
   const router = useRouter()
@@ -122,7 +123,7 @@ const Header = () => {
             <Link href="/" className="main-logo flex shrink-0 items-center">
               <img
                 className="inline w-8 ltr:-ml-1 rtl:-mr-1"
-                src="/assets/images/logo.svg"
+                src={`${BASE_PATH}/assets/images/logo.svg`}
                 alt="logo"
               />
               <span className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
@@ -202,7 +203,7 @@ const Header = () => {
                 button={
                   <img
                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                    src="/assets/images/user-profile.jpeg"
+                    src={`${BASE_PATH}/assets/images/user-profile.jpeg`}
                     alt="userProfile"
                   />
                 }
