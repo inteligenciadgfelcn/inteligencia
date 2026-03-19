@@ -227,6 +227,12 @@ Para poder acceder a un usuario de prueba, la plataforma **Ciudadanía Digital D
 | `LOG_LOKI_BATCHING`       | `true`            | Habilitado el envío de logs por lote cuando se utiliza loki.                               |
 | `LOG_LOKI_BATCH_INTERVAL` | `5`               | Tiempo en segundos para el envío de logs con loki si `LOG_BATCHING=true`.                  |
 
+**Configuración de Reportes**
+
+| Variable      | Valor por defecto | Descripción                                                                 |
+| ------------- | ----------------- | --------------------------------------------------------------------------- |
+| `LOGO_REPORT` |                   | Logo del reporte en formato Base64 (sin el prefijo `data:image/png;base64,`). |
+
 ### Monitoreo de logs
 
 Para más info sobre los códigos de error ver el archivo [src/core/logger/README.md](./src/core/logger/README.md)
