@@ -122,7 +122,6 @@ const mapCasoOperativoToForm = (
 ): Partial<OperativoPayload> => ({
   numeroOperativo:
     operativo?.numeroOperativo ??
-    caso?.numeroOperativo ??
     DEFAULT_VALUES.numeroOperativo,
   idTipoRelevancia: operativo?.idTipoRelevancia ? Number(operativo.idTipoRelevancia) : 0,
   idTipoDenuncia: operativo?.idTipoDenuncia ? Number(operativo.idTipoDenuncia) : 0,
