@@ -113,12 +113,12 @@ export class OperativoService extends BaseService {
     if (!operativo) {
       throw new NotFoundException(`Operativo con ID ${id} no encontrado`)
     }
-    
+
     const res: any = { ...operativo }
     res.descripcionUnidad = operativo.unidad?.descripcion ?? null
     res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
     res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
-    
+
     // Clean up relation objects if needed, but not strictly required
     delete res.unidad
     delete res.planOperacion
@@ -498,6 +498,7 @@ export class OperativoService extends BaseService {
   // ==================== LOGOTIPOS ====================
 
   async agregarLogotipo(
+    idOperativo: string,
     idDroga: string,
     data: CreateLogotipoDto,
     fotografia: Buffer,
@@ -518,17 +519,17 @@ export class OperativoService extends BaseService {
     return {
       ...resto,
       urlFotografia: foto?.length
-        ? `/api/operativos/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
+        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
         : null,
     }
   }
 
-  async listarLogotipos(idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+  async listarLogotipos(idOperativo: string, idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const [logotipos, total] = await this.operativoRepository.listarLogotiposPorDroga(idDroga, paginacion)
     const filas = logotipos.map(({ fotografia, droga, ...l }) => ({
       ...l,
       urlFotografia: fotografia?.length
-        ? `/api/operativos/drogas/${idDroga}/logotipos/${l.id}/foto`
+        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${l.id}/foto`
         : null,
     }))
     return [filas, total]

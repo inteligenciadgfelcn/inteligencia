@@ -7,7 +7,7 @@ import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasF
 import { SustanciasSolidas } from './secciones/SustanciasSolidas'
 import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
 import { Laboratorio } from './secciones/Laboratorio'
-import { Seccion6Form } from './secciones/Seccion6Form'
+import { Persona } from './secciones/Persona'
 import { SeccionBienesForm } from './secciones/SeccionBienesForm'
 import { Galeria } from './secciones/Galeria'
 import { useGestionOperativoForm, type SeccionKey } from '../hooks/useGestionOperativoForm'
@@ -183,7 +183,7 @@ export function FormGestionOperativo({
 
         if (key === 'seccion-6') {
             return (
-                <Seccion6Form
+                <Persona
                     titulo="PERSONAS: PRINCIPAL IMPLICADO / APREHENDIDAS / ARRESTADAS / LGI O PERDIDA DE DOMINIO"
                     idoperativo={idOperativo}
                 />
@@ -214,11 +214,11 @@ export function FormGestionOperativo({
         <div className="space-y-4">
             <div className="panel">
                 <h2 className="text-lg font-semibold">Gestion Operativo</h2>
-                <p className="text-sm text-gray-500">
+                {/* <p className="text-sm text-gray-500">
                     {esEdicion
                         ? `Editando registro #${id}`
                         : 'Nuevo registro (debe crearse cabecera para habilitar guardado de secciones)'}
-                </p>
+                </p> */}
                 {guardandoCabecera && (
                     <p className="text-xs text-primary mt-2">Guardando cabecera...</p>
                 )}
@@ -234,10 +234,10 @@ export function FormGestionOperativo({
                                 type="button"
                                 disabled={deshabilitada}
                                 className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${deshabilitada
-                                        ? 'cursor-not-allowed border-transparent text-gray-300'
-                                        : seccionActiva === seccion.key
-                                            ? 'border-primary text-primary'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                    ? 'cursor-not-allowed border-transparent text-gray-300'
+                                    : seccionActiva === seccion.key
+                                        ? 'border-primary text-primary'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                     }`}
                                 onClick={() => !deshabilitada && handleSetSeccionActiva(seccion.key)}
                             >

@@ -13,7 +13,7 @@ const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export interface CasoOperativoDetalle {
     caso: CasoResumen
-    operativos: OperativoResponse []
+    operativos: OperativoResponse[]
 }
 
 // ── Servicio ─────────────────────────────────────────────────────────────────
@@ -38,11 +38,11 @@ export const GestionOperativosDatosGeneralesService = {
         })
     },
     actualizarOperativo(
-        idCaso: number,
+        idOperativo: number,
         payload: OperativoPayload
     ): Promise<RespuestaApi<CasoOperativoDetalle>> {
         return Servicios.patch({
-            url: `${BASE_OPERATIVOS}/caso/${idCaso}`,
+            url: `${BASE_OPERATIVOS}/${idOperativo}`,
             body: payload,
         })
     },
