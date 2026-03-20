@@ -8,5 +8,16 @@ export const metadata: Metadata = {
 }
 
 export default function GestionOperativoPage() {
-    return <GestionOperativoListado />
+    return (
+        <div className="space-y-6">
+            <GestionOperativoListado 
+                tipo="no-aprobado" 
+                titulo="Gestión de Operativos - No Aprobados" 
+            />
+            <GestionOperativoListado 
+                tipo="aprobado" 
+                titulo="Gestión de Operativos - Aprobados" 
+            />
+        </div>
+    )
 }
