@@ -30,6 +30,15 @@ export class ServicioService {
     private readonly usuarioRepository: Repository<Usuario>
   ) {}
 
+  async generarCodigoServicio(fechaIngreso: Date, fechaSalida: Date) {
+     const ahora = new Date()
+     return generarCodigoServicio(
+      fechaIngreso,
+      fechaSalida,
+      ahora
+    )
+  }
+
   async create(dto: CreateServicioDto) {
     const fechaIngreso = dto.fechaIngreso
     const fechaSalida = dto.fechaSalida
@@ -278,4 +287,6 @@ export class ServicioService {
       estado: servicio.estado,
     }
   }
+
+  
 }

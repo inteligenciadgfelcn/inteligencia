@@ -176,4 +176,54 @@ export class AsignacionesService {
       pagination
     )
   }
+
+  async generarNumeroCaso(dpto: string, letra: string) {
+    const year = new Date().getFullYear().toString().slice(-2)
+
+    const max = await this.asignacionesRepository.obtenerMaxCorrelativo(
+      dpto,
+      letra,
+      year
+    )
+
+    return `${dpto}-${letra}-${max + 1}/${year}`
+  }
+
+  async asignarNumeroCaso(
+    nroOperativo: string,
+    abreviatura: string,
+    letra: string
+  ) {
+    
+    const asignacion = await this.asignacionRepository.findOne({
+      where: { nroOperativo },
+    })
+
+    if (!asignacion) {
+      throw new NotFoundException('Asignación no encontrada')
+    }
+
+    letra = letra.toUpperCase().trim()
+    abreviatura = abreviatura.toUpperCase().trim()
+    const nroCaso = await this.generarNumeroCaso(abreviatura, letra)
+    const existe = await this.asignacionRepository.findOne({
+      where: { nroCaso },
+    })
+
+    if (existe) {
+      throw new BadRequestException(
+        'Conflicto al generar número, intente nuevamente'
+      )
+    }
+    await this.asignacionesRepository.actualizarNumeroCasoDual(
+      nroOperativo,
+      nroCaso,
+      letra
+    )
+
+    return {
+      message: 'Número de caso asignado correctamente',
+      nroCaso,
+    }
+  }
 }

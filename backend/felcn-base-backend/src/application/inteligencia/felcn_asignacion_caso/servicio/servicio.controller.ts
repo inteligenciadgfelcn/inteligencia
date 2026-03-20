@@ -7,6 +7,7 @@ import {
   Param,
   UseGuards,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { ServicioService } from './servicio.service'
 import { UpdateServicioDto } from './dto/update-servicio.dto'
@@ -17,6 +18,7 @@ import {
   ApiResponse,
   ApiTags,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger'
 import { CreateServicioDto } from './dto/create-servicio.dto'
 import { BaseController } from '@/common/base'
@@ -29,6 +31,30 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 export class ServicioController extends BaseController {
   constructor(private readonly servicioService: ServicioService) {
     super()
+  }
+
+  @Get('generar-codigo-servicio')
+  @ApiOperation({
+    summary: 'Generar codigo de servicio operativo (solo para vista)',
+  })
+  @ApiQuery({
+    name: 'fechaIngreso',
+    type: String,
+    example: '2026-03-05 13:30:00',
+  })
+  @ApiQuery({
+    name: 'fechaSalida',
+    type: String,
+    example: '2026-03-05 18:00:00',
+  })
+  generarCodigo(
+    @Query('fechaIngreso') fechaIngreso: string,
+    @Query('fechaSalida') fechaSalida: string
+  ) {
+    const ingreso = new Date(fechaIngreso.replace(' ', 'T'))
+    const salida = new Date(fechaSalida.replace(' ', 'T'))
+
+    return this.servicioService.generarCodigoServicio(ingreso, salida)
   }
 
   @Post()
