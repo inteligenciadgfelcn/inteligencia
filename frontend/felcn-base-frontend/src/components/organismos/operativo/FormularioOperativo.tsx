@@ -77,9 +77,9 @@ export const FormularioOperativo = () => {
 
     const onCambioCantidad =
         (unidad: 'tn' | 'kg' | 'g' | 'mg') =>
-        (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            actualizarCantidades(unidad, event.target.value)
-        }
+            (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+                actualizarCantidades(unidad, event.target.value)
+            }
 
     const normalizarValorPais = (valor: string) =>
         valor
