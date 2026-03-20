@@ -13,6 +13,7 @@ export interface Column<T> {
   title: string
   render?: (row: T) => React.ReactNode
   sortable?: boolean
+  className?: string
 }
 
 interface Props<T> {
@@ -158,11 +159,10 @@ export function VristoDataTable<T>({
                               : 'asc',
                         })
                       }
-                      className={
-                        c.sortable
-                          ? 'cursor-pointer select-none'
-                          : ''
-                      }
+                      className={`
+                        ${c.sortable ? 'cursor-pointer select-none' : ''}
+                        ${c.className || ''}
+                      `}
                     >
                       <div className="flex items-center gap-1">
                         {c.title}
@@ -205,7 +205,7 @@ export function VristoDataTable<T>({
                 rows.map((row, i) => (
                   <tr key={i}>
                     {columns.map((c) => (
-                      <td key={String(c.accessor)}>
+                      <td key={String(c.accessor)} className={c.className || ''}>
                         {c.render
                           ? c.render(row)
                           : String(

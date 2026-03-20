@@ -40,4 +40,12 @@ export const GestionOperativoService = {
             url: `${BASE_OPERATIVOS}/casos/no-aprobados/usuario/${usuario}`,
         })
     },
+
+    listarAprobadosPorUsuario(
+        usuario: string
+    ): Promise<RespuestaApi<GestionOperativoItem[]>> {
+        return Servicios.get({
+            url: `${BASE_OPERATIVOS}/casos/usuario/${usuario}`,
+        })
+    },
 }
