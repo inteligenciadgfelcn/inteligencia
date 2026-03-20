@@ -31,14 +31,10 @@ import { TipoCabello, getTiposCabello } from '../services/tipo.cabello.service'
 import { TipoNariz, getTiposNariz } from '../services/tipo.nariz.service'
 import { TipoOjos, getTiposOjos } from '../services/tipo.ojos.service'
 
-import { useAlerts, useSession } from '@/hooks'
 import FileInputWithPreview from '@/components/form/FormInputFileWithPrefix'
-import { VristoSimpleDataTable } from '@/components/datatable/VristoSimpleDataTable'
 import { CasbinTypes } from '@/types'
-import {
-  getPersonasFiliacionPorCaso,
-  PersonaFiliacion,
-} from '../services/filiacion.service'
+import { getPaises, Pais } from '../services/pais.service'
+import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -115,11 +111,6 @@ const ESTADO_PERSONA_OPTIONS: OpcionBasica[] = [
   { id: 4, descripcion: 'Principal aprendido' },
 ]
 
-const NACIONALIDAD_OPTIONS: OpcionBasica[] = [
-  { id: 1, descripcion: 'Boliviana' },
-  { id: 2, descripcion: 'Extranjera' },
-]
-
 const GENERO_OPTIONS: OpcionBasica[] = [
   { id: 1, descripcion: 'Masculino' },
   { id: 2, descripcion: 'Femenino' },
@@ -135,26 +126,17 @@ const TARJETA_PRONTUARIO_OPTIONS: OpcionBasica[] = [
   { id: 2, descripcion: 'No' },
 ]
 
-const CONDICION_PERSONA_OPTIONS: OpcionBasica[] = []
+const CONDICION_PERSONA_OPTIONS: OpcionBasica[] = [
+  { id: 1, descripcion: 'Vivo' },
+  { id: 2, descripcion: 'Fallecido' },
+]
 
-/* ================= PROPS ================= */
 interface Props {
-  // caso?: CasoServicioTypeCRUD | null
-  // onSuccess: () => void
+  persona?: FiliacionPersonaTable
 }
 
 /* ================= COMPONENT ================= */
-export const FormFiliacion = () => {
-  const [loadingPersonas, setLoadingPersonas] = useState(false)
-  const { Alerta } = useAlerts()
-  const { sesionPeticion } = useSession()
-
-  const [selectedFiliacion, setSelectedFiliacion] =
-    useState<PersonaFiliacion | null>(null)
-
-  const [nroCaso, setNroCaso] = useState<string | null>(null)
-  const [personasData, setPersonasData] = useState<PersonaFiliacion[]>([])
-
+export const FormFiliacion = ({ persona }: Props) => {
   // TODO: Cambiar a false
   const [permisos, setPermisos] = useState<CasbinTypes>({
     read: true,
@@ -234,115 +216,11 @@ export const FormFiliacion = () => {
     placeholderData: keepPreviousData,
   })
 
-  /* FETCH */
-  const handleGetPersonas = async () => {
-    if (!nroCaso) return
-    setLoadingPersonas(true)
-    try {
-      const response = await getPersonasFiliacionPorCaso(
-        { pagina: 1, limite: 100, filtro: '', ordenar: '', direccion: '' },
-        nroCaso
-      )
-      setPersonasData(response.datos.filas)
-      setSelectedFiliacion(null)
-    } catch (error) {
-      console.error('Error al cargar personas:', error)
-      Alerta({
-        mensaje: 'No se pudo cargar las personas',
-        variant: 'error',
-      })
-    } finally {
-      setLoadingPersonas(false)
-    }
-  }
-
-  const cleanInput = () => {
-    setNroCaso(null)
-    setPersonasData([])
-  }
-
-  const toggleSelected = (persona: PersonaFiliacion) => {
-    setSelectedFiliacion((prev) => (prev?.id == persona.id ? null : persona))
-  }
-
-  const columns = [
-    {
-      accessor: 'id',
-      title: 'ID',
-      render: (row: PersonaFiliacion) => <span>{row.id}</span>,
-    },
-    {
-      accessor: 'nombres',
-      title: 'Nombres',
-      render: (row: PersonaFiliacion) => <span>{row.nombres}</span>,
-    },
-    {
-      accessor: 'apellidoPaterno',
-      title: 'Ap. Paterno',
-      render: (row: PersonaFiliacion) => <span>{row.apellidoPaterno}</span>,
-    },
-    {
-      accessor: 'apellidoMaterno',
-      title: 'Ap. Materno',
-      render: (row: PersonaFiliacion) => <span>{row.apellidoMaterno}</span>,
-    },
-    {
-      accessor: 'apellidoCasada',
-      title: 'Ap. Casada',
-      render: (row: PersonaFiliacion) => (
-        <span>{row.apellidoCasada || '-'}</span>
-      ),
-    },
-    {
-      accessor: 'nacionalidad',
-      title: 'Nacionalidad',
-      render: (row: PersonaFiliacion) => <span>{row.nacionalidad}</span>,
-    },
-    {
-      accessor: 'sexo',
-      title: 'Sexo',
-      render: (row: PersonaFiliacion) => <span>{row.sexo}</span>,
-    },
-    {
-      accessor: 'tipoDocumento',
-      title: 'Tipo Doc',
-      render: (row: PersonaFiliacion) => <span>{row.tipoDocumento}</span>,
-    },
-    {
-      accessor: 'numeroDocumento',
-      title: 'Número Documento',
-      render: (row: PersonaFiliacion) => <span>{row.numeroDocumento}</span>,
-    },
-    {
-      accessor: 'fechaNacimiento',
-      title: 'Fecha Nacimiento',
-      render: (row: PersonaFiliacion) => <span>{row.fechaNacimiento}</span>,
-    },
-    {
-      accessor: 'direccion',
-      title: 'Dirección',
-      render: (row: PersonaFiliacion) => <span>{row.direccion}</span>,
-    },
-    {
-      accessor: 'acciones',
-      title: 'Acciones',
-      render: (row: PersonaFiliacion) => {
-        const isSelected = selectedFiliacion?.id == row.id
-
-        return (
-          <button
-            type="button"
-            className={`btn btn-sm m-1 ${
-              isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
-            }`}
-            onClick={() => toggleSelected(row)}
-          >
-            {isSelected ? 'Deseleccionar' : 'Seleccionar'}
-          </button>
-        )
-      },
-    },
-  ]
+  const { data: nacionalidades } = useQuery({
+    queryKey: ['filiacion', 'nacionalidad'],
+    queryFn: getPaises,
+    placeholderData: keepPreviousData,
+  })
 
   const {
     handleSubmit,
@@ -359,73 +237,15 @@ export const FormFiliacion = () => {
   const onSubmit = async (values: FormValues) => {}
 
   return (
-    // <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
     <div className="">
-      {/* <div className="bg-white dark:bg-black w-full max-w-lg rounded-lg shadow-lg"> */}
       <div className="">
-        {/* HEADER */}
-        <div className="flex justify-between items-center px-5 py-4 border-b dark:border-gray-700"></div>
-
-        <div className="panel p-1 mb-5 w-full">
-          <div className="px-4 pt-4">
-            <h2 className="font-bold text-lg">REGISTRO DE PERSONAS</h2>
-          </div>
-          {/* Input Nro Caso seccion */}
-          <div className="grid grid-cols-1 md:grid-cols-12 p-4 gap-4">
-            <div className="col-span-4">
-              <InputWithPrefix
-                name="numeroCaso"
-                prefix="Número de Caso"
-                register={register}
-                value={nroCaso ?? ''}
-                onChange={(e) => setNroCaso(e.target.value)}
-                error={errors.numeroDocumento?.message as string}
-              />
-            </div>
-            <div className="flex col-span-6">
-              {personasData.length == 0 && (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm mr-2"
-                  onClick={handleGetPersonas}
-                >
-                  BUSCAR
-                </button>
-              )}
-              {personasData.length > 0 && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={cleanInput}
-                >
-                  NUEVO INGRESO
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Tabla de Personas Filiacion */}
-          {personasData.length > 0 && (
-            <div className="px-2">
-              <VristoSimpleDataTable<PersonaFiliacion>
-                rows={personasData}
-                columns={columns}
-                loading={loadingPersonas}
-                rowClassName={(row) =>
-                  selectedFiliacion?.id === row.id
-                    ? 'bg-blue-100 dark:bg-blue-900'
-                    : ''
-                }
-              />
-            </div>
-          )}
-        </div>
-
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="panel grid grid-cols-1 md:grid-cols-12 p-4 gap-4">
             <div className="pt-4 col-span-12">
-              <h2 className="font-bold text-lg">DATOS PERSONALES</h2>
+              <h2 className="font-bold text-lg text-primary">
+                Datos Personales
+              </h2>
             </div>
             <div className="col-span-6">
               <AsyncSearchSelect<OpcionBasica>
@@ -482,15 +302,15 @@ export const FormFiliacion = () => {
               />
             </div>
             <div className="col-span-3">
-              <AsyncSearchSelect<OpcionBasica>
+              <AsyncSearchSelect<Pais>
                 name="nacionalidad"
                 control={control}
                 prefix="Nacionalidad"
                 error={errors.nacionalidad?.message}
-                originalData={NACIONALIDAD_OPTIONS}
+                originalData={nacionalidades ?? []}
                 mapOption={(item) => ({
                   label: item.descripcion,
-                  value: item.id,
+                  value: item.idPais,
                   original: item,
                 })}
               />
@@ -812,15 +632,9 @@ export const FormFiliacion = () => {
             </div>
           </div>
 
-          {/* <ProgresoLineal mostrar={loading} /> */}
-
           {/* FOOTER */}
           <div className="flex justify-end gap-3 px-5 py-4 border-t dark:border-gray-700">
-            <button
-              type="submit"
-              disabled={loadingPersonas}
-              className="btn btn-primary"
-            >
+            <button type="submit" className="btn btn-primary">
               Guardar
             </button>
           </div>
