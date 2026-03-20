@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
 import { GestionOperativoService } from '@/services/operativos'
+import IconPencil from '@/components/Icon/IconPencil'
 import type { GestionOperativoItem } from '../types'
 
 export function GestionOperativoListado() {
@@ -119,32 +120,32 @@ export function GestionOperativoListado() {
             accessor: 'idCaso',
             title: 'Acciones',
             render: (row) => (
-                <div className="flex items-center justify-end gap-2">
-                    <Button
-                        variant="outline-primary"
-                        size="sm"
+                <div className="flex items-center justify-center gap-2">
+                    <button
+                        type="button"
+                        className="text-primary hover:text-primary/70 transition-colors"
                         onClick={() =>
                             router.push(
                                 `/operaciones/operativo/gestion-operativo/registro?id=${row.idCaso}`,
                             )
                         }
+                        title="Ver / Editar"
                     >
-                        Ver / Editar
-                    </Button>
+                        <IconPencil className="h-5 w-5" />
+                    </button>
                 </div>
             ),
         },
     ]
 
     return (
-        <section className="space-y-5">
-            <div className="panel flex items-center p-3 text-primary">
-                <span className="text-lg font-semibold">Gestión de Operativos - Listado</span>
+        <div className="space-y-4">
+            <div className="panel">
+                <h2 className="text-lg font-semibold">Gestión de Operativos - Listado</h2>
             </div>
 
-            <div className="panel p-1 w-full">
+            <div className="panel p-0 mt-4">
                 <VristoDataTable<GestionOperativoItem>
-                    title="Gestión de Operativos"
                     rows={filasPagina}
                     total={total}
                     page={page}
@@ -155,29 +156,18 @@ export function GestionOperativoListado() {
                     onSearchChange={(v) => { setSearch(v); setPage(1) }}
                     columns={columns}
                     loading={isLoading}
-                    onExportPrint={() => window.print()}
                     extraButtons={
-                        <>
-                            <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() =>
-                                    router.push('/operaciones/operativo/gestion-operativo/registro')
-                                }
-                            >
-                                Nuevo Registro
-                            </Button>
-                            <button
-                                type="button"
-                                className="btn btn-outline-secondary btn-sm m-1"
-                                onClick={() => void refetch()}
-                            >
-                                Actualizar
-                            </button>
-                        </>
+                        <Button
+                            variant="outline-secondary"
+                            size="sm"
+                            className="m-1"
+                            onClick={() => void refetch()}
+                        >
+                            Actualizar
+                        </Button>
                     }
                 />
             </div>
-        </section>
+        </div>
     )
 }

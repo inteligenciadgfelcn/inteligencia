@@ -662,7 +662,7 @@ export class OperativoController extends BaseController {
     @Param('idDroga') idDroga: string,
     @Query() paginacion: PaginacionQueryDto
   ) {
-    const resultado = await this.operativoService.listarLogotipos(idDroga, paginacion)
+    const resultado = await this.operativoService.listarLogotipos(idOperativo, idDroga, paginacion)
     return this.successPagedRows(resultado, paginacion)
   }
 
@@ -679,7 +679,7 @@ export class OperativoController extends BaseController {
     @UploadedFile() file: Express.Multer.File
   ) {
     const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipo(idDroga, data, fotografia, 'SISTEMA')
+    const logotipo = await this.operativoService.agregarLogotipo(idOperativo, idDroga, data, fotografia, 'SISTEMA')
     return this.successCreate(logotipo)
   }
 

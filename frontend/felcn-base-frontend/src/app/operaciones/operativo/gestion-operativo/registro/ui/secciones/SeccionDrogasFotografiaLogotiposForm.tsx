@@ -39,11 +39,10 @@ function DropzoneFoto({
         <div>
             <label className="mb-1 block text-sm font-medium">{label}</label>
             <div
-                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-                    arrastrar
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                        : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-                }`}
+                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                    : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
+                    }`}
                 onDragOver={(e) => { e.preventDefault(); setArrastrar(true) }}
                 onDragEnter={() => setArrastrar(true)}
                 onDragLeave={() => setArrastrar(false)}
@@ -341,13 +340,13 @@ function LogotiposPanel({
                         onChange={(e) => setBlanco(e.target.value)}
                     />
                 </div>
-                <div>
+                <div className="col-span-1 md:col-span-2 lg:col-span-2">
                     <label className="mb-1 block text-sm font-medium">Observación</label>
-                    <input
-                        type="text"
-                        className="form-input w-full"
+                    <textarea
+                        className="form-textarea w-full"
                         value={observacion}
                         onChange={(e) => setObservacion(e.target.value)}
+                        rows={2}
                     />
                 </div>
                 <div className="col-span-1 lg:col-span-3">
@@ -358,14 +357,14 @@ function LogotiposPanel({
                         onChange={setFotografia}
                     />
                 </div>
-                <div className="col-span-1 mt-2 lg:col-span-3">
+                <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
                     <button
                         type="button"
                         className="btn btn-success btn-sm"
                         onClick={() => void guardar()}
                         disabled={cargando}
                     >
-                        Guardar Logotipo
+                        Guardar
                     </button>
                 </div>
             </div>
@@ -458,8 +457,8 @@ function ExpansionContenidoDroga({
         const fetchFoto = (path: string | null | undefined): Promise<string | null> =>
             path
                 ? GestionOperativoDrogasService.obtenerFoto(path)
-                      .then((blob) => URL.createObjectURL(blob))
-                      .catch(() => null)
+                    .then((blob) => URL.createObjectURL(blob))
+                    .catch(() => null)
                 : Promise.resolve(null)
 
         void Promise.all([
@@ -473,9 +472,9 @@ function ExpansionContenidoDroga({
     return (
         <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700">
             {/* Fotos */}
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
+            {/* <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
                 Fotografías de la Droga
-            </p>
+            </p> */}
             {!cache ? (
                 <div className="grid grid-cols-2 gap-4">
                     {[0, 1].map((i) => (
@@ -765,7 +764,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                             type="text"
                             className="form-input w-full"
                             value={cantidadUnidades}
-                            onChange={(e) => setCantidadUnidades(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*$/.test(val)) {
+                                    setCantidadUnidades(val)
+                                }
+                            }}
                         />
                     </div>
 
@@ -778,7 +782,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                 <Input
                                     id="cantidadTn"
                                     value={cantidadTn}
-                                    onChange={(e) => setCantidadTn(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value
+                                        if (val === '' || /^\d*$/.test(val)) {
+                                            setCantidadTn(val)
+                                        }
+                                    }}
                                     size="sm"
                                     className="w-full"
                                 />
@@ -788,7 +797,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                 <Input
                                     id="cantidadKg"
                                     value={cantidadKg}
-                                    onChange={(e) => setCantidadKg(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value
+                                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                            setCantidadKg(val)
+                                        }
+                                    }}
                                     size="sm"
                                     className="w-full"
                                 />
@@ -798,7 +812,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                 <Input
                                     id="cantidadG"
                                     value={cantidadG}
-                                    onChange={(e) => setCantidadG(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value
+                                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                            setCantidadG(val)
+                                        }
+                                    }}
                                     size="sm"
                                     className="w-full"
                                 />
@@ -808,7 +827,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                 <Input
                                     id="cantidadMg"
                                     value={cantidadMg}
-                                    onChange={(e) => setCantidadMg(e.target.value)}
+                                    onChange={(e) => {
+                                        const val = e.target.value
+                                        if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                            setCantidadMg(val)
+                                        }
+                                    }}
                                     size="sm"
                                     className="w-full"
                                 />
@@ -821,7 +845,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
                             type="text"
                             className="form-input w-full"
                             value={costo}
-                            onChange={(e) => setCosto(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+                                    setCosto(val)
+                                }
+                            }}
                         />
                     </div>
                     <div>
@@ -869,13 +898,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
                             ))}
                         </select>
                     </div>
-                    <div>
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3">
                         <label className="mb-1 block text-sm font-medium">Observaciones</label>
-                        <input
-                            type="text"
-                            className="form-input w-full"
+                        <textarea
+                            className="form-textarea w-full"
                             value={observaciones}
                             onChange={(e) => setObservaciones(e.target.value)}
+                            rows={3}
                         />
                     </div>
 
@@ -898,7 +927,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     </div>
 
                     {/* Botón guardar */}
-                    <div className="col-span-1 mt-2 lg:col-span-3">
+                    <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
@@ -928,6 +957,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                 {
                                     accessor: 'descripcionTipoDroga',
                                     title: 'Tipo de Droga',
+                                    footer: <span className="font-bold text-sm">Total Costo (Bs.):</span>,
                                     render: (r) =>
                                         r.descripcionTipoDroga ?? String(r.idTipoDroga ?? '—'),
                                 },
@@ -937,13 +967,24 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                     render: (r) =>
                                         r.descripcionEstadoDroga ?? String(r.idEstadoDroga ?? '—'),
                                 },
-                                { accessor: 'cantidadUnidades', title: 'Unidades' },
-                                { accessor: 'cantidadGramos', title: 'Gramos' },
+                                { accessor: 'cantidadUnidades', title: 'Unidades', textAlign: 'right' },
+                                {
+                                    accessor: 'cantidadGramos',
+                                    title: 'Gramos',
+                                    textAlign: 'right',
+                                    render: (r) => (r.cantidadGramos != null ? Number(r.cantidadGramos).toFixed(3) : '0.000'),
+                                },
                                 {
                                     accessor: 'costo',
                                     title: 'Costo (Bs.)',
+                                    textAlign: 'right',
                                     render: (r) =>
-                                        r.costo != null ? `Bs. ${r.costo}` : '—',
+                                        r.costo != null ? `${r.costo}` : '—',
+                                    footer: (
+                                        <span className="font-bold text-sm">
+                                            {drogas.reduce((sum, item) => sum + Number(item.costo ?? 0), 0).toFixed(2)}
+                                        </span>
+                                    ),
                                 },
                                 {
                                     accessor: 'descripcionFormaTransporte',
@@ -975,11 +1016,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
                                         <div className="flex items-center justify-center gap-3">
                                             <span title="Ver detalles">
                                                 <svg
-                                                    className={`h-4 w-4 transition-transform duration-200 ${
-                                                        expandedIds.includes(r.id)
-                                                            ? 'rotate-180 text-primary'
-                                                            : 'text-gray-400'
-                                                    }`}
+                                                    className={`h-4 w-4 transition-transform duration-200 ${expandedIds.includes(r.id)
+                                                        ? 'rotate-180 text-primary'
+                                                        : 'text-gray-400'
+                                                        }`}
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
