@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { siteName } from '@/utils'
-import { FormFiliacion } from './ui/FormFilacion'
+import { FiliacionView } from './ui/FiliacionView'
 
 export const metadata: Metadata = {
   title: `Fileacion - ${siteName()}`,
@@ -11,7 +11,7 @@ export default function FileacionPage() {
   return (
     <>
       <div>
-        <FormFiliacion />
+        <FiliacionView />
       </div>
     </>
   )
