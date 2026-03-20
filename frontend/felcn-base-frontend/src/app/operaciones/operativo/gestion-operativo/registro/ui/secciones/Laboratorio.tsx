@@ -175,14 +175,14 @@ export function Laboratorio({
                         />
                     </div>
 
-                    <div className="col-span-1 mt-2 lg:col-span-4">
+                    <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={agregarFabrica}
                             disabled={cargando}
                         >
-                            Agregar Laboratorio/Fabrica
+                            Guardar
                         </button>
                     </div>
                 </div>

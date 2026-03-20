@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
+import IconSearch from '@/components/Icon/IconSearch'
+import { Constantes } from '@/config/Constantes'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -42,7 +44,7 @@ interface DatosGeneralesFormProps {
 }
 
 interface DatosLectura {
-  numeroInforme: string
+  numeroOperativoCaso: string
   nombreCaso: string
   unidad: string
   distrital: string
@@ -70,7 +72,8 @@ const toDatetimeLocal = (value: unknown): string => {
 }
 
 const DEFAULT_VALUES: OperativoPayload = {
-  numeroOperativo: 'CB-UM-363/25',
+  numeroOperativo: '',
+  // numeroInforme: '',
   idTipoRelevancia: 0,
   idTipoDenuncia: 0,
   idTipoPenal: 0,
@@ -121,15 +124,15 @@ const mapCasoOperativoToForm = (
     operativo?.numeroOperativo ??
     caso?.numeroOperativo ??
     DEFAULT_VALUES.numeroOperativo,
-  idTipoRelevancia: toNumberOrZero(operativo?.idTipoRelevancia),
-  idTipoDenuncia: toNumberOrZero(operativo?.idTipoDenuncia),
-  idTipoPenal: toNumberOrZero(operativo?.idTipoPenal),
+  idTipoRelevancia: operativo?.idTipoRelevancia ? Number(operativo.idTipoRelevancia) : 0,
+  idTipoDenuncia: operativo?.idTipoDenuncia ? Number(operativo.idTipoDenuncia) : 0,
+  idTipoPenal: operativo?.idTipoPenal ? Number(operativo.idTipoPenal) : 0,
   fechaOperativo: operativo?.fechaOperativo
     ? toDatetimeLocal(new Date(operativo.fechaOperativo))
     : DEFAULT_VALUES.fechaOperativo,
-  idDepartamento: toNumberOrZero(operativo?.idDepartamento),
-  idProvincia: toNumberOrZero(operativo?.idProvincia),
-  idLocalidad: toNumberOrZero(operativo?.idLocalidad),
+  idDepartamento: operativo?.idDepartamento ? Number(operativo.idDepartamento) : 0,
+  idProvincia: operativo?.idProvincia ? Number(operativo.idProvincia) : 0,
+  idLocalidad: operativo?.idLocalidad ? Number(operativo.idLocalidad) : 0,
   lugar: operativo?.lugar ?? '',
   idCategoriaOperativo: toNumberOrZero(operativo?.idCategoriaOperativo),
   idItemOperativo: toNumberOrZero(operativo?.idItemOperativo),
@@ -143,6 +146,12 @@ const mapCasoOperativoToForm = (
   organizacion: operativo?.organizacion ?? '',
   coordX: operativo?.coordX ?? DEFAULT_VALUES.coordX,
   coordY: operativo?.coordY ?? DEFAULT_VALUES.coordY,
+  gradosX: operativo?.gradosX ?? 0,
+  minX: operativo?.minX ?? 0,
+  segX: operativo?.segX ?? 0,
+  gradosY: operativo?.gradosY ?? 0,
+  minY: operativo?.minY ?? 0,
+  segY: operativo?.segY ?? 0,
   breveDetalle: operativo?.breveDetalle ?? operativo?.descripcion ?? '',
   descripcion: operativo?.descripcion ?? operativo?.breveDetalle ?? '',
 })
@@ -166,7 +175,7 @@ export function DatosGeneralesForm({
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
-    numeroInforme: '',
+    numeroOperativoCaso: '',
     nombreCaso: '',
     unidad: '',
     distrital: '',
@@ -368,7 +377,7 @@ export function DatosGeneralesForm({
     const absoluteDeg = Math.abs(deg)
     const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
     const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
-    
+
     if (!Number.isNaN(decimal)) {
       const rounded = parseFloat(decimal.toFixed(7))
       lastEmittedLat.current = rounded
@@ -391,7 +400,7 @@ export function DatosGeneralesForm({
     const absoluteDeg = Math.abs(deg)
     const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
     const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
-    
+
     if (!Number.isNaN(decimal)) {
       const rounded = parseFloat(decimal.toFixed(7))
       lastEmittedLng.current = rounded
@@ -440,7 +449,7 @@ export function DatosGeneralesForm({
 
     const cargarItemsOperativo = async () => {
       const idCategoria = Number(categoriaOperativoSeleccionada)
-      
+
       if (idCategoria <= 0) {
         if (!cargandoDesdePropsRef.current) {
           setOpcionesOperativoEn([])
@@ -464,7 +473,7 @@ export function DatosGeneralesForm({
         setOpcionesOperativoEn(opciones)
         const idItemActual = Number(getValues('idItemOperativo'))
         const existeItemActual = opciones.some((opcion) => Number(opcion.value) === idItemActual)
-        
+
         if (!existeItemActual) {
           setValue('idItemOperativo', 0)
         }
@@ -562,7 +571,7 @@ export function DatosGeneralesForm({
     try {
       if (idCaso > 0) {
         const payloadOperativo: OperativoPayload = {
-          numeroOperativo: payload.numeroOperativo,
+          numeroOperativo: payload.numeroOperativo, //numeroInforme
           idTipoRelevancia: toNumberOrZero(payload.idTipoRelevancia),
           idTipoDenuncia: toNumberOrZero(payload.idTipoDenuncia),
           idTipoPenal: toNumberOrZero(payload.idTipoPenal),
@@ -579,6 +588,12 @@ export function DatosGeneralesForm({
           mando: payload.mando,
           coordX: toNumberOrZero(payload.coordX),
           coordY: toNumberOrZero(payload.coordY),
+          gradosX: toNumberOrZero(latD),
+          minX: toNumberOrZero(latM),
+          segX: toNumberOrZero(latS),
+          gradosY: toNumberOrZero(lngD),
+          minY: toNumberOrZero(lngM),
+          segY: toNumberOrZero(lngS),
           idPlanOperacion: toNumberOrZero(payload.idPlanOperacion),
           breveDetalle: payload.breveDetalle,
           descripcion: payload.descripcion || payload.breveDetalle,
@@ -588,14 +603,17 @@ export function DatosGeneralesForm({
         }
 
         if (tieneOperativo) {
-          await GestionOperativosDatosGeneralesService.actualizarOperativo(
-            idCaso,
-            payloadOperativo
-          )
-          Alerta({
-            mensaje: 'Operativo actualizado correctamente',
-            variant: 'success',
-          })
+          const idOperativo = Number(datosCaso?.operativos?.[0]?.id ?? 0)
+          if (idOperativo > 0) {
+            await GestionOperativosDatosGeneralesService.actualizarOperativo(
+              idOperativo,
+              payloadOperativo
+            )
+            Alerta({
+              mensaje: 'Operativo actualizado correctamente',
+              variant: 'success',
+            })
+          }
         } else {
           await GestionOperativosDatosGeneralesService.crearOperativo(
             idCaso,
@@ -610,7 +628,17 @@ export function DatosGeneralesForm({
         return
       }
 
-      await onGuardar(payload as unknown as SeccionPayloadBase)
+      await onGuardar({
+        ...payload,
+        coordX: toNumberOrZero(payload.coordX),
+        coordY: toNumberOrZero(payload.coordY),
+        gradosX: toNumberOrZero(latD),
+        minX: toNumberOrZero(latM),
+        segX: toNumberOrZero(latS),
+        gradosY: toNumberOrZero(lngD),
+        minY: toNumberOrZero(lngM),
+        segY: toNumberOrZero(lngS),
+      } as unknown as SeccionPayloadBase)
       Alerta({ mensaje: 'Datos guardados correctamente', variant: 'success' })
     } catch (e) {
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
@@ -624,7 +652,7 @@ export function DatosGeneralesForm({
     const mapped = mapCasoOperativoToForm(caso, operativo)
 
     setDatosLectura({
-      numeroInforme: '',
+      numeroOperativoCaso: caso?.numeroOperativo ?? '',
       nombreCaso: caso?.nombreCaso ?? '',
       unidad: caso?.asignadoCaso ?? '',
       distrital: toStringOrEmpty(
@@ -661,21 +689,21 @@ export function DatosGeneralesForm({
         idDistrital > 0 ? cargarGrupos(idDistrital) : Promise.resolve(),
         idCategoria > 0
           ? (async () => {
-              try {
-                const res = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
-                if (res?.finalizado) {
-                  setOpcionesOperativoEn(
-                    res.datos.map((t) => ({
-                      id: String(t.id),
-                      value: String(t.id),
-                      label: t.descripcion,
-                    }))
-                  )
-                }
-              } catch {
-                setOpcionesOperativoEn([])
+            try {
+              const res = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
+              if (res?.finalizado) {
+                setOpcionesOperativoEn(
+                  res.datos.map((t) => ({
+                    id: String(t.id),
+                    value: String(t.id),
+                    label: t.descripcion,
+                  }))
+                )
               }
-            })()
+            } catch {
+              setOpcionesOperativoEn([])
+            }
+          })()
           : Promise.resolve(),
       ])
 
@@ -707,14 +735,37 @@ export function DatosGeneralesForm({
     <div>
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Fila 1 */}
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Número de Operativo (Asignación / Caso)
+            </label>
+            <input
+              type="text"
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.numeroOperativoCaso}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Nombre del Caso
+            </label>
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.nombreCaso}
+              disabled
+              readOnly
+            />
+          </div>
           <div>
             <label
               htmlFor="numeroOperativo"
               className="mb-1 block text-sm font-medium"
             >
-              Número de Operativo <span className="text-danger">*</span>
+              Número de Informe <span className="text-danger">*</span>
             </label>
             <input
               id="numeroOperativo"
@@ -754,79 +805,9 @@ export function DatosGeneralesForm({
             )}
           </div>
 
+          {/* Fila 2 */}
           <div>
-            <label className="mb-1 block text-sm font-medium">
-              Número de Informe
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.numeroInforme}
-              disabled
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Nombre del Caso
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.nombreCaso}
-              disabled
-              readOnly
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Asignado al Caso
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.asignado}
-              disabled
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Nro. Celular
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.celularAsignado}
-              disabled
-              readOnly
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Fiscal Asignado
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.fiscal}
-              disabled
-              readOnly
-            />
-          </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Quién Realiza la Solicitud
-            </label>
-            <input
-              className="form-input w-full"
-              value={datosLectura.quienRealiza}
-              disabled
-              readOnly
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="idUnidad"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="idUnidad" className="mb-1 block text-sm font-medium">
               Unidad <span className="text-danger">*</span>
             </label>
             <select
@@ -848,10 +829,7 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label
-              htmlFor="idDistrital"
-              className="mb-2 block text-sm font-medium"
-            >
+            <label htmlFor="idDistrital" className="mb-1 block text-sm font-medium">
               Distrital <span className="text-danger">*</span>
             </label>
             <select
@@ -874,7 +852,7 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="idGrupo" className="mb-2 block text-sm font-medium">
+            <label htmlFor="idGrupo" className="mb-1 block text-sm font-medium">
               Grupo <span className="text-danger">*</span>
             </label>
             <select
@@ -893,58 +871,6 @@ export function DatosGeneralesForm({
             {errors.idGrupo && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idGrupo.message}
-              </div>
-            )}
-          </div>
-          <div className="hidden lg:block"></div>
-
-          <div>
-            <label
-              htmlFor="idTipoDenuncia"
-              className="mb-1 block text-sm font-medium"
-            >
-              Tipo de la Denuncia <span className="text-danger">*</span>
-            </label>
-            <select
-              id="idTipoDenuncia"
-              className={`form-select w-full ${errors.idTipoDenuncia ? 'border-danger' : ''}`}
-              {...register('idTipoDenuncia', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesTipoDenuncia.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idTipoDenuncia && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idTipoDenuncia.message}
-              </div>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="idTipoPenal"
-              className="mb-1 block text-sm font-medium"
-            >
-              Tipo Penal <span className="text-danger">*</span>
-            </label>
-            <select
-              id="idTipoPenal"
-              className={`form-select w-full ${errors.idTipoPenal ? 'border-danger' : ''}`}
-              {...register('idTipoPenal', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesTipoPenal.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idTipoPenal && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idTipoPenal.message}
               </div>
             )}
           </div>
@@ -967,105 +893,30 @@ export function DatosGeneralesForm({
               </div>
             )}
           </div>
-          <div className="hidden lg:block"></div>
-          <div>
-            <label
-              htmlFor="idDepartamento"
-              className="mb-1 block text-sm font-medium"
-            >
-              Departamento <span className="text-danger">*</span>
-            </label>
-            <select
-              id="idDepartamento"
-              className={`form-select w-full ${errors.idDepartamento ? 'border-danger' : ''}`}
-              {...register('idDepartamento', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesDepartamento.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idDepartamento && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idDepartamento.message}
-              </div>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="idProvincia"
-              className="mb-1 block text-sm font-medium"
-            >
-              Provincia <span className="text-danger">*</span>
-            </label>
-            <select
-              id="idProvincia"
-              className={`form-select w-full ${errors.idProvincia ? 'border-danger' : ''}`}
-              {...register('idProvincia', { ...reglaObligatorio, valueAsNumber: true })}
-              disabled={opcionesProvincia.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesProvincia.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idProvincia && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idProvincia.message}
-              </div>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="idLocalidad"
-              className="mb-1 block text-sm font-medium"
-            >
-              Municipio <span className="text-danger">*</span>
-            </label>
-            <select
-              id="idLocalidad"
-              className={`form-select w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
-              {...register('idLocalidad', { ...reglaObligatorio, valueAsNumber: true })}
-              disabled={opcionesMunicipio.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesMunicipio.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idLocalidad && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idLocalidad.message}
-              </div>
-            )}
-          </div>
 
-          <div className="col-span-1 lg:col-span-4">
-            <div>
-              <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
-                En la localidad, comunidad, dirección (Zona, Calle, Avenida,
-                Barrio) <span className="text-danger">*</span>
-              </label>
-              <input
-                id="lugar"
-                type="text"
-                className={`form-input w-full ${errors.lugar ? 'border-danger' : ''}`}
-                {...register('lugar', reglaObligatorio)}
-              />
-              {errors.lugar && (
-                <div className="mt-1 text-xs text-danger">
-                  {errors.lugar.message}
-                </div>
-              )}
-            </div>
+          {/* Fila 3: Asignado y Celular + Categoria e Item */}
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Asignado al Caso
+            </label>
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.asignado}
+              disabled
+              readOnly
+            />
           </div>
-
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Nro. Celular
+            </label>
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.celularAsignado}
+              disabled
+              readOnly
+            />
+          </div>
           <div>
             <label
               htmlFor="idCategoriaOperativo"
@@ -1117,47 +968,29 @@ export function DatosGeneralesForm({
               </div>
             )}
           </div>
+
+          {/* Fila 4: Fiscal y Celular + Tipo Operacion y Plan */}
           <div>
-            <label htmlFor="mando" className="mb-1 block text-sm font-medium">
-              Al Mando de <span className="text-danger">*</span>
+            <label className="mb-1 block text-sm font-medium">
+              Fiscal Asignado
             </label>
             <input
-              id="mando"
-              type="text"
-              className={`form-input w-full ${errors.mando ? 'border-danger' : ''}`}
-              {...register('mando', reglaObligatorio)}
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.fiscal}
+              disabled
+              readOnly
             />
-            {errors.mando && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.mando.message}
-              </div>
-            )}
           </div>
-          <div className="hidden lg:block"></div>
           <div>
-            <label
-              htmlFor="idPlanOperacion"
-              className="mb-1 block text-sm font-medium"
-            >
-              Plan de Operaciones <span className="text-danger">*</span>
+            <label className="mb-1 block text-sm font-medium">
+              Nro. Celular (Fiscal)
             </label>
-            <select
-              id="idPlanOperacion"
-              className={`form-select w-full ${errors.idPlanOperacion ? 'border-danger' : ''}`}
-              {...register('idPlanOperacion', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesPlan.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {errors.idPlanOperacion && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.idPlanOperacion.message}
-              </div>
-            )}
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.celularFiscal}
+              disabled
+              readOnly
+            />
           </div>
           <div>
             <label
@@ -1184,12 +1017,126 @@ export function DatosGeneralesForm({
               </div>
             )}
           </div>
-
           <div>
             <label
-              htmlFor="clanFamiliar"
+              htmlFor="idPlanOperacion"
               className="mb-1 block text-sm font-medium"
             >
+              Plan de Operaciones <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idPlanOperacion"
+              className={`form-select w-full ${errors.idPlanOperacion ? 'border-danger' : ''}`}
+              {...register('idPlanOperacion', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesPlan.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idPlanOperacion && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idPlanOperacion.message}
+              </div>
+            )}
+          </div>
+
+          {/* Fila 5: Solicitante y Celular + Denuncia y Penal */}
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Quién Realiza la Solicitud
+            </label>
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.quienRealiza}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Nro. Celular (Solicitante)
+            </label>
+            <input
+              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.celularRealiza}
+              disabled
+              readOnly
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="idTipoDenuncia"
+              className="mb-1 block text-sm font-medium"
+            >
+              Tipo de la Denuncia <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idTipoDenuncia"
+              className={`form-select w-full ${errors.idTipoDenuncia ? 'border-danger' : ''}`}
+              {...register('idTipoDenuncia', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesTipoDenuncia.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idTipoDenuncia && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoDenuncia.message}
+              </div>
+            )}
+          </div>
+          <div>
+            <label
+              htmlFor="idTipoPenal"
+              className="mb-1 block text-sm font-medium"
+            >
+              Tipo Penal <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idTipoPenal"
+              className={`form-select w-full ${errors.idTipoPenal ? 'border-danger' : ''}`}
+              {...register('idTipoPenal', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesTipoPenal.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idTipoPenal && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idTipoPenal.message}
+              </div>
+            )}
+          </div>
+
+
+          {/* Fila 7: Mando, Clan y Organizacion */}
+          <div>
+            <label htmlFor="mando" className="mb-1 block text-sm font-medium">
+              Al Mando de <span className="text-danger">*</span>
+            </label>
+            <input
+              id="mando"
+              type="text"
+              className={`form-input w-full ${errors.mando ? 'border-danger' : ''}`}
+              {...register('mando', reglaObligatorio)}
+            />
+            {errors.mando && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.mando.message}
+              </div>
+            )}
+          </div>
+          <div>
+            <label htmlFor="clanFamiliar" className="mb-1 block text-sm font-medium">
               Clan Familiar <span className="text-danger">*</span>
             </label>
             <input
@@ -1205,10 +1152,7 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label
-              htmlFor="organizacion"
-              className="mb-1 block text-sm font-medium"
-            >
+            <label htmlFor="organizacion" className="mb-1 block text-sm font-medium">
               Organización Criminal <span className="text-danger">*</span>
             </label>
             <input
@@ -1224,6 +1168,96 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div className="hidden lg:block"></div>
+
+          {/* Fila 8: Ubicacion Geografica */}
+          <div>
+            <label htmlFor="idDepartamento" className="mb-1 block text-sm font-medium">
+              Departamento <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idDepartamento"
+              className={`form-select w-full ${errors.idDepartamento ? 'border-danger' : ''}`}
+              {...register('idDepartamento', { ...reglaObligatorio, valueAsNumber: true })}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesDepartamento.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idDepartamento && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idDepartamento.message}
+              </div>
+            )}
+          </div>
+          <div>
+            <label htmlFor="idProvincia" className="mb-1 block text-sm font-medium">
+              Provincia <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idProvincia"
+              className={`form-select w-full ${errors.idProvincia ? 'border-danger' : ''}`}
+              {...register('idProvincia', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesProvincia.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesProvincia.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idProvincia && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idProvincia.message}
+              </div>
+            )}
+          </div>
+          <div>
+            <label htmlFor="idLocalidad" className="mb-1 block text-sm font-medium">
+              Municipio <span className="text-danger">*</span>
+            </label>
+            <select
+              id="idLocalidad"
+              className={`form-select w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
+              {...register('idLocalidad', { ...reglaObligatorio, valueAsNumber: true })}
+              disabled={opcionesMunicipio.length === 0}
+            >
+              <option value="">Seleccione un dato</option>
+              {opcionesMunicipio.map((opt) => (
+                <option key={opt.id} value={Number(opt.value)}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.idLocalidad && (
+              <div className="mt-1 text-xs text-danger">
+                {errors.idLocalidad.message}
+              </div>
+            )}
+          </div>
+          <div className="hidden lg:block"></div>
+
+          <div className="col-span-1 lg:col-span-4">
+            <div>
+              <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
+                En la localidad, comunidad, dirección (Zona, Calle, Avenida, Barrio) <span className="text-danger">*</span>
+              </label>
+              <input
+                id="lugar"
+                type="text"
+                className={`form-input w-full ${errors.lugar ? 'border-danger' : ''}`}
+                {...register('lugar', reglaObligatorio)}
+              />
+              {errors.lugar && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.lugar.message}
+                </div>
+              )}
+            </div>
+          </div>
 
           <div className="col-span-1 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
@@ -1245,7 +1279,7 @@ export function DatosGeneralesForm({
                 </div>
               )}
             </div>
-               {/* Inputs independientes para Latitud DMS */}
+            {/* Inputs independientes para Latitud DMS */}
             <div>
               <label className="mb-1 block text-sm font-medium">
                 Latitud (DMS)
@@ -1259,7 +1293,17 @@ export function DatosGeneralesForm({
                     value={latD}
                     min={-90}
                     max={90}
-                    onChange={(e) => handleLatChange(e.target.value, latM, latS)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || val === '-') {
+                        handleLatChange(val, latM, latS)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= -90 && num <= 90) {
+                        handleLatChange(val, latM, latS)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
                 </div>
@@ -1271,7 +1315,17 @@ export function DatosGeneralesForm({
                     value={latM}
                     min={0}
                     max={59}
-                    onChange={(e) => handleLatChange(latD, e.target.value, latS)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '') {
+                        handleLatChange(latD, val, latS)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= 0 && num <= 59) {
+                        handleLatChange(latD, val, latS)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
                 </div>
@@ -1284,7 +1338,17 @@ export function DatosGeneralesForm({
                     min={0}
                     max={59.999}
                     step="any"
-                    onChange={(e) => handleLatChange(latD, latM, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || val === '.') {
+                        handleLatChange(latD, latM, val)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= 0 && num < 60) {
+                        handleLatChange(latD, latM, val)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
                 </div>
@@ -1310,7 +1374,7 @@ export function DatosGeneralesForm({
               )}
             </div>
 
-         
+
 
             {/* Inputs independientes para Longitud DMS */}
             <div>
@@ -1326,7 +1390,17 @@ export function DatosGeneralesForm({
                     value={lngD}
                     min={-180}
                     max={180}
-                    onChange={(e) => handleLngChange(e.target.value, lngM, lngS)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || val === '-') {
+                        handleLngChange(val, lngM, lngS)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= -180 && num <= 180) {
+                        handleLngChange(val, lngM, lngS)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
                 </div>
@@ -1338,7 +1412,17 @@ export function DatosGeneralesForm({
                     value={lngM}
                     min={0}
                     max={59}
-                    onChange={(e) => handleLngChange(lngD, e.target.value, lngS)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '') {
+                        handleLngChange(lngD, val, lngS)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= 0 && num <= 59) {
+                        handleLngChange(lngD, val, lngS)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
                 </div>
@@ -1351,7 +1435,17 @@ export function DatosGeneralesForm({
                     min={0}
                     max={59.999}
                     step="any"
-                    onChange={(e) => handleLngChange(lngD, lngM, e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || val === '.') {
+                        handleLngChange(lngD, lngM, val)
+                        return
+                      }
+                      const num = Number(val)
+                      if (!Number.isNaN(num) && num >= 0 && num < 60) {
+                        handleLngChange(lngD, lngM, val)
+                      }
+                    }}
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
                 </div>
@@ -1376,11 +1470,12 @@ export function DatosGeneralesForm({
               />
               <button
                 type="button"
-                className="btn btn-inline"
+                className="text-primary hover:text-primary/80 flex items-center justify-center p-2"
                 onClick={() => void buscarDireccion()}
                 disabled={isSearching}
+                title="Buscar dirección"
               >
-                {isSearching ? 'Buscando...' : 'Buscar'}
+                <IconSearch className="h-5 w-5" />
               </button>
 
               {searchResults.length > 0 && (
@@ -1438,7 +1533,21 @@ export function DatosGeneralesForm({
             </div>
           </div>
 
-          <div className="col-span-1 mt-2 lg:col-span-3">
+          <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end gap-2">
+            {tieneOperativo && (
+              <button
+                type="button"
+                className="btn btn-warning btn-sm"
+                onClick={() => {
+                  const idOp = Number(datosCaso?.operativos?.[0]?.id ?? 0)
+                  if (idOp > 0) {
+                    window.open(`${Constantes.baseUrl}/reportes/operativos/${idOp}/pdf`, '_blank')
+                  }
+                }}
+              >
+                Generar Reporte
+              </button>
+            )}
             <button
               type="button"
               className="btn btn-success btn-sm"

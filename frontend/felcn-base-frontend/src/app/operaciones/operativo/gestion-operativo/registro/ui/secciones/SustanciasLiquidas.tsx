@@ -115,41 +115,6 @@ export function SustanciasLiquidas({
                     </div>
 
                     <div>
-                        <label htmlFor="sustanciaQuimicaSolidalitros" className="mb-1 block text-sm font-medium">
-                            Litros
-                        </label>
-                        <input
-                            id="sustanciaQuimicaSolidalitros"
-                            type="number"
-                            className="form-input w-full"
-                            value={litros}
-                            onChange={(e) => setLitros(e.target.value)}
-                            placeholder="0"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="sustanciaQuimicaSolidamililitros" className="mb-1 block text-sm font-medium">
-                            Mililitros
-                        </label>
-                        <input
-                            id="sustanciaQuimicaSolidamililitros"
-                            type="number"
-                            className="form-input w-full"
-                            value={mililitros}
-                            onChange={(e) => {
-                                const val = e.target.value
-                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                                    setMililitros(val)
-                                }
-                            }}
-                            placeholder="0"
-                            min="0"
-                            max="999"
-                        />
-                    </div>
-
-                    <div>
                         <label htmlFor="sustanciaLiquidaCosto" className="mb-1 block text-sm font-medium">
                             Costo
                         </label>
@@ -170,14 +135,53 @@ export function SustanciasLiquidas({
                         />
                     </div>
 
-                    <div className="col-span-1 mt-2 lg:col-span-4">
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidalitros" className="mb-1 block text-sm font-medium">
+                            Litros (L)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidalitros"
+                            type="text"
+                            className="form-input w-full"
+                            value={litros}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*$/.test(val)) {
+                                    setLitros(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidamililitros" className="mb-1 block text-sm font-medium">
+                            Mililitros (mL)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidamililitros"
+                            type="text"
+                            className="form-input w-full"
+                            value={mililitros}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                    setMililitros(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+
+                    <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={agregarSustancia}
                             disabled={cargando}
                         >
-                            Agregar Sustancia
+                            Guardar
                         </button>
                     </div>
                 </div>
@@ -199,7 +203,7 @@ export function SustanciasLiquidas({
                                 {
                                     accessor: 'descripcionSustancia',
                                     title: 'Tipo de Sustancia',
-                                    footer: <span className="font-bold text-sm">Total Costo:</span>,
+                                    footer: <span className="font-bold text-sm">Total Costo (Bs):</span>,
                                 },
                                 {
                                     accessor: 'cantidad',
@@ -209,7 +213,7 @@ export function SustanciasLiquidas({
                                 },
                                 {
                                     accessor: 'costo',
-                                    title: 'Costo',
+                                    title: 'Costo (Bs)',
                                     textAlign: 'right',
                                     render: (row: any) => Number(row.costo ?? 0).toFixed(2),
                                     footer: (

@@ -32,7 +32,7 @@ export class OperativoRepository {
   constructor(
     @InjectDataSource(DB_SIII)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
   // ==================== OPERATIVO ====================
 
@@ -53,7 +53,7 @@ export class OperativoRepository {
   }
 
   async buscarPorId(id: string): Promise<Operativo | null> {
-    return this.operativoRepo.findOne({ 
+    return this.operativoRepo.findOne({
       where: { id },
       relations: ['unidad', 'planOperacion', 'tipoOperacion']
     })
