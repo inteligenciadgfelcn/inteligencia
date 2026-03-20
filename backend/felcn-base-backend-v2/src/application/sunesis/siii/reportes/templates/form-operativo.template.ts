@@ -1,8 +1,10 @@
-import { ReportTemplate } from '../interfaces/reporte-template.interface';
-import { PDFOptions } from 'puppeteer';
-import { OperativoService } from '../../operativo/service/operativo.service';
-import { PaginacionQueryDto } from '@/common/dto';
-import axios from 'axios';
+import { ReportTemplate } from '../interfaces/reporte-template.interface'
+import { PDFOptions } from 'puppeteer'
+import { OperativoService } from '../../operativo/service/operativo.service'
+import { PaginacionQueryDto } from '@/common/dto'
+import axios from 'axios'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const sharp = require('sharp')
 
 export class OperativeReportTemplate implements ReportTemplate<any> {
     pdfOptions: PDFOptions = {
@@ -21,82 +23,187 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
             </div>
         `,
-    };
+    }
 
-    static async fetchData(operativoService: OperativoService, idOperativo: string): Promise<any> {
-        const operativo = await operativoService.buscarPorId(idOperativo);
-        const { caso } = await operativoService.getOrInit(operativo.idCaso);
+    static async fetchData(
+        operativoService: OperativoService,
+        idOperativo: string
+    ): Promise<any> {
+        const operativo = await operativoService.buscarPorId(idOperativo)
+        const pagination = new PaginacionQueryDto()
+        const fullLimit = { ...pagination, limite: 100 } as any
 
-        const pagination = new PaginacionQueryDto();
-        const fullLimit = { ...pagination, limite: 100 } as any;
-
-        const bufferToBase64 = (buffer: Buffer) => {
-            if (!buffer || buffer.length === 0) return null;
-            return `data:image/jpeg;base64,${buffer.toString('base64')}`;
-        };
-
-        const [drogasRaw] = await operativoService.listarDrogas(idOperativo, fullLimit);
-        const drogas = await Promise.all(drogasRaw.map(async d => {
-            const [logosRaw] = await operativoService.listarLogotipos(d.idOperativo, d.id, fullLimit);
-            const logotipos = await Promise.all(logosRaw.map(async l => ({
-                ...l,
-                descripcionTipoDroga: d.descripcionTipoDroga,
-                descripcionPaisOrigen: d.descripcionPaisProcedencia,
-                descripcionPaisDestino: d.descripcionPaisDestino,
-                urlFotografia: bufferToBase64(await operativoService.obtenerFotoLogotipo(d.id, l.id))
-            })));
-
-            return {
-                ...d,
-                urlFotoPruebaCampo: bufferToBase64(await operativoService.obtenerFotoDroga(idOperativo, d.id, 'prueba-campo')),
-                urlFotoPesaje: bufferToBase64(await operativoService.obtenerFotoDroga(idOperativo, d.id, 'pesaje')),
-                logotipos
-            };
-        }));
-
-        const logotipos = drogas.flatMap(d => d.logotipos);
-
-        const [sustanciasSolidas] = await operativoService.listarSustanciasSolidas(idOperativo, fullLimit);
-        const [sustanciasLiquidas] = await operativoService.listarSustanciasLiquidas(idOperativo, fullLimit);
-        const [fabricas] = await operativoService.listarFabricas(idOperativo, fullLimit);
-        const [bienesRaw] = await operativoService.listarBienes(idOperativo, fullLimit);
-        const [personasRaw] = await operativoService.listarDetenidos(idOperativo, fullLimit);
-        const [galeriasRaw] = await operativoService.listarGaleria(idOperativo, fullLimit);
-
-        const personas = await Promise.all(personasRaw.map(async p => ({
-            ...p,
-            urlFotoFrente: bufferToBase64(await operativoService.obtenerFotoDetenido(idOperativo, p.id, 'frente')),
-            urlFotoPerfilDerecho: bufferToBase64(await operativoService.obtenerFotoDetenido(idOperativo, p.id, 'foto-documento')),
-            urlFotoPerfilIzquierdo: bufferToBase64(await operativoService.obtenerFotoDetenido(idOperativo, p.id, 'perfil-izquierdo'))
-        })));
-
-        const galerias = await Promise.all(galeriasRaw.map(async g => ({
-            ...g,
-            urlFotografia: bufferToBase64(await operativoService.obtenerFotoGaleria(idOperativo, g.id))
-        })));
-
-        const bienes = await Promise.all(bienesRaw.map(async b => {
-            const [caracteristicas] = await operativoService.listarCaracteristicasBien(idOperativo, b.id, fullLimit);
-            return {
-                ...b,
-                urlFotoBien: bufferToBase64(await operativoService.obtenerFotoBien(idOperativo, b.id)),
-                caracteristicas: caracteristicas.map(c => ({ label: c.descripcionCaracteristica, value: c.valor }))
-            };
-        }));
-
-        let urlMapabase64: string | null = null;
-        if (operativo.coordX && operativo.coordY) {
+        /**
+         * Compresses a buffer using sharp and returns a base64 data URI.
+         * Falls back gracefully if buffer is empty or sharp fails.
+         */
+        const bufferToBase64Compressed = async (
+            buffer: Buffer,
+            opts: { width?: number; height?: number; quality?: number } = {}
+        ): Promise<string | null> => {
+            if (!buffer || buffer.length === 0) return null
             try {
-                // Yandex Static Maps expects [longitude, latitude]
-                const mapUrl = `https://static-maps.yandex.ru/1.x/?ll=${operativo.coordY},${operativo.coordX}&z=15&l=map&pt=${operativo.coordY},${operativo.coordX},pm2rdm&size=650,350`;
-                const response = await axios.get(mapUrl, { responseType: 'arraybuffer' });
-                if (response.data) {
-                    urlMapabase64 = `data:image/png;base64,${Buffer.from(response.data).toString('base64')}`;
-                }
-            } catch (error) {
-                console.error('Error al obtener el mapa estático:', error.message);
+                const { width = 800, height = 600, quality = 70 } = opts
+                const compressed = await sharp(buffer)
+                    .resize(width, height, { fit: 'inside', withoutEnlargement: true })
+                    .jpeg({ quality })
+                    .toBuffer()
+                return `data:image/jpeg;base64,${compressed.toString('base64')}`
+            } catch {
+                // fallback: no compression
+                return `data:image/jpeg;base64,${buffer.toString('base64')}`
             }
         }
+
+        const [
+            { caso },
+            [drogasRaw],
+            [sustanciasSolidas],
+            [sustanciasLiquidas],
+            [fabricas],
+            [bienesRaw],
+            [personasRaw],
+            [galeriasRaw],
+            mapaCoords,
+        ] = await Promise.all([
+            operativoService.getOrInit(operativo.idCaso),
+            operativoService.listarDrogas(idOperativo, fullLimit),
+            operativoService.listarSustanciasSolidas(idOperativo, fullLimit),
+            operativoService.listarSustanciasLiquidas(idOperativo, fullLimit),
+            operativoService.listarFabricas(idOperativo, fullLimit),
+            operativoService.listarBienes(idOperativo, fullLimit),
+            operativoService.listarDetenidos(idOperativo, fullLimit),
+            operativoService.listarGaleria(idOperativo, fullLimit),
+            (() => {
+                if (operativo.coordX && operativo.coordY) {
+                    console.log(`[Mapa] Coords: lat=${operativo.coordX}, lon=${operativo.coordY} — se renderizará con Leaflet en el HTML`)
+                    return { lat: operativo.coordX, lon: operativo.coordY }
+                }
+                console.warn('[Mapa] Operativo sin coordenadas (coordX/coordY vacíos).')
+                return null
+            })(),
+        ])
+
+        const [drogas, personas, galerias, bienes] = await Promise.all([
+            Promise.all(
+                drogasRaw.map(async (d) => {
+                    const [logosRaw] = await operativoService.listarLogotipos(
+                        d.idOperativo,
+                        d.id,
+                        fullLimit
+                    )
+                    const [logotipos, urlFotoPruebaCampo, urlFotoPesaje] =
+                        await Promise.all([
+                            Promise.all(
+                                logosRaw.map(async (l) => ({
+                                    ...l,
+                                    descripcionTipoDroga: d.descripcionTipoDroga,
+                                    descripcionPaisOrigen: d.descripcionPaisProcedencia,
+                                    descripcionPaisDestino: d.descripcionPaisDestino,
+                                    urlFotografia: await bufferToBase64Compressed(
+                                        await operativoService.obtenerFotoLogotipo(d.id, l.id),
+                                        { width: 100, height: 75, quality: 75 }
+                                    ),
+                                }))
+                            ),
+                            bufferToBase64Compressed(
+                                await operativoService.obtenerFotoDroga(
+                                    idOperativo,
+                                    d.id,
+                                    'prueba-campo'
+                                ),
+                                { width: 155, height: 115, quality: 75 }
+                            ),
+                            bufferToBase64Compressed(
+                                await operativoService.obtenerFotoDroga(
+                                    idOperativo,
+                                    d.id,
+                                    'pesaje'
+                                ),
+                                { width: 155, height: 115, quality: 75 }
+                            ),
+                        ])
+
+                    return {
+                        ...d,
+                        urlFotoPruebaCampo,
+                        urlFotoPesaje,
+                        logotipos,
+                    }
+                })
+            ),
+            Promise.all(
+                personasRaw.map(async (p) => {
+                    const [urlFotoFrente, urlFotoDocumento, urlFotoPerfilIzquierdo] =
+                        await Promise.all([
+                            bufferToBase64Compressed(
+                                await operativoService.obtenerFotoDetenido(
+                                    idOperativo,
+                                    p.id,
+                                    'frente'
+                                ),
+                                { width: 125, height: 165, quality: 80 }
+                            ),
+                            bufferToBase64Compressed(
+                                await operativoService.obtenerFotoDetenido(
+                                    idOperativo,
+                                    p.id,
+                                    'foto-documento'
+                                ),
+                                { width: 225, height: 165, quality: 80 }
+                            ),
+                            bufferToBase64Compressed(
+                                await operativoService.obtenerFotoDetenido(
+                                    idOperativo,
+                                    p.id,
+                                    'perfil-izquierdo'
+                                ),
+                                { width: 125, height: 165, quality: 80 }
+                            ),
+                        ])
+                    return {
+                        ...p,
+                        urlFotoFrente,
+                        urlFotoDocumento,
+                        urlFotoPerfilIzquierdo,
+                    }
+                })
+            ),
+            Promise.all(
+                galeriasRaw.map(async (g) => ({
+                    ...g,
+                    urlFotografia: await bufferToBase64Compressed(
+                        await operativoService.obtenerFotoGaleria(idOperativo, g.id),
+                        { width: 450, height: 300, quality: 75 }
+                    ),
+                }))
+            ),
+            Promise.all(
+                bienesRaw.map(async (b) => {
+                    const [[caracteristicasRaw], urlFotoBien] = await Promise.all([
+                        operativoService.listarCaracteristicasBien(
+                            idOperativo,
+                            b.id,
+                            fullLimit
+                        ),
+                        bufferToBase64Compressed(
+                            await operativoService.obtenerFotoBien(idOperativo, b.id),
+                            { width: 155, height: 115, quality: 75 }
+                        ),
+                    ])
+                    return {
+                        ...b,
+                        urlFotoBien,
+                        caracteristicas: caracteristicasRaw.map((c) => ({
+                            label: c.descripcionCaracteristica,
+                            value: c.valor,
+                        })),
+                    }
+                })
+            ),
+        ])
+
+        const logotipos = drogas.flatMap((d) => d.logotipos)
 
         return {
             caso,
@@ -110,22 +217,37 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
             galerias,
             logotipos,
             idOperativo,
-            urlMapabase64
-        };
+            mapaCoords,
+        }
     }
 
     generateHtml(data: any): string {
-        const { caso, operativo, drogas, sustanciasSolidas, sustanciasLiquidas, fabricas, personas, bienes, galerias, logotipos, idOperativo, urlMapabase64 } = data;
+        const {
+            caso,
+            operativo,
+            drogas,
+            sustanciasSolidas,
+            sustanciasLiquidas,
+            fabricas,
+            personas,
+            bienes,
+            galerias,
+            mapaCoords,
+        } = data
 
         const formatNumber = (num: any) => {
-            const val = typeof num === 'string' ? parseFloat(num) : num;
-            return (val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        };
+            const val = typeof num === 'string' ? parseFloat(num) : num
+            return (val || 0).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            })
+        }
 
-        const drogaRows = drogas.map(droga => {
-            const hasLogos = droga.logotipos && droga.logotipos.length > 0;
-            const hasImages = droga.urlFotoPruebaCampo || droga.urlFotoPesaje;
-            return `
+        const drogaRows = drogas
+            .map((droga) => {
+                const hasLogos = droga.logotipos && droga.logotipos.length > 0
+                const hasImages = droga.urlFotoPruebaCampo || droga.urlFotoPesaje
+                return `
             <tr>
                 <td>${droga.descripcionTipoDroga || 'N/A'}</td>
                 <td>${droga.descripcionEstadoDroga || 'N/A'}</td>
@@ -135,26 +257,37 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 <td>${droga.descripcionPaisProcedencia || 'N/A'}</td>
                 <td>${droga.descripcionPaisDestino || 'N/A'}</td>
             </tr>
-            ${(hasLogos || hasImages) ? `
+            ${hasLogos || hasImages
+                        ? `
             <tr>
                 <td colspan="7" style="padding: 0; background-color: #f8fafc;">
                     <div style="padding: 10px 20px;">
-                        ${hasImages ? `
+                        ${hasImages
+                            ? `
                         <div style="display: flex; gap: 20px; margin-bottom: 15px; justify-content: center; border-bottom: 0px dashed #cbd5e1; padding-bottom: 10px;">
-                            ${droga.urlFotoPruebaCampo ? `
+                            ${droga.urlFotoPruebaCampo
+                                ? `
                             <div style="text-align: center;">
                                 <div style="font-size: 9px; font-weight: bold; color: #3e5f8a; margin-bottom: 3px; text-transform: uppercase;">Prueba de Campo</div>
                                 <img src="${droga.urlFotoPruebaCampo}" class="img-standard img-droga-thumb" />
-                            </div>` : ''}
-                            ${droga.urlFotoPesaje ? `
+                            </div>`
+                                : ''
+                            }
+                            ${droga.urlFotoPesaje
+                                ? `
                             <div style="text-align: center;">
                                 <div style="font-size: 9px; font-weight: bold; color: #3e5f8a; margin-bottom: 3px; text-transform: uppercase;">Pesaje</div>
                                 <img src="${droga.urlFotoPesaje}" class="img-standard img-droga-thumb" />
-                            </div>` : ''}
+                            </div>`
+                                : ''
+                            }
                         </div>
-                        ` : ''}
+                        `
+                            : ''
+                        }
 
-                        ${hasLogos ? `
+                        ${hasLogos
+                            ? `
                         <div style="font-weight: bold; color: #1e3a8a; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">
                             Logotipos Detectados:
                         </div>
@@ -169,7 +302,9 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${droga.logotipos.map(logo => `
+                                ${droga.logotipos
+                                .map(
+                                    (logo) => `
                                     <tr>
                                         <td style="font-size: 9px; padding: 4px;">${logo.imagen || 'N/A'}</td>
                                         <td style="font-size: 9px; padding: 4px;">${logo.descripcionLogo || 'N/A'}</td>
@@ -179,52 +314,63 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                                             ${logo.urlFotografia ? `<img src="${logo.urlFotografia}" class="img-standard img-logo-small" />` : 'N/A'}
                                         </td>
                                     </tr>
-                                `).join('')}
+                                `
+                                )
+                                .join('')}
                             </tbody>
                         </table>
-                        ` : ''}
+                        `
+                            : ''
+                        }
                     </div>
                 </td>
             </tr>
-            ` : ''}
-            `;
-        }).join('');
+            `
+                        : ''
+                    }
+            `
+            })
+            .join('')
 
-        const drogaFotoRows = drogas
-            .filter(d => d.urlFotoPruebaCampo || d.urlFotoPesaje)
-            .map(item => `
-            <tr>
-                <td>${item.descripcionTipoDroga || 'N/A'}</td>
-                <td style="text-align: center;">${item.urlFotoPruebaCampo ? `<img src="${item.urlFotoPruebaCampo}" height="150" width="200" />` : ''}</td>
-                <td style="text-align: center;">${item.urlFotoPesaje ? `<img src="${item.urlFotoPesaje}" height="150" width="200" />` : ''}</td>
-            </tr>
-        `).join('');
-
-        const sustanciaSolidaRows = sustanciasSolidas.map(sustanciaSolida => `
+        const sustanciaSolidaRows = sustanciasSolidas
+            .map(
+                (sustanciaSolida) => `
             <tr>
                 <td>${sustanciaSolida.descripcionSustancia || 'N/A'}</td>
                 <td>${formatNumber(sustanciaSolida.cantidad)}</td>
                 <td>${formatNumber(sustanciaSolida.costo)}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('')
 
-        const sustanciaLiquidaRows = sustanciasLiquidas.map(sustanciaLiquida => `
+        const sustanciaLiquidaRows = sustanciasLiquidas
+            .map(
+                (sustanciaLiquida) => `
             <tr>
                 <td>${sustanciaLiquida.descripcionSustancia || 'N/A'}</td>
                 <td>${formatNumber(sustanciaLiquida.cantidad)}</td>
                 <td>${formatNumber(sustanciaLiquida.costo)}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('')
 
-        const fabricasRows = fabricas.map(fabrica => `
+        const fabricasRows = fabricas
+            .map(
+                (fabrica) => `
             <tr>
                 <td>${fabrica.descripcionTipoFabrica || 'N/A'}</td>
                 <td>${fabrica.descripcionFabricaModelo || 'N/A'}</td>
                 <td>${fabrica.cantidad || 0}</td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('')
 
-        const personaBlocks = personas.map(persona => `
+        const personaBlocks = personas
+            .map(
+                (persona) => `
         <table class="personal-info-table" style="margin-bottom: 30px;">
             <thead>
                 <tr>
@@ -298,9 +444,13 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 </tr>
             </tbody>
         </table>
-    `).join('');
+    `
+            )
+            .join('')
 
-        const bienRows = bienes.map(bien => `
+        const bienRows = bienes
+            .map(
+                (bien) => `
             <tr>
                 <td>${bien.descripcionBien || 'N/A'}</td>
                 <td>${bien.descripcionCatalogoClase || 'N/A'}</td>
@@ -309,24 +459,34 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 <td style="text-align: center;"><img src="${bien.urlFotoBien || ''}" class="img-standard img-bien-thumb" /></td>
                 <td>
                     <table style="width: 100%; border: none;">
-                        ${bien.caracteristicas.map(c => `
+                        ${bien.caracteristicas
+                        .map(
+                            (c) => `
                             <tr>
                                 <td style="border: none; padding: 2px;"><strong>${c.label}:</strong></td>
                                 <td style="border: none; padding: 2px;">${c.value}</td>
                             </tr>
-                        `).join('')}
+                        `
+                        )
+                        .join('')}
                     </table>
                 </td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('')
 
-        const galeriaRows = galerias.map(galeria => `
+        const galeriaRows = galerias
+            .map(
+                (galeria) => `
             <tr>
                 <td>${galeria.id}</td>
                 <td>${galeria.descripcion || ''}</td>
                 <td style="text-align: center;"><img src="${galeria.urlFotografia || ''}" class="img-standard img-gallery-thumb" /></td>
             </tr>
-        `).join('');
+        `
+            )
+            .join('')
 
         return `
 <!DOCTYPE html>
@@ -391,7 +551,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 <div class="section">
                     <div class="section-header"><h2 class="section-title">Datos Generales</h2></div>
                     <div class="timeline-item">
-                        <div class="timeline-title">Numero de Operativo: ${operativo.numeroOperativo || 'N/A'}</div>
+                        <div class="timeline-title">Numero de Operativo: ${caso.numeroOperativo || 'N/A'}</div>
                         <div class="timeline-title">Asignado al Caso: ${caso.asignadoCaso || 'N/A'}</div>
                         <div class="timeline-title">Fiscal Asignado: ${caso.fiscalAsignadoCaso || 'N/A'}</div>
                         <div class="timeline-title">Fecha y hora del Operativo: ${operativo.fechaOperativo ? new Date(operativo.fechaOperativo).toLocaleString('es-BO') : 'N/A'}</div>
@@ -405,12 +565,21 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                     <div class="section-header"><h2 class="section-title">Breve detalle del Operativo</h2></div>
                     <p class="section-content">${operativo.breveDetalle || operativo.descripcion || ''}</p>
                 </div>
-                <div class="section">
+                <div class="section" style="page-break-inside: avoid; break-inside: avoid;">
                     <div class="section-header"><h2 class="section-title">Mapa de Ubicación</h2></div>
-                    <div class="map-container" style="text-align: center; background: #e5f3ff; border: 3px solid #3e5f8a; border-radius: 10px; height: 350px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        ${urlMapabase64 ? `
-                            <img src="${urlMapabase64}" width="100%" height="350px" style="object-fit: cover;" />
-                        ` : `
+                    <div class="map-container" style="text-align: center; background: #e5f3ff; border: 3px solid #3e5f8a; border-radius: 10px; height: 350px; display: flex; align-items: center; justify-content: center; overflow: hidden; page-break-inside: avoid; break-inside: avoid;">
+                        ${mapaCoords
+                ? `
+                        <div id="map" style="width: 100%; height: 350px;"></div>
+                        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                        <script>
+                            var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([${mapaCoords.lat}, ${mapaCoords.lon}], 15);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                            L.marker([${mapaCoords.lat}, ${mapaCoords.lon}]).addTo(map);
+                        </script>
+                        `
+                : `
                             <div style="color: #1e3a8a; font-weight: bold;">
                                 <svg width="50" height="50" viewBox="0 0 24 24" fill="#dc2626" style="margin-bottom: 10px;">
                                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
@@ -419,7 +588,8 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                                 UBICACIÓN GEOGRÁFICA DEL OPERATIVO<br/>
                                 <span style="font-size: 10px; font-weight: normal;">Coordenadas: ${operativo.lugar || 'N/A'}</span>
                             </div>
-                        `}
+                        `
+            }
                     </div>
                 </div>
                 <div class="section">
@@ -475,14 +645,21 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
     </div>
 </body>
 </html>
-        `;
+        `
     }
 
     generateCsv(data: any): string {
-        const { caso, operativo } = data;
-        const header = 'Nombre del Caso,Numero de Caso,Numero de Operativo,Asignado,Fiscal,Fecha,Lugar,Unidad,Plan,Tipo,Resumen\n';
-        const row = `"${caso.nombreCaso || 'N/A'}","${caso.numeroOperativo || 'N/A'}","${operativo.numeroOperativo || 'N/A'}","${caso.asignadoCaso || 'N/A'}","${caso.fiscalAsignadoCaso || 'N/A'}","${operativo.fechaOperativo || 'N/A'}","${operativo.lugar || 'N/A'}","${operativo.idUnidad || 'N/A'}","${operativo.idPlanOperacion || 'N/A'}","${operativo.idTipoOperacion || 'N/A'}","${(operativo.breveDetalle || operativo.descripcion || '').replace(/"/g, '""')}"`;
+        const { caso, operativo } = data
+        const header =
+            'Nombre del Caso,Numero de Caso,Numero de Operativo,Asignado,Fiscal,Fecha,Lugar,Unidad,Plan,Tipo,Resumen\n'
+        const row = `"${caso.nombreCaso || 'N/A'}","${caso.numeroOperativo || 'N/A'}","${operativo.numeroOperativo || 'N/A'}","${caso.asignadoCaso || 'N/A'
+            }","${caso.fiscalAsignadoCaso || 'N/A'}","${operativo.fechaOperativo || 'N/A'}","${operativo.lugar || 'N/A'}","${operativo.idUnidad || 'N/A'
+            }","${operativo.idPlanOperacion || 'N/A'}","${operativo.idTipoOperacion || 'N/A'}","${(
+                operativo.breveDetalle ||
+                operativo.descripcion ||
+                ''
+            ).replace(/"/g, '""')}"`
 
-        return header + row;
+        return header + row
     }
 }
