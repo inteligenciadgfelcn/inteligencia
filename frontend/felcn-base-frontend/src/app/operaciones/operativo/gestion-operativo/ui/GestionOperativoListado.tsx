@@ -9,7 +9,15 @@ import { GestionOperativoService } from '@/services/operativos'
 import IconPencil from '@/components/Icon/IconPencil'
 import type { GestionOperativoItem } from '../types'
 
-export function GestionOperativoListado() {
+export interface GestionOperativoListadoProps {
+    tipo?: 'aprobado' | 'no-aprobado'
+    titulo?: string
+}
+
+export function GestionOperativoListado({
+    tipo = 'no-aprobado',
+    titulo = 'Gestión de Operativos - Listado',
+}: GestionOperativoListadoProps) {
     const router = useRouter()
 
     const [page, setPage] = useState(1)
@@ -17,8 +25,11 @@ export function GestionOperativoListado() {
     const [search, setSearch] = useState('')
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ['gestion-operativo-listado'],
-        queryFn: () => GestionOperativoService.listarNoAprobadosPorUsuario('admin'),
+        queryKey: ['gestion-operativo-listado', tipo],
+        queryFn: () =>
+            tipo === 'aprobado'
+                ? GestionOperativoService.listarAprobadosPorUsuario('admin')
+                : GestionOperativoService.listarNoAprobadosPorUsuario('admin'),
     })
 
     const filas: GestionOperativoItem[] = useMemo(() => data?.datos ?? [], [data])
@@ -119,6 +130,7 @@ export function GestionOperativoListado() {
         {
             accessor: 'idCaso',
             title: 'Acciones',
+            className: 'sticky right-0 bg-white dark:bg-[#0e1726] z-10 shadow-[-4px_0_8px_rgba(0,0,0,0.05)] border-l border-white-light dark:border-[#191e3a]',
             render: (row) => (
                 <div className="flex items-center justify-center gap-2">
                     <button
@@ -141,7 +153,7 @@ export function GestionOperativoListado() {
     return (
         <div className="space-y-4">
             <div className="panel">
-                <h2 className="text-lg font-semibold">Gestión de Operativos - Listado</h2>
+                <h2 className="text-lg font-semibold">{titulo}</h2>
             </div>
 
             <div className="panel p-0 mt-4">
