@@ -4,60 +4,73 @@ import { ReportTemplate } from '../interfaces/reporte-template.interface';
 
 @Injectable()
 export class ReportBaseService implements OnModuleDestroy {
-    private browser: puppeteer.Browser | null = null;
+  private browser: puppeteer.Browser | null = null;
 
-    private async getBrowser(): Promise<puppeteer.Browser> {
-        if (!this.browser) {
-            this.browser = await puppeteer.launch({
-                headless: 'shell',
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            });
-        }
-        return this.browser;
+  private async getBrowser(): Promise<puppeteer.Browser> {
+    if (!this.browser) {
+      this.browser = await puppeteer.launch({
+        headless: 'shell',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-extensions',
+          '--disable-background-networking',
+        ],
+      });
     }
+    return this.browser;
+  }
 
-    async generatePdf<T>(template: ReportTemplate<T>, data: T): Promise<Uint8Array> {
-        const browser = await this.getBrowser();
-        const page = await browser.newPage();
+  async generatePdf<T>(template: ReportTemplate<T>, data: T): Promise<Uint8Array> {
+    const browser = await this.getBrowser();
+    const page = await browser.newPage();
 
-        try {
-            const html = template.generateHtml(data);
-            await page.setContent(html, {
-                timeout: 0,
-                waitUntil: 'networkidle0',
-            });
+    try {
+      const html = template.generateHtml(data);
 
-            await page.emulateMediaType('print');
+      // domcontentloaded is faster than networkidle0 because images are
+      // already embedded as base64 in the HTML — no external network requests.
+      await page.setContent(html, {
+        timeout: 30000,
+        waitUntil: 'networkidle2',
+      });
 
-            const defaultPdfOptions: puppeteer.PDFOptions = {
-                format: 'letter' as puppeteer.PaperFormat,
-                printBackground: true,
-                margin: {
-                    top: '10mm',
-                    right: '10mm',
-                    bottom: '10mm',
-                    left: '10mm',
-                },
-                displayHeaderFooter: false,
-            };
+      // Delay to allow Leaflet map tiles and base64 images to fully render.
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
-            const pdfOptions = { ...defaultPdfOptions, ...template.pdfOptions };
-            const pdfBuffer = await page.pdf(pdfOptions);
+      await page.emulateMediaType('print');
 
-            return pdfBuffer;
-        } finally {
-            await page.close();
-        }
+      const defaultPdfOptions: puppeteer.PDFOptions = {
+        format: 'letter' as puppeteer.PaperFormat,
+        printBackground: true,
+        margin: {
+          top: '10mm',
+          right: '10mm',
+          bottom: '10mm',
+          left: '10mm',
+        },
+        displayHeaderFooter: false,
+      };
+
+      const pdfOptions = { ...defaultPdfOptions, ...template.pdfOptions };
+      const pdfBuffer = await page.pdf(pdfOptions);
+
+      return pdfBuffer;
+    } finally {
+      await page.close();
     }
+  }
 
-    async generateCsv<T>(template: ReportTemplate<T>, data: T): Promise<string> {
-        return template.generateCsv(data);
-    }
+  async generateCsv<T>(template: ReportTemplate<T>, data: T): Promise<string> {
+    return template.generateCsv(data);
+  }
 
-    async onModuleDestroy() {
-        if (this.browser) {
-            await this.browser.close();
-            this.browser = null;
-        }
+  async onModuleDestroy() {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
     }
+  }
 }
