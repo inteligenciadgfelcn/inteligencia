@@ -1,9 +1,11 @@
 FROM node:22-alpine AS build
 WORKDIR /home/node/app
 
+RUN apk add --no-cache python3 make g++ vips-dev
+
 COPY package*.json ./
 
-RUN npm ci --prefer-offline --progress=false --no-audit
+RUN npm ci --progress=false --no-audit
 
 COPY . .
 
@@ -11,13 +13,17 @@ RUN node --run build
 
 FROM node:22-alpine AS prod-deps
 WORKDIR /home/node/app
+
+RUN apk add --no-cache python3 make g++ vips-dev
+
 COPY package*.json ./
-RUN npm ci --omit=dev --prefer-offline --progress=false --no-audit
+RUN npm ci --omit=dev --progress=false --no-audit
 
 FROM node:22-alpine AS release
 WORKDIR /home/node/app
 
 RUN apk add --no-cache \
+    vips \
     chromium \
     nss \
     freetype \
