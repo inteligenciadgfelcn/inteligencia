@@ -1,7 +1,11 @@
-FROM node:22-alpine AS build
+FROM node:22-slim AS build
 WORKDIR /home/node/app
 
-RUN apk add --no-cache python3 make g++ vips-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ libvips-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY package*.json ./
 
@@ -11,30 +15,33 @@ COPY . .
 
 RUN node --run build
 
-FROM node:22-alpine AS prod-deps
+FROM node:22-slim AS prod-deps
 WORKDIR /home/node/app
 
-RUN apk add --no-cache python3 make g++ vips-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ libvips-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY package*.json ./
 RUN npm install --omit=dev --progress=false --no-audit
 
-FROM node:22-alpine AS release
+FROM node:22-slim AS release
 WORKDIR /home/node/app
 
-RUN apk add --no-cache \
-    vips \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libvips \
     chromium \
-    nss \
-    freetype \
-    harfbuzz \
+    libnss3 \
+    libfreetype6 \
+    libharfbuzz0b \
     ca-certificates \
-    ttf-freefont
+    fonts-freefont-ttf \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN chown -R node:node /home/node/app
 
