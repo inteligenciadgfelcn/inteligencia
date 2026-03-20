@@ -266,14 +266,14 @@ export function Galeria({ titulo, idoperativo }: Props) {
                         />
                     </div>
 
-                    <div className="col-span-1 mt-2 lg:col-span-3">
+                    <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={() => void handleGuardar()}
                             disabled={cargando}
                         >
-                            Agregar a Galería
+                            Guardar
                         </button>
                     </div>
                 </div>

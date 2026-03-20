@@ -40,11 +40,10 @@ function DropzoneFoto({
         <div>
             <label className="mb-1 block text-sm font-medium">{label}</label>
             <div
-                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-                    arrastrar
+                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
                         ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
                         : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-                }`}
+                    }`}
                 onDragOver={(e) => { e.preventDefault(); setArrastrar(true) }}
                 onDragEnter={() => setArrastrar(true)}
                 onDragLeave={() => setArrastrar(false)}
@@ -305,7 +304,7 @@ function CaracteristicasPanel({
                         />
                     </div>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 flex justify-end">
                     <button
                         type="button"
                         className="btn btn-success btn-sm"
@@ -339,8 +338,8 @@ function ExpansionContenidoBien({
         const fetchFoto = (path: string | null | undefined): Promise<string | null> =>
             path
                 ? GestionOperativoBienesService.obtenerFoto(path)
-                      .then((blob) => URL.createObjectURL(blob))
-                      .catch(() => null)
+                    .then((blob) => URL.createObjectURL(blob))
+                    .catch(() => null)
                 : Promise.resolve(null)
 
         void fetchFoto(bien.urlFotoBien).then((foto) => {
@@ -546,7 +545,7 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                 <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
 
                 {/* ── Formulario de registro ── */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <label className="mb-1 block text-sm font-medium">Bien</label>
                         <select
@@ -611,7 +610,12 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                             type="text"
                             className="form-input w-full"
                             value={costoAproximado}
-                            onChange={(e) => setCostoAproximado(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+                                    setCostoAproximado(val)
+                                }
+                            }}
                         />
                     </div>
                     <div>
@@ -622,7 +626,12 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                             type="text"
                             className="form-input w-full"
                             value={costoCuantificado}
-                            onChange={(e) => setCostoCuantificado(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+                                    setCostoCuantificado(val)
+                                }
+                            }}
                         />
                     </div>
                     <div>
@@ -641,7 +650,7 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                     </div>
 
                     {/* Foto — DropzoneFoto */}
-                    <div className="col-span-1 lg:col-span-3">
+                    <div className="col-span-1 lg:col-span-4">
                         <DropzoneFoto
                             key={`foto-bien-${dropzoneToken}`}
                             label="Fotografía del Bien"
@@ -651,14 +660,14 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                     </div>
 
                     {/* Botón guardar */}
-                    <div className="col-span-1 mt-2 lg:col-span-3">
+                    <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={() => void guardarBien()}
                             disabled={cargando}
                         >
-                            Agregar Bien
+                            Guardar
                         </button>
                     </div>
                 </div>
@@ -707,11 +716,10 @@ export function SeccionBienesForm({ titulo, idoperativo = 0 }: SeccionFormProps)
                                         <div className="flex items-center justify-center gap-3">
                                             <span title="Ver detalles">
                                                 <svg
-                                                    className={`h-4 w-4 transition-transform duration-200 ${
-                                                        expandedIds.includes(r.id)
+                                                    className={`h-4 w-4 transition-transform duration-200 ${expandedIds.includes(r.id)
                                                             ? 'rotate-180 text-primary'
                                                             : 'text-gray-400'
-                                                    }`}
+                                                        }`}
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"

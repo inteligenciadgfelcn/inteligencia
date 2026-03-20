@@ -51,7 +51,8 @@ export interface CasoResumen {
     telefonoFiscal: string
 }
 export interface OperativoPayload {
-    numeroOperativo: string
+    // numeroInforme: string
+    numeroOperativo: string // numeroOperativo
     idTipoRelevancia: number
     idTipoDenuncia: number
     idTipoPenal: number
@@ -68,6 +69,12 @@ export interface OperativoPayload {
     mando: string
     coordX: number
     coordY: number
+    gradosX?: number
+    minX?: number
+    segX?: number
+    gradosY?: number
+    minY?: number
+    segY?: number
     idPlanOperacion: number
     breveDetalle: string
     descripcion: string
@@ -306,6 +313,7 @@ export interface OperativoResponse {
 
     idTipoRelevancia: number;
     numeroOperativo: string;
+    numeroInforme?: string;
     idTipoDenuncia: number;
     idTipoPenal: number;
 
@@ -341,7 +349,7 @@ export interface OperativoResponse {
 
     fechaHoraIngreso: string; // o Date
 
-  usuario: string;
+    usuario: string;
 }
 
 export interface GaleriaPayload {

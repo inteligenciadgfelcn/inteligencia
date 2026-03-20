@@ -37,7 +37,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
 
         const [drogasRaw] = await operativoService.listarDrogas(idOperativo, fullLimit);
         const drogas = await Promise.all(drogasRaw.map(async d => {
-            const [logosRaw] = await operativoService.listarLogotipos(d.id, fullLimit);
+            const [logosRaw] = await operativoService.listarLogotipos(d.idOperativo, d.id, fullLimit);
             const logotipos = await Promise.all(logosRaw.map(async l => ({
                 ...l,
                 descripcionTipoDroga: d.descripcionTipoDroga,
@@ -441,7 +441,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                     <div class="timeline-item">
                         <div class="timeline-title">SUSTANCIAS QUIMICAS LIQUIDAS</div>
                         <table>
-                            <thead><tr><th>Nombre</th><th>Litros</th>><th>Costo en Bs.</th></tr></thead>
+                            <thead><tr><th>Nombre</th><th>Litros</th><th>Costo en Bs.</th></tr></thead>
                             <tbody>${sustanciaLiquidaRows}</tbody>
                         </table>
                     </div>

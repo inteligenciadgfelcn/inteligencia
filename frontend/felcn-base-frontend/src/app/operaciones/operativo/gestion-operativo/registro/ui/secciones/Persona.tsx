@@ -36,11 +36,10 @@ function DropzoneFoto({
         <div>
             <label className="mb-1 block text-sm font-medium">{label}</label>
             <div
-                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-                    arrastrar
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                        : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-                }`}
+                className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
+                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                    : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
+                    }`}
                 onDragOver={(e) => { e.preventDefault(); setArrastrar(true) }}
                 onDragEnter={() => setArrastrar(true)}
                 onDragLeave={() => setArrastrar(false)}
@@ -150,8 +149,8 @@ function FotosExpansion({
         const fetchFoto = (path: string | null): Promise<string | null> =>
             path
                 ? GestionOperativoPersonasService.obtenerFoto(path)
-                      .then((blob) => URL.createObjectURL(blob))
-                      .catch(() => null)
+                    .then((blob) => URL.createObjectURL(blob))
+                    .catch(() => null)
                 : Promise.resolve(null)
 
         void Promise.all([
@@ -203,7 +202,7 @@ interface Props {
 
 const ITEMS_POR_PAGINA = 10
 
-export function Seccion6Form({ titulo, idoperativo }: Props) {
+export function Persona({ titulo, idoperativo }: Props) {
     // ── Opciones de selectores ────────────────────────────────────────────────
     const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([])
     const [opcionesDocumento, setOpcionesDocumento] = useState<Opcion[]>([])
@@ -593,14 +592,14 @@ export function Seccion6Form({ titulo, idoperativo }: Props) {
                     </div>
 
                     {/* Botón guardar */}
-                    <div className="col-span-1 mt-2 lg:col-span-4">
+                    <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={() => void guardarPersona()}
                             disabled={cargando}
                         >
-                            Agregar Persona
+                            Guardar
                         </button>
                     </div>
                 </div>
@@ -667,11 +666,10 @@ export function Seccion6Form({ titulo, idoperativo }: Props) {
                                             {/* Chevron: indica si la fila está expandida */}
                                             <span title="Ver fotos">
                                                 <svg
-                                                    className={`h-4 w-4 transition-transform duration-200 ${
-                                                        expandedIds.includes(r.id)
-                                                            ? 'rotate-180 text-primary'
-                                                            : 'text-gray-400'
-                                                    }`}
+                                                    className={`h-4 w-4 transition-transform duration-200 ${expandedIds.includes(r.id)
+                                                        ? 'rotate-180 text-primary'
+                                                        : 'text-gray-400'
+                                                        }`}
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"

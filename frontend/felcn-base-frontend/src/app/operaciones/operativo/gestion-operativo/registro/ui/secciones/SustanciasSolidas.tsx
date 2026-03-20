@@ -33,8 +33,10 @@ export function SustanciasSolidas({
     cargando = false,
 }: SeccionFormProps) {
     const [tipoSustancia, setTipoSustancia] = useState('')
+    const [toneladas, setToneladas] = useState('')
     const [kilos, setKilos] = useState('')
     const [gramos, setGramos] = useState('')
+    const [miligramos, setMiligramos] = useState('')
     const [costo, setCosto] = useState('')
     const [opciones, setOpciones] = useState<{ id: string; label: string; value: string }[]>([])
 
@@ -62,11 +64,15 @@ export function SustanciasSolidas({
     }, [])
 
     const agregarSustancia = async () => {
-        if (!tipoSustancia || (!kilos && !gramos)) {
+        if (!tipoSustancia || (!toneladas && !kilos && !gramos && !miligramos)) {
             return
         }
 
-        const totalKilos = parseFloat(kilos || '0') + parseFloat(gramos || '0') / 1000
+        const totalKilos =
+            parseFloat(toneladas || '0') * 1000 +
+            parseFloat(kilos || '0') +
+            parseFloat(gramos || '0') / 1000 +
+            parseFloat(miligramos || '0') / 1000000
 
         const nuevaSustancia = {
             idSustanciaSolidaDescripcion: parseInt(tipoSustancia),
@@ -77,8 +83,10 @@ export function SustanciasSolidas({
         await onGuardar(nuevaSustancia)
 
         setTipoSustancia('')
+        setToneladas('')
         setKilos('')
         setGramos('')
+        setMiligramos('')
         setCosto('')
     }
 
@@ -115,41 +123,6 @@ export function SustanciasSolidas({
                     </div>
 
                     <div>
-                        <label htmlFor="sustanciaQuimicaSolidaKilos" className="mb-1 block text-sm font-medium">
-                            Kilos
-                        </label>
-                        <input
-                            id="sustanciaQuimicaSolidaKilos"
-                            type="number"
-                            className="form-input w-full"
-                            value={kilos}
-                            onChange={(e) => setKilos(e.target.value)}
-                            placeholder="0"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="sustanciaQuimicaSolidaGramos" className="mb-1 block text-sm font-medium">
-                            Gramos
-                        </label>
-                        <input
-                            id="sustanciaQuimicaSolidaGramos"
-                            type="number"
-                            className="form-input w-full"
-                            value={gramos}
-                            onChange={(e) => {
-                                const val = e.target.value
-                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
-                                    setGramos(val)
-                                }
-                            }}
-                            placeholder="0"
-                            min="0"
-                            max="999"
-                        />
-                    </div>
-
-                    <div>
                         <label htmlFor="sustanciaSolidaCosto" className="mb-1 block text-sm font-medium">
                             Costo
                         </label>
@@ -170,14 +143,94 @@ export function SustanciasSolidas({
                         />
                     </div>
 
-                    <div className="col-span-1 mt-2 lg:col-span-4">
+                    <div className="hidden lg:block"></div>
+                    <div className="hidden lg:block"></div>
+
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidaToneladas" className="mb-1 block text-sm font-medium">
+                            Toneladas (Tn)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidaToneladas"
+                            type="text"
+                            className="form-input w-full"
+                            value={toneladas}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || /^\d*$/.test(val)) {
+                                    setToneladas(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidaKilos" className="mb-1 block text-sm font-medium">
+                            Kilos (Kg)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidaKilos"
+                            type="text"
+                            className="form-input w-full"
+                            value={kilos}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                    setKilos(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidaGramos" className="mb-1 block text-sm font-medium">
+                            Gramos (g)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidaGramos"
+                            type="text"
+                            className="form-input w-full"
+                            value={gramos}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                    setGramos(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="sustanciaQuimicaSolidaMiligramos" className="mb-1 block text-sm font-medium">
+                            Miligramos (Mg)
+                        </label>
+                        <input
+                            id="sustanciaQuimicaSolidaMiligramos"
+                            type="text"
+                            className="form-input w-full"
+                            value={miligramos}
+                            onChange={(e) => {
+                                const val = e.target.value
+                                if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 999)) {
+                                    setMiligramos(val)
+                                }
+                            }}
+                            placeholder="0"
+                        />
+                    </div>
+
+
+                    <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
                         <button
                             type="button"
                             className="btn btn-success btn-sm"
                             onClick={agregarSustancia}
                             disabled={cargando}
                         >
-                            Agregar Sustancia
+                            Guardar
                         </button>
                     </div>
                 </div>
@@ -199,7 +252,7 @@ export function SustanciasSolidas({
                                 {
                                     accessor: 'descripcionSustancia',
                                     title: 'Tipo de Sustancia',
-                                    footer: <span className="font-bold text-sm">Total Costo:</span>,
+                                    footer: <span className="font-bold text-sm">Total Costo (Bs):</span>,
                                 },
                                 {
                                     accessor: 'cantidad',
@@ -209,7 +262,7 @@ export function SustanciasSolidas({
                                 },
                                 {
                                     accessor: 'costo',
-                                    title: 'Costo',
+                                    title: 'Costo (Bs)',
                                     textAlign: 'right',
                                     render: (row: any) => Number(row.costo ?? 0).toFixed(2),
                                     footer: (
