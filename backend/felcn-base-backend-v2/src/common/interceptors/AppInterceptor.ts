@@ -38,8 +38,10 @@ export class AppInterceptor implements NestInterceptor {
       | undefined
 
     const tiempoEspera =
-      this.reflector.get<number>('tiempoMaximoEspera', context.getHandler()) ||
-      TIEMPO_ESPERA_POR_DEFECTO
+      this.reflector.getAllAndOverride<number>('tiempoMaximoEspera', [
+        context.getHandler(),
+        context.getClass(),
+      ]) || TIEMPO_ESPERA_POR_DEFECTO
 
     return next.handle().pipe(
       timeout(tiempoEspera * 1000),
