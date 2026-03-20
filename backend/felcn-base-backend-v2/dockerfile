@@ -5,8 +5,7 @@ RUN apk add --no-cache python3 make g++ vips-dev
 
 COPY package*.json ./
 
-RUN npm ci --ignore-scripts --progress=false --no-audit && \
-    npm rebuild sharp --build-from-source
+RUN npm install --progress=false --no-audit
 
 COPY . .
 
@@ -20,8 +19,7 @@ RUN apk add --no-cache python3 make g++ vips-dev
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts --progress=false --no-audit && \
-    npm rebuild sharp --build-from-source
+RUN npm install --omit=dev --progress=false --no-audit
 
 FROM node:22-alpine AS release
 WORKDIR /home/node/app
