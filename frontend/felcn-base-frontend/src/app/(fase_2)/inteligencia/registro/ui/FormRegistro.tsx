@@ -10,9 +10,9 @@ import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import {
-  dateToString,
   dateToStringAmPm,
   dateUtcToString,
+  formatDate2ToBackend,
   nowDateToString,
 } from '@/utils/fechas'
 import { useDepartments } from '../hooks/use.departments'
@@ -255,7 +255,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
         idDepartamento: values.departamento.value,
         idGrupo: values.grupo.value,
         nombreCaso: values.nombreOperativo,
-        fechaSolicitud: values.fechaHoraOperativo,
+        fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
         nombreSolicitud: values.quienRealiza.label,
         telefonoSolicitud: values.quienRealizaNum,
         asignado: values.asignadoA.label,

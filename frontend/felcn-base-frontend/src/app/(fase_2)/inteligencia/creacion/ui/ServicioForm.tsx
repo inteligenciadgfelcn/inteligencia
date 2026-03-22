@@ -16,7 +16,12 @@ import {
 import { useUsersInteligencia } from '../../servicio/hooks/use.users.inteligencia'
 import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
 import { Usuario } from '../../servicio/services/users.service'
-import { CreateServiceBody, postServicio } from '../services/creacion.service'
+import {
+  CreateServiceBody,
+  postGenerarServicio,
+  postServicio,
+} from '../services/creacion.service'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -47,7 +52,6 @@ export type FormValues = z.infer<typeof formSchema>
 export const ServicioForm = () => {
   const [loading, setLoading] = useState(false)
   const { Alerta } = useAlerts()
-  const { sesionPeticion } = useSession()
 
   const {
     handleSubmit,
@@ -69,6 +73,20 @@ export const ServicioForm = () => {
   imprimir('form values', watch())
 
   const { data: usuarios } = useUsersInteligencia()
+
+  const handleGenCode = async () => {
+    const fechaIngreso = watch('fechaHoraIngreso')
+    const fechaSalida = watch('fechaHoraSalida')
+
+    setLoading(true)
+    const code = await postGenerarServicio({
+      fechaIngreso: formatDateToBackend(fechaIngreso),
+      fechaSalida: formatDateToBackend(fechaSalida),
+    })
+
+    setValue('codigoServicio', code)
+    setLoading(false)
+  }
 
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
@@ -112,117 +130,131 @@ export const ServicioForm = () => {
   }
 
   return (
-    <div className="">
+    <>
+      <LoadingDialog show={loading} />
       <div className="">
-        <div className="panel flex items-center p-3 text-primary mb-5">
-          <span className="text-lg font-semibold">
-            Formulario de creación de codigos de servicios
-          </span>
-        </div>
-        {/* FORM */}
-        <div className="panel">
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-12 p-4 gap-4">
-              <div className="col-span-8">
-                <AsyncSearchSelect<Usuario>
-                  control={control}
-                  name="entrante"
-                  prefix="Servicio entrante"
-                  error={errors.entrante?.message as string}
-                  originalData={usuarios ?? []}
-                  mapOption={(item) => {
-                    return {
-                      label:
-                        `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                      value: Number(item.telefono),
-                      original: item,
-                    }
-                  }}
-                  onValueChange={(option) => {
-                    if (option) {
-                      setValue('entrantePase', option.original.usuario)
-                    } else {
-                      resetField('entrantePase')
-                    }
-                  }}
-                />
+        <div className="">
+          <div className="panel flex items-center p-3 text-primary mb-5">
+            <span className="text-lg font-semibold">
+              Formulario de creación de codigos de servicios
+            </span>
+          </div>
+          {/* FORM */}
+          <div className="panel">
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="grid grid-cols-12 p-4 gap-4">
+                <div className="col-span-8">
+                  <AsyncSearchSelect<Usuario>
+                    control={control}
+                    name="entrante"
+                    prefix="Servicio entrante"
+                    error={errors.entrante?.message as string}
+                    originalData={usuarios ?? []}
+                    mapOption={(item) => {
+                      return {
+                        label:
+                          `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
+                        value: Number(item.telefono),
+                        original: item,
+                      }
+                    }}
+                    onValueChange={(option) => {
+                      if (option) {
+                        setValue('entrantePase', option.original.usuario)
+                      } else {
+                        resetField('entrantePase')
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <InputWithPrefix
+                    name="entrantePase"
+                    prefix="Numero de Pase"
+                    register={register}
+                    error={errors.entrantePase?.message as string}
+                    readOnly
+                  />
+                </div>
+                <div className="col-span-8">
+                  <AsyncSearchSelect<Usuario>
+                    control={control}
+                    name="emergencia"
+                    prefix="Servicio de emergencia"
+                    error={errors.emergencia?.message as string}
+                    originalData={usuarios ?? []}
+                    mapOption={(item) => {
+                      return {
+                        label:
+                          `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
+                        value: Number(item.telefono),
+                        original: item,
+                      }
+                    }}
+                    onValueChange={(option) => {
+                      if (option) {
+                        setValue('emergenciaPase', option.original.usuario)
+                      } else {
+                        resetField('emergenciaPase')
+                      }
+                    }}
+                  />
+                </div>
+                <div className="col-span-4">
+                  <InputWithPrefix
+                    name="emergenciaPase"
+                    prefix="Numero de Pase"
+                    register={register}
+                    error={errors.emergenciaPase?.message as string}
+                    readOnly
+                  />
+                </div>
+                <div className="col-span-8">
+                  <InputWithPrefix
+                    name="fechaHoraIngreso"
+                    prefix="Fecha y hora de Ingreso al Servicio"
+                    register={register}
+                    error={errors.fechaHoraIngreso?.message as string}
+                  />
+                </div>
+                <div className="col-span-4"></div>
+                <div className="col-span-8">
+                  <InputWithPrefix
+                    name="fechaHoraSalida"
+                    prefix="Fecha y hora de Salida del Servicio"
+                    register={register}
+                    error={errors.fechaHoraSalida?.message as string}
+                  />
+                </div>
+                <div className="col-span-4"></div>
+                <div className="col-span-3">
+                  <button
+                    type="button"
+                    disabled={loading}
+                    className="btn btn-secondary btn-sm w-full"
+                    onClick={handleGenCode}
+                  >
+                    {loading && (
+                      <span className="animate-spin border-2 border-white border-l-transparent rounded-full w-5 h-5 ltr:mr-4 rtl:ml-4 inline-block align-middle"></span>
+                    )}
+                    Asignar codigo de servicio
+                  </button>
+                </div>
+                <div className="col-span-5">
+                  <InputWithPrefix
+                    name="codigoServicio"
+                    register={register}
+                    readOnly
+                    error={errors.codigoServicio?.message as string}
+                  />
+                </div>
               </div>
-              <div className="col-span-4">
-                <InputWithPrefix
-                  name="entrantePase"
-                  prefix="Numero de Pase"
-                  register={register}
-                  error={errors.entrantePase?.message as string}
-                  readOnly
-                />
-              </div>
-              <div className="col-span-8">
-                <AsyncSearchSelect<Usuario>
-                  control={control}
-                  name="emergencia"
-                  prefix="Servicio de emergencia"
-                  error={errors.emergencia?.message as string}
-                  originalData={usuarios ?? []}
-                  mapOption={(item) => {
-                    return {
-                      label:
-                        `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                      value: Number(item.telefono),
-                      original: item,
-                    }
-                  }}
-                  onValueChange={(option) => {
-                    if (option) {
-                      setValue('emergenciaPase', option.original.usuario)
-                    } else {
-                      resetField('emergenciaPase')
-                    }
-                  }}
-                />
-              </div>
-              <div className="col-span-4">
-                <InputWithPrefix
-                  name="emergenciaPase"
-                  prefix="Numero de Pase"
-                  register={register}
-                  error={errors.emergenciaPase?.message as string}
-                  readOnly
-                />
-              </div>
-              <div className="col-span-8">
-                <InputWithPrefix
-                  name="fechaHoraIngreso"
-                  prefix="Fecha y hora de Ingreso al Servicio"
-                  register={register}
-                  error={errors.fechaHoraIngreso?.message as string}
-                />
-              </div>
-              <div className="col-span-4"></div>
-              <div className="col-span-8">
-                <InputWithPrefix
-                  name="fechaHoraSalida"
-                  prefix="Fecha y hora de Salida del Servicio"
-                  register={register}
-                  error={errors.fechaHoraSalida?.message as string}
-                />
-              </div>
-              <div className="col-span-4"></div>
-              <div className="col-span-8">
-                <InputWithPrefix
-                  name="codigoServicio"
-                  prefix="Codigo de Servicio Asignado"
-                  register={register}
-                  readOnly
-                  error={errors.codigoServicio?.message as string}
-                />
-              </div>
-            </div>
 
-            {/* <ProgresoLineal mostrar={loading} /> */}
+              {/* <ProgresoLineal mostrar={loading} /> */}
 
-            {/* FOOTER */}
-            <div className="flex justify-end gap-3 px-5 py-4 dark:border-gray-700">
-              {/* <button
+              {/* FOOTER */}
+              <div className="flex justify-end gap-3 px-5 py-4 dark:border-gray-700">
+                {/* <button
               type="button"
               onClick={onClose}
               disabled={loading}
@@ -231,17 +263,18 @@ export const ServicioForm = () => {
               Cancelar
             </button> */}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-              >
-                Guardar codigo de servicio
-              </button>
-            </div>
-          </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn btn-primary"
+                >
+                  Guardar codigo de servicio
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

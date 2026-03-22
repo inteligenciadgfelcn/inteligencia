@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -30,11 +30,14 @@ import { Profesion, getProfesiones } from '../services/profesion.service'
 import { TipoCabello, getTiposCabello } from '../services/tipo.cabello.service'
 import { TipoNariz, getTiposNariz } from '../services/tipo.nariz.service'
 import { TipoOjos, getTiposOjos } from '../services/tipo.ojos.service'
+import { postRegistroFiliacion } from '../services/filiacion.service'
 
 import FileInputWithPreview from '@/components/form/FormInputFileWithPrefix'
 import { CasbinTypes } from '@/types'
 import { getPaises, Pais } from '../services/pais.service'
 import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
+import { imprimir } from '@/utils/imprimir'
+import { useAlerts } from '@/hooks'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -73,8 +76,15 @@ export const formSchema = z.object({
   condicionDeLaPersona: selectSchema(
     'La condición de la persona es obligatoria'
   ),
-  estatura: z.string().min(1, 'La estatura es obligatoria'),
-  pesoCorporal: z.string().min(1, 'El peso corporal es obligatorio'),
+  estatura: z
+    .string()
+    .min(1, 'La estatura es obligatoria')
+    .pipe(z.coerce.number({ invalid_type_error: 'Debe ser un número válido' })),
+  pesoCorporal: z
+    .string()
+    .min(1, 'El peso corporal es obligatorio')
+    .pipe(z.coerce.number({ invalid_type_error: 'Debe ser un número válido' })),
+
   senalesParticulares: z
     .string()
     .min(1, 'Las señas particulares son obligatorias'),
@@ -133,10 +143,13 @@ const CONDICION_PERSONA_OPTIONS: OpcionBasica[] = [
 
 interface Props {
   persona?: FiliacionPersonaTable
+  onSuccess?: () => void
 }
 
 /* ================= COMPONENT ================= */
-export const FormFiliacion = ({ persona }: Props) => {
+export const FormFiliacion = ({ persona, onSuccess }: Props) => {
+  const { Alerta } = useAlerts()
+
   // TODO: Cambiar a false
   const [permisos, setPermisos] = useState<CasbinTypes>({
     read: true,
@@ -233,8 +246,159 @@ export const FormFiliacion = ({ persona }: Props) => {
     defaultValues: {},
   })
 
+  const fileToBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const result = String(reader.result ?? '')
+        const base64 = result.includes(',') ? result.split(',')[1] : result
+        resolve(base64)
+      }
+      reader.onerror = () => reject(new Error('No se pudo procesar la imagen'))
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const convertirFecha = (fecha: string) => {
+    const [dia, mes, anio] = fecha.split('/')
+
+    if (!dia || !mes || !anio) {
+      throw new Error('Formato inválido')
+    }
+
+    return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
+  }
+
   /* ================= SUBMIT ================= */
-  const onSubmit = async (values: FormValues) => {}
+  const onSubmit = async (values: FormValues) => {
+    if (!persona) {
+      Alerta({
+        mensaje: 'Debe seleccionar una persona antes de guardar',
+        variant: 'error',
+      })
+      return
+    }
+
+    try {
+      const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
+        await Promise.all([
+          fileToBase64(values.fotoFrontal),
+          fileToBase64(values.fotoPerfilDerecho),
+          fileToBase64(values.fotoPerfilIzquierdo),
+        ])
+
+      await postRegistroFiliacion({
+        idPersona: Number(persona.id_persona_auxiliar),
+        estadoPersona: values.estadoPersona.label,
+        numeroCaso: persona.numero_caso,
+        nombres: values.nombre,
+        apellidoPaterno: values.paterno,
+        apellidoMaterno: values.materno ?? '',
+        apellidoEsposo: values.apEsposo ?? '',
+        idPais: values.nacionalidad.value,
+        genero: values.genero.value === 1,
+        fechaNacimiento: convertirFecha(values.fechaNacimiento),
+        idEstadoCivil: values.estadoCivil.value,
+        direccion: values.direccion,
+        observacion: values.observacion ?? '',
+        detenido: {
+          serie: '*',
+          seccion: '*',
+          tieneTarjeta: values.tarjetaProntuario.value === 1,
+          estaVivo: values.condicionDeLaPersona.value === 1,
+          fotoFrente,
+          fotoPerfilDerecho,
+          fotoPerfilIzquierdo,
+          observacionAdicional: values.observacion ?? '',
+        },
+        alias: {
+          alias: values.alias,
+        },
+        profesion: {
+          idProfesion: values.profesionOcupacion.value,
+        },
+        documento: {
+          idTipoDocumento: values.tipoDocumento.value,
+          numeroDocumento: values.numeroDocumento ?? '',
+          expedido: values.expedidoEn,
+          contrastadoSegip: values.contratadoSegip.label,
+        },
+        fenotipo: {
+          estatura: String(values.estatura),
+          pesoCorporal: String(values.pesoCorporal),
+          senasParticulares: values.senalesParticulares,
+          tatuajes: values.tatuajes ?? '',
+          tipoNariz: values.tipoNariz.value,
+          constitucionCorporal: values.constitucion.value,
+          idColorPiel: values.colorPiel.value,
+          idColorCabello: values.colorCabello.value,
+          idTipoCabello: values.tipoCabello.value,
+          idColorOjos: values.colorOjos.value,
+          idTipoOjos: values.tipoOjos.value,
+        },
+        arrestado: {
+          idOperativo: Number(persona.id_operativo),
+          lugarOperativo: values.lugarOperativo,
+          lugarNacimiento: values.lugarNacimiento,
+          fotoDedoIzquierdo: '',
+          fotoDedoDerecho: '',
+        },
+      })
+
+      Alerta({
+        mensaje: 'Registro de filiacion guardado correctamente',
+        variant: 'success',
+      })
+      onSuccess?.()
+    } catch (error: any) {
+      imprimir('Error al guardar filiacion', error)
+      Alerta({
+        mensaje:
+          error?.mensaje ?? error?.message ?? 'No se pudo guardar la filiacion',
+        variant: 'error',
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (persona && nacionalidades) {
+      const nacionalidadEncontrada = nacionalidades?.find(
+        (n) => n.descripcion.toLowerCase() === persona.pais.toLowerCase()
+      )
+
+      const generoEncontrado = GENERO_OPTIONS.find(
+        (g) => g.descripcion.toLowerCase() === persona.genero.toLowerCase()
+      )
+
+      const tipoDocumentoEncontrado = tiposDocumento?.find(
+        (t) =>
+          t.descripcion.toLowerCase() === persona.tipo_documento.toLowerCase()
+      )
+
+      imprimir('Nacionalidad encontrada', nacionalidadEncontrada)
+
+      setValue('nombre', persona.nombres)
+      setValue('paterno', persona.apellido_paterno)
+      setValue('materno', persona.apellido_materno)
+      setValue('apEsposo', persona.apellido_esposo)
+      setValue('lugarOperativo', persona.lugar)
+      setValue('numeroDocumento', persona.numero_documento)
+      setValue('fechaNacimiento', persona.fecha_nacimiento)
+      setValue('direccion', persona.direccion)
+      setValue('nacionalidad', {
+        label: nacionalidadEncontrada!.descripcion,
+        value: nacionalidadEncontrada!.idPais,
+      })
+      setValue('genero', {
+        label: generoEncontrado!.descripcion,
+        value: generoEncontrado!.id,
+      })
+      setValue('tipoDocumento', {
+        label: tipoDocumentoEncontrado!.descripcion,
+        value: tipoDocumentoEncontrado!.idTipoDocumento,
+      })
+    }
+  }, [persona, nacionalidades, setValue])
 
   return (
     <div className="">
@@ -370,6 +534,7 @@ export const FormFiliacion = ({ persona }: Props) => {
                 name="numeroDocumento"
                 prefix="Número de Documento"
                 register={register}
+                onlyNumbers
                 error={errors.numeroDocumento?.message as string}
               />
             </div>
@@ -433,7 +598,7 @@ export const FormFiliacion = ({ persona }: Props) => {
                 })}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-6">
               <InputWithPrefix
                 name="observacion"
                 prefix="Observación"
@@ -441,7 +606,7 @@ export const FormFiliacion = ({ persona }: Props) => {
                 error={errors.observacion?.message as string}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-3">
               <AsyncSearchSelect<OpcionBasica>
                 name="tarjetaProntuario"
                 control={control}
@@ -455,7 +620,7 @@ export const FormFiliacion = ({ persona }: Props) => {
                 })}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-3">
               <AsyncSearchSelect<OpcionBasica>
                 name="condicionDeLaPersona"
                 control={control}
@@ -630,12 +795,9 @@ export const FormFiliacion = ({ persona }: Props) => {
                 error={errors.fotoPerfilDerecho?.message}
               />
             </div>
-          </div>
-
-          {/* FOOTER */}
-          <div className="flex justify-end gap-3 px-5 py-4 border-t dark:border-gray-700">
-            <button type="submit" className="btn btn-primary">
-              Guardar
+            {/* FOOTER */}
+            <button type="submit" className="btn btn-primary col-span-2">
+              Agregar persona
             </button>
           </div>
         </form>

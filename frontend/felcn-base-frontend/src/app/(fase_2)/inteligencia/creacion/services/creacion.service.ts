@@ -23,6 +23,11 @@ export interface CreateServiceBody {
   fechaSalida: string
 }
 
+export interface GenerateServiceBody {
+  fechaIngreso: string
+  fechaSalida: string
+}
+
 const { sesionPeticion } = usePeticion()
 
 export async function postServicio(
@@ -35,8 +40,6 @@ export async function postServicio(
     withCredentials: true,
   })
 
-  imprimir('response', response)
-
   if (response.mensaje) {
     return {
       mensaje: response.mensaje,
@@ -47,4 +50,17 @@ export async function postServicio(
       servicio: response,
     }
   }
+}
+
+export async function postGenerarServicio(
+  body: GenerateServiceBody
+): Promise<string> {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/servicio/generar-codigo-servicio`,
+    method: 'GET',
+    params: body,
+    withCredentials: true,
+  })
+
+  return response
 }
