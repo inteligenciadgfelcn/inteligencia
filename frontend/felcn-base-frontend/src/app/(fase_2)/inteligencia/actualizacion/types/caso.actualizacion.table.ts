@@ -11,7 +11,7 @@ export interface CasoActualizacionTable {
   asignacionCaso: string
   fiscalAsignado: string
 
-  codigoDepartamento: string
+  abreviaturaDepartamento: string
 }
 
 // {
