@@ -21,10 +21,13 @@ import IconTxtFile from '@/components/Icon/IconTxtFile'
 import { DataTableSortStatus } from 'mantine-datatable'
 import React from 'react'
 import { sortBy } from 'lodash'
-import { RegistroTypeCRUD } from '../types/RegistroType'
 import { FormRegistro } from './FormRegistro'
 import { AlertaEstadoRegistro } from './AlertaEstadoRegistro'
 import { RegistroDetalle } from './RegistroDetalle'
+import { AsignacionTable } from '../types/asignacion.table'
+import { imprimir } from '@/utils/imprimir'
+import IconTrash from '@/components/Icon/IconTrash'
+import IconEdit from '@/components/Icon/IconEdit'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
@@ -45,13 +48,13 @@ export function RegistrosDataTable() {
     delete: true,
   })
 
-  const [selected, setSelected] = useState<RegistroTypeCRUD | null>(null)
+  const [selected, setSelected] = useState<AsignacionTable | null>(null)
 
   const [openForm, setOpenForm] = useState(false)
   const [openDetalle, setOpenDetalle] = useState(false)
   const [openEstado, setOpenEstado] = useState(false)
   const [openMenu, setOpenMenu] = useState(false)
-  const [secciones, setSecciones] = useState<RegistroTypeCRUD[]>([])
+  const [secciones, setSecciones] = useState<AsignacionTable[]>([])
   const [tipoNuevo, setTipoNuevo] = useState<'modulo' | 'seccion'>('modulo')
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
     columnAccessor: 'orden',
@@ -72,25 +75,27 @@ export function RegistrosDataTable() {
   /* FETCH */
   const obtenerRegistros = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseApiUrl}/asignaciones`,
-      // params: {
-      //   pagina,
-      //   limite,
-      //   filtro: search || undefined,
-      //   ordenar: sortStatus.columnAccessor,
-      //   direccion: sortStatus.direction,
-      // },
+      url: `${Constantes.baseUrl}/asignaciones`,
+      withCredentials: true,
+      params: {
+        pagina,
+        limite,
+        filtro: search || undefined,
+        ordenar: sortStatus.columnAccessor,
+        direccion: sortStatus.direction,
+      },
     })
-
-    return {
-      filas: res.data,
-      total: res.data.length,
-    }
+    imprimir('table', res)
+    return res.datos
+    // {
+    //   filas: res.data,
+    //   total: res.data.length,
+    // }
   }
 
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['solicitud_registros', pagina, limite, search, sortStatus],
-    queryFn: obtenerRegistros,
+    queryFn: () => obtenerRegistros(),
     placeholderData: keepPreviousData,
   })
 
@@ -105,58 +110,22 @@ export function RegistrosDataTable() {
     return sortStatus.direction === 'desc' ? sorted.reverse() : sorted
   }, [filas, sortStatus])
 
-  /* EXPORT CONFIG */
-  const exportHeaders = [
-    'Codigo Registro',
-    'Departamento',
-    'Unidad',
-    'Numero de Registro',
-    'Fecha y Hora de la Operacion',
-    'Nombre del Caso',
-    'Asignado al Caso',
-    'Fiscal Asignado al Caso',
-  ]
-
-  const exportColumns = [
-    'codigoServicio',
-    'departamento',
-    'unidad',
-    'nroRegistro',
-    'fechaHoraOperativo',
-    'nombreOperativo',
-    'asignadoA.nombreCompleto',
-    'fiscalAsignado.nombreCompleto',
-  ] as const as readonly (keyof RegistroTypeCRUD)[]
-
-  const exportExcel = () => {
-    exportToExcel(filas, exportHeaders, exportColumns, 'caso_servicios')
-  }
-
-  const exportPrint = () => {
-    exportToPrint(
-      filas,
-      exportHeaders,
-      exportColumns,
-      'Gestión de Casos Servicios'
-    )
-  }
-
   /* COLUMNAS */
   const columns = [
     {
-      accessor: 'codigoServicio',
+      accessor: 'idAsignacion',
       title: 'Codigo Registro',
       sortable: true,
-      render: (row: RegistroTypeCRUD) => <span>{row?.id}</span>,
+      render: (row: AsignacionTable) => <span>{row?.idAsignacion}</span>,
     },
 
     {
       accessor: 'departamento',
       title: 'Departamento',
       sortable: true,
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsignacionTable) => (
         <div className="flex items-center gap-2">
-          <span>{row.departamento.nombre}</span>
+          <span>{row.departamento?.descripcion}</span>
         </div>
       ),
     },
@@ -164,7 +133,7 @@ export function RegistrosDataTable() {
     {
       accessor: 'unidad',
       title: 'Unidad',
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsignacionTable) => (
         <div className="flex items-center gap-2">
           <span>{row.grupo.distrital.unidad.descripcion}</span>
         </div>
@@ -176,17 +145,17 @@ export function RegistrosDataTable() {
     {
       accessor: 'asignadoA',
       title: 'Asignado al caso',
-      render: (row: RegistroTypeCRUD) => row.asignado ?? '-',
+      render: (row: AsignacionTable) => row.asignado ?? '-',
     },
     {
       accessor: 'fiscalAsignado',
       title: 'Fiscal asignado al caso',
-      render: (row: RegistroTypeCRUD) => row.fiscalAsignado ?? '-',
+      render: (row: AsignacionTable) => row.fiscalAsignado ?? '-',
     },
     {
       accessor: 'acciones',
       title: 'Acciones',
-      render: (row: RegistroTypeCRUD) => (
+      render: (row: AsignacionTable) => (
         <>
           {permisos.read && (
             <button
@@ -199,20 +168,15 @@ export function RegistrosDataTable() {
             </button>
           )}
 
-          {/* {permisos.update && (
-              <button
-                onClick={() => {
-                  setSelected(row)
-                  setOpenEstado(true)
-                }}
-              >
-                <IconRefresh
-                  className={`w-5 h-5 ${
-                    row.estado === 'ACTIVO' ? 'text-success' : 'text-danger'
-                  }`}
-                />
-              </button>
-            )} */}
+          {permisos.update && (
+            <button
+              onClick={() => {
+                setSelected(row)
+              }}
+            >
+              <IconEdit className="ms-2 h-5 text-primary" />
+            </button>
+          )}
 
           {/* {permisos.update && (
             <button
@@ -233,22 +197,22 @@ export function RegistrosDataTable() {
 
   return (
     <div>
-      {
-        <div className="panel flex items-center p-3 text-primary mb-5">
-          <span className="text-lg font-semibold">
-            Registro de casos en operativos antinarcóticos
-          </span>
-        </div>
-      }
-      <div className="panel p-1 mb-5 w-full">
+      <div className="panel flex items-center p-3 text-primary mb-5">
+        <span className="text-lg font-semibold">
+          Registro de casos en operativos antinarcóticos
+        </span>
+      </div>
+      <div className="panel p-1 mb-12 w-full">
         <FormRegistro
+          asignacion={selected}
           onSuccess={() => {
             setOpenForm(false)
             refetch()
           }}
         />
       </div>
-      <VristoDataTable<RegistroTypeCRUD>
+      <VristoDataTable<AsignacionTable>
+        title="Casos operativos"
         rows={filasOrdenadas}
         total={total}
         page={pagina}
@@ -302,7 +266,7 @@ export function RegistrosDataTable() {
       {openEstado && (
         <AlertaEstadoRegistro
           isOpen
-          registro={selected}
+          asignacion={selected}
           onClose={() => setOpenEstado(false)}
           onSuccess={() => {
             setOpenEstado(false)
