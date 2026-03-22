@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { siteName } from '@/utils'
 import { FormParentesco } from './ui/FormParentesco'
+import { ParentescoView } from './ui/ParentescoView'
 
 export const metadata: Metadata = {
   title: `Parentezco - ${siteName()}`,
@@ -8,9 +9,5 @@ export const metadata: Metadata = {
 }
 
 export default function ParentezcoPage() {
-  return (
-    <div className="panel p-1 mb-5 w-full">
-      <FormParentesco />
-    </div>
-  )
+  return <ParentescoView />
 }

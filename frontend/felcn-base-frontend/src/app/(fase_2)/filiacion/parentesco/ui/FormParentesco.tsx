@@ -65,9 +65,9 @@ export function FormParentesco() {
   }
 
   return (
-    <div className="space-y-5 p-4">
+    <div className="space-y-5">
       <div className="panel p-4">
-        <h2 className="text-lg font-semibold text-primary mb-4">PARENTESCOS</h2>
+        <h2 className="text-lg font-semibold text-primary mb-4">Parentescos</h2>
 
         <form onSubmit={handleSubmitParentesco(onSubmitParentezco)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -149,7 +149,7 @@ export function FormParentesco() {
 
       <div className="panel p-4">
         <h2 className="text-lg font-semibold text-primary mb-4">
-          NOMBRES SUPUESTOS
+          Nombres Supuestos
         </h2>
 
         <form onSubmit={handleSubmitSupuestos(onSubmitSupuestos)}>
