@@ -1,19 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { getPersonasFiliacionPorCaso } from '../services/filiacion.service'
-import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
+import { useEffect, useState } from 'react'
+import { getPersonasFiliacionPorCaso } from '../registro/services/filiacion.service'
+import { FiliacionPersonaTable } from '../registro/type/filiacion.persona.table'
 import { useAlerts } from '@/hooks'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import { VristoSimpleDataTable } from '@/components/datatable/VristoSimpleDataTable'
-import { on } from 'events'
 
 interface Props {
   // caso?: CasoServicioTypeCRUD | null
   onSelected: (data?: FiliacionPersonaTable) => void
+  refreshKey?: number
+  statusFiliacion: 0 | 1
 }
 
-export const TablePersonas = ({ onSelected }: Props) => {
+export const TablePersonas = ({
+  onSelected,
+  refreshKey,
+  statusFiliacion,
+}: Props) => {
   const { Alerta } = useAlerts()
   const [nroCaso, setNroCaso] = useState<string | null>(null)
   const [loadingPersonas, setLoadingPersonas] = useState(false)
@@ -36,7 +41,7 @@ export const TablePersonas = ({ onSelected }: Props) => {
           direccion: '',
         },
         nroCaso,
-        0
+        statusFiliacion
       )
       setPersonasData(response.datos.filas)
       setSelectedFiliacion(null)
@@ -61,10 +66,17 @@ export const TablePersonas = ({ onSelected }: Props) => {
         prev?.id_persona_auxiliar == persona.id_persona_auxiliar
           ? null
           : persona
-      onSelected(data ?? undefined)
       return data
     })
   }
+
+  useEffect(() => {
+    onSelected(selectedFiliacion ?? undefined)
+  }, [selectedFiliacion])
+
+  useEffect(() => {
+    handleGetPersonas()
+  }, [refreshKey])
 
   const columns = [
     {
@@ -136,7 +148,9 @@ export const TablePersonas = ({ onSelected }: Props) => {
   return (
     <div className="panel p-1 mb-5 w-full">
       <div className="px-4 pt-4">
-        <h2 className="font-bold text-lg text-primary">Registro de Personas</h2>
+        <h2 className="font-bold text-lg text-primary">
+          Registro de Referencias
+        </h2>
       </div>
 
       {/* Input Nro Caso seccion */}
