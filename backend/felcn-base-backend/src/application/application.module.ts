@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
 import { ParametroModule } from './parametro/parametro.module'
 import { HealthModule } from './health/health.module'
-import { SunesisModule } from './sunesis/sunesis.module'
+// import { SunesisModule } from './sunesis/sunesis.module'
 import { InteligenciaModule } from './inteligencia/inteligencia.module'
 
 @Module({
-  imports: [ParametroModule, HealthModule, SunesisModule, InteligenciaModule],
+  imports: [ParametroModule, HealthModule, InteligenciaModule],
 })
-export class ApplicationModule {}
+export class ApplicationModule { }

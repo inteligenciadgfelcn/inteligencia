@@ -2,22 +2,20 @@
 
 import { useState } from 'react'
 import { useAlerts, useSession } from '@/hooks'
-import { Constantes } from '@/config/Constantes'
-import { InterpreteMensajes, delay, titleCase } from '@/utils'
-import { imprimir } from '@/utils/imprimir'
-import { RegistroTypeCRUD } from '../types/RegistroType'
+import { AsignacionTable } from '../types/asignacion.table'
+import { titleCase } from '@/utils'
 
 interface AlertaEstadoRegistroProps {
   isOpen: boolean
   onClose: () => void
-  registro: RegistroTypeCRUD | null
+  asignacion: AsignacionTable | null
   onSuccess: () => void
 }
 
 export const AlertaEstadoRegistro = ({
   isOpen,
   onClose,
-  registro,
+  asignacion,
   onSuccess,
 }: AlertaEstadoRegistroProps) => {
   const { Alerta } = useAlerts()
@@ -62,21 +60,17 @@ export const AlertaEstadoRegistro = ({
       <div className="panel w-full max-w-lg p-5 animate__animated animate__zoomIn">
         {/* HEADER */}
         <div className="mb-3">
-          <h5 className="text-lg font-semibold">Confirmar cambio de estado</h5>
+          <h5 className="text-lg font-bold">Confirmar cambio de estado</h5>
         </div>
 
         {/* BODY */}
-        {/* <div className="text-sm text-gray-600 dark:text-gray-400">
-          ¿Está seguro de{' '}
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          ¿Está seguro de eliminar el caso de servicio:{' '}
           <span className="font-semibold">
-            {registro?.estado === 'ACTIVO' ? 'inactivar' : 'activar'}
-          </span>{' '}
-          el caso de servicio:{' '}
-          <span className="font-semibold">
-            {titleCase(registro?.nroRegistro || '')}
+            {titleCase(asignacion?.nombreCaso || '')}
           </span>
           ?
-        </div> */}
+        </div>
 
         {/* LOADING */}
         {loading && (
@@ -97,13 +91,13 @@ export const AlertaEstadoRegistro = ({
             Cancelar
           </button>
 
-          {/* <button
-            className="btn btn-primary"
-            onClick={cambiarEstadoModulo}
+          <button
+            className="btn btn-danger"
+            onClick={onClose}
             disabled={loading}
           >
             Confirmar
-          </button> */}
+          </button>
         </div>
       </div>
     </div>
