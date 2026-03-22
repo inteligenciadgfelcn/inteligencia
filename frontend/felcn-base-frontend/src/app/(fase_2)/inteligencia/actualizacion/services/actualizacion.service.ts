@@ -9,6 +9,11 @@ export interface OpertaivosResponse {
   datos: Datos
 }
 
+export interface NroCasoResponse {
+  message: string
+  nroCaso: string
+}
+
 interface Datos {
   total: number
   filas: CasoActualizacionTable[]
@@ -24,7 +29,41 @@ export const getActualizacionData = async (
     params: {
       ...params,
       registrados: registrados ? 'true' : 'false',
-      codigo: 'ICIA-1818032026',
+      codigoServicio: 'ICIA-2122032026', // TODO: Obtener el código del servicio desde la configuración o contexto adecuado
+    },
+    withCredentials: true,
+  })
+  return response
+}
+
+export const generateNroCaso = async (
+  codigoDepartamento: string,
+  letra: string
+): Promise<string> => {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/asignaciones/generar-numero`,
+    method: 'POST',
+    body: {
+      codigoDepartamento: codigoDepartamento,
+      letra: letra,
+    },
+    withCredentials: true,
+  })
+  return response
+}
+
+export const saveAssignNroCaso = async (
+  nroOperativo: string,
+  codigoDepartamento: string,
+  letra: string
+): Promise<NroCasoResponse> => {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/asignaciones/asignar-numero-caso`,
+    method: 'POST',
+    body: {
+      nroOperativo: nroOperativo,
+      abreviatura: codigoDepartamento,
+      letra: letra,
     },
     withCredentials: true,
   })
