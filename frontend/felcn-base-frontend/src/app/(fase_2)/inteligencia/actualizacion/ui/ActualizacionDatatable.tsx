@@ -212,6 +212,7 @@ export function ActualizacionDataTable() {
         caso={selectedCaso}
         onActualizar={() => {
           imprimir('Actualizando caso con data:')
+          setSelectedCaso(null)
           refetch()
         }}
       />

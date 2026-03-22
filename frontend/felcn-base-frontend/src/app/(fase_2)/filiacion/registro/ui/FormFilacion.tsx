@@ -38,6 +38,7 @@ import { getPaises, Pais } from '../services/pais.service'
 import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
 import { imprimir } from '@/utils/imprimir'
 import { useAlerts } from '@/hooks'
+import FingerprintCapture from '@/components/finger/FingerprintCapture'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -783,11 +784,13 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                 accept=".webp,.png,.jpg"
                 prefix="Foto Perfil Izquierdo"
                 error={errors.fotoPerfilIzquierdo?.message}
+                showPreview
               />
             </div>
             <div className="col-span-4">
               <FileInputWithPreview
                 name="fotoPerfilDerecho"
+                showPreview
                 register={register}
                 setValue={setValue}
                 accept=".webp,.png,.jpg"
@@ -795,7 +798,38 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                 error={errors.fotoPerfilDerecho?.message}
               />
             </div>
-            {/* FOOTER */}
+          </div>
+
+          {/* Huellas derecha */}
+          <div className="panel mt-6 col-span-12">
+            <h2 className="font-bold text-lg text-primary">
+              Huellas mano derecha
+            </h2>
+            <div className="col-span-12 grid grid-cols-5 gap-4">
+              <FingerprintCapture id="1" name_finger="Pulgar" />
+              <FingerprintCapture id="1" name_finger="Indice" />
+              <FingerprintCapture id="1" name_finger="Medio" />
+              <FingerprintCapture id="1" name_finger="Anular" />
+              <FingerprintCapture id="1" name_finger="Meñique" />
+            </div>
+          </div>
+
+          {/* Huellas izquierda */}
+          <div className="panel mt-6 col-span-12">
+            <h2 className="font-bold text-lg text-primary">
+              Huellas mano izquierda
+            </h2>
+            <div className="col-span-12  grid grid-cols-5 gap-4">
+              <FingerprintCapture id="1" name_finger="Pulgar" />
+              <FingerprintCapture id="1" name_finger="Indice" />
+              <FingerprintCapture id="1" name_finger="Medio" />
+              <FingerprintCapture id="1" name_finger="Anular" />
+              <FingerprintCapture id="1" name_finger="Meñique" />
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="col-span-12 mt-6 flex justify-end gap-4">
             <button type="submit" className="btn btn-primary col-span-2">
               Agregar persona
             </button>

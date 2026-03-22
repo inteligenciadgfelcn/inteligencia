@@ -4,8 +4,14 @@ import React, { useEffect, useState } from 'react'
 import { useSession } from '@/hooks'
 import { Constantes } from '@/config/Constantes'
 import { socket } from '@/services/socket'
+import IconSave from '../Icon/IconSave'
 
-export default function FingerprintCapture() {
+interface Props {
+  id: string
+  name_finger: string
+}
+
+export default function FingerprintCapture({ id, name_finger }: Props) {
   const { sesionPeticion } = useSession()
 
   const [scannerEstado, setScannerEstado] = useState('DESCONECTADO')
@@ -88,71 +94,44 @@ export default function FingerprintCapture() {
   }
 
   return (
-    <div
-      style={{
-        marginTop: 20,
-        padding: 20,
-        background: '#111',
-        color: '#fff',
-        borderRadius: 10,
-      }}
-    >
-      <h2>🖐️ Captura de Huella</h2>
+    <div className="panel p-5 rounded-[10px]">
+      <h5 className="text-xl text-center">{name_finger}</h5>
 
       {/* 🔥 ESTADO SCANNER */}
-      <div
-        style={{
-          padding: 10,
-          borderRadius: 5,
-          marginBottom: 10,
-          background: scannerEstado === 'CONECTADO' ? '#0f5132' : '#842029',
-        }}
+      {/* <div
+        className={`p-2.5 rounded mb-2.5 ${
+          scannerEstado === 'CONECTADO' ? 'bg-[#0f5132]' : 'bg-[#842029]'
+        }`}
       >
         {scannerEstado === 'CONECTADO'
           ? '🟢 Dermalog conectado'
           : '🔴 Dermalog desconectado'}
-      </div>
+      </div> */}
 
-      {estado === 'esperando' && <p>Presione capturar</p>}
-      {estado === 'capturando' && <p>📡 Capturando...</p>}
+      {/* {estado === 'esperando' && <p>Presione capturar</p>} */}
+      {estado === 'capturando' && <p>Capturando...</p>}
 
       {/* IMAGEN */}
-      <div
-        style={{
-          width: 250,
-          height: 300,
-          border: '3px solid #00ffcc',
-          background: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginTop: 15,
-        }}
-      >
+      <div className="w-full h-[200px] bg-white flex items-center justify-center mt-4">
         {imagen ? (
-          <img
-            src={imagen}
-            alt="Huella"
-            style={{ width: '100%', height: '100%' }}
-          />
+          <img src={imagen} alt="Huella" className="w-full h-full" />
         ) : (
-          <span style={{ color: '#999' }}>Sin captura</span>
+          <span className="text-gray-400">Sin captura</span>
         )}
       </div>
 
       {/* CALIDAD */}
       {preview && (
-        <p style={{ marginTop: 10 }}>
+        <p className="mt-2.5">
           Calidad:{' '}
           <b
-            style={{
-              color:
-                preview.calidad > 70
-                  ? 'lime'
-                  : preview.calidad > 50
-                    ? 'orange'
-                    : 'red',
-            }}
+            className={`${
+              preview.calidad > 70
+                ? 'text-lime-400'
+                : preview.calidad > 50
+                  ? 'text-orange-400'
+                  : 'text-red-500'
+            }`}
           >
             {preview.calidad}
           </b>
@@ -160,31 +139,30 @@ export default function FingerprintCapture() {
       )}
 
       {/* BOTONES */}
-      <div style={{ marginTop: 15 }}>
+      <div className="mt-4">
         <button
           onClick={capturar}
           disabled={scannerEstado !== 'CONECTADO'}
-          style={{
-            padding: 10,
-            background: scannerEstado === 'CONECTADO' ? '#007bff' : 'gray',
-            color: '#fff',
-            marginRight: 10,
-          }}
+          className={`btn w-full px-2.5 py-2 text-white mr-2.5 ${
+            scannerEstado === 'CONECTADO'
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-gray-500 cursor-not-allowed'
+          }`}
         >
-          🔄 Reintentar huella
+          Escanear huella
         </button>
 
-        <button
+        {/* <button
           onClick={guardar}
           disabled={!preview}
-          style={{
-            padding: 10,
-            background: preview ? 'green' : 'gray',
-            color: '#fff',
-          }}
+          className={`px-2.5 py-2 text-white ${
+            preview
+              ? 'bg-green-600 hover:bg-green-700'
+              : 'bg-gray-500 cursor-not-allowed'
+          }`}
         >
-          💾 Guardar huella
-        </button>
+          <IconSave />
+        </button> */}
       </div>
     </div>
   )

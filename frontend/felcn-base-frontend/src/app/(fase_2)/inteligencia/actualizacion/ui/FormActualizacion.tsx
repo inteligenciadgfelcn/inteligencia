@@ -13,6 +13,12 @@ import { getIniciales, LetraInicial } from '../services/letras.service'
 import { imprimir } from '@/utils/imprimir'
 import IconEdit from '@/components/Icon/IconEdit'
 import IconPrinter from '@/components/Icon/IconPrinter'
+import {
+  generateNroCaso,
+  saveAssignNroCaso,
+} from '../services/actualizacion.service'
+import { InterpreteMensajes } from '@/utils'
+import { useAlerts } from '@/hooks'
 
 const selectSchema = (message: string) =>
   z.preprocess(
@@ -53,6 +59,8 @@ type FormState = z.infer<typeof formSchema>
 
 export function FormActualizacion({ caso, onActualizar }: Props) {
   const [continuacionCaso, setContinuacionCaso] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const { Alerta } = useAlerts()
 
   const { data: letras } = useQuery({
     queryKey: ['letras'],
@@ -67,21 +75,88 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
     reset,
     formState: { errors },
     setValue,
+    getValues,
+    trigger,
   } = useForm<FormState>({
     resolver: zodResolver(formSchema),
   })
 
-  const onSubmit = (values: FormState) => {
-    imprimir('Actualizando caso con data:')
-    onActualizar()
+  const onSubmit = async (values: FormState) => {
+    try {
+      setLoading(true)
+      const code = await saveAssignNroCaso(
+        getValues('nroRegistro'),
+        getValues('codigoDepartamento'),
+        getValues('letrasPrincipalAprendido')?.label
+      )
+
+      Alerta({
+        mensaje: InterpreteMensajes({
+          mensaje: 'Número de caso guardado correctamente.',
+        }),
+        variant: 'success',
+      })
+
+      onActualizar()
+    } catch (error) {
+      imprimir('Error generando número de caso', error)
+      Alerta({
+        mensaje: InterpreteMensajes(error),
+        variant: 'error',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const onContinuacionChange = (value: boolean) => {
+  const onContinuacionChange = async (value: boolean) => {
     setContinuacionCaso(value)
     if (value) {
       setValue('newCode', '', { shouldValidate: true, shouldDirty: true })
     } else {
-      setValue('newCode', '12345', { shouldValidate: true, shouldDirty: true })
+      handleGenNroCaso()
+    }
+  }
+
+  const handleGenNroCaso = async () => {
+    const fieldsToValidate: (keyof FormState)[] = [
+      'letrasPrincipalAprendido',
+      'codigoDepartamento',
+      'nroRegistro',
+    ]
+
+    // Validar solo los campos requeridos para asignar número de registro
+    const isValid = await trigger(fieldsToValidate)
+    if (!isValid) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const code = await generateNroCaso(
+        getValues('codigoDepartamento'),
+        getValues('letrasPrincipalAprendido')?.label
+      )
+
+      Alerta({
+        mensaje: InterpreteMensajes({
+          mensaje: 'Número de caso generado correctamente.',
+        }),
+        variant: 'success',
+      })
+
+      // Si la respuesta contiene el número de registro, actualizarlo en el form
+      if (code) {
+        setValue('newCode', code, { shouldValidate: true, shouldDirty: true })
+      }
+    } catch (error) {
+      imprimir('Error generando número de caso', error)
+      Alerta({
+        mensaje: InterpreteMensajes(error),
+        variant: 'error',
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -89,7 +164,7 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
     if (caso) {
       reset({
         letrasPrincipalAprendido: undefined,
-        codigoDepartamento: caso.codigoDepartamento ?? '',
+        codigoDepartamento: caso.abreviaturaDepartamento ?? '',
         nroRegistro: caso.numeroOperativo ?? '',
         newCode: '',
       })
@@ -151,7 +226,7 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
                 type="button"
                 className={`btn btn-sm btn-success`}
                 onClick={() => onContinuacionChange(true)}
-                disabled={!caso}
+                disabled={!caso || loading}
               >
                 Si
               </button>
@@ -159,7 +234,7 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
                 type="button"
                 className={`btn btn-sm btn-danger`}
                 onClick={() => onContinuacionChange(false)}
-                disabled={!caso}
+                disabled={!caso || loading}
               >
                 No
               </button>
@@ -175,8 +250,12 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
             />
           </div>
 
-          <div className="col-span-12 md:col-span-4 flex md:justify-end">
-            <button type="submit" className="btn btn-primary btn-sm">
+          <div className="col-span-12 md:col-span-4 flex md:justify-start">
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm"
+              disabled={loading}
+            >
               Actualizar
             </button>
           </div>
