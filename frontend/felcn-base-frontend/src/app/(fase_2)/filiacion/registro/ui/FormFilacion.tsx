@@ -39,6 +39,8 @@ import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
 import { imprimir } from '@/utils/imprimir'
 import { useAlerts } from '@/hooks'
 import FingerprintCapture from '@/components/finger/FingerprintCapture'
+import { r } from '@faker-js/faker/dist/airline-BnpeTvY9'
+import { postRegistroHuella } from '../services/finger.service'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -147,9 +149,32 @@ interface Props {
   onSuccess?: () => void
 }
 
+interface FingerData {
+  id: string
+  nameFinger: string
+  image: string
+  calidad: number
+}
+
 /* ================= COMPONENT ================= */
 export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   const { Alerta } = useAlerts()
+
+  const rightFingers = [
+    { id: 'Derecho_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
+    { id: 'Derecho_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
+    { id: 'Derecho_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
+    { id: 'Derecho_Anular', nameFinger: 'Anular', image: '', calidad: 0 },
+    { id: 'Derecho_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
+  ]
+
+  const leftFingers = [
+    { id: 'Izquierdo_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
+    { id: 'Izquierdo_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
+    { id: 'Izquierdo_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
+    { id: 'Izquierdo_Anular', nameFinger: 'Anular', image: '', calidad: 0 },
+    { id: 'Izquierdo_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
+  ]
 
   // TODO: Cambiar a false
   const [permisos, setPermisos] = useState<CasbinTypes>({
@@ -270,6 +295,22 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
   }
 
+  const sendFingers = async () => {
+    const allFingers = [...rightFingers, ...leftFingers]
+    const fingersWithImage = allFingers.filter((f) => f.image)
+    console.log('Fingers to send:', fingersWithImage)
+    await Promise.all(
+      fingersWithImage.map((item) =>
+        postRegistroHuella({
+          personaId: persona?.id_persona_auxiliar ?? '-1',
+          imagen: item.image,
+          calidad: 0,
+          dedo: item.id,
+        })
+      )
+    )
+  }
+
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
     if (!persona) {
@@ -281,6 +322,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
 
     try {
+      sendFingers()
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
           fileToBase64(values.fotoFrontal),
@@ -806,11 +848,17 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano derecha
             </h2>
             <div className="col-span-12 grid grid-cols-5 gap-4">
-              <FingerprintCapture id="Derecho_Pulgar" name_finger="Pulgar" />
-              <FingerprintCapture id="Derecho_Indice" name_finger="Indice" />
-              <FingerprintCapture id="Derecho_Medio" name_finger="Medio" />
-              <FingerprintCapture id="Derecho_Anular" name_finger="Anular" />
-              <FingerprintCapture id="Derecho_Menique" name_finger="Meñique" />
+              {rightFingers.map((finger) => (
+                <FingerprintCapture
+                  key={finger.id}
+                  id={finger.id}
+                  name_finger={finger.nameFinger}
+                  onChangeImage={(img, calidad) => {
+                    finger.image = img ?? ''
+                    finger.calidad = calidad
+                  }}
+                />
+              ))}
             </div>
           </div>
 
@@ -820,11 +868,17 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano izquierda
             </h2>
             <div className="col-span-12  grid grid-cols-5 gap-4">
-              <FingerprintCapture id="Izquierdo_Pulgar" name_finger="Pulgar" />
-              <FingerprintCapture id="Izquierdo_Indice" name_finger="Indice" />
-              <FingerprintCapture id="Izquierdo_Medio" name_finger="Medio" />
-              <FingerprintCapture id="Izquierdo_Anular" name_finger="Anular" />
-              <FingerprintCapture id="Izquierdo_Menique" name_finger="Meñique" />
+              {leftFingers.map((finger) => (
+                <FingerprintCapture
+                  key={finger.id}
+                  id={finger.id}
+                  name_finger={finger.nameFinger}
+                  onChangeImage={(img, calidad) => {
+                    finger.image = img ?? ''
+                    finger.calidad = calidad
+                  }}
+                />
+              ))}
             </div>
           </div>
 
