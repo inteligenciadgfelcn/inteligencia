@@ -24,6 +24,8 @@ import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constituci
 import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module'
 import { LetraModule } from './felcn_siii/parametricas/letra/letra.module';
 import { ScannerModule } from './felcn_siii/operaciones/scanner/scanner.module'
+import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_familiares.module';
+import { ParentezcoModule } from './felcn_sii/parentezco/parentezco.module';
 
 @Module({
   imports: [
@@ -50,7 +52,9 @@ import { ScannerModule } from './felcn_siii/operaciones/scanner/scanner.module'
     TipoCabelloModule,
     FiliacionModule,
     LetraModule,
-    ScannerModule
+    ScannerModule,
+    DatosFamiliaresModule,
+    ParentezcoModule
   ],
 })
 export class InteligenciaModule {}
