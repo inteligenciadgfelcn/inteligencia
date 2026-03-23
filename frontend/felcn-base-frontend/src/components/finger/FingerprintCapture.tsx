@@ -28,11 +28,11 @@ export default function FingerprintCapture({
     if (!socket.connected) socket.connect()
 
     const onConnect = () => {
-      console.log('🟢 Socket conectado')
+      // console.log('🟢 Socket conectado')
     }
 
     const onScannerStatus = (data: any) => {
-      console.log('📡 Estado scanner:', data)
+      //console.log('📡 Estado scanner:', data)
       setScannerEstado(data.estado)
     }
 
@@ -69,7 +69,7 @@ export default function FingerprintCapture({
     }
 
     setEstado('capturando')
-    onChangeImage('', 0)
+    onChangeImage('', -1)
 
     await sesionPeticion({
       url: `${Constantes.baseUrl}/scanner/capturar`,
