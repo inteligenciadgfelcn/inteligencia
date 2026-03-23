@@ -160,7 +160,7 @@ interface FingerData {
 export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   const { Alerta } = useAlerts()
 
-  const rightFingers = [
+  const rightFingersData = [
     { id: 'Derecho_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
     { id: 'Derecho_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
     { id: 'Derecho_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
@@ -168,13 +168,16 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     { id: 'Derecho_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
   ]
 
-  const leftFingers = [
+  const leftFingersData = [
     { id: 'Izquierdo_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
     { id: 'Izquierdo_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
     { id: 'Izquierdo_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
     { id: 'Izquierdo_Anular', nameFinger: 'Anular', image: '', calidad: 0 },
     { id: 'Izquierdo_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
   ]
+
+  const [rigthFingers, setRightFingers] = useState(rightFingersData)
+  const [leftFingers, setLeftFingers] = useState(leftFingersData)
 
   // TODO: Cambiar a false
   const [permisos, setPermisos] = useState<CasbinTypes>({
@@ -296,15 +299,17 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   }
 
   const sendFingers = async () => {
-    const allFingers = [...rightFingers, ...leftFingers]
-    const fingersWithImage = allFingers.filter((f) => f.image)
-    console.log('Fingers to send:', fingersWithImage)
+    const allFingers = [...rigthFingers, ...leftFingers]
+    const fingersWithImage = allFingers.filter((f) => f.image.length > 0)
+
+    imprimir(fingersWithImage)
+
     await Promise.all(
       fingersWithImage.map((item) =>
         postRegistroHuella({
           personaId: persona?.id_persona_auxiliar ?? '-1',
           imagen: item.image,
-          calidad: 0,
+          calidad: item.calidad,
           dedo: item.id,
         })
       )
@@ -322,7 +327,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
 
     try {
-      sendFingers()
+      await sendFingers()
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
           fileToBase64(values.fotoFrontal),
@@ -848,14 +853,20 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano derecha
             </h2>
             <div className="col-span-12 grid grid-cols-5 gap-4">
-              {rightFingers.map((finger) => (
+              {rigthFingers.map((finger, index) => (
                 <FingerprintCapture
                   key={finger.id}
                   id={finger.id}
                   name_finger={finger.nameFinger}
                   onChangeImage={(img, calidad) => {
-                    finger.image = img ?? ''
-                    finger.calidad = calidad
+                    imprimir(img, calidad)
+                    setRightFingers((prev) =>
+                      prev.map((f) =>
+                        f.id === finger.id
+                          ? { ...f, image: img ?? '', calidad: calidad }
+                          : f
+                      )
+                    )
                   }}
                 />
               ))}
@@ -868,14 +879,19 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano izquierda
             </h2>
             <div className="col-span-12  grid grid-cols-5 gap-4">
-              {leftFingers.map((finger) => (
+              {leftFingers.map((finger, i) => (
                 <FingerprintCapture
                   key={finger.id}
                   id={finger.id}
                   name_finger={finger.nameFinger}
                   onChangeImage={(img, calidad) => {
-                    finger.image = img ?? ''
-                    finger.calidad = calidad
+                    setLeftFingers((prev) =>
+                      prev.map((f) =>
+                        f.id === finger.id
+                          ? { ...f, image: img ?? '', calidad: calidad }
+                          : f
+                      )
+                    )
                   }}
                 />
               ))}
