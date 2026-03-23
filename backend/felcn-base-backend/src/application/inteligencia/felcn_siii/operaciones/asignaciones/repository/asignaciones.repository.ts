@@ -46,9 +46,6 @@ export class AsignacionesRepository {
 
     const saved = await this.asignacionRepository.save(asignacion)
 
-    console.log(saved);
-
-    // S2I
     const asignacionS2I = this.asignacionAsigRepository.create({
       idDepartamento: departamento.idDepartamento,
       idUnidad: grupo.distrital.unidad.idUnidad,
