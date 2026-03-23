@@ -84,6 +84,7 @@ const bootstrap = async () => {
   app.use(passport.session())
   app.use(cookieParser())
   app.use(express.static('public'))
+  app.use('/storage', express.static('storage'));
 
   // Configuración para servir archivos estáticos desde STORAGE_NFS_PATH
   const storagePath = configService.get('STORAGE_NFS_PATH')

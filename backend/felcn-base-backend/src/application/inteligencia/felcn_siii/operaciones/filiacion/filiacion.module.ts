@@ -11,6 +11,7 @@ import { DB_SIII } from '@/core/config/database/database.module';
 import { PersonasRepository } from './repository/personas.repository';
 import { Profesion } from '../../parametricas/profesion/entities/profesion.entity';
 import { FiliacionRepository } from './repository/filiacion.repository';
+import { HuellaModule } from '../../../felcn_sii/huella/huella.module';
 
 @Module({
    imports: [
@@ -22,6 +23,7 @@ import { FiliacionRepository } from './repository/filiacion.repository';
       FenotipoDetenido,
       Profesion
     ],DB_SIII,),
+    HuellaModule,
   ],
   controllers: [FiliacionController],
   providers: [FiliacionService, PersonasRepository, FiliacionRepository],

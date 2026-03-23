@@ -34,7 +34,7 @@ export default function FingerprintCapture({ id, name_finger }: Props) {
     const onPreview = (data: any) => {
       console.log('📡 Preview huella:', data)
 
-      if (!data?.imagen) return
+      if (!data?.imagen || data.dedo != id) return
 
       const img = `data:image/bmp;base64,${data.imagen}`
 
@@ -69,7 +69,7 @@ export default function FingerprintCapture({ id, name_finger }: Props) {
       method: 'POST',
       body: {
         personaId: 123,
-        dedo: 'INDICE_DERECHO',
+        dedo: id,
       },
     })
   }
@@ -141,6 +141,7 @@ export default function FingerprintCapture({ id, name_finger }: Props) {
       {/* BOTONES */}
       <div className="mt-4">
         <button
+          type="button"
           onClick={capturar}
           disabled={scannerEstado !== 'CONECTADO'}
           className={`btn w-full px-2.5 py-2 text-white mr-2.5 ${
