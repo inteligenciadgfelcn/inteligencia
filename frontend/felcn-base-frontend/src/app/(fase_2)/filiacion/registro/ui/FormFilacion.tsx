@@ -806,11 +806,11 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano derecha
             </h2>
             <div className="col-span-12 grid grid-cols-5 gap-4">
-              <FingerprintCapture id="1" name_finger="Pulgar" />
-              <FingerprintCapture id="1" name_finger="Indice" />
-              <FingerprintCapture id="1" name_finger="Medio" />
-              <FingerprintCapture id="1" name_finger="Anular" />
-              <FingerprintCapture id="1" name_finger="Meñique" />
+              <FingerprintCapture id="Derecho_Pulgar" name_finger="Pulgar" />
+              <FingerprintCapture id="Derecho_Indice" name_finger="Indice" />
+              <FingerprintCapture id="Derecho_Medio" name_finger="Medio" />
+              <FingerprintCapture id="Derecho_Anular" name_finger="Anular" />
+              <FingerprintCapture id="Derecho_Menique" name_finger="Meñique" />
             </div>
           </div>
 
@@ -820,11 +820,11 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               Huellas mano izquierda
             </h2>
             <div className="col-span-12  grid grid-cols-5 gap-4">
-              <FingerprintCapture id="1" name_finger="Pulgar" />
-              <FingerprintCapture id="1" name_finger="Indice" />
-              <FingerprintCapture id="1" name_finger="Medio" />
-              <FingerprintCapture id="1" name_finger="Anular" />
-              <FingerprintCapture id="1" name_finger="Meñique" />
+              <FingerprintCapture id="Izquierdo_Pulgar" name_finger="Pulgar" />
+              <FingerprintCapture id="Izquierdo_Indice" name_finger="Indice" />
+              <FingerprintCapture id="Izquierdo_Medio" name_finger="Medio" />
+              <FingerprintCapture id="Izquierdo_Anular" name_finger="Anular" />
+              <FingerprintCapture id="Izquierdo_Menique" name_finger="Meñique" />
             </div>
           </div>
 
