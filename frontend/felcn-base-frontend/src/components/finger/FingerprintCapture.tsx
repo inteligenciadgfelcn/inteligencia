@@ -9,9 +9,14 @@ import IconSave from '../Icon/IconSave'
 interface Props {
   id: string
   name_finger: string
+  onChangeImage: (image: string | null, calidad: number) => void
 }
 
-export default function FingerprintCapture({ id, name_finger }: Props) {
+export default function FingerprintCapture({
+  id,
+  name_finger,
+  onChangeImage,
+}: Props) {
   const { sesionPeticion } = useSession()
 
   const [scannerEstado, setScannerEstado] = useState('DESCONECTADO')
@@ -40,6 +45,7 @@ export default function FingerprintCapture({ id, name_finger }: Props) {
 
       setImagen(img)
       setPreview(data)
+      onChangeImage(data.imagen, data.calidad)
       setEstado('listo')
     }
 
@@ -63,6 +69,7 @@ export default function FingerprintCapture({ id, name_finger }: Props) {
     }
 
     setEstado('capturando')
+    onChangeImage('', 0)
 
     await sesionPeticion({
       url: `${Constantes.baseUrl}/scanner/capturar`,
