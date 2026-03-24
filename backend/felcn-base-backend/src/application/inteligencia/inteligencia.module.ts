@@ -11,21 +11,21 @@ import { GrupoModule } from './felcn_siii/parametricas/grupo/grupo.module'
 import { GradoModule } from './felcn_siii/parametricas/grado/grado.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
 import { PruebaModule } from './reportes/prueba/prueba.module'
-import { TipoDocumentoModule } from './felcn_siii/parametricas/tipo_documento/tipo_documento.module';
-import { ProfesionModule } from './felcn_siii/parametricas/profesion/profesion.module';
-import { EstadoCivilModule } from './felcn_siii/parametricas/estado_civil/estado_civil.module';
-import { TipoNarizModule } from './felcn_siii/parametricas/tipo_nariz/tipo_nariz.module';
-import { ColorPielModule } from './felcn_siii/parametricas/color_piel/color_piel.module';
-import { ColorCabelloModule } from './felcn_siii/parametricas/color_cabello/color_cabello.module';
-import { ColorOjosModule } from './felcn_siii/parametricas/color_ojos/color_ojos.module';
-import { TipoOjosModule } from './felcn_siii/parametricas/tipo_ojos/tipo_ojos.module';
-import { TipoCabelloModule } from './felcn_siii/parametricas/tipo_cabello/tipo_cabello.module';
-import { ConstitucionCorporalModule } from './felcn_siii/parametricas/constitucion_corporal/constitucion_corporal.module'
-import { FiliacionModule } from './felcn_siii/operaciones/filiacion/filiacion.module'
+import { ProfesionModule } from './felcn_sii/parametricas/profesion/profesion.module';
+import { EstadoCivilModule } from './felcn_sii/parametricas/estado_civil/estado_civil.module';
+import { TipoNarizModule } from './felcn_sii/parametricas/tipo_nariz/tipo_nariz.module';
+import { ColorPielModule } from './felcn_sii/parametricas/color_piel/color_piel.module';
+import { ColorCabelloModule } from './felcn_sii/parametricas/color_cabello/color_cabello.module';
+import { ColorOjosModule } from './felcn_sii/parametricas/color_ojos/color_ojos.module';
+import { TipoOjosModule } from './felcn_sii/parametricas/tipo_ojos/tipo_ojos.module';
+import { TipoCabelloModule } from './felcn_sii/parametricas/tipo_cabello/tipo_cabello.module';
+import { ConstitucionCorporalModule } from './felcn_sii/parametricas/constitucion_corporal/constitucion_corporal.module'
+import { FiliacionModule } from './felcn_sii/filiacion/filiacion.module'
 import { LetraModule } from './felcn_siii/parametricas/letra/letra.module';
-import { ScannerModule } from './felcn_siii/operaciones/scanner/scanner.module'
 import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_familiares.module';
-import { ParentezcoModule } from './felcn_sii/parentezco/parentezco.module';
+import { ParentezcoModule } from './felcn_sii/parametricas/parentezco/parentezco.module'
+import { ScannerModule } from './felcn_sii/scanner/scanner.module'
+import { TipoDocumentoModule } from './felcn_sii/parametricas/tipo_documento/tipo_documento.module'
 
 @Module({
   imports: [

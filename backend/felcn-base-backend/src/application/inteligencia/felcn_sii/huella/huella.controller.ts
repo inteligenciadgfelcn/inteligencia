@@ -17,14 +17,12 @@ import * as path from 'path'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('Huellas')
+@ApiTags('SII - Huellas')
 @Controller('huellas')
 export class HuellaController {
   constructor(private readonly service: HuellaService) {}
 
-  /* =====================================================
-     🔥 GUARDAR HUELLA
-  ===================================================== */
+  /* GUARDAR HUELLA */
   @Post('guardar')
   @ApiOperation({ summary: 'Guardar huella capturada' })
   async guardar(@Body() data: any) {
@@ -50,7 +48,7 @@ export class HuellaController {
     const fileName = `${data.dedo}.bmp`
     const filePath = path.join(folder, fileName)
 
-    // 🔥 LIMPIAR BASE64
+    // LIMPIAR BASE64
     let base64Data = data.imagen
     if (base64Data.includes('base64,')) {
       base64Data = base64Data.split('base64,')[1]
@@ -83,10 +81,7 @@ export class HuellaController {
     }
   }
 
-  /* =====================================================
-     🔥 OBTENER HUELLAS POR PERSONA
-     ?includeImagen=true  👈 opcional
-  ===================================================== */
+  /* OBTENER HUELLAS POR PERSONA*/
   @Get('persona/:id')
   @ApiOperation({ summary: 'Obtener huellas por persona' })
   async obtenerPorPersona(

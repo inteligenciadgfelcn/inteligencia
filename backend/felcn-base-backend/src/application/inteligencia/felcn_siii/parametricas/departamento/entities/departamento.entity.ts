@@ -8,10 +8,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-
-import { Pais } from '../../pais/entities/pais.entity'
 import { Estado } from '../../../estado.enum'
 import { Asignacion } from '../../../operaciones/asignaciones/entities/asignacione.entity'
+import { Pais } from '../../pais/entities/pais.entity'
 
 @Entity({
   name: 'departamento',
