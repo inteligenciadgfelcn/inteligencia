@@ -6,8 +6,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Pais } from '../../pais/entities/pais.entity'
 import { Estado } from '../../../estado.enum'
+import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
 
 @Entity({
   name: 'continente',
