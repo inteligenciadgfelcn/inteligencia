@@ -1,5 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
-import { DocumentoDetenido } from '../../../operaciones/filiacion/documento_detenido/entities/documento_detenido.entity'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity({ schema: 'parametricas', name: 'tipo_documento' })
 export class TipoDocumento {
@@ -17,7 +16,4 @@ export class TipoDocumento {
     comment: 'Descripción oficial del tipo documento',
   })
   descripcion: string
-
-  @OneToMany(() => DocumentoDetenido, (doc) => doc.tipoDocumento)
-  documentos: DocumentoDetenido[]
 }
