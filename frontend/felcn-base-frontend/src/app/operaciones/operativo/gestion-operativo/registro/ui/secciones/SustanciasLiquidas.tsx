@@ -5,6 +5,9 @@ import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
 import { DataTable } from 'mantine-datatable'
 import { useConfirmDialog } from '@/hooks'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 
 interface SeccionFormProps {
   titulo: string
@@ -112,19 +115,14 @@ export function SustanciasLiquidas({
             >
               Tipo de Sustancia
             </label>
-            <select
+            <Select
               id="sustanciaQuimicaLiquidaTipo"
-              className="form-select w-full"
+              className="w-full"
+              options={opciones}
+              placeholder="Seleccione un Dato"
               value={tipoSustancia}
               onChange={(e) => setTipoSustancia(e.target.value)}
-            >
-              <option value="">Seleccione un Dato</option>
-              {opciones.map((opt) => (
-                <option key={opt.id} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
@@ -134,10 +132,10 @@ export function SustanciasLiquidas({
             >
               Costo
             </label>
-            <input
+            <Input
               id="sustanciaLiquidaCosto"
               type="number"
-              className="form-input w-full"
+              className="w-full"
               value={costo}
               onChange={(e) => {
                 const val = e.target.value
@@ -158,10 +156,10 @@ export function SustanciasLiquidas({
             >
               Litros (L)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidalitros"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={litros}
               onChange={(e) => {
                 const val = e.target.value
@@ -180,10 +178,10 @@ export function SustanciasLiquidas({
             >
               Mililitros (mL)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidamililitros"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={mililitros}
               onChange={(e) => {
                 const val = e.target.value
@@ -199,14 +197,15 @@ export function SustanciasLiquidas({
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
-            <button
+            <Button
               type="button"
-              className="btn btn-success btn-sm"
+              variant="success"
+              size="sm"
               onClick={agregarSustancia}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -257,14 +256,17 @@ export function SustanciasLiquidas({
                   title: 'Acciones',
                   textAlign: 'center',
                   render: (row: any) => (
-                    <button
+                    <Button
                       type="button"
-                      className="text-danger hover:text-danger/80 flex justify-center w-full"
+                      variant="danger"
+                      size="sm"
+                      className="flex justify-center w-full"
                       onClick={() => handleEliminar(row.id as number)}
                       disabled={cargando}
+                      icon={<IconTrash className="w-5 h-5" />}
                     >
-                      <IconTrash className="w-5 h-5" />
-                    </button>
+                      {''}
+                    </Button>
                   ),
                 },
               ]}

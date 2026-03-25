@@ -5,6 +5,9 @@ import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
 import { DataTable } from 'mantine-datatable'
 import { useConfirmDialog } from '@/hooks'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 
 interface SeccionFormProps {
   titulo: string
@@ -142,19 +145,17 @@ export function Laboratorio({
             >
               Tipo de Fábrica/Laboratorio
             </label>
-            <select
+            <Select
               id="laboratorioTipoFabrica"
-              className="form-select w-full"
+              className="w-full"
+              options={opcionesTipos.map((opt) => ({
+                value: opt.value,
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un Dato"
               value={tipoFabrica}
               onChange={(e) => setTipoFabrica(e.target.value)}
-            >
-              <option value="">Seleccione un Dato</option>
-              {opcionesTipos.map((opt) => (
-                <option key={opt.id} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
@@ -164,20 +165,18 @@ export function Laboratorio({
             >
               Modelo de Fábrica
             </label>
-            <select
+            <Select
               id="laboratorioModeloFabrica"
-              className="form-select w-full"
+              className="w-full"
+              options={opcionesModelos.map((opt) => ({
+                value: opt.value,
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un Dato"
               value={modeloFabrica}
               onChange={(e) => setModeloFabrica(e.target.value)}
               disabled={!tipoFabrica || opcionesModelos.length === 0}
-            >
-              <option value="">Seleccione un Dato</option>
-              {opcionesModelos.map((opt) => (
-                <option key={opt.id} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
@@ -187,10 +186,10 @@ export function Laboratorio({
             >
               Cantidad
             </label>
-            <input
+            <Input
               id="laboratorioCantidad"
               type="number"
-              className="form-input w-full"
+              className="w-full"
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
               placeholder="0"
@@ -199,14 +198,15 @@ export function Laboratorio({
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
-            <button
+            <Button
               type="button"
-              className="btn btn-success btn-sm"
+              variant="success"
+              size="sm"
               onClick={agregarFabrica}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -242,14 +242,16 @@ export function Laboratorio({
                   title: 'Acciones',
                   textAlign: 'center',
                   render: (row: any) => (
-                    <button
+                    <Button
                       type="button"
-                      className="text-danger hover:text-danger/80 flex justify-center w-full"
+                      variant="danger"
+                      size="sm"
+                      className="flex justify-center w-full"
                       onClick={() => handleEliminar(row.id as number)}
                       disabled={cargando}
                     >
                       <IconTrash className="w-5 h-5" />
-                    </button>
+                    </Button>
                   ),
                 },
               ]}

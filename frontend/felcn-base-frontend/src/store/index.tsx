@@ -1,12 +1,12 @@
-import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import themeConfigSlice from './themeConfigSlice';
+import { combineReducers, configureStore } from '@reduxjs/toolkit'
+import themeConfigSlice from './themeConfigSlice'
 
 const rootReducer = combineReducers({
-    themeConfig: themeConfigSlice,
-});
+  themeConfig: themeConfigSlice,
+})
 
 export default configureStore({
-    reducer: rootReducer,
-});
+  reducer: rootReducer,
+})
 
-export type IRootState = ReturnType<typeof rootReducer>;
+export type IRootState = ReturnType<typeof rootReducer>

@@ -35,7 +35,6 @@ export const ModalParametroDetalle = ({
 
         <div className="fixed inset-0 z-[999] overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center px-4">
-
             {/* MODAL */}
             <Transition.Child
               as={Fragment}
@@ -47,12 +46,9 @@ export const ModalParametroDetalle = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="panel my-8 w-full max-w-lg overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark">
-
                 {/* HEADER */}
                 <div className="flex items-center justify-between bg-[#fbfbfb] px-5 py-3 dark:bg-[#121c2c]">
-                  <h5 className="text-lg font-bold">
-                    Detalles del parámetro
-                  </h5>
+                  <h5 className="text-lg font-bold">Detalles del parámetro</h5>
 
                   <button
                     type="button"
@@ -66,7 +62,6 @@ export const ModalParametroDetalle = ({
                 {/* BODY */}
                 <div className="p-5">
                   <div className="grid grid-cols-12 gap-y-3 text-sm">
-
                     <div className="col-span-4 font-semibold">Código:</div>
                     <div className="col-span-8">{parametro?.codigo}</div>
 
@@ -77,9 +72,7 @@ export const ModalParametroDetalle = ({
                     <div className="col-span-8">{parametro?.grupo}</div>
 
                     <div className="col-span-4 font-semibold">Descripción:</div>
-                    <div className="col-span-8">
-                      {parametro?.descripcion}
-                    </div>
+                    <div className="col-span-8">{parametro?.descripcion}</div>
 
                     <div className="col-span-4 font-semibold">Estado:</div>
                     <div className="col-span-8">
@@ -95,7 +88,6 @@ export const ModalParametroDetalle = ({
                         }
                       />
                     </div>
-
                   </div>
                 </div>
 
@@ -109,10 +101,8 @@ export const ModalParametroDetalle = ({
                     Cerrar
                   </button>
                 </div>
-
               </Dialog.Panel>
             </Transition.Child>
-
           </div>
         </div>
       </Dialog>

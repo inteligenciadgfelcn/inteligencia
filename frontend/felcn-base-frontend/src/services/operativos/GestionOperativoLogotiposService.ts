@@ -1,10 +1,12 @@
 import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
-import type { LogotipoCasoPayload, RespuestaApi, RespuestaApiPaginada } from './types'
+import type {
+  LogotipoCasoPayload,
+  RespuestaApi,
+  RespuestaApiPaginada,
+} from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
-
-
 
 const buildFormData = (payload: LogotipoCasoPayload) => {
   const formData = new FormData()
@@ -28,7 +30,12 @@ const buildFormData = (payload: LogotipoCasoPayload) => {
 }
 
 export const GestionOperativoLogotiposService = {
-  listar(idCaso: number, idDroga: number, pagina: number = 1, limite: number = 10): Promise<RespuestaApi<RespuestaApiPaginada<unknown>>> {
+  listar(
+    idCaso: number,
+    idDroga: number,
+    pagina: number = 1,
+    limite: number = 10
+  ): Promise<RespuestaApi<RespuestaApiPaginada<unknown>>> {
     return Servicios.get({
       url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos?pagina=${pagina}&limite=${limite}`,
     })

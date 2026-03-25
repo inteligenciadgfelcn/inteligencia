@@ -14,11 +14,9 @@ export const Perfil = () => {
 
   return (
     <div className="pt-5">
-
       <h2 className="mb-5 text-xl font-semibold">Perfil de Usuario</h2>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-
         <PerfilCard
           usuario={usuario}
           onChangePassword={() => setModalPass(true)}
@@ -28,20 +26,15 @@ export const Perfil = () => {
         <div className="lg:col-span-2">
           <InformacionCard usuario={usuario} />
         </div>
-
       </div>
 
-      <CambioPassModal
-        isOpen={modalPass}
-        onClose={() => setModalPass(false)}
-      />
+      <CambioPassModal isOpen={modalPass} onClose={() => setModalPass(false)} />
 
       <EditarPerfilModal
         isOpen={modalEdicion}
         onClose={() => setModalEdicion(false)}
         usuario={usuario}
       />
-
     </div>
   )
 }

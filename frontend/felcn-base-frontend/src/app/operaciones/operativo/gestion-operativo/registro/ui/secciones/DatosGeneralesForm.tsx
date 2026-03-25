@@ -5,6 +5,9 @@ import { useForm } from 'react-hook-form'
 import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
 import IconSearch from '@/components/Icon/IconSearch'
 import { Constantes } from '@/config/Constantes'
 
@@ -120,16 +123,20 @@ const mapCasoOperativoToForm = (
   caso: CasoResumen,
   operativo: OperativoResponse | null
 ): Partial<OperativoPayload> => ({
-  numeroOperativo:
-    operativo?.numeroOperativo ??
-    DEFAULT_VALUES.numeroOperativo,
-  idTipoRelevancia: operativo?.idTipoRelevancia ? Number(operativo.idTipoRelevancia) : 0,
-  idTipoDenuncia: operativo?.idTipoDenuncia ? Number(operativo.idTipoDenuncia) : 0,
+  numeroOperativo: operativo?.numeroOperativo ?? DEFAULT_VALUES.numeroOperativo,
+  idTipoRelevancia: operativo?.idTipoRelevancia
+    ? Number(operativo.idTipoRelevancia)
+    : 0,
+  idTipoDenuncia: operativo?.idTipoDenuncia
+    ? Number(operativo.idTipoDenuncia)
+    : 0,
   idTipoPenal: operativo?.idTipoPenal ? Number(operativo.idTipoPenal) : 0,
   fechaOperativo: operativo?.fechaOperativo
     ? toDatetimeLocal(new Date(operativo.fechaOperativo))
     : DEFAULT_VALUES.fechaOperativo,
-  idDepartamento: operativo?.idDepartamento ? Number(operativo.idDepartamento) : 0,
+  idDepartamento: operativo?.idDepartamento
+    ? Number(operativo.idDepartamento)
+    : 0,
   idProvincia: operativo?.idProvincia ? Number(operativo.idProvincia) : 0,
   idLocalidad: operativo?.idLocalidad ? Number(operativo.idLocalidad) : 0,
   lugar: operativo?.lugar ?? '',
@@ -374,8 +381,10 @@ export function DatosGeneralesForm({
     const min = Number(mStr) || 0
     const sec = Number(sStr) || 0
     const absoluteDeg = Math.abs(deg)
-    const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
-    const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
+    const isNegative =
+      deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
+    const decimal =
+      (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
 
     if (!Number.isNaN(decimal)) {
       const rounded = parseFloat(decimal.toFixed(7))
@@ -397,8 +406,10 @@ export function DatosGeneralesForm({
     const min = Number(mStr) || 0
     const sec = Number(sStr) || 0
     const absoluteDeg = Math.abs(deg)
-    const isNegative = deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
-    const decimal = (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
+    const isNegative =
+      deg < 0 || Object.is(deg, -0) || dStr.trim().startsWith('-')
+    const decimal =
+      (absoluteDeg + min / 60 + sec / 3600) * (isNegative ? -1 : 1)
 
     if (!Number.isNaN(decimal)) {
       const rounded = parseFloat(decimal.toFixed(7))
@@ -441,8 +452,6 @@ export function DatosGeneralesForm({
     cargarCategoriasOperativo,
   ])
 
-
-
   useEffect(() => {
     let activo = true
 
@@ -460,7 +469,10 @@ export function DatosGeneralesForm({
       if (cargandoDesdePropsRef.current) return
 
       try {
-        const respuesta = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
+        const respuesta =
+          await GestionOperativoCatalogosService.obtenerItemsOperativo(
+            idCategoria
+          )
         if (!activo || !respuesta?.finalizado) return
 
         const opciones = respuesta.datos.map((t) => ({
@@ -471,7 +483,9 @@ export function DatosGeneralesForm({
 
         setOpcionesOperativoEn(opciones)
         const idItemActual = Number(getValues('idItemOperativo'))
-        const existeItemActual = opciones.some((opcion) => Number(opcion.value) === idItemActual)
+        const existeItemActual = opciones.some(
+          (opcion) => Number(opcion.value) === idItemActual
+        )
 
         if (!existeItemActual) {
           setValue('idItemOperativo', 0)
@@ -541,7 +555,10 @@ export function DatosGeneralesForm({
       setSearchResults(data)
     } catch (error) {
       console.error('Error buscando dirección', error)
-      Alerta({ mensaje: 'Hubo un error al buscar la dirección', variant: 'error' })
+      Alerta({
+        mensaje: 'Hubo un error al buscar la dirección',
+        variant: 'error',
+      })
     } finally {
       setIsSearching(false)
     }
@@ -688,21 +705,24 @@ export function DatosGeneralesForm({
         idDistrital > 0 ? cargarGrupos(idDistrital) : Promise.resolve(),
         idCategoria > 0
           ? (async () => {
-            try {
-              const res = await GestionOperativoCatalogosService.obtenerItemsOperativo(idCategoria)
-              if (res?.finalizado) {
-                setOpcionesOperativoEn(
-                  res.datos.map((t) => ({
-                    id: String(t.id),
-                    value: String(t.id),
-                    label: t.descripcion,
-                  }))
-                )
+              try {
+                const res =
+                  await GestionOperativoCatalogosService.obtenerItemsOperativo(
+                    idCategoria
+                  )
+                if (res?.finalizado) {
+                  setOpcionesOperativoEn(
+                    res.datos.map((t) => ({
+                      id: String(t.id),
+                      value: String(t.id),
+                      label: t.descripcion,
+                    }))
+                  )
+                }
+              } catch {
+                setOpcionesOperativoEn([])
               }
-            } catch {
-              setOpcionesOperativoEn([])
-            }
-          })()
+            })()
           : Promise.resolve(),
       ])
 
@@ -740,9 +760,9 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Número de Operativo (Asignación / Caso)
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.numeroOperativoCaso}
               disabled
               readOnly
@@ -752,8 +772,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Nombre del Caso
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.nombreCaso}
               disabled
               readOnly
@@ -766,10 +786,10 @@ export function DatosGeneralesForm({
             >
               Número de Informe <span className="text-danger">*</span>
             </label>
-            <input
+            <Input
               id="numeroOperativo"
               type="text"
-              className={`form-input w-full ${errors.numeroOperativo ? 'border-danger' : ''}`}
+              className={`w-full ${errors.numeroOperativo ? 'border-danger' : ''}`}
               {...register('numeroOperativo', reglaObligatorio)}
             />
             {errors.numeroOperativo && (
@@ -785,18 +805,19 @@ export function DatosGeneralesForm({
             >
               Relevancia <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idTipoRelevancia"
-              className={`form-select w-full ${errors.idTipoRelevancia ? 'border-danger' : ''}`}
-              {...register('idTipoRelevancia', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesRelevancia.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesRelevancia.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idTipoRelevancia ? 'border-danger' : ''}`}
+              {...register('idTipoRelevancia', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idTipoRelevancia && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idTipoRelevancia.message}
@@ -806,21 +827,25 @@ export function DatosGeneralesForm({
 
           {/* Fila 2 */}
           <div>
-            <label htmlFor="idUnidad" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="idUnidad"
+              className="mb-1 block text-sm font-medium"
+            >
               Unidad <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idUnidad"
-              className={`form-select w-full ${errors.idUnidad ? 'border-danger' : ''}`}
-              {...register('idUnidad', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesUnidadEst.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesUnidadEst.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idUnidad ? 'border-danger' : ''}`}
+              {...register('idUnidad', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idUnidad && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idUnidad.message}
@@ -828,22 +853,26 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="idDistrital" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="idDistrital"
+              className="mb-1 block text-sm font-medium"
+            >
               Distrital <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idDistrital"
-              className={`form-select w-full ${errors.idDistrital ? 'border-danger' : ''}`}
-              {...register('idDistrital', { ...reglaObligatorio, valueAsNumber: true })}
+              options={opcionesDistritalEst.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idDistrital ? 'border-danger' : ''}`}
               disabled={opcionesDistritalEst.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesDistritalEst.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              {...register('idDistrital', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idDistrital && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idDistrital.message}
@@ -854,19 +883,20 @@ export function DatosGeneralesForm({
             <label htmlFor="idGrupo" className="mb-1 block text-sm font-medium">
               Grupo <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idGrupo"
-              className={`form-select w-full ${errors.idGrupo ? 'border-danger' : ''}`}
-              {...register('idGrupo', { ...reglaObligatorio, valueAsNumber: true })}
+              options={opcionesGrupoEst.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idGrupo ? 'border-danger' : ''}`}
               disabled={opcionesGrupoEst.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesGrupoEst.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              {...register('idGrupo', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idGrupo && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idGrupo.message}
@@ -880,10 +910,10 @@ export function DatosGeneralesForm({
             >
               Fecha y Hora del Operativo <span className="text-danger">*</span>
             </label>
-            <input
+            <Input
               id="fechaOperativo"
               type="datetime-local"
-              className={`form-input w-full ${errors.fechaOperativo ? 'border-danger' : ''}`}
+              className={`w-full ${errors.fechaOperativo ? 'border-danger' : ''}`}
               {...register('fechaOperativo', reglaObligatorio)}
             />
             {errors.fechaOperativo && (
@@ -898,8 +928,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Asignado al Caso
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.asignado}
               disabled
               readOnly
@@ -909,8 +939,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Nro. Celular
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.celularAsignado}
               disabled
               readOnly
@@ -923,18 +953,19 @@ export function DatosGeneralesForm({
             >
               Categoría Operativo <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idCategoriaOperativo"
-              className={`form-select w-full ${errors.idCategoriaOperativo ? 'border-danger' : ''}`}
-              {...register('idCategoriaOperativo', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {categoriasOperativo.map((cat) => (
-                <option key={cat.id} value={Number(cat.id)}>
-                  {cat.descripcion}
-                </option>
-              ))}
-            </select>
+              options={categoriasOperativo.map((cat) => ({
+                value: Number(cat.id),
+                label: cat.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idCategoriaOperativo ? 'border-danger' : ''}`}
+              {...register('idCategoriaOperativo', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idCategoriaOperativo && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idCategoriaOperativo.message}
@@ -948,19 +979,20 @@ export function DatosGeneralesForm({
             >
               Operativo Realizado en <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idItemOperativo"
-              className={`form-select w-full ${errors.idItemOperativo ? 'border-danger' : ''}`}
-              {...register('idItemOperativo', { ...reglaObligatorio, valueAsNumber: true })}
+              options={opcionesOperativoEn.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idItemOperativo ? 'border-danger' : ''}`}
               disabled={opcionesOperativoEn.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesOperativoEn.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              {...register('idItemOperativo', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idItemOperativo && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idItemOperativo.message}
@@ -973,8 +1005,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Fiscal Asignado
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.fiscal}
               disabled
               readOnly
@@ -984,8 +1016,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Nro. Celular (Fiscal)
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.celularFiscal}
               disabled
               readOnly
@@ -998,18 +1030,19 @@ export function DatosGeneralesForm({
             >
               El Operativo es de Tipo <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idTipoOperacion"
-              className={`form-select w-full ${errors.idTipoOperacion ? 'border-danger' : ''}`}
-              {...register('idTipoOperacion', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesTipoOperativo.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesTipoOperativo.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idTipoOperacion ? 'border-danger' : ''}`}
+              {...register('idTipoOperacion', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idTipoOperacion && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idTipoOperacion.message}
@@ -1023,18 +1056,19 @@ export function DatosGeneralesForm({
             >
               Plan de Operaciones <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idPlanOperacion"
-              className={`form-select w-full ${errors.idPlanOperacion ? 'border-danger' : ''}`}
-              {...register('idPlanOperacion', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesPlan.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesPlan.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idPlanOperacion ? 'border-danger' : ''}`}
+              {...register('idPlanOperacion', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idPlanOperacion && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idPlanOperacion.message}
@@ -1047,8 +1081,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Quién Realiza la Solicitud
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.quienRealiza}
               disabled
               readOnly
@@ -1058,8 +1092,8 @@ export function DatosGeneralesForm({
             <label className="mb-1 block text-sm font-medium">
               Nro. Celular (Solicitante)
             </label>
-            <input
-              className="form-input w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+            <Input
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
               value={datosLectura.celularRealiza}
               disabled
               readOnly
@@ -1072,18 +1106,19 @@ export function DatosGeneralesForm({
             >
               Tipo de la Denuncia <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idTipoDenuncia"
-              className={`form-select w-full ${errors.idTipoDenuncia ? 'border-danger' : ''}`}
-              {...register('idTipoDenuncia', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesTipoDenuncia.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesTipoDenuncia.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idTipoDenuncia ? 'border-danger' : ''}`}
+              {...register('idTipoDenuncia', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idTipoDenuncia && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idTipoDenuncia.message}
@@ -1097,18 +1132,19 @@ export function DatosGeneralesForm({
             >
               Tipo Penal <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idTipoPenal"
-              className={`form-select w-full ${errors.idTipoPenal ? 'border-danger' : ''}`}
-              {...register('idTipoPenal', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesTipoPenal.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesTipoPenal.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idTipoPenal ? 'border-danger' : ''}`}
+              {...register('idTipoPenal', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idTipoPenal && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idTipoPenal.message}
@@ -1116,16 +1152,15 @@ export function DatosGeneralesForm({
             )}
           </div>
 
-
           {/* Fila 7: Mando, Clan y Organizacion */}
           <div>
             <label htmlFor="mando" className="mb-1 block text-sm font-medium">
               Al Mando de <span className="text-danger">*</span>
             </label>
-            <input
+            <Input
               id="mando"
               type="text"
-              className={`form-input w-full ${errors.mando ? 'border-danger' : ''}`}
+              className={`w-full ${errors.mando ? 'border-danger' : ''}`}
               {...register('mando', reglaObligatorio)}
             />
             {errors.mando && (
@@ -1135,13 +1170,16 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="clanFamiliar" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="clanFamiliar"
+              className="mb-1 block text-sm font-medium"
+            >
               Clan Familiar <span className="text-danger">*</span>
             </label>
-            <input
+            <Input
               id="clanFamiliar"
               type="text"
-              className={`form-input w-full ${errors.clanFamiliar ? 'border-danger' : ''}`}
+              className={`w-full ${errors.clanFamiliar ? 'border-danger' : ''}`}
               {...register('clanFamiliar', reglaObligatorio)}
             />
             {errors.clanFamiliar && (
@@ -1151,13 +1189,16 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="organizacion" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="organizacion"
+              className="mb-1 block text-sm font-medium"
+            >
               Organización Criminal <span className="text-danger">*</span>
             </label>
-            <input
+            <Input
               id="organizacion"
               type="text"
-              className={`form-input w-full ${errors.organizacion ? 'border-danger' : ''}`}
+              className={`w-full ${errors.organizacion ? 'border-danger' : ''}`}
               {...register('organizacion', reglaObligatorio)}
             />
             {errors.organizacion && (
@@ -1170,21 +1211,25 @@ export function DatosGeneralesForm({
 
           {/* Fila 8: Ubicacion Geografica */}
           <div>
-            <label htmlFor="idDepartamento" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="idDepartamento"
+              className="mb-1 block text-sm font-medium"
+            >
               Departamento <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idDepartamento"
-              className={`form-select w-full ${errors.idDepartamento ? 'border-danger' : ''}`}
-              {...register('idDepartamento', { ...reglaObligatorio, valueAsNumber: true })}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesDepartamento.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesDepartamento.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idDepartamento ? 'border-danger' : ''}`}
+              {...register('idDepartamento', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idDepartamento && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idDepartamento.message}
@@ -1192,22 +1237,26 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="idProvincia" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="idProvincia"
+              className="mb-1 block text-sm font-medium"
+            >
               Provincia <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idProvincia"
-              className={`form-select w-full ${errors.idProvincia ? 'border-danger' : ''}`}
-              {...register('idProvincia', { ...reglaObligatorio, valueAsNumber: true })}
+              options={opcionesProvincia.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idProvincia ? 'border-danger' : ''}`}
               disabled={opcionesProvincia.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesProvincia.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              {...register('idProvincia', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idProvincia && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idProvincia.message}
@@ -1215,22 +1264,26 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label htmlFor="idLocalidad" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="idLocalidad"
+              className="mb-1 block text-sm font-medium"
+            >
               Municipio <span className="text-danger">*</span>
             </label>
-            <select
+            <Select
               id="idLocalidad"
-              className={`form-select w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
-              {...register('idLocalidad', { ...reglaObligatorio, valueAsNumber: true })}
+              options={opcionesMunicipio.map((opt) => ({
+                value: Number(opt.value),
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un dato"
+              className={`w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
               disabled={opcionesMunicipio.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesMunicipio.map((opt) => (
-                <option key={opt.id} value={Number(opt.value)}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              {...register('idLocalidad', {
+                ...reglaObligatorio,
+                valueAsNumber: true,
+              })}
+            />
             {errors.idLocalidad && (
               <div className="mt-1 text-xs text-danger">
                 {errors.idLocalidad.message}
@@ -1242,12 +1295,13 @@ export function DatosGeneralesForm({
           <div className="col-span-1 lg:col-span-4">
             <div>
               <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
-                En la localidad, comunidad, dirección (Zona, Calle, Avenida, Barrio) <span className="text-danger">*</span>
+                En la localidad, comunidad, dirección (Zona, Calle, Avenida,
+                Barrio) <span className="text-danger">*</span>
               </label>
-              <input
+              <Input
                 id="lugar"
                 type="text"
-                className={`form-input w-full ${errors.lugar ? 'border-danger' : ''}`}
+                className={`w-full ${errors.lugar ? 'border-danger' : ''}`}
                 {...register('lugar', reglaObligatorio)}
               />
               {errors.lugar && (
@@ -1266,10 +1320,10 @@ export function DatosGeneralesForm({
               >
                 Latitud (Decimal) <span className="text-danger">*</span>
               </label>
-              <input
+              <Input
                 id="coordX"
                 type="text"
-                className={`form-input w-full ${errors.coordX ? 'border-danger' : ''}`}
+                className={`w-full ${errors.coordX ? 'border-danger' : ''}`}
                 {...register('coordX', reglaObligatorio)}
               />
               {errors.coordX && (
@@ -1285,10 +1339,10 @@ export function DatosGeneralesForm({
               </label>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Grados"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={latD}
                     min={-90}
                     max={90}
@@ -1304,13 +1358,15 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    °
+                  </span>
                 </div>
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Minutos"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={latM}
                     min={0}
                     max={59}
@@ -1326,13 +1382,15 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    ′
+                  </span>
                 </div>
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Segundos"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={latS}
                     min={0}
                     max={59.999}
@@ -1349,7 +1407,9 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    ″
+                  </span>
                 </div>
               </div>
             </div>
@@ -1360,10 +1420,10 @@ export function DatosGeneralesForm({
               >
                 Longitud (Decimal) <span className="text-danger">*</span>
               </label>
-              <input
+              <Input
                 id="coordY"
                 type="text"
-                className={`form-input w-full ${errors.coordY ? 'border-danger' : ''}`}
+                className={`w-full ${errors.coordY ? 'border-danger' : ''}`}
                 {...register('coordY', reglaObligatorio)}
               />
               {errors.coordY && (
@@ -1373,8 +1433,6 @@ export function DatosGeneralesForm({
               )}
             </div>
 
-
-
             {/* Inputs independientes para Longitud DMS */}
             <div>
               <label className="mb-1 block text-sm font-medium">
@@ -1382,10 +1440,10 @@ export function DatosGeneralesForm({
               </label>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Grados"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={lngD}
                     min={-180}
                     max={180}
@@ -1401,13 +1459,15 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">°</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    °
+                  </span>
                 </div>
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Minutos"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={lngM}
                     min={0}
                     max={59}
@@ -1423,13 +1483,15 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">′</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    ′
+                  </span>
                 </div>
                 <div className="relative flex-1">
-                  <input
+                  <Input
                     type="number"
                     placeholder="Segundos"
-                    className="form-input w-full pr-8"
+                    className="w-full pr-8"
                     value={lngS}
                     min={0}
                     max={59.999}
@@ -1446,7 +1508,9 @@ export function DatosGeneralesForm({
                       }
                     }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">″</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    ″
+                  </span>
                 </div>
               </div>
             </div>
@@ -1454,9 +1518,9 @@ export function DatosGeneralesForm({
 
           <div className="col-span-1 lg:col-span-4 mt-4">
             <div className="flex gap-2 mb-2 relative">
-              <input
+              <Input
                 type="text"
-                className="form-input flex-1"
+                className="flex-1"
                 placeholder="Buscar dirección, zona o calle..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -1503,9 +1567,7 @@ export function DatosGeneralesForm({
               height={400}
               onClick={handleMapClick}
               coordenadas={
-                coordX && coordY
-                  ? [Number(coordX), Number(coordY)]
-                  : null
+                coordX && coordY ? [Number(coordX), Number(coordY)] : null
               }
             />
           </div>
@@ -1516,12 +1578,14 @@ export function DatosGeneralesForm({
                 htmlFor="breveDetalle"
                 className="mb-1 block text-sm font-medium"
               >
-                Breve Detalle del Operativo <span className="text-danger">*</span>
+                Breve Detalle del Operativo{' '}
+                <span className="text-danger">*</span>
               </label>
-              <textarea
+              <Textarea
                 id="breveDetalle"
-                className={`form-textarea w-full ${errors.breveDetalle ? 'border-danger text-danger' : ''}`}
+                error={!!errors.breveDetalle}
                 rows={6}
+                className="w-full"
                 {...register('breveDetalle', reglaObligatorio)}
               />
               {errors.breveDetalle && (
@@ -1534,27 +1598,32 @@ export function DatosGeneralesForm({
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end gap-2">
             {tieneOperativo && (
-              <button
+              <Button
                 type="button"
-                className="btn btn-warning btn-sm"
+                variant="warning"
+                size="sm"
                 onClick={() => {
                   const idOp = Number(datosCaso?.operativos?.[0]?.id ?? 0)
                   if (idOp > 0) {
-                    window.open(`${Constantes.baseUrl}/reportes/operativos/${idOp}/pdf`, '_blank')
+                    window.open(
+                      `${Constantes.baseUrl}/reportes/operativos/${idOp}/pdf`,
+                      '_blank'
+                    )
                   }
                 }}
               >
                 Generar Reporte
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="button"
-              className="btn btn-success btn-sm"
+              variant="success"
+              size="sm"
               onClick={() => void handleGuardar()}
               disabled={cargando}
             >
               {tieneOperativo ? 'Actualizar' : 'Guardar'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

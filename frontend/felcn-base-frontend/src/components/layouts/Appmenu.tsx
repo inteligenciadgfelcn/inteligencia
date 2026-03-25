@@ -38,8 +38,9 @@ export const AppMenu = ({ orientation = 'vertical' }: Props) => {
         return (
           <li
             key={modulo.id}
-            className={`menu nav-item relative ${orientation === 'horizontal' ? 'px-1' : ''
-              }`}
+            className={`menu nav-item relative ${
+              orientation === 'horizontal' ? 'px-1' : ''
+            }`}
           >
             {/* MODULO */}
             <button type="button" className="nav-link">

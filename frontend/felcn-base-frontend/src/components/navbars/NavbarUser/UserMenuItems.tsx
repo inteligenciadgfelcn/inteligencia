@@ -56,9 +56,11 @@ export const UserMenuItems: React.FC<UserMenuItemsProps> = ({
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full text-white text-xl font-bold">
-                {`${usuario?.persona.nombres[0] ?? ''}${usuario?.persona.primerApellido[0] ??
-                  usuario?.persona.segundoApellido[0] ?? ''
-                  }`}
+                {`${usuario?.persona.nombres[0] ?? ''}${
+                  usuario?.persona.primerApellido[0] ??
+                  usuario?.persona.segundoApellido[0] ??
+                  ''
+                }`}
               </div>
             )}
           </div>
@@ -68,8 +70,8 @@ export const UserMenuItems: React.FC<UserMenuItemsProps> = ({
             {titleCase(usuario?.persona?.nombres ?? '')}{' '}
             {titleCase(
               usuario?.persona?.primerApellido ??
-              usuario?.persona?.segundoApellido ??
-              ''
+                usuario?.persona?.segundoApellido ??
+                ''
             )}
           </h6>
           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -86,14 +88,18 @@ export const UserMenuItems: React.FC<UserMenuItemsProps> = ({
           className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors"
           onClick={abrirPerfil}
         >
-          <Icono color={'action'} className="text-gray-500 dark:text-gray-400">account_circle</Icono>
+          <Icono color={'action'} className="text-gray-500 dark:text-gray-400">
+            account_circle
+          </Icono>
           <span>Ver perfil</span>
         </button>
 
         {roles.length > 1 && (
           <div className="px-4 py-2">
             <div className="flex items-center gap-3 mb-2 text-gray-500 dark:text-gray-400">
-              <Icono className="text-gray-500 dark:text-gray-400">switch_account</Icono>
+              <Icono className="text-gray-500 dark:text-gray-400">
+                switch_account
+              </Icono>
               <span>Cambiar rol</span>
             </div>
             <div className="flex flex-wrap gap-1 w-full pl-9">
@@ -115,7 +121,9 @@ export const UserMenuItems: React.FC<UserMenuItemsProps> = ({
 
       {/* Theme Section */}
       <div className="p-4">
-        <p className="text-xs font-semibold mb-2 text-gray-500 dark:text-gray-400">TEMA</p>
+        <p className="text-xs font-semibold mb-2 text-gray-500 dark:text-gray-400">
+          TEMA
+        </p>
         <div className="flex rounded-md shadow-sm" role="group">
           <button
             type="button"

@@ -48,7 +48,7 @@ export default function LoginPage() {
         variant: 'error',
       })
     }
-  }, [error,Alerta])
+  }, [error, Alerta])
 
   return (
     <LoginCoverVristo>

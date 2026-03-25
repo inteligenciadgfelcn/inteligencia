@@ -6,6 +6,9 @@ import IconTrash from '@/components/Icon/IconTrash'
 import { GestionOperativoGaleriaService } from '@/services/operativos'
 import type { GaleriaResponse } from '@/services/operativos'
 import { useConfirmDialog } from '@/hooks'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 
 // ── DropzoneFoto ─────────────────────────────────────────────────────────────
 function DropzoneFoto({
@@ -257,11 +260,10 @@ export function Galeria({ titulo, idoperativo }: Props) {
             >
               Descripción
             </label>
-            <input
+            <Input
               id="descripcion"
               type="text"
               placeholder="Ingrese una descripción"
-              className="form-input w-full"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value.toUpperCase())}
             />
@@ -270,17 +272,17 @@ export function Galeria({ titulo, idoperativo }: Props) {
                         <label htmlFor="idTipoTamano" className="mb-1 block text-sm font-medium">
                             Tamaño de Foto
                         </label>
-                        <select
+                        <Select
                             id="idTipoTamano"
-                            className="form-select w-full"
                             value={idTipoTamano}
                             onChange={(e) => setIdTipoTamano(e.target.value)}
-                        >
-                            <option value="">Seleccione un tamaño</option>
-                            <option value="1">Fotografia Horizontal</option>
-                            <option value="2">Fotografia Vertical</option>
-                            <option value="3">Fotografia Cuadrada</option>
-                        </select>
+                            placeholder="Seleccione un tamaño"
+                            options={[
+                                { value: "1", label: "Fotografia Horizontal" },
+                                { value: "2", label: "Fotografia Vertical" },
+                                { value: "3", label: "Fotografia Cuadrada" }
+                            ]}
+                        />
                     </div> */}
 
           <div className="col-span-1 lg:col-span-3">
@@ -293,14 +295,14 @@ export function Galeria({ titulo, idoperativo }: Props) {
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
+            <Button
+              variant="success"
+              size="sm"
               onClick={() => void handleGuardar()}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -343,15 +345,16 @@ export function Galeria({ titulo, idoperativo }: Props) {
                   width: 80,
                   render: (r) => (
                     <div className="flex items-center justify-center">
-                      <button
-                        type="button"
-                        className="text-danger hover:text-danger/80"
+                      <Button
+                        variant="danger"
+                        size="sm"
                         title="Eliminar"
                         disabled={cargando}
                         onClick={() => void handleEliminar(r.id)}
+                        icon={<IconTrash className="h-4 w-4" />}
                       >
-                        <IconTrash className="h-4 w-4" />
-                      </button>
+                        Eliminar
+                      </Button>
                     </div>
                   ),
                 },

@@ -44,7 +44,7 @@ export function exportToExcel<T extends Record<string, any>>(
     fileName,
     sheet: fileName,
     tablePayload: {
-      header: [...headers],   // 👈 CLON
+      header: [...headers], // 👈 CLON
       body,
     },
   })
@@ -54,7 +54,7 @@ export function exportToExcel<T extends Record<string, any>>(
 
 export function exportToPrint<T extends Record<string, any>>(
   rows: T[],
- headers: readonly string[],
+  headers: readonly string[],
   columns: readonly (keyof T)[],
   title: string
 ) {

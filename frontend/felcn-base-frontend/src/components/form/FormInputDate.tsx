@@ -62,7 +62,7 @@ export const FormInputDate = <
       <InputLabel htmlFor={id} sx={{ mb: 0 }}>
         <Typography
           variant={labelVariant}
-          sx={{ pb:0, color: 'text.primary', fontWeight: '500' }}
+          sx={{ pb: 0, color: 'text.primary', fontWeight: '500' }}
         >
           {label}
         </Typography>

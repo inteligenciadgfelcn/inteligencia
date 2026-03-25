@@ -116,22 +116,21 @@ export default function RecuperacionPage() {
       <title>{`Recupera tu cuenta - ${siteName()}`}</title>
       <div
         className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-        style={{ backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)` }}
+        style={{
+          backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)`,
+        }}
       >
         <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {!code && (
             <>
               {indicadorTareaRealizada ? (
-
                 <div className="flex flex-col items-center gap-4 text-center">
                   <Icono fontSize="large">mark_email_unread</Icono>
                   <h1 className="text-2xl font-extrabold text-primary">
                     ¡Mensaje enviado!
                   </h1>
 
-                  <p className="text-white-dark">
-                    {mensaje}
-                  </p>
+                  <p className="text-white-dark">{mensaje}</p>
 
                   <button
                     type="button"
@@ -140,13 +139,12 @@ export default function RecuperacionPage() {
                   >
                     Ir al inicio
                   </button>
-
                 </div>
-
               ) : (
-
-                <form onSubmit={handleSubmit(recuperarPeticion)} className="space-y-5">
-
+                <form
+                  onSubmit={handleSubmit(recuperarPeticion)}
+                  className="space-y-5"
+                >
                   <div className="mb-8">
                     <h1 className="text-3xl font-extrabold text-primary">
                       Recupera tu cuenta
@@ -190,15 +188,12 @@ export default function RecuperacionPage() {
                   >
                     Cancelar
                   </button>
-
                 </form>
-
               )}
             </>
           )}
 
           {code && <CambioPass code={code} />}
-
         </div>
       </div>
     </>

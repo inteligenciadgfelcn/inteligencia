@@ -35,7 +35,6 @@ const SelectWithIconField = ({
   defaultIcon,
   onChange,
 }: SelectWithIconFieldProps) => {
-
   const iconToShow = value || defaultIcon
 
   // obtenemos handlers reales de RHF
@@ -43,7 +42,6 @@ const SelectWithIconField = ({
 
   return (
     <div className={clsx(fullWidth && 'w-full', error && 'has-error')}>
-
       {label && (
         <label htmlFor={name} className="form-label">
           {label}
@@ -51,7 +49,6 @@ const SelectWithIconField = ({
       )}
 
       <div className="flex">
-
         {/* Icono */}
         {iconToShow && (
           <div
@@ -74,17 +71,13 @@ const SelectWithIconField = ({
           disabled={disabled}
           className={clsx(
             'form-select w-full',
-            iconToShow
-              ? 'ltr:rounded-l-none rtl:rounded-r-none'
-              : 'rounded-md'
+            iconToShow ? 'ltr:rounded-l-none rtl:rounded-r-none' : 'rounded-md'
           )}
           onChange={(e) => {
-           
             registerField.onChange?.(e)
 
             const v = e.target.value
-            const lbl =
-              options.find((o) => o.value === v)?.label || ''
+            const lbl = options.find((o) => o.value === v)?.label || ''
             onChange?.(v, lbl)
           }}
         >
@@ -96,7 +89,6 @@ const SelectWithIconField = ({
             </option>
           ))}
         </select>
-
       </div>
 
       {error && <p className="form-help">{error}</p>}

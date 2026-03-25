@@ -11,11 +11,11 @@ const BASE = `${Constantes.baseUrl}/asig-lookups`
  *  - GET /api/asig-lookups/unidades
  */
 export const AsigLookupsService = {
-    /**
-     * Obtiene todas las unidades disponibles para asignaciones.
-     * Cada unidad tiene { idUnidad: string, descripcion: string }.
-     */
-    obtenerUnidades(): Promise<RespuestaAPI<UnidadAsig>> {
-        return Servicios.get({ url: `${BASE}/unidades` })
-    },
+  /**
+   * Obtiene todas las unidades disponibles para asignaciones.
+   * Cada unidad tiene { idUnidad: string, descripcion: string }.
+   */
+  obtenerUnidades(): Promise<RespuestaAPI<UnidadAsig>> {
+    return Servicios.get({ url: `${BASE}/unidades` })
+  },
 }

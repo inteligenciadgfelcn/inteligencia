@@ -23,8 +23,8 @@ export const CustomSwitch: FC<Props> = ({
 }) => {
   // Map MUI colors to our Switch colors
   const mapColor = (c: string): any => {
-    if (c === 'error') return 'danger';
-    return c;
+    if (c === 'error') return 'danger'
+    return c
   }
 
   return (

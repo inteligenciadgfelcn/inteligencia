@@ -42,19 +42,18 @@ export default function AdminDashboard() {
 
   return (
     <div className="container mx-auto px-4 mt-6">
-
       <DashboardHeader />
       <DashboardSummary />
 
       {/* -------- TABS -------- */}
       <div className="mb-5 border-b border-gray-200 flex gap-4">
-
         <button
           onClick={() => setTab('charts')}
           className={`pb-2 font-semibold transition
-            ${tab === 'charts'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-500 hover:text-primary'
+            ${
+              tab === 'charts'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-gray-500 hover:text-primary'
             }`}
         >
           Gráficos
@@ -63,14 +62,14 @@ export default function AdminDashboard() {
         <button
           onClick={() => setTab('activity')}
           className={`pb-2 font-semibold transition
-            ${tab === 'activity'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-gray-500 hover:text-primary'
+            ${
+              tab === 'activity'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-gray-500 hover:text-primary'
             }`}
         >
           Actividades Recientes
         </button>
-
       </div>
 
       {/* -------- CONTENIDO -------- */}
@@ -79,7 +78,6 @@ export default function AdminDashboard() {
         <>
           {hasAnyPermission ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
               {permissions.getUsers && <UserRoleDistribution />}
 
               {permissions.getPolicies && <AccessPoliciesByRole />}
@@ -87,7 +85,6 @@ export default function AdminDashboard() {
               {permissions.getUsers && <UserGrowth />}
 
               {permissions.getModules && <ModulesByRole />}
-
             </div>
           ) : (
             <div className="panel border-l-4 border-danger bg-danger-light text-danger">
@@ -102,7 +99,6 @@ export default function AdminDashboard() {
       )}
 
       {tab === 'activity' && <RecentActivities />}
-
     </div>
   )
 }

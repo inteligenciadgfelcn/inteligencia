@@ -14,4 +14,3 @@ export * from './GestionOperativoDrogasService'
 export * from './GestionOperativoLogotiposService'
 export * from './GestionOperativoGaleriaService'
 export * from './GestionOperativoBienesService'
-

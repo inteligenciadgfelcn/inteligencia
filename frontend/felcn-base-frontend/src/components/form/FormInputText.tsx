@@ -25,7 +25,9 @@ type FormInputTextProps<
     'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
   >
   disabled?: boolean
-  onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void
   onEnter?: () => void
   clearable?: boolean
   variant?: 'standard' | 'outlined' | 'filled'
@@ -77,8 +79,8 @@ export const FormInputText = <
                 disabled={disabled}
                 {...field}
                 onChange={(e) => {
-                  if (onChange) onChange(e);
-                  field.onChange(e);
+                  if (onChange) onChange(e)
+                  field.onChange(e)
                 }}
               />
             ) : (
@@ -92,12 +94,12 @@ export const FormInputText = <
                   disabled={disabled}
                   {...field}
                   onChange={(e) => {
-                    if (onChange) onChange(e);
-                    field.onChange(e);
+                    if (onChange) onChange(e)
+                    field.onChange(e)
                   }}
                   onKeyUp={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && onEnter) {
-                      onEnter();
+                      onEnter()
                     }
                   }}
                 />
@@ -128,7 +130,9 @@ export const FormInputText = <
             )}
 
             {!!error && (
-              <span className="text-xs text-danger mt-1 block">{error?.message}</span>
+              <span className="text-xs text-danger mt-1 block">
+                {error?.message}
+              </span>
             )}
           </div>
         )}

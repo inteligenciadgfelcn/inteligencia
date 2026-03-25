@@ -21,7 +21,6 @@ export const ModalModuloDetalle = ({
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" open={isOpen} onClose={onClose}>
-
         {/* FONDO */}
         <Transition.Child
           as={Fragment}
@@ -37,7 +36,6 @@ export const ModalModuloDetalle = ({
 
         <div className="fixed inset-0 z-[999] overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center px-4">
-
             {/* MODAL */}
             <Transition.Child
               as={Fragment}
@@ -49,12 +47,9 @@ export const ModalModuloDetalle = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="panel my-8 w-full max-w-lg overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark">
-
                 {/* HEADER */}
                 <div className="flex items-center justify-between bg-[#fbfbfb] px-5 py-3 dark:bg-[#121c2c]">
-                  <h5 className="text-lg font-bold">
-                    Detalles del módulo
-                  </h5>
+                  <h5 className="text-lg font-bold">Detalles del módulo</h5>
 
                   <button
                     type="button"
@@ -68,21 +63,16 @@ export const ModalModuloDetalle = ({
                 {/* BODY */}
                 <div className="p-5">
                   <div className="grid grid-cols-12 gap-y-3 text-sm">
-
                     <div className="col-span-4 font-semibold">Label:</div>
                     <div className="col-span-8 flex items-center gap-2">
                       {modulo?.propiedades?.icono && (
-                        <Icono>
-                          {modulo.propiedades.icono}
-                        </Icono>
+                        <Icono>{modulo.propiedades.icono}</Icono>
                       )}
                       {modulo?.label}
                     </div>
 
                     <div className="col-span-4 font-semibold">Nombre:</div>
-                    <div className="col-span-8">
-                      {modulo?.nombre}
-                    </div>
+                    <div className="col-span-8">{modulo?.nombre}</div>
 
                     <div className="col-span-4 font-semibold">Descripción:</div>
                     <div className="col-span-8">
@@ -90,9 +80,7 @@ export const ModalModuloDetalle = ({
                     </div>
 
                     <div className="col-span-4 font-semibold">URL:</div>
-                    <div className="col-span-8">
-                      {modulo?.url}
-                    </div>
+                    <div className="col-span-8">{modulo?.url}</div>
 
                     <div className="col-span-4 font-semibold">Orden:</div>
                     <div className="col-span-8">
@@ -118,7 +106,6 @@ export const ModalModuloDetalle = ({
                         }
                       />
                     </div>
-
                   </div>
                 </div>
 
@@ -132,10 +119,8 @@ export const ModalModuloDetalle = ({
                     Cerrar
                   </button>
                 </div>
-
               </Dialog.Panel>
             </Transition.Child>
-
           </div>
         </div>
       </Dialog>

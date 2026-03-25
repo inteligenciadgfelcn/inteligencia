@@ -22,29 +22,31 @@ export const BotonOrdenar = ({
   cambioCriterios,
   label,
 }: BotonOrdenarParams) => {
+  const activeCount = criterios.filter(
+    (value) => value.ordenar && value.orden
+  ).length
 
-  const activeCount = criterios.filter((value) => value.ordenar && value.orden).length;
-
-  const dropdownItems = criterios.filter(c => c.ordenar).map((accion, index) => ({
-    label: accion.nombre,
-    icon: accion.orden ? (
-      <Icono>{accion.orden == 'asc' ? 'north' : 'south'}</Icono>
-    ) : <span className="w-5" />, // placeholder for alignment
-    onClick: () => {
-      const nuevosCriterios = [...criterios]
-      cambioCriterios(
-        nuevosCriterios.map((value, indice) => ({
-          ...value,
-          ...{
-            orden:
-              index == indice
-                ? ToggleOrden(value.orden)
-                : undefined,
-          },
-        }))
-      )
-    }
-  }));
+  const dropdownItems = criterios
+    .filter((c) => c.ordenar)
+    .map((accion, index) => ({
+      label: accion.nombre,
+      icon: accion.orden ? (
+        <Icono>{accion.orden == 'asc' ? 'north' : 'south'}</Icono>
+      ) : (
+        <span className="w-5" />
+      ), // placeholder for alignment
+      onClick: () => {
+        const nuevosCriterios = [...criterios]
+        cambioCriterios(
+          nuevosCriterios.map((value, indice) => ({
+            ...value,
+            ...{
+              orden: index == indice ? ToggleOrden(value.orden) : undefined,
+            },
+          }))
+        )
+      },
+    }))
 
   const triggerIcon = (
     <div className="relative">
@@ -56,7 +58,7 @@ export const BotonOrdenar = ({
         </span>
       )}
     </div>
-  );
+  )
 
   return (
     <div title={label}>

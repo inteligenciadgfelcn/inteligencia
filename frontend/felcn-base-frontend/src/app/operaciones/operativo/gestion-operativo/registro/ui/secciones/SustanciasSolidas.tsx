@@ -5,6 +5,9 @@ import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
 import { DataTable } from 'mantine-datatable'
 import { useConfirmDialog } from '@/hooks'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 
 interface SeccionFormProps {
   titulo: string
@@ -119,19 +122,16 @@ export function SustanciasSolidas({
             >
               Tipo de Sustancia
             </label>
-            <select
+            <Select
               id="sustanciaQuimicaSolidaTipo"
-              className="form-select w-full"
+              options={opciones.map((opt) => ({
+                value: opt.value,
+                label: opt.label,
+              }))}
+              placeholder="Seleccione un Dato"
               value={tipoSustancia}
               onChange={(e) => setTipoSustancia(e.target.value)}
-            >
-              <option value="">Seleccione un Dato</option>
-              {opciones.map((opt) => (
-                <option key={opt.id} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           <div>
@@ -141,10 +141,9 @@ export function SustanciasSolidas({
             >
               Costo
             </label>
-            <input
+            <Input
               id="sustanciaSolidaCosto"
               type="number"
-              className="form-input w-full"
               value={costo}
               onChange={(e) => {
                 const val = e.target.value
@@ -168,10 +167,9 @@ export function SustanciasSolidas({
             >
               Toneladas (Tn)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidaToneladas"
               type="text"
-              className="form-input w-full"
               value={toneladas}
               onChange={(e) => {
                 const val = e.target.value
@@ -190,10 +188,9 @@ export function SustanciasSolidas({
             >
               Kilos (Kg)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidaKilos"
               type="text"
-              className="form-input w-full"
               value={kilos}
               onChange={(e) => {
                 const val = e.target.value
@@ -215,10 +212,9 @@ export function SustanciasSolidas({
             >
               Gramos (g)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidaGramos"
               type="text"
-              className="form-input w-full"
               value={gramos}
               onChange={(e) => {
                 const val = e.target.value
@@ -240,10 +236,9 @@ export function SustanciasSolidas({
             >
               Miligramos (Mg)
             </label>
-            <input
+            <Input
               id="sustanciaQuimicaSolidaMiligramos"
               type="text"
-              className="form-input w-full"
               value={miligramos}
               onChange={(e) => {
                 const val = e.target.value
@@ -259,14 +254,14 @@ export function SustanciasSolidas({
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
-            <button
-              type="button"
-              className="btn btn-success btn-sm"
+            <Button
+              variant="success"
+              size="sm"
               onClick={agregarSustancia}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -317,14 +312,15 @@ export function SustanciasSolidas({
                   title: 'Acciones',
                   textAlign: 'center',
                   render: (row: any) => (
-                    <button
-                      type="button"
-                      className="text-danger hover:text-danger/80 flex justify-center w-full"
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="p-1"
                       onClick={() => handleEliminar(row.id as number)}
                       disabled={cargando}
                     >
-                      <IconTrash className="w-5 h-5" />
-                    </button>
+                      <IconTrash className="w-4 h-4" />
+                    </Button>
                   ),
                 },
               ]}

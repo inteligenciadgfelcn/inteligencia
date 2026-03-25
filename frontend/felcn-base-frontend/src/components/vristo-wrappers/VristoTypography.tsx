@@ -1,14 +1,35 @@
-import React, { ReactNode, CSSProperties } from 'react';
+import React, { ReactNode, CSSProperties } from 'react'
 
 interface VristoTypographyProps {
-  children: ReactNode;
-  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'body1' | 'body2' | 'caption' | 'subtitle1' | 'subtitle2';
-  className?: string;
-  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'dark' | 'light' | 'text.primary' | 'text.secondary';
-  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
-  align?: 'left' | 'center' | 'right';
-  gutterBottom?: boolean;
-  style?: CSSProperties;
+  children: ReactNode
+  variant?:
+    | 'h1'
+    | 'h2'
+    | 'h3'
+    | 'h4'
+    | 'h5'
+    | 'h6'
+    | 'body1'
+    | 'body2'
+    | 'caption'
+    | 'subtitle1'
+    | 'subtitle2'
+  className?: string
+  color?:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'info'
+    | 'dark'
+    | 'light'
+    | 'text.primary'
+    | 'text.secondary'
+  fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold'
+  align?: 'left' | 'center' | 'right'
+  gutterBottom?: boolean
+  style?: CSSProperties
 }
 
 const variantMap = {
@@ -23,11 +44,11 @@ const variantMap = {
   body1: { tag: 'p', classes: 'text-sm' },
   body2: { tag: 'p', classes: 'text-xs' },
   caption: { tag: 'span', classes: 'text-xs text-gray-500 dark:text-gray-400' },
-};
+}
 
 const colorMap = {
   primary: 'text-primary',
-  secondary: 'text-secondary', 
+  secondary: 'text-secondary',
   success: 'text-success',
   warning: 'text-warning',
   danger: 'text-danger',
@@ -36,20 +57,20 @@ const colorMap = {
   light: 'text-white dark:text-gray-300',
   'text.primary': 'text-dark dark:text-white',
   'text.secondary': 'text-gray-600 dark:text-gray-300',
-};
+}
 
 const fontWeightMap = {
   normal: 'font-normal',
-  medium: 'font-medium', 
+  medium: 'font-medium',
   semibold: 'font-semibold',
   bold: 'font-bold',
-};
+}
 
 const alignMap = {
   left: 'text-left',
-  center: 'text-center', 
+  center: 'text-center',
   right: 'text-right',
-};
+}
 
 export const VristoTypography: React.FC<VristoTypographyProps> = ({
   children,
@@ -61,8 +82,8 @@ export const VristoTypography: React.FC<VristoTypographyProps> = ({
   gutterBottom = false,
   style,
 }) => {
-  const variantConfig = variantMap[variant];
-  const Tag = variantConfig.tag as keyof JSX.IntrinsicElements;
+  const variantConfig = variantMap[variant]
+  const Tag = variantConfig.tag as keyof JSX.IntrinsicElements
 
   const classes = [
     variantConfig.classes,
@@ -70,12 +91,14 @@ export const VristoTypography: React.FC<VristoTypographyProps> = ({
     fontWeight && fontWeightMap[fontWeight],
     align && alignMap[align],
     gutterBottom && 'mb-4',
-    className
-  ].filter(Boolean).join(' ');
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <Tag className={classes} style={style}>
       {children}
     </Tag>
-  );
-};
+  )
+}
