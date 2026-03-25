@@ -1,7 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DataTable } from 'mantine-datatable'
+import {
+  VristoDataTable,
+  type Column,
+} from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
 import { GestionOperativoPersonasService } from '@/services/operativos'
 import { SiiiLookupsService } from '@/services/parametricas'
@@ -670,108 +673,80 @@ export function Persona({ titulo, idoperativo }: Props) {
         {/* ── Tabla de personas registradas ── */}
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="table-hover whitespace-nowrap"
-              records={personas}
-              totalRecords={totalRegistros}
-              recordsPerPage={ITEMS_POR_PAGINA}
+            <VristoDataTable<PersonaResponse>
+              loading={cargando}
+              rows={personas}
+              total={totalRegistros}
+              limit={ITEMS_POR_PAGINA}
               page={pagina}
               onPageChange={handleCambioPagina}
-              noRecordsText="Sin personas registradas"
-              highlightOnHover
-              columns={[
-                {
-                  accessor: 'nombreCompleto',
-                  title: 'Nombre Completo',
-                  render: (r) =>
-                    [r.nombres, r.apellidoPaterno, r.apellidoMaterno]
-                      .filter(Boolean)
-                      .join(' '),
-                },
-                { accessor: 'nroDocumento', title: 'Nro. Documento' },
-                {
-                  accessor: 'descripcionTipoDocumento',
-                  title: 'Tipo Documento',
-                },
-                {
-                  accessor: 'fechaNacimiento',
-                  title: 'Fecha Nac.',
-                  render: (r) => formatFecha(r.fechaNacimiento),
-                },
-                {
-                  accessor: 'genero',
-                  title: 'Género',
-                  render: (r) => (r.genero ? 'Masculino' : 'Femenino'),
-                },
-                { accessor: 'estado', title: 'Estado' },
-                {
-                  accessor: 'direccion',
-                  title: 'Dirección',
-                  render: (r) => (
-                    <span
-                      className="block max-w-[160px] overflow-hidden text-ellipsis"
-                      title={r.direccion}
-                    >
-                      {r.direccion}
-                    </span>
-                  ),
-                },
-                { accessor: 'descripcionPais', title: 'Nacionalidad' },
-                {
-                  accessor: 'acciones',
-                  title: 'Acciones',
-                  textAlign: 'center',
-                  width: 80,
-                  render: (r) => (
-                    <div className="flex items-center justify-center gap-3">
-                      {/* Chevron: indica si la fila está expandida */}
-                      <span title="Ver fotos">
-                        <svg
-                          className={`h-4 w-4 transition-transform duration-200 ${
-                            expandedIds.includes(r.id)
-                              ? 'rotate-180 text-primary'
-                              : 'text-gray-400'
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
+              onLimitChange={() => {}}
+              columns={
+                [
+                  {
+                    accessor: 'nombreCompleto',
+                    title: 'Nombre Completo',
+                    render: (r) =>
+                      [r.nombres, r.apellidoPaterno, r.apellidoMaterno]
+                        .filter(Boolean)
+                        .join(' '),
+                  },
+                  { accessor: 'nroDocumento', title: 'Nro. Documento' },
+                  {
+                    accessor: 'descripcionTipoDocumento',
+                    title: 'Tipo Documento',
+                  },
+                  {
+                    accessor: 'fechaNacimiento',
+                    title: 'Fecha Nac.',
+                    render: (r) => formatFecha(r.fechaNacimiento),
+                  },
+                  {
+                    accessor: 'genero',
+                    title: 'Género',
+                    render: (r) => (r.genero ? 'Masculino' : 'Femenino'),
+                  },
+                  { accessor: 'estado', title: 'Estado' },
+                  {
+                    accessor: 'direccion',
+                    title: 'Dirección',
+                    render: (r) => (
+                      <span
+                        className="block max-w-[160px] overflow-hidden text-ellipsis"
+                        title={r.direccion}
+                      >
+                        {r.direccion}
                       </span>
-                      {/* Eliminar */}
-                      <Button
+                    ),
+                  },
+                  { accessor: 'descripcionPais', title: 'Nacionalidad' },
+                  {
+                    accessor: 'acciones',
+                    title: 'Acciones',
+                    render: (r) => (
+                      <button
                         type="button"
-                        variant="danger"
-                        size="sm"
+                        className="text-danger hover:text-danger/80"
                         title="Eliminar"
                         disabled={cargando}
                         onClick={(e) => {
                           e.stopPropagation()
                           void handleEliminar(r.id)
                         }}
-                        className="p-1"
                       >
                         <IconTrash className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ),
-                },
-              ]}
+                      </button>
+                    ),
+                  },
+                ] as Column<PersonaResponse>[]
+              }
               rowExpansion={{
-                allowMultiple: false,
-                expanded: {
-                  recordIds: expandedIds,
-                  onRecordIdsChange: setExpandedIds as (ids: unknown[]) => void,
-                },
-                content: ({ record }) => (
+                idField: 'id',
+                expandedIds: expandedIds,
+                onExpandChange: setExpandedIds as (
+                  ids: (string | number)[]
+                ) => void,
+                renderContent: (record) => (
                   <FotosExpansion
                     persona={record}
                     cache={fotosCache[record.id]}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
 import { GestionOperativoGaleriaService } from '@/services/operativos'
 import type { GaleriaResponse } from '@/services/operativos'
@@ -245,6 +245,11 @@ export function Galeria({ titulo, idoperativo }: Props) {
     void cargar(nuevaPagina)
   }
 
+  const handleCambioLimite = () => {
+    // No implementado actualmente
+    setPagina(1)
+  }
+
   return (
     <div>
       <ConfirmDialog />
@@ -309,24 +314,22 @@ export function Galeria({ titulo, idoperativo }: Props) {
         {/* Tabla */}
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="table-hover whitespace-nowrap"
-              records={items}
-              totalRecords={totalRegistros}
-              recordsPerPage={ITEMS_POR_PAGINA}
+            <VristoDataTable<(typeof items)[0]>
+              loading={cargando}
+              rows={items}
+              total={totalRegistros}
+              limit={ITEMS_POR_PAGINA}
               page={pagina}
               onPageChange={handleCambioPagina}
-              noRecordsText="Sin fotografías registradas"
-              highlightOnHover
+              onLimitChange={handleCambioLimite}
+              search=""
+              onSearchChange={() => {}}
               columns={[
-                { accessor: 'id', title: 'Cod. Id', width: 100 },
+                { accessor: 'id', title: 'Cod. Id' },
                 { accessor: 'descripcion', title: 'Descripción' },
                 {
                   accessor: 'fotografia',
                   title: 'Fotografía',
-                  textAlign: 'center',
                   render: (r) => (
                     <div className="flex justify-center">
                       <ImagenAutenticada
@@ -341,21 +344,16 @@ export function Galeria({ titulo, idoperativo }: Props) {
                 {
                   accessor: 'acciones',
                   title: 'Acciones',
-                  textAlign: 'center',
-                  width: 80,
                   render: (r) => (
-                    <div className="flex items-center justify-center">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        title="Eliminar"
-                        disabled={cargando}
-                        onClick={() => void handleEliminar(r.id)}
-                        icon={<IconTrash className="h-4 w-4" />}
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
+                    <button
+                      type="button"
+                      className="text-danger hover:text-danger/80"
+                      title="Eliminar"
+                      disabled={cargando}
+                      onClick={() => void handleEliminar(r.id)}
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </button>
                   ),
                 },
               ]}

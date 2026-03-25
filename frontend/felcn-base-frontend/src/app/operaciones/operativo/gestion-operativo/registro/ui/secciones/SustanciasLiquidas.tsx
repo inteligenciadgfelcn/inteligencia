@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
-import { DataTable } from 'mantine-datatable'
+import {
+  VristoDataTable,
+  type Column,
+} from '@/components/datatable/VristoDataTable'
 import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -211,66 +214,49 @@ export function SustanciasLiquidas({
 
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="whitespace-nowrap table-hover"
-              records={datos}
-              totalRecords={
+            <VristoDataTable<(typeof datos)[0]>
+              rows={datos}
+              total={
                 totalRegistros !== undefined ? totalRegistros : datos.length
               }
-              recordsPerPage={limite}
               page={pagina}
+              limit={limite}
               onPageChange={onCambioPagina ?? (() => {})}
-              recordsPerPageOptions={[10, 20, 50]}
-              onRecordsPerPageChange={onCambioLimite ?? (() => {})}
+              onLimitChange={onCambioLimite ?? (() => {})}
+              search=""
+              onSearchChange={() => {}}
+              loading={cargando}
               columns={[
                 {
                   accessor: 'descripcionSustancia',
                   title: 'Tipo de Sustancia',
-                  footer: (
-                    <span className="font-bold text-sm">Total Costo (Bs):</span>
-                  ),
                 },
                 {
                   accessor: 'cantidad',
                   title: 'Cantidad en litros',
-                  textAlign: 'right',
                   render: (row: any) => Number(row.cantidad ?? 0).toFixed(3),
                 },
                 {
                   accessor: 'costo',
                   title: 'Costo (Bs)',
-                  textAlign: 'right',
                   render: (row: any) => Number(row.costo ?? 0).toFixed(2),
-                  footer: (
-                    <span className="font-bold text-sm">
-                      {datos
-                        .reduce((sum, item) => sum + Number(item.costo ?? 0), 0)
-                        .toFixed(2)}
-                    </span>
-                  ),
                 },
                 {
                   accessor: 'actions',
                   title: 'Acciones',
-                  textAlign: 'center',
                   render: (row: any) => (
-                    <Button
+                    <button
                       type="button"
-                      variant="danger"
-                      size="sm"
-                      className="flex justify-center w-full"
+                      className="text-danger hover:text-danger/80"
+                      title="Eliminar"
                       onClick={() => handleEliminar(row.id as number)}
                       disabled={cargando}
-                      icon={<IconTrash className="w-5 h-5" />}
                     >
-                      {''}
-                    </Button>
+                      <IconTrash className="w-4 h-4" />
+                    </button>
                   ),
                 },
               ]}
-              highlightOnHover
             />
           </div>
         </div>

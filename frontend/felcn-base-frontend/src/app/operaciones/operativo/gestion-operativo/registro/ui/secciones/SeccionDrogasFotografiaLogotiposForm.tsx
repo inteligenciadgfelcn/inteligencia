@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -406,15 +406,16 @@ function LogotiposPanel({
 
       {/* Grilla de logotipos */}
       <div className="mt-4 datatables">
-        <DataTable
-          fetching={cargando}
-          withTableBorder={false}
-          className="table-hover whitespace-nowrap"
-          records={logotiposItems}
-          noRecordsText="Sin logotipos registrados"
-          highlightOnHover
+        <VristoDataTable<LogotipoCasoPayload>
+          loading={cargando}
+          rows={logotiposItems}
+          total={logotiposItems.length}
+          page={1}
+          limit={logotiposItems.length || 10}
+          onPageChange={() => {}}
+          onLimitChange={() => {}}
           columns={[
-            { accessor: 'id', title: '#', width: 60 },
+            { accessor: 'id', title: '#' },
             {
               accessor: 'descripcionLogo',
               title: 'Descripción',
@@ -438,7 +439,6 @@ function LogotiposPanel({
             {
               accessor: 'urlFotografia',
               title: 'Foto',
-              width: 120,
               render: (row) => {
                 const fotoUrl = (row as unknown as Record<string, unknown>)
                   .urlFotografia
@@ -454,18 +454,16 @@ function LogotiposPanel({
             {
               accessor: 'actions',
               title: '',
-              width: 60,
-              textAlign: 'center',
               render: (row) => (
-                <Button
+                <button
                   type="button"
-                  variant="danger"
-                  size="sm"
+                  className="text-danger hover:text-danger/80"
+                  title="Eliminar"
                   disabled={cargando}
                   onClick={() => void eliminar(row.id)}
                 >
                   <IconTrash className="h-4 w-4" />
-                </Button>
+                </button>
               ),
             },
           ]}
@@ -617,7 +615,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [drogas, setDrogas] = useState<ResponseDroga[]>([])
   const [totalRegistros, setTotalRegistros] = useState(0)
   const [pagina, setPagina] = useState(1)
-  const [expandedIds, setExpandedIds] = useState<number[]>([])
+  const [expandedIds, setExpandedIds] = useState<(string | number)[]>([])
 
   // ── Cache de fotos ────────────────────────────────────────────────────────
   const [fotosCache, setFotosCache] = useState<Record<number, FotosCacheDroga>>(
@@ -1031,26 +1029,18 @@ export function SeccionDrogasFotografiaLogotiposForm({
         {/* ── Tabla de drogas registradas ── */}
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="table-hover whitespace-nowrap"
-              records={drogas}
-              totalRecords={totalRegistros}
-              recordsPerPage={ITEMS_POR_PAGINA}
+            <VristoDataTable<ResponseDroga>
+              loading={cargando}
+              rows={drogas}
+              total={totalRegistros}
               page={pagina}
+              limit={ITEMS_POR_PAGINA}
               onPageChange={handleCambioPagina}
-              noRecordsText="Sin drogas registradas"
-              highlightOnHover
+              onLimitChange={() => {}}
               columns={[
                 {
                   accessor: 'descripcionTipoDroga',
                   title: 'Tipo de Droga',
-                  footer: (
-                    <span className="font-bold text-sm">
-                      Total Costo (Bs.):
-                    </span>
-                  ),
                   render: (r) =>
                     r.descripcionTipoDroga ?? String(r.idTipoDroga ?? '—'),
                 },
@@ -1063,12 +1053,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'cantidadUnidades',
                   title: 'Unidades',
-                  textAlign: 'right',
                 },
                 {
                   accessor: 'cantidadGramos',
                   title: 'Gramos',
-                  textAlign: 'right',
                   render: (r) =>
                     r.cantidadGramos != null
                       ? Number(r.cantidadGramos).toFixed(3)
@@ -1077,15 +1065,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'costo',
                   title: 'Costo (Bs.)',
-                  textAlign: 'right',
                   render: (r) => (r.costo != null ? `${r.costo}` : '—'),
-                  footer: (
-                    <span className="font-bold text-sm">
-                      {drogas
-                        .reduce((sum, item) => sum + Number(item.costo ?? 0), 0)
-                        .toFixed(2)}
-                    </span>
-                  ),
                 },
                 {
                   accessor: 'descripcionFormaTransporte',
@@ -1110,57 +1090,31 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'acciones',
                   title: 'Acciones',
-                  textAlign: 'center',
-                  width: 80,
                   render: (r) => (
-                    <div className="flex items-center justify-center gap-3">
-                      <span title="Ver detalles">
-                        <svg
-                          className={`h-4 w-4 transition-transform duration-200 ${
-                            expandedIds.includes(r.id)
-                              ? 'rotate-180 text-primary'
-                              : 'text-gray-400'
-                          }`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </span>
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        title="Eliminar"
-                        disabled={cargando}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          void handleEliminar(r.id)
-                        }}
-                      >
-                        <IconTrash className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <button
+                      type="button"
+                      className="text-danger hover:text-danger/80"
+                      title="Eliminar"
+                      disabled={cargando}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleEliminar(r.id)
+                      }}
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </button>
                   ),
                 },
               ]}
               rowExpansion={{
-                allowMultiple: false,
-                expanded: {
-                  recordIds: expandedIds,
-                  onRecordIdsChange: setExpandedIds as (ids: unknown[]) => void,
-                },
-                content: ({ record }) => (
+                idField: 'id',
+                expandedIds: expandedIds,
+                onExpandChange: (ids) => setExpandedIds(ids),
+                renderContent: (row) => (
                   <ExpansionContenidoDroga
-                    droga={record}
+                    droga={row}
                     idoperativo={idoperativo}
-                    cache={fotosCache[record.id]}
+                    cache={fotosCache[row.id]}
                     onCacheLoad={actualizarCache}
                     onZoom={setImagenAmpliada}
                     onEliminarConfirm={handleEliminarConfirm}
