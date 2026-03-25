@@ -36,10 +36,13 @@ const schema = z
     password: z
       .string()
       .min(8, 'Mínimo 8 caracteres')
-      .refine(async (p) => {
-        const { score } = await seguridadPass(p)
-        return score === 4
-      }, { message: 'Contraseña insegura' }),
+      .refine(
+        async (p) => {
+          const { score } = await seguridadPass(p)
+          return score === 4
+        },
+        { message: 'Contraseña insegura' }
+      ),
     confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -105,31 +108,24 @@ export default function RegisterVristo() {
   return (
     <div
       className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-      style={{ backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)` }}
+      style={{
+        backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)`,
+      }}
     >
       <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
-
         {/* TÍTULO */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-primary">
-            Crear Cuenta
-          </h1>
+          <h1 className="text-3xl font-extrabold text-primary">Crear Cuenta</h1>
           <p className="text-white-dark">
             Complete el formulario para registrarse
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
           {/* DOCUMENTO */}
           <div>
-            <label className="mb-0 block text-white-dark">
-              Nro. Documento
-            </label>
-            <input
-              {...register('nroDocumento')}
-              className="form-input"
-            />
+            <label className="mb-0 block text-white-dark">Nro. Documento</label>
+            <input {...register('nroDocumento')} className="form-input" />
             <p className="text-danger text-sm">
               {errors.nroDocumento?.message}
             </p>
@@ -137,16 +133,9 @@ export default function RegisterVristo() {
 
           {/* NOMBRES */}
           <div>
-            <label className="mb-0 block text-white-dark">
-              Nombres
-            </label>
-            <input
-              {...register('nombres')}
-              className="form-input"
-            />
-            <p className="text-danger text-sm">
-              {errors.nombres?.message}
-            </p>
+            <label className="mb-0 block text-white-dark">Nombres</label>
+            <input {...register('nombres')} className="form-input" />
+            <p className="text-danger text-sm">{errors.nombres?.message}</p>
           </div>
 
           {/* APELLIDOS */}
@@ -155,20 +144,14 @@ export default function RegisterVristo() {
               <label className="mb-0 block text-white-dark">
                 Primer Apellido
               </label>
-              <input
-                {...register('primerApellido')}
-                className="form-input"
-              />
+              <input {...register('primerApellido')} className="form-input" />
             </div>
 
             <div>
               <label className="mb-0 block text-white-dark">
                 Segundo Apellido
               </label>
-              <input
-                {...register('segundoApellido')}
-                className="form-input"
-              />
+              <input {...register('segundoApellido')} className="form-input" />
             </div>
           </div>
 
@@ -208,9 +191,7 @@ export default function RegisterVristo() {
 
           {/* PASSWORD */}
           <div>
-            <label className="mb-0 block text-white-dark">
-              Contraseña
-            </label>
+            <label className="mb-0 block text-white-dark">Contraseña</label>
             <div className="relative">
               <input
                 type="password"
@@ -221,14 +202,10 @@ export default function RegisterVristo() {
                 <IconLockDots />
               </span>
             </div>
-            <p className="text-danger text-sm">
-              {errors.password?.message}
-            </p>
+            <p className="text-danger text-sm">{errors.password?.message}</p>
           </div>
 
-          {watch('password') && (
-            <NivelSeguridadPass pass={watch('password')} />
-          )}
+          {watch('password') && <NivelSeguridadPass pass={watch('password')} />}
 
           {/* CONFIRM */}
           <div>
@@ -266,7 +243,6 @@ export default function RegisterVristo() {
               Iniciar sesión
             </Link>
           </div>
-
         </form>
       </div>
     </div>

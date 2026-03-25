@@ -53,10 +53,7 @@ export const FormInputDropdown = <
 }: FormInputDropdownProps<TFieldValues, TName>) => {
   return (
     <div className="w-full relative">
-      <label
-        htmlFor={id}
-        className="mb-1 block text-sm font-medium"
-      >
+      <label htmlFor={id} className="mb-1 block text-sm font-medium">
         {label}
       </label>
       <Controller
@@ -97,7 +94,9 @@ export const FormInputDropdown = <
               </button>
             )}
             {!!error && (
-              <span className="mt-1 block text-xs text-danger">{error?.message}</span>
+              <span className="mt-1 block text-xs text-danger">
+                {error?.message}
+              </span>
             )}
           </>
         )}

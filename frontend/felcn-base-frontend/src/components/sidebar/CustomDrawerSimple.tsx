@@ -47,7 +47,9 @@ export const CustomDrawer: React.FC<{
   if (!open) return null
 
   return (
-    <div className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg transition-transform duration-300 z-50 ${className}`}>
+    <div
+      className={`fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg transition-transform duration-300 z-50 ${className}`}
+    >
       <div className="h-16 border-b border-gray-200 dark:border-gray-700" />
       <div className="overflow-auto h-[calc(100vh-4rem)] p-2">
         {modulos.map((modulo, index) => (
@@ -59,7 +61,7 @@ export const CustomDrawer: React.FC<{
               onMouseLeave={() => setHoveredModulo(null)}
             >
               <div className="flex items-center justify-between w-full">
-                <span 
+                <span
                   className="text-sm text-gray-600 dark:text-gray-400 font-normal"
                   title={modulo.propiedades.descripcion}
                 >
@@ -73,15 +75,17 @@ export const CustomDrawer: React.FC<{
               </div>
             </div>
 
-            <div className={`overflow-hidden transition-all duration-300 ${modulo.open ? 'max-h-96' : 'max-h-0'}`}>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${modulo.open ? 'max-h-96' : 'max-h-0'}`}
+            >
               <div className="cursor-pointer pt-0 pb-0">
                 {modulo.subModulo.map((subModuloItem, indexSubModulo) => (
                   <div
                     id={subModuloItem.url}
                     key={`submodulo-${index}-${indexSubModulo}`}
                     className={`flex items-center justify-between px-2 mx-6 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      rutaActiva(subModuloItem.url, rutaActual) 
-                        ? 'bg-primary/10 border-l-4 border-primary text-primary' 
+                      rutaActiva(subModuloItem.url, rutaActual)
+                        ? 'bg-primary/10 border-l-4 border-primary text-primary'
                         : ''
                     }`}
                     title={subModuloItem.propiedades.descripcion}
@@ -108,11 +112,15 @@ export const CustomDrawer: React.FC<{
                 ))}
               </div>
             </div>
-            {!modulo.open && <div className="border-b border-gray-200 dark:border-gray-700 mx-4" />}
+            {!modulo.open && (
+              <div className="border-b border-gray-200 dark:border-gray-700 mx-4" />
+            )}
           </div>
         ))}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700 mt-4">
-          <p className="text-xs text-gray-500 text-center">v{versionNumber()}</p>
+          <p className="text-xs text-gray-500 text-center">
+            v{versionNumber()}
+          </p>
         </div>
       </div>
     </div>

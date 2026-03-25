@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DataTable } from 'mantine-datatable'
 import IconTrash from '@/components/Icon/IconTrash'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 import {
   BienCaracteristicaResponse,
   BienResponse,
@@ -280,13 +283,14 @@ function CaracteristicasPanel({
                 </span>
                 {c.descripcion}
               </span>
-              <button
-                type="button"
-                className="mt-0.5 shrink-0 text-danger hover:text-danger/80"
+              <Button
+                variant="danger"
+                size="sm"
+                className="mt-0.5 shrink-0"
                 onClick={() => void eliminarCaracteristica(c.id)}
               >
                 <IconTrash className="h-4 w-4" />
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
@@ -299,41 +303,40 @@ function CaracteristicasPanel({
             <label className="mb-1 block text-sm font-medium">
               Característica
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={opcionesCaracteristica.map((o) => ({
+                value: o.id,
+                label: o.label,
+              }))}
+              placeholder="Seleccione"
               value={idCatalogoCaracteristica}
               onChange={(e) => setIdCatalogoCaracteristica(e.target.value)}
               disabled={cargandoForm || opcionesCaracteristica.length === 0}
-            >
-              <option value="">Seleccione</option>
-              {opcionesCaracteristica.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Descripción
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
               value={descripcionCaracteristica}
               onChange={(e) => setDescripcionCaracteristica(e.target.value)}
+              className="w-full"
             />
           </div>
         </div>
         <div className="mt-3 flex justify-end">
-          <button
+          <Button
+            variant="success"
+            size="sm"
             type="button"
-            className="btn btn-success btn-sm"
             onClick={() => void guardar()}
             disabled={cargandoForm || !idCatalogoCaracteristica}
           >
             Guardar Característica
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -607,67 +610,60 @@ export function SeccionBienesForm({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="mb-1 block text-sm font-medium">Bien</label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={bienes.map((b) => ({
+                value: String(b.id),
+                label: b.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idBien}
               onChange={(e) => void handleChangeBien(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {bienes.map((b) => (
-                <option key={b.id} value={String(b.id)}>
-                  {b.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Clase</label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={clases.map((c) => ({
+                value: String(c.id),
+                label: c.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idCatalogoClase}
               disabled={clases.length === 0}
               onChange={(e) => void handleChangeClase(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {clases.map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Tipo</label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={tipos.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idCatalogoTipo}
               disabled={tipos.length === 0}
               onChange={(e) => setIdCatalogoTipo(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {tipos.map((t) => (
-                <option key={t.id} value={String(t.id)}>
-                  {t.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">Cantidad</label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
               value={cantidadBien}
               onChange={(e) => setCantidadBien(e.target.value)}
+              className="w-full"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Costo Aproximado (Bs.)
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
               value={costoAproximado}
               onChange={(e) => {
                 const val = e.target.value
@@ -675,15 +671,15 @@ export function SeccionBienesForm({
                   setCostoAproximado(val)
                 }
               }}
+              className="w-full"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Costo Cuantificado (Bs.)
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
               value={costoCuantificado}
               onChange={(e) => {
                 const val = e.target.value
@@ -691,21 +687,24 @@ export function SeccionBienesForm({
                   setCostoCuantificado(val)
                 }
               }}
+              className="w-full"
             />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               ¿En Investigación?
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={[
+                { value: '', label: 'Seleccione un dato' },
+                { value: 'true', label: 'SI' },
+                { value: 'false', label: 'NO' },
+              ]}
+              placeholder="Seleccione un dato"
               value={enInvestigacion}
               onChange={(e) => setEnInvestigacion(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              <option value="true">SI</option>
-              <option value="false">NO</option>
-            </select>
+              className="w-full"
+            />
           </div>
 
           {/* Foto — DropzoneFoto */}
@@ -720,14 +719,15 @@ export function SeccionBienesForm({
 
           {/* Botón guardar */}
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
-            <button
+            <Button
+              variant="success"
+              size="sm"
               type="button"
-              className="btn btn-success btn-sm"
               onClick={() => void guardarBien()}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -792,9 +792,10 @@ export function SeccionBienesForm({
                           />
                         </svg>
                       </span>
-                      <button
+                      <Button
+                        variant="danger"
+                        size="sm"
                         type="button"
-                        className="text-danger hover:text-danger/80"
                         title="Eliminar"
                         disabled={cargando}
                         onClick={(e) => {
@@ -803,7 +804,7 @@ export function SeccionBienesForm({
                         }}
                       >
                         <IconTrash className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   ),
                 },

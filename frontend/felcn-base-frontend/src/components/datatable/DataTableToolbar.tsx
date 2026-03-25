@@ -24,12 +24,9 @@ export const DataTableToolbar = ({
   onAdd,
   onRefresh,
 }: Props) => {
-
   return (
     <div className="mb-4.5 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-
       <div className="flex flex-wrap gap-2">
-
         {onCSV && (
           <button className="btn btn-primary btn-sm" onClick={onCSV}>
             <IconFile className="w-4 h-4 mr-2" />
@@ -59,12 +56,14 @@ export const DataTableToolbar = ({
         )}
 
         {onRefresh && (
-          <button className="btn btn-outline-primary btn-sm" onClick={onRefresh}>
+          <button
+            className="btn btn-outline-primary btn-sm"
+            onClick={onRefresh}
+          >
             <IconRefresh className="w-4 h-4 mr-2" />
             Actualizar
           </button>
         )}
-
       </div>
 
       <input
@@ -74,7 +73,6 @@ export const DataTableToolbar = ({
         value={search}
         onChange={(e) => onSearch(e.target.value)}
       />
-
     </div>
   )
 }

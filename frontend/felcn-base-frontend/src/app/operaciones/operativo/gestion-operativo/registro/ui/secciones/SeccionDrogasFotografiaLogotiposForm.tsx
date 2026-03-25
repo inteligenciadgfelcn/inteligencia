@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DataTable } from 'mantine-datatable'
 import IconTrash from '@/components/Icon/IconTrash'
+import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
 import {
   GestionOperativoCatalogosService,
   GestionOperativoDrogasService,
@@ -65,16 +68,18 @@ function DropzoneFoto({
             <span className="truncate text-xs text-gray-600 dark:text-gray-400">
               {archivo.name}
             </span>
-            <button
+            <Button
               type="button"
-              className="ml-2 text-red-500 hover:text-red-700"
+              variant="danger"
+              size="sm"
+              className="ml-2"
               onClick={() => {
                 if (inputRef.current) inputRef.current.value = ''
                 onChange(null)
               }}
             >
               ✕
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -330,9 +335,9 @@ function LogotiposPanel({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className="mb-1 block text-sm font-medium">Imagen</label>
-          <input
+          <Input
             type="text"
-            className="form-input w-full"
+            className="w-full"
             value={imagen}
             onChange={(e) => setImagen(e.target.value)}
           />
@@ -341,9 +346,9 @@ function LogotiposPanel({
           <label className="mb-1 block text-sm font-medium">
             Descripción del Logo
           </label>
-          <input
+          <Input
             type="text"
-            className="form-input w-full"
+            className="w-full"
             value={descripcionLogo}
             onChange={(e) => setDescripcionLogo(e.target.value)}
           />
@@ -352,9 +357,9 @@ function LogotiposPanel({
           <label className="mb-1 block text-sm font-medium">
             Organización Criminal
           </label>
-          <input
+          <Input
             type="text"
-            className="form-input w-full"
+            className="w-full"
             value={organizacion}
             onChange={(e) => setOrganizacion(e.target.value)}
           />
@@ -363,20 +368,19 @@ function LogotiposPanel({
           <label className="mb-1 block text-sm font-medium">
             Posibles Blancos
           </label>
-          <input
-            type="text"
-            className="form-input w-full"
+          <Input
             value={blanco}
             onChange={(e) => setBlanco(e.target.value)}
+            className="w-full"
           />
         </div>
         <div className="col-span-1 md:col-span-2 lg:col-span-2">
           <label className="mb-1 block text-sm font-medium">Observación</label>
-          <textarea
-            className="form-textarea w-full"
+          <Textarea
             value={observacion}
             onChange={(e) => setObservacion(e.target.value)}
             rows={2}
+            className="w-full"
           />
         </div>
         <div className="col-span-1 lg:col-span-3">
@@ -388,14 +392,15 @@ function LogotiposPanel({
           />
         </div>
         <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
-          <button
+          <Button
             type="button"
-            className="btn btn-success btn-sm"
+            variant="success"
+            size="sm"
             onClick={() => void guardar()}
             disabled={cargando}
           >
             Guardar
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -452,14 +457,15 @@ function LogotiposPanel({
               width: 60,
               textAlign: 'center',
               render: (row) => (
-                <button
+                <Button
                   type="button"
-                  className="text-danger hover:text-danger/80"
+                  variant="danger"
+                  size="sm"
                   disabled={cargando}
                   onClick={() => void eliminar(row.id)}
                 >
                   <IconTrash className="h-4 w-4" />
-                </button>
+                </Button>
               ),
             },
           ]}
@@ -798,44 +804,40 @@ export function SeccionDrogasFotografiaLogotiposForm({
             <label className="mb-1 block text-sm font-medium">
               Tipo de Droga
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={tiposDroga.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idTipoDroga}
               onChange={(e) => setIdTipoDroga(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {tiposDroga.map((t) => (
-                <option key={t.id} value={String(t.id)}>
-                  {t.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Estado de la Droga
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={estadosDroga.map((e) => ({
+                value: String(e.id),
+                label: e.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idEstadoDroga}
               onChange={(e) => setIdEstadoDroga(e.target.value)}
               disabled={estadosDroga.length === 0}
-            >
-              <option value="">Seleccione un dato</option>
-              {estadosDroga.map((e) => (
-                <option key={e.id} value={String(e.id)}>
-                  {e.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Cantidad de Unidades
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={cantidadUnidades}
               onChange={(e) => {
                 const val = e.target.value
@@ -925,9 +927,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
             <label className="mb-1 block text-sm font-medium">
               Costo (Bs.)
             </label>
-            <input
+            <Input
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={costo}
               onChange={(e) => {
                 const val = e.target.value
@@ -941,62 +943,56 @@ export function SeccionDrogasFotografiaLogotiposForm({
             <label className="mb-1 block text-sm font-medium">
               Forma de Transporte
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={formasTransporte.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idFormaTransporte}
               onChange={(e) => setIdFormaTransporte(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {formasTransporte.map((t) => (
-                <option key={t.id} value={String(t.id)}>
-                  {t.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               País Procedencia
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idPaisProcedencia}
               onChange={(e) => setIdPaisProcedencia(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {paises.map((p) => (
-                <option key={p.id} value={String(p.id)}>
-                  {p.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               País Destino
             </label>
-            <select
-              className="form-select w-full"
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
               value={idPaisDestino}
               onChange={(e) => setIdPaisDestino(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {paises.map((p) => (
-                <option key={p.id} value={String(p.id)}>
-                  {p.descripcion}
-                </option>
-              ))}
-            </select>
+              className="w-full"
+            />
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
             <label className="mb-1 block text-sm font-medium">
               Observaciones
             </label>
-            <textarea
-              className="form-textarea w-full"
+            <Textarea
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               rows={3}
+              className="w-full"
             />
           </div>
 
@@ -1020,14 +1016,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
           {/* Botón guardar */}
           <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
-            <button
+            <Button
               type="button"
-              className="btn btn-success btn-sm"
+              variant="success"
+              size="sm"
               onClick={() => void guardarDroga()}
               disabled={cargando}
             >
               Guardar Droga
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -1136,9 +1133,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
                           />
                         </svg>
                       </span>
-                      <button
+                      <Button
                         type="button"
-                        className="text-danger hover:text-danger/80"
+                        variant="danger"
+                        size="sm"
                         title="Eliminar"
                         disabled={cargando}
                         onClick={(e) => {
@@ -1147,7 +1145,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                         }}
                       >
                         <IconTrash className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   ),
                 },

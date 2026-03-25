@@ -13,7 +13,8 @@ export default function AuthSidePanel() {
         maxWidth: '835px',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(225deg, rgba(239,18,98,1) 0%, rgba(67,97,238,1) 100%)',
+        background:
+          'linear-gradient(225deg, rgba(239,18,98,1) 0%, rgba(67,97,238,1) 100%)',
         p: 5,
         marginLeft: { xl: '-128px' },
         transform: { xl: 'skewX(14deg)' },
@@ -26,7 +27,8 @@ export default function AuthSidePanel() {
           insetY: 0,
           right: '-40px',
           width: { xs: '32px', xl: '64px' },
-          background: 'linear-gradient(to right, rgba(67,97,238,0.1), transparent)',
+          background:
+            'linear-gradient(to right, rgba(67,97,238,0.1), transparent)',
           display: { xs: 'none', xl: 'block' },
         }}
       />
@@ -37,7 +39,10 @@ export default function AuthSidePanel() {
           transform: { xl: 'skewX(-14deg)' },
         }}
       >
-        <Link href="/" style={{ display: 'block', width: '192px', marginLeft: '40px' }}>
+        <Link
+          href="/"
+          style={{ display: 'block', width: '192px', marginLeft: '40px' }}
+        >
           <Image
             src="/assets/images/auth/logo-white.svg"
             alt="Logo"
