@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
-import { DataTable } from 'mantine-datatable'
+import {
+  VristoDataTable,
+  type Column,
+} from '@/components/datatable/VristoDataTable'
 import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -267,64 +270,51 @@ export function SustanciasSolidas({
 
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="whitespace-nowrap table-hover"
-              records={datos}
-              totalRecords={
+            <VristoDataTable
+              rows={datos}
+              total={
                 totalRegistros !== undefined ? totalRegistros : datos.length
               }
-              recordsPerPage={limite}
               page={pagina}
+              limit={limite}
               onPageChange={onCambioPagina ?? (() => {})}
-              recordsPerPageOptions={[10, 20, 50]}
-              onRecordsPerPageChange={onCambioLimite ?? (() => {})}
-              columns={[
-                {
-                  accessor: 'descripcionSustancia',
-                  title: 'Tipo de Sustancia',
-                  footer: (
-                    <span className="font-bold text-sm">Total Costo (Bs):</span>
-                  ),
-                },
-                {
-                  accessor: 'cantidad',
-                  title: 'Cantidad en Kilos',
-                  textAlign: 'right',
-                  render: (row: any) => Number(row.cantidad ?? 0).toFixed(3),
-                },
-                {
-                  accessor: 'costo',
-                  title: 'Costo (Bs)',
-                  textAlign: 'right',
-                  render: (row: any) => Number(row.costo ?? 0).toFixed(2),
-                  footer: (
-                    <span className="font-bold text-sm">
-                      {datos
-                        .reduce((sum, item) => sum + Number(item.costo ?? 0), 0)
-                        .toFixed(2)}
-                    </span>
-                  ),
-                },
-                {
-                  accessor: 'actions',
-                  title: 'Acciones',
-                  textAlign: 'center',
-                  render: (row: any) => (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      className="p-1"
-                      onClick={() => handleEliminar(row.id as number)}
-                      disabled={cargando}
-                    >
-                      <IconTrash className="w-4 h-4" />
-                    </Button>
-                  ),
-                },
-              ]}
-              highlightOnHover
+              onLimitChange={onCambioLimite ?? (() => {})}
+              search=""
+              onSearchChange={() => {}}
+              loading={cargando}
+              columns={
+                [
+                  {
+                    accessor: 'descripcionSustancia',
+                    title: 'Tipo de Sustancia',
+                  },
+                  {
+                    accessor: 'cantidad',
+                    title: 'Cantidad en Kilos',
+                    render: (row) => Number(row.cantidad ?? 0).toFixed(3),
+                  },
+                  {
+                    accessor: 'costo',
+                    title: 'Costo (Bs)',
+                    render: (row) => Number(row.costo ?? 0).toFixed(2),
+                  },
+                  {
+                    accessor: 'actions',
+                    title: 'Acciones',
+                    render: (row) => (
+                      <button
+                        type="button"
+                        className="text-danger hover:text-danger/80"
+                        title="Eliminar"
+                        onClick={() => handleEliminar(row.id as number)}
+                        disabled={cargando}
+                      >
+                        <IconTrash className="w-4 h-4" />
+                      </button>
+                    ),
+                  },
+                ] as Column<(typeof datos)[0]>[]
+              }
             />
           </div>
         </div>

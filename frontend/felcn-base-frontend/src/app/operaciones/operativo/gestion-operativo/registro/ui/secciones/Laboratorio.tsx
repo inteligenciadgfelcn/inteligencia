@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react'
 import { SiiiLookupsService } from '@/services/parametricas'
 import IconTrash from '@/components/Icon/IconTrash'
-import { DataTable } from 'mantine-datatable'
+import {
+  VristoDataTable,
+  type Column,
+} from '@/components/datatable/VristoDataTable'
 import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -212,50 +215,47 @@ export function Laboratorio({
 
         <div className="mt-5">
           <div className="datatables">
-            <DataTable
-              fetching={cargando}
-              withTableBorder={false}
-              className="whitespace-nowrap table-hover"
-              records={datos}
-              totalRecords={
+            <VristoDataTable
+              loading={cargando}
+              rows={datos}
+              total={
                 totalRegistros !== undefined ? totalRegistros : datos.length
               }
-              recordsPerPage={limite}
+              limit={limite}
               page={pagina}
               onPageChange={onCambioPagina ?? (() => {})}
-              recordsPerPageOptions={[10, 20, 50]}
-              onRecordsPerPageChange={onCambioLimite ?? (() => {})}
-              columns={[
-                { accessor: 'descripcionTipoFabrica', title: 'Tipo Fabrica' },
-                {
-                  accessor: 'descripcionFabricaModelo',
-                  title: 'Modelo Fabrica',
-                },
-                {
-                  accessor: 'cantidad',
-                  title: 'Cantidad',
-                  textAlign: 'right',
-                  render: (row: any) => row.cantidad,
-                },
-                {
-                  accessor: 'actions',
-                  title: 'Acciones',
-                  textAlign: 'center',
-                  render: (row: any) => (
-                    <Button
-                      type="button"
-                      variant="danger"
-                      size="sm"
-                      className="flex justify-center w-full"
-                      onClick={() => handleEliminar(row.id as number)}
-                      disabled={cargando}
-                    >
-                      <IconTrash className="w-5 h-5" />
-                    </Button>
-                  ),
-                },
-              ]}
-              highlightOnHover
+              onLimitChange={onCambioLimite ?? (() => {})}
+              search={''}
+              onSearchChange={() => {}}
+              columns={
+                [
+                  { accessor: 'descripcionTipoFabrica', title: 'Tipo Fabrica' },
+                  {
+                    accessor: 'descripcionFabricaModelo',
+                    title: 'Modelo Fabrica',
+                  },
+                  {
+                    accessor: 'cantidad',
+                    title: 'Cantidad',
+                    render: (row: any) => row.cantidad,
+                  },
+                  {
+                    accessor: 'actions',
+                    title: 'Acciones',
+                    render: (row: any) => (
+                      <button
+                        type="button"
+                        className="text-danger hover:text-danger/80"
+                        title="Eliminar"
+                        onClick={() => handleEliminar(row.id as number)}
+                        disabled={cargando}
+                      >
+                        <IconTrash className="w-4 h-4" />
+                      </button>
+                    ),
+                  },
+                ] as Column<(typeof datos)[0]>[]
+              }
             />
           </div>
         </div>
