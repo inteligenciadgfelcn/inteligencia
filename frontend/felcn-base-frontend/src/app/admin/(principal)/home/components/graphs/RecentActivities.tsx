@@ -108,10 +108,9 @@ export default function RecentActivities() {
     return configs
   }, [permissions, sesionPeticion])
 
-const queries = useQueries({
-  queries: queryConfigs,
-}) as any[]
-
+  const queries = useQueries({
+    queries: queryConfigs,
+  }) as any[]
 
   /* ------------------- CONSTRUIR ACTIVIDADES ------------------- */
 
@@ -119,7 +118,7 @@ const queries = useQueries({
     if (queries.some((q) => q.isLoading)) return []
 
     const all = queries.flatMap((query, index) => {
-    const filas = (query.data as any)?.datos?.filas || []
+      const filas = (query.data as any)?.datos?.filas || []
 
       if (!filas.length) return []
 

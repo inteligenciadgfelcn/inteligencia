@@ -64,16 +64,16 @@ export const darkTheme = createTheme(
         },
       },
       MuiButton: {
-       defaultProps: {
-    disableElevation: true,
-  },
-  styleOverrides: {
-    root: {
-      textTransform: 'none',
-      fontWeight: '600',
-      borderRadius: 8,
-    },
-  },
+        defaultProps: {
+          disableElevation: true,
+        },
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: '600',
+            borderRadius: 8,
+          },
+        },
       },
       MuiDrawer: {
         styleOverrides: {

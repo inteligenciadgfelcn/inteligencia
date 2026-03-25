@@ -5,16 +5,19 @@ import type { RespuestaApi, SeccionPayload } from './types'
 const BASE = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoSeccion2Service = {
-    obtener(idOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.get({
-            url: `${BASE}/${idOperativo}/seccion2`,
-        })
-    },
+  obtener(idOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
+    return Servicios.get({
+      url: `${BASE}/${idOperativo}/seccion2`,
+    })
+  },
 
-    guardar(idOperativo: number, payload: SeccionPayload): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.post({
-            url: `${BASE}/${idOperativo}/seccion2`,
-            body: payload,
-        })
-    },
+  guardar(
+    idOperativo: number,
+    payload: SeccionPayload
+  ): Promise<RespuestaApi<SeccionPayload>> {
+    return Servicios.post({
+      url: `${BASE}/${idOperativo}/seccion2`,
+      body: payload,
+    })
+  },
 }

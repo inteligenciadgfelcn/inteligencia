@@ -57,9 +57,10 @@ export function useConfirmDialog() {
   }, [state.loading])
 
   const handleConfirm = useCallback(async () => {
+    const fn = state.onConfirm
     setState((prev) => ({ ...prev, loading: true }))
     try {
-      await state.onConfirm()
+      await fn()
       setState(ESTADO_INICIAL)
     } catch {
       setState((prev) => ({ ...prev, loading: false }))

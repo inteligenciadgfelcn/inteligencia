@@ -7,6 +7,9 @@ import { GestionOperativoPersonasService } from '@/services/operativos'
 import { SiiiLookupsService } from '@/services/parametricas'
 import type { PersonaResponse } from '@/services/operativos'
 import { useConfirmDialog } from '@/hooks'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
 type Opcion = { id: string; label: string }
@@ -63,16 +66,18 @@ function DropzoneFoto({
             <span className="truncate text-xs text-gray-600 dark:text-gray-400">
               {archivo.name}
             </span>
-            <button
+            <Button
               type="button"
-              className="ml-2 text-red-500 hover:text-red-700"
+              variant="danger"
+              size="sm"
+              className="ml-2 p-1"
               onClick={() => {
                 if (inputRef.current) inputRef.current.value = ''
                 onChange(null)
               }}
             >
               ✕
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -451,10 +456,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             <label htmlFor="nombres" className="mb-1 block text-sm font-medium">
               Nombre(s)
             </label>
-            <input
+            <Input
               id="nombres"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={nombres}
               onChange={(e) => setNombres(e.target.value.toUpperCase())}
             />
@@ -466,10 +471,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Primer Apellido
             </label>
-            <input
+            <Input
               id="primerApellido"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={primerApellido}
               onChange={(e) => setPrimerApellido(e.target.value.toUpperCase())}
             />
@@ -481,10 +486,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Segundo Apellido
             </label>
-            <input
+            <Input
               id="segundoApellido"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={segundoApellido}
               onChange={(e) => setSegundoApellido(e.target.value.toUpperCase())}
             />
@@ -496,10 +501,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Ap. Casada
             </label>
-            <input
+            <Input
               id="apCasada"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={apCasada}
               onChange={(e) => setApCasada(e.target.value.toUpperCase())}
             />
@@ -513,34 +518,33 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Estado / Tipo Implicado
             </label>
-            <select
+            <Select
               id="idEstadoSujeto"
-              className="form-select w-full"
+              className="w-full"
               value={idEstadoSujeto}
               onChange={(e) => setIdEstadoSujeto(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesEstado.map((o) => (
-                <option key={o.id} value={o.label}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesEstado.map((o) => ({
+                value: o.label,
+                label: o.label,
+              }))}
+              placeholder="Seleccione un dato"
+            />
           </div>
           <div>
             <label htmlFor="genero" className="mb-1 block text-sm font-medium">
               Género
             </label>
-            <select
+            <Select
               id="genero"
-              className="form-select w-full"
+              className="w-full"
               value={genero}
               onChange={(e) => setGenero(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              <option value="true">Masculino</option>
-              <option value="false">Femenino</option>
-            </select>
+              options={[
+                { value: 'true', label: 'Masculino' },
+                { value: 'false', label: 'Femenino' },
+              ]}
+              placeholder="Seleccione un dato"
+            />
           </div>
           <div>
             <label
@@ -549,19 +553,17 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Tipo de Documento
             </label>
-            <select
+            <Select
               id="idTipoDocumento"
-              className="form-select w-full"
+              className="w-full"
               value={idTipoDocumento}
               onChange={(e) => setIdTipoDocumento(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesDocumento.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesDocumento.map((o) => ({
+                value: o.id,
+                label: o.label,
+              }))}
+              placeholder="Seleccione un dato"
+            />
           </div>
           <div>
             <label
@@ -570,10 +572,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Nro. Documento
             </label>
-            <input
+            <Input
               id="numeroDocumento"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={numeroDocumento}
               onChange={(e) => setNumeroDocumento(e.target.value.toUpperCase())}
             />
@@ -587,10 +589,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Fecha de Nacimiento
             </label>
-            <input
+            <Input
               id="fechaNacimiento"
               type="date"
-              className="form-input w-full"
+              className="w-full"
               value={fechaNacimiento}
               onChange={(e) => setFechaNacimiento(e.target.value)}
             />
@@ -602,10 +604,10 @@ export function Persona({ titulo, idoperativo }: Props) {
             >
               Dirección
             </label>
-            <input
+            <Input
               id="direccion"
               type="text"
-              className="form-input w-full"
+              className="w-full"
               value={direccion}
               onChange={(e) => setDireccion(e.target.value.toUpperCase())}
             />
@@ -614,19 +616,17 @@ export function Persona({ titulo, idoperativo }: Props) {
             <label htmlFor="idPais" className="mb-1 block text-sm font-medium">
               Nacionalidad
             </label>
-            <select
+            <Select
               id="idPais"
-              className="form-select w-full"
+              className="w-full"
               value={idPais}
               onChange={(e) => setIdPais(e.target.value)}
-            >
-              <option value="">Seleccione un dato</option>
-              {opcionesPaises.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              options={opcionesPaises.map((o) => ({
+                value: o.id,
+                label: o.label,
+              }))}
+              placeholder="Seleccione un dato"
+            />
           </div>
 
           {/* Fila 4: Fotos — DropzoneFoto con drag & drop */}
@@ -655,14 +655,15 @@ export function Persona({ titulo, idoperativo }: Props) {
 
           {/* Botón guardar */}
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
-            <button
+            <Button
               type="button"
-              className="btn btn-success btn-sm"
+              variant="success"
+              size="sm"
               onClick={() => void guardarPersona()}
               disabled={cargando}
             >
               Guardar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -746,18 +747,20 @@ export function Persona({ titulo, idoperativo }: Props) {
                         </svg>
                       </span>
                       {/* Eliminar */}
-                      <button
+                      <Button
                         type="button"
-                        className="text-danger hover:text-danger/80"
+                        variant="danger"
+                        size="sm"
                         title="Eliminar"
                         disabled={cargando}
                         onClick={(e) => {
                           e.stopPropagation()
                           void handleEliminar(r.id)
                         }}
+                        className="p-1"
                       >
                         <IconTrash className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   ),
                 },
@@ -795,13 +798,15 @@ export function Persona({ titulo, idoperativo }: Props) {
               alt="Vista ampliada"
               className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
             />
-            <button
+            <Button
               type="button"
+              variant="dark"
+              size="sm"
               className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
               onClick={() => setImagenAmpliada(null)}
             >
               ✕
-            </button>
+            </Button>
           </div>
         </div>
       )}

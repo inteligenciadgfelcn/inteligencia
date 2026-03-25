@@ -26,9 +26,7 @@ export default function DashboardHeader() {
           {titleCase(usuario?.persona.nombres?.toLowerCase() ?? '')}
         </Typography>
 
-        <Typography color="text.secondary">
-          Panel de administración
-        </Typography>
+        <Typography color="text.secondary">Panel de administración</Typography>
       </Box>
 
       {/* Avatar derecha */}

@@ -14,8 +14,6 @@ import { MantineProvider } from '@mantine/core'
 import '@mantine/core/styles.css'
 import 'mantine-datatable/styles.css'
 
-
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>

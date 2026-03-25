@@ -139,9 +139,7 @@ export const SubirArchivo: React.FC<SubirArchivoProps> = ({
           accept={
             tiposPermitidos?.length > 0
               ? tiposPermitidos
-                  .map((value) =>
-                    value.includes('/') ? value : `.${value}`
-                  )
+                  .map((value) => (value.includes('/') ? value : `.${value}`))
                   .join(',')
               : undefined
           }

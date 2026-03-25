@@ -1,23 +1,20 @@
-'use client';
+'use client'
 
-import React, {
-  TextareaHTMLAttributes,
-  ReactNode,
-} from 'react';
-import { UseFormRegister } from 'react-hook-form';
-import { Icono } from '../Icono';
+import React, { TextareaHTMLAttributes, ReactNode } from 'react'
+import { UseFormRegister } from 'react-hook-form'
+import { Icono } from '../Icono'
 
 interface TextareaWithPrefixProps
   extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'prefix'> {
-  prefix?: ReactNode;
-  icon?: string;
+  prefix?: ReactNode
+  icon?: string
 
-  containerClassName?: string;
-  prefixClassName?: string;
-  textareaClassName?: string;
+  containerClassName?: string
+  prefixClassName?: string
+  textareaClassName?: string
 
-  register?: UseFormRegister<any>;
-  error?: string;
+  register?: UseFormRegister<any>
+  error?: string
 }
 
 const TextareaWithPrefix: React.FC<TextareaWithPrefixProps> = ({
@@ -31,14 +28,12 @@ const TextareaWithPrefix: React.FC<TextareaWithPrefixProps> = ({
   name,
   ...textareaProps
 }) => {
-  const showLeftBox = Boolean(prefix || icon);
+  const showLeftBox = Boolean(prefix || icon)
 
   return (
     <div className={`mb-5 ${containerClassName}`}>
       <div className="flex flex-col">
-
         <div className="flex">
-
           {/* LEFT BOX */}
           {showLeftBox && (
             <div
@@ -52,15 +47,9 @@ const TextareaWithPrefix: React.FC<TextareaWithPrefixProps> = ({
                 ${prefixClassName}
                 ${error ? 'border-danger' : ''}`}
             >
-              {icon && (
-                <Icono fontSize="large">
-                  {icon}
-                </Icono>
-              )}
+              {icon && <Icono fontSize="large">{icon}</Icono>}
 
-              {prefix && (
-                <span>{prefix}</span>
-              )}
+              {prefix && <span>{prefix}</span>}
             </div>
           )}
 
@@ -70,25 +59,17 @@ const TextareaWithPrefix: React.FC<TextareaWithPrefixProps> = ({
             {...textareaProps}
             name={name}
             className={`form-textarea flex-1
-              ${showLeftBox
-                ? 'ltr:rounded-l-none rtl:rounded-r-none'
-                : ''}
+              ${showLeftBox ? 'ltr:rounded-l-none rtl:rounded-r-none' : ''}
               ${textareaClassName}
               ${error ? 'border-danger focus:border-danger' : ''}`}
           />
-
         </div>
 
         {/* ERROR */}
-        {error && (
-          <span className="text-danger text-sm mt-1">
-            {error}
-          </span>
-        )}
-
+        {error && <span className="text-danger text-sm mt-1">{error}</span>}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TextareaWithPrefix;
+export default TextareaWithPrefix

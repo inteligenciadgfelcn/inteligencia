@@ -77,12 +77,9 @@ export function VristoDataTable<T>({
       )}
 
       <div className="panel mt-6">
-
         {/* TOOLBAR */}
         <div className="mb-4.5 flex flex-col justify-between gap-5 md:flex-row md:items-center">
-
           <div className="flex flex-wrap items-center">
-
             {onExportCSV && (
               <button
                 type="button"
@@ -117,7 +114,6 @@ export function VristoDataTable<T>({
             )}
 
             {extraButtons}
-
           </div>
 
           <input
@@ -130,19 +126,15 @@ export function VristoDataTable<T>({
               onPageChange(1)
             }}
           />
-
         </div>
 
         {/* TABLA */}
         <div className="table-responsive">
-
           <table className="table-hover whitespace-nowrap">
-
             <thead>
               <tr>
                 {columns.map((c) => {
-                  const active =
-                    sortStatus?.columnAccessor === c.accessor
+                  const active = sortStatus?.columnAccessor === c.accessor
 
                   return (
                     <th
@@ -153,8 +145,7 @@ export function VristoDataTable<T>({
                         onSortStatusChange({
                           columnAccessor: c.accessor as string,
                           direction:
-                            active &&
-                            sortStatus?.direction === 'asc'
+                            active && sortStatus?.direction === 'asc'
                               ? 'desc'
                               : 'asc',
                         })
@@ -184,20 +175,15 @@ export function VristoDataTable<T>({
             </thead>
 
             <tbody>
-
               {loading && (
                 <tr>
-                  <td colSpan={columns.length}>
-                    Cargando...
-                  </td>
+                  <td colSpan={columns.length}>Cargando...</td>
                 </tr>
               )}
 
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length}>
-                    Sin registros
-                  </td>
+                  <td colSpan={columns.length}>Sin registros</td>
                 </tr>
               )}
 
@@ -205,26 +191,23 @@ export function VristoDataTable<T>({
                 rows.map((row, i) => (
                   <tr key={i}>
                     {columns.map((c) => (
-                      <td key={String(c.accessor)} className={c.className || ''}>
+                      <td
+                        key={String(c.accessor)}
+                        className={c.className || ''}
+                      >
                         {c.render
                           ? c.render(row)
-                          : String(
-                              (row as any)[c.accessor] ?? ''
-                            )}
+                          : String((row as any)[c.accessor] ?? '')}
                       </td>
                     ))}
                   </tr>
                 ))}
-
             </tbody>
-
           </table>
-
         </div>
 
         {/* PAGINADOR */}
         <div className="mt-4 flex items-center justify-between">
-
           <div className="flex items-center gap-3 text-sm">
             <span>
               Mostrando del {(page - 1) * limit + 1} al{' '}
@@ -248,7 +231,6 @@ export function VristoDataTable<T>({
           </div>
 
           <ul className="inline-flex items-center gap-1">
-
             <li>
               <button
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f3f4f6] text-gray-600 hover:bg-primary hover:text-white disabled:opacity-50"
@@ -288,11 +270,8 @@ export function VristoDataTable<T>({
                 ›
               </button>
             </li>
-
           </ul>
-
         </div>
-
       </div>
     </div>
   )
