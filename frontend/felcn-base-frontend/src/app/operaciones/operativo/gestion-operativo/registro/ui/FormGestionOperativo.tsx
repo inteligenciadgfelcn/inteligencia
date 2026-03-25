@@ -22,20 +22,27 @@ import {
   useSeccion5,
 } from '../hooks/useGestionOperativoSecciones'
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
+import { Icono } from '@/components/Icono'
 
 interface FormGestionOperativoProps {
   idGestionOperativo?: string
 }
 
-const SECCIONES: { key: SeccionKey; label: string }[] = [
-  { key: 'seccion-1', label: 'Datos Generales' },
-  { key: 'seccion-2', label: 'Drogas' },
-  { key: 'seccion-3', label: 'Sust. Sólidas' },
-  { key: 'seccion-4', label: 'Sust. Líquidas' },
-  { key: 'seccion-5', label: 'Laboratorios' },
-  { key: 'seccion-6', label: 'Personas' },
-  { key: 'seccion-7', label: 'Bienes' },
-  { key: 'seccion-8', label: 'Galería' },
+interface SeccionDef {
+  key: SeccionKey
+  label: string
+  icon: string
+}
+
+const SECCIONES: SeccionDef[] = [
+  { key: 'seccion-1', label: 'Datos Generales', icon: 'description' },
+  { key: 'seccion-2', label: 'Drogas', icon: 'science' },
+  { key: 'seccion-3', label: 'Sust. Sólidas', icon: 'grain' },
+  { key: 'seccion-4', label: 'Sust. Líquidas', icon: 'water_drop' },
+  { key: 'seccion-5', label: 'Laboratorios', icon: 'biotech' },
+  { key: 'seccion-6', label: 'Personas', icon: 'people' },
+  { key: 'seccion-7', label: 'Bienes', icon: 'inventory_2' },
+  { key: 'seccion-8', label: 'Galería', icon: 'photo_library' },
 ]
 
 export function FormGestionOperativo({
@@ -268,25 +275,29 @@ export function FormGestionOperativo({
       </div>
 
       <div className="panel p-0">
-        <div className="flex overflow-x-auto border-b border-gray-200">
+        <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b]">
           {SECCIONES.map((seccion) => {
             const deshabilitada = seccion.key !== 'seccion-1' && !tieneOperativo
+            const activa = seccionActiva === seccion.key
             return (
               <button
                 key={seccion.key}
                 type="button"
                 disabled={deshabilitada}
-                className={`whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-all ${
                   deshabilitada
-                    ? 'cursor-not-allowed border-transparent text-gray-300'
-                    : seccionActiva === seccion.key
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600'
+                    : activa
+                      ? 'border-primary text-primary bg-primary/5'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                 }`}
                 onClick={() =>
                   !deshabilitada && handleSetSeccionActiva(seccion.key)
                 }
               >
+                <Icono className={`w-4 h-4 ${activa ? 'text-primary' : ''}`}>
+                  {seccion.icon}
+                </Icono>
                 {seccion.label}
               </button>
             )
