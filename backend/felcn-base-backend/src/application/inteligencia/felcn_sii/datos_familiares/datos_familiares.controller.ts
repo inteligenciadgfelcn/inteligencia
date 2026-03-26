@@ -46,12 +46,12 @@ export class DatosFamiliaresController extends BaseController {
     return this.datosFamiliaresService.findByDetenido(idDetenido)
   }
 
-  @Get()
+ /* @Get()
   @ApiOperation({ summary: 'Listar familiares con paginación' })
   async findAll(@Query() pagination: PaginacionQueryDto) {
     const result = await this.datosFamiliaresService.findAll(pagination)
     return this.successListRows(result)
-  }
+  }*/
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un familiar por ID' })
