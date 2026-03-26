@@ -136,15 +136,26 @@ export class FiliacionService {
     const detenidos = await this.dataSource
       .getRepository(Detenido)
       .createQueryBuilder('d')
-      .select(['d.id_detenido AS idDetenido', 'd.numero_caso AS numeroCaso'])
-      .where('d.numero_caso = :caso', { caso: nroCaso })
-      .getMany()
+      .select([
+        'd.id_detenido AS id_detenido',
+        'd.numero_caso AS numero_caso',
+        'd.nombres AS nombres',
+      ])
+      .where('TRIM(d.numero_caso) = :caso', { caso: nroCaso.trim() })
+      .getRawMany()
 
-    const mapa = new Map(detenidos.map((d) => [d.numeroCaso, d.idDetenido]))
+    const mapa = new Map(
+      detenidos.map((d) => [
+        `${d.numero_caso?.trim()}-${d.nombres?.trim()}`,
+        d.id_detenido,
+      ])
+    )
 
     const resultado = filas.map((f) => ({
       ...f,
-      id_detenido: mapa.get(f.numero_caso) ?? null,
+      id_detenido:
+        mapa.get(`${f.numero_caso?.trim()}-${f.nombres?.trim()}`) ??
+        null,
     }))
 
     return [resultado, total] as [any[], number]
