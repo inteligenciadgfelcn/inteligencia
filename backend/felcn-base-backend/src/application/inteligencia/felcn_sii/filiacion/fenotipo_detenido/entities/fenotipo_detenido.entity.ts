@@ -10,33 +10,33 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Detenido } from '../../detenido/entities/detenido.entity'
 
 @Entity({ name: 'fenotipo_detenido', schema: 'public' })
 export class FenotipoDetenido {
-  
- @PrimaryGeneratedColumn({
+  @PrimaryGeneratedColumn({
     name: 'id_fenotipo_detenido',
     type: 'int',
   })
   idFenotipoDetenido: number
 
-  @ManyToOne(() => Detenido)
+  @OneToOne(() => Detenido, (d) => d.fenotipo)
   @JoinColumn({ name: 'id_detenido' })
   detenido: Detenido
 
   @Column({
     name: 'fecha',
-    type: 'timestamp'
+    type: 'timestamp',
   })
   fecha: Date
 
   @Column({
     name: 'estatura',
     type: 'varchar',
-    length: 10
+    length: 10,
   })
   estatura: string
 
@@ -44,7 +44,7 @@ export class FenotipoDetenido {
     name: 'peso_corporal',
     type: 'varchar',
     length: 10,
-    nullable: true
+    nullable: true,
   })
   pesoCorporal: string
 
@@ -52,7 +52,7 @@ export class FenotipoDetenido {
     name: 'sena_particular',
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   senasParticulares: string
 
@@ -60,7 +60,7 @@ export class FenotipoDetenido {
     name: 'tatuaje',
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   tatuaje: string
 

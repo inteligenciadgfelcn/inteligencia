@@ -17,9 +17,9 @@ export class DocumentoDetenido {
   })
   idDocumentoDetenido: number
 
-  @ManyToOne(() => Detenido)
-    @JoinColumn({ name: 'id_detenido' })
-    detenido: Detenido
+  @ManyToOne(() => Detenido, (d) => d.documentos)
+  @JoinColumn({ name: 'id_detenido' })
+  detenido: Detenido
 
   @Column({
     name: 'id_operativo',

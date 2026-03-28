@@ -13,6 +13,11 @@ export class CreateDatosFamiliaresDto {
   @IsNotEmpty()
   idDetenido: number
 
+  @ApiProperty({ example: 7 })
+  @IsInt()
+  @IsNotEmpty()
+  idParentezco: number
+
   @ApiProperty({ example: 'Juan Carlos' })
   @IsString()
   @IsNotEmpty()

@@ -1,4 +1,3 @@
-
 import { EstadoCivil } from '@/application/inteligencia/felcn_sii/parametricas/estado_civil/entities/estado_civil.entity'
 import {
   PrimaryGeneratedColumn,
@@ -7,9 +6,14 @@ import {
   JoinColumn,
   Entity,
   OneToMany,
+  OneToOne,
 } from 'typeorm'
 import { DatosFamiliares } from '../../../datos_familiares/entities/datos_familiare.entity'
 import { Pais } from '../../../parametricas/pais/entities/pais.entity'
+import { AliasDetenido } from '../../alias_detenido/entities/alias_detenido.entity'
+import { DocumentoDetenido } from '../../documento_detenido/entities/documento_detenido.entity'
+import { FenotipoDetenido } from '../../fenotipo_detenido/entities/fenotipo_detenido.entity'
+import { ProfesionDetenido } from '../../profesion_detenido/entities/profesion_detenido.entity'
 
 @Entity({ name: 'detenido', schema: 'public' })
 export class Detenido {
@@ -234,4 +238,16 @@ export class Detenido {
 
   @OneToMany(() => DatosFamiliares, (df) => df.detenido)
   datosFamiliares: DatosFamiliares[]
+
+  @OneToMany(() => AliasDetenido, (a) => a.detenido)
+  aliases: AliasDetenido[]
+
+  @OneToMany(() => DocumentoDetenido, (d) => d.detenido)
+  documentos: DocumentoDetenido[]
+
+  @OneToOne(() => FenotipoDetenido, (f) => f.detenido)
+  fenotipo: FenotipoDetenido
+
+  @OneToMany(() => ProfesionDetenido, (p) => p.detenido)
+  profesiones: ProfesionDetenido[]
 }

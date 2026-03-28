@@ -1,4 +1,3 @@
-
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -17,7 +16,7 @@ export class AliasDetenido {
   })
   idAliasDetenido: number
 
-  @ManyToOne(() => Detenido)
+  @ManyToOne(() => Detenido, (d) => d.aliases)
   @JoinColumn({ name: 'id_detenido' })
   detenido: Detenido
 
