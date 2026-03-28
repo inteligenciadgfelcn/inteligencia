@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { TipoFabrica } from '../../parametrica/entity/tipo/tipo-fabrica.entity'
 
 /**
  * Entidad Fábrica Modelo
@@ -18,6 +19,10 @@ export class FabricaModelo {
 
   @Column({ name: 'descripcion', type: 'varchar', length: 50 })
   descripcion: string
+
+  @ManyToOne(() => TipoFabrica)
+  @JoinColumn({ name: 'id_tipo_fabrica' })
+  tipoFabrica?: TipoFabrica
 
   constructor(data?: Partial<FabricaModelo>) {
     if (data) Object.assign(this, data)

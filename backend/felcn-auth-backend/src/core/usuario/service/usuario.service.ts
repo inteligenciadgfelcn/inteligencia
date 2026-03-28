@@ -222,6 +222,9 @@ export class UsuarioService extends BaseService {
       )
     }
 
+    let correoActivacion: string | null = null
+    let templateActivacion: string | null = null
+
     const op = async (transaction: EntityManager) => {
       const personaNueva = await this.personaRepositorio.crear(
         {
@@ -270,28 +273,33 @@ export class UsuarioService extends BaseService {
         transaction
       )
 
-      const template =
+      correoActivacion = usuarioNuevo.correoElectronico ?? null
+      templateActivacion =
         TemplateEmailService.armarPlantillaActivacionCuentaManual(
           urlActivacion.toString()
         )
 
-      if (usuarioNuevo.correoElectronico) {
-        await this.mensajeriaService
-          .sendEmail(
-            usuarioNuevo.correoElectronico,
-            Messages.NEW_USER_ACCOUNT_VERIFY,
-            template
-          )
-          .catch((err) => {
-            const mensaje = `Falló al enviar el correo de activación de cuenta`
-            this.logger.error(err, mensaje)
-          })
-      }
-
       const { id, usuario, correoElectronico, estado } = usuarioNuevo
       return { id, usuario, correoElectronico, estado }
     }
-    return await this.usuarioRepositorio.runTransaction(op)
+
+    const resultado = await this.usuarioRepositorio.runTransaction(op)
+
+    // Envío de correo fuera de la transacción (no bloquea la respuesta)
+    if (correoActivacion) {
+      this.mensajeriaService
+        .sendEmail(
+          correoActivacion,
+          Messages.NEW_USER_ACCOUNT_VERIFY,
+          templateActivacion!
+        )
+        .catch((err) => {
+          const mensaje = `Falló al enviar el correo de activación de cuenta`
+          this.logger.error(err, mensaje)
+        })
+    }
+
+    return resultado
   }
 
   async activarCuenta(codigo: string) {
@@ -886,10 +894,18 @@ export class UsuarioService extends BaseService {
 
       if (persona) {
         //contrastación SEGIP
+        const segipEnabled =
+          this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
 
-        const contrastaSegip = await this.segipServices.contrastar(persona)
-        if (!contrastaSegip?.finalizado) {
-          throw new PreconditionFailedException(contrastaSegip?.mensaje)
+        if (segipEnabled) {
+          const contrastaSegip = await this.segipServices.contrastar(persona)
+          if (!contrastaSegip?.finalizado) {
+            throw new PreconditionFailedException(contrastaSegip?.mensaje)
+          }
+        } else {
+          this.logger.warn(
+            'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
+          )
         }
 
         // Verificar que el telefono no este registrado
@@ -920,7 +936,16 @@ export class UsuarioService extends BaseService {
         )
       }
 
-      const { correoElectronico, roles, ciudadaniaDigital } = usuarioDto
+      const {
+        correoElectronico,
+        roles,
+        ciudadaniaDigital,
+        nombreApp,
+        telefonoCelular,
+        telefonoCorporativo,
+        idGrado,
+        idGrupo,
+      } = usuarioDto
       // 2. verificar que el email no este registrado
 
       if (
@@ -956,6 +981,23 @@ export class UsuarioService extends BaseService {
             ciudadaniaDigital: ciudadaniaDigital,
           },
           usuarioAuditoria
+        )
+      }
+
+      // Actualizar campos FELCN opcionales si fueron enviados
+      const camposFelcn = {
+        ...(nombreApp !== undefined && { nombreApp }),
+        ...(telefonoCelular !== undefined && { telefonoCelular }),
+        ...(telefonoCorporativo !== undefined && { telefonoCorporativo }),
+        ...(idGrado !== undefined && { idGrado }),
+        ...(idGrupo !== undefined && { idGrupo }),
+      }
+      if (Object.keys(camposFelcn).length > 0) {
+        await this.usuarioRepositorio.actualizar(
+          id,
+          camposFelcn,
+          usuarioAuditoria,
+          transaction
         )
       }
 
@@ -1067,6 +1109,11 @@ export class UsuarioService extends BaseService {
       correoElectronico: usuario.correoElectronico,
       urlFoto: usuario.urlFoto,
       estado: usuario.estado,
+      nombreApp: usuario.nombreApp,
+      idGrado: usuario.idGrado,
+      idGrupo: usuario.idGrupo,
+      grado: usuario.grado ?? null,
+      grupo: usuario.grupo ?? null,
       roles: await Promise.all(
         usuario.usuarioRol
           .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)

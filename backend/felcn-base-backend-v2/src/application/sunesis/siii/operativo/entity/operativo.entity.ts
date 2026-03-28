@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm'
-import { AuditoriaEntity } from '@/common/entity'
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BaseEntity } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 
 /**
@@ -9,7 +8,7 @@ import { SCHEMA_PUBLIC } from '../../../shared/constants'
  * Tabla: operativo
  */
 @Entity({ name: 'operativo', schema: SCHEMA_PUBLIC })
-export class Operativo extends AuditoriaEntity {
+export class Operativo extends BaseEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_operativo' })
   id: string
 
@@ -61,30 +60,52 @@ export class Operativo extends AuditoriaEntity {
   @Column({ name: 'mando', type: 'varchar', length: 150 })
   mando: string
 
-  // Coordenadas GIS
-  @Column({ name: 'grados_x', type: 'integer' })
-  gradosX: number
-
-  @Column({ name: 'min_x', type: 'integer' })
-  minX: number
-
-  @Column({ name: 'seg_x', type: 'double precision' })
-  segX: number
-
+  // Coordenadas GIS (decimal — el frontend convierte DMS si aplica)
   @Column({ name: 'coord_x', type: 'double precision' })
   coordX: number
 
-  @Column({ name: 'grados_y', type: 'integer' })
-  gradosY: number
-
-  @Column({ name: 'min_y', type: 'integer' })
-  minY: number
-
-  @Column({ name: 'seg_y', type: 'double precision' })
-  segY: number
-
   @Column({ name: 'coord_y', type: 'double precision' })
   coordY: number
+
+  // TODO: eliminar estos campos tras ejecutar script SQL de limpieza en BD
+  // Columnas DMS — existen en la tabla física como NOT NULL, mapear para evitar error INSERT
+  @Column({ name: 'grados_x', type: 'integer' })
+  gradosX: number = 0
+
+  @Column({ name: 'min_x', type: 'integer' })
+  minX: number = 0
+
+  @Column({ name: 'seg_x', type: 'double precision' })
+  segX: number = 0
+
+  @Column({ name: 'grados_y', type: 'integer' })
+  gradosY: number = 0
+
+  @Column({ name: 'min_y', type: 'integer' })
+  minY: number = 0
+
+  @Column({ name: 'seg_y', type: 'double precision' })
+  segY: number = 0
+
+  // TODO: eliminar estos campos tras ejecutar script SQL de limpieza en BD
+  // Flags booleanos — existen en la tabla física como NOT NULL
+  @Column({ name: 'es_revisado', type: 'boolean' })
+  esRevisado: boolean = false
+
+  @Column({ name: 'es_positivo', type: 'boolean' })
+  esPositivo: boolean = true
+
+  @Column({ name: 'es_aprehendido', type: 'boolean' })
+  esAprehendido: boolean = false
+
+  @Column({ name: 'es_arrestado', type: 'boolean' })
+  esArrestado: boolean = false
+
+  @Column({ name: 'es_icia', type: 'boolean' })
+  esIcia: boolean = true
+
+  @Column({ name: 'es_parte_diario', type: 'boolean' })
+  esParteDiario: boolean = false
 
   @Column({ name: 'id_plan_operacion', type: 'integer' })
   idPlanOperacion: number
@@ -101,26 +122,13 @@ export class Operativo extends AuditoriaEntity {
   @Column({ name: 'organizacion', type: 'varchar', length: 50 })
   organizacion: string
 
-  @Column({ name: 'clan_familiar', type: 'varchar', length: 50, nullable: true })
+  @Column({
+    name: 'clan_familiar',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
   clanFamiliar?: string
-
-  @Column({ name: 'es_revisado', type: 'boolean' })
-  esRevisado: boolean
-
-  @Column({ name: 'es_positivo', type: 'boolean' })
-  esPositivo: boolean
-
-  @Column({ name: 'es_aprehendido', type: 'boolean' })
-  esAprehendido: boolean
-
-  @Column({ name: 'es_arrestado', type: 'boolean' })
-  esArrestado: boolean
-
-  @Column({ name: 'es_icia', type: 'boolean' })
-  esIcia: boolean
-
-  @Column({ name: 'es_parte_diario', type: 'boolean' })
-  esParteDiario: boolean
 
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
@@ -136,7 +144,7 @@ export class Operativo extends AuditoriaEntity {
   }
 
   constructor(data?: Partial<Operativo>) {
-    super(data)
+    super()
     if (data) Object.assign(this, data)
   }
 }

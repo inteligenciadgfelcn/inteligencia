@@ -36,7 +36,7 @@ export const AlertaEliminarPolitica = ({
       await delay(800)
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: 'delete',
         params: {
           sujeto: politica.sujeto,

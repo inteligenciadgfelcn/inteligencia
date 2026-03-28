@@ -44,4 +44,19 @@ export class ActualizarUsuarioDto {
   @ApiProperty()
   @IsOptional()
   urlFoto?: string | null
+
+  @IsOptional()
+  nombreApp?: string | null
+
+  @IsOptional()
+  telefonoCelular?: string | null
+
+  @IsOptional()
+  telefonoCorporativo?: string | null
+
+  @IsOptional()
+  idGrado?: number | null
+
+  @IsOptional()
+  idGrupo?: number | null
 }

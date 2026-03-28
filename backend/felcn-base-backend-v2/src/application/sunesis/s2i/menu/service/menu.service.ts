@@ -9,7 +9,7 @@ import { Menu } from '../entity/menu.entity'
 export class MenuService extends BaseService {
   constructor(
     @InjectDataSource(DB_S2I)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {
     super()
   }

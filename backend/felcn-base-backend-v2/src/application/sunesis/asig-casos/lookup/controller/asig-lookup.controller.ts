@@ -61,7 +61,8 @@ export class AsigLookupController extends BaseController {
   @ApiOperation({ summary: 'Listar unidades por usuario' })
   @Get('usuario-unidades/:usuarioLogin')
   async listarUnidadesPorUsuario(@Param('usuarioLogin') usuarioLogin: string) {
-    const datos = await this.lookupService.listarUnidadesPorUsuario(usuarioLogin)
+    const datos =
+      await this.lookupService.listarUnidadesPorUsuario(usuarioLogin)
     return this.successList(datos)
   }
 

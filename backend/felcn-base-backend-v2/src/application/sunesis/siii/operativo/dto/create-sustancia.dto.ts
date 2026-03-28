@@ -1,11 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from 'class-validator'
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator'
 
 export class CreateSustanciaSolidaDto {
   @ApiProperty({ description: 'ID sustancia sólida descripción', example: 1 })
@@ -13,21 +7,15 @@ export class CreateSustanciaSolidaDto {
   @IsNumber()
   idSustanciaSolidaDescripcion: number
 
-  @ApiProperty({ description: 'Cantidad', example: 500 })
+  @ApiProperty({ description: 'Cantidad en KG', example: 2.75 })
   @IsNotEmpty()
   @IsNumber()
   cantidad: number
 
-  @ApiProperty({ description: 'Unidad de medida', example: 'KG' })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(20)
-  unidadMedida: string
-
-  @ApiPropertyOptional({ description: 'Observaciones' })
+  @ApiPropertyOptional({ description: 'Costo estimado', example: 100.0 })
   @IsOptional()
-  @IsString()
-  observaciones?: string
+  @IsNumber()
+  costo?: number
 }
 
 export class CreateSustanciaLiquidaDto {
@@ -36,19 +24,13 @@ export class CreateSustanciaLiquidaDto {
   @IsNumber()
   idSustanciaLiquidaDescripcion: number
 
-  @ApiProperty({ description: 'Cantidad', example: 200 })
+  @ApiProperty({ description: 'Cantidad en LT', example: 15.5 })
   @IsNotEmpty()
   @IsNumber()
   cantidad: number
 
-  @ApiProperty({ description: 'Unidad de medida', example: 'LT' })
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(20)
-  unidadMedida: string
-
-  @ApiPropertyOptional({ description: 'Observaciones' })
+  @ApiPropertyOptional({ description: 'Costo estimado', example: 100.0 })
   @IsOptional()
-  @IsString()
-  observaciones?: string
+  @IsNumber()
+  costo?: number
 }

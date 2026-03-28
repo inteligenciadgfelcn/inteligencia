@@ -8,7 +8,7 @@ import { DB_S2I } from '../../../shared/constants'
 export class UsuarioRepository {
   constructor(
     @InjectDataSource(DB_S2I)
-    private dataSource: DataSource,
+    private dataSource: DataSource
   ) {}
 
   private get repository() {
