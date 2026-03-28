@@ -1,37 +1,36 @@
-import IconDownload from "../Icon/IconDownload";
-import IconEye from "../Icon/IconEye";
-import IconFile from "../Icon/IconFile";
-import IconPencil from "../Icon/IconPencil";
-import IconPhone from "../Icon/IconPhone";
-import IconPlus from "../Icon/IconPlus";
-import IconRefresh from "../Icon/IconRefresh";
-import IconSave from "../Icon/IconSave";
-import IconSearch from "../Icon/IconSearch";
-import IconTrashLines from "../Icon/IconTrashLines";
-import IconMenuAuthentication from "../Icon/Menu/IconMenuAuthentication";
-import IconMenuCalendar from "../Icon/Menu/IconMenuCalendar";
-import IconMenuCharts from "../Icon/Menu/IconMenuCharts";
-import IconMenuChat from "../Icon/Menu/IconMenuChat";
-import IconMenuComponents from "../Icon/Menu/IconMenuComponents";
-import IconMenuContacts from "../Icon/Menu/IconMenuContacts";
-import IconMenuDashboard from "../Icon/Menu/IconMenuDashboard";
-import IconMenuDatatables from "../Icon/Menu/IconMenuDatatables";
-import IconMenuDocumentation from "../Icon/Menu/IconMenuDocumentation";
-import IconMenuDragAndDrop from "../Icon/Menu/IconMenuDragAndDrop";
-import IconMenuElements from "../Icon/Menu/IconMenuElements";
-import IconMenuFontIcons from "../Icon/Menu/IconMenuFontIcons";
-import IconMenuForms from "../Icon/Menu/IconMenuForms";
-import IconMenuInvoice from "../Icon/Menu/IconMenuInvoice";
-import IconMenuMailbox from "../Icon/Menu/IconMenuMailbox";
-import IconMenuNotes from "../Icon/Menu/IconMenuNotes";
-import IconMenuPages from "../Icon/Menu/IconMenuPages";
-import IconMenuTables from "../Icon/Menu/IconMenuTables";
-import IconMenuTodo from "../Icon/Menu/IconMenuTodo";
-import IconMenuUsers from "../Icon/Menu/IconMenuUsers";
-import IconMenuWidgets from "../Icon/Menu/IconMenuWidgets";
+import IconDownload from '../Icon/IconDownload'
+import IconEye from '../Icon/IconEye'
+import IconFile from '../Icon/IconFile'
+import IconPencil from '../Icon/IconPencil'
+import IconPhone from '../Icon/IconPhone'
+import IconPlus from '../Icon/IconPlus'
+import IconRefresh from '../Icon/IconRefresh'
+import IconSave from '../Icon/IconSave'
+import IconSearch from '../Icon/IconSearch'
+import IconTrashLines from '../Icon/IconTrashLines'
+import IconMenuAuthentication from '../Icon/Menu/IconMenuAuthentication'
+import IconMenuCalendar from '../Icon/Menu/IconMenuCalendar'
+import IconMenuCharts from '../Icon/Menu/IconMenuCharts'
+import IconMenuChat from '../Icon/Menu/IconMenuChat'
+import IconMenuComponents from '../Icon/Menu/IconMenuComponents'
+import IconMenuContacts from '../Icon/Menu/IconMenuContacts'
+import IconMenuDashboard from '../Icon/Menu/IconMenuDashboard'
+import IconMenuDatatables from '../Icon/Menu/IconMenuDatatables'
+import IconMenuDocumentation from '../Icon/Menu/IconMenuDocumentation'
+import IconMenuDragAndDrop from '../Icon/Menu/IconMenuDragAndDrop'
+import IconMenuElements from '../Icon/Menu/IconMenuElements'
+import IconMenuFontIcons from '../Icon/Menu/IconMenuFontIcons'
+import IconMenuForms from '../Icon/Menu/IconMenuForms'
+import IconMenuInvoice from '../Icon/Menu/IconMenuInvoice'
+import IconMenuMailbox from '../Icon/Menu/IconMenuMailbox'
+import IconMenuNotes from '../Icon/Menu/IconMenuNotes'
+import IconMenuPages from '../Icon/Menu/IconMenuPages'
+import IconMenuTables from '../Icon/Menu/IconMenuTables'
+import IconMenuTodo from '../Icon/Menu/IconMenuTodo'
+import IconMenuUsers from '../Icon/Menu/IconMenuUsers'
+import IconMenuWidgets from '../Icon/Menu/IconMenuWidgets'
 
 export const menuIconMap: Record<string, any> = {
-
   /* ================= DASHBOARD ================= */
   home: IconMenuDashboard,
   dashboard: IconMenuDashboard,
@@ -60,7 +59,7 @@ export const menuIconMap: Record<string, any> = {
 
   refresh: IconRefresh,
   reload: IconRefresh,
-  add:IconPlus,
+  add: IconPlus,
 
   save: IconSave,
   download: IconDownload,

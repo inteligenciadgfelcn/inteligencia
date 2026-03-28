@@ -1,29 +1,155 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { DataTable } from 'mantine-datatable'
-import { Card } from '@/components/ui/Card'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
+import IconTrash from '@/components/Icon/IconTrash'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { FormInputDropdown, FormInputText, optionType } from '@/components/form'
-import FormInputFile from '@/components/form/FormInputFile'
-import IconTrashLines from '@/components/Icon/IconTrashLines'
-
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
 import {
-  EstadoDroga,
   GestionOperativoCatalogosService,
   GestionOperativoDrogasService,
   GestionOperativoLogotiposService,
+} from '@/services/operativos'
+import type {
+  EstadoDroga,
   LogotipoCasoPayload,
   ResponseDroga,
 } from '@/services/operativos'
-import type { SeccionPayloadBase } from '../../../types'
-import { useParametricas } from '@/hooks'
+import { useConfirmDialog, useParametricas } from '@/hooks'
 
-const ITEMS_POR_PAGINA = 5
+// ─── Tipos ────────────────────────────────────────────────────────────────────
+type FotosCacheDroga = { pruebaCampo: string | null; pesaje: string | null }
 
-// ── Imagen autenticada ──────────────────────────────────────────────────────
+// ─── DropzoneFoto ─────────────────────────────────────────────────────────────
+function DropzoneFoto({
+  label,
+  archivo,
+  onChange,
+}: {
+  label: string
+  archivo: File | null
+  onChange: (file: File | null) => void
+}) {
+  const [arrastrar, setArrastrar] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setArrastrar(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith('image/')) onChange(file)
+  }
+
+  return (
+    <div>
+      <label className="mb-1 block text-sm font-medium">{label}</label>
+      <div
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
+          arrastrar
+            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+            : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
+        }`}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setArrastrar(true)
+        }}
+        onDragEnter={() => setArrastrar(true)}
+        onDragLeave={() => setArrastrar(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+      >
+        {archivo ? (
+          <div
+            className="flex items-center justify-between"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="truncate text-xs text-gray-600 dark:text-gray-400">
+              {archivo.name}
+            </span>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              className="ml-2"
+              onClick={() => {
+                if (inputRef.current) inputRef.current.value = ''
+                onChange(null)
+              }}
+            >
+              ✕
+            </Button>
+          </div>
+        ) : (
+          <>
+            <svg
+              className="mx-auto mb-2 h-7 w-7 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+              />
+            </svg>
+            <p className="text-xs">
+              <span className="font-medium text-green-600">
+                Sube un archivo
+              </span>
+              <span className="text-gray-500"> o arrastra y suelta</span>
+            </p>
+            <p className="mt-1 text-xs text-gray-400">PNG, JPG, WEBP</p>
+          </>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        hidden
+        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+      />
+    </div>
+  )
+}
+
+// ─── FotoSlot ─────────────────────────────────────────────────────────────────
+function FotoSlot({
+  src,
+  label,
+  onZoom,
+}: {
+  src: string | null
+  label: string
+  onZoom: (src: string) => void
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+        {label}
+      </p>
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt={label}
+          className="h-40 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
+          onClick={() => onZoom(src)}
+        />
+      ) : (
+        <div className="flex h-40 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
+          <span className="text-xs text-gray-400">Sin foto</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── ImagenAutenticada ────────────────────────────────────────────────────────
 function ImagenAutenticada({
   path,
   alt,
@@ -63,36 +189,90 @@ function ImagenAutenticada({
   )
 }
 
-// ── Panel de logotipos (estado propio por droga) ────────────────────────────
+// ─── LogotiposPanel ───────────────────────────────────────────────────────────
 function LogotiposPanel({
   idoperativo,
   idDroga,
+  onZoom,
+  onEliminarConfirm,
 }: {
   idoperativo: number
   idDroga: number
+  onZoom: (src: string) => void
+  onEliminarConfirm: (texto: string, onConfirm: () => Promise<void>) => void
 }) {
-  const { control, handleSubmit, reset } = useForm({
-    defaultValues: {
-      imagen: '',
-      descripcionLogo: '',
-      organizacion: '',
-      blanco: '',
-      observacion: '',
-      fotografia: [],
-    },
-  })
+  const [imagen, setImagen] = useState('')
+  const [descripcionLogo, setDescripcionLogo] = useState('')
+  const [organizacion, setOrganizacion] = useState('')
+  const [blanco, setBlanco] = useState('')
+  const [observacion, setObservacion] = useState('')
+  const [fotografia, setFotografia] = useState<File | null>(null)
+  const [dropzoneToken, setDropzoneToken] = useState(0)
 
-  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>([])
+  // ── Thumbnail de foto con estado de carga ─────────────────────────────────
+  function FotoLogotipoThumb({
+    path,
+    onClick,
+  }: {
+    path: string
+    onClick: (src: string) => void
+  }) {
+    const [src, setSrc] = useState<string | null>(null)
+    const [cargandoFoto, setCargandoFoto] = useState(true)
+
+    useEffect(() => {
+      let objectUrl: string
+      GestionOperativoLogotiposService.obtenerFoto(path)
+        .then((blob) => {
+          objectUrl = URL.createObjectURL(blob)
+          setSrc(objectUrl)
+        })
+        .catch(() => setSrc(null))
+        .finally(() => setCargandoFoto(false))
+      return () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl)
+      }
+    }, [path])
+
+    if (cargandoFoto) {
+      return (
+        <div className="h-14 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+      )
+    }
+    if (!src) {
+      return (
+        <div className="flex h-14 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
+          <span className="text-xs text-gray-400">Sin foto</span>
+        </div>
+      )
+    }
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={src}
+        alt="Logotipo"
+        className="h-14 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
+        onClick={() => onClick(src)}
+      />
+    )
+  }
+
+  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
+    []
+  )
   const [cargando, setCargando] = useState(false)
-  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
 
   const cargar = async () => {
     setCargando(true)
     try {
-      const res = await GestionOperativoLogotiposService.listar(idoperativo, idDroga)
+      const res = await GestionOperativoLogotiposService.listar(
+        idoperativo,
+        idDroga
+      )
       if (res?.finalizado) {
-        setLogotiposItems((res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? [])
+        setLogotiposItems(
+          (res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? []
+        )
       }
     } finally {
       setCargando(false)
@@ -101,385 +281,301 @@ function LogotiposPanel({
 
   useEffect(() => {
     void cargar()
-  }, [idoperativo, idDroga])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const eliminar = async (id: number) => {
-    await GestionOperativoLogotiposService.eliminar(idoperativo, idDroga, id)
-    await cargar()
+  const resetForm = () => {
+    setImagen('')
+    setDescripcionLogo('')
+    setOrganizacion('')
+    setBlanco('')
+    setObservacion('')
+    setFotografia(null)
+    setDropzoneToken((t) => t + 1)
   }
 
-  const onSubmit = async (data: Record<string, any>) => {
-    const fotoLogoFile =
-      data.fotografia && data.fotografia.length > 0 ? data.fotografia[0] : undefined
+  const guardar = async () => {
     setCargando(true)
     try {
-      const respuesta = await GestionOperativoLogotiposService.crear(idoperativo, idDroga, {
-        id: 0,
-        imagen: String(data.imagen ?? ''),
-        descripcionLogo: String(data.descripcionLogo ?? ''),
-        organizacion: String(data.organizacion ?? ''),
-        blanco: data.blanco ? String(data.blanco) : undefined,
-        observacion: data.observacion ? String(data.observacion) : undefined,
-        fotografia: fotoLogoFile,
-      })
-      if (respuesta?.finalizado) {
+      const res = await GestionOperativoLogotiposService.crear(
+        idoperativo,
+        idDroga,
+        {
+          id: 0,
+          imagen,
+          descripcionLogo,
+          organizacion,
+          blanco: blanco || undefined,
+          observacion: observacion || undefined,
+          fotografia: fotografia ?? undefined,
+        }
+      )
+      if (res?.finalizado) {
         await cargar()
-        reset()
-        setMostrarFormulario(false)
+        resetForm()
       }
     } finally {
       setCargando(false)
     }
   }
 
+  const eliminar = async (id: number) => {
+    onEliminarConfirm('¿Está seguro de eliminar este logotipo?', async () => {
+      await GestionOperativoLogotiposService.eliminar(idoperativo, idDroga, id)
+      await cargar()
+    })
+  }
+
   return (
-    <div className="mt-4 space-y-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-      <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-        Logotipos de la Droga #{idDroga}
+    <div className="mt-4 border-t border-[#e0e6ed] pt-4 dark:border-gray-700">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
+        Logotipos
       </p>
 
-      {/* Formulario */}
-      {mostrarFormulario && <form onSubmit={handleSubmit(onSubmit)}>
-        <Card title="REGISTRAR LOGOTIPO">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <FormInputText id="imagen" name="imagen" label="Imagen" control={control} />
-            <FormInputText
-              id="descripcionLogo"
-              name="descripcionLogo"
-              label="Descripcion del Logo"
-              control={control}
-            />
-            <FormInputText
-              id="organizacion"
-              name="organizacion"
-              label="Organizacion Criminal"
-              control={control}
-            />
-            <FormInputText
-              id="blanco"
-              name="blanco"
-              label="Posibles Blancos"
-              control={control}
-            />
-            <FormInputText
-              id="observacion"
-              name="observacion"
-              label="Observacion"
-              control={control}
-            />
-            <div className="hidden lg:block" />
-            <div className="col-span-1 lg:col-span-3">
-              <FormInputFile
-                id="fotografia"
-                name="fotografia"
-                label="Fotografia"
-                control={control}
-                limite={1}
-                tiposPermitidos={['image/*']}
-              />
-            </div>
-            <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-              <Button variant="primary" type="submit" disabled={cargando}>
-                Guardar Logotipo
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </form>}
-
-      {/* Tabla */}
-      <Card
-        title="LOGOTIPOS REGISTRADOS"
-        action={
-          <Button
-            variant="primary"
-            onClick={() => setMostrarFormulario((v) => !v)}
-            disabled={cargando}
-          >
-            {mostrarFormulario ? 'Cancelar' : 'Agregar Logotipo'}
-          </Button>
-        }
-      >
-        <div className="datatables">
-          <DataTable
-            withTableBorder={false}
-            className="table-hover whitespace-nowrap"
-            fetching={cargando}
-            records={logotiposItems}
-            columns={[
-              { accessor: 'id', title: '#' },
-              {
-                accessor: 'descripcionLogo',
-                title: 'Descripcion',
-                render: (row) => String(row.descripcionLogo ?? ''),
-              },
-              {
-                accessor: 'organizacion',
-                title: 'Organizacion',
-                render: (row) => String(row.organizacion ?? ''),
-              },
-              {
-                accessor: 'blanco',
-                title: 'Blancos',
-                render: (row) => String(row.blanco ?? ''),
-              },
-              {
-                accessor: 'observacion',
-                title: 'Observacion',
-                render: (row) => String(row.observacion ?? ''),
-              },
-              {
-                accessor: 'foto',
-                title: 'Foto',
-                render: (row) => {
-                  const fotoUrl =
-                    (row as unknown as Record<string, unknown>).fotografiaUrl ??
-                    (row as unknown as Record<string, unknown>).urlFotografia
-                  return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
-                    <ImagenAutenticada
-                      path={fotoUrl}
-                      alt="Logotipo"
-                      className="h-14 w-20 rounded object-cover shadow-sm"
-                      onClick={setImagenAmpliada}
-                    />
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )
-                },
-              },
-              {
-                accessor: 'actions',
-                title: '',
-                render: (row) => (
-                  <button
-                    type="button"
-                    className="text-danger"
-                    onClick={() => {
-                      void eliminar(row.id)
-                    }}
-                  >
-                    <IconTrashLines />
-                  </button>
-                ),
-              },
-            ]}
-            highlightOnHover
+      {/* Formulario siempre visible */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium">Imagen</label>
+          <Input
+            type="text"
+            className="w-full"
+            value={imagen}
+            onChange={(e) => setImagen(e.target.value)}
           />
         </div>
-      </Card>
-
-      {/* Lightbox logotipos */}
-      {imagenAmpliada && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
-          onClick={() => setImagenAmpliada(null)}
-        >
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagenAmpliada}
-              alt="Vista ampliada"
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            />
-            <button
-              type="button"
-              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
-              onClick={() => setImagenAmpliada(null)}
-            >
-              ✕
-            </button>
-          </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Descripción del Logo
+          </label>
+          <Input
+            type="text"
+            className="w-full"
+            value={descripcionLogo}
+            onChange={(e) => setDescripcionLogo(e.target.value)}
+          />
         </div>
-      )}
-    </div>
-  )
-}
-
-// ── Ítem de droga desplegable ───────────────────────────────────────────────
-function DrogaItem({
-  droga,
-  expandido,
-  onToggle,
-  onEliminar,
-  idoperativo,
-}: {
-  droga: ResponseDroga
-  expandido: boolean
-  onToggle: () => void
-  onEliminar: () => void
-  idoperativo: number
-}) {
-  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
-
-  return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-      {/* Cabecera del ítem */}
-      <div
-        className="flex cursor-pointer items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-gray-900"
-        onClick={onToggle}
-      >
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
-          <span className="font-bold text-primary">#{droga.id}</span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-medium">Estado:</span> {droga.idEstadoDroga}
-          </span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-medium">Gramos:</span> {droga.cantidadGramos}
-          </span>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-medium">Unidades:</span> {droga.cantidadUnidades}
-          </span>
-          {droga.costo != null && (
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-medium">Costo:</span> Bs. {droga.costo}
-            </span>
-          )}
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Organización Criminal
+          </label>
+          <Input
+            type="text"
+            className="w-full"
+            value={organizacion}
+            onChange={(e) => setOrganizacion(e.target.value)}
+          />
         </div>
-
-        <div className="flex shrink-0 items-center gap-3">
-          <button
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Posibles Blancos
+          </label>
+          <Input
+            value={blanco}
+            onChange={(e) => setBlanco(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="col-span-1 md:col-span-2 lg:col-span-2">
+          <label className="mb-1 block text-sm font-medium">Observación</label>
+          <Textarea
+            value={observacion}
+            onChange={(e) => setObservacion(e.target.value)}
+            rows={2}
+            className="w-full"
+          />
+        </div>
+        <div className="col-span-1 lg:col-span-3">
+          <DropzoneFoto
+            key={`logo-foto-${dropzoneToken}`}
+            label="Fotografía"
+            archivo={fotografia}
+            onChange={setFotografia}
+          />
+        </div>
+        <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
+          <Button
             type="button"
-            className="text-danger"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEliminar()
-            }}
+            variant="success"
+            size="sm"
+            onClick={() => void guardar()}
+            disabled={cargando}
           >
-            <IconTrashLines />
-          </button>
-          <svg
-            className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${expandido ? 'rotate-180' : ''}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-          </svg>
+            Guardar
+          </Button>
         </div>
       </div>
 
-      {/* Contenido expandido */}
-      {expandido && (
-        <div className="border-t border-gray-200 p-4 dark:border-gray-700">
-          {/* Detalles */}
-          <div className="mb-4 grid grid-cols-2 gap-2 text-sm md:grid-cols-3 lg:grid-cols-4">
-            <div>
-              <span className="font-medium text-gray-500">Transporte:</span>{' '}
-              {droga.idFormaTransporte}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Procedencia:</span>{' '}
-              {droga.idPaisProcedencia}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Destino:</span>{' '}
-              {droga.idPaisDestino}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Ingreso:</span>{' '}
-              {droga.fechaHoraIngreso}
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">Usuario:</span>{' '}
-              {droga.usuario}
-            </div>
-          </div>
-
-          {/* Fotos de la droga */}
-          {(droga.urlFotoPruebaCampo || droga.urlFotoPesaje) && (
-            <div className="mb-4 flex gap-6">
-              {droga.urlFotoPruebaCampo && (
-                <div className="text-center">
-                  <p className="mb-1 text-xs text-gray-500">Prueba de Campo</p>
-                  <ImagenAutenticada
-                    path={droga.urlFotoPruebaCampo}
-                    alt="Prueba de Campo"
-                    className="h-20 w-28 rounded object-cover shadow-sm"
-                    onClick={setImagenAmpliada}
-                  />
-                </div>
-              )}
-              {droga.urlFotoPesaje && (
-                <div className="text-center">
-                  <p className="mb-1 text-xs text-gray-500">Pesaje</p>
-                  <ImagenAutenticada
-                    path={droga.urlFotoPesaje}
-                    alt="Pesaje"
-                    className="h-20 w-28 rounded object-cover shadow-sm"
-                    onClick={setImagenAmpliada}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Logotipos anidados */}
-          <LogotiposPanel idoperativo={idoperativo} idDroga={droga.id} />
-        </div>
-      )}
-
-      {/* Lightbox fotos de droga */}
-      {imagenAmpliada && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
-          onClick={() => setImagenAmpliada(null)}
-        >
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagenAmpliada}
-              alt="Vista ampliada"
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            />
-            <button
-              type="button"
-              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
-              onClick={() => setImagenAmpliada(null)}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Grilla de logotipos */}
+      <div className="mt-4 datatables">
+        <VristoDataTable<LogotipoCasoPayload>
+          loading={cargando}
+          rows={logotiposItems}
+          total={logotiposItems.length}
+          page={1}
+          limit={logotiposItems.length || 10}
+          onPageChange={() => {}}
+          onLimitChange={() => {}}
+          columns={[
+            { accessor: 'id', title: '#' },
+            {
+              accessor: 'descripcionLogo',
+              title: 'Descripción',
+              render: (row) => String(row.descripcionLogo ?? ''),
+            },
+            {
+              accessor: 'organizacion',
+              title: 'Organización',
+              render: (row) => String(row.organizacion ?? ''),
+            },
+            {
+              accessor: 'blanco',
+              title: 'Blancos',
+              render: (row) => String(row.blanco ?? ''),
+            },
+            {
+              accessor: 'observacion',
+              title: 'Observación',
+              render: (row) => String(row.observacion ?? ''),
+            },
+            {
+              accessor: 'urlFotografia',
+              title: 'Foto',
+              render: (row) => {
+                const fotoUrl = (row as unknown as Record<string, unknown>)
+                  .urlFotografia
+                return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
+                  <FotoLogotipoThumb path={fotoUrl} onClick={onZoom} />
+                ) : (
+                  <div className="flex h-14 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
+                    <span className="text-xs text-gray-400">Sin foto</span>
+                  </div>
+                )
+              },
+            },
+            {
+              accessor: 'actions',
+              title: '',
+              render: (row) => (
+                <button
+                  type="button"
+                  className="text-danger hover:text-danger/80"
+                  title="Eliminar"
+                  disabled={cargando}
+                  onClick={() => void eliminar(row.id)}
+                >
+                  <IconTrash className="h-4 w-4" />
+                </button>
+              ),
+            },
+          ]}
+        />
+      </div>
     </div>
   )
 }
 
-// ── Componente principal ────────────────────────────────────────────────────
-interface SeccionFormProps {
-  titulo: string
-  onGuardar?: (payload: SeccionPayloadBase) => Promise<unknown>
-  onRecuperar?: () => Promise<unknown>
-  cargando?: boolean
-  idoperativo?: number
+// ─── ExpansionContenidoDroga ──────────────────────────────────────────────────
+function ExpansionContenidoDroga({
+  droga,
+  idoperativo,
+  cache,
+  onCacheLoad,
+  onZoom,
+  onEliminarConfirm,
+}: {
+  droga: ResponseDroga
+  idoperativo: number
+  cache: FotosCacheDroga | undefined
+  onCacheLoad: (id: number, fotos: FotosCacheDroga) => void
+  onZoom: (src: string) => void
+  onEliminarConfirm: (texto: string, onConfirm: () => Promise<void>) => void
+}) {
+  useEffect(() => {
+    if (cache) return
+    const fetchFoto = (
+      path: string | null | undefined
+    ): Promise<string | null> =>
+      path
+        ? GestionOperativoDrogasService.obtenerFoto(path)
+            .then((blob) => URL.createObjectURL(blob))
+            .catch(() => null)
+        : Promise.resolve(null)
+
+    void Promise.all([
+      fetchFoto(droga.urlFotoPruebaCampo),
+      fetchFoto(droga.urlFotoPesaje),
+    ]).then(([pruebaCampo, pesaje]) => {
+      onCacheLoad(droga.id, { pruebaCampo, pesaje })
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700">
+      {/* Fotos */}
+      {/* <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
+                Fotografías de la Droga
+            </p> */}
+      {!cache ? (
+        <div className="grid grid-cols-2 gap-4">
+          {[0, 1].map((i) => (
+            <div
+              key={i}
+              className="h-40 animate-pulse rounded bg-gray-200 dark:bg-gray-700"
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <FotoSlot
+            src={cache.pruebaCampo}
+            label="Prueba de Campo"
+            onZoom={onZoom}
+          />
+          <FotoSlot
+            src={cache.pesaje}
+            label="Cuantificación y Pesaje"
+            onZoom={onZoom}
+          />
+        </div>
+      )}
+
+      {/* Logotipos anidados */}
+      <LogotiposPanel
+        idoperativo={idoperativo}
+        idDroga={droga.id}
+        onZoom={onZoom}
+        onEliminarConfirm={onEliminarConfirm}
+      />
+    </div>
+  )
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const parseNumber = (valor: unknown) => {
+  if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0
+  const normalizado = Number(String(valor ?? '').replace(',', '.'))
+  return Number.isFinite(normalizado) ? normalizado : 0
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+interface SeccionFormProps {
+  titulo: string
+  idoperativo?: number
+  // Props heredados del contrato de sección (no usados internamente)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onGuardar?: (...args: any[]) => Promise<any>
+  onRecuperar?: () => Promise<unknown>
+  cargando?: boolean
+}
+
+const ITEMS_POR_PAGINA = 10
+
+// ─── SeccionDrogasFotografiaLogotiposForm ─────────────────────────────────────
 export function SeccionDrogasFotografiaLogotiposForm({
+  titulo,
   idoperativo = 0,
 }: SeccionFormProps) {
-  const {
-    control: controlDrogas,
-    handleSubmit: handleSubmitDrogas,
-    setValue: setDrogasValue,
-    watch: watchDrogas,
-    reset: resetDrogas,
-  } = useForm({
-    defaultValues: {
-      idTipoDroga: '',
-      idEstadoDroga: '',
-      cantidadGramos: '',
-      cantidadUnidades: '',
-      costo: '',
-      idFormaTransporte: '',
-      idPaisProcedencia: '',
-      idPaisDestino: '',
-      observaciones: '',
-      pruebaCampo: [],
-      pesaje: [],
-    },
-  })
-
+  const { confirm, ConfirmDialog } = useConfirmDialog()
+  // ── Paramétricas ──────────────────────────────────────────────────────────
   const {
     paises,
     tiposDroga,
@@ -490,111 +586,144 @@ export function SeccionDrogasFotografiaLogotiposForm({
   } = useParametricas()
 
   useEffect(() => {
-    cargarPaises(), cargarTiposDroga(), cargarFormasTransporte()
-  }, [])
+    cargarPaises()
+    cargarTiposDroga()
+    cargarFormasTransporte()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const opcionesPaises: optionType[] = paises.map((t) => ({
-    id: String(t.id),
-    value: String(t.id),
-    label: t.descripcion,
-  }))
-  const opcionesTiposDroga: optionType[] = tiposDroga.map((t) => ({
-    id: String(t.id),
-    value: String(t.id),
-    label: t.descripcion,
-  }))
-  const opcionesFormasTransporte: optionType[] = formasTransporte.map((t) => ({
-    id: String(t.id),
-    value: String(t.id),
-    label: t.descripcion,
-  }))
-
-  const tipoDrogaSeleccionada = watchDrogas('idTipoDroga')
   const [estadosDroga, setEstadosDroga] = useState<EstadoDroga[]>([])
 
-  const cargarEstadosDroga = async (idTipoDroga: number) => {
-    try {
-      const res = await GestionOperativoCatalogosService.obtenerEstadosDroga(idTipoDroga)
-      if (res?.finalizado) {
-        setEstadosDroga(Array.isArray(res.datos) ? res.datos : [])
-      }
-    } catch {
-      setEstadosDroga([])
-    }
-  }
-
-  useEffect(() => {
-    if (tipoDrogaSeleccionada) {
-      setDrogasValue('idEstadoDroga', '')
-      void cargarEstadosDroga(Number(tipoDrogaSeleccionada))
-    } else {
-      setEstadosDroga([])
-    }
-  }, [tipoDrogaSeleccionada])
-
-  const opcionesEstadosDroga: optionType[] = estadosDroga.map((e) => ({
-    id: String(e.id),
-    value: String(e.id),
-    label: e.descripcion,
-  }))
-
-  // Estado de lista
-  const [drogasItems, setDrogasItems] = useState<ResponseDroga[]>([])
-  const [cargandoDrogas, setCargandoDrogas] = useState(false)
-  const [mostrarFormulario, setMostrarFormulario] = useState(false)
-  const [expandidoId, setExpandidoId] = useState<number | null>(null)
-  const [paginaActual, setPaginaActual] = useState(1)
-  const [idBolivia, setIdBolivia] = useState('')
-
+  // ── Campos del formulario ─────────────────────────────────────────────────
+  const [idTipoDroga, setIdTipoDroga] = useState('')
+  const [idEstadoDroga, setIdEstadoDroga] = useState('')
+  const [cantidadUnidades, setCantidadUnidades] = useState('')
   const [cantidadTn, setCantidadTn] = useState('')
   const [cantidadKg, setCantidadKg] = useState('')
   const [cantidadG, setCantidadG] = useState('')
   const [cantidadMg, setCantidadMg] = useState('')
+  const [costo, setCosto] = useState('')
+  const [idFormaTransporte, setIdFormaTransporte] = useState('')
+  const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
+  const [idPaisDestino, setIdPaisDestino] = useState('')
+  const [observaciones, setObservaciones] = useState('')
+  const [dropzoneToken, setDropzoneToken] = useState(0)
+  const [pruebaCampo, setPruebaCampo] = useState<File | null>(null)
+  const [pesaje, setPesaje] = useState<File | null>(null)
 
-  const parseNumber = (valor: unknown) => {
-    if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0
-    const normalizado = Number(String(valor ?? '').replace(',', '.'))
-    return Number.isFinite(normalizado) ? normalizado : 0
-  }
+  // ── Lista, paginación y estado general ────────────────────────────────────
+  const [cargando, setCargando] = useState(false)
+  const [drogas, setDrogas] = useState<ResponseDroga[]>([])
+  const [totalRegistros, setTotalRegistros] = useState(0)
+  const [pagina, setPagina] = useState(1)
+  const [expandedIds, setExpandedIds] = useState<(string | number)[]>([])
 
+  // ── Cache de fotos ────────────────────────────────────────────────────────
+  const [fotosCache, setFotosCache] = useState<Record<number, FotosCacheDroga>>(
+    {}
+  )
+  const fotosCacheRef = useRef<Record<number, FotosCacheDroga>>({})
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
+
+  const actualizarCache = useCallback((id: number, fotos: FotosCacheDroga) => {
+    fotosCacheRef.current[id] = fotos
+    setFotosCache((prev) => ({ ...prev, [id]: fotos }))
+  }, [])
+
+  const limpiarCache = useCallback(() => {
+    Object.values(fotosCacheRef.current).forEach(({ pruebaCampo, pesaje }) => {
+      if (pruebaCampo) URL.revokeObjectURL(pruebaCampo)
+      if (pesaje) URL.revokeObjectURL(pesaje)
+    })
+    fotosCacheRef.current = {}
+    setFotosCache({})
+  }, [])
+
+  useEffect(
+    () => () => {
+      limpiarCache()
+    },
+    [limpiarCache]
+  )
+
+  // ── Bolivia default ───────────────────────────────────────────────────────
   useEffect(() => {
     if (paises.length > 0) {
       const bolivia = paises.find(
         (p) => p.descripcion.trim().toLowerCase() === 'bolivia'
       )
       if (bolivia) {
-        setIdBolivia(String(bolivia.id))
-        setDrogasValue('idPaisProcedencia', String(bolivia.id))
-        setDrogasValue('idPaisDestino', String(bolivia.id))
+        const id = String(bolivia.id)
+        setIdPaisProcedencia(id)
+        setIdPaisDestino(id)
       }
     }
-  }, [paises, setDrogasValue])
+  }, [paises])
 
-  const cargarDrogas = async () => {
-    if (!idoperativo) return
-    setCargandoDrogas(true)
-    try {
-      const res = await GestionOperativoDrogasService.listar(idoperativo)
-      if (res?.finalizado) {
-        setDrogasItems(res.datos?.filas ?? [])
-      }
-    } finally {
-      setCargandoDrogas(false)
+  // ── Cascading: tipo → estados ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!idTipoDroga) {
+      setEstadosDroga([])
+      setIdEstadoDroga('')
+      return
     }
-  }
+    setIdEstadoDroga('')
+    void GestionOperativoCatalogosService.obtenerEstadosDroga(
+      Number(idTipoDroga)
+    )
+      .then((res) => {
+        if (res?.finalizado)
+          setEstadosDroga(Array.isArray(res.datos) ? res.datos : [])
+      })
+      .catch(() => setEstadosDroga([]))
+  }, [idTipoDroga])
+
+  // ── Cargar drogas ─────────────────────────────────────────────────────────
+  const cargarDrogas = useCallback(
+    async (pag: number = 1) => {
+      if (!idoperativo) return
+      setCargando(true)
+      limpiarCache()
+      setExpandedIds([])
+      try {
+        const res = await GestionOperativoDrogasService.listar(
+          idoperativo,
+          pag,
+          ITEMS_POR_PAGINA
+        )
+        if (res?.finalizado) {
+          setDrogas(res.datos?.filas ?? [])
+          setTotalRegistros(res.datos?.page?.totalElements ?? 0)
+        }
+      } finally {
+        setCargando(false)
+      }
+    },
+    [idoperativo, limpiarCache]
+  )
 
   useEffect(() => {
-    void cargarDrogas()
-  }, [idoperativo])
+    void cargarDrogas(1)
+  }, [idoperativo]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const eliminarDroga = async (id: number) => {
-    if (!idoperativo) return
-    await GestionOperativoDrogasService.eliminar(idoperativo, id)
-    if (expandidoId === id) setExpandidoId(null)
-    await cargarDrogas()
-  }
+  // ── Reset formulario ──────────────────────────────────────────────────────
+  const resetForm = useCallback(() => {
+    setIdTipoDroga('')
+    setIdEstadoDroga('')
+    setCantidadUnidades('')
+    setCantidadTn('')
+    setCantidadKg('')
+    setCantidadG('')
+    setCantidadMg('')
+    setCosto('')
+    setIdFormaTransporte('')
+    setObservaciones('')
+    setPruebaCampo(null)
+    setPesaje(null)
+    setDropzoneToken((t) => t + 1)
+  }, [])
 
-  const onSubmitDrogas = async (data: Record<string, any>) => {
+  // ── Guardar droga ─────────────────────────────────────────────────────────
+  const guardarDroga = async () => {
     if (!idoperativo) return
     const gramos =
       parseNumber(cantidadTn) * 1_000_000 +
@@ -602,261 +731,424 @@ export function SeccionDrogasFotografiaLogotiposForm({
       parseNumber(cantidadG) +
       parseNumber(cantidadMg) / 1000
 
-    const pruebaCampoFile =
-      data.pruebaCampo && data.pruebaCampo.length > 0 ? data.pruebaCampo[0] : undefined
-    const pesajeFile =
-      data.pesaje && data.pesaje.length > 0 ? data.pesaje[0] : undefined
-
-    setCargandoDrogas(true)
+    setCargando(true)
     try {
-      const respuesta = await GestionOperativoDrogasService.crear(idoperativo, {
+      const res = await GestionOperativoDrogasService.crear(idoperativo, {
         id: 0,
-        idTipoDroga: data.idTipoDroga,
-        idEstadoDroga: data.idEstadoDroga,
+        idTipoDroga: Number(idTipoDroga),
+        idEstadoDroga: Number(idEstadoDroga),
         cantidadGramos: gramos,
-        cantidadUnidades: parseNumber(data.cantidadUnidades),
-        costo: data.costo !== '' ? parseNumber(data.costo) : undefined,
-        idFormaTransporte: data.idFormaTransporte,
-        idPaisProcedencia: data.idPaisProcedencia,
-        idPaisDestino: data.idPaisDestino,
-        observaciones: data.observaciones ? String(data.observaciones) : undefined,
-        pruebaCampo: pruebaCampoFile,
-        pesaje: pesajeFile,
+        cantidadUnidades: parseNumber(cantidadUnidades),
+        costo: costo !== '' ? parseNumber(costo) : undefined,
+        idFormaTransporte: Number(idFormaTransporte),
+        idPaisProcedencia: Number(idPaisProcedencia),
+        idPaisDestino: Number(idPaisDestino),
+        observaciones: observaciones || undefined,
+        pruebaCampo: pruebaCampo ?? undefined,
+        pesaje: pesaje ?? undefined,
       })
-      if (respuesta?.finalizado) {
-        await cargarDrogas()
-        resetDrogas({
-          idTipoDroga: '',
-          idEstadoDroga: '',
-          cantidadGramos: '',
-          cantidadUnidades: '',
-          costo: '',
-          idFormaTransporte: '',
-          idPaisProcedencia: idBolivia,
-          idPaisDestino: idBolivia,
-          observaciones: '',
-          pruebaCampo: [],
-          pesaje: [],
-        })
-        setCantidadTn('')
-        setCantidadKg('')
-        setCantidadG('')
-        setCantidadMg('')
-        setMostrarFormulario(false)
-        setPaginaActual(1)
+      if (res?.finalizado) {
+        await cargarDrogas(1)
+        setPagina(1)
+        resetForm()
       }
     } finally {
-      setCargandoDrogas(false)
+      setCargando(false)
     }
   }
 
-  // Paginación
-  const totalPaginas = Math.max(1, Math.ceil(drogasItems.length / ITEMS_POR_PAGINA))
-  const itemsPagina = drogasItems.slice(
-    (paginaActual - 1) * ITEMS_POR_PAGINA,
-    paginaActual * ITEMS_POR_PAGINA
-  )
-
-  const toggleExpandido = (id: number) => {
-    setExpandidoId((prev) => (prev === id ? null : id))
+  // ── Eliminar droga ────────────────────────────────────────────────────────
+  const handleEliminar = async (id: number) => {
+    confirm({
+      texto: '¿Está seguro de eliminar esta droga?',
+      onConfirm: async () => {
+        setCargando(true)
+        try {
+          await GestionOperativoDrogasService.eliminar(idoperativo, id)
+          setExpandedIds((prev) => prev.filter((eid) => eid !== id))
+          await cargarDrogas(pagina)
+        } finally {
+          setCargando(false)
+        }
+      },
+    })
   }
 
+  const handleEliminarConfirm = (
+    texto: string,
+    onConfirm: () => Promise<void>
+  ) => {
+    confirm({
+      texto,
+      onConfirm,
+    })
+  }
+
+  const handleCambioPagina = (nuevaPagina: number) => {
+    setPagina(nuevaPagina)
+    void cargarDrogas(nuevaPagina)
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
-      {/* Formulario de registro */}
-      {mostrarFormulario && (
-        <form onSubmit={handleSubmitDrogas(onSubmitDrogas)}>
-          <Card title="REGISTRO DE DROGA">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <FormInputDropdown
-                id="idTipoDroga"
-                name="idTipoDroga"
-                label="Tipo de Droga"
-                control={controlDrogas}
-                options={opcionesTiposDroga}
-              />
-              <FormInputDropdown
-                id="idEstadoDroga"
-                name="idEstadoDroga"
-                label="Estado de la Droga"
-                control={controlDrogas}
-                options={opcionesEstadosDroga}
-              />
-              <FormInputText
-                id="cantidadUnidades"
-                name="cantidadUnidades"
-                label="Cantidad de Unidades"
-                control={controlDrogas}
-              />
-              <div className="col-span-1 md:col-span-2 lg:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Cantidad
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-gray-500">Tn</span>
-                    <Input
-                      id="cantidadTn"
-                      value={cantidadTn}
-                      onChange={(event) => setCantidadTn(event.target.value)}
-                      size="sm"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-gray-500">Kg</span>
-                    <Input
-                      id="cantidadKg"
-                      value={cantidadKg}
-                      onChange={(event) => setCantidadKg(event.target.value)}
-                      size="sm"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-gray-500">g</span>
-                    <Input
-                      id="cantidadG"
-                      value={cantidadG}
-                      onChange={(event) => setCantidadG(event.target.value)}
-                      size="sm"
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs font-bold text-gray-500">Mg</span>
-                    <Input
-                      id="cantidadMg"
-                      value={cantidadMg}
-                      onChange={(event) => setCantidadMg(event.target.value)}
-                      size="sm"
-                      className="w-full"
-                    />
-                  </div>
-                </div>
+    <div>
+      <ConfirmDialog />
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
+
+        {/* ── Formulario de registro ── */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Tipo de Droga
+            </label>
+            <Select
+              options={tiposDroga.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idTipoDroga}
+              onChange={(e) => setIdTipoDroga(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Estado de la Droga
+            </label>
+            <Select
+              options={estadosDroga.map((e) => ({
+                value: String(e.id),
+                label: e.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idEstadoDroga}
+              onChange={(e) => setIdEstadoDroga(e.target.value)}
+              disabled={estadosDroga.length === 0}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Cantidad de Unidades
+            </label>
+            <Input
+              type="text"
+              className="w-full"
+              value={cantidadUnidades}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '' || /^\d*$/.test(val)) {
+                  setCantidadUnidades(val)
+                }
+              }}
+            />
+          </div>
+
+          {/* Cantidad multi-unidad */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="mb-1 block text-sm font-medium">Cantidad</label>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-gray-500">Tn</span>
+                <Input
+                  id="cantidadTn"
+                  value={cantidadTn}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === '' || /^\d*$/.test(val)) {
+                      setCantidadTn(val)
+                    }
+                  }}
+                  size="sm"
+                  className="w-full"
+                />
               </div>
-              <FormInputText
-                id="costo"
-                name="costo"
-                label="Costo (Bs.)"
-                control={controlDrogas}
-              />
-              <FormInputDropdown
-                id="idFormaTransporte"
-                name="idFormaTransporte"
-                label="Forma de Transporte"
-                control={controlDrogas}
-                options={opcionesFormasTransporte}
-              />
-              <FormInputDropdown
-                id="idPaisProcedencia"
-                name="idPaisProcedencia"
-                label="Procedencia"
-                control={controlDrogas}
-                options={opcionesPaises}
-              />
-              <FormInputDropdown
-                id="idPaisDestino"
-                name="idPaisDestino"
-                label="Destino"
-                control={controlDrogas}
-                options={opcionesPaises}
-              />
-              <FormInputText
-                id="observaciones"
-                name="observaciones"
-                label="Observaciones"
-                control={controlDrogas}
-              />
-              <div className="col-span-1 lg:col-span-3">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <FormInputFile
-                    id="pruebaCampo"
-                    name="pruebaCampo"
-                    label="Fotografia Prueba de Campo"
-                    control={controlDrogas}
-                    limite={1}
-                    tiposPermitidos={['image/*']}
-                  />
-                  <FormInputFile
-                    id="pesaje"
-                    name="pesaje"
-                    label="Fotografia Cuantificacion y Pesaje"
-                    control={controlDrogas}
-                    limite={1}
-                    tiposPermitidos={['image/*']}
-                  />
-                </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-gray-500">Kg</span>
+                <Input
+                  id="cantidadKg"
+                  value={cantidadKg}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (
+                      val === '' ||
+                      (parseInt(val) >= 0 && parseInt(val) <= 999)
+                    ) {
+                      setCantidadKg(val)
+                    }
+                  }}
+                  size="sm"
+                  className="w-full"
+                />
               </div>
-              <div className="col-span-1 mt-4 flex justify-end lg:col-span-3">
-                <Button variant="primary" type="submit" disabled={cargandoDrogas}>
-                  Guardar Droga
-                </Button>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-gray-500">g</span>
+                <Input
+                  id="cantidadG"
+                  value={cantidadG}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (
+                      val === '' ||
+                      (parseInt(val) >= 0 && parseInt(val) <= 999)
+                    ) {
+                      setCantidadG(val)
+                    }
+                  }}
+                  size="sm"
+                  className="w-full"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-gray-500">Mg</span>
+                <Input
+                  id="cantidadMg"
+                  value={cantidadMg}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (
+                      val === '' ||
+                      (parseInt(val) >= 0 && parseInt(val) <= 999)
+                    ) {
+                      setCantidadMg(val)
+                    }
+                  }}
+                  size="sm"
+                  className="w-full"
+                />
               </div>
             </div>
-          </Card>
-        </form>
-      )}
-
-      {/* Lista desplegable de drogas */}
-      <Card
-        title="DROGAS REGISTRADAS"
-        action={
-          <Button
-            variant="primary"
-            onClick={() => setMostrarFormulario((v) => !v)}
-            disabled={cargandoDrogas}
-          >
-            {mostrarFormulario ? 'Cancelar' : 'Agregar Droga'}
-          </Button>
-        }
-      >
-        {cargandoDrogas ? (
-          <p className="py-6 text-center text-sm text-gray-400">Cargando...</p>
-        ) : drogasItems.length === 0 ? (
-          <p className="py-6 text-center text-sm text-gray-400">Sin registros</p>
-        ) : (
-          <div className="space-y-2">
-            {itemsPagina.map((droga) => (
-              <DrogaItem
-                key={droga.id}
-                droga={droga}
-                expandido={expandidoId === droga.id}
-                onToggle={() => toggleExpandido(droga.id)}
-                onEliminar={() => void eliminarDroga(droga.id)}
-                idoperativo={idoperativo}
-              />
-            ))}
-
-            {/* Paginación */}
-            {totalPaginas > 1 && (
-              <div className="flex items-center justify-between pt-3">
-                <span className="text-xs text-gray-500">
-                  Página {paginaActual} de {totalPaginas} — {drogasItems.length} registros
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={paginaActual === 1}
-                    onClick={() => setPaginaActual((p) => p - 1)}
-                    className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
-                  >
-                    ‹ Anterior
-                  </button>
-                  <button
-                    type="button"
-                    disabled={paginaActual === totalPaginas}
-                    onClick={() => setPaginaActual((p) => p + 1)}
-                    className="rounded border border-gray-300 px-3 py-1 text-xs disabled:opacity-40 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
-                  >
-                    Siguiente ›
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
-        )}
-      </Card>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Costo (Bs.)
+            </label>
+            <Input
+              type="text"
+              className="w-full"
+              value={costo}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
+                  setCosto(val)
+                }
+              }}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Forma de Transporte
+            </label>
+            <Select
+              options={formasTransporte.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idFormaTransporte}
+              onChange={(e) => setIdFormaTransporte(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              País Procedencia
+            </label>
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idPaisProcedencia}
+              onChange={(e) => setIdPaisProcedencia(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              País Destino
+            </label>
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idPaisDestino}
+              onChange={(e) => setIdPaisDestino(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <label className="mb-1 block text-sm font-medium">
+              Observaciones
+            </label>
+            <Textarea
+              value={observaciones}
+              onChange={(e) => setObservaciones(e.target.value)}
+              rows={3}
+              className="w-full"
+            />
+          </div>
+
+          {/* Fotos — DropzoneFoto */}
+          <div className="col-span-1 lg:col-span-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <DropzoneFoto
+                key={`prueba-${dropzoneToken}`}
+                label="Fotografía Prueba de Campo"
+                archivo={pruebaCampo}
+                onChange={setPruebaCampo}
+              />
+              <DropzoneFoto
+                key={`pesaje-${dropzoneToken}`}
+                label="Fotografía Cuantificación y Pesaje"
+                archivo={pesaje}
+                onChange={setPesaje}
+              />
+            </div>
+          </div>
+
+          {/* Botón guardar */}
+          <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
+            <Button
+              type="button"
+              variant="success"
+              size="sm"
+              onClick={() => void guardarDroga()}
+              disabled={cargando}
+            >
+              Guardar Droga
+            </Button>
+          </div>
+        </div>
+
+        {/* ── Tabla de drogas registradas ── */}
+        <div className="mt-5">
+          <div className="datatables">
+            <VristoDataTable<ResponseDroga>
+              loading={cargando}
+              rows={drogas}
+              total={totalRegistros}
+              page={pagina}
+              limit={ITEMS_POR_PAGINA}
+              onPageChange={handleCambioPagina}
+              onLimitChange={() => {}}
+              columns={[
+                {
+                  accessor: 'descripcionTipoDroga',
+                  title: 'Tipo de Droga',
+                  render: (r) =>
+                    r.descripcionTipoDroga ?? String(r.idTipoDroga ?? '—'),
+                },
+                {
+                  accessor: 'descripcionEstadoDroga',
+                  title: 'Estado',
+                  render: (r) =>
+                    r.descripcionEstadoDroga ?? String(r.idEstadoDroga ?? '—'),
+                },
+                {
+                  accessor: 'cantidadUnidades',
+                  title: 'Unidades',
+                },
+                {
+                  accessor: 'cantidadGramos',
+                  title: 'Gramos',
+                  render: (r) =>
+                    r.cantidadGramos != null
+                      ? Number(r.cantidadGramos).toFixed(3)
+                      : '0.000',
+                },
+                {
+                  accessor: 'costo',
+                  title: 'Costo (Bs.)',
+                  render: (r) => (r.costo != null ? `${r.costo}` : '—'),
+                },
+                {
+                  accessor: 'descripcionFormaTransporte',
+                  title: 'Forma Transporte',
+                  render: (r) =>
+                    r.descripcionFormaTransporte ??
+                    String(r.idFormaTransporte ?? '—'),
+                },
+                {
+                  accessor: 'descripcionPaisProcedencia',
+                  title: 'Procedencia',
+                  render: (r) =>
+                    r.descripcionPaisProcedencia ??
+                    String(r.idPaisProcedencia ?? '—'),
+                },
+                {
+                  accessor: 'descripcionPaisDestino',
+                  title: 'Destino',
+                  render: (r) =>
+                    r.descripcionPaisDestino ?? String(r.idPaisDestino ?? '—'),
+                },
+                {
+                  accessor: 'acciones',
+                  title: 'Acciones',
+                  render: (r) => (
+                    <button
+                      type="button"
+                      className="text-danger hover:text-danger/80"
+                      title="Eliminar"
+                      disabled={cargando}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        void handleEliminar(r.id)
+                      }}
+                    >
+                      <IconTrash className="h-4 w-4" />
+                    </button>
+                  ),
+                },
+              ]}
+              rowExpansion={{
+                idField: 'id',
+                expandedIds: expandedIds,
+                onExpandChange: (ids) => setExpandedIds(ids),
+                renderContent: (row) => (
+                  <ExpansionContenidoDroga
+                    droga={row}
+                    idoperativo={idoperativo}
+                    cache={fotosCache[row.id]}
+                    onCacheLoad={actualizarCache}
+                    onZoom={setImagenAmpliada}
+                    onEliminarConfirm={handleEliminarConfirm}
+                  />
+                ),
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Lightbox ── */}
+      {imagenAmpliada && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setImagenAmpliada(null)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imagenAmpliada}
+              alt="Vista ampliada"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            <button
+              type="button"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setImagenAmpliada(null)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

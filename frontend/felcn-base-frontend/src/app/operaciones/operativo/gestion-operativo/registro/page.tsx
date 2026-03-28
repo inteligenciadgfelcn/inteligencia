@@ -3,19 +3,19 @@ import { siteName } from '@/utils'
 import { FormGestionOperativo } from './ui/FormGestionOperativo'
 
 export const metadata: Metadata = {
-    title: `Registro Gestion Operativo - ${siteName()}`,
-    description: 'Formulario de registro y edicion de gestion operativo',
+  title: `Registro Gestion Operativo - ${siteName()}`,
+  description: 'Formulario de registro y edicion de gestion operativo',
 }
 
 interface RegistroPageProps {
-    searchParams: Promise<{
-        id?: string
-    }>
+  searchParams: Promise<{
+    id?: string
+  }>
 }
 
 export default async function RegistroGestionOperativoPage({
-    searchParams,
+  searchParams,
 }: RegistroPageProps) {
-    const params = await searchParams
-    return <FormGestionOperativo idGestionOperativo={params.id} />
+  const params = await searchParams
+  return <FormGestionOperativo idGestionOperativo={params.id} />
 }

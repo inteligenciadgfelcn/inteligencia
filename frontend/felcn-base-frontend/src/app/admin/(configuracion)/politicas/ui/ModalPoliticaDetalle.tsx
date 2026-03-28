@@ -19,7 +19,6 @@ export const ModalPoliticaDetalle = ({
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" open={isOpen} onClose={onClose}>
-
         {/* FONDO */}
         <Transition.Child
           as={Fragment}
@@ -35,7 +34,6 @@ export const ModalPoliticaDetalle = ({
 
         <div className="fixed inset-0 z-[999] overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center px-4">
-
             {/* MODAL */}
             <Transition.Child
               as={Fragment}
@@ -47,12 +45,9 @@ export const ModalPoliticaDetalle = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="panel my-8 w-full max-w-lg overflow-hidden rounded-lg border-0 p-0 text-black dark:text-white-dark">
-
                 {/* HEADER */}
                 <div className="flex items-center justify-between bg-[#fbfbfb] px-5 py-3 dark:bg-[#121c2c]">
-                  <h5 className="text-lg font-bold">
-                    Detalles de la política
-                  </h5>
+                  <h5 className="text-lg font-bold">Detalles de la política</h5>
 
                   <button
                     type="button"
@@ -66,36 +61,26 @@ export const ModalPoliticaDetalle = ({
                 {/* BODY */}
                 <div className="p-5">
                   <div className="grid grid-cols-12 gap-y-3 text-sm">
-
                     <div className="col-span-4 font-semibold">Sujeto:</div>
-                    <div className="col-span-8">
-                      {politica?.sujeto}
-                    </div>
+                    <div className="col-span-8">{politica?.sujeto}</div>
 
                     <div className="col-span-4 font-semibold">Objeto:</div>
-                    <div className="col-span-8">
-                      {politica?.objeto}
-                    </div>
+                    <div className="col-span-8">{politica?.objeto}</div>
 
                     <div className="col-span-4 font-semibold">Acciones:</div>
                     <div className="col-span-8 flex flex-wrap gap-1">
-                      {politica?.accion
-                        ?.split('|')
-                        .map((accion, index) => (
-                          <span
-                            key={index}
-                            className="badge badge-outline-primary"
-                          >
-                            {accion}
-                          </span>
-                        ))}
+                      {politica?.accion?.split('|').map((accion, index) => (
+                        <span
+                          key={index}
+                          className="badge badge-outline-primary"
+                        >
+                          {accion}
+                        </span>
+                      ))}
                     </div>
 
                     <div className="col-span-4 font-semibold">App:</div>
-                    <div className="col-span-8">
-                      {politica?.app}
-                    </div>
-
+                    <div className="col-span-8">{politica?.app}</div>
                   </div>
                 </div>
 
@@ -109,10 +94,8 @@ export const ModalPoliticaDetalle = ({
                     Cerrar
                   </button>
                 </div>
-
               </Dialog.Panel>
             </Transition.Child>
-
           </div>
         </div>
       </Dialog>

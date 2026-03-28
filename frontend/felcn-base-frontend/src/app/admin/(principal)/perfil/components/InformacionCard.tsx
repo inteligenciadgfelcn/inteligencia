@@ -12,10 +12,10 @@ const useIsMobile = () => {
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768) // Equivalente a 'sm' de MUI
     }
-    
+
     checkIsMobile()
     window.addEventListener('resize', checkIsMobile)
-    
+
     return () => window.removeEventListener('resize', checkIsMobile)
   }, [])
 
@@ -85,7 +85,6 @@ export const InformacionCard = ({ usuario }: InformacionCardProps) => {
 
   return (
     <div className="panel">
-
       {/* HEADER */}
       <div className="mb-5">
         <h5 className="text-lg font-semibold dark:text-white-light">
@@ -113,12 +112,8 @@ export const InformacionCard = ({ usuario }: InformacionCardProps) => {
               </div>
 
               <div className="flex-1">
-                <div className="text-xs text-white-dark">
-                  {item.label}
-                </div>
-                <div className="text-sm font-medium">
-                  {item.value}
-                </div>
+                <div className="text-xs text-white-dark">{item.label}</div>
+                <div className="text-sm font-medium">{item.value}</div>
               </div>
             </div>
           )
@@ -136,18 +131,19 @@ export const InformacionCard = ({ usuario }: InformacionCardProps) => {
 
       <div className="flex flex-wrap gap-2 mb-6">
         {usuario?.roles.map((role, index) => {
-          const isActive = role.idRol === usuario.idRol;
-          const isLoading = loadingRol === role.idRol;
-          
+          const isActive = role.idRol === usuario.idRol
+          const isLoading = loadingRol === role.idRol
+
           return (
             <span
               key={index}
               onClick={() => handleRolChange(role.idRol)}
               className={`
                 px-3 py-1 text-xs font-medium rounded-full cursor-pointer transition-all duration-200
-                ${isActive 
-                  ? 'bg-primary text-white' 
-                  : 'bg-primary/10 text-primary hover:bg-primary/20'
+                ${
+                  isActive
+                    ? 'bg-primary text-white'
+                    : 'bg-primary/10 text-primary hover:bg-primary/20'
                 }
                 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'}
                 ${!!loadingRol ? 'pointer-events-none' : ''}
@@ -197,7 +193,6 @@ export const InformacionCard = ({ usuario }: InformacionCardProps) => {
           </div>
         </>
       )}
-
     </div>
   )
 }

@@ -15,34 +15,34 @@ export const lightTheme = createTheme(
     cssVariables: true,
     colorSchemes: { light: true },
     palette: {
-  mode: 'light',
+      mode: 'light',
 
-  background: {
-    default: '#f3f4f6',
-    paper: '#ffffff',
-  },
+      background: {
+        default: '#f3f4f6',
+        paper: '#ffffff',
+      },
 
-  primary: {
-    main: '#4361ee',
-  },
+      primary: {
+        main: '#4361ee',
+      },
 
-  secondary: {
-    main: '#ef1262',
-  },
+      secondary: {
+        main: '#ef1262',
+      },
 
-  error: {
-    main: '#BA1B1B',
-  },
+      error: {
+        main: '#BA1B1B',
+      },
 
-  action: {
-    active: '#6b7280',
-  },
+      action: {
+        active: '#6b7280',
+      },
 
-  text: {
-    primary: '#111827',
-    secondary: '#6b7280',
-  },
-},
+      text: {
+        primary: '#111827',
+        secondary: '#6b7280',
+      },
+    },
 
     typography: {
       fontFamily: InterFont.style.fontFamily,
@@ -72,16 +72,16 @@ export const lightTheme = createTheme(
         },
       },
       MuiButton: {
-       defaultProps: {
-    disableElevation: true,
-  },
-  styleOverrides: {
-    root: {
-      textTransform: 'none',
-      fontWeight: '600',
-      borderRadius: 8,
-    },
-  },
+        defaultProps: {
+          disableElevation: true,
+        },
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: '600',
+            borderRadius: 8,
+          },
+        },
       },
       MuiDrawer: {
         styleOverrides: {

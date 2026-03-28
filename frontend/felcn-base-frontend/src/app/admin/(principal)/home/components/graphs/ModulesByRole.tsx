@@ -46,8 +46,7 @@ export default function ModulesByRole() {
         const moduleName = p.objeto.split('/')[2]
 
         if (!roleMap[role]) roleMap[role] = {}
-        roleMap[role][moduleName] =
-          (roleMap[role][moduleName] || 0) + 1
+        roleMap[role][moduleName] = (roleMap[role][moduleName] || 0) + 1
 
         modulesSet.add(moduleName)
       }

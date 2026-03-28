@@ -26,7 +26,6 @@ const FormInput = ({
 }: FormInputProps) => {
   return (
     <div className={clsx(fullWidth && 'w-full', error && 'has-error')}>
-
       {label && (
         <label htmlFor={name} className="form-label">
           {label}
@@ -34,7 +33,6 @@ const FormInput = ({
       )}
 
       <div className="flex">
-
         {/* Icono izquierdo */}
         {icon && (
           <div
@@ -57,9 +55,7 @@ const FormInput = ({
           disabled={disabled}
           className={clsx(
             'form-input w-full',
-            icon
-              ? 'ltr:rounded-l-none rtl:rounded-r-none'
-              : 'rounded-md',
+            icon ? 'ltr:rounded-l-none rtl:rounded-r-none' : 'rounded-md',
             className
           )}
         />

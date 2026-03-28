@@ -108,12 +108,23 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.listar(paginacion)
   }
 
-  async buscarPorId(id: string): Promise<Operativo> {
+  async buscarPorId(id: string): Promise<any> {
     const operativo = await this.operativoRepository.buscarPorId(id)
     if (!operativo) {
       throw new NotFoundException(`Operativo con ID ${id} no encontrado`)
     }
-    return operativo
+
+    const res: any = { ...operativo }
+    res.descripcionUnidad = operativo.unidad?.descripcion ?? null
+    res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
+    res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
+
+    // Clean up relation objects if needed, but not strictly required
+    delete res.unidad
+    delete res.planOperacion
+    delete res.tipoOperacion
+
+    return res
   }
 
   async buscarPorCaso(idCaso: string): Promise<Operativo[]> {
@@ -431,22 +442,63 @@ export class OperativoService extends BaseService {
     data: CreateGaleriaDto,
     foto: Buffer,
     usuario: string
-  ): Promise<Galeria> {
-    const galeria = new Galeria({ idOperativo, descripcion: data.descripcion, foto })
-    return this.operativoRepository.crearGaleria(galeria)
+  ): Promise<any> {
+    const galeriaEntity = new Galeria({
+      idOperativo,
+      descripcion: data.descripcion,
+      foto,
+    })
+    const galeria = await this.operativoRepository.crearGaleria(galeriaEntity)
+    const { foto: f, ...resto } = galeria
+    return {
+      ...resto,
+      urlFotoThumbnail: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/thumbnail`
+        : null,
+      urlFotoMedium: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/medium`
+        : null,
+      urlFotoFull: f?.length
+        ? `/api/operativos/${idOperativo}/galeria/${galeria.id}/full`
+        : null,
+    }
   }
 
-  async listarGaleria(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Galeria[], number]> {
-    return this.operativoRepository.listarGaleriaPorOperativo(idOperativo, paginacion)
+  async listarGaleria(
+    idOperativo: string,
+    paginacion: PaginacionQueryDto
+  ): Promise<[any[], number]> {
+    const [galerias, total] =
+      await this.operativoRepository.listarGaleriaPorOperativo(
+        idOperativo,
+        paginacion
+      )
+    const filas = galerias.map(({ foto, operativo: _operativo, ...g }) => ({
+      ...g,
+      urlFotoThumbnail: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/thumbnail`
+        : null,
+      urlFotoMedium: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/medium`
+        : null,
+      urlFotoFull: foto?.length
+        ? `/api/operativos/${idOperativo}/galeria/${g.id}/full`
+        : null,
+    }))
+    return [filas, total]
   }
 
-  async eliminarFotoGaleria(idOperativo: string, idGaleria: string): Promise<void> {
+  async eliminarFotoGaleria(
+    idOperativo: string,
+    idGaleria: string
+  ): Promise<void> {
     await this.operativoRepository.eliminarGaleria(idGaleria)
   }
 
   // ==================== LOGOTIPOS ====================
 
   async agregarLogotipo(
+    idOperativo: string,
     idDroga: string,
     data: CreateLogotipoDto,
     fotografia: Buffer,
@@ -467,17 +519,17 @@ export class OperativoService extends BaseService {
     return {
       ...resto,
       urlFotografia: foto?.length
-        ? `/api/operativos/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
+        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
         : null,
     }
   }
 
-  async listarLogotipos(idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+  async listarLogotipos(idOperativo: string, idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const [logotipos, total] = await this.operativoRepository.listarLogotiposPorDroga(idDroga, paginacion)
     const filas = logotipos.map(({ fotografia, droga, ...l }) => ({
       ...l,
       urlFotografia: fotografia?.length
-        ? `/api/operativos/drogas/${idDroga}/logotipos/${l.id}/foto`
+        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${l.id}/foto`
         : null,
     }))
     return [filas, total]
@@ -543,8 +595,8 @@ export class OperativoService extends BaseService {
       throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
     }
     switch (tipo) {
-      case 'frente':           return detenido.fotoFrente || Buffer.alloc(0)
-      case 'foto-documento':   return detenido.fotoDocumento || Buffer.alloc(0)
+      case 'frente': return detenido.fotoFrente || Buffer.alloc(0)
+      case 'foto-documento': return detenido.fotoDocumento || Buffer.alloc(0)
       case 'perfil-izquierdo': return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
       default: throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
     }

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { AsigCasosModule } from './asig-casos/asig-casos.module'
 import { S2iModule } from './s2i/s2i.module'
 import { SiiiModule } from './siii/siii.module'
+import { ReportModule } from './siii/reportes/reporte.module'
 
 /**
  * Módulo principal SUNESIS
@@ -11,7 +12,7 @@ import { SiiiModule } from './siii/siii.module'
  * - SiiiModule: felcn_iii
  */
 @Module({
-  imports: [AsigCasosModule, S2iModule, SiiiModule],
-  exports: [AsigCasosModule, S2iModule, SiiiModule],
+  imports: [AsigCasosModule, S2iModule, SiiiModule, ReportModule],
+  exports: [AsigCasosModule, S2iModule, SiiiModule, ReportModule],
 })
 export class SunesisModule {}

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { IRootState } from '../../store';
+import { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { IRootState } from '../../store'
 import {
   toggleAnimation,
   toggleLayout,
@@ -8,18 +8,18 @@ import {
   toggleRTL,
   toggleTheme,
   toggleSemidark,
-} from '../../store/themeConfigSlice';
-import IconSettings from '@/components/Icon/IconSettings';
-import IconX from '@/components/Icon/IconX';
-import IconSun from '@/components/Icon/IconSun';
-import IconMoon from '@/components/Icon/IconMoon';
-import IconLaptop from '@/components/Icon/IconLaptop';
+} from '../../store/themeConfigSlice'
+import IconSettings from '@/components/Icon/IconSettings'
+import IconX from '@/components/Icon/IconX'
+import IconSun from '@/components/Icon/IconSun'
+import IconMoon from '@/components/Icon/IconMoon'
+import IconLaptop from '@/components/Icon/IconLaptop'
 
 const Setting = () => {
-  const themeConfig = useSelector((state: IRootState) => state.themeConfig);
-  const dispatch = useDispatch();
+  const themeConfig = useSelector((state: IRootState) => state.themeConfig)
+  const dispatch = useDispatch()
 
-  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [showCustomizer, setShowCustomizer] = useState(false)
 
   return (
     <div>
@@ -69,9 +69,11 @@ const Setting = () => {
             <div className="mt-3 grid grid-cols-3 gap-2">
               <button
                 type="button"
-                className={`${themeConfig.theme === 'light'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
+                className={`${
+                  themeConfig.theme === 'light'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
                 onClick={() => dispatch(toggleTheme('light'))}
               >
                 <IconSun className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
@@ -80,9 +82,11 @@ const Setting = () => {
 
               <button
                 type="button"
-                className={`${themeConfig.theme === 'dark'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
+                className={`${
+                  themeConfig.theme === 'dark'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
                 onClick={() => dispatch(toggleTheme('dark'))}
               >
                 <IconMoon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
@@ -91,9 +95,11 @@ const Setting = () => {
 
               <button
                 type="button"
-                className={`${themeConfig.theme === 'system'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
+                className={`${
+                  themeConfig.theme === 'system'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
                 onClick={() => dispatch(toggleTheme('system'))}
               >
                 <IconLaptop className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
@@ -114,9 +120,11 @@ const Setting = () => {
             <div className="mt-3 grid grid-cols-3 gap-2">
               <button
                 type="button"
-                className={`${themeConfig.menu === 'horizontal'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
+                className={`${
+                  themeConfig.menu === 'horizontal'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
                 onClick={() => dispatch(toggleMenu('horizontal'))}
               >
                 Horizontal
@@ -124,9 +132,11 @@ const Setting = () => {
 
               <button
                 type="button"
-                className={`${themeConfig.menu === 'vertical'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
+                className={`${
+                  themeConfig.menu === 'vertical'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
                 onClick={() => dispatch(toggleMenu('vertical'))}
               >
                 Vertical
@@ -134,12 +144,12 @@ const Setting = () => {
 
               <button
                 type="button"
-                className={`${themeConfig.menu === 'collapsible-vertical'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn`}
-                onClick={() =>
-                  dispatch(toggleMenu('collapsible-vertical'))
-                }
+                className={`${
+                  themeConfig.menu === 'collapsible-vertical'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn`}
+                onClick={() => dispatch(toggleMenu('collapsible-vertical'))}
               >
                 Colapsable
               </button>
@@ -151,9 +161,7 @@ const Setting = () => {
                   type="checkbox"
                   className="form-checkbox"
                   checked={themeConfig.semidark}
-                  onChange={(e) =>
-                    dispatch(toggleSemidark(e.target.checked))
-                  }
+                  onChange={(e) => dispatch(toggleSemidark(e.target.checked))}
                 />
                 <span>Modo Semi Oscuro (Sidebar y Header)</span>
               </label>
@@ -172,21 +180,23 @@ const Setting = () => {
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                className={`${themeConfig.layout === 'boxed-layout'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn flex-auto`}
-                onClick={() =>
-                  dispatch(toggleLayout('boxed-layout'))
-                }
+                className={`${
+                  themeConfig.layout === 'boxed-layout'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn flex-auto`}
+                onClick={() => dispatch(toggleLayout('boxed-layout'))}
               >
                 Caja
               </button>
 
               <button
                 type="button"
-                className={`${themeConfig.layout === 'full'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn flex-auto`}
+                className={`${
+                  themeConfig.layout === 'full'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn flex-auto`}
                 onClick={() => dispatch(toggleLayout('full'))}
               >
                 Completo
@@ -199,16 +209,16 @@ const Setting = () => {
             <h5 className="mb-1 text-base leading-none dark:text-white">
               Dirección
             </h5>
-            <p className="text-xs text-white-dark">
-              Dirección de lectura.
-            </p>
+            <p className="text-xs text-white-dark">Dirección de lectura.</p>
 
             <div className="mt-3 flex gap-2">
               <button
                 type="button"
-                className={`${themeConfig.rtlClass === 'ltr'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn flex-auto`}
+                className={`${
+                  themeConfig.rtlClass === 'ltr'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn flex-auto`}
                 onClick={() => dispatch(toggleRTL('ltr'))}
               >
                 Izquierda a Derecha
@@ -216,9 +226,11 @@ const Setting = () => {
 
               <button
                 type="button"
-                className={`${themeConfig.rtlClass === 'rtl'
-                  ? 'btn-primary'
-                  : 'btn-outline-primary'} btn flex-auto`}
+                className={`${
+                  themeConfig.rtlClass === 'rtl'
+                    ? 'btn-primary'
+                    : 'btn-outline-primary'
+                } btn flex-auto`}
                 onClick={() => dispatch(toggleRTL('rtl'))}
               >
                 Derecha a Izquierda
@@ -238,9 +250,7 @@ const Setting = () => {
             <select
               className="form-select border-primary text-primary"
               value={themeConfig.animation}
-              onChange={(e) =>
-                dispatch(toggleAnimation(e.target.value))
-              }
+              onChange={(e) => dispatch(toggleAnimation(e.target.value))}
             >
               <option value=" ">Ninguna</option>
               <option value="animate__fadeIn">Desvanecer</option>
@@ -257,7 +267,7 @@ const Setting = () => {
         </div>
       </nav>
     </div>
-  );
-};
+  )
+}
 
-export default Setting;
+export default Setting

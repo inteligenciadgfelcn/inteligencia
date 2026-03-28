@@ -9,23 +9,33 @@ RUN npm set registry https://registry.agcs.agetic.gob.bo/ && \
 
 COPY . .
 
+ARG NEXT_PUBLIC_PATH=""
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_PUBLIC_PATH=${NEXT_PUBLIC_PATH}
 RUN node --run build
 
 FROM hub.agcs.agetic.gob.bo/dockerhub-proxy/library/node:22-alpine AS release
 WORKDIR /home/node/app
-RUN apk add --no-cache libc6-compat && \
-    chown -R node:node /home/node/app
-    
-RUN npm i sharp@0.33.5 --legacy-peer-deps
+RUN apk add --no-cache libc6-compat
+
+# Pre-instalar sharp en directorio temporal ANTES de los COPY
+# Esta capa queda cacheada y solo se re-ejecuta si cambia la versión de sharp
+RUN npm i sharp@0.33.5 --prefix /tmp/sharp-pkg --progress=false --no-audit --legacy-peer-deps
 
 COPY --chown=node:node ./public ./public
 COPY --chown=node:node ./package.json ./package.json
-
 COPY --chown=node:node ./next.config.js ./next.config.js
-COPY --chown=node:node ./next-env.d.ts ./next-env.d.ts
 
 COPY --from=build --chown=node:node /home/node/app/.next/standalone ./
 COPY --from=build --chown=node:node /home/node/app/.next/static ./.next/static
+
+# Reemplazar sharp del standalone con el pre-instalado (binario nativo + todas sus dependencias)
+RUN rm -rf ./node_modules/sharp ./node_modules/@img && \
+    cp -rf /tmp/sharp-pkg/node_modules/. ./node_modules/ && \
+    find /tmp/sharp-pkg/node_modules -mindepth 1 -maxdepth 1 -type d | \
+      while read d; do \
+        chown -R node:node "./node_modules/$(basename "$d")" 2>/dev/null || true; \
+      done
 
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
@@ -36,5 +46,5 @@ ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} \
 
 FROM release AS app
 USER node
-CMD  ["sh", "-c",  "node server.js"]
+CMD ["node", "server.js"]
 EXPOSE 3000

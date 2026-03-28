@@ -291,20 +291,20 @@ export const UsuariosDatatable: React.FC = () => {
           )}
           {(params.row.estado == 'ACTIVO' ||
             params.row.estado == 'INACTIVO') && (
-              <IconoTooltip
-                id={`restablecerContrasena-${params.row.id}`}
-                titulo={
-                  params.row.ciudadaniaDigital
-                    ? 'No puede restablecer la contraseña'
-                    : 'Restablecer contraseña'
-                }
-                color={'info'}
-                accion={() => abrirAlertaRestablecerContrasena(params.row)}
-                desactivado={params.row.ciudadaniaDigital}
-                icono={'vpn_key'}
-                name={'Restablecer contraseña'}
-              />
-            )}
+            <IconoTooltip
+              id={`restablecerContrasena-${params.row.id}`}
+              titulo={
+                params.row.ciudadaniaDigital
+                  ? 'No puede restablecer la contraseña'
+                  : 'Restablecer contraseña'
+              }
+              color={'info'}
+              accion={() => abrirAlertaRestablecerContrasena(params.row)}
+              desactivado={params.row.ciudadaniaDigital}
+              icono={'vpn_key'}
+              name={'Restablecer contraseña'}
+            />
+          )}
           {params.row.estado == 'PENDIENTE' && (
             <IconoTooltip
               id={`reenviarCorreoActivacion-${params.row.id}`}

@@ -45,13 +45,13 @@ function ThemeComponent({ children }: { children: ReactNode }) {
 
   // Sync with Tailwind dark mode
   useEffect(() => {
-    const effectiveMode = mode === 'system' ? systemMode : mode;
+    const effectiveMode = mode === 'system' ? systemMode : mode
     if (effectiveMode === 'dark') {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('dark')
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('dark')
     }
-  }, [mode, systemMode]);
+  }, [mode, systemMode])
 
   const theme = React.useMemo(() => {
     const effectiveMode = mode === 'system' ? systemMode : mode

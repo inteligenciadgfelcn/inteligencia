@@ -33,16 +33,15 @@ export const BotonAcciones = ({
   variante = 'icono',
   texto = 'acciones',
 }: BotonAccionesParams) => {
-
   // Map actions to DropdownItems
   const dropdownItems = acciones
-    .filter(a => a.mostrar)
-    .map(a => ({
+    .filter((a) => a.mostrar)
+    .map((a) => ({
       label: a.titulo,
       icon: <Icono>{a.icono}</Icono>, // Wrap if needed, or pass directly if Icono expects string
       onClick: (e: any) => a.accion && a.accion(e),
-      disabled: a.desactivado
-    }));
+      disabled: a.desactivado,
+    }))
 
   if (variante === 'boton') {
     return (

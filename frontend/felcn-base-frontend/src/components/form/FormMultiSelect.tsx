@@ -37,9 +37,7 @@ export const MultiSelect = ({
         placeholder={placeholder}
         options={options}
         value={options.filter((o) => value.includes(o.value))}
-        onChange={(selected) =>
-          onChange(selected.map((item) => item.value))
-        }
+        onChange={(selected) => onChange(selected.map((item) => item.value))}
         classNamePrefix="react-select"
       />
 
