@@ -23,7 +23,7 @@ export default function ModulesByRole() {
     queryKey: ['politicas-modulos'],
     queryFn: async () => {
       const response = await sesionPeticion<PoliticasResponse>({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: 'get',
         params: { pagina: 1, limite: 50 },
       })
@@ -46,8 +46,7 @@ export default function ModulesByRole() {
         const moduleName = p.objeto.split('/')[2]
 
         if (!roleMap[role]) roleMap[role] = {}
-        roleMap[role][moduleName] =
-          (roleMap[role][moduleName] || 0) + 1
+        roleMap[role][moduleName] = (roleMap[role][moduleName] || 0) + 1
 
         modulesSet.add(moduleName)
       }

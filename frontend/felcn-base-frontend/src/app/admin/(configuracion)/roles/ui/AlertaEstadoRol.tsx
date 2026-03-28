@@ -38,7 +38,7 @@ export const AlertaEstadoRol = ({
       await delay(800)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/roles/${rol.id}/${
+        url: `${Constantes.authUrl}/autorizacion/roles/${rol.id}/${
           rol.estado === 'ACTIVO' ? 'inactivacion' : 'activacion'
         }`,
         method: 'patch',
@@ -65,12 +65,9 @@ export const AlertaEstadoRol = ({
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
       <div className="panel w-full max-w-lg p-5 animate__animated animate__zoomIn">
-
         {/* HEADER */}
         <div className="mb-3">
-          <h5 className="text-lg font-semibold">
-            Confirmar cambio de estado
-          </h5>
+          <h5 className="text-lg font-semibold">Confirmar cambio de estado</h5>
         </div>
 
         {/* BODY */}
@@ -80,10 +77,7 @@ export const AlertaEstadoRol = ({
             {rol?.estado === 'ACTIVO' ? 'inactivar' : 'activar'}
           </span>{' '}
           el rol:{' '}
-          <span className="font-semibold">
-            {titleCase(rol?.nombre || '')}
-          </span>
-          ?
+          <span className="font-semibold">{titleCase(rol?.nombre || '')}</span>?
         </div>
 
         {/* LOADING */}
@@ -97,7 +91,6 @@ export const AlertaEstadoRol = ({
 
         {/* FOOTER */}
         <div className="mt-6 flex justify-end gap-3">
-
           <button
             className="btn btn-outline-primary"
             onClick={onClose}
@@ -113,9 +106,7 @@ export const AlertaEstadoRol = ({
           >
             Confirmar
           </button>
-
         </div>
-
       </div>
     </div>
   )

@@ -57,14 +57,16 @@ export const NavbarUser: React.FC = () => {
   // Click outside listener for UserMenu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
 
   const normalizeText = (text: string) => {
     return text
@@ -204,7 +206,9 @@ export const NavbarUser: React.FC = () => {
       </AlertDialog>
 
       {/* Main Header */}
-      <header className={`z-40 fixed top-0 left-0 right-0 bg-white dark:bg-[#0e1726] shadow-s transition-all duration-300`}>
+      <header
+        className={`z-40 fixed top-0 left-0 right-0 bg-white dark:bg-[#0e1726] shadow-s transition-all duration-300`}
+      >
         <div className="flex items-center justify-between px-5 py-2.5">
           <div className="flex items-center">
             <NavbarMenuButton />
@@ -249,7 +253,7 @@ export const NavbarUser: React.FC = () => {
                 <div className="w-[30px] h-[30px] rounded-full overflow-hidden bg-secondary relative">
                   {usuario?.urlFoto ? (
                     <Image
-                      src={`${Constantes.baseUrl}${usuario?.urlFoto}`}
+                      src={`${Constantes.authUrl}${usuario?.urlFoto}`}
                       alt={'Foto de perfil'}
                       fill
                       sizes="100vw"
@@ -257,9 +261,11 @@ export const NavbarUser: React.FC = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full text-white text-xs font-bold">
-                      {`${usuario?.persona.nombres[0] ?? ''}${usuario?.persona.primerApellido[0] ??
-                        usuario?.persona.segundoApellido[0] ?? ''
-                        }`}
+                      {`${usuario?.persona.nombres[0] ?? ''}${
+                        usuario?.persona.primerApellido[0] ??
+                        usuario?.persona.segundoApellido[0] ??
+                        ''
+                      }`}
                     </div>
                   )}
                 </div>
@@ -269,7 +275,9 @@ export const NavbarUser: React.FC = () => {
                 <div className="absolute right-0 mt-2 z-50">
                   <UserMenuItems
                     cerrarMenu={cerrarMenu}
-                    accionMostrarAlertaCerrarSesion={accionMostrarAlertaCerrarSesion}
+                    accionMostrarAlertaCerrarSesion={
+                      accionMostrarAlertaCerrarSesion
+                    }
                   />
                 </div>
               )}
@@ -285,7 +293,9 @@ export const NavbarUser: React.FC = () => {
         */}
       {/* Mobile Search - Using MUI Dialog for now */}
       {isMobile && (
-        <div style={{ display: 'none' }}>Mobile Search Dialog Placeholder. Re-implement properly if needed.</div>
+        <div style={{ display: 'none' }}>
+          Mobile Search Dialog Placeholder. Re-implement properly if needed.
+        </div>
       )}
     </>
   )

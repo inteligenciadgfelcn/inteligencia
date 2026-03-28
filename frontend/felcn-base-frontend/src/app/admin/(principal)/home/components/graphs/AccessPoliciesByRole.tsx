@@ -19,11 +19,15 @@ export default function AccessPoliciesByRole() {
 
   /* ---------------- GET DATA ---------------- */
 
-  const { data: politicasData, isLoading, error } = useQuery({
+  const {
+    data: politicasData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['politicas'],
     queryFn: async () => {
       const response = await sesionPeticion<PoliticasResponse>({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: 'get',
         params: { pagina: 1, limite: 50 },
       })
@@ -35,8 +39,7 @@ export default function AccessPoliciesByRole() {
   /* ---------------- PROCESS DATA ---------------- */
 
   const { categories, series } = useMemo(() => {
-    if (!politicasData?.filas?.length)
-      return { categories: [], series: [] }
+    if (!politicasData?.filas?.length) return { categories: [], series: [] }
 
     const roleMap: Record<string, Record<string, number>> = {}
     const actions = new Set<string>()
@@ -49,8 +52,7 @@ export default function AccessPoliciesByRole() {
 
         acciones.forEach((accion) => {
           actions.add(accion)
-          roleMap[p.sujeto][accion] =
-            (roleMap[p.sujeto][accion] || 0) + 1
+          roleMap[p.sujeto][accion] = (roleMap[p.sujeto][accion] || 0) + 1
         })
       }
     })
@@ -132,9 +134,7 @@ export default function AccessPoliciesByRole() {
   return (
     <div className="panel h-full">
       <div className="mb-5">
-        <h5 className="text-lg font-semibold">
-          Políticas de Acceso por Rol
-        </h5>
+        <h5 className="text-lg font-semibold">Políticas de Acceso por Rol</h5>
       </div>
 
       <ReactApexChart

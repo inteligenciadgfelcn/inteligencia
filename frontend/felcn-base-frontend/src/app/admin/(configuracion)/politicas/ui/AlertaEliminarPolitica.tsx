@@ -27,7 +27,6 @@ export const AlertaEliminarPolitica = ({
   if (!isOpen) return null
 
   const eliminarPolitica = async () => {
-
     if (!politica || loading) return
 
     try {
@@ -36,7 +35,7 @@ export const AlertaEliminarPolitica = ({
       await delay(800)
 
       const respuesta = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/politicas`,
+        url: `${Constantes.authUrl}/autorizacion/politicas`,
         method: 'delete',
         params: {
           sujeto: politica.sujeto,
@@ -53,7 +52,6 @@ export const AlertaEliminarPolitica = ({
 
       onSuccess()
       onClose()
-
     } catch (e) {
       imprimir('Error al eliminar política', e)
       Alerta({
@@ -67,19 +65,16 @@ export const AlertaEliminarPolitica = ({
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
-
       <div className="panel w-full max-w-lg p-5 animate__animated animate__zoomIn">
-
         {/* HEADER */}
-        <h5 className="mb-3 text-lg font-semibold">
-          Confirmar eliminación
-        </h5>
+        <h5 className="mb-3 text-lg font-semibold">Confirmar eliminación</h5>
 
         {/* BODY */}
         <p className="text-sm text-gray-600 dark:text-gray-400">
           ¿Está seguro de eliminar la política{' '}
           <span className="font-semibold">
-            {politica?.app}-{politica?.objeto}-{politica?.sujeto}-{politica?.accion}
+            {politica?.app}-{politica?.objeto}-{politica?.sujeto}-
+            {politica?.accion}
           </span>
           ?
         </p>
@@ -95,7 +90,6 @@ export const AlertaEliminarPolitica = ({
 
         {/* FOOTER */}
         <div className="mt-6 flex justify-end gap-3">
-
           <button
             className="btn btn-outline-primary"
             onClick={onClose}
@@ -111,9 +105,7 @@ export const AlertaEliminarPolitica = ({
           >
             Eliminar
           </button>
-
         </div>
-
       </div>
     </div>
   )

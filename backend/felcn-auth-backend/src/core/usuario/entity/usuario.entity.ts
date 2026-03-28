@@ -15,10 +15,12 @@ import dotenv from 'dotenv'
 import { UsuarioEstado } from '../constant'
 import { AuditoriaEntity } from '@/common/entity/auditoria.entity'
 import { UsuarioRol } from '@/core/authorization/entity/usuario-rol.entity'
+import { Grado } from '@/core/estructura/entity/grado.entity'
+import { Grupo } from '@/core/estructura/entity/grupo.entity'
 
 dotenv.config()
 @Check(UtilService.buildStatusCheck(UsuarioEstado))
-@Entity({ name: 'usuarios', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'usuario', schema: process.env.DB_SCHEMA_USUARIO })
 export class Usuario extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',
@@ -122,6 +124,49 @@ export class Usuario extends AuditoriaEntity {
   urlFoto?: string | null
 
   @Column({
+    name: 'nombre_app',
+    length: 200,
+    type: 'varchar',
+    nullable: true,
+    comment: 'Nombre para mostrar en la aplicación (ej: grado + nombre completo)',
+  })
+  nombreApp?: string | null
+
+  @Column({
+    name: 'telefono_celular',
+    length: 20,
+    type: 'varchar',
+    nullable: true,
+    comment: 'Número de teléfono celular personal del usuario',
+  })
+  telefonoCelular?: string | null
+
+  @Column({
+    name: 'telefono_corporativo',
+    length: 20,
+    type: 'varchar',
+    nullable: true,
+    comment: 'Número de teléfono corporativo/institucional del usuario',
+  })
+  telefonoCorporativo?: string | null
+
+  @Column({
+    name: 'id_grado',
+    type: 'integer',
+    nullable: true,
+    comment: 'Clave foránea al grado militar/policial del usuario',
+  })
+  idGrado?: number | null
+
+  @Column({
+    name: 'id_grupo',
+    type: 'integer',
+    nullable: true,
+    comment: 'Clave foránea al grupo operacional al que pertenece el usuario',
+  })
+  idGrupo?: number | null
+
+  @Column({
     name: 'id_persona',
     type: 'bigint',
     nullable: false,
@@ -132,14 +177,17 @@ export class Usuario extends AuditoriaEntity {
   @OneToMany(() => UsuarioRol, (usuarioRol) => usuarioRol.usuario)
   usuarioRol: UsuarioRol[]
 
-  @ManyToOne(() => Persona, (persona) => persona.usuarios, {
-    nullable: false,
-  })
-  @JoinColumn({
-    name: 'id_persona',
-    referencedColumnName: 'id',
-  })
+  @ManyToOne(() => Persona, (persona) => persona.usuarios, { nullable: false })
+  @JoinColumn({ name: 'id_persona', referencedColumnName: 'id' })
   persona: Persona
+
+  @ManyToOne(() => Grado, { nullable: true, eager: false })
+  @JoinColumn({ name: 'id_grado', referencedColumnName: 'id' })
+  grado?: Grado | null
+
+  @ManyToOne(() => Grupo, { nullable: true, eager: false })
+  @JoinColumn({ name: 'id_grupo', referencedColumnName: 'id' })
+  grupo?: Grupo | null
 
   constructor(data?: Partial<Usuario>) {
     super(data)

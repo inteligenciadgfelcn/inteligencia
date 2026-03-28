@@ -23,7 +23,7 @@ export default function UserGrowth() {
     queryKey: ['usuarios-growth'],
     queryFn: async () => {
       const response = await sesionPeticion<UsuariosResponse>({
-        url: `${Constantes.baseUrl}/usuarios`,
+        url: `${Constantes.authUrl}/usuarios`,
         method: 'get',
         params: { pagina: 1, limite: 50 },
       })
@@ -49,9 +49,7 @@ export default function UserGrowth() {
     const map: Record<string, number> = {}
 
     sorted.forEach((u) => {
-      const date = new Date(u.fechaCreacion)
-        .toISOString()
-        .split('T')[0]
+      const date = new Date(u.fechaCreacion).toISOString().split('T')[0]
       count++
       map[date] = count
     })

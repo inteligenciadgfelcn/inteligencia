@@ -4,10 +4,10 @@ import { ISession } from 'connect-typeorm'
 
 dotenv.config()
 
-@Entity()
+@Entity({ name: 'session', schema: process.env.DB_SCHEMA_USUARIO })
 export class Session implements ISession {
   @Index()
-  @Column('bigint', { comment: 'Fecha de expiración de sesión' })
+  @Column('bigint', { name: 'expired_at', comment: 'Fecha de expiración de sesión' })
   public expiredAt = Date.now()
 
   @PrimaryColumn('varchar', {
@@ -21,6 +21,6 @@ export class Session implements ISession {
   })
   public json = ''
 
-  @DeleteDateColumn({ comment: 'Fecha de eliminación o cierre de sesión' })
+  @DeleteDateColumn({ name: 'destroyed_at', comment: 'Fecha de eliminación o cierre de sesión' })
   public destroyedAt?: Date
 }

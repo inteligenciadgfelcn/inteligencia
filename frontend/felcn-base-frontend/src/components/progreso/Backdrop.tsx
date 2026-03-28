@@ -23,7 +23,7 @@ export const BackdropVista = ({
   const colorClasses = {
     inherit: 'text-gray-500',
     primary: 'text-primary',
-    secondary: 'text-secondary', 
+    secondary: 'text-secondary',
     error: 'text-danger',
     info: 'text-info',
     success: 'text-success',
@@ -33,7 +33,9 @@ export const BackdropVista = ({
   return (
     <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center">
       <div className="text-center">
-        <div className={`inline-flex items-center justify-center ${colorClasses[color]}`}>
+        <div
+          className={`inline-flex items-center justify-center ${colorClasses[color]}`}
+        >
           <svg
             className="animate-spin"
             style={{ width: size, height: size }}
@@ -43,7 +45,7 @@ export const BackdropVista = ({
             <circle
               className="opacity-25"
               cx="12"
-              cy="12" 
+              cy="12"
               r="10"
               stroke="currentColor"
               strokeWidth="4"

@@ -74,7 +74,7 @@ export function ModulosDatatable() {
 
   const obtenerModulos = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/modulos`,
+      url: `${Constantes.authUrl}/autorizacion/modulos`,
       params: {
         pagina,
         limite,
@@ -89,7 +89,7 @@ export function ModulosDatatable() {
 
   const obtenerSecciones = async () => {
     const respuesta = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/modulos`,
+      url: `${Constantes.authUrl}/autorizacion/modulos`,
       params: {
         pagina: 1,
         limite: 20,

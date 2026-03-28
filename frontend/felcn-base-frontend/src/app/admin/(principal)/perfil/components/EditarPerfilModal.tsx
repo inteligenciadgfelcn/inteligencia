@@ -64,14 +64,17 @@ export const EditarPerfilModal = ({
   const onSubmit = async (values: FormValues) => {
     try {
       await sesionPeticion({
-        url: `${Constantes.baseUrl}/usuarios/cuenta/perfil`,
+        url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
         method: 'patch',
         body: values,
       })
 
       await actualizarPerfilCompleto()
 
-      Alerta({ mensaje: 'Perfil actualizado correctamente', variant: 'success' })
+      Alerta({
+        mensaje: 'Perfil actualizado correctamente',
+        variant: 'success',
+      })
       onClose()
     } catch (error) {
       Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
@@ -80,9 +83,7 @@ export const EditarPerfilModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-
       <div className="panel w-full max-w-xl animate__animated animate__zoomIn">
-
         {/* HEADER */}
         <div className="flex items-start justify-between border-b border-white-light dark:border-dark/50 pb-4 mb-6">
           <div>
@@ -103,18 +104,14 @@ export const EditarPerfilModal = ({
 
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
           {/* DATOS PERSONALES */}
           <div>
             <h6 className="font-semibold mb-3">Datos personales</h6>
 
             <div className="space-y-4">
-
               {/* NOMBRES */}
               <div>
-                <label className="mb-0 block text-white-dark">
-                  Nombres
-                </label>
+                <label className="mb-0 block text-white-dark">Nombres</label>
 
                 <div className="relative">
                   <IconUser className="absolute start-4 top-1/2 -translate-y-1/2 text-white-dark" />
@@ -125,14 +122,11 @@ export const EditarPerfilModal = ({
                   />
                 </div>
 
-                <p className="text-danger text-sm">
-                  {errors.nombres?.message}
-                </p>
+                <p className="text-danger text-sm">{errors.nombres?.message}</p>
               </div>
 
               {/* APELLIDOS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
                 <div>
                   <label className="mb-0 block text-white-dark">
                     Primer Apellido
@@ -160,9 +154,7 @@ export const EditarPerfilModal = ({
                     className="form-input"
                   />
                 </div>
-
               </div>
-
             </div>
           </div>
 
@@ -171,7 +163,6 @@ export const EditarPerfilModal = ({
             <h6 className="font-semibold mb-3">Contacto</h6>
 
             <div className="space-y-4">
-
               {/* EMAIL */}
               <div>
                 <label className="mb-0 block text-white-dark">
@@ -195,9 +186,7 @@ export const EditarPerfilModal = ({
 
               {/* TELEFONO */}
               <div>
-                <label className="mb-0 block text-white-dark">
-                  Teléfono
-                </label>
+                <label className="mb-0 block text-white-dark">Teléfono</label>
 
                 <div className="relative">
                   <IconPhone className="absolute start-4 top-1/2 -translate-y-1/2 text-white-dark" />
@@ -213,13 +202,11 @@ export const EditarPerfilModal = ({
                   {errors.telefono?.message}
                 </p>
               </div>
-
             </div>
           </div>
 
           {/* FOOTER */}
           <div className="flex justify-end gap-3 pt-6 border-t border-white-light dark:border-dark/50">
-
             <button
               type="button"
               className="btn btn-outline-danger"
@@ -237,11 +224,8 @@ export const EditarPerfilModal = ({
               <IconSave />
               {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
             </button>
-
           </div>
-
         </form>
-
       </div>
     </div>
   )

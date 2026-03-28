@@ -48,11 +48,10 @@ export function RolesDatatable() {
   const [openDetalle, setOpenDetalle] = useState(false)
   const [openEstado, setOpenEstado] = useState(false)
 
-  const [sortStatus, setSortStatus] =
-    useState<DataTableSortStatus>({
-      columnAccessor: 'rol',
-      direction: 'asc',
-    })
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
+    columnAccessor: 'rol',
+    direction: 'asc',
+  })
 
   /* PERMISOS */
 
@@ -69,7 +68,7 @@ export function RolesDatatable() {
 
   const obtenerRoles = async () => {
     const respuesta = await sesionPeticion({
-      url: `${Constantes.baseUrl}/autorizacion/roles/todos`,
+      url: `${Constantes.authUrl}/autorizacion/roles/todos`,
       params: {
         pagina,
         limite,
@@ -79,7 +78,6 @@ export function RolesDatatable() {
 
     return respuesta.datos
   }
-  
 
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['roles', pagina, limite, search],
@@ -95,14 +93,9 @@ export function RolesDatatable() {
   const filasOrdenadas = (() => {
     if (!filas.length) return filas
 
-    const sorted = sortBy(
-      filas,
-      sortStatus.columnAccessor as string
-    )
+    const sorted = sortBy(filas, sortStatus.columnAccessor as string)
 
-    return sortStatus.direction === 'desc'
-      ? sorted.reverse()
-      : sorted
+    return sortStatus.direction === 'desc' ? sorted.reverse() : sorted
   })()
 
   /* EXPORT */
@@ -134,9 +127,7 @@ export function RolesDatatable() {
       render: (row: RolCRUDType) => (
         <span
           className={`badge ${
-            row.estado === 'ACTIVO'
-              ? 'bg-success'
-              : 'bg-danger'
+            row.estado === 'ACTIVO' ? 'bg-success' : 'bg-danger'
           }`}
         >
           {row.estado}
@@ -173,11 +164,7 @@ export function RolesDatatable() {
 
           {permisos.update && (
             <button
-              aria-label={
-                row.estado === 'ACTIVO'
-                  ? 'Inactivar'
-                  : 'Activar'
-              }
+              aria-label={row.estado === 'ACTIVO' ? 'Inactivar' : 'Activar'}
               onClick={() => {
                 setSelected(row)
                 setOpenEstado(true)
@@ -185,9 +172,7 @@ export function RolesDatatable() {
             >
               <IconRefresh
                 className={`w-5 h-5 ${
-                  row.estado === 'ACTIVO'
-                    ? 'text-success'
-                    : 'text-danger'
+                  row.estado === 'ACTIVO' ? 'text-success' : 'text-danger'
                 }`}
               />
             </button>

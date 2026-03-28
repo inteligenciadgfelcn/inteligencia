@@ -1,6 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { FabricaModelo } from './fabrica-modelo.entity'
 
 /**
  * Entidad Fábrica/Laboratorio
@@ -22,9 +30,6 @@ export class Fabrica {
   @Column({ name: 'cantidad', type: 'integer' })
   cantidad: number
 
-  @Column({ name: 'observaciones', type: 'text', nullable: true })
-  observaciones?: string
-
   @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
   fechaHoraIngreso: Date
 
@@ -34,6 +39,10 @@ export class Fabrica {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => FabricaModelo)
+  @JoinColumn({ name: 'id_fabrica_modelo' })
+  fabricaModelo?: FabricaModelo
 
   @BeforeInsert()
   insertarFechaIngreso() {

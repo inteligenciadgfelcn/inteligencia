@@ -22,11 +22,14 @@ const nextConfig = {
 
     return config
   },
+  trailingSlash: true,
   output: 'standalone',
   eslint: {
     dirs: ['src', 'stories', 'test'],
   },
   images: {
+    loader: 'custom',
+    loaderFile: './src/imageLoader.ts',
     remotePatterns: process.env.NEXT_PUBLIC_IMAGES_DOMAIN
       ? process.env.NEXT_PUBLIC_IMAGES_DOMAIN.split(',').map((domain) => ({
           protocol: domain === 'localhost' ? 'http' : 'https',

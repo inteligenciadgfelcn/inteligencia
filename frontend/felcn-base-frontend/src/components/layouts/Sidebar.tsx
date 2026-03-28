@@ -11,6 +11,7 @@ import IconCaretDown from '@/components/Icon/IconCaretDown'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthProvider'
 import { menuIconMap } from '@/components/sidebar/menuIconMap'
+import { BASE_PATH } from '@/imageLoader'
 
 const Sidebar = () => {
   const { rolUsuario } = useAuth()
@@ -19,27 +20,27 @@ const Sidebar = () => {
   const modulosBackend = rolUsuario?.modulos || []
   const modulos = [
     ...modulosBackend,
-    {
-      id: 'operativo-module',
-      label: 'Operaciones',
-      propiedades: {
-        icono: 'widgets',
-        descripcion: 'Modulo de Operaciones',
-        orden: 99,
-      },
-      subModulo: [
-        {
-          id: 'formulario-operativo',
-          label: 'Formulario Operativo',
-          url: '/admin/operativo',
-          propiedades: {
-            icono: 'form',
-            descripcion: 'Formulario de registro operativo',
-            orden: 1,
-          },
-        },
-      ],
-    },
+    // {
+    //   id: 'operativo-module',
+    //   label: 'Operaciones',
+    //   propiedades: {
+    //     icono: 'widgets',
+    //     descripcion: 'Modulo de Operaciones',
+    //     orden: 99,
+    //   },
+    //   subModulo: [
+    //     {
+    //       id: 'formulario-operativo',
+    //       label: 'Formulario Operativo',
+    //       url: '/admin/operativo',
+    //       propiedades: {
+    //         icono: 'form',
+    //         descripcion: 'Formulario de registro operativo',
+    //         orden: 1,
+    //       },
+    //     },
+    //   ],
+    // },
   ]
 
   const pathname = usePathname()
@@ -105,7 +106,7 @@ const Sidebar = () => {
             <Link href="/" className="main-logo flex shrink-0 items-center">
               <img
                 className="ml-[5px] w-8 flex-none"
-                src="/assets/images/logo.svg"
+                src={`${BASE_PATH}/assets/images/logo.svg`}
                 alt="logo"
               />
               <span className="align-middle text-2xl font-semibold ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light lg:inline">

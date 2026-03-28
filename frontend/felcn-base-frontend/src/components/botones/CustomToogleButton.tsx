@@ -15,19 +15,19 @@ export const CustomToggleButton = ({
   icono,
   cambiar,
 }: BotonFiltroParams) => {
-
   // Tailwind classes mapping
-  const baseClasses = "inline-flex items-center justify-center rounded transition-colors duration-200 focus:outline-none border border-transparent";
+  const baseClasses =
+    'inline-flex items-center justify-center rounded transition-colors duration-200 focus:outline-none border border-transparent'
   const sizeClasses = {
-    small: "p-1.5",
-    medium: "p-2",
-    large: "p-3",
-  };
+    small: 'p-1.5',
+    medium: 'p-2',
+    large: 'p-3',
+  }
 
   // Selected state
   const selectedClasses = seleccionado
-    ? "bg-primary/10 text-primary hover:bg-primary/20"
-    : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400";
+    ? 'bg-primary/10 text-primary hover:bg-primary/20'
+    : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400'
 
   return (
     <button

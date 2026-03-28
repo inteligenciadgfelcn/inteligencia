@@ -59,10 +59,10 @@ export const FormInputDate = <
 }: FormDatePickerProps<TFieldValues, TName>) => {
   return (
     <div>
-      <InputLabel htmlFor={id}>
+      <InputLabel htmlFor={id} sx={{ mb: 0 }}>
         <Typography
           variant={labelVariant}
-          sx={{ color: 'text.primary', fontWeight: '500' }}
+          sx={{ pb: 0, color: 'text.primary', fontWeight: '500' }}
         >
           {label}
         </Typography>

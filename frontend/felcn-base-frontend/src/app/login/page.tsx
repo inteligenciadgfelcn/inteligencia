@@ -19,7 +19,7 @@ export default function LoginPage() {
     await delay(800)
 
     const respuesta = await Servicios.get({
-      url: `${Constantes.baseUrl}/estado`,
+      url: `${Constantes.authUrl}/estado`,
       body: {},
       headers: {
         accept: 'application/json',
@@ -48,7 +48,7 @@ export default function LoginPage() {
         variant: 'error',
       })
     }
-  }, [error,Alerta])
+  }, [error, Alerta])
 
   return (
     <LoginCoverVristo>

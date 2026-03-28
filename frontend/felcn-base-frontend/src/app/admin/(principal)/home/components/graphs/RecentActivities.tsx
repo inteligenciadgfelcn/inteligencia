@@ -74,7 +74,7 @@ export default function RecentActivities() {
         queryKey: ['usuarios'],
         queryFn: () =>
           sesionPeticion<UsuariosResponse>({
-            url: `${Constantes.baseUrl}/usuarios`,
+            url: `${Constantes.authUrl}/usuarios`,
             method: 'get',
             params: { limite: 10, pagina: 1, orden: '-fechaCreacion' },
           }),
@@ -86,7 +86,7 @@ export default function RecentActivities() {
         queryKey: ['roles'],
         queryFn: () =>
           sesionPeticion<RolesResponse>({
-            url: `${Constantes.baseUrl}/autorizacion/roles/todos`,
+            url: `${Constantes.authUrl}/autorizacion/roles/todos`,
             method: 'get',
             params: { limite: 10, pagina: 1, orden: '-fechaCreacion' },
           }),
@@ -98,7 +98,7 @@ export default function RecentActivities() {
         queryKey: ['modulos'],
         queryFn: () =>
           sesionPeticion<ModulosResponse>({
-            url: `${Constantes.baseUrl}/autorizacion/modulos`,
+            url: `${Constantes.authUrl}/autorizacion/modulos`,
             method: 'get',
             params: { limite: 10, pagina: 1, orden: '-fechaCreacion' },
           }),
@@ -108,10 +108,9 @@ export default function RecentActivities() {
     return configs
   }, [permissions, sesionPeticion])
 
-const queries = useQueries({
-  queries: queryConfigs,
-}) as any[]
-
+  const queries = useQueries({
+    queries: queryConfigs,
+  }) as any[]
 
   /* ------------------- CONSTRUIR ACTIVIDADES ------------------- */
 
@@ -119,7 +118,7 @@ const queries = useQueries({
     if (queries.some((q) => q.isLoading)) return []
 
     const all = queries.flatMap((query, index) => {
-    const filas = (query.data as any)?.datos?.filas || []
+      const filas = (query.data as any)?.datos?.filas || []
 
       if (!filas.length) return []
 

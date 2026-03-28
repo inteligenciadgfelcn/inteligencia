@@ -2,6 +2,8 @@ import { env } from 'next-runtime-env'
 
 export const Constantes = {
   baseUrl: env('NEXT_PUBLIC_BASE_URL') ?? '',
+  authUrl: env('NEXT_PUBLIC_AUTH_URL') ?? '',
+  baseApiUrl: env('NEXT_PUBLIC_BASE_API_URL') ?? '',
   siteName: env('NEXT_PUBLIC_SITE_NAME') ?? '',
   sitePath: env('NEXT_PUBLIC_PATH') ?? '',
   appEnv: env('NEXT_PUBLIC_APP_ENV') ?? '',

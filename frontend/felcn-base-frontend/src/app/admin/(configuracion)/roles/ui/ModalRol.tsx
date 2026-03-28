@@ -37,12 +37,7 @@ interface Props {
 
 /* ================= COMPONENT ================= */
 
-export const ModalRol = ({
-  isOpen,
-  onClose,
-  rol,
-  onSuccess,
-}: Props) => {
+export const ModalRol = ({ isOpen, onClose, rol, onSuccess }: Props) => {
   const [loading, setLoading] = useState(false)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
@@ -69,7 +64,7 @@ export const ModalRol = ({
       setLoading(true)
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/autorizacion/roles${
+        url: `${Constantes.authUrl}/autorizacion/roles${
           rol ? `/${rol.id}` : ''
         }`,
         method: rol ? 'patch' : 'post',
@@ -101,7 +96,6 @@ export const ModalRol = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white dark:bg-black w-full max-w-lg rounded-lg shadow-lg">
-
         {/* HEADER */}
         <div className="flex justify-between items-center px-5 py-4 border-b dark:border-gray-700">
           <div>
@@ -120,9 +114,7 @@ export const ModalRol = ({
 
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)}>
-
           <div className="p-5 grid grid-cols-1 gap-4">
-
             <FormInput
               label="Rol"
               name="rol"
@@ -148,14 +140,12 @@ export const ModalRol = ({
               error={errors.descripcion?.message}
               disabled={loading}
             />
-
           </div>
 
           <ProgresoLineal mostrar={loading} />
 
           {/* FOOTER */}
           <div className="flex justify-end gap-3 px-5 py-4 border-t dark:border-gray-700">
-
             <button
               type="button"
               onClick={onClose}
@@ -172,11 +162,8 @@ export const ModalRol = ({
             >
               Guardar Cambios
             </button>
-
           </div>
-
         </form>
-
       </div>
     </div>
   )

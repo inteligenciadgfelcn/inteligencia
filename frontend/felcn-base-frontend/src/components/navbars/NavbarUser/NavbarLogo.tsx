@@ -19,9 +19,7 @@ export const NavbarLogo: React.FC = () => {
         className="w-auto h-auto max-w-full"
       />
       <div className="px-0.5" />
-      <div
-        className="text-gray-900 dark:text-gray-100 font-semibold text-lg"
-      >
+      <div className="text-gray-900 dark:text-gray-100 font-semibold text-lg">
         {siteName()}
       </div>
     </div>

@@ -13,17 +13,35 @@ const AppMenuHorizontal = () => {
   const [openMenu, setOpenMenu] = useState<string>('')
 
   const modulos = rolUsuario?.modulos || []
+  const modulosConAsignaciones = [
+    ...modulos,
+    {
+      id: 'temporal-operaciones',
+      label: 'Operaciones',
+      propiedades: {
+        icono: 'task',
+      },
+      subModulo: [
+        {
+          id: 'temporal-asignaciones',
+          label: 'Asignaciones',
+          url: '/operaciones/operativo/asignaciones',
+          propiedades: {
+            icono: 'grid_on',
+          },
+        },
+      ],
+    },
+  ]
 
   return (
     <>
-      {modulos.map((modulo: any) => {
+      {modulosConAsignaciones.map((modulo: any) => {
         const Icon =
-          menuIconMap[modulo.propiedades?.icono] ||
-          menuIconMap.default
+          menuIconMap[modulo.propiedades?.icono] || menuIconMap.default
 
         return (
           <li key={modulo.id} className="menu nav-item relative">
-
             {/* BOTON PRINCIPAL */}
             <button
               type="button"
@@ -50,8 +68,7 @@ const AppMenuHorizontal = () => {
             >
               {modulo.subModulo.map((sub: any) => {
                 const SubIcon =
-                  menuIconMap[sub.propiedades?.icono] ||
-                  menuIconMap.default
+                  menuIconMap[sub.propiedades?.icono] || menuIconMap.default
 
                 return (
                   <li key={sub.id}>
@@ -61,16 +78,13 @@ const AppMenuHorizontal = () => {
                     >
                       <div className="flex items-center">
                         <SubIcon className="shrink-0" />
-                        <span className="ltr:pl-3 rtl:pr-3">
-                          {sub.label}
-                        </span>
+                        <span className="ltr:pl-3 rtl:pr-3">{sub.label}</span>
                       </div>
                     </Link>
                   </li>
                 )
               })}
             </ul>
-
           </li>
         )
       })}
