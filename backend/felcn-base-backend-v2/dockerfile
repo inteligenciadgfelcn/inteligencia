@@ -1,61 +1,47 @@
-FROM node:22-slim AS build
+# ----------- BUILD -----------
+FROM node:22-alpine AS build
 WORKDIR /home/node/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ libvips-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
 COPY package*.json ./
-
-RUN npm install --progress=false --no-audit
+RUN npm ci --prefer-offline --no-audit
 
 COPY . .
-
 RUN node --run build
 
-FROM node:22-slim AS prod-deps
+
+# ----------- PROD DEPS -----------
+FROM node:22-alpine AS prod-deps
 WORKDIR /home/node/app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ libvips-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 COPY package*.json ./
-RUN npm install --omit=dev --progress=false --no-audit
+RUN npm ci --omit=dev --prefer-offline --no-audit
 
-FROM node:22-slim AS release
+
+# ----------- FINAL -----------
+FROM node:22-alpine AS app
 WORKDIR /home/node/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libvips \
-    chromium \
-    libnss3 \
-    libfreetype6 \
-    libharfbuzz0b \
-    ca-certificates \
-    fonts-freefont-ttf \
-    && rm -rf /var/lib/apt/lists/*
+# 👇 crear carpeta de logs con permisos correctos
+RUN mkdir -p /tmp/logs && chown -R node:node /tmp/logs
 
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+# copiar solo lo necesario
+COPY --from=prod-deps /home/node/app/node_modules ./node_modules
+COPY --from=build /home/node/app/dist ./dist
 
-RUN chown -R node:node /home/node/app
-
-COPY --from=prod-deps --chown=node:node /home/node/app/node_modules ./node_modules
-COPY --from=build --chown=node:node /home/node/app/dist ./dist
-
+# metadata (opcional)
 ARG CI_COMMIT_SHORT_SHA
 ARG CI_COMMIT_MESSAGE
 ARG CI_COMMIT_REF_NAME
-ENV CI_COMMIT_SHORT_SHA=${CI_COMMIT_SHORT_SHA} \
-    CI_COMMIT_MESSAGE=${CI_COMMIT_MESSAGE} \
-    CI_COMMIT_REF_NAME=${CI_COMMIT_REF_NAME}
 
-FROM release AS app
+ENV CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA \
+    CI_COMMIT_MESSAGE=$CI_COMMIT_MESSAGE \
+    CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME \
+    NODE_ENV=production
+
+# seguridad
 USER node
-CMD ["sh", "-c", "node dist/src/main"]
+
 EXPOSE 3000
+
+# 👇 más limpio que usar sh -c
+CMD ["node", "dist/src/main"]
