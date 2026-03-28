@@ -11,6 +11,7 @@ import { DatosFamiliaresRepository } from './repository/datos_familiares.reposit
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { CreateDatosFamiliaresDto } from './dto/create-datos_familiare.dto'
 import { UpdateDatosFamiliaresDto } from './dto/update-datos_familiare.dto'
+import { Parentezco } from '../parametricas/parentezco/entities/parentezco.entity'
 
 @Injectable()
 export class DatosFamiliaresService {
@@ -18,7 +19,10 @@ export class DatosFamiliaresService {
     private readonly datosFamiliaresRepository: DatosFamiliaresRepository,
 
     @InjectRepository(Detenido, DB_SII)
-    private readonly detenidoRepository: Repository<Detenido>
+    private readonly detenidoRepository: Repository<Detenido>,
+
+     @InjectRepository(Parentezco, DB_SII)
+    private readonly parentezcoRepository: Repository<Parentezco>
   ) {}
 
  async create(dto: CreateDatosFamiliaresDto) {
@@ -30,9 +34,17 @@ export class DatosFamiliaresService {
     throw new BadRequestException('Detenido no válido o inactivo')
   }
 
+  const parentezco = await this.parentezcoRepository.findOne({
+  where: { idParentezco: dto.idParentezco },
+})
+if (!parentezco) {
+  throw new BadRequestException('Parentezco no válido')
+}
+
   const familiar = this.datosFamiliaresRepository.create({
     ...dto,
     detenido: detenido,
+     parentezco: parentezco,
   })
 
   await this.datosFamiliaresRepository.save(familiar) 

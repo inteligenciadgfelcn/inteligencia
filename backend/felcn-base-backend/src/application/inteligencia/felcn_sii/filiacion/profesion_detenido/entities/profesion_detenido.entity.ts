@@ -17,7 +17,7 @@ export class ProfesionDetenido {
   })
   idProfesionDetenido: number
 
-  @ManyToOne(() => Detenido)
+  @ManyToOne(() => Detenido, (d) => d.profesiones)
   @JoinColumn({ name: 'id_detenido' })
   detenido: Detenido
 
