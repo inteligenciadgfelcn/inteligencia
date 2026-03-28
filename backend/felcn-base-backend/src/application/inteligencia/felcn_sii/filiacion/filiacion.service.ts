@@ -164,4 +164,8 @@ export class FiliacionService {
   async obtenerPersona(id: number) {
     return this.personasRepository.obtenerPersona(id)
   }
+
+   async obtenerDetenido(id: number) {
+    return this.filiacionRepository.obtenerDetenido(id)
+  }
 }

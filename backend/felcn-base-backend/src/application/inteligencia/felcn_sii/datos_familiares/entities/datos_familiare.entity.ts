@@ -34,6 +34,7 @@ export class DatosFamiliares {
 
   @Column({
     type: 'varchar',
+      name: 'nombres',
     length: 150,
     nullable: false,
     comment: 'Nombres del familiar',
@@ -42,6 +43,7 @@ export class DatosFamiliares {
 
   @Column({
     type: 'varchar',
+      name: 'apellido_paterno',
     length: 100,
     nullable: true,
     comment: 'Apellido paterno',
@@ -50,6 +52,7 @@ export class DatosFamiliares {
 
   @Column({
     type: 'varchar',
+      name: 'apellido_materno',
     length: 100,
     nullable: true,
     comment: 'Apellido materno',
@@ -127,6 +130,7 @@ export class DatosFamiliares {
   fechaActualizacion: Date
 
   @Column({
+     
     type: 'varchar',
     length: 50,
     name: 'usuario_actualizado',

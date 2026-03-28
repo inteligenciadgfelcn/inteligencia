@@ -68,4 +68,15 @@ export class FiliacionController extends BaseController {
   async obtenerPersona(@Param('id', ParseIntPipe) id: number) {
     return await this.filiacionService.obtenerPersona(id)
   }
+
+  @Get('detenido/:id')
+  @ApiOperation({ summary: 'Obtener información de un detenido' })
+  @ApiParam({
+    name: 'id',
+    example: 154569,
+    description: 'ID del detenido',
+  })
+  async obtenerDetenido(@Param('id', ParseIntPipe) id: number) {
+    return await this.filiacionService.obtenerDetenido(id)
+  }
 }
