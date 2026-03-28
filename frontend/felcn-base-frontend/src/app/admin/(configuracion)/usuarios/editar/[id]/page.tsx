@@ -7,10 +7,10 @@ export const metadata: Metadata = {
   description: 'Editar usuario existente',
 }
 
-export default async function EditarUsuarioPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+export default async function EditarUsuarioPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
 }) {
   const { id } = await params
   return <FormularioUsuario usuarioId={id} />

@@ -8,11 +8,11 @@ export default function LoginLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <title>{`${siteName()}`}</title>
-        <Box component="main">
-          <Suspense fallback={<FullScreenLoading mensaje={'Cargando...'} />}>
-            {children}
-          </Suspense>
-        </Box>
+      <Box component="main">
+        <Suspense fallback={<FullScreenLoading mensaje={'Cargando...'} />}>
+          {children}
+        </Suspense>
+      </Box>
     </>
   )
 }

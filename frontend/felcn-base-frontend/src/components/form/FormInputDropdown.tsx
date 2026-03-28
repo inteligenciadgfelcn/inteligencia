@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   Control,
   Controller,
@@ -5,19 +6,7 @@ import {
   FieldValues,
   PathValue,
 } from 'react-hook-form'
-import {
-  FormHelperText,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Typography,
-} from '@mui/material'
 import { RegisterOptions } from 'react-hook-form/dist/types/validator'
-import React from 'react'
-import { Variant } from '@mui/material/styles/createTypography'
-import { Icono } from '@/components/Icono'
 
 export interface optionType {
   id: string
@@ -39,11 +28,11 @@ type FormInputDropdownProps<
     'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
   >
   disabled?: boolean
-  onChange?: (event: SelectChangeEvent) => void
+  onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void
   clearable?: boolean
   bgcolor?: string
   options: optionType[]
-  labelVariant?: Variant
+  labelVariant?: any // ignored in Vristo tailwind implementation
 }
 
 export const FormInputDropdown = <
@@ -61,70 +50,54 @@ export const FormInputDropdown = <
   options,
   clearable,
   bgcolor,
-  labelVariant = 'subtitle2',
 }: FormInputDropdownProps<TFieldValues, TName>) => {
-  const generateSelectOptions = () =>
-    options.map((option) => (
-      <MenuItem key={option.id} value={option.value}>
-        {option.label}
-      </MenuItem>
-    ))
-
   return (
-    <div>
-      <InputLabel htmlFor={id}>
-        <Typography
-          variant={labelVariant}
-          sx={{ pb: 1, color: 'text.primary', fontWeight: '600' }}
-        >
-          {label}
-        </Typography>
-      </InputLabel>
+    <div className="w-full relative">
+      <label htmlFor={id} className="mb-1 block text-sm font-medium">
+        {label}
+      </label>
       <Controller
         name={name}
         control={control}
         render={({ field, fieldState: { error } }) => (
           <>
-            <Select
+            <select
               id={id}
-              name={name}
-              sx={{
-                width: '100%',
-                bgcolor: bgcolor,
-                '& .MuiSelect-iconOutlined': {
-                  display: field.value && clearable ? 'none' : '',
-                },
-                '&.Mui-focused .MuiIconButton-root': { color: 'primary.main' },
-              }}
-              variant={'outlined'}
-              size={size}
-              error={!!error}
+              className={`form-select w-full ${error ? '!border-danger' : ''} ${size === 'small' ? 'py-2 text-sm' : ''}`}
               disabled={disabled}
+              value={field.value ?? ''}
               onChange={(event) => {
                 if (onChange) {
                   onChange(event)
                 }
                 field.onChange(event)
               }}
-              inputRef={field.ref}
-              value={field.value}
-              endAdornment={
-                field.value && clearable ? (
-                  <IconButton
-                    sx={{ display: field.value ? '' : 'none' }}
-                    onClick={() => {
-                      field.onChange('')
-                    }}
-                    color={'primary'}
-                  >
-                    <Icono color={'primary'}>clear</Icono>
-                  </IconButton>
-                ) : undefined
-              }
+              ref={field.ref}
+              style={bgcolor ? { backgroundColor: bgcolor } : undefined}
             >
-              {generateSelectOptions()}
-            </Select>
-            {!!error && <FormHelperText error>{error?.message}</FormHelperText>}
+              <option value="" disabled className="text-gray-400">
+                Seleccione un dato
+              </option>
+              {options.map((option) => (
+                <option key={option.id} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {field.value && clearable && !disabled && (
+              <button
+                type="button"
+                className="absolute right-8 top-[32px] text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                onClick={() => field.onChange('')}
+              >
+                ✕
+              </button>
+            )}
+            {!!error && (
+              <span className="mt-1 block text-xs text-danger">
+                {error?.message}
+              </span>
+            )}
           </>
         )}
         defaultValue={'' as PathValue<TFieldValues, TName>}

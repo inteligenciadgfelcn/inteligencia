@@ -12,7 +12,6 @@ import {
 import { Constantes } from '@/config/Constantes'
 import VristoStatCard from './VristoStatCard'
 
-
 export default function DashboardSummary() {
   const { usuario, permisoAccion } = useAuth()
   const { sesionPeticion } = useSession()
@@ -82,7 +81,7 @@ export default function DashboardSummary() {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <VristoStatCard
             title="Total de Usuarios"
-            value={isLoadingUsers ? '...' : usersData?.datos.total ?? 'N/A'}
+            value={isLoadingUsers ? '...' : (usersData?.datos.total ?? 'N/A')}
             icon="users"
             color="#4361ee"
           />
@@ -93,7 +92,7 @@ export default function DashboardSummary() {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <VristoStatCard
             title="Total de Roles"
-            value={isLoadingRoles ? '...' : rolesData?.datos?.total ?? 'N/A'}
+            value={isLoadingRoles ? '...' : (rolesData?.datos?.total ?? 'N/A')}
             icon="verified_user"
             color="#00ab55"
           />
@@ -104,7 +103,9 @@ export default function DashboardSummary() {
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <VristoStatCard
             title="Total de Módulos"
-            value={isLoadingModules ? '...' : modulesData?.datos.total ?? 'N/A'}
+            value={
+              isLoadingModules ? '...' : (modulesData?.datos.total ?? 'N/A')
+            }
             icon="widgets"
             color="#e7515a"
           />

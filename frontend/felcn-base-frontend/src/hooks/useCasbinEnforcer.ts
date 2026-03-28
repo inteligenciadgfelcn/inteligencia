@@ -69,12 +69,18 @@ export const useCasbinEnforcer = () => {
     enforcer,
     rol,
   }: InterpretarPermisoParams) => {
+    // Next.js con trailingSlash:true agrega '/' al final — normalizamos para que keyMatch2 coincida
+    const ruta =
+      routerName.length > 1 && routerName.endsWith('/')
+        ? routerName.slice(0, -1)
+        : routerName
+
     return {
       read: await verificarAutorizacion({
         enforcer: enforcer,
         politica: {
           sujeto: rol ?? '',
-          objeto: routerName,
+          objeto: ruta,
           accion: 'read',
         },
       }),
@@ -82,7 +88,7 @@ export const useCasbinEnforcer = () => {
         enforcer: enforcer,
         politica: {
           sujeto: rol ?? '',
-          objeto: routerName,
+          objeto: ruta,
           accion: 'create',
         },
       }),
@@ -90,7 +96,7 @@ export const useCasbinEnforcer = () => {
         enforcer: enforcer,
         politica: {
           sujeto: rol ?? '',
-          objeto: routerName,
+          objeto: ruta,
           accion: 'update',
         },
       }),
@@ -98,7 +104,7 @@ export const useCasbinEnforcer = () => {
         enforcer: enforcer,
         politica: {
           sujeto: rol ?? '',
-          objeto: routerName,
+          objeto: ruta,
           accion: 'delete',
         },
       }),

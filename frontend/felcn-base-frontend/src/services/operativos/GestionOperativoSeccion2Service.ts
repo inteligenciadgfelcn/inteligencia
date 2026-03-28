@@ -2,20 +2,22 @@ import { Constantes } from '@/config/Constantes'
 import { Servicios } from '@/services'
 import type { RespuestaApi, SeccionPayload } from './types'
 
-const BASE = `${Constantes.baseUrl}/gestion-operativo`
+const BASE = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoSeccion2Service = {
-    obtener(idGestionOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.get({ url: `${BASE}/${idGestionOperativo}/seccion-2` })
-    },
+  obtener(idOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
+    return Servicios.get({
+      url: `${BASE}/${idOperativo}/seccion2`,
+    })
+  },
 
-    guardar(
-        idGestionOperativo: number,
-        payload: SeccionPayload
-    ): Promise<RespuestaApi<SeccionPayload>> {
-        return Servicios.post({
-            url: `${BASE}/${idGestionOperativo}/seccion-2`,
-            body: payload,
-        })
-    },
+  guardar(
+    idOperativo: number,
+    payload: SeccionPayload
+  ): Promise<RespuestaApi<SeccionPayload>> {
+    return Servicios.post({
+      url: `${BASE}/${idOperativo}/seccion2`,
+      body: payload,
+    })
+  },
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { DataTableSortStatus } from 'mantine-datatable'
 
 import IconFile from '@/components/Icon/IconFile'
@@ -13,6 +13,14 @@ export interface Column<T> {
   title: string
   render?: (row: T) => React.ReactNode
   sortable?: boolean
+  className?: string
+}
+
+interface RowExpansion<T> {
+  idField: keyof T
+  expandedIds: (string | number)[]
+  onExpandChange: (ids: (string | number)[]) => void
+  renderContent: (row: T) => React.ReactNode
 }
 
 interface Props<T> {
@@ -27,8 +35,8 @@ interface Props<T> {
   onPageChange: (p: number) => void
   onLimitChange: (l: number) => void
 
-  search: string
-  onSearchChange: (v: string) => void
+  search?: string
+  onSearchChange?: (v: string) => void
 
   onExportCSV?: () => void
   onExportExcel?: () => void
@@ -41,6 +49,8 @@ interface Props<T> {
 
   sortStatus?: DataTableSortStatus
   onSortStatusChange?: (v: DataTableSortStatus) => void
+
+  rowExpansion?: RowExpansion<T>
 }
 
 /* COMPONENTE */
@@ -63,8 +73,31 @@ export function VristoDataTable<T>({
   extraButtons,
   sortStatus,
   onSortStatusChange,
+  rowExpansion,
 }: Props<T>) {
   const totalPages = Math.ceil(total / limit)
+
+  const toggleExpand = (id: string | number) => {
+    if (!rowExpansion) return
+    const { expandedIds, onExpandChange } = rowExpansion
+    if (expandedIds.includes(id)) {
+      onExpandChange(expandedIds.filter((eid) => eid !== id))
+    } else {
+      onExpandChange([...expandedIds, id])
+    }
+  }
+
+  const isExpanded = (id: string | number) => {
+    return rowExpansion?.expandedIds.includes(id) ?? false
+  }
+
+  const getRowId = (row: T): string | number => {
+    if (!rowExpansion) return ''
+    const id = row[rowExpansion.idField]
+    return typeof id === 'string' || typeof id === 'number' ? id : ''
+  }
+
+  const totalColumns = rowExpansion ? columns.length + 1 : columns.length
 
   return (
     <div>
@@ -76,72 +109,73 @@ export function VristoDataTable<T>({
       )}
 
       <div className="panel mt-6">
-
         {/* TOOLBAR */}
-        <div className="mb-4.5 flex flex-col justify-between gap-5 md:flex-row md:items-center">
+        {(onExportCSV ||
+          onExportExcel ||
+          onExportPrint ||
+          extraButtons ||
+          onSearchChange) && (
+          <div className="mb-4.5 flex flex-col justify-between gap-5 md:flex-row md:items-center">
+            <div className="flex flex-wrap items-center">
+              {onExportCSV && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm m-1"
+                  onClick={onExportCSV}
+                >
+                  <IconFile className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                  CSV
+                </button>
+              )}
 
-          <div className="flex flex-wrap items-center">
+              {onExportExcel && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm m-1"
+                  onClick={onExportExcel}
+                >
+                  <IconFile className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                  EXCEL
+                </button>
+              )}
 
-            {onExportCSV && (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm m-1"
-                onClick={onExportCSV}
-              >
-                <IconFile className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-                CSV
-              </button>
+              {onExportPrint && (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm m-1"
+                  onClick={onExportPrint}
+                >
+                  <IconPrinter className="ltr:mr-2 rtl:ml-2" />
+                  PRINT
+                </button>
+              )}
+
+              {extraButtons}
+            </div>
+
+            {onSearchChange && (
+              <input
+                type="text"
+                className="form-input w-auto"
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => {
+                  onSearchChange(e.target.value)
+                  onPageChange(1)
+                }}
+              />
             )}
-
-            {onExportExcel && (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm m-1"
-                onClick={onExportExcel}
-              >
-                <IconFile className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-                EXCEL
-              </button>
-            )}
-
-            {onExportPrint && (
-              <button
-                type="button"
-                className="btn btn-primary btn-sm m-1"
-                onClick={onExportPrint}
-              >
-                <IconPrinter className="ltr:mr-2 rtl:ml-2" />
-                PRINT
-              </button>
-            )}
-
-            {extraButtons}
-
           </div>
-
-          <input
-            type="text"
-            className="form-input w-auto"
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => {
-              onSearchChange(e.target.value)
-              onPageChange(1)
-            }}
-          />
-
-        </div>
+        )}
 
         {/* TABLA */}
         <div className="table-responsive">
-
           <table className="table-hover whitespace-nowrap">
-
             <thead>
               <tr>
+                {rowExpansion && <th className="w-10"></th>}
                 {columns.map((c) => {
-                  const active =
-                    sortStatus?.columnAccessor === c.accessor
+                  const active = sortStatus?.columnAccessor === c.accessor
 
                   return (
                     <th
@@ -152,17 +186,15 @@ export function VristoDataTable<T>({
                         onSortStatusChange({
                           columnAccessor: c.accessor as string,
                           direction:
-                            active &&
-                            sortStatus?.direction === 'asc'
+                            active && sortStatus?.direction === 'asc'
                               ? 'desc'
                               : 'asc',
                         })
                       }
-                      className={
-                        c.sortable
-                          ? 'cursor-pointer select-none'
-                          : ''
-                      }
+                      className={`
+                        ${c.sortable ? 'cursor-pointer select-none' : ''}
+                        ${c.className || ''}
+                      `}
                     >
                       <div className="flex items-center gap-1">
                         {c.title}
@@ -184,10 +216,9 @@ export function VristoDataTable<T>({
             </thead>
 
             <tbody>
-
               {loading && (
                 <tr>
-                  <td colSpan={columns.length}>
+                  <td colSpan={totalColumns} className="text-center">
                     Cargando...
                   </td>
                 </tr>
@@ -195,36 +226,78 @@ export function VristoDataTable<T>({
 
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={columns.length}>
+                  <td colSpan={totalColumns} className="text-center">
                     Sin registros
                   </td>
                 </tr>
               )}
 
               {!loading &&
-                rows.map((row, i) => (
-                  <tr key={i}>
-                    {columns.map((c) => (
-                      <td key={String(c.accessor)}>
-                        {c.render
-                          ? c.render(row)
-                          : String(
-                              (row as any)[c.accessor] ?? ''
-                            )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
+                rows.map((row, i) => {
+                  const rowId = getRowId(row)
+                  const expanded = isExpanded(rowId)
 
+                  return (
+                    <React.Fragment key={i}>
+                      <tr
+                        className={
+                          expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''
+                        }
+                      >
+                        {rowExpansion && (
+                          <td className="w-10">
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(rowId)}
+                              className="flex items-center justify-center w-6 h-6 text-gray-400 hover:text-primary transition-transform duration-200"
+                            >
+                              <svg
+                                className={`h-4 w-4 transition-transform duration-200 ${
+                                  expanded ? 'rotate-180 text-primary' : ''
+                                }`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          </td>
+                        )}
+                        {columns.map((c) => (
+                          <td
+                            key={String(c.accessor)}
+                            className={c.className || ''}
+                          >
+                            {c.render
+                              ? c.render(row)
+                              : String((row as any)[c.accessor] ?? '')}
+                          </td>
+                        ))}
+                      </tr>
+                      {rowExpansion && expanded && (
+                        <tr>
+                          <td colSpan={totalColumns} className="p-0">
+                            <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30">
+                              {rowExpansion.renderContent(row)}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
             </tbody>
-
           </table>
-
         </div>
 
         {/* PAGINADOR */}
         <div className="mt-4 flex items-center justify-between">
-
           <div className="flex items-center gap-3 text-sm">
             <span>
               Mostrando del {(page - 1) * limit + 1} al{' '}
@@ -248,7 +321,6 @@ export function VristoDataTable<T>({
           </div>
 
           <ul className="inline-flex items-center gap-1">
-
             <li>
               <button
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f3f4f6] text-gray-600 hover:bg-primary hover:text-white disabled:opacity-50"
@@ -288,11 +360,8 @@ export function VristoDataTable<T>({
                 ›
               </button>
             </li>
-
           </ul>
-
         </div>
-
       </div>
     </div>
   )

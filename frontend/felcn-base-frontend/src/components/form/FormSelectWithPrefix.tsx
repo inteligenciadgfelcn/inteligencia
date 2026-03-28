@@ -123,7 +123,9 @@ const SelectWithPrefix: React.FC<SelectWithPrefixProps> = ({
                     field.value
                       ? {
                           value: field.value,
-                          label: optionsCache[field.value].toUpperCase() || field.value.toUpperCase(),
+                          label:
+                            optionsCache[field.value].toUpperCase() ||
+                            field.value.toUpperCase(),
                         }
                       : null
                   }

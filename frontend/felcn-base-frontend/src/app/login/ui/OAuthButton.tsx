@@ -27,7 +27,6 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
   imageSize = 35,
   children,
 }) => {
-
   return (
     <button
       type="button"
@@ -52,17 +51,11 @@ export const OAuthButton: React.FC<OAuthButtonProps> = ({
         />
       </div>
 
-      {startIcon && (
-        <div className="flex items-center">{startIcon}</div>
-      )}
+      {startIcon && <div className="flex items-center">{startIcon}</div>}
 
-      <span className="flex-1 font-medium text-left">
-        {text}
-      </span>
+      <span className="flex-1 font-medium text-left">{text}</span>
 
-      {endIcon && (
-        <div className="flex items-center">{endIcon}</div>
-      )}
+      {endIcon && <div className="flex items-center">{endIcon}</div>}
 
       {children}
     </button>

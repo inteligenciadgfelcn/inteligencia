@@ -19,7 +19,11 @@ export default function UserRoleDistribution() {
 
   /* ---------------- DATA ---------------- */
 
-  const { data: userData, isLoading, error } = useQuery({
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['userRoles'],
     queryFn: async () => {
       const response = await sesionPeticion<UsuariosResponse>({

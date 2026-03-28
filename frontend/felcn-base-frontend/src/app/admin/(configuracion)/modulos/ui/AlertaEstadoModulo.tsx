@@ -61,12 +61,9 @@ export const AlertaEstadoModulo = ({
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
       <div className="panel w-full max-w-lg p-5 animate__animated animate__zoomIn">
-
         {/* HEADER */}
         <div className="mb-3">
-          <h5 className="text-lg font-semibold">
-            Confirmar cambio de estado
-          </h5>
+          <h5 className="text-lg font-semibold">Confirmar cambio de estado</h5>
         </div>
 
         {/* BODY */}
@@ -93,7 +90,6 @@ export const AlertaEstadoModulo = ({
 
         {/* FOOTER */}
         <div className="mt-6 flex justify-end gap-3">
-
           <button
             className="btn btn-outline-primary"
             onClick={onClose}
@@ -109,9 +105,7 @@ export const AlertaEstadoModulo = ({
           >
             Confirmar
           </button>
-
         </div>
-
       </div>
     </div>
   )

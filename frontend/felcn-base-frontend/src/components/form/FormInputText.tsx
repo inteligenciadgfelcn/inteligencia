@@ -25,7 +25,9 @@ type FormInputTextProps<
     'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'
   >
   disabled?: boolean
-  onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void
   onEnter?: () => void
   clearable?: boolean
   variant?: 'standard' | 'outlined' | 'filled'
@@ -57,8 +59,11 @@ export const FormInputText = <
   const handleClickShowPassword = () => setShowPassword(!showPassword)
 
   return (
-    <div className={multiline ? "" : "custom-file-container"}>
-      <label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-400 mb-1 block">
+    <div className={`w-full ${multiline ? '' : 'custom-file-container'}`}>
+      <label
+        htmlFor={id}
+        className="mb-0 block text-sm font-semibold !text-gray-900 dark:!text-gray-200"
+      >
         {label}
       </label>
       <Controller
@@ -70,12 +75,12 @@ export const FormInputText = <
               <textarea
                 id={id}
                 rows={rows}
-                className={`form-textarea w-full ${error ? '!border-danger' : ''}`}
+                className={`form-textarea w-full !max-w-none ${error ? '!border-danger' : ''}`}
                 disabled={disabled}
                 {...field}
                 onChange={(e) => {
-                  if (onChange) onChange(e);
-                  field.onChange(e);
+                  if (onChange) onChange(e)
+                  field.onChange(e)
                 }}
               />
             ) : (
@@ -84,17 +89,17 @@ export const FormInputText = <
                   id={id}
                   type={showPassword ? 'text' : type}
                   size={size === 'small' ? 'sm' : 'md'}
-                  className="w-full"
+                  className="w-full !max-w-none"
                   error={!!error}
                   disabled={disabled}
                   {...field}
                   onChange={(e) => {
-                    if (onChange) onChange(e);
-                    field.onChange(e);
+                    if (onChange) onChange(e)
+                    field.onChange(e)
                   }}
                   onKeyUp={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey && onEnter) {
-                      onEnter();
+                      onEnter()
                     }
                   }}
                 />
@@ -125,7 +130,9 @@ export const FormInputText = <
             )}
 
             {!!error && (
-              <span className="text-xs text-danger mt-1 block">{error?.message}</span>
+              <span className="text-xs text-danger mt-1 block">
+                {error?.message}
+              </span>
             )}
           </div>
         )}
