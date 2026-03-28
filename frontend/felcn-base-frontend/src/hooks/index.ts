@@ -1,4 +1,5 @@
 export * from './useAlerts'
+export * from './useConfirmDialog'
 export * from './useSession'
 export * from './useStorage'
 export * from './useCasbinEnforcer'

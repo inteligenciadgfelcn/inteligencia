@@ -17,7 +17,9 @@ export const NavbarMenuButton: React.FC = () => {
       onClick={toggleSidebar}
       className="mr-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
     >
-      <Icono color="action" fontSize="large">{sideMenuOpen ? 'menu_open' : 'menu'}</Icono>
+      <Icono color="action" fontSize="large">
+        {sideMenuOpen ? 'menu_open' : 'menu'}
+      </Icono>
     </button>
   )
 }

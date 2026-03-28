@@ -9,7 +9,7 @@ const Page: NextPage = () => {
   return (
     <React.Fragment>
       <title>{`Registro - ${siteName()}`}</title>
-        <RegistroContainer />
+      <RegistroContainer />
     </React.Fragment>
   )
 }

@@ -24,7 +24,6 @@ const FormTextarea = ({
 }: FormTextareaProps) => {
   return (
     <div className={clsx(fullWidth && 'w-full', error && 'has-error')}>
-
       {label && (
         <label htmlFor={name} className="form-label">
           {label}

@@ -49,9 +49,7 @@ export default function UserGrowth() {
     const map: Record<string, number> = {}
 
     sorted.forEach((u) => {
-      const date = new Date(u.fechaCreacion)
-        .toISOString()
-        .split('T')[0]
+      const date = new Date(u.fechaCreacion).toISOString().split('T')[0]
       count++
       map[date] = count
     })

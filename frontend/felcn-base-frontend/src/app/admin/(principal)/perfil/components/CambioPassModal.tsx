@@ -23,10 +23,13 @@ const formSchema = z
     newPassword: z
       .string()
       .min(8, 'La contraseña debe tener al menos 8 caracteres')
-      .refine(async (p) => {
-        const { score } = await seguridadPass(p)
-        return score === 4
-      }, { message: 'La contraseña no es muy segura' }),
+      .refine(
+        async (p) => {
+          const { score } = await seguridadPass(p)
+          return score === 4
+        },
+        { message: 'La contraseña no es muy segura' }
+      ),
     confirmPassword: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {
@@ -87,9 +90,7 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-
       <div className="panel w-full max-w-lg animate__animated animate__zoomIn">
-
         {/* HEADER */}
         <div className="flex items-start justify-between border-b border-white-light dark:border-dark/50 pb-4 mb-6">
           <div>
@@ -115,7 +116,6 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
 
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
           {/* OLD */}
           <div>
             <label className="form-label">Contraseña actual</label>
@@ -138,9 +138,7 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
               </button>
             </div>
 
-            <p className="text-danger text-sm">
-              {errors.oldPassword?.message}
-            </p>
+            <p className="text-danger text-sm">{errors.oldPassword?.message}</p>
           </div>
 
           {/* NEW */}
@@ -165,9 +163,7 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
               </button>
             </div>
 
-            <p className="text-danger text-sm">
-              {errors.newPassword?.message}
-            </p>
+            <p className="text-danger text-sm">{errors.newPassword?.message}</p>
           </div>
 
           {watch('newPassword') && (
@@ -205,7 +201,6 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
 
           {/* FOOTER */}
           <div className="flex justify-end gap-3 pt-5 border-t border-white-light dark:border-dark/50">
-
             <button
               type="button"
               className="btn btn-outline-danger"
@@ -222,13 +217,9 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
             >
               {loading ? 'Guardando...' : 'Modificar'}
             </button>
-
           </div>
-
         </form>
-
       </div>
-
     </div>
   )
 }

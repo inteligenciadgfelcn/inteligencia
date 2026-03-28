@@ -40,10 +40,24 @@ export const SubirArchivo: React.FC<SubirArchivoProps> = ({
     const dt = new DataTransfer()
 
     const permitidos = Array.from(event.dataTransfer.files ?? []).filter(
-      (file) =>
-        tiposPermitidos?.length > 0
-          ? tiposPermitidos.includes(file.name.split('.')?.pop() ?? '')
-          : true
+      (file) => {
+        if (!tiposPermitidos || tiposPermitidos.length === 0) return true
+
+        // Soporta MIME types (ej: "image/*" o "image/png")
+        const aceptaMime = tiposPermitidos.some((tipo) => {
+          if (!tipo.includes('/')) return false
+          if (tipo.endsWith('/*')) {
+            const base = tipo.split('/')[0]
+            return file.type.startsWith(`${base}/`)
+          }
+          return file.type === tipo
+        })
+        if (aceptaMime) return true
+
+        // Soporta extensiones (ej: "png", "jpg")
+        const ext = file.name.split('.')?.pop() ?? ''
+        return tiposPermitidos.includes(ext)
+      }
     )
 
     imprimir(`permitidos: `, permitidos)
@@ -124,7 +138,9 @@ export const SubirArchivo: React.FC<SubirArchivoProps> = ({
           hidden
           accept={
             tiposPermitidos?.length > 0
-              ? tiposPermitidos?.map((value) => `.${value}`).join(',')
+              ? tiposPermitidos
+                  .map((value) => (value.includes('/') ? value : `.${value}`))
+                  .join(',')
               : undefined
           }
           name={name}
