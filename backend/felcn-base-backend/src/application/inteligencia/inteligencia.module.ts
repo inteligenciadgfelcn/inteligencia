@@ -26,6 +26,7 @@ import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_famili
 import { ParentezcoModule } from './felcn_sii/parametricas/parentezco/parentezco.module'
 import { ScannerModule } from './felcn_sii/scanner/scanner.module'
 import { TipoDocumentoModule } from './felcn_sii/parametricas/tipo_documento/tipo_documento.module'
+import { NombresSupuestosModule } from './felcn_sii/nombres_supuestos/nombres_supuestos.module';
 
 @Module({
   imports: [
@@ -54,7 +55,8 @@ import { TipoDocumentoModule } from './felcn_sii/parametricas/tipo_documento/tip
     LetraModule,
     ScannerModule,
     DatosFamiliaresModule,
-    ParentezcoModule
+    ParentezcoModule,
+    NombresSupuestosModule
   ],
 })
 export class InteligenciaModule {}
