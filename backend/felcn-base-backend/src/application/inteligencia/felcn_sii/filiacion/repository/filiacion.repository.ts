@@ -59,6 +59,7 @@ export class FiliacionRepository {
         datosFamiliares: {
           parentezco: true,
         },
+        nombresSupuestos: true,
       },
     })
 
@@ -107,19 +108,28 @@ export class FiliacionRepository {
         })) ?? [],
 
       datosFamiliares:
-  d.datosFamiliares?.map((df) => ({
-    id: df.idDatosFamiliares,
-    nombres: df.nombres,
-    paterno: df.paterno,
-    materno: df.materno,
-    edad: df.edad,
-    direccion: df.direccion,
-    telefono: df.telefono,
-    vivo: df.vivo,
-    implicado: df.implicado,
-    
-    parentezco: df.parentezco?.descripcion,
-  })) ?? [],
+        d.datosFamiliares?.map((df) => ({
+          id: df.idDatosFamiliares,
+          nombres: df.nombres,
+          paterno: df.paterno,
+          materno: df.materno,
+          edad: df.edad,
+          direccion: df.direccion,
+          telefono: df.telefono,
+          vivo: df.vivo,
+          implicado: df.implicado,
+
+          parentezco: df.parentezco?.descripcion,
+        })) ?? [],
+      nombresSupuestos:
+        d.nombresSupuestos?.map((ns) => ({
+          id: ns.idNombresSupuestos,
+          nombres: ns.nombres,
+          paterno: ns.paterno,
+          materno: ns.materno,
+          apellidoEsposo: ns.apellidoEsposo,
+          cpq: ns.cpq,
+        })) ?? [],
     }
   }
 }

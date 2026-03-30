@@ -14,6 +14,7 @@ import { AliasDetenido } from '../../alias_detenido/entities/alias_detenido.enti
 import { DocumentoDetenido } from '../../documento_detenido/entities/documento_detenido.entity'
 import { FenotipoDetenido } from '../../fenotipo_detenido/entities/fenotipo_detenido.entity'
 import { ProfesionDetenido } from '../../profesion_detenido/entities/profesion_detenido.entity'
+import { NombresSupuesto } from '../../../nombres_supuestos/entities/nombres_supuesto.entity'
 
 @Entity({ name: 'detenido', schema: 'public' })
 export class Detenido {
@@ -250,4 +251,7 @@ export class Detenido {
 
   @OneToMany(() => ProfesionDetenido, (p) => p.detenido)
   profesiones: ProfesionDetenido[]
+
+  @OneToMany(() => NombresSupuesto, (ns) => ns.detenido)
+  nombresSupuestos: NombresSupuesto[]
 }
