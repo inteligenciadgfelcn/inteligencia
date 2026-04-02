@@ -3,14 +3,14 @@ import { CreateTipoOjoDto } from './dto/create-tipo_ojo.dto';
 import { UpdateTipoOjoDto } from './dto/update-tipo_ojo.dto';
 import { TipoOjo } from './entities/tipo_ojo.entity';
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto';
-import { DB_SIII } from '@/core/config/database/database.module';
+import { DB_SII } from '@/core/config/database/database.module';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class TipoOjosService {
  constructor(
-     @InjectRepository(TipoOjo, DB_SIII)
+     @InjectRepository(TipoOjo, DB_SII)
      private readonly tipoOjoRepository: Repository<TipoOjo>
    ) {}
  

@@ -3,14 +3,14 @@ import { CreateTipoCabelloDto } from './dto/create-tipo_cabello.dto';
 import { UpdateTipoCabelloDto } from './dto/update-tipo_cabello.dto';
 import { TipoCabello } from './entities/tipo_cabello.entity';
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto';
-import { DB_SIII } from '@/core/config/database/database.module';
+import { DB_SII } from '@/core/config/database/database.module';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class TipoCabelloService {
   constructor(
-     @InjectRepository(TipoCabello, DB_SIII)
+     @InjectRepository(TipoCabello, DB_SII)
      private readonly tipoCabelloRepository: Repository<TipoCabello>
    ) {}
  
