@@ -3,14 +3,14 @@ import { CreateTipoNarizDto } from './dto/create-tipo_nariz.dto';
 import { UpdateTipoNarizDto } from './dto/update-tipo_nariz.dto';
 import { TipoNariz } from './entities/tipo_nariz.entity';
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto';
-import { DB_SIII } from '@/core/config/database/database.module';
+import { DB_SII } from '@/core/config/database/database.module';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class TipoNarizService {
  constructor(
-     @InjectRepository(TipoNariz, DB_SIII)
+     @InjectRepository(TipoNariz, DB_SII)
      private readonly tipoNarizRepository: Repository<TipoNariz>
    ) {}
  
