@@ -1,5 +1,4 @@
 import { DeepPartial } from 'typeorm'
-import { ArrestadoAuxiliar } from '../arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 import { CreateFiliacionDto } from '../dto/create-filiacion.dto'
 import { ColorPiel } from '@/application/inteligencia/felcn_sii/parametricas/color_piel/entities/color_piel.entity'
 import { TipoCabello } from '@/application/inteligencia/felcn_sii/parametricas/tipo_cabello/entities/tipo_cabello.entity'
@@ -7,6 +6,7 @@ import { Pais } from '@/application/inteligencia/felcn_sii/parametricas/pais/ent
 import { EstadoCivil } from '@/application/inteligencia/felcn_sii/parametricas/estado_civil/entities/estado_civil.entity'
 import { ColorOjo } from '../../parametricas/color_ojos/entities/color_ojo.entity'
 import { ColorCabello } from '../../parametricas/color_cabello/entities/color_cabello.entity'
+import { ArrestadoAuxiliar } from '@/application/inteligencia/felcn_siii/operaciones/filiacion/arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 
 export function mapArrestadoEntity(
   dto: CreateFiliacionDto,

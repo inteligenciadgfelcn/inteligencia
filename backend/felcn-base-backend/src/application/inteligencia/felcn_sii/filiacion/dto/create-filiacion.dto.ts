@@ -15,7 +15,7 @@ import { CreateDetenidoDto } from '../detenido/dto/create-detenido.dto'
 import { CreateDocumentoDetenidoDto } from '../documento_detenido/dto/create-documento_detenido.dto'
 import { CreateFenotipoDetenidoDto } from '../fenotipo_detenido/dto/create-fenotipo_detenido.dto'
 import { CreateProfesionDetenidoDto } from '../profesion_detenido/dto/create-profesion_detenido.dto'
-import { CreateArrestadoAuxiliarDto } from '../arrestado_auxiliar/dto/create-arrestado_auxiliar.dto'
+import { CreateArrestadoAuxiliarDto } from '@/application/inteligencia/felcn_siii/operaciones/filiacion/arrestado_auxiliar/dto/create-arrestado_auxiliar.dto'
 
 export class CreateFiliacionDto {
   @ApiProperty({ example: 421, description: 'Id de persona auxiliar' })

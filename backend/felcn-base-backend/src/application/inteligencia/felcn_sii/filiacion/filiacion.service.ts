@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
 import { DataSource, EntityManager, Repository } from 'typeorm'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
-import { DB_SII } from '@/core/config/database/database.module'
+import { DB_SII, DB_SIII } from '@/core/config/database/database.module'
 import { PersonasRepository } from './repository/personas.repository'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { ArrestadoAuxiliar } from './arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 import { Profesion } from '../parametricas/profesion/entities/profesion.entity'
 import { FiliacionRepository } from './repository/filiacion.repository'
 import { mapArrestadoEntity } from './mappers/arrestado.mapper'
@@ -14,14 +13,20 @@ import { mapFenotipoDtoToEntity } from './fenotipo_detenido/mappers/fenotipo-map
 import { ProfesionDetenido } from './profesion_detenido/entities/profesion_detenido.entity'
 import { Detenido } from './detenido/entities/detenido.entity'
 import { mapDetenidoEntity } from './mappers/detenido.mapper'
+import { ArrestadoAuxiliar } from '../../felcn_siii/operaciones/filiacion/arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 
 @Injectable()
 export class FiliacionService {
   constructor(
     @InjectDataSource(DB_SII)
     private dataSource: DataSource,
+
     @InjectRepository(Profesion, DB_SII)
     private profesionRepository: Repository<Profesion>,
+
+    @InjectDataSource(DB_SIII)
+    private dataSourceSIII: DataSource,
+
     private readonly personasRepository: PersonasRepository,
     private readonly filiacionRepository: FiliacionRepository
   ) {}
@@ -45,10 +50,9 @@ export class FiliacionService {
       if (dto.estadoPersona === 'Arrestado') {
         const arrestadoData = mapArrestadoEntity(dto, profesionDescripcion)
 
-        arrestado = await manager.save(
-          ArrestadoAuxiliar,
-          manager.create(ArrestadoAuxiliar, arrestadoData)
-        )
+        arrestado = await this.dataSourceSIII
+          .getRepository(ArrestadoAuxiliar)
+          .save(arrestadoData)
       }
 
       // ===== CREAR DETENIDO =====
@@ -108,11 +112,16 @@ export class FiliacionService {
 
       await Promise.all(operations)
 
-      await manager.update(
-        'persona_auxiliar',
-        { id_persona_auxiliar: dto.idPersona },
-        { enviado: 1 }
-      )
+      try {
+        await this.dataSourceSIII
+          .createQueryBuilder()
+          .update('public.persona_auxiliar')
+          .set({ enviado: 1 })
+          .where('id_persona_auxiliar = :id', { id: dto.idPersona })
+          .execute()
+      } catch (error) {
+        console.error('Error actualizando persona_auxiliar:', error)
+      }
 
       return {
         message: 'Filiación registrada correctamente',
@@ -154,8 +163,7 @@ export class FiliacionService {
     const resultado = filas.map((f) => ({
       ...f,
       id_detenido:
-        mapa.get(`${f.numero_caso?.trim()}-${f.nombres?.trim()}`) ??
-        null,
+        mapa.get(`${f.numero_caso?.trim()}-${f.nombres?.trim()}`) ?? null,
     }))
 
     return [resultado, total] as [any[], number]
@@ -165,7 +173,7 @@ export class FiliacionService {
     return this.personasRepository.obtenerPersona(id)
   }
 
-   async obtenerDetenido(id: number) {
+  async obtenerDetenido(id: number) {
     return this.filiacionRepository.obtenerDetenido(id)
   }
 }

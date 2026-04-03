@@ -21,7 +21,7 @@ export class PersonasRepository {
 
    const baseQuery = this.datasource
       .createQueryBuilder()
-      .from('persona_auxiliar', 'p')
+      .from('public.persona_auxiliar', 'p')
       .leftJoin('operativo', 'o', 'p.id_operativo = o.id_operativo')
       .leftJoin('pais', 'pa', 'p.id_pais = pa.id_pais')
       .leftJoin('tipo_documento', 'td', 'p.id_tipo_documento = td.id_tipo_documento')

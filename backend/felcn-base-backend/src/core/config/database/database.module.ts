@@ -10,7 +10,7 @@ export const DB_AUTH = 'default' // felcn_auth (autenticación y autorización)
 export const DB_ASIG_CASOS = 'asig-casos' // felcn_asignacion_casos
 export const DB_S2I = 's2i' // felcn_s2i
 export const DB_SIII = 'siii' // felcn_siii
-export const DB_SII = 'sii' // felcn_siii
+export const DB_SII = 'sii' // felcn_sii
 
 @Module({
   imports: [
@@ -201,7 +201,7 @@ export const DB_SII = 'sii' // felcn_siii
         }),
         entities: [
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
-          __dirname + '/../../../application/inteligencia/felcn_siii/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
         ],
       }),
     }),
