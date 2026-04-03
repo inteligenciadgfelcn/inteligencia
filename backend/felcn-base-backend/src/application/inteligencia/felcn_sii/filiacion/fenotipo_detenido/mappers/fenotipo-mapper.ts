@@ -1,5 +1,4 @@
 import { Detenido } from '../../detenido/entities/detenido.entity'
-import { ArrestadoAuxiliar } from '../../arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 import { ColorCabello } from '@/application/inteligencia/felcn_sii/parametricas/color_cabello/entities/color_cabello.entity'
 import { ColorOjo } from '@/application/inteligencia/felcn_sii/parametricas/color_ojos/entities/color_ojo.entity'
 import { ColorPiel } from '@/application/inteligencia/felcn_sii/parametricas/color_piel/entities/color_piel.entity'
@@ -9,6 +8,7 @@ import { TipoNariz } from '@/application/inteligencia/felcn_sii/parametricas/tip
 import { TipoOjo } from '@/application/inteligencia/felcn_sii/parametricas/tipo_ojos/entities/tipo_ojo.entity'
 import { CreateFenotipoDetenidoDto } from '../dto/create-fenotipo_detenido.dto'
 import { FenotipoDetenido } from '../entities/fenotipo_detenido.entity'
+import { ArrestadoAuxiliar } from '@/application/inteligencia/felcn_siii/operaciones/filiacion/arrestado_auxiliar/entities/arrestado_auxiliar.entity'
 
 export function mapFenotipoDtoToEntity(
   dto: CreateFenotipoDetenidoDto,

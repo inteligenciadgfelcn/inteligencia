@@ -14,7 +14,7 @@ import { AuditoriaEntity } from '@/common/entity/auditoria.entity'
 dotenv.config()
 
 @Check(UtilService.buildStatusCheck(RolEstado))
-@Entity({ name: 'roles', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'rol', schema: process.env.DB_SCHEMA_USUARIOS })
 export class Rol extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',
