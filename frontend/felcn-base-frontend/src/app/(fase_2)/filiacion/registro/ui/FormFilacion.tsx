@@ -39,7 +39,6 @@ import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
 import { imprimir } from '@/utils/imprimir'
 import { useAlerts } from '@/hooks'
 import FingerprintCapture from '@/components/finger/FingerprintCapture'
-import { r } from '@faker-js/faker/dist/airline-BnpeTvY9'
 import { postRegistroHuella } from '../services/finger.service'
 
 /* ================= VALIDACIÓN ================= */
@@ -369,7 +368,10 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           idTipoDocumento: values.tipoDocumento.value,
           numeroDocumento: values.numeroDocumento ?? '',
           expedido: values.expedidoEn,
-          contrastadoSegip: values.contratadoSegip.label,
+          contrastadoSegip:
+            values.contratadoSegip.label == 'Si'
+              ? 'CONTRASTADO CON EL SEGIP'
+              : 'NO CONTRASTADO CON EL SEGIP',
         },
         fenotipo: {
           estatura: String(values.estatura),
