@@ -1,9 +1,10 @@
+
 import { ColorCabello } from '@/application/inteligencia/felcn_sii/parametricas/color_cabello/entities/color_cabello.entity'
 import { ColorOjo } from '@/application/inteligencia/felcn_sii/parametricas/color_ojos/entities/color_ojo.entity'
 import { ColorPiel } from '@/application/inteligencia/felcn_sii/parametricas/color_piel/entities/color_piel.entity'
 import { EstadoCivil } from '@/application/inteligencia/felcn_sii/parametricas/estado_civil/entities/estado_civil.entity'
-import { Pais } from '@/application/inteligencia/felcn_sii/parametricas/pais/entities/pais.entity'
 import { TipoCabello } from '@/application/inteligencia/felcn_sii/parametricas/tipo_cabello/entities/tipo_cabello.entity'
+import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -227,13 +228,4 @@ export class ArrestadoAuxiliar {
     comment: 'Fecha y hora de última actualización',
   })
   fechaHoraActualizacion: Date
-
-  @Column({
-    name: 'usuario_actualizacion',
-    type: 'varchar',
-    length: 15,
-    nullable: true,
-    comment: 'Usuario que realizó la última actualización',
-  })
-  usuarioActualizacion: string
 }
