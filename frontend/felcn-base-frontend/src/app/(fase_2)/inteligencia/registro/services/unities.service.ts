@@ -2,7 +2,7 @@ import { usePeticion } from '@/hooks/usePeticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Unidad {
-  idUnidad: number
+  id: number
   abreviatura: string
   descripcion: string
   abreviaturaIcia: string

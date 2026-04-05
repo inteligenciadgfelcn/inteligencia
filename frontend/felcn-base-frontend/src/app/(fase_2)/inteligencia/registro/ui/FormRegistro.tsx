@@ -28,6 +28,7 @@ import { getNumeroRegistro } from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
 import { AsignacionTable } from '../types/asignacion.table'
+import { original } from '@reduxjs/toolkit'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -37,6 +38,7 @@ const selectSchema = (message: string) =>
       {
         value: z.number(),
         label: z.string(),
+        original: z.any(),
       },
       { required_error: message }
     )
@@ -104,24 +106,24 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
             label: asignacion.departamento?.descripcion,
           }
         : undefined,
-      unidad: asignacion?.grupo
-        ? {
-            value: asignacion.grupo.distrital.unidad.idUnidad,
-            label: asignacion.grupo.distrital.unidad.descripcion,
-          }
-        : undefined,
-      distrital: asignacion?.grupo
-        ? {
-            value: asignacion.grupo.distrital.idDistrital,
-            label: asignacion.grupo.distrital.descripcion,
-          }
-        : undefined,
-      grupo: asignacion?.grupo
-        ? {
-            value: asignacion.grupo.idGrupo,
-            label: asignacion.grupo.descripcion,
-          }
-        : undefined,
+      // unidad: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.distrital.unidad.idUnidad,
+      //       label: asignacion.grupo.distrital.unidad.descripcion,
+      //     }
+      //   : undefined,
+      // distrital: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.distrital.idDistrital,
+      //       label: asignacion.grupo.distrital.descripcion,
+      //     }
+      //   : undefined,
+      // grupo: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.idGrupo,
+      //       label: asignacion.grupo.descripcion,
+      //     }
+      //   : undefined,
       nroRegistro: asignacion?.nroOperativo || '',
       nombreOperativo: asignacion?.nombreCaso || '',
       fechaHoraOperativo: asignacion?.fechaSolicitud
@@ -160,55 +162,55 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
   useEffect(() => {
     if (asignacion) {
-      reset({
-        codigoServicio: asignacion?.codigoServicio || '',
-        nroPase: asignacion?.usuario || '',
-        departamento: asignacion?.departamento
-          ? {
-              value: asignacion.departamento?.idDepartamento,
-              label: asignacion.departamento?.descripcion,
-            }
-          : undefined,
-        unidad: asignacion?.grupo
-          ? {
-              value: asignacion.grupo.distrital.unidad.idUnidad,
-              label: asignacion.grupo.distrital.unidad.descripcion,
-            }
-          : undefined,
-        distrital: asignacion?.grupo
-          ? {
-              value: asignacion.grupo.distrital.idDistrital,
-              label: asignacion.grupo.distrital.descripcion,
-            }
-          : undefined,
-        grupo: asignacion?.grupo
-          ? {
-              value: asignacion.grupo.idGrupo,
-              label: asignacion.grupo.descripcion,
-            }
-          : undefined,
-        nroRegistro: asignacion?.nroOperativo || '',
-        nombreOperativo: asignacion?.nombreCaso || '',
-        fechaHoraOperativo: asignacion?.fechaSolicitud
-          ? dateUtcToString(asignacion.fechaSolicitud)
-          : nowDateToString(),
-        quienRealiza: asignacion?.nombreSolicitud
-          ? {
-              value: Number(asignacion.telefonoSolicitud),
-              label: asignacion.nombreSolicitud,
-            }
-          : undefined,
-        asignadoA: asignacion?.asignado
-          ? {
-              value: Number(asignacion.telefonoAsignado),
-              label: asignacion.asignado,
-            }
-          : undefined,
-        fiscalAsignado: asignacion?.fiscalAsignado || '',
-        quienRealizaNum: asignacion?.telefonoSolicitud || '',
-        asignadoANum: asignacion?.telefonoAsignado || '',
-        fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
-      })
+      // reset({
+      //   codigoServicio: asignacion?.codigoServicio || '',
+      //   nroPase: asignacion?.usuario || '',
+      //   departamento: asignacion?.departamento
+      //     ? {
+      //         value: asignacion.departamento?.idDepartamento,
+      //         label: asignacion.departamento?.descripcion,
+      //       }
+      //     : undefined,
+      //   unidad: asignacion?.unidad
+      //     ? {
+      //         value: asignacion.unidad.idUnidad,
+      //         label: asignacion.unidad.descripcion,
+      //       }
+      //     : undefined,
+      //   distrital: asignacion?.grupo
+      //     ? {
+      //         value: asignacion.grupo.distrital.idDistrital,
+      //         label: asignacion.grupo.distrital.descripcion,
+      //       }
+      //     : undefined,
+      //   grupo: asignacion?.grupo
+      //     ? {
+      //         value: asignacion.grupo.idGrupo,
+      //         label: asignacion.grupo.descripcion,
+      //       }
+      //     : undefined,
+      //   nroRegistro: asignacion?.nroOperativo || '',
+      //   nombreOperativo: asignacion?.nombreCaso || '',
+      //   fechaHoraOperativo: asignacion?.fechaSolicitud
+      //     ? dateUtcToString(asignacion.fechaSolicitud)
+      //     : nowDateToString(),
+      //   quienRealiza: asignacion?.nombreSolicitud
+      //     ? {
+      //         value: Number(asignacion.telefonoSolicitud),
+      //         label: asignacion.nombreSolicitud,
+      //       }
+      //     : undefined,
+      //   asignadoA: asignacion?.asignado
+      //     ? {
+      //         value: Number(asignacion.telefonoAsignado),
+      //         label: asignacion.asignado,
+      //       }
+      //     : undefined,
+      //   fiscalAsignado: asignacion?.fiscalAsignado || '',
+      //   quienRealizaNum: asignacion?.telefonoSolicitud || '',
+      //   asignadoANum: asignacion?.telefonoAsignado || '',
+      //   fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      // })
     }
   }, [asignacion])
 
@@ -252,7 +254,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
       const payload = {
         codigoServicio: values.codigoServicio,
         usuario: values.nroPase,
-        idDepartamento: values.departamento.value,
+        idDepartamento: values.departamento.original.abreviatura,
         idGrupo: values.grupo.value,
         nombreCaso: values.nombreOperativo,
         fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
@@ -299,6 +301,8 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
     // Validar solo los campos requeridos para asignar número de registro
     const isValid = await trigger(fieldsToValidate)
+    console.log(`${isValid}, ${fieldsToValidate}`)
+
     if (!isValid) {
       return
     }
@@ -310,7 +314,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
       setLoading(true)
 
       const response = await getNumeroRegistro(
-        departamento!.value,
+        departamento!.original.abreviatura,
         grupo!.value
       )
 
@@ -383,7 +387,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
-                    value: item.idUnidad,
+                    value: item.id,
                     original: item,
                   }
                 }}
@@ -400,7 +404,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
-                    value: item.idDistrital,
+                    value: item.id,
                     original: item,
                   }
                 }}
@@ -417,7 +421,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
-                    value: item.idGrupo,
+                    value: item.id,
                     original: item,
                   }
                 }}
@@ -471,9 +475,8 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 isDisable={!grupoSeleccionado}
                 mapOption={(item) => {
                   return {
-                    label:
-                      `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                    value: Number(item.telefono),
+                    label: `${item.nombreCompleto}`.toUpperCase(),
+                    value: Number(item.idUsuario),
                     original: item,
                   }
                 }}
@@ -506,9 +509,8 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 isDisable={!grupoSeleccionado}
                 mapOption={(item) => {
                   return {
-                    label:
-                      `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                    value: Number(item.telefono),
+                    label: `${item.nombreCompleto}`.toUpperCase(),
+                    value: Number(item.idUsuario),
                     original: item,
                   }
                 }}

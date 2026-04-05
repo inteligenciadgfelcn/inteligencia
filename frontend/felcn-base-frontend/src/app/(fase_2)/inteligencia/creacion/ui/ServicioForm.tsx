@@ -90,7 +90,9 @@ export const ServicioForm = () => {
 
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
+    console.log(`${loading}`)
     if (loading) return
+    console.log(`${loading}`)
 
     try {
       setLoading(true)
@@ -152,15 +154,14 @@ export const ServicioForm = () => {
                     originalData={usuarios ?? []}
                     mapOption={(item) => {
                       return {
-                        label:
-                          `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                        value: Number(item.telefono),
+                        label: `${item.nombreCompleto}`.toUpperCase(),
+                        value: Number(item.usuario),
                         original: item,
                       }
                     }}
                     onValueChange={(option) => {
                       if (option) {
-                        setValue('entrantePase', option.original.usuario)
+                        setValue('entrantePase', option.original.codigoIcia)
                       } else {
                         resetField('entrantePase')
                       }
@@ -185,15 +186,14 @@ export const ServicioForm = () => {
                     originalData={usuarios ?? []}
                     mapOption={(item) => {
                       return {
-                        label:
-                          `${item.grado.abreviatura} ${item.nombres}`.toUpperCase(),
-                        value: Number(item.telefono),
+                        label: `${item.nombreCompleto}`.toUpperCase(),
+                        value: Number(item.usuario),
                         original: item,
                       }
                     }}
                     onValueChange={(option) => {
                       if (option) {
-                        setValue('emergenciaPase', option.original.usuario)
+                        setValue('emergenciaPase', option.original.codigoIcia)
                       } else {
                         resetField('emergenciaPase')
                       }
