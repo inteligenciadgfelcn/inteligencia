@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
 import { DataSource, EntityManager, Repository } from 'typeorm'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
@@ -14,6 +14,7 @@ import { ProfesionDetenido } from './profesion_detenido/entities/profesion_deten
 import { Detenido } from './detenido/entities/detenido.entity'
 import { mapDetenidoEntity } from './mappers/detenido.mapper'
 import { ArrestadoAuxiliar } from '../../felcn_siii/operaciones/filiacion/arrestado_auxiliar/entities/arrestado_auxiliar.entity'
+import { async } from 'rxjs'
 
 @Injectable()
 export class FiliacionService {
@@ -170,10 +171,22 @@ export class FiliacionService {
   }
 
   async obtenerPersona(id: number) {
-    return this.personasRepository.obtenerPersona(id)
+  const persona = await this.personasRepository.obtenerPersona(id);
+
+  if (!persona) {
+    throw new NotFoundException('No existe esa persona');
   }
 
+  return persona;
+}
+
   async obtenerDetenido(id: number) {
-    return this.filiacionRepository.obtenerDetenido(id)
+    const detenido = await this.filiacionRepository.obtenerDetenido(id);
+
+    if (!detenido) {
+  throw new NotFoundException('Detenido no encontrado')
+}
+
+    return detenido;
   }
 }
