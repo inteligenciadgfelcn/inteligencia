@@ -19,10 +19,10 @@ import {
 } from './utils/servicio.util'
 import { Estado } from '../../felcn_siii/estado.enum'
 
-// ✅ Tipo para evitar errores de TS
 type UsuarioAuth = {
   usuario: string
   nombreCompleto: string
+  codigo_icia: string
   abreviatura: string
 }
 
@@ -120,34 +120,34 @@ export class ServicioService {
   }
 
   async verificarServicio(usuario: string) {
-  const ahora = new Date()
+    const ahora = new Date()
 
-  const servicio = await this.servicioRepository
-    .createQueryBuilder('s')
-    .where(
-      '(s.usuario_principal = :usuario OR s.usuario_emergencia = :usuario)',
-      { usuario }
-    )
-    .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
-    .andWhere('s.fecha_hora_ingreso <= :ahora', { ahora })
-    .andWhere('s.fecha_hora_salida >= :ahora', { ahora })
-    .getOne()
+    const servicio = await this.servicioRepository
+      .createQueryBuilder('s')
+      .where(
+        '(s.usuario_principal = :usuario OR s.usuario_emergencia = :usuario)',
+        { usuario }
+      )
+      .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
+      .andWhere('s.fecha_hora_ingreso <= :ahora', { ahora })
+      .andWhere('s.fecha_hora_salida >= :ahora', { ahora })
+      .getOne()
 
-  if (!servicio) {
+    if (!servicio) {
+      return {
+        enServicio: false,
+        mensaje: 'Usuario sin servicio asignado',
+      }
+    }
+
     return {
-      enServicio: false,
-      mensaje: 'Usuario sin servicio asignado',
+      enServicio: true,
+      codigoServicio: servicio.codigoServicio,
+      usuario,
+      desde: formatearFecha(servicio.fechaIngreso),
+      hasta: formatearFecha(servicio.fechaSalida),
     }
   }
-
-  return {
-    enServicio: true,
-    codigoServicio: servicio.codigoServicio,
-    usuario,
-    desde: formatearFecha(servicio.fechaIngreso),
-    hasta: formatearFecha(servicio.fechaSalida),
-  }
-}
 
   async infoServicio(codigoServicio: string) {
     const servicio = await this.servicioRepository.findOne({
@@ -241,29 +241,30 @@ export class ServicioService {
         ].filter(Boolean)
       )
     )
+    console.log('usuariosIds:', usuariosIds)
 
     const usuarios: UsuarioAuth[] = await this.dataSourceAuth.query(
       `
-      SELECT 
-        u.usuario,
-        TRIM(CONCAT(
-          gr.abreviatura, ' ',
-          p.nombres, ' ',
-          p.primer_apellido, ' ',
-          COALESCE(p.segundo_apellido, '')
-        )) as "nombreCompleto",
-        gr.abreviatura
-      FROM usuario.usuario u
-      LEFT JOIN usuario.persona p ON p.id = u.id_persona
-      LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
-      WHERE u.usuario = ANY($1::text[])
-    `,
+  SELECT 
+    u.usuario,
+    u.codigo_icia,
+    u.id as "idUsuario",
+    TRIM(CONCAT(
+      gr.abreviatura, ' ',
+      p.nombres, ' ',
+      p.primer_apellido, ' ',
+      COALESCE(p.segundo_apellido, '')
+    )) as "nombreCompleto",
+    gr.abreviatura
+  FROM usuario.usuario u
+  LEFT JOIN usuario.persona p ON p.id = u.id_persona
+  LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+  WHERE u.codigo_icia = ANY($1::text[])
+  `,
       [usuariosIds]
     )
 
-    const usuariosMap = new Map(
-      usuarios.map((u) => [u.usuario, u])
-    )
+    const usuariosMap = new Map(usuarios.map((u) => [u.codigo_icia, u]))
 
     const resultado = servicios.map((servicio) => {
       const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
