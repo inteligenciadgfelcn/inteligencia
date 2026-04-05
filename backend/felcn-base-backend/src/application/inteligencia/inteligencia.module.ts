@@ -1,14 +1,7 @@
 
-import { UsuarioModule } from './felcn_siii/parametricas/usuario/usuario.module'
-import { ContinenteModule } from './felcn_siii/parametricas/continente/continente.module'
-import { DepartamentoModule } from './felcn_siii/parametricas/departamento/departamento.module'
+import { UsuarioModule } from './usuario/usuario.module'
 import { Module } from '@nestjs/common'
-import { PaisModule } from './felcn_siii/parametricas/pais/pais.module'
-import { AsignacionesModule } from './felcn_siii/operaciones/asignaciones/asignaciones.module'
-import { UnidadModule } from './felcn_siii/parametricas/unidad/unidad.module'
-import { DistritalModule } from './felcn_siii/parametricas/distrital/distrital.module'
-import { GrupoModule } from './felcn_siii/parametricas/grupo/grupo.module'
-import { GradoModule } from './felcn_siii/parametricas/grado/grado.module'
+import { GrupoModule } from './felcn_asignacion_caso/grupo/grupo.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
 import { PruebaModule } from './reportes/prueba/prueba.module'
 import { ProfesionModule } from './felcn_sii/parametricas/profesion/profesion.module';
@@ -21,12 +14,18 @@ import { TipoOjosModule } from './felcn_sii/parametricas/tipo_ojos/tipo_ojos.mod
 import { TipoCabelloModule } from './felcn_sii/parametricas/tipo_cabello/tipo_cabello.module';
 import { ConstitucionCorporalModule } from './felcn_sii/parametricas/constitucion_corporal/constitucion_corporal.module'
 import { FiliacionModule } from './felcn_sii/filiacion/filiacion.module'
-import { LetraModule } from './felcn_siii/parametricas/letra/letra.module';
 import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_familiares.module';
 import { ParentezcoModule } from './felcn_sii/parametricas/parentezco/parentezco.module'
 import { ScannerModule } from './felcn_sii/scanner/scanner.module'
 import { TipoDocumentoModule } from './felcn_sii/parametricas/tipo_documento/tipo_documento.module'
 import { NombresSupuestosModule } from './felcn_sii/nombres_supuestos/nombres_supuestos.module';
+import { LetraModule } from './felcn_asignacion_caso/letra/letra.module'
+import { AsignacionesModule } from './felcn_asignacion_caso/asignaciones/asignaciones.module'
+import { UnidadModule } from './felcn_asignacion_caso/unidad/unidad.module'
+import { DistritalModule } from './felcn_asignacion_caso/distrital/distrital.module'
+import { ContinenteModule } from './felcn_sii/parametricas/continente/continente.module'
+import { PaisModule } from './felcn_sii/parametricas/pais/pais.module'
+import { DepartamentoModule } from './felcn_sii/parametricas/departamento/departamento.module'
 
 @Module({
   imports: [
@@ -34,7 +33,6 @@ import { NombresSupuestosModule } from './felcn_sii/nombres_supuestos/nombres_su
     UnidadModule,
     DistritalModule,
     GrupoModule,
-    GradoModule,
     ContinenteModule,
     PaisModule,
     DepartamentoModule,
