@@ -75,12 +75,12 @@ export class ServicioController extends BaseController {
     return this.servicioService.verificarServicio(usuario)
   }
 
-  // @Get()
-  // @ApiOperation({ summary: 'Listar servicios con paginación' })
-  // async findAllPaginado(@Query() pagination: PaginacionQueryDto) {
-  //   const result = await this.servicioService.findAllPaginado(pagination)
-  //   return this.successListRows(result)
-  // }
+  @Get()
+  @ApiOperation({ summary: 'Listar servicios con paginación' })
+  async findAllPaginado(@Query() pagination: PaginacionQueryDto) {
+    const result = await this.servicioService.findAllPaginado(pagination)
+    return this.successListRows(result)
+  }
 
   @Get('info/:codigoServicio')
   @ApiOperation({ summary: 'Obtener información de un servicio' })
