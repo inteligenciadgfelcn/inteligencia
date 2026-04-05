@@ -39,6 +39,11 @@ export class FiliacionRepository {
   async obtenerDetenido(id: number) {
     const detenido = await this.detenidoRepository.findOne({
       where: { idDetenido: id },
+       select: {
+      idDetenido: true,
+      nombres: true,
+      numeroCaso: true,
+    },
       relations: {
         aliases: true,
         documentos: {
