@@ -29,7 +29,7 @@ export const getActualizacionData = async (
     params: {
       ...params,
       registrados: registrados ? 'true' : 'false',
-      codigoServicio: 'ICIA-2122032026', // TODO: Obtener el código del servicio desde la configuración o contexto adecuado
+      codigoServicio: 'ICIA-0707042026', // TODO: Obtener el código del servicio desde la configuración o contexto adecuado
     },
     withCredentials: true,
   })

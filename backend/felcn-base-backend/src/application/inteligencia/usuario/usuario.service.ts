@@ -20,6 +20,7 @@ export class UsuarioService {
         COALESCE(p.segundo_apellido, '')
       )) as "nombreCompleto",
       p.nro_documento as "nroDocumento",
+      p.telefono as "telefono",
       u.usuario as "usuario",
       u.codigo_icia as "codigoIcia",
       u._estado as "estado",

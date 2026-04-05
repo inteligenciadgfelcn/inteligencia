@@ -135,7 +135,7 @@ export function RegistrosDataTable() {
       title: 'Unidad',
       render: (row: AsignacionTable) => (
         <div className="flex items-center gap-2">
-          <span>{row.grupo.distrital.unidad.descripcion}</span>
+          <span>{row.unidad.descripcion}</span>
         </div>
       ),
     },

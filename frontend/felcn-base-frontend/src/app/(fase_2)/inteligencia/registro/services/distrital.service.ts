@@ -3,7 +3,7 @@ import { Constantes } from '@/config/Constantes'
 import { Unidad } from './unities.service'
 
 export interface Distrital {
-  idDistrital: number
+  id: number
   descripcion: string
   estado: string
   unidad: Unidad

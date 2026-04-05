@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { VristoSimpleDataTable } from '@/components/datatable/VristoSimpleDataTable'
 import { FiliacionPersonaTable } from '../../registro/type/filiacion.persona.table'
@@ -8,6 +8,8 @@ import { TablePersonas } from '../../shared/TablePersonas'
 import { FormParentesco } from './FormParentesco'
 import { FormNombresSupuestos } from './FormNombresSupuestos'
 import { DetenidoDetalle, getDetenidoById } from '../services/detenido.service'
+import { log } from 'console'
+import { de } from '@faker-js/faker/.'
 
 interface DetenidoAliasRow {
   id: number
@@ -43,34 +45,34 @@ export const ParentescoView = () => {
   const [personaSelected, setPersonaSelected] = useState<
     FiliacionPersonaTable | undefined
   >()
+
   const [refreshKey] = useState(0)
 
-  const detenidoId = '52'
-
-  const { data: detenido, isLoading } = useQuery<DetenidoDetalle>({
-    queryKey: ['filiacion', 'detenido', detenidoId],
-    queryFn: () => getDetenidoById(detenidoId as string),
-    enabled: Boolean(detenidoId),
+  const { data: detenidoDetalle } = useQuery<DetenidoDetalle>({
+    queryKey: ['filiacion', personaSelected?.id_detenido],
+    queryFn: () => getDetenidoById(String(personaSelected?.id_detenido || '')),
+    enabled: !!personaSelected?.id_detenido,
   })
 
   const aliasRows: DetenidoAliasRow[] =
-    detenido?.alias.map((alias, index) => ({
+    detenidoDetalle?.alias.map((alias, index) => ({
       id: index + 1,
       alias,
     })) ?? []
 
   const documentosRows: DetenidoDocumentoRow[] =
-    detenido?.documentos.map((documento, index) => ({
+    detenidoDetalle?.documentos.map((documento, index) => ({
       id: index + 1,
       numero: documento.numero,
       tipo: documento.tipo,
       expedido: documento.expedido,
     })) ?? []
 
-  const profesionesRows: DetenidoProfesionRow[] = detenido?.profesiones ?? []
+  const profesionesRows: DetenidoProfesionRow[] =
+    detenidoDetalle?.profesiones ?? []
 
-  const fenotipoRows: DetenidoFenotipoRow[] = detenido?.fenotipo
-    ? [detenido.fenotipo]
+  const fenotipoRows: DetenidoFenotipoRow[] = detenidoDetalle?.fenotipo
+    ? [detenidoDetalle.fenotipo]
     : []
 
   return (
@@ -84,13 +86,12 @@ export const ParentescoView = () => {
       <FormParentesco />
       <FormNombresSupuestos />
 
-      {detenidoId && (
+      {detenidoDetalle && (
         <div className="grid grid-cols-1 gap-5">
           <div className="panel p-4">
             <h2 className="text-lg font-semibold text-primary">Documentos</h2>
             <VristoSimpleDataTable<DetenidoDocumentoRow>
               rows={documentosRows}
-              loading={isLoading}
               columns={[
                 { accessor: 'id', title: 'N°' },
                 { accessor: 'numero', title: 'Número' },
@@ -104,7 +105,6 @@ export const ParentescoView = () => {
             <h2 className="text-lg font-semibold text-primary">Alias</h2>
             <VristoSimpleDataTable<DetenidoAliasRow>
               rows={aliasRows}
-              loading={isLoading}
               columns={[
                 { accessor: 'id', title: 'N°' },
                 { accessor: 'alias', title: 'Alias' },
@@ -116,7 +116,6 @@ export const ParentescoView = () => {
             <h2 className="text-lg font-semibold text-primary">Profesiones</h2>
             <VristoSimpleDataTable<DetenidoProfesionRow>
               rows={profesionesRows}
-              loading={isLoading}
               columns={[
                 { accessor: 'id', title: 'ID' },
                 { accessor: 'descripcion', title: 'Descripción' },
@@ -130,7 +129,6 @@ export const ParentescoView = () => {
             </h2>
             <VristoSimpleDataTable<DetenidoFenotipoRow>
               rows={fenotipoRows}
-              loading={isLoading}
               columns={[
                 { accessor: 'estatura', title: 'Estatura' },
                 { accessor: 'peso', title: 'Peso' },

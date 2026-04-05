@@ -18,7 +18,10 @@ export interface AsignacionTable {
   fechaSolicitud: Date
   usuario: null
   departamento?: Departamento
-  grupo: Grupo
+  unidad: {
+    idUnidad: string
+    descripcion: string
+  }
 }
 
 interface Departamento {

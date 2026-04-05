@@ -2,6 +2,8 @@ import { usePeticion } from '@/hooks/usePeticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Usuario {
+  nombreCompleto: string
+  codigoIcia: string
   usuario: string
   nombres: string
   telefono: string
