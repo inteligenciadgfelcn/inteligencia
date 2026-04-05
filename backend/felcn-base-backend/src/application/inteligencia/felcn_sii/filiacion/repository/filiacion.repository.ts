@@ -13,7 +13,7 @@ export class FiliacionRepository {
     private detenidoRepository: Repository<Detenido>
   ) {}
 
-  async crearAlias(manager, alias, detenido) {
+  async crearAlias(manager: any, alias: any, detenido: Detenido){
     return manager.save(
       AliasDetenido,
       manager.create(AliasDetenido, {
@@ -23,7 +23,7 @@ export class FiliacionRepository {
     )
   }
 
-  async crearDocumento(manager, documento, detenido) {
+  async crearDocumento(manager: any, documento: any, detenido: Detenido) {
     const { idTipoDocumento, ...docData } = documento
 
     return manager.save(

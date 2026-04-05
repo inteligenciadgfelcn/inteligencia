@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { UpdateServicioDto } from './dto/update-servicio.dto'
-import { DB_ASIG_CASOS, DB_SIII } from '@/core/config/database/database.module'
-import { InjectRepository } from '@nestjs/typeorm'
+import { DB_ASIG_CASOS, DB_AUTH } from '@/core/config/database/database.module'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { Servicio } from './entities/servicio.entity'
-import { In, Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { CreateServicioDto } from './dto/create-servicio.dto'
 import { formatearFecha, validarRangoFechas } from './utils/fecha.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -18,7 +18,13 @@ import {
   validarCruceServicios,
 } from './utils/servicio.util'
 import { Estado } from '../../felcn_siii/estado.enum'
-import { Usuario } from '../../felcn_siii/parametricas/usuario/entities/usuario.entity'
+
+// ✅ Tipo para evitar errores de TS
+type UsuarioAuth = {
+  usuario: string
+  nombreCompleto: string
+  abreviatura: string
+}
 
 @Injectable()
 export class ServicioService {
@@ -26,17 +32,13 @@ export class ServicioService {
     @InjectRepository(Servicio, DB_ASIG_CASOS)
     private readonly servicioRepository: Repository<Servicio>,
 
-    @InjectRepository(Usuario, DB_SIII)
-    private readonly usuarioRepository: Repository<Usuario>
+    @InjectDataSource(DB_AUTH)
+    private readonly dataSourceAuth: DataSource
   ) {}
 
   async generarCodigoServicio(fechaIngreso: Date, fechaSalida: Date) {
-     const ahora = new Date()
-     return generarCodigoServicio(
-      fechaIngreso,
-      fechaSalida,
-      ahora
-    )
+    const ahora = new Date()
+    return generarCodigoServicio(fechaIngreso, fechaSalida, ahora)
   }
 
   async create(dto: CreateServicioDto) {
@@ -46,10 +48,8 @@ export class ServicioService {
 
     validarRangoFechas(fechaIngreso, fechaSalida, ahora)
 
-    // cerrar servicios vencidos
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
-    // verificar si ya existe servicio hoy
     const servicioHoy = await buscarServicioPorFecha(
       this.servicioRepository,
       fechaIngreso
@@ -69,21 +69,18 @@ export class ServicioService {
       }
     }
 
-    // validar cruce de servicios
     await validarCruceServicios(
       this.servicioRepository,
       fechaIngreso,
       fechaSalida
     )
 
-    // generar codigo
     const codigoServicio = generarCodigoServicio(
       fechaIngreso,
       fechaSalida,
       ahora
     )
 
-    // verificar si el código ya existe
     const existeCodigo = await this.servicioRepository.findOne({
       where: { codigoServicio },
     })
@@ -123,34 +120,34 @@ export class ServicioService {
   }
 
   async verificarServicio(usuario: string) {
-    const ahora = new Date()
+  const ahora = new Date()
 
-    const servicio = await this.servicioRepository
-      .createQueryBuilder('s')
-      .where(
-        '(s.usuarioPrincipal = :usuario OR s.usuarioEmergencia = :usuario)',
-        { usuario }
-      )
-      .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
-      .andWhere('s.fechaIngreso <= :ahora', { ahora })
-      .andWhere('s.fechaSalida >= :ahora', { ahora })
-      .getOne()
+  const servicio = await this.servicioRepository
+    .createQueryBuilder('s')
+    .where(
+      '(s.usuario_principal = :usuario OR s.usuario_emergencia = :usuario)',
+      { usuario }
+    )
+    .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
+    .andWhere('s.fecha_hora_ingreso <= :ahora', { ahora })
+    .andWhere('s.fecha_hora_salida >= :ahora', { ahora })
+    .getOne()
 
-    if (!servicio) {
-      return {
-        enServicio: false,
-        mensaje: 'Usuario sin servicio asignado',
-      }
-    }
-
+  if (!servicio) {
     return {
-      enServicio: true,
-      codigoServicio: servicio.codigoServicio,
-      usuario,
-      desde: formatearFecha(servicio.fechaIngreso),
-      hasta: formatearFecha(servicio.fechaSalida),
+      enServicio: false,
+      mensaje: 'Usuario sin servicio asignado',
     }
   }
+
+  return {
+    enServicio: true,
+    codigoServicio: servicio.codigoServicio,
+    usuario,
+    desde: formatearFecha(servicio.fechaIngreso),
+    hasta: formatearFecha(servicio.fechaSalida),
+  }
+}
 
   async infoServicio(codigoServicio: string) {
     const servicio = await this.servicioRepository.findOne({
@@ -225,6 +222,7 @@ export class ServicioService {
       .createQueryBuilder('servicio')
       .take(limite)
       .skip(saltar)
+      .orderBy('servicio.fechaIngreso', 'DESC')
 
     if (filtro) {
       query.andWhere(
@@ -235,17 +233,37 @@ export class ServicioService {
 
     const [servicios, total] = await query.getManyAndCount()
 
-    const usuariosIds = [
-      ...servicios.map((s) => s.usuarioPrincipal),
-      ...servicios.map((s) => s.usuarioEmergencia),
-    ]
+    const usuariosIds = Array.from(
+      new Set(
+        [
+          ...servicios.map((s) => s.usuarioPrincipal),
+          ...servicios.map((s) => s.usuarioEmergencia),
+        ].filter(Boolean)
+      )
+    )
 
-    const usuarios: Usuario[] = await this.usuarioRepository.find({
-      where: { usuario: In(usuariosIds) },
-      relations: ['grado'],
-    })
+    const usuarios: UsuarioAuth[] = await this.dataSourceAuth.query(
+      `
+      SELECT 
+        u.usuario,
+        TRIM(CONCAT(
+          gr.abreviatura, ' ',
+          p.nombres, ' ',
+          p.primer_apellido, ' ',
+          COALESCE(p.segundo_apellido, '')
+        )) as "nombreCompleto",
+        gr.abreviatura
+      FROM usuario.usuario u
+      LEFT JOIN usuario.persona p ON p.id = u.id_persona
+      LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+      WHERE u.usuario = ANY($1::text[])
+    `,
+      [usuariosIds]
+    )
 
-    const usuariosMap = new Map(usuarios.map((u) => [u.usuario, u]))
+    const usuariosMap = new Map(
+      usuarios.map((u) => [u.usuario, u])
+    )
 
     const resultado = servicios.map((servicio) => {
       const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
@@ -257,11 +275,11 @@ export class ServicioService {
         fechaSalida: formatearFecha(servicio.fechaSalida),
 
         nombreUsuarioPrincipal: usuarioPrincipal
-          ? `${usuarioPrincipal.grado?.abreviatura} ${usuarioPrincipal.nombres}`
+          ? usuarioPrincipal.nombreCompleto
           : null,
 
         nombreUsuarioEmergencia: usuarioEmergencia
-          ? `${usuarioEmergencia.grado?.abreviatura} ${usuarioEmergencia.nombres}`
+          ? usuarioEmergencia.nombreCompleto
           : null,
       }
     })
@@ -287,6 +305,4 @@ export class ServicioService {
       estado: servicio.estado,
     }
   }
-
-  
 }

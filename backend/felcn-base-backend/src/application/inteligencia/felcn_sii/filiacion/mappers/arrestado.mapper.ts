@@ -78,7 +78,7 @@ export function mapArrestadoEntity(
 
     genero,
 
-    pais,
+    pais:pais?.idPais,
     estadoCivil,
 
     numeroDocumento: documento?.numeroDocumento,
