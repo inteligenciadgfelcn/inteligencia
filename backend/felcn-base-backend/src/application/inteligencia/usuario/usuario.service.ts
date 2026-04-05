@@ -21,6 +21,7 @@ export class UsuarioService {
       )) as "nombreCompleto",
       p.nro_documento as "nroDocumento",
       u.usuario as "usuario",
+      u.codigo_icia as "codigoIcia",
       u._estado as "estado",
       gr.descripcion as "grado",
       g.descripcion as "grupo",
