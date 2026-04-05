@@ -4,7 +4,6 @@ import { ColorOjo } from '@/application/inteligencia/felcn_sii/parametricas/colo
 import { ColorPiel } from '@/application/inteligencia/felcn_sii/parametricas/color_piel/entities/color_piel.entity'
 import { EstadoCivil } from '@/application/inteligencia/felcn_sii/parametricas/estado_civil/entities/estado_civil.entity'
 import { TipoCabello } from '@/application/inteligencia/felcn_sii/parametricas/tipo_cabello/entities/tipo_cabello.entity'
-import { Pais } from '@/application/inteligencia/felcn_siii/parametricas/pais/entities/pais.entity'
 import {
   PrimaryGeneratedColumn,
   Column,
@@ -20,7 +19,7 @@ export class ArrestadoAuxiliar {
     type: 'int',
     comment: 'Clave primaria del registro de arrestado auxiliar',
   })
-  idArrestadoAuxiliar: number
+  idArrestadoAuxiliar!: number
 
   @Column({
     name: 'id_operativo',
@@ -28,7 +27,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Identificador del operativo relacionado',
   })
-  idOperativo: number
+  idOperativo!: number
 
   @Column({
     name: 'numero_caso',
@@ -37,7 +36,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Número de caso asociado',
   })
-  numeroCaso: string
+  numeroCaso!: string
 
   @Column({
     name: 'nombres',
@@ -45,7 +44,7 @@ export class ArrestadoAuxiliar {
     length: 150,
     comment: 'Nombres del detenido',
   })
-  nombres: string
+  nombres!: string
 
   @Column({
     name: 'apellido_paterno',
@@ -54,7 +53,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Apellido paterno del detenido',
   })
-  apellidoPaterno: string
+  apellidoPaterno!: string
 
   @Column({
     name: 'apellido_materno',
@@ -63,7 +62,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Apellido materno del detenido',
   })
-  apellidoMaterno: string
+  apellidoMaterno!: string
 
   @Column({
     name: 'apellido_esposo',
@@ -72,7 +71,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Apellido de esposo en caso de corresponder',
   })
-  apellidoEsposo: string
+  apellidoEsposo!: string
 
   @Column({
     name: 'es_masculino',
@@ -80,13 +79,15 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Indica si el detenido es de sexo masculino',
   })
-  genero: boolean
+  genero!: boolean
 
-  @ManyToOne(() => Pais)
-  @JoinColumn({
+  @Column({
     name: 'id_pais',
+    type: 'int',
+    nullable: true,
+    comment: 'Identificador del país de origen del detenido',
   })
-  pais: Pais
+  pais!: number
 
   @Column({
     name: 'numero_documento',
@@ -94,7 +95,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Numero de documento de identificación',
   })
-  numeroDocumento: string
+  numeroDocumento!: string
 
   @Column({
     name: 'fecha_nacimiento',
@@ -102,7 +103,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fecha de nacimiento del detenido',
   })
-  fechaNacimiento: Date
+  fechaNacimiento!: Date
 
   @Column({
     name: 'lugar_nacimiento',
@@ -110,13 +111,13 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fecha de nacimiento del detenido',
   })
-  lugarNacimiento: Date
+  lugarNacimiento!: Date
 
   @ManyToOne(() => EstadoCivil)
   @JoinColumn({
     name: 'id_estado_civil',
   })
-  estadoCivil: EstadoCivil
+  estadoCivil!: EstadoCivil
 
   @Column({
     name: 'ocupacion',
@@ -124,7 +125,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Profesión del arrestado',
   })
-  ocupacion: string
+  ocupacion!: string
 
   @Column({
     name: 'direccion',
@@ -132,14 +133,14 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Dirección del detenido',
   })
-  direccion: string
+  direccion!: string
 
   @Column({
     name: 'estatura',
     type: 'varchar',
     length: 10,
   })
-  estatura: string
+  estatura!: string
 
   @Column({
     name: 'foto_frente',
@@ -147,7 +148,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fotografía frontal del detenido',
   })
-  fotoFrente: string
+  fotoFrente!: string
 
   @Column({
     name: 'foto_dedo_derecho',
@@ -155,7 +156,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fotografía del dedo derecho',
   })
-  fotoDedoDerecho: string
+  fotoDedoDerecho!: string
 
   @Column({
     name: 'foto_dedo_izquierdo',
@@ -163,23 +164,23 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fotografía del dedo izquierdo',
   })
-  fotoDedoIzquierdo: string
+  fotoDedoIzquierdo!: string
 
   @ManyToOne(() => ColorPiel)
   @JoinColumn({ name: 'id_color_piel' })
-  colorPiel: ColorPiel
+  colorPiel!: ColorPiel
 
   @ManyToOne(() => ColorOjo)
   @JoinColumn({ name: 'id_color_ojos' })
-  colorOjos: ColorOjo
+  colorOjos!: ColorOjo
 
   @ManyToOne(() => TipoCabello)
   @JoinColumn({ name: 'id_tipo_cabello' })
-  tipoCabello: TipoCabello
+  tipoCabello!: TipoCabello
 
   @ManyToOne(() => ColorCabello)
   @JoinColumn({ name: 'id_color_cabello' })
-  colorCabello: ColorCabello
+  colorCabello!: ColorCabello
 
   @Column({
     name: 'senas',
@@ -187,7 +188,7 @@ export class ArrestadoAuxiliar {
     length: 255,
     nullable: true,
   })
-  senasParticulares: string
+  senasParticulares!: string
 
   @Column({
     name: 'lugar_arresto',
@@ -195,7 +196,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Lugar de arresto',
   })
-  lugarArresto: string
+  lugarArresto!: string
 
   @Column({
     name: 'observaciones',
@@ -203,14 +204,14 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Observaciones generales',
   })
-  observaciones: string
+  observaciones!: string
   @Column({
     name: 'fecha_hora_ingreso',
     type: 'timestamp',
     nullable: true,
     comment: 'Fecha y hora de ingreso del registro',
   })
-  fechaHoraIngreso: Date
+  fechaHoraIngreso!: Date
 
   @Column({
     name: 'usuario',
@@ -219,7 +220,7 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Usuario que registró la información',
   })
-  usuario: string
+  usuario!: string
 
   @Column({
     name: 'fecha_hora_actualizacion',
@@ -227,5 +228,5 @@ export class ArrestadoAuxiliar {
     nullable: true,
     comment: 'Fecha y hora de última actualización',
   })
-  fechaHoraActualizacion: Date
+  fechaHoraActualizacion!: Date
 }

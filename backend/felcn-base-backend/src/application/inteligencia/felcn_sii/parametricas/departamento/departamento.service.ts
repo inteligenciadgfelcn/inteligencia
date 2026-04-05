@@ -1,17 +1,14 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
-import { CreateDepartamentoDto } from './dto/create-departamento.dto'
-import { UpdateDepartamentoDto } from './dto/update-departamento.dto'
-import { InjectRepository } from '@nestjs/typeorm'
-import {  Repository } from 'typeorm'
-import { DB_SII } from '@/core/config/database/database.module'
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
-import { Departamento } from './entities/departamento.entity'
-import { Pais } from '@/application/inteligencia/felcn_sii/parametricas/pais/entities/pais.entity'
+import { Estado } from "@/application/inteligencia/felcn_siii/estado.enum"
+import { PaginacionQueryDto } from "@/common/dto/paginacion-query.dto"
+import { DB_SII } from "@/core/config/database/database.module"
+import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Repository } from "typeorm"
+import { Pais } from "../pais/entities/pais.entity"
+import { CreateDepartamentoDto } from "./dto/create-departamento.dto"
+import { UpdateDepartamentoDto } from "./dto/update-departamento.dto"
+import { Departamento } from "./entities/departamento.entity"
+
 
 @Injectable()
 export class DepartamentoService {
