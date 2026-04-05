@@ -1,5 +1,6 @@
 export interface FiliacionPersonaTable {
   id_persona_auxiliar: string
+  id_detenido: number
   nombres: string
   apellido_paterno: string
   apellido_materno: string
