@@ -1,0 +1,58 @@
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  MaxLength,
+  IsBoolean,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateUnidadDto {
+  @ApiProperty({
+    example: 'UMP',
+    description: 'Código único de la unidad',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10)
+  abreviatura!: string;
+
+  @ApiProperty({
+    example: 'Unidad Movil de Patrullaje Rural',
+    description: 'Descripción de la unidad',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(250)
+  descripcion?: string;
+
+  @ApiProperty({
+    example: 'UM',
+    description: 'Abreviatura ICIA',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10)
+  abreviaturaIcia!: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Indica si la unidad es operativa administrativa',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Boolean)
+  @IsBoolean()
+  opAdm?: boolean;
+
+  @ApiProperty({
+    example: 'UMOPAR',
+    description: 'Abreviatura para reporte',
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(10)
+  abreviaturaReporte!: string;
+}

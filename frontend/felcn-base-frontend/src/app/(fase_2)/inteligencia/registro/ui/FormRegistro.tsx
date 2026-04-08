@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAlerts, useSession } from '@/hooks'
@@ -9,59 +9,81 @@ import { Constantes } from '@/config/Constantes'
 import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
-import SelectWithPrefix from '@/components/form/FormSelectWithPrefix'
-import { nowDateToString } from '@/utils/fechas'
-import { RegistroTypeCRUD } from '../types/RegistroType'
+import {
+  dateToStringAmPm,
+  dateUtcToString,
+  formatDate2ToBackend,
+  nowDateToString,
+} from '@/utils/fechas'
+import { useDepartments } from '../hooks/use.departments'
+import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
+import { Departamento } from '../services/departments.service'
+import { useUnities } from '../hooks/use.unities'
+import { Unidad } from '../services/unities.service'
+import { useDistritales } from '../hooks/use.distritales'
+import { Distrital } from '../services/distrital.service'
+import { useGroups } from '../hooks/use.groups'
+import { Grupo } from '../services/group.service'
+import { getNumeroRegistro } from '../services/registro.service'
+import { useUsers } from '../hooks/use.users'
+import { Usuario } from '../services/users.service'
+import { AsignacionTable } from '../types/asignacion.table'
+import { original } from '@reduxjs/toolkit'
 
 /* ================= VALIDACIÓN ================= */
-const datosPersonaSchema = z.object({
-  nombreCompleto: z.string().min(1, 'Nombre completo obligatorio'),
-  nroCelular: z.string().min(1, 'Número de celular obligatorio'),
-})
+const selectSchema = (message: string) =>
+  z.preprocess(
+    (val) => (val === null ? undefined : val),
+    z.object(
+      {
+        value: z.number(),
+        label: z.string(),
+        original: z.any(),
+      },
+      { required_error: message }
+    )
+  )
 
 export const formSchema = z.object({
   codigoServicio: z.string().min(1, 'Código de servicio obligatorio'),
   nroPase: z.string().min(1, 'Número de pase obligatorio'),
-  departamento: z.number().min(1, 'Departamento obligatorio'),
-  unidad: z.number().min(1, 'Unidad obligatoria'),
-  distrital: z.number().min(1, 'Distrital obligatorio'),
-  grupo: z.number().min(1, 'Grupo obligatorio'),
+  departamento: selectSchema('Departamento obligatorio'),
+  unidad: selectSchema('Unidad obligatoria'),
+  distrital: selectSchema('Distrital obligatoria'),
+  grupo: selectSchema('Grupo obligatorio'),
   nroRegistro: z.string().min(1, 'Número de registro obligatorio'),
   nombreOperativo: z.string().min(1, 'Nombre del operativo obligatorio'),
   fechaHoraOperativo: z
     .string()
     .min(1, 'Fecha y hora del operativo obligatoria'),
-  quienRealiza: datosPersonaSchema,
-  asignadoA: datosPersonaSchema,
-  fiscalAsignado: datosPersonaSchema,
+  quienRealiza: selectSchema('Quien realiza la solicitud obligatorio'),
+  quienRealizaNum: z
+    .string()
+    .min(1, 'Número de celular de quien realiza la solicitud obligatorio'),
+  asignadoA: selectSchema('Asignado al caso obligatorio'),
+  asignadoANum: z
+    .string()
+    .min(1, 'Número de celular de asignado al caso obligatorio'),
+  fiscalAsignado: z.string().min(1, 'Fiscal asignado obligatorio'),
+  fiscalAsignadoNum: z
+    .string()
+    .min(1, 'Número de celular de fiscal asignado obligatorio'),
 })
 
-type FormValues = z.infer<typeof formSchema>
+export type FormValues = z.infer<typeof formSchema>
 
 /* ================= PROPS ================= */
 
 interface Props {
-  registro?: RegistroTypeCRUD | null
+  asignacion?: AsignacionTable | null
   onSuccess: () => void
 }
 
 /* ================= COMPONENT ================= */
-export const FormRegistro = ({ registro, onSuccess }: Props) => {
+export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   const [loading, setLoading] = useState(false)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
-
-  // Cachés para mapear value -> label
-  const [departamentosCache, setDepartamentosCache] = useState<{
-    [key: string]: string
-  }>({})
-  const [unidadesCache, setUnidadesCache] = useState<{ [key: string]: string }>(
-    {}
-  )
-  const [distritalesCache, setDistritalesCache] = useState<{
-    [key: string]: string
-  }>({})
-  const [gruposCache, setGruposCache] = useState<{ [key: string]: string }>({})
 
   const {
     handleSubmit,
@@ -71,177 +93,145 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
     trigger,
     control,
     reset,
+    resetField,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      // codigoServicio: registro?.codigoServicio || '',
-      // nroPase: registro?.nroPase || '',
-      // departamento: 0,
-      // unidad: 0,
-      // distrital: 0,
-      // grupo: 0,
-      // nroRegistro: registro?.nroRegistro || '',
-      // nombreOperativo: registro?.nombreOperativo || '',
-      fechaHoraOperativo: nowDateToString(),
-      // quienRealiza: {
-      //   nombreCompleto: registro?.quienRealiza?.nombreCompleto || '',
-      //   nroCelular: registro?.quienRealiza?.nroCelular || '',
-      // },
-      // asignadoA: {
-      //   nombreCompleto: registro?.asignadoA?.nombreCompleto || '',
-      //   nroCelular: registro?.asignadoA?.nroCelular || '',
-      // },
-      // fiscalAsignado: {
-      //   nombreCompleto: registro?.fiscalAsignado?.nombreCompleto || '',
-      //   nroCelular: registro?.fiscalAsignado?.nroCelular || '',
-      // },
+      codigoServicio: asignacion?.codigoServicio || '',
+      nroPase: asignacion?.usuario || '',
+      departamento: asignacion?.departamento
+        ? {
+            value: asignacion.departamento?.idDepartamento,
+            label: asignacion.departamento?.descripcion,
+          }
+        : undefined,
+      // unidad: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.distrital.unidad.idUnidad,
+      //       label: asignacion.grupo.distrital.unidad.descripcion,
+      //     }
+      //   : undefined,
+      // distrital: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.distrital.idDistrital,
+      //       label: asignacion.grupo.distrital.descripcion,
+      //     }
+      //   : undefined,
+      // grupo: asignacion?.grupo
+      //   ? {
+      //       value: asignacion.grupo.idGrupo,
+      //       label: asignacion.grupo.descripcion,
+      //     }
+      //   : undefined,
+      nroRegistro: asignacion?.nroOperativo || '',
+      nombreOperativo: asignacion?.nombreCaso || '',
+      fechaHoraOperativo: asignacion?.fechaSolicitud
+        ? dateToStringAmPm(asignacion.fechaSolicitud)
+        : nowDateToString(),
+      quienRealiza: asignacion?.nombreSolicitud
+        ? {
+            value: Number(asignacion.telefonoSolicitud),
+            label: asignacion.nombreSolicitud,
+          }
+        : undefined,
+      asignadoA: asignacion?.asignado
+        ? {
+            value: Number(asignacion.telefonoAsignado),
+            label: asignacion.asignado,
+          }
+        : undefined,
+      fiscalAsignado: asignacion?.fiscalAsignado || '',
+      quienRealizaNum: asignacion?.telefonoSolicitud || '',
+      asignadoANum: asignacion?.telefonoAsignado || '',
+      fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
     },
   })
 
-  const unidadSeleccionada = watch('unidad')
-  const distritalSeleccionado = watch('distrital')
-  const isUnidadFirstChange = useRef(true)
-  const isDistritalFirstChange = useRef(true)
+  const unidadSeleccionada = useWatch({ control, name: 'unidad' })
+  const distritalSeleccionado = useWatch({ control, name: 'distrital' })
+  const grupoSeleccionado = useWatch({ control, name: 'grupo' })
 
-  const loadDepartments = async (inputValue: string) => {
-    const response = await sesionPeticion({
-      url: `${Constantes.baseApiUrl}/departamentos/all/pais`,
-      params: { idPais: 1 },
-      withCredentials: true,
-    })
+  imprimir('form values', watch())
 
-    const options = response.data.map((json: any) => ({
-      value: json.id,
-      label: json.nombre,
-    }))
-
-    // Actualizar caché
-    const cache: { [key: string]: string } = {}
-    options.forEach((opt: { value: string; label: string }) => {
-      cache[opt.value] = opt.label
-    })
-    setDepartamentosCache(cache)
-
-    return options.filter((d: any) =>
-      d.label.toLowerCase().includes(inputValue.toLowerCase())
-    )
-  }
-
-  const loadUnities = async (inputValue: string) => {
-    const response = await sesionPeticion({
-      url: `${Constantes.baseApiUrl}/unidades/allGeneral`,
-      withCredentials: true,
-    })
-
-    const options = response.data.map((json: any) => ({
-      value: json.id,
-      label: json.descripcion,
-    }))
-
-    // Actualizar caché
-    const cache: { [key: string]: string } = {}
-    options.forEach((opt: { value: string; label: string }) => {
-      cache[opt.value] = opt.label
-    })
-    setUnidadesCache(cache)
-
-    return options.filter((d: any) =>
-      d.label.toLowerCase().includes(inputValue.toLowerCase())
-    )
-  }
-
-  const loadDistritals = async (inputValue: string) => {
-    if (!unidadSeleccionada) {
-      return []
-    }
-
-    try {
-      const response = await sesionPeticion({
-        url: `${Constantes.baseApiUrl}/distritales/all/unidad`,
-        params: { idUnidad: unidadSeleccionada },
-        withCredentials: true,
-      })
-
-      const options = response.data.map((json: any) => ({
-        value: json.id,
-        label: json.descripcion,
-      }))
-
-      // Actualizar caché
-      const cache: { [key: string]: string } = {}
-      options.forEach((opt: { value: string; label: string }) => {
-        cache[opt.value] = opt.label
-      })
-      setDistritalesCache(cache)
-
-      const filtered = options.filter((d: any) =>
-        d.label.toLowerCase().includes(inputValue.toLowerCase())
-      )
-
-      return filtered
-    } catch (error) {
-      return []
-    }
-  }
-
-  const loadGroups = async (inputValue: string) => {
-    if (!distritalSeleccionado) {
-      return []
-    }
-
-    try {
-      const response = await sesionPeticion({
-        url: `${Constantes.baseApiUrl}/grupos/all/distrito`,
-        params: { idDistrito: distritalSeleccionado },
-        withCredentials: true,
-      })
-
-      const options = response.data.map((json: any) => ({
-        value: json.id,
-        label: json.descripcion,
-      }))
-
-      // Actualizar caché
-      const cache: { [key: string]: string } = {}
-      options.forEach((opt: { value: string; label: string }) => {
-        cache[opt.value] = opt.label
-      })
-      setGruposCache(cache)
-
-      const filtered = options.filter((d: any) =>
-        d.label.toLowerCase().includes(inputValue.toLowerCase())
-      )
-
-      return filtered
-    } catch (error) {
-      return []
-    }
-  }
+  const { data: departamentos } = useDepartments()
+  const { data: unidades } = useUnities()
+  const { data: distritales } = useDistritales(unidadSeleccionada?.value)
+  const { data: grupos } = useGroups(distritalSeleccionado?.value)
+  const { data: usuarios } = useUsers(grupoSeleccionado?.value)
 
   useEffect(() => {
-    loadDepartments('')
-    loadUnities('')
-  }, [])
+    if (asignacion) {
+      // reset({
+      //   codigoServicio: asignacion?.codigoServicio || '',
+      //   nroPase: asignacion?.usuario || '',
+      //   departamento: asignacion?.departamento
+      //     ? {
+      //         value: asignacion.departamento?.idDepartamento,
+      //         label: asignacion.departamento?.descripcion,
+      //       }
+      //     : undefined,
+      //   unidad: asignacion?.unidad
+      //     ? {
+      //         value: asignacion.unidad.idUnidad,
+      //         label: asignacion.unidad.descripcion,
+      //       }
+      //     : undefined,
+      //   distrital: asignacion?.grupo
+      //     ? {
+      //         value: asignacion.grupo.distrital.idDistrital,
+      //         label: asignacion.grupo.distrital.descripcion,
+      //       }
+      //     : undefined,
+      //   grupo: asignacion?.grupo
+      //     ? {
+      //         value: asignacion.grupo.idGrupo,
+      //         label: asignacion.grupo.descripcion,
+      //       }
+      //     : undefined,
+      //   nroRegistro: asignacion?.nroOperativo || '',
+      //   nombreOperativo: asignacion?.nombreCaso || '',
+      //   fechaHoraOperativo: asignacion?.fechaSolicitud
+      //     ? dateUtcToString(asignacion.fechaSolicitud)
+      //     : nowDateToString(),
+      //   quienRealiza: asignacion?.nombreSolicitud
+      //     ? {
+      //         value: Number(asignacion.telefonoSolicitud),
+      //         label: asignacion.nombreSolicitud,
+      //       }
+      //     : undefined,
+      //   asignadoA: asignacion?.asignado
+      //     ? {
+      //         value: Number(asignacion.telefonoAsignado),
+      //         label: asignacion.asignado,
+      //       }
+      //     : undefined,
+      //   fiscalAsignado: asignacion?.fiscalAsignado || '',
+      //   quienRealizaNum: asignacion?.telefonoSolicitud || '',
+      //   asignadoANum: asignacion?.telefonoAsignado || '',
+      //   fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      // })
+    }
+  }, [asignacion])
 
   useEffect(() => {
-    if (isUnidadFirstChange.current) {
-      isUnidadFirstChange.current = false
-      return
-    }
-
-    setValue('distrital', 0)
-    setValue('grupo', 0)
-  }, [unidadSeleccionada, setValue])
+    resetField('distrital')
+    resetField('grupo')
+  }, [unidadSeleccionada, resetField])
 
   useEffect(() => {
-    if (isDistritalFirstChange.current) {
-      isDistritalFirstChange.current = false
-      return
-    }
+    resetField('grupo')
+  }, [distritalSeleccionado, resetField])
 
-    setValue('grupo', 0)
-  }, [distritalSeleccionado, setValue])
+  useEffect(() => {
+    resetField('quienRealiza')
+    resetField('asignadoA')
+  }, [grupoSeleccionado, resetField])
+
+  useEffect(() => {
+    resetField('quienRealiza')
+    resetField('asignadoA')
+  }, [grupoSeleccionado, resetField])
 
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
@@ -249,7 +239,6 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
 
     try {
       setLoading(true)
-
       //     {
       //   "idDepartamento": 1,
       //   "idGrupo": 2,
@@ -263,26 +252,30 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
       //   "telefonoFiscal": "72000000"
       // }
       const payload = {
-        idDepartamento: values.departamento,
-        idGrupo: values.grupo,
+        codigoServicio: values.codigoServicio,
+        usuario: values.nroPase,
+        idDepartamento: values.departamento.original.abreviatura,
+        idGrupo: values.grupo.value,
         nombreCaso: values.nombreOperativo,
-        fechaSolicitud: values.fechaHoraOperativo,
-        nombreSolicitud: values.quienRealiza.nombreCompleto,
-        telefonoSolicitud: values.quienRealiza.nroCelular,
-        asignado: values.asignadoA.nombreCompleto,
-        telefonoAsignado: values.asignadoA.nroCelular,
-        fiscalAsignado: values.fiscalAsignado.nombreCompleto,
-        telefonoFiscal: values.fiscalAsignado.nroCelular,
+        fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
+        nombreSolicitud: values.quienRealiza.label,
+        telefonoSolicitud: values.quienRealizaNum,
+        asignado: values.asignadoA.label,
+        telefonoAsignado: values.asignadoANum,
+        fiscalAsignado: values.fiscalAsignado,
+        telefonoFiscal: values.fiscalAsignadoNum,
       }
 
       const resp = await sesionPeticion({
-        url: `${Constantes.baseApiUrl}/asignaciones`,
+        url: `${Constantes.baseUrl}/asignaciones`,
         method: 'post',
         body: payload,
       })
 
       Alerta({
-        mensaje: InterpreteMensajes(resp),
+        mensaje: InterpreteMensajes({
+          mensaje: 'Caso registrado correctamente',
+        }),
         variant: 'success',
       })
 
@@ -308,25 +301,22 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
 
     // Validar solo los campos requeridos para asignar número de registro
     const isValid = await trigger(fieldsToValidate)
+    console.log(`${isValid}, ${fieldsToValidate}`)
+
     if (!isValid) {
       return
     }
 
-    const codigoServicio = watch('codigoServicio')
-    const nroPase = watch('nroPase')
     const departamento = watch('departamento')
-    const unidad = watch('unidad')
-    const distrital = watch('distrital')
     const grupo = watch('grupo')
 
     try {
       setLoading(true)
 
-      const response = await sesionPeticion({
-        url: `${Constantes.baseApiUrl}/asignaciones/generar-codigo`,
-        params: { idDepartamento: departamento, idGrupo: grupo },
-        withCredentials: true,
-      })
+      const response = await getNumeroRegistro(
+        departamento!.original.abreviatura,
+        grupo!.value
+      )
 
       Alerta({
         mensaje: InterpreteMensajes({
@@ -336,8 +326,8 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
       })
 
       // Si la respuesta contiene el número de registro, actualizarlo en el form
-      if (response.data) {
-        setValue('nroRegistro', response.data)
+      if (response) {
+        setValue('nroRegistro', response)
       }
     } catch (error) {
       imprimir('Error asignando número de registro', error)
@@ -372,48 +362,69 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
                 error={errors.nroPase?.message as string}
               />
             </div>
-            <div className="col-span-12">
-              <SelectWithPrefix
+            <div className="col-span-8">
+              <AsyncSearchSelect<Departamento>
                 name="departamento"
                 control={control}
                 prefix="Departamento"
-                loadOptions={loadDepartments}
-                optionsCache={departamentosCache}
                 error={errors.departamento?.message}
+                originalData={departamentos ?? []}
+                mapOption={(item) => ({
+                  label: item.descripcion,
+                  value: item.idDepartamento,
+                  original: item,
+                })}
               />
             </div>
+            <div className="col-span-4"></div>
             <div className="col-span-4">
-              <SelectWithPrefix
+              <AsyncSearchSelect<Unidad>
                 name="unidad"
                 control={control}
                 prefix="Unidad"
-                loadOptions={loadUnities}
-                optionsCache={unidadesCache}
                 error={errors.unidad?.message}
+                originalData={unidades ?? []}
+                mapOption={(item) => {
+                  return {
+                    label: item.descripcion,
+                    value: item.id,
+                    original: item,
+                  }
+                }}
               />
             </div>
             <div className="col-span-4">
-              <SelectWithPrefix
-                key={`distrital-${unidadSeleccionada}`}
+              <AsyncSearchSelect<Distrital>
                 name="distrital"
                 control={control}
                 prefix="Distrital"
-                loadOptions={loadDistritals}
-                optionsCache={distritalesCache}
-                disabled={!unidadSeleccionada}
                 error={errors.distrital?.message}
+                originalData={distritales ?? []}
+                isDisable={!unidadSeleccionada}
+                mapOption={(item) => {
+                  return {
+                    label: item.descripcion,
+                    value: item.id,
+                    original: item,
+                  }
+                }}
               />
             </div>
             <div className="col-span-4">
-              <SelectWithPrefix
-                key={`grupo-${distritalSeleccionado}`}
+              <AsyncSearchSelect<Grupo>
                 name="grupo"
                 control={control}
                 prefix="Grupo"
-                loadOptions={loadGroups}
-                optionsCache={gruposCache}
-                disabled={!distritalSeleccionado}
                 error={errors.grupo?.message}
+                originalData={grupos ?? []}
+                isDisable={!distritalSeleccionado || !unidadSeleccionada}
+                mapOption={(item) => {
+                  return {
+                    label: item.descripcion,
+                    value: item.id,
+                    original: item,
+                  }
+                }}
               />
             </div>
             <div className="col-span-12">
@@ -454,55 +465,89 @@ export const FormRegistro = ({ registro, onSuccess }: Props) => {
                 error={errors.fechaHoraOperativo?.message as string}
               />
             </div>
-            <div className="col-span-6">
-              <InputWithPrefix
-                name="quienRealiza.nombreCompleto"
+            <div className="col-span-8">
+              <AsyncSearchSelect<Usuario>
+                control={control}
+                name="quienRealiza"
                 prefix="Quien realiza la solicitud"
-                register={register}
-                error={errors.quienRealiza?.nombreCompleto?.message as string}
+                error={errors.quienRealiza?.message as string}
+                originalData={usuarios ?? []}
+                isDisable={!grupoSeleccionado}
+                mapOption={(item) => {
+                  return {
+                    label: `${item.nombreCompleto}`.toUpperCase(),
+                    value: Number(item.idUsuario),
+                    original: item,
+                  }
+                }}
+                onValueChange={(option) => {
+                  if (option) {
+                    setValue('quienRealizaNum', option.original.telefono)
+                  } else {
+                    resetField('quienRealizaNum')
+                  }
+                }}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-4">
               <InputWithPrefix
-                name="quienRealiza.nroCelular"
+                name="quienRealizaNum"
                 prefix="Nro. Celular"
                 icon="phone"
                 register={register}
-                error={errors.quienRealiza?.nroCelular?.message as string}
+                error={errors.quienRealizaNum?.message as string}
+                readOnly
               />
             </div>
-            <div className="col-span-6">
-              <InputWithPrefix
-                name="asignadoA.nombreCompleto"
+            <div className="col-span-8">
+              <AsyncSearchSelect<Usuario>
+                control={control}
+                name="asignadoA"
                 prefix="Asignado al caso"
-                register={register}
-                error={errors.asignadoA?.nombreCompleto?.message as string}
+                error={errors.asignadoA?.message as string}
+                originalData={usuarios ?? []}
+                isDisable={!grupoSeleccionado}
+                mapOption={(item) => {
+                  return {
+                    label: `${item.nombreCompleto}`.toUpperCase(),
+                    value: Number(item.idUsuario),
+                    original: item,
+                  }
+                }}
+                onValueChange={(option) => {
+                  if (option) {
+                    setValue('asignadoANum', option.original.telefono)
+                  } else {
+                    resetField('asignadoANum')
+                  }
+                }}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-4">
               <InputWithPrefix
-                name="asignadoA.nroCelular"
+                name="asignadoANum"
                 prefix="Nro. Celular"
                 icon="phone"
                 register={register}
-                error={errors.asignadoA?.nroCelular?.message as string}
+                error={errors.asignadoANum?.message as string}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-8">
               <InputWithPrefix
-                name="fiscalAsignado.nombreCompleto"
+                name="fiscalAsignado"
                 prefix="Fiscal asignado"
                 register={register}
-                error={errors.fiscalAsignado?.nombreCompleto?.message as string}
+                error={errors.fiscalAsignado?.message as string}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-4">
               <InputWithPrefix
-                name="fiscalAsignado.nroCelular"
+                name="fiscalAsignadoNum"
                 prefix="Nro. Celular"
                 icon="phone"
                 register={register}
-                error={errors.fiscalAsignado?.nroCelular?.message as string}
+                onlyNumbers
+                error={errors.fiscalAsignadoNum?.message as string}
               />
             </div>
           </div>

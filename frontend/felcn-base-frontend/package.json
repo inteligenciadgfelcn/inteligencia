@@ -83,14 +83,15 @@
     "react-perfect-scrollbar": "^1.5.8",
     "react-popper": "^2.3.0",
     "react-redux": "^9.2.0",
+    "react-select": "^5.7.0",
     "sharp": "0.33.5",
+    "socket.io-client": "^4.8.3",
     "swr": "2.2.5",
     "use-debounce": "10.0.4",
     "xss": "1.0.15",
     "zod": "3.23.8",
     "zustand": "4.5.5",
-    "zxcvbn-typescript": "5.0.1",
-    "react-select": "^5.7.0"
+    "zxcvbn-typescript": "5.0.1"
   },
   "devDependencies": {
     "@babel/core": "7.26.10",

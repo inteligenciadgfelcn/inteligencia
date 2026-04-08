@@ -1,31 +1,16 @@
-
 import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
-import {
-  BeforeInsert,
-  Column,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-} from 'typeorm'
+import { BeforeInsert, Column, Entity, Index, PrimaryColumn } from 'typeorm'
 
 @Entity({ name: 'servicio', schema: 'public' })
 export class Servicio {
-  @PrimaryGeneratedColumn({
-    type: 'int',
-    name: 'id_servicio',
-    comment: 'Clave primaria del registro',
-  })
-  idServicio: number
-
   @Index({ unique: true })
-  @Column({
+  @PrimaryColumn({
     type: 'varchar',
     length: 50,
-    nullable: false,
     name: 'codigo_servicio',
     comment: 'Codigo de servicio',
   })
-  codigoServicio: string
+  codigoServicio!: string
 
   @Column({
     type: 'varchar',
@@ -34,7 +19,7 @@ export class Servicio {
     name: 'usuario_principal',
     comment: 'Usuario principal del servicio',
   })
-  usuarioPrincipal: string
+  usuarioPrincipal!: string
 
   @Column({
     type: 'varchar',
@@ -43,7 +28,7 @@ export class Servicio {
     name: 'usuario_emergencia',
     comment: 'Usuario de emergencia del servicio',
   })
-  usuarioEmergencia: string
+  usuarioEmergencia!: string
 
   @Column({
     type: 'timestamp',
@@ -51,7 +36,7 @@ export class Servicio {
     name: 'fecha_hora_ingreso',
     comment: 'Fecha de ingreso al servicio',
   })
-  fechaIngreso: Date
+  fechaIngreso!: Date
 
   @Column({
     type: 'timestamp',
@@ -59,7 +44,7 @@ export class Servicio {
     name: 'fecha_hora_salida',
     comment: 'Fecha de salida del servicio',
   })
-  fechaSalida: Date
+  fechaSalida!: Date
 
   @Column({
     type: 'enum',
@@ -67,7 +52,7 @@ export class Servicio {
     default: Estado.ACTIVO,
     comment: 'Estado del registro',
   })
-  estado: Estado
+  estado!: Estado
 
   @BeforeInsert()
   setEstadoPorDefecto() {
