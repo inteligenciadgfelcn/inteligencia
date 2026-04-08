@@ -4,27 +4,42 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { UpdateServicioDto } from './dto/update-servicio.dto'
-import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
-import { InjectRepository } from '@nestjs/typeorm'
+import { DB_ASIG_CASOS, DB_AUTH } from '@/core/config/database/database.module'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { Servicio } from './entities/servicio.entity'
-import { Repository } from 'typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { CreateServicioDto } from './dto/create-servicio.dto'
 import { formatearFecha, validarRangoFechas } from './utils/fecha.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import {
-  buscarServicioHoy,
+  buscarServicioPorFecha,
   cerrarServiciosVencidos,
   generarCodigoServicio,
   validarCruceServicios,
 } from './utils/servicio.util'
 import { Estado } from '../../felcn_siii/estado.enum'
 
+type UsuarioAuth = {
+  usuario: string
+  nombreCompleto: string
+  codigo_icia: string
+  abreviatura: string
+}
+
 @Injectable()
 export class ServicioService {
   constructor(
     @InjectRepository(Servicio, DB_ASIG_CASOS)
-    private readonly servicioRepository: Repository<Servicio>
+    private readonly servicioRepository: Repository<Servicio>,
+
+    @InjectDataSource(DB_AUTH)
+    private readonly dataSourceAuth: DataSource
   ) {}
+
+  async generarCodigoServicio(fechaIngreso: Date, fechaSalida: Date) {
+    const ahora = new Date()
+    return generarCodigoServicio(fechaIngreso, fechaSalida, ahora)
+  }
 
   async create(dto: CreateServicioDto) {
     const fechaIngreso = dto.fechaIngreso
@@ -33,11 +48,12 @@ export class ServicioService {
 
     validarRangoFechas(fechaIngreso, fechaSalida, ahora)
 
-    // cerrar servicios vencidos
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
-    // verificar si ya existe servicio hoy
-    const servicioHoy = await buscarServicioHoy(this.servicioRepository)
+    const servicioHoy = await buscarServicioPorFecha(
+      this.servicioRepository,
+      fechaIngreso
+    )
 
     if (servicioHoy) {
       return {
@@ -53,21 +69,18 @@ export class ServicioService {
       }
     }
 
-    // validar cruce de servicios
     await validarCruceServicios(
       this.servicioRepository,
       fechaIngreso,
       fechaSalida
     )
 
-    // generar codigo
     const codigoServicio = generarCodigoServicio(
       fechaIngreso,
       fechaSalida,
       ahora
     )
 
-    // verificar si el código ya existe
     const existeCodigo = await this.servicioRepository.findOne({
       where: { codigoServicio },
     })
@@ -112,12 +125,12 @@ export class ServicioService {
     const servicio = await this.servicioRepository
       .createQueryBuilder('s')
       .where(
-        '(s.usuarioPrincipal = :usuario OR s.usuarioEmergencia = :usuario)',
+        '(s.usuario_principal = :usuario OR s.usuario_emergencia = :usuario)',
         { usuario }
       )
       .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
-      .andWhere('s.fechaIngreso <= :ahora', { ahora })
-      .andWhere('s.fechaSalida >= :ahora', { ahora })
+      .andWhere('s.fecha_hora_ingreso <= :ahora', { ahora })
+      .andWhere('s.fecha_hora_salida >= :ahora', { ahora })
       .getOne()
 
     if (!servicio) {
@@ -200,13 +213,16 @@ export class ServicioService {
     }
   }
 
-  async findAllPaginado(pagination: PaginacionQueryDto) {
+  async findAllPaginado(
+    pagination: PaginacionQueryDto
+  ): Promise<[any[], number]> {
     const { limite, saltar, filtro } = pagination
 
     const query = this.servicioRepository
       .createQueryBuilder('servicio')
       .take(limite)
       .skip(saltar)
+      .orderBy('servicio.fechaIngreso', 'DESC')
 
     if (filtro) {
       query.andWhere(
@@ -214,7 +230,62 @@ export class ServicioService {
         { filtro: `%${filtro}%` }
       )
     }
-    return await query.getManyAndCount()
+
+    const [servicios, total] = await query.getManyAndCount()
+
+    const usuariosIds = Array.from(
+      new Set(
+        [
+          ...servicios.map((s) => s.usuarioPrincipal),
+          ...servicios.map((s) => s.usuarioEmergencia),
+        ].filter(Boolean)
+      )
+    )
+    console.log('usuariosIds:', usuariosIds)
+
+    const usuarios: UsuarioAuth[] = await this.dataSourceAuth.query(
+      `
+  SELECT 
+    u.usuario,
+    u.codigo_icia,
+    u.id as "idUsuario",
+    TRIM(CONCAT(
+      gr.abreviatura, ' ',
+      p.nombres, ' ',
+      p.primer_apellido, ' ',
+      COALESCE(p.segundo_apellido, '')
+    )) as "nombreCompleto",
+    gr.abreviatura
+  FROM usuario.usuario u
+  LEFT JOIN usuario.persona p ON p.id = u.id_persona
+  LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+  WHERE u.codigo_icia = ANY($1::text[])
+  `,
+      [usuariosIds]
+    )
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.codigo_icia, u]))
+
+    const resultado = servicios.map((servicio) => {
+      const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
+      const usuarioEmergencia = usuariosMap.get(servicio.usuarioEmergencia)
+
+      return {
+        ...servicio,
+        fechaIngreso: formatearFecha(servicio.fechaIngreso),
+        fechaSalida: formatearFecha(servicio.fechaSalida),
+
+        nombreUsuarioPrincipal: usuarioPrincipal
+          ? usuarioPrincipal.nombreCompleto
+          : null,
+
+        nombreUsuarioEmergencia: usuarioEmergencia
+          ? usuarioEmergencia.nombreCompleto
+          : null,
+      }
+    })
+
+    return [resultado, total]
   }
 
   async findOne(codigoServicio: string) {

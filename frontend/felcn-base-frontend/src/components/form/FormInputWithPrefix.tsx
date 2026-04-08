@@ -15,6 +15,7 @@ interface InputWithPrefixProps
 
   register?: UseFormRegister<any>
   error?: string
+  onlyNumbers?: boolean
 }
 
 const InputWithPrefix: React.FC<InputWithPrefixProps> = ({
@@ -26,6 +27,7 @@ const InputWithPrefix: React.FC<InputWithPrefixProps> = ({
   register,
   error,
   name,
+  onlyNumbers,
   ...inputProps
 }) => {
   const showLeftBox = Boolean(prefix || icon)
@@ -58,7 +60,13 @@ const InputWithPrefix: React.FC<InputWithPrefixProps> = ({
             {...(register && name
               ? register(name, {
                   onChange: (e) => {
-                    e.target.value = e.target.value.toUpperCase()
+                    let value = e.target.value
+                    if (onlyNumbers) {
+                      value = value.replace(/\D/g, '')
+                    } else {
+                      value = value.toUpperCase()
+                    }
+                    e.target.value = value
                   },
                 })
               : {})}
