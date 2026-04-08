@@ -26,6 +26,7 @@ import { DistritalModule } from './felcn_asignacion_caso/distrital/distrital.mod
 import { ContinenteModule } from './felcn_sii/parametricas/continente/continente.module'
 import { PaisModule } from './felcn_sii/parametricas/pais/pais.module'
 import { DepartamentoModule } from './felcn_sii/parametricas/departamento/departamento.module'
+import { OperativoModule } from './felcn_sospechoso/operativo/operativo.module';
 
 @Module({
   imports: [
@@ -54,7 +55,8 @@ import { DepartamentoModule } from './felcn_sii/parametricas/departamento/depart
     ScannerModule,
     DatosFamiliaresModule,
     ParentezcoModule,
-    NombresSupuestosModule
+    NombresSupuestosModule,
+    OperativoModule
   ],
 })
 export class InteligenciaModule {}
