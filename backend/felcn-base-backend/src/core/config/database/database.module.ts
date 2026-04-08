@@ -10,6 +10,7 @@ export const DB_AUTH = 'default' // felcn_auth (autenticación y autorización)
 export const DB_ASIG_CASOS = 'asig-casos' // felcn_asignacion_casos
 export const DB_S2I = 's2i' // felcn_s2i
 export const DB_SIII = 'siii' // felcn_siii
+export const DB_SII = 'sii' // felcn_sii
 
 @Module({
   imports: [
@@ -200,7 +201,55 @@ export const DB_SIII = 'siii' // felcn_siii
         }),
         entities: [
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
-          __dirname + '/../../../application/inteligencia/felcn_siii/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
+        ],
+      }),
+    }),
+
+     // =============================================
+    // CONEXIÓN 5: SII
+    // Base de datos: felcn_sii
+    // Tablas: usuario, rol, grado, unidad, distrital, grupo, menu, etc.
+    // =============================================
+    TypeOrmModule.forRootAsync({
+      name: DB_SII,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres' as const,
+        host:
+          configService.get<string>('DB_SII_HOST') ||
+          configService.get<string>('DB_HOST'),
+        port:
+          configService.get<number>('DB_SII_PORT') ||
+          configService.get<number>('DB_PORT'),
+        username:
+          configService.get<string>('DB_SII_USERNAME') ||
+          configService.get<string>('DB_USERNAME'),
+        password:
+          configService.get<string>('DB_SII_PASSWORD') ||
+          configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_SII_DATABASE'),
+        keepConnectionAlive: true,
+        synchronize: false,
+        ssl:
+          configService.get('DB_USE_SSL') === 'true'
+            ? {
+                rejectUnauthorized:
+                  configService.get('DB_VERIFY_SSL') === 'true',
+              }
+            : false,
+        subscribers:
+          configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+        logger: new SQLLogger({
+          logger: LoggerService.getInstance(),
+          level: {
+            query: configService.get('LOG_SQL') === 'true',
+            error: true,
+          },
+        }),
+        entities: [
+          __dirname + '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
         ],
       }),
     }),
