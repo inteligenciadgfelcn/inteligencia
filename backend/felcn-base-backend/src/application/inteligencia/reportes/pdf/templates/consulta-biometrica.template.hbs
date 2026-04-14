@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', sans-serif; margin: 15px; color: #333; font-size: 10px; }
+        
+        .header { display: flex; align-items: center; border-bottom: 2px solid #004a2f; padding-bottom: 10px; }
+        .logo { width: 80px; height: auto; }
+        .title-container { flex-grow: 1; text-align: center; }
+        h1 { margin: 0; font-size: 18px; color: #004a2f; }
+        h2 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
+        
+        .section { margin-bottom: 10px; }
+        .section-title { 
+            background: #004a2f; 
+            color: white; 
+            padding: 5px 10px; 
+            font-weight: bold; 
+            font-size: 10px;
+        }
+        
+        .info-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 10px;
+        }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #000; }
+        
+        .resultado-box {
+            padding: 15px;
+            border: 2px solid #004a2f;
+            background: #f0fff0;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .hit-positive {
+            color: #008000;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .score {
+            font-size: 14px;
+            font-weight: bold;
+            color: #004a2f;
+        }
+        
+        .huellas-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 10px;
+        }
+        .huella-box {
+            border: 1px solid #666;
+            padding: 10px;
+            text-align: center;
+            background: #fafafa;
+        }
+        .huella-img {
+            width: 80px;
+            height: 100px;
+            background: #e0e0e0;
+            margin: 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #666;
+            border: 1px dashed #999;
+        }
+        .huella-label {
+            font-weight: bold;
+            font-size: 9px;
+            color: #004a2f;
+        }
+        .cotejo-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #008000;
+        }
+        
+        .identidad-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+        }
+        
+        .puntos-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+            font-size: 10px;
+        }
+        
+        .observaciones-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+        }
+        .sello-box {
+            border: 2px solid #004a2f;
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: #004a2f;
+        }
+        .firma-box {
+            text-align: center;
+            font-size: 9px;
+            border: 1px solid #666;
+            padding: 10px 20px;
+            background: #f5f5f5;
+        }
+        
+        .meta-info {
+            margin-top: 15px;
+            font-size: 9px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{institucional}}" class="logo" alt="Logo FELCN">
+        <div class="title-container">
+            <h1>FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO</h1>
+            <h2>Reporte de Inteligencia - Consulta Biométrica</h2>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>1. ORIGEN DE LA CONSULTA</div>
+        <div class=info-box>
+            <div class=info-grid>
+                <div><span class=label>OPERADOR:</span> <span class=value>{{origen.operador}}</span></div>
+                <div><span class=label>UNIDAD:</span> <span class=value>{{unidad}}</span></div>
+            </div>
+            <div style=margin-top:8px><span class=label>MÉTODO DE CAPTURA:</span> <span class=value>{{origen.metodoCaptura}}</span></div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>2. RESULTADOS DEL COTEJO (SISTEMA AFIS/SEGIP)</div>
+        <div class=resultado-box>
+            <div class=hit-positive>ESTADO DE COINCIDENCIA: [ HIT - POSITIVO ]</div>
+            <div class=score>PORCENTAJE DE PRECISIÓN (SCORE): {{resultados.porcentajePrecision}}</div>
+        </div>
+        <div class=huellas-container>
+            <div class=huella-box>
+                <div class=huella-label>HUELLA CAPTURADA</div>
+                <div class=huella-img>[ IMAGEN ACTUAL ]</div>
+                <div style=font-size:8px;color:#666>(RECUADRO LADO IZQUIERDO)</div>
+            </div>
+            <div class=huella-box>
+                <div class=huella-label>HUELLA EN BASE DE DATOS</div>
+                <div class=huella-img>[ REGISTRO HISTÓRICO ]</div>
+                <div style=font-size:8px;color:#666>(RECUADRO LADO DERECHO)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>3. IDENTIDAD CONFIRMADA</div>
+        <div class=identidad-box>
+            <div class=info-grid>
+                <div><span class=label>NOMBRE COMPLETO:</span> <span class=value>{{identidad.nombreCompleto}}</span></div>
+                <div><span class=label>C.I.:</span> <span class=value>{{identidad.ci}}</span></div>
+                <div><span class=label>FECHA DE NACIMIENTO:</span> <span class=value>{{identidad.fechaNacimiento}}</span></div>
+                <div><span class=label>TIPO DE SANGRE:</span> <span class=value>{{identidad.tipoSangre}}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>4. PUNTOS CARACTERÍSTICOS DETECTADOS (MINUCIAS)</div>
+        <div class=puntos-box>
+            <div>Se identificaron {{puntosCaracteristicos.totalMinucias}} puntos de coincidencia (minucias) entre la muestra capturada y el archivo maestro, incluyendo:</div>
+            <div style=margin-top:5px>
+                - Bifurcaciones: {{puntosCaracteristicos.bifurcaciones}}<br>
+                - Terminaciones: {{puntosCaracteristicos.terminaciones}}<br>
+                - Núcleos: {{puntosCaracteristicos.nucleos}}
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>5. OBSERVACIONES TÉCNICAS</div>
+        <div class=observaciones-box>
+            {{observacionesTecnicas}}
+        </div>
+    </div>
+
+    <div class=footer-section>
+        <div class=sello-box>
+            SELLO DE LABORATORIO<br>
+            {{footer.sello}}
+        </div>
+        <div class=firma-box>
+            FIRMA DIGITAL<br>
+            VALIDADO POR<br>
+            <strong>{{footer.firma}}</strong>
+        </div>
+    </div>
+
+    <div class=meta-info>
+        <div>ID DE TRANSACCIÓN: {{footer.idTransaccion}}</div>
+        <div>PÁGINA 1 DE 1</div>
+    </div>
+
+    <div style=text-align:right;font-size:9px;color:#666;margin-top:10px>
+        Generado el: {{fechaGeneracion}} | Sistema de Inteligencia FELCN
+    </div>
+</body>
+</html>

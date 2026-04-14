@@ -1,4 +1,3 @@
-
 import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
 import {
   BeforeInsert,

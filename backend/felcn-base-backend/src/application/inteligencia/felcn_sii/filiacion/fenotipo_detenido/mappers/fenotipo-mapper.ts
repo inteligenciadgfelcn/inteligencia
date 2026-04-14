@@ -14,7 +14,6 @@ export function mapFenotipoDtoToEntity(
   dto: CreateFenotipoDetenidoDto,
   persona: Detenido | ArrestadoAuxiliar
 ): FenotipoDetenido {
-
   const fenotipo = new FenotipoDetenido()
 
   const {
@@ -38,27 +37,22 @@ export function mapFenotipoDtoToEntity(
   }
 
   // Mapear relaciones
-  if (tipoNariz)
-    fenotipo.tipoNariz = { idTipoNariz: tipoNariz } as TipoNariz
+  if (tipoNariz) fenotipo.tipoNariz = { idTipoNariz: tipoNariz } as TipoNariz
 
   if (constitucionCorporal)
-    fenotipo.constitucionCorporal =
-      { idConstitucionCorporal: constitucionCorporal } as ConstitucionCorporal
+    fenotipo.constitucionCorporal = {
+      idConstitucionCorporal: constitucionCorporal,
+    } as ConstitucionCorporal
 
-  if (idColorPiel)
-    fenotipo.colorPiel = { idColorPiel } as ColorPiel
+  if (idColorPiel) fenotipo.colorPiel = { idColorPiel } as ColorPiel
 
-  if (idColorCabello)
-    fenotipo.colorCabello = { idColorCabello } as ColorCabello
+  if (idColorCabello) fenotipo.colorCabello = { idColorCabello } as ColorCabello
 
-  if (idTipoCabello)
-    fenotipo.tipoCabello = { idTipoCabello } as TipoCabello
+  if (idTipoCabello) fenotipo.tipoCabello = { idTipoCabello } as TipoCabello
 
-  if (idColorOjos)
-    fenotipo.colorOjos = { idColorOjo: idColorOjos } as ColorOjo
+  if (idColorOjos) fenotipo.colorOjos = { idColorOjo: idColorOjos } as ColorOjo
 
-  if (idTipoOjos)
-    fenotipo.tipoOjos = { idTipoOjos } as TipoOjo
+  if (idTipoOjos) fenotipo.tipoOjos = { idTipoOjos } as TipoOjo
 
   return fenotipo
 }

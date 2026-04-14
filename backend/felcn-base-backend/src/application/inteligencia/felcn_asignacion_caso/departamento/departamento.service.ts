@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
@@ -12,7 +9,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 export class DepartamentoService {
   constructor(
     @InjectRepository(Departamento, DB_ASIG_CASOS)
-    private readonly departamentoRepository: Repository<Departamento>,
+    private readonly departamentoRepository: Repository<Departamento>
   ) {}
 
   async findAll(pagination: PaginacionQueryDto) {
@@ -42,7 +39,7 @@ export class DepartamentoService {
 
   async findOne(id: number): Promise<Departamento> {
     const departamento = await this.departamentoRepository.findOne({
-      where: {idDepartamento: id},
+      where: { idDepartamento: id },
     })
 
     if (!departamento) {
@@ -51,5 +48,4 @@ export class DepartamentoService {
 
     return departamento
   }
-
 }

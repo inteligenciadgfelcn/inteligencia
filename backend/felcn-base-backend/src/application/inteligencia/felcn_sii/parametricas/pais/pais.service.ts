@@ -16,12 +16,12 @@ import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
 @Injectable()
 export class PaisService {
   constructor(
-      @InjectRepository(Pais, DB_SII)
-      private readonly paisRepository: Repository<Pais>,
+    @InjectRepository(Pais, DB_SII)
+    private readonly paisRepository: Repository<Pais>,
 
-      @InjectRepository(Continente, DB_SII)
-      private readonly continenteRepository: Repository<Continente>,
-    ) {}
+    @InjectRepository(Continente, DB_SII)
+    private readonly continenteRepository: Repository<Continente>
+  ) {}
 
   async create(dto: CreatePaisDto): Promise<Pais> {
     const exists = await this.paisRepository.findOne({

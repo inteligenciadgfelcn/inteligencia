@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', sans-serif; margin: 15px; color: #333; font-size: 10px; }
+        
+        .header { display: flex; align-items: center; border-bottom: 2px solid #004a2f; padding-bottom: 10px; }
+        .logo { width: 80px; height: auto; }
+        .title-container { flex-grow: 1; text-align: center; }
+        h1 { margin: 0; font-size: 18px; color: #004a2f; }
+        h2 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
+        
+        .confidential { 
+            background: #f5f5f5; 
+            border: 1px solid #999; 
+            padding: 5px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 9px; 
+            margin-bottom: 10px;
+        }
+        
+        .params-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+        .params-title { font-weight: bold; margin-bottom: 8px; color: #004a2f; }
+        .param-line { margin: 3px 0; padding-left: 15px; }
+        .param-label { font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #666; padding: 6px; text-align: center; font-size: 9px; }
+        th { background-color: #e8e8e8; font-weight: bold; }
+        .row-label { text-align: left; }
+        
+        .summary-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        .summary-title { font-weight: bold; margin-bottom: 8px; color: #004a2f; }
+        
+        .footer-info {
+            margin-top: 20px;
+            font-size: 9px;
+            text-align: right;
+            color: #666;
+        }
+        
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .signature-box {
+            width: 180px;
+            text-align: center;
+            border: 1px solid #333;
+            padding: 10px;
+            background: #f5f5f5;
+        }
+        .stamp {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #004a2f;
+            border: 2px solid #004a2f;
+            padding: 5px 10px;
+            display: inline-block;
+            margin-bottom: 8px;
+            transform: rotate(-5deg);
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 25px;
+            padding-top: 3px;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{institucional}}" class="logo" alt="Logo FELCN">
+        <div class="title-container">
+            <h1>FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO</h1>
+            <h2>Reporte de Inteligencia - Registro de Antecedentes</h2>
+        </div>
+    </div>
+
+    <div class="confidential">CONFIDENCIAL - USO INTERNO</div>
+
+    <div class="params-box">
+        <div class="params-title">PARÁMETROS DE BÚSQUEDA APLICADOS:</div>
+        <div class="param-line"><span class="param-label">&gt; RANGO DE FECHAS:</span> {{parametros.rangoFechas}}</div>
+        <div class="param-line"><span class="param-label">&gt; JURISDICCIÓN:</span> {{parametros.jurisdiccion}}</div>
+        <div class="param-line"><span class="param-label">&gt; TIPO DE DELITO:</span> {{parametros.tipoDelito}}</div>
+        <div class="param-line"><span class="param-label">&gt; ESTADO:</span> {{parametros.estado}}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID REGISTRO</th>
+                <th>NOMBRES Y APELLIDOS</th>
+                <th>C.I. / DOC.</th>
+                <th>DELITO ESPECÍFICO</th>
+                <th>FECHA REG.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each registros}}
+            <tr>
+                <td>{{this.id}}</td>
+                <td class="row-label">{{this.nombre}}</td>
+                <td>{{this.ci}}</td>
+                <td>{{this.delito}}</td>
+                <td>{{this.fecha}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="summary-box">
+        <div class="summary-title">RESUMEN ESTADÍSTICO DEL REPORTE:</div>
+        <div>- Total registros encontrados: {{resumen.totalRegistros}}</div>
+        <div>- Mayor incidencia: {{resumen.mayorIncidencia}}</div>
+        <div>- Género: Masculino ({{resumen.generoMasculino}}) | Femenino ({{resumen.generoFemenino}})</div>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="stamp">SELLO OFICIAL</div>
+            <div class="signature-line">FIRMA Y POST FIRMA</div>
+            <div style="font-size: 8px; margin-top: 3px;">OPERADOR DE SISTEMAS FELCN</div>
+        </div>
+    </div>
+
+    <div class="footer-info">
+        Generado el: {{fechaGeneracion}} | Sistema de Inteligencia FELCN
+    </div>
+</body>
+</html>

@@ -21,38 +21,38 @@ export class DatosFamiliaresService {
     @InjectRepository(Detenido, DB_SII)
     private readonly detenidoRepository: Repository<Detenido>,
 
-     @InjectRepository(Parentezco, DB_SII)
+    @InjectRepository(Parentezco, DB_SII)
     private readonly parentezcoRepository: Repository<Parentezco>
   ) {}
 
- async create(dto: CreateDatosFamiliaresDto) {
-  const detenido = await this.detenidoRepository.findOne({
-    where: { idDetenido: dto.idDetenido },
-  })
+  async create(dto: CreateDatosFamiliaresDto) {
+    const detenido = await this.detenidoRepository.findOne({
+      where: { idDetenido: dto.idDetenido },
+    })
 
-  if (!detenido) {
-    throw new BadRequestException('Detenido no válido o inactivo')
+    if (!detenido) {
+      throw new BadRequestException('Detenido no válido o inactivo')
+    }
+
+    const parentezco = await this.parentezcoRepository.findOne({
+      where: { idParentezco: dto.idParentezco },
+    })
+    if (!parentezco) {
+      throw new BadRequestException('Parentezco no válido')
+    }
+
+    const familiar = this.datosFamiliaresRepository.create({
+      ...dto,
+      detenido: detenido,
+      parentezco: parentezco,
+    })
+
+    await this.datosFamiliaresRepository.save(familiar)
+
+    return {
+      message: 'Registrado correctamente',
+    }
   }
-
-  const parentezco = await this.parentezcoRepository.findOne({
-  where: { idParentezco: dto.idParentezco },
-})
-if (!parentezco) {
-  throw new BadRequestException('Parentezco no válido')
-}
-
-  const familiar = this.datosFamiliaresRepository.create({
-    ...dto,
-    detenido: detenido,
-     parentezco: parentezco,
-  })
-
-  await this.datosFamiliaresRepository.save(familiar) 
-
-  return {
-    message: 'Registrado correctamente',
-  }
-}
 
   async findAll(pagination: PaginacionQueryDto) {
     return await this.datosFamiliaresRepository.findAllPaginated(pagination)

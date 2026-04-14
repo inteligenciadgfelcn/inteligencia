@@ -1,9 +1,8 @@
-import { IsString, MaxLength } from "@/common/validation";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean } from "class-validator";
+import { IsString, MaxLength } from '@/common/validation'
+import { ApiProperty } from '@nestjs/swagger'
+import { IsBoolean } from 'class-validator'
 
 export class CreateProfesionDto {
-
   @ApiProperty({
     example: 'ACERRADERO',
     description: 'Descripción de profesión',

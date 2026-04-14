@@ -82,7 +82,7 @@ export class CreateFiliacionDto {
   @IsOptional()
   direccion?: string
 
-   @ApiProperty({ example: 'Sin antecedentes', description: 'Observaciones' })
+  @ApiProperty({ example: 'Sin antecedentes', description: 'Observaciones' })
   @IsString()
   @IsOptional()
   observacion?: string

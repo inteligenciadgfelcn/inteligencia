@@ -1,19 +1,19 @@
-import { IsInt, IsString, IsNotEmpty, Min, Max } from 'class-validator';
+import { IsInt, IsString, IsNotEmpty, Min, Max } from 'class-validator'
 
 export class CreateHuellaDto {
   @IsInt()
-  idPersona: number;
+  idPersona: number
 
   @IsString()
   @IsNotEmpty()
-  dedo: string;
+  dedo: string
 
   @IsString()
   @IsNotEmpty()
-  template: string;
+  template: string
 
   @IsInt()
   @Min(0)
   @Max(100)
-  calidad: number;
+  calidad: number
 }

@@ -1,24 +1,29 @@
-
 import { UsuarioModule } from './usuario/usuario.module'
 import { Module } from '@nestjs/common'
 import { GrupoModule } from './felcn_asignacion_caso/grupo/grupo.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
 import { PruebaModule } from './reportes/prueba/prueba.module'
-import { ProfesionModule } from './felcn_sii/parametricas/profesion/profesion.module';
-import { EstadoCivilModule } from './felcn_sii/parametricas/estado_civil/estado_civil.module';
-import { TipoNarizModule } from './felcn_sii/parametricas/tipo_nariz/tipo_nariz.module';
-import { ColorPielModule } from './felcn_sii/parametricas/color_piel/color_piel.module';
-import { ColorCabelloModule } from './felcn_sii/parametricas/color_cabello/color_cabello.module';
-import { ColorOjosModule } from './felcn_sii/parametricas/color_ojos/color_ojos.module';
-import { TipoOjosModule } from './felcn_sii/parametricas/tipo_ojos/tipo_ojos.module';
-import { TipoCabelloModule } from './felcn_sii/parametricas/tipo_cabello/tipo_cabello.module';
+import { ProfesionModule } from './felcn_sii/parametricas/profesion/profesion.module'
+import { EstadoCivilModule } from './felcn_sii/parametricas/estado_civil/estado_civil.module'
+import { TipoNarizModule } from './felcn_sii/parametricas/tipo_nariz/tipo_nariz.module'
+import { ColorPielModule } from './felcn_sii/parametricas/color_piel/color_piel.module'
+import { ColorCabelloModule } from './felcn_sii/parametricas/color_cabello/color_cabello.module'
+import { ColorOjosModule } from './felcn_sii/parametricas/color_ojos/color_ojos.module'
+import { TipoOjosModule } from './felcn_sii/parametricas/tipo_ojos/tipo_ojos.module'
+import { TipoCabelloModule } from './felcn_sii/parametricas/tipo_cabello/tipo_cabello.module'
 import { ConstitucionCorporalModule } from './felcn_sii/parametricas/constitucion_corporal/constitucion_corporal.module'
 import { FiliacionModule } from './felcn_sii/filiacion/filiacion.module'
-import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_familiares.module';
+import { DatosFamiliaresModule } from './felcn_sii/datos_familiares/datos_familiares.module'
 import { ParentezcoModule } from './felcn_sii/parametricas/parentezco/parentezco.module'
 import { ScannerModule } from './felcn_sii/scanner/scanner.module'
 import { TipoDocumentoModule } from './felcn_sii/parametricas/tipo_documento/tipo_documento.module'
-import { NombresSupuestosModule } from './felcn_sii/nombres_supuestos/nombres_supuestos.module';
+import { NombresSupuestosModule } from './felcn_sii/nombres_supuestos/nombres_supuestos.module'
+import { VariablesCruzadasModule } from './reportes/pdf/variables-cruzadas/variables-cruzadas.module'
+import { AntecedentesModule } from './reportes/pdf/antecedentes/antecedentes.module'
+import { RegistroAntecedentesModule } from './reportes/pdf/registro-antecedentes/registro-antecedentes.module'
+import { TarjetaProntuarioModule } from './reportes/pdf/tarjeta-prontuario/tarjeta-prontuario.module'
+import { ConsultaBiometricaModule } from './reportes/pdf/consulta-biometrica/consulta-biometrica.module'
+import { AnalisisInteligenciaModule } from './reportes/pdf/analisis-inteligencia/analisis-inteligencia.module'
 import { LetraModule } from './felcn_asignacion_caso/letra/letra.module'
 import { AsignacionesModule } from './felcn_asignacion_caso/asignaciones/asignaciones.module'
 import { UnidadModule } from './felcn_asignacion_caso/unidad/unidad.module'
@@ -54,7 +59,13 @@ import { DepartamentoModule } from './felcn_sii/parametricas/departamento/depart
     ScannerModule,
     DatosFamiliaresModule,
     ParentezcoModule,
-    NombresSupuestosModule
+    NombresSupuestosModule,
+    VariablesCruzadasModule,
+    AntecedentesModule,
+    RegistroAntecedentesModule,
+    TarjetaProntuarioModule,
+    ConsultaBiometricaModule,
+    AnalisisInteligenciaModule,
   ],
 })
 export class InteligenciaModule {}

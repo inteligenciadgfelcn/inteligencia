@@ -15,7 +15,10 @@ import { Servicio } from '../servicio/entities/servicio.entity'
 @Module({
   imports: [
     TypeOrmModule.forFeature([Asignacion], DB_SIII),
-    TypeOrmModule.forFeature([AsignacionASIG,Departamento, Unidad, Letra, Servicio], DB_ASIG_CASOS),
+    TypeOrmModule.forFeature(
+      [AsignacionASIG, Departamento, Unidad, Letra, Servicio],
+      DB_ASIG_CASOS
+    ),
   ],
   providers: [AsignacionesService, AsignacionesRepository],
   controllers: [AsignacionesController],

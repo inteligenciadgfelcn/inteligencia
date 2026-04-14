@@ -51,5 +51,4 @@ export class DistritalController extends BaseController {
   findOne(@Param('id') id: string) {
     return this.distritalService.findOne(+id)
   }
-
 }

@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, MaxLength } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger'
+import { IsNotEmpty, IsString, IsNumber, MaxLength } from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class CreateDistritalDto {
   @ApiProperty({
@@ -10,7 +10,7 @@ export class CreateDistritalDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
-  descripcion: string;
+  descripcion: string
 
   @ApiProperty({
     example: 1,
@@ -19,5 +19,5 @@ export class CreateDistritalDto {
   @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
-  idUnidad: number;
+  idUnidad: number
 }

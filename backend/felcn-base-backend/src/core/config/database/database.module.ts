@@ -201,12 +201,13 @@ export const DB_SII = 'sii' // felcn_sii
         }),
         entities: [
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
-          __dirname + '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
+          __dirname +
+            '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
         ],
       }),
     }),
 
-     // =============================================
+    // =============================================
     // CONEXIÓN 5: SII
     // Base de datos: felcn_sii
     // Tablas: usuario, rol, grado, unidad, distrital, grupo, menu, etc.
@@ -249,7 +250,8 @@ export const DB_SII = 'sii' // felcn_sii
           },
         }),
         entities: [
-          __dirname + '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
+          __dirname +
+            '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
         ],
       }),
     }),

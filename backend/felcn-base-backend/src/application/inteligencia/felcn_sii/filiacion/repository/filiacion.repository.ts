@@ -13,7 +13,7 @@ export class FiliacionRepository {
     private detenidoRepository: Repository<Detenido>
   ) {}
 
-  async crearAlias(manager: any, alias: any, detenido: Detenido){
+  async crearAlias(manager: any, alias: any, detenido: Detenido) {
     return manager.save(
       AliasDetenido,
       manager.create(AliasDetenido, {
@@ -39,11 +39,11 @@ export class FiliacionRepository {
   async obtenerDetenido(id: number) {
     const detenido = await this.detenidoRepository.findOne({
       where: { idDetenido: id },
-       select: {
-      idDetenido: true,
-      nombres: true,
-      numeroCaso: true,
-    },
+      select: {
+        idDetenido: true,
+        nombres: true,
+        numeroCaso: true,
+      },
       relations: {
         aliases: true,
         documentos: {

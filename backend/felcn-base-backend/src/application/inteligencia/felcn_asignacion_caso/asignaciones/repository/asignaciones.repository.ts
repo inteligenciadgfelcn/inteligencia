@@ -15,13 +15,9 @@ export class AsignacionesRepository {
 
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
     private readonly asignacionAsigRepository: Repository<AsignacionASIG>
-    
   ) {}
 
-  async crearAsignacionDual(
-    dto: CreateAsignacionDto,
-    nroOperativo: string
-  ) {
+  async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
     const grupoData = await this.asignacionRepository.manager
       .createQueryBuilder()

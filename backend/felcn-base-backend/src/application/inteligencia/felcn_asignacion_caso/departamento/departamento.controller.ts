@@ -9,11 +9,7 @@ import {
   Query,
 } from '@nestjs/common'
 import { DepartamentoService } from './departamento.service'
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -38,7 +34,7 @@ export class DepartamentoController extends BaseController {
   findAllGeneral() {
     return this.departamentoService.findAllGeneral()
   }
-  
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un departamento por ID' })
   findOne(@Param('id') id: number) {

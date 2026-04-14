@@ -33,4 +33,3 @@ export class GrupoController extends BaseController {
     return this.grupoService.findOne(id)
   }
 }
-  

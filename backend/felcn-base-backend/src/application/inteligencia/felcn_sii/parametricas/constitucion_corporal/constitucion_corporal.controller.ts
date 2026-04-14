@@ -18,7 +18,9 @@ import { UpdateConstitucionCorporalDto } from './dto/update-constitucion-corpora
 @ApiTags('SII - Constitucion corporal')
 @Controller('constitucion-corporal')
 export class ConstitucionCorporalController {
-  constructor(private readonly constitucionService: ConstitucionCorporalService) {}
+  constructor(
+    private readonly constitucionService: ConstitucionCorporalService
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Crear una constitucion corporal' })

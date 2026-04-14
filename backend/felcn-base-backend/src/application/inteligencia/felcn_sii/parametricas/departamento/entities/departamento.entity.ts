@@ -24,14 +24,13 @@ export class Departamento {
 
   @Index({ unique: true })
   @Column({
-    name :'abreviatura',
+    name: 'abreviatura',
     type: 'varchar',
     length: 2,
     nullable: false,
     comment: 'Abreviatura del departamento',
   })
   abreviatura: string
-
 
   @Index(['pais'], { unique: true })
   @Column({
@@ -65,5 +64,4 @@ export class Departamento {
       this.estado = Estado.ACTIVO
     }
   }
-
 }

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', sans-serif; margin: 15px; color: #333; font-size: 10px; }
+        
+        .header { display: flex; align-items: center; border-bottom: 2px solid #004a2f; padding-bottom: 10px; }
+        .logo { width: 80px; height: auto; }
+        .title-container { flex-grow: 1; text-align: center; }
+        h1 { margin: 0; font-size: 18px; color: #004a2f; }
+        h2 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
+        
+        .section { margin-bottom: 10px; }
+        .section-title { 
+            background: #004a2f; 
+            color: white; 
+            padding: 5px 10px; 
+            font-weight: bold; 
+            font-size: 10px;
+        }
+        
+        .params-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .param-line { margin: 4px 0; padding-left: 10px; }
+        
+        .network-box {
+            padding: 15px;
+            border: 1px solid #666;
+            background: #fafafa;
+            margin: 10px 0;
+        }
+        .node-central {
+            background: #004a2f;
+            color: white;
+            padding: 8px 15px;
+            text-align: center;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        .network-links {
+            padding-left: 20px;
+            font-size: 10px;
+            line-height: 1.8;
+        }
+        
+        .heat-map-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .heat-point {
+            margin: 8px 0;
+            padding: 8px;
+            background: #fff;
+            border-left: 3px solid #004a2f;
+        }
+        .point-label {
+            font-weight: bold;
+            color: #004a2f;
+        }
+        
+        .correlation-box {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+        }
+        .sello-box {
+            border: 2px solid #004a2f;
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: #004a2f;
+        }
+        .firma-box {
+            text-align: center;
+            font-size: 9px;
+            border: 1px solid #666;
+            padding: 10px 20px;
+            background: #f5f5f5;
+        }
+        
+        .warning-box {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            text-align: center;
+            font-weight: bold;
+            font-size: 9px;
+            color: #856404;
+        }
+        
+        .meta-info {
+            margin-top: 10px;
+            font-size: 9px;
+            color: #666;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{institucional}}" class="logo" alt="Logo FELCN">
+        <div class="title-container">
+            <h1>FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO</h1>
+            <h2>Reporte de Inteligencia - Análisis</h2>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>1. PARÁMETROS DEL ANÁLISIS (DATA MINING)</div>
+        <div class=params-box>
+            <div class=param-line>&gt; DIMENSIÓN TEMPORAL: {{parametros.dimensionTemporal}}</div>
+            <div class=param-line>&gt; CRUCE GEOGRÁFICO: {{parametros.cruceGeografico}}</div>
+            <div class=param-line>&gt; VARIABLE DE VALOR: {{parametros.variableValor}}</div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>2. DIAGRAMA DE VÍNCULOS (SÍNTESIS DE REDES)</div>
+        <div class=network-box>
+            <div style=text-align:center;margin-bottom:10px>[ REPRESENTACIÓN DE RED CRIMINAL ]</div>
+            <div class=node-central>{{vinculos.nodoCentral}}</div>
+            <div class=network-links>
+                |-- ENLACE LOGÍSTICO: {{vinculos.enlaceLogistico}}<br>
+                |-- ENLACE FINANCIERO: {{vinculos.enlaceFinanciero}}<br>
+                |-- NEXO OPERATIVO: {{vinculos.nexoOperativo}}
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>3. MAPA DE CALOR GEOGRÁFICO (DENSIDAD DE INCIDENCIA)</div>
+        <div class=heat-map-box>
+            <div class=heat-point>
+                <div class=point-label>- Punto Crítico A (Villa Tunari):</div>
+                <div>{{mapaCalor.puntoA}}</div>
+            </div>
+            <div class=heat-point>
+                <div class=point-label>- Punto Crítico B (Montero):</div>
+                <div>{{mapaCalor.puntoB}}</div>
+            </div>
+            <div class=heat-point>
+                <div class=point-label>- Punto Crítico C (Puerto Suárez):</div>
+                <div>{{mapaCalor.puntoC}}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>4. ANÁLISIS DE CORRELACIÓN VALOR/TIEMPO</div>
+        <div class=correlation-box>
+            {{correlacion}}
+        </div>
+    </div>
+
+    <div class=footer-section>
+        <div class=sello-box>
+            SELLO DE INTELIGENCIA<br>
+            {{footer.sello}}
+        </div>
+        <div class=firma-box>
+            FIRMA Y CÓDIGO<br>
+            {{footer.firma}}
+        </div>
+    </div>
+
+    <div class=warning-box>
+        ADVERTENCIA: La difusión no autorizada de este documento compromete operaciones en curso.
+    </div>
+
+    <div class=meta-info>
+        Generado el: {{fechaGeneracion}} | Sistema de Inteligencia FELCN
+    </div>
+</body>
+</html>

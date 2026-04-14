@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-@Entity({name:'refresh_token', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'refresh_token', schema: process.env.DB_SCHEMA_USUARIOS })
 export class RefreshTokens {
   @PrimaryColumn({
     comment: 'Clave primaria de la tabla RefreshToken',

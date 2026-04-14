@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Helvetica', sans-serif; margin: 15px; color: #333; font-size: 10px; }
+        
+        .header { display: flex; align-items: center; border-bottom: 2px solid #004a2f; padding-bottom: 10px; }
+        .logo { width: 80px; height: auto; }
+        .title-container { flex-grow: 1; text-align: center; }
+        h1 { margin: 0; font-size: 18px; color: #004a2f; }
+        h2 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
+        
+        .section { margin-bottom: 10px; }
+        .section-title { 
+            background: #004a2f; 
+            color: white; 
+            padding: 5px 10px; 
+            font-weight: bold; 
+            font-size: 10px;
+        }
+        
+        .identidad-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .foto-box {
+            width: 100%;
+            height: 150px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #999;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+        .identidad-datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 10px;
+        }
+        .label { font-weight: bold; color: #555; }
+        .value { color: #000; }
+        
+        .dactilar-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+        }
+        .formula-dactilar {
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #666; padding: 6px; text-align: center; font-size: 9px; }
+        th { background-color: #e8e8e8; font-weight: bold; }
+        .text-left { text-align: left; }
+        
+        .observaciones-list {
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+        .observaciones-list li {
+            margin: 4px 0;
+            list-style: none;
+            font-size: 10px;
+        }
+        
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+        }
+        .sello-box {
+            border: 2px solid #004a2f;
+            padding: 8px 15px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+            color: #004a2f;
+        }
+        .qr-box {
+            text-align: center;
+            font-size: 9px;
+        }
+        .qr-code {
+            width: 60px;
+            height: 60px;
+            background: #eee;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-size: 8px;
+        }
+        
+        .legal-footer {
+            margin-top: 15px;
+            padding: 8px;
+            background: #f5f5f5;
+            border: 1px solid #ccc;
+            font-size: 8px;
+            text-align: center;
+            color: #555;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{institucional}}" class="logo" alt="Logo FELCN">
+        <div class="title-container">
+            <h1>FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO</h1>
+            <h2>Reporte de Inteligencia - Tarjeta Prontuario</h2>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>1. DATOS DE IDENTIDAD BIOMÉTRICA</div>
+        <div class=identidad-grid>
+            <div class=foto-box>
+                [ FOTO DE FRENTE ]<br>
+                (HD)<br>
+                [ FOTOGRAFÍA<br>
+                RECIENTE ]
+            </div>
+            <div class=identidad-datos>
+                <div><span class=label> NOMBRES:</span> <span class=value>{{identidad.nombres}}</span></div>
+                <div><span class=label> APELLIDOS:</span> <span class=value>{{identidad.apellidos}}</span></div>
+                <div><span class=label> C.I.:</span> <span class=value>{{identidad.ci}}</span></div>
+                <div><span class=label> SEXO:</span> <span class=value>{{identidad.sexo}}</span></div>
+                <div><span class=label> NACIONALIDAD:</span> <span class=value>{{identidad.nacionalidad}}</span></div>
+                <div><span class=label> EDAD:</span> <span class=value>{{identidad.edad}}</span></div>
+                <div><span class=label> ESTADO CIVIL:</span> <span class=value>{{identidad.estadoCivil}}</span></div>
+                <div><span class=label> PROFESIÓN:</span> <span class=value>{{identidad.profesion}}</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>2. REGISTRO DACTILOSCÓPICO (SISTEMA AFIS)</div>
+        <div class=dactilar-box>
+            <div>
+                <div class=label>Mano Derecha:</div>
+                <div class=formula-dactilar>{{dactiloscopico.manoDerecha}}</div>
+                <div style=font-size:9px;color:#666>({{dactiloscopico.formula}})</div>
+            </div>
+            <div>
+                <div class=label>Mano Izquierda:</div>
+                <div class=formula-dactilar>{{dactiloscopico.manoIzquierda}}</div>
+                <div style=font-size:9px;color:#666>({{dactiloscopico.formula}})</div>
+            </div>
+        </div>
+        <div style=padding:10px;text-align:center;font-size:9px;color:#666>
+            [ Representación visual de puntos característicos de la huella dactilar ]
+        </div>
+    </div>
+
+    <div class=section>
+        <div class=section-title>3. HISTORIAL DE ANTECEDENTES (LEY 1008)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>FECHA</th>
+                    <th>CASO</th>
+                    <th>DELITO / TIPIFICACIÓN</th>
+                    <th>ESTADO JURÍDICO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each antecedentes}}
+                <tr>
+                    <td>{{this.fecha}}</td>
+                    <td>{{this.caso}}</td>
+                    <td class=text-left>{{this.delito}}</td>
+                    <td>{{this.estado}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class=section>
+        <div class=section-title>4. OBSERVACIONES Y SEÑALES PARTICULARES</div>
+        <div class=observaciones-list>
+            {{#each observaciones}}
+            <li>{{this}}</li>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class=footer-section>
+        <div class=sello-box>
+            SELLO DIGITAL<br>
+            {{footer.direccion}}
+        </div>
+        <div class=qr-box>
+            <div class=qr-code>[QR]</div>
+            CÓDIGO QR DE<br>
+            VERIFICACIÓN<br>
+            <strong>{{footer.codigoQR}}</strong>
+        </div>
+    </div>
+
+    <div class=legal-footer>
+        ESTE DOCUMENTO CUENTA CON FIRMA DIGITAL LEY N° 164. LA ALTERACIÓN DE ESTE PDF CONSTITUYE DELITO DE FALSEDAD MATERIAL. VERIFIQUE EN: {{footer.verificarURL}}
+    </div>
+
+    <div style=text-align:right;font-size:9px;color:#666;margin-top:10px>
+        Generado el: {{fechaGeneracion}} | Sistema de Inteligencia FELCN
+    </div>
+</body>
+</html>

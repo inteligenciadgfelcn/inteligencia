@@ -12,7 +12,6 @@ export function mapArrestadoEntity(
   dto: CreateFiliacionDto,
   profesionDescripcion: string | null
 ): DeepPartial<ArrestadoAuxiliar> {
-
   const {
     arrestado,
     documento,
@@ -28,7 +27,7 @@ export function mapArrestadoEntity(
     idPais,
     idEstadoCivil,
     direccion,
-    observacion
+    observacion,
   } = dto
 
   let pais: Pais | undefined
@@ -78,7 +77,7 @@ export function mapArrestadoEntity(
 
     genero,
 
-    pais:pais?.idPais,
+    pais: pais?.idPais,
     estadoCivil,
 
     numeroDocumento: documento?.numeroDocumento,
@@ -102,10 +101,10 @@ export function mapArrestadoEntity(
     colorCabello,
 
     senasParticulares: fenotipo?.senasParticulares,
-    estatura:fenotipo?.estatura,
+    estatura: fenotipo?.estatura,
 
     lugarArresto: arrestado?.lugarOperativo,
 
-    observaciones: observacion
+    observaciones: observacion,
   }
 }

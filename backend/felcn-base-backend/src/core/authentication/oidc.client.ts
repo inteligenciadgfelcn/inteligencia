@@ -1,5 +1,5 @@
 import { Client, Issuer } from 'openid-client'
-import { BaseException, LoggerService } from '@/core/logger'
+import { LoggerService } from '@/core/logger'
 import { custom } from 'openid-client'
 
 //Para cambiar el timeout del cliente de ciudadanía en caso de ser necesario.
@@ -7,11 +7,10 @@ import { custom } from 'openid-client'
 if (process.env.NODE_ENV === 'development') {
   custom.setHttpOptionsDefaults({
     timeout: 10000,
-    // @ts-ignore
+    // @ts-expect-error - Allow self-signed certs in dev
     hooks: {
       beforeRequest: [
         (options) => {
-          // @ts-ignore
           options.https = { rejectUnauthorized: false }
         },
       ],
@@ -41,12 +40,10 @@ export class ClientOidcService {
         client_secret: oidcSecret,
       })
     } catch (error: unknown) {
-      const errorInfo = new BaseException(error, {
-        modulo: 'CIUDADANÍA:PROVEEDOR IDENTIDAD',
-        mensaje: 'Error de conexión con ciudadanía',
-        metadata: { oidcIssuer },
-      })
-      setTimeout(() => logger.error(errorInfo), 2000)
+      logger.warn(
+        `OIDC: No se pudo conectar a ${oidcIssuer} - Iniciando sin autenticación Ciudanería`
+      )
+      return undefined
     }
     return ClientOidcService.client
   }

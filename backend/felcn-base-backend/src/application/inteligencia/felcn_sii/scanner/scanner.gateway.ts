@@ -1,12 +1,12 @@
-import { HuellaService } from '@/application/inteligencia/felcn_sii/huella/huella.service';
+import { HuellaService } from '@/application/inteligencia/felcn_sii/huella/huella.service'
 import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+} from '@nestjs/websockets'
+import { Server, Socket } from 'socket.io'
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -15,123 +15,119 @@ export class ScannerGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
-  private scanners = new Map<
-    string,
-    { socketId: string; estado: string }
-  >();
+  private scanners = new Map<string, { socketId: string; estado: string }>()
 
-  private socketToScanner = new Map<string, string>();
+  private socketToScanner = new Map<string, string>()
 
   constructor(private readonly huellaService: HuellaService) {}
 
   /* CONEXIÓN FRONTEND*/
   handleConnection(client: Socket) {
-    console.log('Cliente conectado:', client.id);
+    console.log('Cliente conectado:', client.id)
 
     // 🔥 ENVIAR ESTADO REAL (no por size)
-    let estado = 'DESCONECTADO';
+    let estado = 'DESCONECTADO'
 
     for (const scanner of this.scanners.values()) {
       if (scanner.estado === 'DISPONIBLE') {
-        estado = 'CONECTADO';
-        break;
+        estado = 'CONECTADO'
+        break
       }
     }
 
-    client.emit('scanner-status', { estado });
+    client.emit('scanner-status', { estado })
   }
 
   /* DESCONEXIÓN*/
   handleDisconnect(client: Socket) {
-    const scannerId = this.socketToScanner.get(client.id);
+    const scannerId = this.socketToScanner.get(client.id)
 
     if (scannerId) {
-      this.scanners.delete(scannerId);
-      this.socketToScanner.delete(client.id);
+      this.scanners.delete(scannerId)
+      this.socketToScanner.delete(client.id)
 
-      console.log(`❌ Scanner ${scannerId} desconectado`);
+      console.log(`❌ Scanner ${scannerId} desconectado`)
 
       this.server.emit('scanner-status', {
         estado: 'DESCONECTADO',
         scannerId,
-      });
+      })
     }
   }
 
   /* REGISTRO SCANNER*/
   @SubscribeMessage('register-scanner')
   handleRegister(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload;
-    const { scannerId } = data;
+    const data = Array.isArray(payload) ? payload[0] : payload
+    const { scannerId } = data
 
     this.scanners.set(scannerId, {
       socketId: client.id,
       estado: 'DESCONECTADO', // 🔥 INICIA DESCONECTADO
-    });
+    })
 
-    this.socketToScanner.set(client.id, scannerId);
+    this.socketToScanner.set(client.id, scannerId)
 
-    console.log(`🆔 Scanner registrado: ${scannerId}`);
+    console.log(`🆔 Scanner registrado: ${scannerId}`)
   }
 
   /* HEARTBEAT (CLAVE REAL) */
   @SubscribeMessage('scanner-ping')
   handlePing(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload;
+    const data = Array.isArray(payload) ? payload[0] : payload
 
-    const { scannerId, conectado } = data;
+    const { scannerId, conectado } = data
 
-    const scanner = this.scanners.get(scannerId);
+    const scanner = this.scanners.get(scannerId)
 
-    if (!scanner) return;
+    if (!scanner) return
 
     //ACTUALIZA ESTADO REAL
-    scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO';
+    scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO'
 
-    console.log(`💓 ${scannerId} → ${scanner.estado}`);
+    console.log(`💓 ${scannerId} → ${scanner.estado}`)
 
     //AVISA AL FRONTEND
     this.server.emit('scanner-status', {
       estado: conectado ? 'CONECTADO' : 'DESCONECTADO',
       scannerId,
-    });
+    })
   }
 
   /* HUELLA PREVIEW*/
   @SubscribeMessage('fingerprint-result')
   async handleFingerprint(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload;
+    const data = Array.isArray(payload) ? payload[0] : payload
 
-    console.log(data);
-    
+    console.log(data)
 
     this.server.emit('fingerprint-preview', {
       personaId: data.personaId,
       dedo: data.dedo,
       calidad: data.calidad,
       imagen: data.template,
-    });
+    })
   }
 
   /* DISPONIBLE*/
   getScannerDisponible(): string | null {
     for (const [id, scanner] of this.scanners.entries()) {
-      if (scanner.estado === 'DISPONIBLE') return id;
+      if (scanner.estado === 'DISPONIBLE') return id
     }
-    return null;
+    return null
   }
 
   /* ENVIAR AL SCANNER */
   sendToScanner(scannerId: string, event: string, data: any) {
-    const scanner = this.scanners.get(scannerId);
+    const scanner = this.scanners.get(scannerId)
 
-    if (!scanner) throw new Error('Scanner no registrado');
+    if (!scanner) throw new Error('Scanner no registrado')
 
     if (scanner.estado !== 'DISPONIBLE')
-      throw new Error('Scanner no disponible');
+      throw new Error('Scanner no disponible')
 
-    this.server.to(scanner.socketId).emit(event, data);
+    this.server.to(scanner.socketId).emit(event, data)
   }
 }

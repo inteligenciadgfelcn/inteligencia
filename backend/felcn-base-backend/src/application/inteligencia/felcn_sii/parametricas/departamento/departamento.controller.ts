@@ -1,12 +1,28 @@
-import { BaseController } from "@/common/base"
-import { PaginacionQueryDto } from "@/common/dto/paginacion-query.dto"
-import { JwtAuthGuard } from "@/core/authentication/guards/jwt-auth.guard"
-import { UseGuards, Controller, Post, Body, Req, Get, Query, Param, Patch, Delete } from "@nestjs/common"
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger"
-import { DepartamentoService } from "./departamento.service"
-import { CreateDepartamentoDto } from "./dto/create-departamento.dto"
-import { UpdateDepartamentoDto } from "./dto/update-departamento.dto"
-
+import { BaseController } from '@/common/base'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
+import {
+  UseGuards,
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  Query,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+} from '@nestjs/swagger'
+import { DepartamentoService } from './departamento.service'
+import { CreateDepartamentoDto } from './dto/create-departamento.dto'
+import { UpdateDepartamentoDto } from './dto/update-departamento.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

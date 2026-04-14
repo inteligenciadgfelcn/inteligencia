@@ -11,4 +11,3 @@ export class CreateContinenteDto {
   @MaxLength(150)
   descripcion: string
 }
-

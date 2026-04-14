@@ -1,14 +1,6 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, UseGuards } from '@nestjs/common'
 import { UnidadService } from './unidad.service'
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 import { BaseController } from '@/common/base'
 
@@ -26,5 +18,4 @@ export class UnidadController extends BaseController {
   findAllGeneral() {
     return this.unidadService.findAllGeneral()
   }
- 
 }

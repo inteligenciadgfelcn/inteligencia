@@ -41,30 +41,19 @@ export class UsuarioService {
   }
 
   async findByGrupo(id: number) {
-    return this.dataSource.query(
-      this.buildQuery(`AND u.id_grupo = $1`),
-      [id]
-    )
+    return this.dataSource.query(this.buildQuery(`AND u.id_grupo = $1`), [id])
   }
 
   async findByDistrito(id: number) {
-    return this.dataSource.query(
-      this.buildQuery(`AND d.id = $1`),
-      [id]
-    )
+    return this.dataSource.query(this.buildQuery(`AND d.id = $1`), [id])
   }
 
   async findByUnidad(unidadId: number) {
-    return this.dataSource.query(
-      this.buildQuery(`AND un.id = $1`),
-      [unidadId]
-    )
+    return this.dataSource.query(this.buildQuery(`AND un.id = $1`), [unidadId])
   }
 
   async findByUnidadInteligencia() {
-    return this.dataSource.query(
-      this.buildQuery(`AND un.abreviatura = 'DNI'`)
-    )
+    return this.dataSource.query(this.buildQuery(`AND un.abreviatura = 'DNI'`))
   }
 
   async findOne(usuario: string) {

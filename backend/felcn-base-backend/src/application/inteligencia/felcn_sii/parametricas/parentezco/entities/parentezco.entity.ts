@@ -44,7 +44,7 @@ export class Parentezco {
       this.estado = Estado.ACTIVO
     }
   }
-  
+
   @OneToMany(() => DatosFamiliares, (df) => df.parentezco)
   datosFamiliares: DatosFamiliares[]
 }

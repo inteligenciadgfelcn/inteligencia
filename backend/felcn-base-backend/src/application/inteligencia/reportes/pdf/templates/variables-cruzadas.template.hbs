@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; margin: 20px; color: #333; }
+        .header { display: flex; align-items: center; border-bottom: 2px solid #004a2f; padding-bottom: 10px; }
+        .logo { width: 80px; height: auto; }
+        .title-container { flex-grow: 1; text-align: center; }
+        h1 { margin: 0; font-size: 18px; color: #004a2f; }
+        h2 { margin: 5px 0; font-size: 14px; text-transform: uppercase; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; font-size: 11px; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .row-label { text-align: left; background-color: #fafafa; font-weight: bold; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; font-size: 10px; text-align: right; border-top: 1px solid #eee; padding-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{institucional}}" class="logo" alt="Logo FELCN">
+        <div class="title-container">
+            <h1>FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO</h1>
+            <h2>Reporte de Inteligencia - Variables Cruzadas</h2>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Variable / Categoría</th>
+                <th>Categoría A</th>
+                <th>Categoría B</th>
+                <th>Categoría C</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each rows}}
+            <tr>
+                <td class="row-label">{{this.label}}</td>
+                <td>{{this.valA}}</td>
+                <td>{{this.valB}}</td>
+                <td>{{this.valC}}</td>
+                <td><strong>{{this.total}}</strong></td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Generado el: {{fecha}} | Sistema de Inteligencia FELCN
+    </div>
+</body>
+</html>

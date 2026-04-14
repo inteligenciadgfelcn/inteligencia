@@ -138,7 +138,6 @@ export class AsignacionesService {
     return this.asignacionAsig.save(asignacion)
   }
 
-
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro } = pagination
     const query = this.asignacionAsig

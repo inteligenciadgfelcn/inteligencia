@@ -11,7 +11,7 @@ export class UnidadService {
   ) {}
 
   async findAllGeneral() {
-  return this.dataSource.query(`
+    return this.dataSource.query(`
     SELECT 
       unidad.id,
       unidad.descripcion,
@@ -28,5 +28,5 @@ export class UnidadService {
     WHERE unidad._estado = 'ACTIVO'
     GROUP BY unidad.id, unidad.descripcion, unidad.abreviatura
   `)
-}
+  }
 }

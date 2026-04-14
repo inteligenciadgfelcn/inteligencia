@@ -5,7 +5,6 @@ import { Column, Entity, PrimaryColumn } from 'typeorm'
   schema: 'parametricas',
 })
 export class Letra {
-
   @PrimaryColumn({
     type: 'varchar',
     name: 'letras',
@@ -15,5 +14,4 @@ export class Letra {
       'Letra identificadora utilizada para la generación del número de caso',
   })
   descripcion: string
-
 }

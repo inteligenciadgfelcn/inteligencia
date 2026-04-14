@@ -8,7 +8,6 @@ import {
 } from 'typeorm'
 import { Distrital } from '../../distrital/entities/distrital.entity'
 
-
 @Entity({ name: 'grupo' })
 @Index('UQ_grupo_distrito_descripcion', ['distrital', 'descripcion'], {
   unique: true,
@@ -37,5 +36,4 @@ export class Grupo {
     comment: 'Descripción del grupo',
   })
   descripcion!: string
-
 }

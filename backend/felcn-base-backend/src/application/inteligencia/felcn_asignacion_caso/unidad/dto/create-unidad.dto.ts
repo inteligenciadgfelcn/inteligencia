@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 import {
   IsNotEmpty,
   IsString,
   IsOptional,
   MaxLength,
   IsBoolean,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from 'class-validator'
+import { Type } from 'class-transformer'
 
 export class CreateUnidadDto {
   @ApiProperty({
@@ -16,7 +16,7 @@ export class CreateUnidadDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(10)
-  abreviatura!: string;
+  abreviatura!: string
 
   @ApiProperty({
     example: 'Unidad Movil de Patrullaje Rural',
@@ -26,7 +26,7 @@ export class CreateUnidadDto {
   @IsOptional()
   @IsString()
   @MaxLength(250)
-  descripcion?: string;
+  descripcion?: string
 
   @ApiProperty({
     example: 'UM',
@@ -35,7 +35,7 @@ export class CreateUnidadDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(10)
-  abreviaturaIcia!: string;
+  abreviaturaIcia!: string
 
   @ApiProperty({
     example: true,
@@ -45,7 +45,7 @@ export class CreateUnidadDto {
   @IsOptional()
   @Type(() => Boolean)
   @IsBoolean()
-  opAdm?: boolean;
+  opAdm?: boolean
 
   @ApiProperty({
     example: 'UMOPAR',
@@ -54,5 +54,5 @@ export class CreateUnidadDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(10)
-  abreviaturaReporte!: string;
+  abreviaturaReporte!: string
 }

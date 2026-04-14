@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { DepartamentoService } from './departamento.service'
 import { DepartamentoController } from './departamento.controller'
-import { DB_ASIG_CASOS} from '@/core/config/database/database.module'
+import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Departamento } from './entities/departamento.entity'
 import { Pais } from '../../felcn_sii/parametricas/pais/entities/pais.entity'

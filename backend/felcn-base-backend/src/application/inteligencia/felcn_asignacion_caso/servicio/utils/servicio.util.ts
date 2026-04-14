@@ -1,10 +1,8 @@
-
-import { BadRequestException } from "@nestjs/common"
-import { Repository } from "typeorm"
-import { Servicio } from "../entities/servicio.entity"
-import { formatearFecha } from "./fecha.util"
-import { Estado } from "@/application/inteligencia/felcn_siii/estado.enum"
-
+import { BadRequestException } from '@nestjs/common'
+import { Repository } from 'typeorm'
+import { Servicio } from '../entities/servicio.entity'
+import { formatearFecha } from './fecha.util'
+import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
 
 export function generarCodigoServicio(
   fechaIngreso: Date,
@@ -19,7 +17,6 @@ export function generarCodigoServicio(
   )
 }
 
-
 export async function cerrarServiciosVencidos(
   servicioRepository: Repository<Servicio>,
   ahora: Date
@@ -32,7 +29,6 @@ export async function cerrarServiciosVencidos(
     .andWhere('estado = :estado', { estado: Estado.ACTIVO })
     .execute()
 }
-
 
 export async function validarCruceServicios(
   servicioRepository: Repository<Servicio>,
@@ -60,7 +56,6 @@ export async function validarCruceServicios(
     )
   }
 }
-
 
 export async function buscarServicioPorFecha(
   servicioRepository: Repository<Servicio>,

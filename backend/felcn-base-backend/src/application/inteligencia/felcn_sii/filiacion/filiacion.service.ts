@@ -171,22 +171,22 @@ export class FiliacionService {
   }
 
   async obtenerPersona(id: number) {
-  const persona = await this.personasRepository.obtenerPersona(id);
+    const persona = await this.personasRepository.obtenerPersona(id)
 
-  if (!persona) {
-    throw new NotFoundException('No existe esa persona');
+    if (!persona) {
+      throw new NotFoundException('No existe esa persona')
+    }
+
+    return persona
   }
 
-  return persona;
-}
-
   async obtenerDetenido(id: number) {
-    const detenido = await this.filiacionRepository.obtenerDetenido(id);
+    const detenido = await this.filiacionRepository.obtenerDetenido(id)
 
     if (!detenido) {
-  throw new NotFoundException('Detenido no encontrado')
-}
+      throw new NotFoundException('Detenido no encontrado')
+    }
 
-    return detenido;
+    return detenido
   }
 }

@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsString,
-  MaxLength,
-  IsBoolean,
-  IsOptional,
-} from 'class-validator'
+import { IsString, MaxLength, IsBoolean, IsOptional } from 'class-validator'
 
 export class CreateDetenidoDto {
   @ApiProperty({

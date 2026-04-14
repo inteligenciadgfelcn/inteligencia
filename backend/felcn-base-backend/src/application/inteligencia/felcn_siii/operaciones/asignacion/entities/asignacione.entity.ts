@@ -1,9 +1,4 @@
-
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity({ name: 'asignacion', schema: 'public' })
 export class Asignacion {
@@ -22,7 +17,7 @@ export class Asignacion {
   })
   unidad!: string
 
-  @Column({ name: 'id_distrital'})
+  @Column({ name: 'id_distrital' })
   distrital!: number
 
   @Column({ name: 'id_grupo' })

@@ -19,7 +19,10 @@ export class CreateDocumentoDetenidoDto {
   @IsOptional()
   expedido?: string
 
-  @ApiProperty({ example: 'Contrastado con el segip' , description: 'Si fue verificado con el SEGIP' })
+  @ApiProperty({
+    example: 'Contrastado con el segip',
+    description: 'Si fue verificado con el SEGIP',
+  })
   @IsString()
   contrastadoSegip?: string
 }

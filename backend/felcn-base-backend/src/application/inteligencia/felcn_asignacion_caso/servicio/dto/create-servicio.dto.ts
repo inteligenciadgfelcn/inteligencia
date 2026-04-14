@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import {
-  IsDate,
-  IsNotEmpty,
-  IsString,
-  MaxLength,
-} from 'class-validator'
+import { IsDate, IsNotEmpty, IsString, MaxLength } from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class CreateServicioDto {
-
   @ApiProperty({
     example: 'G-AGAG-0508',
     description: 'Numero de pase de usuario Principal',
@@ -29,7 +23,8 @@ export class CreateServicioDto {
   @IsString()
   @IsNotEmpty({ message: 'El numero de pase de emergencia es obligatoria' })
   @MaxLength(15, {
-    message: 'El numero de pase de emergencia no puede tener más de 15 caracteres',
+    message:
+      'El numero de pase de emergencia no puede tener más de 15 caracteres',
   })
   usuarioEmergencia: string
 

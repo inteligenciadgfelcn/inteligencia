@@ -7,4 +7,4 @@ import { InteligenciaModule } from './inteligencia/inteligencia.module'
 @Module({
   imports: [ParametroModule, HealthModule, InteligenciaModule],
 })
-export class ApplicationModule { }
+export class ApplicationModule {}

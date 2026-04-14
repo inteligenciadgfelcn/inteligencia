@@ -21,7 +21,7 @@ export class Profesion {
     name: 'ocupa_profesion',
     type: 'boolean',
     default: true,
-    comment: 'Indica si la profesión está habilitada'
+    comment: 'Indica si la profesión está habilitada',
   })
   ocupaProfesion: boolean
 }

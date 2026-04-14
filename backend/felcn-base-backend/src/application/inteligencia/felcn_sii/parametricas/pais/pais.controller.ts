@@ -43,38 +43,37 @@ export class PaisController extends BaseController {
   @ApiOperation({ summary: 'Listado de paises por continente' })
   @ApiQuery({ name: 'idContinente', required: false })
   findAllSimple(@Query('idContinente') idContinente: number) {
-    return this.paisService.findAllContinente(
-      idContinente);
+    return this.paisService.findAllContinente(idContinente)
   }
 
   @Get()
   @ApiOperation({ summary: 'Listar todos los países (sin paginación)' })
   async findAll(@Query() pagination: PaginacionQueryDto) {
-   const result = await this.paisService.findAll(pagination);
-    return this.successListRows(result);
+    const result = await this.paisService.findAll(pagination)
+    return this.successListRows(result)
   }
 
   @Get('allGeneral')
   @ApiOperation({ summary: 'Listar todos los países (sin paginación)' })
   findAllGeneral() {
-    return this.paisService.findAllGeneral();
+    return this.paisService.findAllGeneral()
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un país por ID' })
   findOne(@Param('id') id: number) {
-    return this.paisService.findOne(id);
+    return this.paisService.findOne(id)
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Actualizar un país' })
   update(@Param('id') id: number, @Body() dto: UpdatePaisDto) {
-    return this.paisService.update(id, dto);
+    return this.paisService.update(id, dto)
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Eliminar un país (borrado lógico)' })
   remove(@Param('id') id: number) {
-    return this.paisService.remove(id);
+    return this.paisService.remove(id)
   }
 }
