@@ -12,19 +12,11 @@ import { GradoService } from './service/grado.service'
 import { UnidadService } from './service/unidad.service'
 import { DistritaService } from './service/distrital.service'
 import { GrupoService } from './service/grupo.service'
-import { GradoController } from './controller/grado.controller'
-import { UnidadController } from './controller/unidad.controller'
-import { DistritaController } from './controller/distrital.controller'
-import { GrupoController } from './controller/grupo.controller'
 import { LookupsController } from './controller/lookups.controller'
 
 @Module({
   imports: [TypeOrmModule.forFeature([Grado, Unidad, Distrital, Grupo])],
   controllers: [
-    GradoController,
-    UnidadController,
-    DistritaController,
-    GrupoController,
     LookupsController,
   ],
   providers: [
