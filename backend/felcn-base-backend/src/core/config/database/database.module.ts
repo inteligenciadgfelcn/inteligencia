@@ -278,7 +278,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         password:
           configService.get<string>('DB_SOSPECHOSO_PASSWORD') ||
           configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_SOSPECHOSOS_DATABASE'),
+        database: configService.get<string>('DB_SOSPECHOSO_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
