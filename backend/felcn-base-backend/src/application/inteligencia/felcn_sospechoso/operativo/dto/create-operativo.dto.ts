@@ -72,4 +72,5 @@ export class CreateOperativoDto {
   @IsString()
   @MaxLength(500)
   descripcion?: string
+  abreviaturaDepartamento: any
 }

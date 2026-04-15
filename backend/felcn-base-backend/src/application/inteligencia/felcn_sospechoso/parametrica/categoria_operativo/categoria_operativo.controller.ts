@@ -5,7 +5,7 @@ import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SOSPECHOSO - Categoria Operativo')
+@ApiTags('Casos X - Categoria Operativo')
 @Controller('categoria-operativo')
 export class CategoriaOperativoController {
   constructor(

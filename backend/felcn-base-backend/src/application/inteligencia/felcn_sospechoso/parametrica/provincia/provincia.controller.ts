@@ -10,7 +10,7 @@ import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SOSPECHOSO - Provincia')
+@ApiTags('Casos X - Provincia')
 @Controller('provincia')
 export class ProvinciaController {
   constructor(private readonly provinciaService: ProvinciaService) {}

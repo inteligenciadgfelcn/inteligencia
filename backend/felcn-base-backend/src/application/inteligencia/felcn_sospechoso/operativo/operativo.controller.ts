@@ -8,7 +8,7 @@ import { BaseController } from '@/common/base';
 
 //@ApiBearerAuth()
 //@UseGuards(JwtAuthGuard)
-@ApiTags('Sospechoso - operativo')
+@ApiTags('Casos X - Operativo')
 @Controller('operativo')
 export class OperativoController extends BaseController{
   constructor(private readonly operativoService: OperativoService) {
@@ -16,6 +16,9 @@ export class OperativoController extends BaseController{
   }
 
   @Post()
+  @ApiOperation({
+      summary: 'Creación de operativo caso x',
+    })
   create(@Body() createOperativoDto: CreateOperativoDto) {
     return this.operativoService.create(createOperativoDto);
   }

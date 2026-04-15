@@ -5,6 +5,9 @@ import { DB_AUTH } from '@/core/config/database/database.module'
 
 @Injectable()
 export class AuthRepository {
+  getDepartamentoByAbreviatura(abrev: any) {
+    throw new Error('Method not implemented.')
+  }
   constructor(
     @InjectDataSource(DB_AUTH)
     private readonly dataSource: DataSource
