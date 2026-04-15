@@ -6,7 +6,7 @@ import {
 } from 'typeorm'
 
 @Entity({ name: 'estado' })
-export class Estado {
+export class EstadoSospechoso {
 
   @PrimaryGeneratedColumn({
     type: 'int',

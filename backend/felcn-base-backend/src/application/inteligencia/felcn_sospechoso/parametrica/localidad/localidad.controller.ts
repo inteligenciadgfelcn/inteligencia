@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SOSPECHOSO - Localidad')
+@ApiTags('Casos X - Localidad')
 @Controller('localidad')
 export class LocalidadController {
   constructor(private readonly localidadService: LocalidadService) {}

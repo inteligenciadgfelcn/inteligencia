@@ -3,16 +3,46 @@ import { CreateOperativoDto } from './dto/create-operativo.dto'
 import { UpdateOperativoDto } from './dto/update-operativo.dto'
 import { AuthRepository } from './repositories/auth.repository'
 import { SiiiRepository } from './repositories/siii.repository'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
+import { Operativo } from './entities/operativo.entity'
+import { DB_SOSPECHOSO } from '@/core/config/database/database.module'
+import { Departamento } from '../parametrica/provincia/entities/departamento.entity'
 
 @Injectable()
 export class OperativoService {
   constructor(
-     private readonly siiiRepo: SiiiRepository,
-    private readonly authRepo: AuthRepository
+    private readonly siiiRepo: SiiiRepository,
+    private readonly authRepo: AuthRepository,
+
+    @InjectRepository(Operativo, DB_SOSPECHOSO)
+    private readonly operativoRepo: Repository<Operativo>,
+
+    @InjectRepository(Departamento, DB_SOSPECHOSO)
+    private readonly departamentoRepo: Repository<Departamento>
   ) {}
 
-  create(createOperativoDto: CreateOperativoDto) {
-    return 'This action adds a new operativo'
+  async create(dto: CreateOperativoDto) {
+    const abrev = dto.abreviaturaDepartamento?.trim().toUpperCase()
+
+    if (!abrev) {
+      throw new Error('La abreviatura es requerida')
+    }
+
+    const departamento = await this.departamentoRepo.findOne({
+      where: { abreviatura: abrev },
+    })
+
+    if (!departamento) {
+      throw new Error(`Departamento ${abrev} no existe`)
+    }
+
+    const operativo = this.operativoRepo.create({
+      ...dto,
+      idDepartamento: departamento.idDepartamento,
+    })
+
+    return await this.operativoRepo.save(operativo)
   }
 
   findAll() {
