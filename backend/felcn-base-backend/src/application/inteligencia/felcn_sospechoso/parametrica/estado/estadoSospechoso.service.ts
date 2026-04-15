@@ -2,17 +2,17 @@ import { DB_SOSPECHOSO } from '@/core/config/database/database.module';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Estado } from './entities/estado.entity';
+import { EstadoSospechoso } from './entities/estadoSospechoso.entity';
 
 @Injectable()
-export class EstadoService {
+export class EstadoSospechosoService {
  constructor(
-    @InjectRepository(Estado, DB_SOSPECHOSO)
-    private readonly estadoRepository: Repository<Estado>
+    @InjectRepository(EstadoSospechoso, DB_SOSPECHOSO)
+    private readonly estadoSospechosoRepository: Repository<EstadoSospechoso>
   ) {}
 
    findAll() {
-    return this.estadoRepository.find({
+    return this.estadoSospechosoRepository.find({
       order: {
         idEstado: 'ASC',
       },
