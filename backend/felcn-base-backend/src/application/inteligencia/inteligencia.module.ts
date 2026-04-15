@@ -27,6 +27,11 @@ import { ContinenteModule } from './felcn_sii/parametricas/continente/continente
 import { PaisModule } from './felcn_sii/parametricas/pais/pais.module'
 import { DepartamentoModule } from './felcn_sii/parametricas/departamento/departamento.module'
 import { OperativoModule } from './felcn_sospechoso/operativo/operativo.module';
+import { ProvinciaModule } from './felcn_sospechoso/parametrica/provincia/provincia.module';
+import { LocalidadModule } from './felcn_sospechoso/parametrica/localidad/localidad.module';
+import { CategoriaOperativoModule } from './felcn_sospechoso/parametrica/categoria_operativo/categoria_operativo.module';
+import { ItemOperativoModule } from './felcn_sospechoso/parametrica/item_operativo/item_operativo.module';
+import { EstadoModule } from './felcn_sospechoso/parametrica/estado/estado.module';
 
 @Module({
   imports: [
@@ -56,7 +61,12 @@ import { OperativoModule } from './felcn_sospechoso/operativo/operativo.module';
     DatosFamiliaresModule,
     ParentezcoModule,
     NombresSupuestosModule,
-    OperativoModule
+    OperativoModule,
+    ProvinciaModule,
+    LocalidadModule,
+    CategoriaOperativoModule,
+    ItemOperativoModule,
+    EstadoModule
   ],
 })
 export class InteligenciaModule {}
