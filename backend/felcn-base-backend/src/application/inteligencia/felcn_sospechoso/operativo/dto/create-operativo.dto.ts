@@ -67,10 +67,4 @@ export class CreateOperativoDto {
   @MaxLength(255)
   mando?: string
 
-  @ApiProperty({ example: 'Operativo realizado sin novedades', description: 'Descripción', required: false })
-  @IsOptional()
-  @IsString()
-  @MaxLength(500)
-  descripcion?: string
-  abreviaturaDepartamento: any
 }
