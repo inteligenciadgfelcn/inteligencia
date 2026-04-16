@@ -23,7 +23,7 @@ export class OperativoService {
   ) {}
 
   async create(dto: CreateOperativoDto) {
-    const abrev = dto.abreviaturaDepartamento?.trim().toUpperCase()
+    const abrev = dto.idDepartamento?.trim().toUpperCase()
 
     if (!abrev) {
       throw new Error('La abreviatura es requerida')
