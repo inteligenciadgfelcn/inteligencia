@@ -9,8 +9,8 @@ import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import { Card } from '@/components/ui/Card'
 import {
-  buscarInraPorNumeroIdentificacionFake,
-  buscarInraPorNumeroTituloFake,
+  buscarInraPorNumeroIdentificacion,
+  buscarInraPorNumeroTitulo,
   InraBeneficiario,
   InraResponse,
   InraSearchType,
@@ -54,7 +54,7 @@ export const INRAForm = () => {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [beneficiarios, setBeneficiarios] = useState<InraBeneficiario[]>([])
 
-  const titulos = resultado?.respuestaTitulos ?? []
+  const titulos = resultado?.datos.respuestaTitulos ?? []
 
   const rows = useMemo(() => {
     const from = (page - 1) * limit
@@ -78,7 +78,8 @@ export const INRAForm = () => {
     {
       accessor: 'superficie',
       title: 'Superficie',
-      render: (row) => row.superficie.toFixed(4),
+      render: (row) =>
+        row.superficie?.toFixed(4) ?? row.superficieTotal?.toFixed(4) ?? '-',
     },
     {
       accessor: 'claseTitulo',
@@ -122,11 +123,9 @@ export const INRAForm = () => {
     try {
       let response: InraResponse
       if (values.tipoBusqueda.value === 'TITULO') {
-        response = await buscarInraPorNumeroTituloFake(values.datoBusqueda)
+        response = await buscarInraPorNumeroTitulo(values.datoBusqueda)
       } else {
-        response = await buscarInraPorNumeroIdentificacionFake(
-          values.datoBusqueda
-        )
+        response = await buscarInraPorNumeroIdentificacion(values.datoBusqueda)
       }
 
       setResultado(response)
@@ -146,8 +145,8 @@ export const INRAForm = () => {
     setDialogOpen(false)
   }
 
-  const mensajePrincipal = resultado?.mensajes?.[0]?.mensaje
-  const sinResultados = resultado?.respuestaTitulos === null
+  const mensajePrincipal = resultado?.datos.mensajes?.[0]?.mensaje
+  const sinResultados = resultado?.datos.respuestaTitulos === null
 
   return (
     <div className="mb-5">
