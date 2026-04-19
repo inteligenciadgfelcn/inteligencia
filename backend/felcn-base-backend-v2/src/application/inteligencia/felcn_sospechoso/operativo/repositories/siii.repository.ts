@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '@/core/config/database/database.module'
+import { PersonaAntecedente } from '../interfaces/persona-antecedentes.interface'
+import { BuscarAntecedenteDto } from '../dto/buscar-antecedente.dto'
 
 @Injectable()
 export class SiiiRepository {
@@ -178,5 +180,61 @@ export class SiiiRepository {
 `,
       [numero_caso]
     )
+  }
+
+  async buscarPersonaDetenida(
+    filtros: BuscarAntecedenteDto
+  ): Promise<PersonaAntecedente[]> {
+    const { ci, nombre, apellidoPaterno, apellidoMaterno } = filtros
+
+    let condiciones: string[] = []
+    let params: any[] = []
+
+    if (ci) {
+      params.push(ci)
+      condiciones.push(`pa.nro_documento = $${params.length}`)
+    }
+
+    if (nombre) {
+      params.push(`%${nombre}%`)
+      condiciones.push(`LOWER(pa.nombres) LIKE LOWER($${params.length})`)
+    }
+
+    if (apellidoPaterno) {
+      params.push(`%${apellidoPaterno}%`)
+      condiciones.push(
+        `LOWER(pa.apellido_paterno) LIKE LOWER($${params.length})`
+      )
+    }
+
+    if (apellidoMaterno) {
+      params.push(`%${apellidoMaterno}%`)
+      condiciones.push(
+        `LOWER(pa.apellido_materno) LIKE LOWER($${params.length})`
+      )
+    }
+
+    const where = `WHERE ${condiciones.join(' AND ')}`
+
+    const result = await this.dataSource.query(
+      `
+    SELECT 
+      pa.nro_documento,
+      pa.nombres,
+      pa.apellido_paterno,
+      pa.apellido_materno,
+      COUNT(DISTINCT pa.id_operativo)::int as cantidad_operativos
+    FROM public.persona_auxiliar pa
+    ${where}
+    GROUP BY 
+      pa.nro_documento,
+      pa.nombres,
+      pa.apellido_paterno,
+      pa.apellido_materno
+    `,
+      params
+    )
+
+    return result as PersonaAntecedente[]
   }
 }

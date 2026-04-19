@@ -247,7 +247,7 @@ export class ServicioService {
       `
   SELECT 
     u.usuario,
-    u.codigo_icia,
+    u.numero_pase,
     u.id as "idUsuario",
     TRIM(CONCAT(
       gr.abreviatura, ' ',
@@ -259,7 +259,7 @@ export class ServicioService {
   FROM usuario.usuario u
   LEFT JOIN usuario.persona p ON p.id = u.id_persona
   LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
-  WHERE u.codigo_icia = ANY($1::text[])
+  WHERE u.numero_pase = ANY($1::text[])
   `,
       [usuariosIds]
     )
