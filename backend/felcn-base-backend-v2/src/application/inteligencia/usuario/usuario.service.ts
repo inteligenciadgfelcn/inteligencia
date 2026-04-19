@@ -22,7 +22,7 @@ export class UsuarioService {
       p.nro_documento as "nroDocumento",
       p.telefono as "telefono",
       u.usuario as "usuario",
-      u.codigo_icia as "codigoIcia",
+      u.numero_pase as "numeroPase",
       u._estado as "estado",
       gr.descripcion as "grado",
       g.descripcion as "grupo",
@@ -69,7 +69,7 @@ export class UsuarioService {
 
   async findOne(usuario: string) {
     const result = await this.dataSource.query(
-      this.buildQuery(`AND u.usuario = $1`),
+      this.buildQuery(`AND u.numero_pase = $1`),
       [usuario]
     )
 
