@@ -25,6 +25,7 @@ interface RowExpansion<T> {
 
 interface Props<T> {
   title?: string
+  titleBreadcrumb?: string
 
   rows: T[]
   total: number
@@ -46,6 +47,7 @@ interface Props<T> {
 
   columns: Column<T>[]
   loading?: boolean
+  rowClassName?: (row: T) => string
 
   sortStatus?: DataTableSortStatus
   onSortStatusChange?: (v: DataTableSortStatus) => void
@@ -57,6 +59,7 @@ interface Props<T> {
 
 export function VristoDataTable<T>({
   title,
+  titleBreadcrumb,
   rows,
   total,
   page,
@@ -71,6 +74,7 @@ export function VristoDataTable<T>({
   columns,
   loading,
   extraButtons,
+  rowClassName,
   sortStatus,
   onSortStatusChange,
   rowExpansion,
@@ -103,12 +107,17 @@ export function VristoDataTable<T>({
     <div>
       {/* HEADER */}
       {title && (
-        <div className="panel flex items-center p-3 text-primary mb-5">
+        <div className="panel flex items-center p-3 text-primary mb-3">
           <span className="text-lg font-semibold">{title}</span>
         </div>
       )}
 
-      <div className="panel mt-6">
+      <div className="panel mt-3">
+        {titleBreadcrumb && (
+          <button className="mb-4 bg-primary text-white-light p-1.5 ltr:pl-6 rtl:pr-6 ltr:pr-2 rtl:pl-2 relative  h-full flex items-center before:absolute ltr:before:-right-[15px] rtl:before:-left-[15px] rtl:before:rotate-180 before:inset-y-0 before:m-auto before:w-0 before:h-0 before:border-[16px] before:border-l-[15px] before:border-r-0 before:border-t-transparent before:border-b-transparent before:border-l-primary before:z-[1]">
+            {titleBreadcrumb}
+          </button>
+        )}
         {/* TOOLBAR */}
         {(onExportCSV ||
           onExportExcel ||

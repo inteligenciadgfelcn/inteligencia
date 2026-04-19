@@ -17,7 +17,7 @@ import { Usuario } from '@/core/usuario/entity/usuario.entity'
 dotenv.config()
 
 @Check(UtilService.buildStatusCheck(UsuarioRolEstado))
-@Entity({ name: 'usuarios_roles', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'usuario_rol', schema: process.env.DB_SCHEMA_USUARIOS })
 export class UsuarioRol extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',
