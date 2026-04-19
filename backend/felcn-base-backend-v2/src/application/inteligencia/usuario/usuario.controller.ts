@@ -49,7 +49,7 @@ export class UsuarioController {
 
   @Get('usuario/:usuario')
   @ApiOperation({
-    summary: 'Obtener usuario por código',
+    summary: 'Obtener usuario por numero de pase',
   })
   @ApiParam({ name: 'usuario', example: 'G-SRG-0144' })
   findOne(@Param('usuario') usuario: string) {
