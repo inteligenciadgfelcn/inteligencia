@@ -18,7 +18,7 @@ import { UsuarioRol } from '@/core/authorization/entity/usuario-rol.entity'
 
 dotenv.config()
 @Check(UtilService.buildStatusCheck(UsuarioEstado))
-@Entity({ name: 'usuarios', schema: process.env.DB_SCHEMA_USUARIOS })
+@Entity({ name: 'usuario', schema: process.env.DB_SCHEMA_USUARIOS })
 export class Usuario extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'bigint',
