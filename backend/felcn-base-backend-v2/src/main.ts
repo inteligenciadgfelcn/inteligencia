@@ -3,16 +3,11 @@ import { AppModule } from './app.module'
 import { ConfigService } from '@nestjs/config'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import express from 'express'
-import session from 'express-session'
-import passport from 'passport'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import { INestApplication } from '@nestjs/common'
 import { CustomValidationPipe } from '@/common/pipes'
-import { TypeormStore } from 'connect-typeorm'
-import { Session } from '@/core/authentication/entity/session.entity'
 import dotenv from 'dotenv'
-import path from 'path'
 
 import {
   SWAGGER_API_CURRENT_VERSION,
@@ -20,27 +15,10 @@ import {
   SWAGGER_API_NAME,
   SWAGGER_API_ROOT,
 } from './common/constants'
-import { DataSource } from 'typeorm'
 import { LoggerModule, printInfo, printLogo, printRoutes } from '@/core/logger'
 import packageJson from '../package.json'
 
 dotenv.config()
-
-export const SessionAppDataSource = new DataSource({
-  type: 'postgres',
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  schema: process.env.DB_SCHEMA,
-  synchronize: false,
-  ssl:
-    process.env.DB_USE_SSL === 'true'
-      ? { rejectUnauthorized: process.env.DB_VERIFY_SSL === 'true' }
-      : false,
-  entities: [__dirname + '/../src/**/*.entity{.ts,.js}'],
-})
 
 const bootstrap = async () => {
   const app = await NestFactory.create(AppModule, {
@@ -56,44 +34,10 @@ const bootstrap = async () => {
     createSwagger(app)
   }
 
-  await SessionAppDataSource.initialize()
-
-  // configuration app
-  const repositorySession = SessionAppDataSource.getRepository(Session)
-
   app.use(express.json({ limit: '50mb' }))
   app.use(express.urlencoded({ extended: true, limit: '50mb' }))
-
-  app.use(
-    session({
-      secret: configService.get('SESSION_SECRET') || '',
-      resave: false,
-      saveUninitialized: false,
-      rolling: true,
-      name: 'base.connect.sid',
-      cookie: {
-        maxAge: 30 * 60 * 1000,
-        httpOnly: true,
-      },
-      store: new TypeormStore({ ttl: 3600, cleanupLimit: 2 }).connect(
-        repositorySession
-      ),
-    })
-  )
-  app.use(passport.initialize())
-  app.use(passport.session())
   app.use(cookieParser())
   app.use(express.static('public'))
-
-  // Configuración para servir archivos estáticos desde STORAGE_NFS_PATH
-  const storagePath = configService.get('STORAGE_NFS_PATH')
-  if (storagePath) {
-    app.use('/uploads', express.static(path.join(storagePath, 'uploads')))
-  } else {
-    console.warn(
-      'STORAGE_NFS_PATH no está configurado. Los archivos estáticos no se servirán correctamente.'
-    )
-  }
 
   app.enableCors({
     origin: true,
