@@ -62,13 +62,14 @@ export async function validarCruceServicios(
 }
 
 
-export async function buscarServicioHoy(
-  servicioRepository: Repository<Servicio>
+export async function buscarServicioPorFecha(
+  servicioRepository: Repository<Servicio>,
+  fecha: Date
 ) {
-  const inicioDia = new Date()
+  const inicioDia = new Date(fecha)
   inicioDia.setHours(0, 0, 0, 0)
 
-  const finDia = new Date()
+  const finDia = new Date(fecha)
   finDia.setHours(23, 59, 59, 999)
 
   return await servicioRepository
