@@ -12,6 +12,7 @@ import packageJson from '../package.json'
 import { AppInterceptor } from '@/common/interceptors'
 
 import dotenv from 'dotenv'
+import { AuthModule } from './core/config/authorization/auth.module'
 dotenv.config()
 
 const loggingEnabled = String(process.env.LOG_ENABLED) === 'true'
@@ -51,6 +52,8 @@ const logToLokiEnabled = String(process.env.LOG_LOKI_ENABLED) === 'true'
     ScheduleModule.forRoot(),
     CoreModule,
     ApplicationModule,
+    AuthModule,
+
   ],
   controllers: [AppController],
   providers: [
