@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Unidades')
+@ApiTags('Unidades')
 @Controller('unidad')
 export class UnidadController extends BaseController {
   constructor(private readonly unidadService: UnidadService) {

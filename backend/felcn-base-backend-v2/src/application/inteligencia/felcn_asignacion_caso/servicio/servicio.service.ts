@@ -22,7 +22,7 @@ import { Estado } from '../../felcn_siii/estado.enum'
 type UsuarioAuth = {
   usuario: string
   nombreCompleto: string
-  codigo_icia: string
+  numero_pase: string
   abreviatura: string
 }
 
@@ -264,7 +264,7 @@ export class ServicioService {
       [usuariosIds]
     )
 
-    const usuariosMap = new Map(usuarios.map((u) => [u.codigo_icia, u]))
+    const usuariosMap = new Map(usuarios.map((u) => [u.numero_pase, u]))
 
     const resultado = servicios.map((servicio) => {
       const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
