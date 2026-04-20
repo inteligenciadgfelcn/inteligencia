@@ -21,6 +21,7 @@ declare global {
     rol?: string // rol principal
     exp?: number
     iat?: number
+    numeroPase?: string | null
   }
 }
 

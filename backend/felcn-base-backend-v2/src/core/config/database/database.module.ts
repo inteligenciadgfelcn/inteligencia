@@ -59,6 +59,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -69,86 +70,93 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
     // Esquemas: usuarios (usuarios, roles, permisos), proyecto (otros)
     // Tablas: usuarios, personas, roles, usuarios_roles, modulos, casbin_rule, refresh_tokens
     // =============================================
-    TypeOrmModule.forRootAsync({
+     TypeOrmModule.forRootAsync({
       name: DB_AUTH,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USERNAME'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_DATABASE'),
+        host:
+          config.get<string>('DB_AUTH_HOST') ||
+          config.get<string>('DB_HOST'),
+        port: Number(
+          config.get('DB_AUTH_PORT') || config.get('DB_PORT'),
+        ),
+        username:
+          config.get<string>('DB_AUTH_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
+        password:
+          config.get<string>('DB_AUTH_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_AUTH_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
-          configService.get('DB_USE_SSL') === 'true'
+          config.get('DB_USE_SSL') === 'true'
             ? {
                 rejectUnauthorized:
-                  configService.get('DB_VERIFY_SSL') === 'true',
+                  config.get('DB_VERIFY_SSL') === 'true',
               }
             : false,
         subscribers:
-          configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
         logger: new SQLLogger({
           logger: LoggerService.getInstance(),
           level: {
-            query: configService.get('LOG_SQL') === 'true',
+            query: config.get('LOG_SQL') === 'true',
             error: true,
           },
         }),
         entities: [
-          
         ],
       }),
     }),
+
 
     // =============================================
     // CONEXIÓN: ASIG-CASOS
     // Base de datos: felcn_asignacion_casos
     // Tablas: asignacion, servicio, departamento, unidad, letra, etc.
     // =============================================
-    TypeOrmModule.forRootAsync({
+      TypeOrmModule.forRootAsync({
       name: DB_ASIG_CASOS,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         host:
-          configService.get<string>('DB_ASIG_HOST') ||
-          configService.get<string>('DB_HOST'),
-        port:
-          configService.get<number>('DB_ASIG_PORT') ||
-          configService.get<number>('DB_PORT'),
+          config.get<string>('DB_ASIG_CASOS_HOST') ||
+          config.get<string>('DB_HOST'),
+        port: Number(
+          config.get('DB_ASIG_CASOS_PORT') ||
+            config.get('DB_PORT'),
+        ),
         username:
-          configService.get<string>('DB_ASIG_USERNAME') ||
-          configService.get<string>('DB_USERNAME'),
+          config.get<string>('DB_ASIG_CASOS_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
         password:
-          configService.get<string>('DB_ASIG_PASSWORD') ||
-          configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_ASIG_DATABASE'),
+          config.get<string>('DB_ASIG_CASOS_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_ASIG_CASOS_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
-          configService.get('DB_USE_SSL') === 'true'
+          config.get('DB_USE_SSL') === 'true'
             ? {
                 rejectUnauthorized:
-                  configService.get('DB_VERIFY_SSL') === 'true',
+                  config.get('DB_VERIFY_SSL') === 'true',
               }
             : false,
         subscribers:
-          configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
         logger: new SQLLogger({
           logger: LoggerService.getInstance(),
           level: {
-            query: configService.get('LOG_SQL') === 'true',
+            query: config.get('LOG_SQL') === 'true',
             error: true,
           },
         }),
         entities: [
-          __dirname +
-            '/../../../application/sunesis/asig-casos/**/*.entity{.ts,.js}',
           __dirname +
             '/../../../application/inteligencia/felcn_asignacion_caso/**/*.entity{.ts,.js}',
         ],
@@ -164,41 +172,42 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
       name: DB_SII,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         host:
-          configService.get<string>('DB_SII_HOST') ||
-          configService.get<string>('DB_HOST'),
-        port:
-          configService.get<number>('DB_SII_PORT') ||
-          configService.get<number>('DB_PORT'),
+          config.get<string>('DB_SII_HOST') ||
+          config.get<string>('DB_HOST'),
+        port: Number(
+          config.get('DB_SII_PORT') || config.get('DB_PORT'),
+        ),
         username:
-          configService.get<string>('DB_SII_USERNAME') ||
-          configService.get<string>('DB_USERNAME'),
+          config.get<string>('DB_SII_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
         password:
-          configService.get<string>('DB_SII_PASSWORD') ||
-          configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_SII_DATABASE'),
+          config.get<string>('DB_SII_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_SII_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
-          configService.get('DB_USE_SSL') === 'true'
+          config.get('DB_USE_SSL') === 'true'
             ? {
                 rejectUnauthorized:
-                  configService.get('DB_VERIFY_SSL') === 'true',
+                  config.get('DB_VERIFY_SSL') === 'true',
               }
             : false,
         subscribers:
-          configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
         logger: new SQLLogger({
           logger: LoggerService.getInstance(),
           level: {
-            query: configService.get('LOG_SQL') === 'true',
+            query: config.get('LOG_SQL') === 'true',
             error: true,
           },
         }),
         entities: [
-          __dirname + '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
+          __dirname +
+            '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -208,45 +217,47 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
     // Base de datos: felcn_sospechosos
     // Tablas: plan_operacion, categoria_operativo, continente, departamento, detenido, distrital, estado, etc.
     // =============================================
-    TypeOrmModule.forRootAsync({
+   TypeOrmModule.forRootAsync({
       name: DB_SOSPECHOSO,
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         host:
-          configService.get<string>('DB_SOSPECHOSO_HOST') ||
-          configService.get<string>('DB_HOST'),
-        port:
-          configService.get<number>('DB_SOSPECHOSO_PORT') ||
-          configService.get<number>('DB_PORT'),
+          config.get<string>('DB_SOSPECHOSO_HOST') ||
+          config.get<string>('DB_HOST'),
+        port: Number(
+          config.get('DB_SOSPECHOSO_PORT') ||
+            config.get('DB_PORT'),
+        ),
         username:
-          configService.get<string>('DB_SOSPECHOSO_USERNAME') ||
-          configService.get<string>('DB_USERNAME'),
+          config.get<string>('DB_SOSPECHOSO_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
         password:
-          configService.get<string>('DB_SOSPECHOSO_PASSWORD') ||
-          configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_SOSPECHOSO_DATABASE'),
+          config.get<string>('DB_SOSPECHOSO_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_SOSPECHOSO_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
-          configService.get('DB_USE_SSL') === 'true'
+          config.get('DB_USE_SSL') === 'true'
             ? {
                 rejectUnauthorized:
-                  configService.get('DB_VERIFY_SSL') === 'true',
+                  config.get('DB_VERIFY_SSL') === 'true',
               }
             : false,
         subscribers:
-          configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
         logger: new SQLLogger({
           logger: LoggerService.getInstance(),
           level: {
-            query: configService.get('LOG_SQL') === 'true',
+            query: config.get('LOG_SQL') === 'true',
             error: true,
           },
         }),
         entities: [
-          __dirname + '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
+          __dirname +
+            '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
         ],
       }),
     }),

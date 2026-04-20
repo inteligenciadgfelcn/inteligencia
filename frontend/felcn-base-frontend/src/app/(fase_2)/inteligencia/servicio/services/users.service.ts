@@ -3,7 +3,7 @@ import { Constantes } from '@/config/Constantes'
 
 export interface Usuario {
   nombreCompleto: string
-  codigoIcia: string
+  numeroPase: string
   usuario: string
   nombres: string
   telefono: string
