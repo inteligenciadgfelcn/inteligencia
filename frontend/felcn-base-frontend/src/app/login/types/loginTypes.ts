@@ -64,6 +64,7 @@ export interface UsuarioType {
   roles: RoleType[]
   persona: PersonaType
   idRol: string
+  numeroPase: string
   urlFoto?: string | null
 }
 
