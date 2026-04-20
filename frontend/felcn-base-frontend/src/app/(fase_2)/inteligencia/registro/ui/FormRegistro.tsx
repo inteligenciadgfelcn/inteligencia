@@ -11,7 +11,6 @@ import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import {
   dateToStringAmPm,
-  dateUtcToString,
   formatDate2ToBackend,
   nowDateToString,
 } from '@/utils/fechas'
@@ -24,11 +23,14 @@ import { useDistritales } from '../hooks/use.distritales'
 import { Distrital } from '../services/distrital.service'
 import { useGroups } from '../hooks/use.groups'
 import { Grupo } from '../services/group.service'
-import { getNumeroRegistro } from '../services/registro.service'
+import {
+  getNumeroRegistro,
+  verificarServicioUsuario,
+} from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
 import { AsignacionTable } from '../types/asignacion.table'
-import { original } from '@reduxjs/toolkit'
+import { useAuth } from '@/context/AuthProvider'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -82,8 +84,13 @@ interface Props {
 /* ================= COMPONENT ================= */
 export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   const [loading, setLoading] = useState(false)
+  const [verificandoServicio, setVerificandoServicio] = useState(true)
+  const [usuarioConServicio, setUsuarioConServicio] = useState(false)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
+  const { usuario } = useAuth()
+
+  imprimir('Usuario en form', usuario)
 
   const {
     handleSubmit,
@@ -99,7 +106,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       codigoServicio: asignacion?.codigoServicio || '',
-      nroPase: asignacion?.usuario || '',
+      nroPase: usuario?.numeroPase || '',
       departamento: asignacion?.departamento
         ? {
             value: asignacion.departamento?.idDepartamento,
@@ -229,9 +236,39 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   }, [grupoSeleccionado, resetField])
 
   useEffect(() => {
-    resetField('quienRealiza')
-    resetField('asignadoA')
-  }, [grupoSeleccionado, resetField])
+    const verificarServicio = async () => {
+      if (!usuario?.numeroPase) {
+        setUsuarioConServicio(false)
+        setVerificandoServicio(false)
+        return
+      }
+
+      try {
+        setVerificandoServicio(true)
+
+        const response = await verificarServicioUsuario(usuario.numeroPase)
+        const enServicio = Boolean(response?.enServicio)
+
+        setUsuarioConServicio(enServicio)
+
+        if (enServicio && response.codigoServicio) {
+          setValue('codigoServicio', response.codigoServicio, {
+            shouldValidate: true,
+          })
+          setValue('nroPase', usuario.numeroPase, {
+            shouldValidate: true,
+          })
+        }
+      } catch (error) {
+        imprimir('Error verificando servicio del usuario', error)
+        setUsuarioConServicio(false)
+      } finally {
+        setVerificandoServicio(false)
+      }
+    }
+
+    verificarServicio()
+  }, [usuario?.numeroPase, setValue])
 
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
@@ -279,7 +316,9 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
         variant: 'success',
       })
 
+      const tmpCodigoServicio = values.codigoServicio
       reset()
+      setValue('codigoServicio', tmpCodigoServicio)
       onSuccess()
     } catch (e) {
       imprimir('Error módulo', e)
@@ -340,8 +379,28 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
     }
   }
 
+  if (verificandoServicio) {
+    return (
+      <div className="rounded-md border border-primary/20 bg-primary/5 px-4 py-6 text-center">
+        <p className="text-base font-semibold text-primary">
+          Verificando servicio asignado...
+        </p>
+      </div>
+    )
+  }
+
+  if (!usuarioConServicio) {
+    return (
+      <div className="rounded-md border border-danger/20 bg-danger/5 px-4 py-6 text-center">
+        <p className="text-base font-semibold text-danger">
+          No tienes un servicio asignado
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="">
+    <div className="panel">
       <div className="">
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -351,6 +410,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 name="codigoServicio"
                 prefix="Código de servicio"
                 register={register}
+                readOnly
                 error={errors.codigoServicio?.message as string}
               />
             </div>
@@ -358,6 +418,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
               <InputWithPrefix
                 name="nroPase"
                 prefix="Numero de Pase"
+                readOnly
                 register={register}
                 error={errors.nroPase?.message as string}
               />
