@@ -8,7 +8,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Letras')
+@ApiTags('ASIG-CASO - Letras')
 @Controller('letra')
 export class LetraController extends BaseController{
   constructor(private readonly letraService: LetraService) {

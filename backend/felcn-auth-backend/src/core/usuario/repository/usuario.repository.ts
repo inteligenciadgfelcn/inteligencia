@@ -265,6 +265,7 @@ export class UsuarioRepository {
         'grado.descripcion',
         'grupo.id',
         'grupo.descripcion',
+        'usuario.numeroPase'
       ])
       .where({ id })
       .getOne()

@@ -141,6 +141,7 @@ export class AuthenticationService extends BaseService {
       roles: user.roles,
       idRol: rol.idRol,
       rol: rol.rol,
+      numeroPase: usuario.numeroPase,
     }
     // crear refresh_token
     const refreshToken = await this.refreshTokensService.create(user.id)

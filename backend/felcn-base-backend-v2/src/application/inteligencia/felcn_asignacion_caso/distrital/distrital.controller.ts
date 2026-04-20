@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Distrital')
+@ApiTags('Distrital')
 @Controller('distrital')
 export class DistritalController extends BaseController {
   constructor(private readonly distritalService: DistritalService) {

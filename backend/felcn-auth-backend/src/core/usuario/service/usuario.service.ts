@@ -1114,6 +1114,7 @@ export class UsuarioService extends BaseService {
       idGrupo: usuario.idGrupo,
       grado: usuario.grado ?? null,
       grupo: usuario.grupo ?? null,
+      numeroPase: usuario.numeroPase ?? null,
       roles: await Promise.all(
         usuario.usuarioRol
           .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)
