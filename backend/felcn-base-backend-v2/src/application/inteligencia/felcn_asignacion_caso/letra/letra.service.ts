@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateLetraDto } from './dto/create-letra.dto';
 import { UpdateLetraDto } from './dto/update-letra.dto';
-import { DB_SIII } from '@/core/config/database/database.module';
+import { DB_ASIG_CASOS } from '@/core/config/database/database.module';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Letra } from './entities/letra.entity';
@@ -9,7 +9,7 @@ import { Letra } from './entities/letra.entity';
 @Injectable()
 export class LetraService {
  constructor(
-    @InjectRepository(Letra, DB_SIII)
+    @InjectRepository(Letra, DB_ASIG_CASOS)
     private readonly repo: Repository<Letra>,
   ) {}
 

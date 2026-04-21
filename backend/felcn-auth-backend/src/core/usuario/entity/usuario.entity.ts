@@ -174,6 +174,15 @@ export class Usuario extends AuditoriaEntity {
   })
   idPersona: string
 
+   @Column({
+    name: 'numero_pase',
+    length: 20,
+    type: 'varchar',
+    nullable: true,
+    comment: 'Número de pase del usuario',
+  })
+  numeroPase?: string | null
+
   @OneToMany(() => UsuarioRol, (usuarioRol) => usuarioRol.usuario)
   usuarioRol: UsuarioRol[]
 

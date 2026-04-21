@@ -8,7 +8,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Profesion')
+@ApiTags('SII - Profesion')
 @Controller('profesion')
 export class ProfesionController extends BaseController{
   constructor(private readonly profesionService: ProfesionService) {

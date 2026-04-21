@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAlerts, useSession } from '@/hooks'
+import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
@@ -161,7 +161,7 @@ export const ServicioForm = () => {
                     }}
                     onValueChange={(option) => {
                       if (option) {
-                        setValue('entrantePase', option.original.codigoIcia)
+                        setValue('entrantePase', option.original.numeroPase)
                       } else {
                         resetField('entrantePase')
                       }
@@ -193,7 +193,7 @@ export const ServicioForm = () => {
                     }}
                     onValueChange={(option) => {
                       if (option) {
-                        setValue('emergenciaPase', option.original.codigoIcia)
+                        setValue('emergenciaPase', option.original.numeroPase)
                       } else {
                         resetField('emergenciaPase')
                       }

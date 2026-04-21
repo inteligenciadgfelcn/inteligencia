@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Departamentos')
+@ApiTags('Departamentos')
 @Controller('departamento')
 export class DepartamentoController extends BaseController {
   constructor(private readonly departamentoService: DepartamentoService) {
