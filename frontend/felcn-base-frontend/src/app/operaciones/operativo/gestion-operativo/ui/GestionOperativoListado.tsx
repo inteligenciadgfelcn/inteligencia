@@ -7,6 +7,7 @@ import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
 import { GestionOperativoService } from '@/services/operativos'
 import IconPencil from '@/components/Icon/IconPencil'
+import { useAuth } from '@/context/AuthProvider'
 import type { GestionOperativoItem } from '../types'
 
 export interface GestionOperativoListadoProps {
@@ -19,6 +20,7 @@ export function GestionOperativoListado({
   titulo = 'Gestión de Operativos - Listado',
 }: GestionOperativoListadoProps) {
   const router = useRouter()
+  const { usuario } = useAuth()
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -28,8 +30,9 @@ export function GestionOperativoListado({
     queryKey: ['gestion-operativo-listado', tipo],
     queryFn: () =>
       tipo === 'aprobado'
-        ? GestionOperativoService.listarAprobadosPorUsuario('admin')
-        : GestionOperativoService.listarNoAprobadosPorUsuario('admin'),
+        ? GestionOperativoService.listarAprobadosPorUsuario()
+        : GestionOperativoService.listarNoAprobadosPorUsuario(),
+    enabled: !!usuario,
   })
 
   const filas: GestionOperativoItem[] = useMemo(() => data?.datos ?? [], [data])

@@ -21,7 +21,7 @@ import { GradosModule } from "./usuario/grados/grados.module";
     GruposModule,
     LetrasModule,
     AsignacionesModule,
-    GradosModule
+    GradosModule,
   ],
 })
 export class ApiModule {}
