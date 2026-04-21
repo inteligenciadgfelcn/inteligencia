@@ -16,6 +16,7 @@ declare global {
 
   type PayloadType = {
     id: string
+    usuario: string // username de login (campo asignacion.usuario en felcn_siii)
     roles: Array<string>
     idRol?: string // rol principal
     rol?: string // rol principal
