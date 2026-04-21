@@ -7,16 +7,19 @@ import {
   Body,
   Param,
   Query,
+  Req,
+  UseGuards,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
   Res,
 } from '@nestjs/common'
-import { Response } from 'express'
+import { Request, Response } from 'express'
 import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express'
-import { ApiTags, ApiOperation, ApiConsumes, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiConsumes, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { OperativoService } from '../service/operativo.service'
 
 // DTOs
@@ -33,12 +36,8 @@ import {
   CreateLogotipoDto,
 } from '../dto'
 
-// TODO: Reactivar guards para producción
-// import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
-// import { CasbinGuard } from '@/core/authorization/guards/casbin.guard'
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard, CasbinGuard)
-
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('Operativos (SIII)')
 @Controller('operativos')
 export class OperativoController extends BaseController {
@@ -49,21 +48,23 @@ export class OperativoController extends BaseController {
   // ==================== CASOS DE USUARIO ====================
 
   @ApiOperation({
-    summary: 'Listar todos los casos de un usuario',
-    description: 'Lee de felcn_siii.public.asignacion con JOINs a unidad/distrital/grupo.',
+    summary: 'Listar casos aprobados del usuario autenticado',
+    description: 'Filtra asignacion.usuario = JWT.usuario y TRIM(numero_caso) <> \'\'.',
   })
-  @Get('casos/usuario/:usuario')
-  async listarCasosPorUsuario(@Param('usuario') usuario: string) {
-    const datos = await this.operativoService.listarCasosPorUsuario(usuario)
+  @Get('casos')
+  async listarCasosAprobados(@Req() req: Request) {
+    const { usuario } = req.user as PassportUser
+    const datos = await this.operativoService.listarCasosAprobados(usuario)
     return this.successList(datos)
   }
 
   @ApiOperation({
-    summary: 'Listar casos no aprobados de un usuario',
-    description: 'Lee de felcn_siii.public.asignacion donde NroCaso está vacío.',
+    summary: 'Listar casos no aprobados del usuario autenticado',
+    description: 'Filtra asignacion.usuario = JWT.usuario y TRIM(numero_caso) = \'\'.',
   })
-  @Get('casos/no-aprobados/usuario/:usuario')
-  async listarCasosNoAprobados(@Param('usuario') usuario: string) {
+  @Get('casos/no-aprobados')
+  async listarCasosNoAprobados(@Req() req: Request) {
+    const { usuario } = req.user as PassportUser
     const datos = await this.operativoService.listarCasosNoAprobados(usuario)
     return this.successList(datos)
   }

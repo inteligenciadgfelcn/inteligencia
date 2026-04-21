@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   GestionOperativoCabecera,
   GestionOperativoCabeceraPayload,
@@ -8,44 +8,54 @@ import type {
 } from './types'
 import type { GestionOperativoItem } from '@/app/operaciones/operativo/gestion-operativo/types'
 
+const { sesionPeticion } = usePeticion()
+
 const BASE = `${Constantes.baseUrl}/gestion-operativo`
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoService = {
   listar(): Promise<RespuestaApi<GestionOperativoResumen[]>> {
-    return Servicios.get({ url: BASE })
+    return sesionPeticion({ url: BASE, withCredentials: true })
   },
 
   obtenerPorId(id: number): Promise<RespuestaApi<GestionOperativoCabecera>> {
-    return Servicios.get({ url: `${BASE}/${id}` })
+    return sesionPeticion({ url: `${BASE}/${id}`, withCredentials: true })
   },
 
   crear(
-    payload: GestionOperativoCabeceraPayload
+    payload: GestionOperativoCabeceraPayload,
   ): Promise<RespuestaApi<GestionOperativoCabecera>> {
-    return Servicios.post({ url: BASE, body: payload })
+    return sesionPeticion({
+      url: BASE,
+      method: 'POST',
+      body: payload,
+      withCredentials: true,
+    })
   },
 
   actualizar(
     id: number,
-    payload: GestionOperativoCabeceraPayload
+    payload: GestionOperativoCabeceraPayload,
   ): Promise<RespuestaApi<GestionOperativoCabecera>> {
-    return Servicios.patch({ url: `${BASE}/${id}`, body: payload })
-  },
-
-  listarNoAprobadosPorUsuario(
-    usuario: string
-  ): Promise<RespuestaApi<GestionOperativoItem[]>> {
-    return Servicios.get({
-      url: `${BASE_OPERATIVOS}/casos/no-aprobados/usuario/${usuario}`,
+    return sesionPeticion({
+      url: `${BASE}/${id}`,
+      method: 'PATCH',
+      body: payload,
+      withCredentials: true,
     })
   },
 
-  listarAprobadosPorUsuario(
-    usuario: string
-  ): Promise<RespuestaApi<GestionOperativoItem[]>> {
-    return Servicios.get({
-      url: `${BASE_OPERATIVOS}/casos/usuario/${usuario}`,
+  listarNoAprobadosPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/no-aprobados`,
+      withCredentials: true,
+    })
+  },
+
+  listarAprobadosPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos`,
+      withCredentials: true,
     })
   },
 }

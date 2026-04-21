@@ -37,7 +37,7 @@ import {
 export class OperativoService extends BaseService {
   constructor(
     private readonly operativoRepository: OperativoRepository,
-    private readonly asignacionSiiiRepository: AsignacionSiiiRepository
+    private readonly asignacionSiiiRepository: AsignacionSiiiRepository,
   ) {
     super()
   }
@@ -567,8 +567,8 @@ export class OperativoService extends BaseService {
 
   // ==================== CASOS DE USUARIO ====================
 
-  async listarCasosPorUsuario(usuario: string): Promise<any[]> {
-    return this.asignacionSiiiRepository.buscarTodosPorUsuario(usuario)
+  async listarCasosAprobados(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarAprobadosPorUsuario(usuario)
   }
 
   async listarCasosNoAprobados(usuario: string): Promise<any[]> {
