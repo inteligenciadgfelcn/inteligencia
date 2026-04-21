@@ -3,12 +3,11 @@ import { AsignacionASIG } from '../../asignaciones/entities/asignacionAsig.entit
 
 @Entity({
   name: 'letra',
-  schema: 'parametricas',
 })
 export class Letra {
   @PrimaryColumn({
     type: 'varchar',
-    name: 'letras',
+    name: 'codigo',
     length: 10,
     nullable: false,
     comment:

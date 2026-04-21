@@ -8,6 +8,7 @@ import { Repository } from 'typeorm'
 import { Operativo } from './entities/operativo.entity'
 import { DB_SOSPECHOSO } from '@/core/config/database/database.module'
 import { Departamento } from '../parametrica/provincia/entities/departamento.entity'
+import { BuscarAntecedenteDto } from './dto/buscar-antecedente.dto'
 
 @Injectable()
 export class OperativoService {
@@ -69,6 +70,28 @@ export class OperativoService {
       unidad: auth.unidad || null,
       distrital: auth.distrital || null,
       grupo: auth.grupo || null,
+    }
+  }
+
+  async verificarAntecedentes(dto: BuscarAntecedenteDto) {
+    const personas = await this.siiiRepo.buscarPersonaDetenida(dto)
+
+    if (!personas.length) {
+      return {
+        encontrado: false,
+        mensaje: 'No se encontraron registros',
+        data: [],
+      }
+    }
+
+    return {
+      encontrado: true,
+      data: personas.map((p) => ({
+        nombreCompleto: `${p.nombres} ${p.apellido_paterno} ${p.apellido_materno}`,
+        ci: p.nro_documento,
+        cantidadOperativos: p.cantidad_operativos,
+        tieneAntecedentes: p.cantidad_operativos >= 1,
+      })),
     }
   }
 

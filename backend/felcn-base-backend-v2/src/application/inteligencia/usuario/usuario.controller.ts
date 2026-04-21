@@ -10,7 +10,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Usuario')
+@ApiTags('Usuario')
 @Controller('usuarios')
 export class UsuarioController {
   constructor(private readonly usuarioService: UsuarioService) {}
@@ -49,7 +49,7 @@ export class UsuarioController {
 
   @Get('usuario/:usuario')
   @ApiOperation({
-    summary: 'Obtener usuario por código',
+    summary: 'Obtener usuario por numero de pase',
   })
   @ApiParam({ name: 'usuario', example: 'G-SRG-0144' })
   findOne(@Param('usuario') usuario: string) {

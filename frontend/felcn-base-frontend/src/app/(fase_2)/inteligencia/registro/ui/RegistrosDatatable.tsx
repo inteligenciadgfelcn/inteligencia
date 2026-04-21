@@ -40,6 +40,10 @@ export function RegistrosDataTable() {
   const [limite, setLimite] = useState(10)
   const [search, setSearch] = useState('')
 
+  // const [verificandoServicio, setVerificandoServicio] = useState(true)
+  // const [usuarioConServicio, setUsuarioConServicio] = useState(false)
+  // const { usuario } = useAuth()
+
   // TODO: Cambiar a false
   const [permisos, setPermisos] = useState<CasbinTypes>({
     read: true,
@@ -193,8 +197,27 @@ export function RegistrosDataTable() {
     },
   ]
 
-  /* RENDER */
+  // if (verificandoServicio) {
+  //   return (
+  //     <div className="rounded-md border border-primary/20 bg-primary/5 px-4 py-6 text-center">
+  //       <p className="text-base font-semibold text-primary">
+  //         Verificando servicio asignado...
+  //       </p>
+  //     </div>
+  //   )
+  // }
 
+  // if (!usuarioConServicio) {
+  //   return (
+  //     <div className="rounded-md border border-danger/20 bg-danger/5 px-4 py-6 text-center">
+  //       <p className="text-base font-semibold text-danger">
+  //         No tienes un servicio asignado
+  //       </p>
+  //     </div>
+  //   )
+  // }
+
+  /* RENDER */
   return (
     <div>
       <div className="panel flex items-center p-3 text-primary mb-5">
@@ -202,7 +225,7 @@ export function RegistrosDataTable() {
           Registro de casos en operativos antinarcóticos
         </span>
       </div>
-      <div className="panel p-1 mb-12 w-full">
+      <div className="p-1 mb-12 w-full">
         <FormRegistro
           asignacion={selected}
           onSuccess={() => {
