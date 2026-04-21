@@ -6,7 +6,7 @@ import { Unidad } from './entities/unidad.entity'
 import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Unidad], DB_ASIG_CASOS)],
+  imports: [TypeOrmModule.forFeature([Unidad], DB_ASIG_CASOS )],
   controllers: [UnidadController],
   providers: [UnidadService],
   exports: [UnidadService],

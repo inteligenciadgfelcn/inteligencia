@@ -5,7 +5,7 @@ import { BaseController } from '@/common/base'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('SIII - Grupos')
+@ApiTags('Grupos')
 @Controller('grupos')
 export class GrupoController extends BaseController {
   constructor(private readonly grupoService: GrupoService) {
