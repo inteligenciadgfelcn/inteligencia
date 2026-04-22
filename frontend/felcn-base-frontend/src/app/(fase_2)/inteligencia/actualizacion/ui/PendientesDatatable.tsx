@@ -10,8 +10,11 @@ import { getActualizacionData } from '../services/actualizacion.service'
 import { DataTableSortStatus } from 'mantine-datatable'
 import IconRefresh from '@/components/Icon/IconRefresh'
 import { dateUtcToString } from '@/utils/fechas'
+import { useAuth } from '@/context/AuthProvider'
 
 export function PendientesDataTable() {
+  const { verificarServicioUsuario } = useAuth()
+
   const [pagina, setPagina] = useState(1)
   const [limite, setLimite] = useState(10)
   const [search, setSearch] = useState('')
@@ -44,14 +47,23 @@ export function PendientesDataTable() {
   /* FETCH */
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['casos_pendientes', pagina, limite, search, sortStatus],
-    queryFn: () =>
-      getActualizacionData(false, {
-        pagina: pagina,
-        limite: limite,
-        filtro: search || undefined,
-        ordenar: sortStatus.columnAccessor,
-        direccion: sortStatus.direction,
-      }),
+    queryFn: async () => {
+      const { codigoServicio } = await verificarServicioUsuario()
+      if (!codigoServicio) {
+        throw new Error('No se pudo obtener el código de servicio del usuario')
+      }
+      return getActualizacionData(
+        false,
+        {
+          pagina: pagina,
+          limite: limite,
+          filtro: search || undefined,
+          ordenar: sortStatus.columnAccessor,
+          direccion: sortStatus.direction,
+        },
+        codigoServicio
+      )
+    },
     placeholderData: keepPreviousData,
   })
 
