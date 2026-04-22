@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -147,7 +148,25 @@ export class OperativoService extends BaseService {
       fotoPesaje: pesaje.length ? pesaje : undefined,
       usuario,
     })
-    const droga = await this.operativoRepository.crearDroga(drogaEntity)
+    let droga: Droga
+    try {
+      droga = await this.operativoRepository.crearDroga(drogaEntity)
+    } catch (e: any) {
+      if (e?.code === '23503') {
+        // FK violation — identificar qué campo falla
+        const detalle: string = e?.detail ?? ''
+        if (detalle.includes('forma_transporte'))
+          throw new BadRequestException('El ID de forma de transporte no existe')
+        if (detalle.includes('id_pais') && detalle.includes('destino'))
+          throw new BadRequestException('El ID de país de destino no existe')
+        if (detalle.includes('id_pais'))
+          throw new BadRequestException('El ID de país de procedencia no existe')
+        if (detalle.includes('estado_droga'))
+          throw new BadRequestException('El ID de estado de droga no existe')
+        throw new BadRequestException('Referencia inválida en los datos de droga')
+      }
+      throw e
+    }
     const { fotoPruebaCampo, fotoPesaje, ...resto } = droga
     return {
       ...resto,
