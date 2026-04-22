@@ -48,7 +48,7 @@ export class SiiiRepository {
     FROM operativo o
 
     INNER JOIN asignacion a 
-      ON o.numero_operativo = a.numero_operativo
+      ON o.id_caso = a.id_caso
 
     INNER JOIN parametricas.departamento d 
       ON o.id_departamento = d.id_departamento
@@ -236,5 +236,20 @@ export class SiiiRepository {
     )
 
     return result as PersonaAntecedente[]
+  }
+
+  async getOperativoRegistrado(numero_caso: string) {
+    return await this.dataSource.query(
+      `SELECT 
+        a.nombre_caso, 
+        a.numero_caso,
+        a.asignado_caso,
+        a.fiscal_asignado_caso
+     FROM operativo o
+     INNER JOIN asignacion a 
+       ON o.id_caso = a.id_caso
+     WHERE TRIM(a.numero_caso) = $1`,
+      [numero_caso]
+    )
   }
 }

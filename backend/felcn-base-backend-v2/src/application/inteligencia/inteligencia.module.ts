@@ -32,6 +32,7 @@ import { LocalidadModule } from './felcn_sospechoso/parametrica/localidad/locali
 import { CategoriaOperativoModule } from './felcn_sospechoso/parametrica/categoria_operativo/categoria_operativo.module';
 import { ItemOperativoModule } from './felcn_sospechoso/parametrica/item_operativo/item_operativo.module';
 import { EstadoSospechosoModule } from './felcn_sospechoso/parametrica/estado/estadoSospechoso.module';
+import { DetenidoModule } from './felcn_sospechoso/detenido/detenido.module';
 
 @Module({
   imports: [
@@ -66,7 +67,8 @@ import { EstadoSospechosoModule } from './felcn_sospechoso/parametrica/estado/es
     LocalidadModule,
     CategoriaOperativoModule,
     ItemOperativoModule,
-    EstadoSospechosoModule
+    EstadoSospechosoModule,
+    DetenidoModule
   ],
 })
 export class InteligenciaModule {}
