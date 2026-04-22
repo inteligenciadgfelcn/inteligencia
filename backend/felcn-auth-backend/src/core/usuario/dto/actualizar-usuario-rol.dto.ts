@@ -52,4 +52,8 @@ export class ActualizarUsuarioRolDto {
   @IsOptional()
   @ApiProperty({ example: 1, required: false, description: 'ID del grupo organizacional' })
   idGrupo?: number | null
+
+  @IsOptional()
+  @ApiProperty({ example: 'P-001234', required: false, description: 'Número de pase del funcionario' })
+  numeroPase?: string | null
 }

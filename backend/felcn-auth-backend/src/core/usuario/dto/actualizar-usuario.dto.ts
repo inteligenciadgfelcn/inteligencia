@@ -59,4 +59,7 @@ export class ActualizarUsuarioDto {
 
   @IsOptional()
   idGrupo?: number | null
+
+  @IsOptional()
+  numeroPase?: string | null
 }

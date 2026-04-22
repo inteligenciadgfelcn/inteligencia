@@ -186,6 +186,7 @@ export class UsuarioRepository {
         'persona.fechaNacimiento',
         'persona.tipoDocumento',
         'persona.telefono',
+        'usuario.numeroPase',
         'grado.id',
         'grado.abreviatura',
         'grado.descripcion',
@@ -333,6 +334,7 @@ export class UsuarioRepository {
         telefonoCorporativo: usuarioDto?.telefonoCorporativo,
         idGrado: usuarioDto?.idGrado,
         idGrupo: usuarioDto?.idGrupo,
+        numeroPase: usuarioDto?.numeroPase,
         usuarioCreacion: usuarioAuditoria,
       })
     )
@@ -368,6 +370,7 @@ export class UsuarioRepository {
       telefonoCorporativo: usuarioDto.telefonoCorporativo,
       idGrado: usuarioDto.idGrado,
       idGrupo: usuarioDto.idGrupo,
+      numeroPase: usuarioDto.numeroPase,
     })
     return await repo.update(idUsuario, datosActualizar)
   }
