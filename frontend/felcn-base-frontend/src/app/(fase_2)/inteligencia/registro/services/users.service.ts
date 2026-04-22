@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Usuario {
@@ -27,7 +27,6 @@ export interface Grupo {
   estado: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getUsersByGroup(idGroup: number): Promise<Usuario[]> {
   const response = await sesionPeticion({

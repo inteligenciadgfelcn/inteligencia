@@ -1,11 +1,10 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks'
+import { sesionPeticion } from '@/utils/peticion'
 
 export interface LetraInicial {
   descripcion: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getIniciales(): Promise<LetraInicial[]> {
   const response = await sesionPeticion({
