@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks'
+import { sesionPeticion } from '@/utils/peticion'
 
 export interface RegisterFingerBody {
   personaId: string
@@ -13,7 +13,6 @@ export interface RegistroFiliacionResponse {
   ruta: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function postRegistroHuella(
   body: RegisterFingerBody
