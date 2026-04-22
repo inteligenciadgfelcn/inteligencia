@@ -25,4 +25,6 @@ export class UsuarioDto {
   idGrado?: number | null
 
   idGrupo?: number | null
+
+  numeroPase?: string | null
 }

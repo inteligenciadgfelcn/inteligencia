@@ -14,8 +14,6 @@ import { imprimir } from '@/utils/imprimir'
 export default function AdminDashboard() {
   const { usuario, permisoAccion, verificarServicioUsuario } = useAuth()
 
-  verificarServicioUsuario().catch(imprimir)
-
   const [tab, setTab] = useState<'charts' | 'activity'>('charts')
 
   const [permissions, setPermissions] = useState({

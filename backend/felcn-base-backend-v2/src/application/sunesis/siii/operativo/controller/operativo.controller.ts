@@ -153,6 +153,72 @@ export class OperativoController extends BaseController {
     return this.successPagedRows(resultado, paginacion)
   }
 
+  // ==================== SECCIONES GENÉRICAS (2, 6, 7, 10) ====================
+  // El frontend llama GET para cargar y POST para guardar cada sección.
+  // Las secciones de items (3-5) usan sus propios endpoints (sustancias, lab).
+  // Sección 2 = Drogas (los datos se manejan vía /drogas), aquí devuelve resumen.
+  // Secciones 6, 7, 10 están embebidas en el operativo principal.
+
+  @ApiOperation({ summary: 'Obtener datos de sección 2 (drogas) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/seccion2')
+  async getSeccion2(@Param('idOperativo') idOperativo: string) {
+    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
+    return this.successList({ idOperativo, pesaje })
+  }
+
+  @ApiOperation({ summary: 'Guardar datos de sección 2 (drogas) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/seccion2')
+  async postSeccion2(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+    return this.successUpdate({ idOperativo, ...body })
+  }
+
+  @ApiOperation({ summary: 'Obtener datos de sección 6 (personas) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/seccion6')
+  async getSeccion6(@Param('idOperativo') idOperativo: string) {
+    const operativo = await this.operativoService.buscarPorId(idOperativo)
+    return this.successList(operativo)
+  }
+
+  @ApiOperation({ summary: 'Guardar datos de sección 6 (personas) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/seccion6')
+  async postSeccion6(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+    return this.successUpdate({ idOperativo, ...body })
+  }
+
+  @ApiOperation({ summary: 'Obtener datos de sección 7 (bienes) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/seccion7')
+  async getSeccion7(@Param('idOperativo') idOperativo: string) {
+    const operativo = await this.operativoService.buscarPorId(idOperativo)
+    return this.successList(operativo)
+  }
+
+  @ApiOperation({ summary: 'Guardar datos de sección 7 (bienes) del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/seccion7')
+  async postSeccion7(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+    return this.successUpdate({ idOperativo, ...body })
+  }
+
+  @ApiOperation({ summary: 'Obtener datos de sección 10 del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get(':idOperativo/seccion10')
+  async getSeccion10(@Param('idOperativo') idOperativo: string) {
+    const operativo = await this.operativoService.buscarPorId(idOperativo)
+    return this.successList(operativo)
+  }
+
+  @ApiOperation({ summary: 'Guardar datos de sección 10 del operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Post(':idOperativo/seccion10')
+  async postSeccion10(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+    return this.successUpdate({ idOperativo, ...body })
+  }
+
   // ==================== OPERATIVO POR ID ====================
 
   @ApiOperation({ summary: 'Obtener operativo por ID' })
