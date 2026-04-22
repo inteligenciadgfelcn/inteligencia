@@ -15,13 +15,9 @@ export class AsignacionesRepository {
 
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
     private readonly asignacionAsigRepository: Repository<AsignacionASIG>
-    
   ) {}
 
-  async crearAsignacionDual(
-    dto: CreateAsignacionDto,
-    nroOperativo: string
-  ) {
+  async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
     const grupoData = await this.asignacionRepository.manager
       .createQueryBuilder()
@@ -106,33 +102,36 @@ export class AsignacionesRepository {
       .getRawMany()
 
     if (!asignaciones.length) return [[], 0]
-
     const numeros = asignaciones.map((a) => a.numeroOperativo)
+    const operativos = await this.asignacionRepository.query(
+      `
+    SELECT 
+      a.numero_operativo,
+      o.id_operativo
+    FROM operativo o
+    INNER JOIN asignacion a ON o.id_caso = a.id_caso
+    WHERE a.numero_operativo = ANY($1)
+    `,
+      [numeros]
+    )
+    const mapOperativos = new Map<string, number>()
 
-    let setOperativos = new Set<string>()
-
-    type OperativoRow = {
-      numero_operativo: string
-    }
-
-    if (numeros.length) {
-      const operativos: OperativoRow[] = await this.asignacionRepository.query(
-        `
-      SELECT numero_operativo
-      FROM operativo
-      WHERE numero_operativo = ANY($1)
-      `,
-        [numeros]
-      )
-
-      setOperativos = new Set(operativos.map((o) => o.numero_operativo))
-    }
-
-    const resultado = asignaciones.filter((a) => {
-      const existe = setOperativos.has(a.numeroOperativo)
-
-      return registrados ? existe : !existe
+    operativos.forEach((o: any) => {
+      mapOperativos.set(o.numero_operativo, o.id_operativo)
     })
+
+    const resultado = asignaciones
+      .map((a) => {
+        const idOperativo = mapOperativos.get(a.numeroOperativo)
+        const existe = !!idOperativo
+
+        return {
+          ...a,
+          idOperativo: idOperativo || null,
+          existe,
+        }
+      })
+      .filter((a) => (registrados ? a.existe : !a.existe))
 
     const total = resultado.length
     const data = resultado.slice(saltar, saltar + limite)
