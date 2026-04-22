@@ -22,14 +22,16 @@ const { sesionPeticion } = usePeticion()
 
 export const getActualizacionData = async (
   registrados: boolean,
-  params: DataTableParams
+  params: DataTableParams,
+  codigoServicio: String
 ): Promise<OpertaivosResponse> => {
   const response = await sesionPeticion({
     url: `${Constantes.baseUrl}/asignaciones/operativos`,
     params: {
       ...params,
       registrados: registrados ? 'true' : 'false',
-      codigoServicio: 'ICIA-0707042026', // TODO: Obtener el código del servicio desde la configuración o contexto adecuado
+      // codigoServicio: 'ICIA-0707042026', // TODO: Obtener el código del servicio desde la configuración o contexto adecuado
+      codigoServicio: codigoServicio,
     },
     withCredentials: true,
   })
