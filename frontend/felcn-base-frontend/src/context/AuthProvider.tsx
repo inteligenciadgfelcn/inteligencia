@@ -21,12 +21,17 @@ import {
 } from '@/app/login/types/loginTypes'
 import { useAlerts, useCasbinEnforcer, useSession } from '@/hooks'
 import { Servicios } from '@/services'
+import { VerificarServicioResponse } from '@/app/(fase_2)/inteligencia/registro/services/registro.service'
+import { set } from 'lodash'
 
 interface ContextProps {
   cargarUsuarioManual: () => Promise<void>
   inicializarUsuario: () => Promise<void>
   actualizarPerfilCompleto: () => Promise<void>
   estaAutenticado: boolean
+  estaEnServicio: boolean
+  codigoIcia: String
+  verificarServicioUsuario: () => Promise<VerificarServicioResponse>
   usuario: UsuarioType | null
   rolUsuario: RoleType | undefined
   setRolUsuario: ({ idRol }: idRolType) => Promise<void>
@@ -45,6 +50,8 @@ interface AuthContextType {
 export const AuthProvider = ({ children }: AuthContextType) => {
   const [user, setUser] = useState<UsuarioType | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
+  const [isVerified, setIsVerified] = useState<boolean>(false)
+  const [codigoIcia, setCodigoIcia] = useState<String>('')
 
   // Hook para mostrar alertas
   const { Alerta } = useAlerts()
@@ -148,6 +155,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
       imprimir(`Usuarios ✅`, respuesta.datos)
 
       await obtenerPermisos()
+      // await verificarServicioUsuario(respuesta.datos.numeroPase)
 
       mostrarFullScreen()
       await delay(1000)
@@ -219,6 +227,19 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
   const rolUsuario = () => user?.roles.find((rol) => rol.idRol == user?.idRol)
 
+  const verificarServicioUsuario =
+    async (): Promise<VerificarServicioResponse> => {
+      const response = await sesionPeticion<VerificarServicioResponse>({
+        url: `${Constantes.baseUrl}/servicio/verificar/${user?.numeroPase}`,
+        withCredentials: true,
+      })
+
+      setIsVerified(response.enServicio)
+      setCodigoIcia(response.codigoServicio || '')
+
+      return response
+    }
+
   return (
     <AuthContext.Provider
       value={{
@@ -231,6 +252,9 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         setRolUsuario: cambiarRol,
         ingresar: login,
         progresoLogin: loading,
+        estaEnServicio: isVerified,
+        codigoIcia,
+        verificarServicioUsuario,
         permisoUsuario: (routerName: string) =>
           interpretarPermiso({ routerName, enforcer, rol: rolUsuario()?.rol }),
         permisoAccion: (objeto: string, accion: string) =>
