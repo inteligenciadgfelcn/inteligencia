@@ -75,6 +75,7 @@ const formSchema = z.object({
   }),
   idGrado: z.number().nullable().optional(),
   idGrupo: z.number().nullable().optional(),
+  numeroPase: z.string().nullable().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -184,6 +185,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       roles: [],
       idGrado: null,
       idGrupo: null,
+      numeroPase: '',
     },
   })
 
@@ -200,10 +202,11 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         roles: usuario.usuarioRol.map((value: any) => value.rol.id),
         idGrado: usuario.idGrado ?? null,
         idGrupo: usuario.idGrupo ?? null,
+        numeroPase: usuario.numeroPase ?? '',
       })
       // Pre-populate cascade: unidad → distrital → grupo
-      const unidadId = usuario.grupo?.distrital?.idUnidad ?? null
-      const distritalId = usuario.grupo?.idDistrital ?? null
+      const unidadId = usuario.grupo?.distrital?.unidad?.id ?? null
+      const distritalId = usuario.grupo?.distrital?.id ?? null
       setIdUnidad(unidadId)
       setIdDistrital(distritalId)
     }
@@ -217,6 +220,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         method: usuarioId ? 'patch' : 'post',
         body: {
           ...values,
+          numeroPase: values.numeroPase === '' ? null : values.numeroPase,
           persona: {
             nombres: values.nombres,
             primerApellido: values.primerApellido,
@@ -508,6 +512,26 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                       ))}
                     </Select>
                   </FormControl>
+                </Grid>
+
+                {/* Número de Pase */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <InputLabel
+                    htmlFor={'numeroPase'}
+                    sx={{ color: 'text.primary', fontWeight: '500', mb: 1 }}
+                  >
+                    Número de Pase
+                  </InputLabel>
+                  <TextField
+                    {...register('numeroPase')}
+                    id="numeroPase"
+                    fullWidth
+                    size="small"
+                    error={!!errors.numeroPase}
+                    helperText={errors.numeroPase?.message}
+                    disabled={loading}
+                    inputProps={{ maxLength: 20 }}
+                  />
                 </Grid>
 
                 {/* Unidad — estado local, controla cascada */}
