@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   RespuestaApi,
   SustanciaSolidaPayload,
@@ -7,6 +7,7 @@ import type {
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoSustanciasSolidasService = {
@@ -15,8 +16,9 @@ export const GestionOperativoSustanciasSolidasService = {
     page: number = 1,
     limit: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<SustanciaSolidaRespuesta>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/sustancias-solidas?pagina=${page}&limite=${limit}`,
+      withCredentials: true,
     })
   },
 
@@ -24,8 +26,10 @@ export const GestionOperativoSustanciasSolidasService = {
     idOperativo: number,
     id: number
   ): Promise<RespuestaApi<SustanciaSolidaRespuesta>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/sustancias-solidas/${id}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
@@ -33,9 +37,11 @@ export const GestionOperativoSustanciasSolidasService = {
     idOperativo: number,
     payload: SustanciaSolidaPayload
   ): Promise<RespuestaApi<SustanciaSolidaRespuesta>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/sustancias-solidas`,
+      method: 'POST',
       body: payload,
+      withCredentials: true,
     })
   },
 }

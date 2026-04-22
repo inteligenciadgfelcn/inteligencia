@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   PersonaPayload,
   PersonaResponse,
@@ -7,6 +7,7 @@ import type {
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE = `${Constantes.baseUrl}/operativos`
 
 const buildFormData = (payload: PersonaPayload): FormData => {
@@ -36,8 +37,9 @@ export const GestionOperativoPersonasService = {
     pagina: number = 1,
     limite: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<PersonaResponse>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/personas?pagina=${pagina}&limite=${limite}`,
+      withCredentials: true,
     })
   },
 
@@ -45,10 +47,12 @@ export const GestionOperativoPersonasService = {
     idOperativo: number,
     payload: PersonaPayload
   ): Promise<RespuestaApi<PersonaResponse>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/personas`,
+      method: 'POST',
       body: buildFormData(payload),
       headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
     })
   },
 
@@ -56,16 +60,19 @@ export const GestionOperativoPersonasService = {
     idOperativo: number,
     idPersona: number
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/personas/${idPersona}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
   obtenerFoto(path: string): Promise<Blob> {
     const pathNormalizado = path.replace(/^\/api/, '')
-    return Servicios.get<Blob>({
+    return sesionPeticion<Blob>({
       url: `${Constantes.baseUrl}${pathNormalizado}`,
       responseType: 'blob',
+      withCredentials: true,
     })
   },
 }

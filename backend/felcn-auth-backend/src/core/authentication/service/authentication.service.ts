@@ -138,7 +138,6 @@ export class AuthenticationService extends BaseService {
 
     const payload: PayloadType = {
       id: user.id,
-      usuario: usuario.usuario,
       roles: user.roles,
       idRol: rol.idRol,
       rol: rol.rol,
@@ -327,10 +326,10 @@ export class AuthenticationService extends BaseService {
 
     const payload: PayloadType = {
       id: user.id,
-      usuario: usuario.usuario,
       roles: user.roles,
       idRol: rol.idRol,
       rol: rol.rol,
+      numeroPase: usuario.numeroPase,
     }
     // crear refresh_token
     const refreshToken = await this.refreshTokensService.create(user.id)
