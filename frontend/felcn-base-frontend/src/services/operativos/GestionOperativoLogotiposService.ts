@@ -1,11 +1,12 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   LogotipoCasoPayload,
   RespuestaApi,
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 const buildFormData = (payload: LogotipoCasoPayload) => {
@@ -36,8 +37,9 @@ export const GestionOperativoLogotiposService = {
     pagina: number = 1,
     limite: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<unknown>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos?pagina=${pagina}&limite=${limite}`,
+      withCredentials: true,
     })
   },
 
@@ -46,12 +48,14 @@ export const GestionOperativoLogotiposService = {
     idDroga: number,
     payload: LogotipoCasoPayload
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos`,
+      method: 'POST',
       body: buildFormData(payload),
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      withCredentials: true,
     })
   },
 
@@ -60,16 +64,19 @@ export const GestionOperativoLogotiposService = {
     idDroga: number,
     idLogotipo: number
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos/${idLogotipo}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
   obtenerFoto(path: string): Promise<Blob> {
     const pathNormalizado = path.replace(/^\/api/, '')
-    return Servicios.get<Blob>({
+    return sesionPeticion<Blob>({
       url: `${Constantes.baseUrl}${pathNormalizado}`,
       responseType: 'blob',
+      withCredentials: true,
     })
   },
 }
