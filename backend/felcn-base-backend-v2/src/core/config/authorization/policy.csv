@@ -14,5 +14,5 @@ TECNICO, /api/usuarios, GET
 TECNICO, /api/parametros, GET|POST
 *, /api/parametros/:grupo/listado, GET
 *, /api/autorizacion/permisos, GET
-*, /usuarios/cuenta/perfil, GET
-*, /usuarios/cuenta/contrasena, PATCH
+*, /api/usuarios/cuenta/perfil, GET
+*, /api/usuarios/cuenta/contrasena, PATCH
