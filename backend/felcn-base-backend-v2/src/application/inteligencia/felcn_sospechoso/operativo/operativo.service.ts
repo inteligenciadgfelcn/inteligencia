@@ -9,6 +9,8 @@ import { Operativo } from './entities/operativo.entity'
 import { DB_SOSPECHOSO } from '@/core/config/database/database.module'
 import { Departamento } from '../parametrica/provincia/entities/departamento.entity'
 import { BuscarAntecedenteDto } from './dto/buscar-antecedente.dto'
+import { Estado } from '@/common/constants'
+import { PaginacionQueryDto } from '@/common/dto'
 
 @Injectable()
 export class OperativoService {
@@ -46,8 +48,20 @@ export class OperativoService {
     return await this.operativoRepo.save(operativo)
   }
 
-  findAll() {
-    return `This action returns all operativo`
+  async findAllPaginado(pagination: PaginacionQueryDto) {
+    const { limite, saltar, filtro } = pagination
+    const query = this.operativoRepo
+      .createQueryBuilder('a')
+      .take(limite)
+      .skip(saltar)
+
+    if (filtro) {
+      query.andWhere('a.numeroCaso ILIKE :filtro', {
+        filtro: `%${filtro}%`,
+      })
+    }
+
+    return await query.getManyAndCount()
   }
 
   async findOne(numero_caso: string) {
@@ -73,6 +87,40 @@ export class OperativoService {
     }
   }
 
+  async findOneRegistro(numero_caso: string) {
+    const limpio = decodeURIComponent(numero_caso).trim()
+
+    const existe = await this.operativoRepo.findOne({
+      where: { numeroCaso: limpio },
+    })
+
+    if (existe) {
+      return {
+        existe: true,
+        mensaje: 'Ya existe un registro con ese número de caso',
+      }
+    }
+
+    const result = await this.siiiRepo.getOperativoRegistrado(limpio)
+
+    if (!result.length) {
+      return {
+        existe: false,
+        mensaje: 'No se encontró información para ese caso',
+      }
+    }
+
+    const operativo = result[0]
+
+    return {
+      existe: false,
+      numeroCaso: operativo.numero_caso,
+      nombreCaso: operativo.nombre_caso,
+      asignado: operativo.asignado_caso,
+      fiscalAsignado: operativo.fiscal_asignado_caso,
+    }
+  }
+
   async verificarAntecedentes(dto: BuscarAntecedenteDto) {
     const personas = await this.siiiRepo.buscarPersonaDetenida(dto)
 
@@ -93,13 +141,5 @@ export class OperativoService {
         tieneAntecedentes: p.cantidad_operativos >= 1,
       })),
     }
-  }
-
-  update(id: number, updateOperativoDto: UpdateOperativoDto) {
-    return `This action updates a #${id} operativo`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} operativo`
   }
 }
