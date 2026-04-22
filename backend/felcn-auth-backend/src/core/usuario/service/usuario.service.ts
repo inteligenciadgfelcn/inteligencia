@@ -877,7 +877,6 @@ export class UsuarioService extends BaseService {
     usuarioDto: ActualizarUsuarioRolDto,
     usuarioAuditoria: string
   ) {
-    this.verificarPermisos(id, usuarioAuditoria)
     // 1. verificar que exista el usuario
     const op = async (transaction: EntityManager) => {
       const usuario =
@@ -945,6 +944,7 @@ export class UsuarioService extends BaseService {
         telefonoCorporativo,
         idGrado,
         idGrupo,
+        numeroPase,
       } = usuarioDto
       // 2. verificar que el email no este registrado
 
@@ -991,6 +991,7 @@ export class UsuarioService extends BaseService {
         ...(telefonoCorporativo !== undefined && { telefonoCorporativo }),
         ...(idGrado !== undefined && { idGrado }),
         ...(idGrupo !== undefined && { idGrupo }),
+        ...(numeroPase !== undefined && { numeroPase }),
       }
       if (Object.keys(camposFelcn).length > 0) {
         await this.usuarioRepositorio.actualizar(
