@@ -45,6 +45,11 @@ export class CreateAsignacionDto {
   @MaxLength(150)
   nombreSolicitud!: string;
 
+  @ApiProperty({ example: 'ICIA-12345'  })
+  @IsString()
+  @IsNotEmpty()
+  numeroPaseSolicitud!: string;
+
   @ApiProperty({ example: '71234567' })
   @IsString()
   @IsNotEmpty()

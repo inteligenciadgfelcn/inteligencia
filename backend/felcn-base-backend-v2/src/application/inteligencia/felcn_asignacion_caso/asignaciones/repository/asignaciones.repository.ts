@@ -55,7 +55,7 @@ export class AsignacionesRepository {
       telefonoAsignado: dto.telefonoAsignado,
       fiscalAsignado: dto.fiscalAsignado,
       telefonoFiscal: dto.telefonoFiscal,
-      usuario: dto.usuario,
+      usuario: dto.numeroPaseSolicitud,
     })
 
     const saved = await this.asignacionRepository.save(asignacion)
