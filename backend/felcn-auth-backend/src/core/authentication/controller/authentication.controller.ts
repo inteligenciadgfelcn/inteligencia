@@ -148,29 +148,35 @@ export class AuthenticationController extends BaseController {
 
     // req.logout();
     req.session.destroy(() => ({}))
-    const issuer = await Issuer.discover(
-      this.configService.get('OIDC_ISSUER') || ''
-    )
-    const urlEndSession = issuer.metadata.end_session_endpoint
-
     res.clearCookie('connect.sid')
     res.clearCookie('jid', jid)
-    const idUsuario = req.headers.authorization
-      ? JSON.parse(
-          Buffer.from(
-            `${req.headers.authorization}`.split('.')[1],
-            'base64'
-          ).toString()
-        ).id
-      : null
+
+    let idUsuario: string | null = null
+    try {
+      const parts = req.headers.authorization?.split('.')
+      if (parts && parts.length >= 2) {
+        idUsuario = JSON.parse(Buffer.from(parts[1], 'base64').toString()).id ?? null
+      }
+    } catch {
+      // token malformado o ausente — continúa sin id de auditoría
+    }
 
     this.logger.audit('authentication', {
       mensaje: 'Salió del sistema',
       metadata: { usuario: idUsuario },
     })
 
-    // Ciudadanía v2
-    if (!(urlEndSession && idToken)) {
+    // Ciudadanía v2: solo si el usuario entró por OIDC
+    if (!idToken) {
+      return res.status(200).json()
+    }
+
+    const issuer = await Issuer.discover(
+      this.configService.get('OIDC_ISSUER') || ''
+    )
+    const urlEndSession = issuer.metadata.end_session_endpoint
+
+    if (!urlEndSession) {
       return res.status(200).json()
     }
 
@@ -180,9 +186,7 @@ export class AuthenticationController extends BaseController {
       'post_logout_redirect_uri',
       this.configService.get('OIDC_POST_LOGOUT_REDIRECT_URI') ?? ''
     )
-    if (idToken) {
-      urlResponse.searchParams.append('id_token_hint', idToken)
-    }
+    urlResponse.searchParams.append('id_token_hint', idToken)
     urlResponse.searchParams.append('mensaje', mensaje)
 
     return res.status(200).json({

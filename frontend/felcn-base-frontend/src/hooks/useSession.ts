@@ -5,6 +5,9 @@ import { verificarToken } from '@/utils/token'
 import { useFullScreenLoading } from '@/context/FullScreenLoadingProvider'
 import { Constantes } from '@/config/Constantes'
 
+// Flag a nivel de módulo: evita múltiples cerrarSesion simultáneos
+let sesionCerrando = false
+
 export const useSession = () => {
   const { mostrarFullScreen, ocultarFullScreen } = useFullScreenLoading()
 
@@ -67,6 +70,8 @@ export const useSession = () => {
   }
 
   const cerrarSesion = async () => {
+    if (sesionCerrando) return
+    sesionCerrando = true
     try {
       mostrarFullScreen()
       await delay(1000)
@@ -91,6 +96,7 @@ export const useSession = () => {
       imprimir(`Error al cerrar sesión: `, e)
       window.location.reload()
     } finally {
+      sesionCerrando = false
       ocultarFullScreen()
     }
   }
