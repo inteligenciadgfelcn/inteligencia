@@ -301,6 +301,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
         telefonoAsignado: values.asignadoANum,
         fiscalAsignado: values.fiscalAsignado,
         telefonoFiscal: values.fiscalAsignadoNum,
+        numeroPaseSolicitud: values.quienRealiza.original?.numeroPase,
       }
 
       const resp = await sesionPeticion({
