@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   BienCaracteristicaPayload,
   BienCaracteristicaResponse,
@@ -9,6 +9,7 @@ import type {
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 const buildFormData = (payload: BienPayload) => {
@@ -30,8 +31,9 @@ export const GestionOperativoBienesService = {
     pagina: number = 1,
     limite: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<BienResponse>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes?pagina=${pagina}&limite=${limite}`,
+      withCredentials: true,
     })
   },
 
@@ -39,10 +41,12 @@ export const GestionOperativoBienesService = {
     idOperativo: number,
     payload: BienPayload
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes`,
+      method: 'POST',
       body: buildFormData(payload),
       headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
     })
   },
 
@@ -50,8 +54,10 @@ export const GestionOperativoBienesService = {
     idOperativo: number,
     idBien: number
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
@@ -59,8 +65,9 @@ export const GestionOperativoBienesService = {
     idOperativo: number,
     idBien: number
   ): Promise<RespuestaApi<RespuestaApiPaginada<BienCaracteristicaResponse>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas`,
+      withCredentials: true,
     })
   },
 
@@ -69,10 +76,12 @@ export const GestionOperativoBienesService = {
     idBien: number,
     payload: BienCaracteristicaPayload
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas`,
+      method: 'POST',
       body: payload,
       headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
     })
   },
 
@@ -81,16 +90,19 @@ export const GestionOperativoBienesService = {
     idBien: number,
     idCaracteristica: number
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}/bienes/${idBien}/caracteristicas/${idCaracteristica}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
   obtenerFoto(path: string): Promise<Blob> {
     const pathNormalizado = path.replace(/^\/api/, '')
-    return Servicios.get<Blob>({
+    return sesionPeticion<Blob>({
       url: `${Constantes.baseUrl}${pathNormalizado}`,
       responseType: 'blob',
+      withCredentials: true,
     })
   },
 }

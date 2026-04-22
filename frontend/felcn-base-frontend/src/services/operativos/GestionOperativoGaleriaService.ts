@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   GaleriaPayload,
   GaleriaResponse,
@@ -7,6 +7,7 @@ import type {
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE = `${Constantes.baseUrl}/operativos`
 
 const buildFormData = (payload: GaleriaPayload): FormData => {
@@ -23,8 +24,9 @@ export const GestionOperativoGaleriaService = {
     pagina: number = 1,
     limite: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<GaleriaResponse>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/galeria?pagina=${pagina}&limite=${limite}`,
+      withCredentials: true,
     })
   },
 
@@ -32,10 +34,12 @@ export const GestionOperativoGaleriaService = {
     idOperativo: number,
     payload: GaleriaPayload
   ): Promise<RespuestaApi<GaleriaResponse>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/galeria`,
+      method: 'POST',
       body: buildFormData(payload),
       headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
     })
   },
 
@@ -43,17 +47,20 @@ export const GestionOperativoGaleriaService = {
     idOperativo: number,
     idGaleria: number
   ): Promise<RespuestaApi<unknown>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/galeria/${idGaleria}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
   obtenerFoto(path: string): Promise<Blob> {
     if (!path) return Promise.reject(new Error('Path no proporcionado'))
     const pathNormalizado = path.replace(/^\/api/, '')
-    return Servicios.get<Blob>({
+    return sesionPeticion<Blob>({
       url: `${Constantes.baseUrl}${pathNormalizado}`,
       responseType: 'blob',
+      withCredentials: true,
     })
   },
 }

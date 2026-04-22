@@ -53,7 +53,6 @@ export function FormGestionOperativo({
     esEdicion,
     seccionActiva,
     setSeccionActiva,
-    guardandoCabecera,
   } = useGestionOperativoForm(idGestionOperativo)
 
   const [tieneOperativo, setTieneOperativo] = useState<boolean | null>(null)
@@ -269,9 +268,6 @@ export function FormGestionOperativo({
                         ? `Editando registro #${id}`
                         : 'Nuevo registro (debe crearse cabecera para habilitar guardado de secciones)'}
                 </p> */}
-        {guardandoCabecera && (
-          <p className="text-xs text-primary mt-2">Guardando cabecera...</p>
-        )}
       </div>
 
       <div className="panel p-0">

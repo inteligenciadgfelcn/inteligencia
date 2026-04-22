@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   CasoResumen,
   OperativoPayload,
@@ -7,9 +7,10 @@ import type {
   RespuestaApi,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
-// ── Tipos del endpoint GET /operativos/casos/usuario/:idUsuario ──────────────
+// ── Tipos del endpoint GET /operativos/caso/:idCaso ──────────────────────────
 
 export interface CasoOperativoDetalle {
   caso: CasoResumen
@@ -20,10 +21,11 @@ export interface CasoOperativoDetalle {
 
 export const GestionOperativosDatosGeneralesService = {
   obtenerPorUsuario(
-    idUsuario: number
+    idCaso: number
   ): Promise<RespuestaApi<CasoOperativoDetalle>> {
-    return Servicios.get({
-      url: `${BASE_OPERATIVOS}/caso/${idUsuario}`,
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/caso/${idCaso}`,
+      withCredentials: true,
     })
   },
 
@@ -31,18 +33,23 @@ export const GestionOperativosDatosGeneralesService = {
     idCaso: number,
     payload: OperativoPayload
   ): Promise<RespuestaApi<CasoOperativoDetalle>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/caso/${idCaso}`,
+      method: 'POST',
       body: payload,
+      withCredentials: true,
     })
   },
+
   actualizarOperativo(
     idOperativo: number,
     payload: OperativoPayload
   ): Promise<RespuestaApi<CasoOperativoDetalle>> {
-    return Servicios.patch({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/${idOperativo}`,
+      method: 'PATCH',
       body: payload,
+      withCredentials: true,
     })
   },
 }

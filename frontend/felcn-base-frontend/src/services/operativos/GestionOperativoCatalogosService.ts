@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   CatalogoCaracteristica,
   CatalogoBien,
@@ -10,45 +10,51 @@ import type {
   RespuestaApi,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoCatalogosService = {
   obtenerEstadosDroga(
     idTipoDroga: number
   ): Promise<RespuestaApi<EstadoDroga[]>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/catalogos/estados-droga/${idTipoDroga}`,
+      withCredentials: true,
     })
   },
   obtenerItemsOperativo(
     idItemOperativo: number
   ): Promise<RespuestaApi<ItemCategoriaOperativo[]>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/catalogos/items-operativo/${idItemOperativo}`,
+      withCredentials: true,
     })
   },
 
   obtenerClasesBien(
     idBien: number
   ): Promise<RespuestaApi<CatalogoClaseBien[]>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/catalogos/clases/${idBien}`,
+      withCredentials: true,
     })
   },
 
   obtenerTiposBien(
     idCatalogoClase: number
   ): Promise<RespuestaApi<CatalogoTipoBien[]>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/catalogos/tipos/${idCatalogoClase}`,
+      withCredentials: true,
     })
   },
 
   obtenerCaracteristicasBien(
     idCatalogoClase: number
   ): Promise<RespuestaApi<CatalogoCaracteristica[]>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/catalogos/caracteristicas/${idCatalogoClase}`,
+      withCredentials: true,
     })
   },
 }

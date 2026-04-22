@@ -1,13 +1,15 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type { RespuestaApi, SeccionPayload } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoSeccion10Service = {
   obtener(idOperativo: number): Promise<RespuestaApi<SeccionPayload>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/seccion10`,
+      withCredentials: true,
     })
   },
 
@@ -15,9 +17,11 @@ export const GestionOperativoSeccion10Service = {
     idOperativo: number,
     payload: SeccionPayload
   ): Promise<RespuestaApi<SeccionPayload>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE}/${idOperativo}/seccion10`,
+      method: 'POST',
       body: payload,
+      withCredentials: true,
     })
   },
 }

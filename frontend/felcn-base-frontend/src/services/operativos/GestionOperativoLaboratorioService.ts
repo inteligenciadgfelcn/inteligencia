@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { Servicios } from '@/services'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   RespuestaApi,
   FabricaRespuesta,
@@ -7,6 +7,7 @@ import type {
   RespuestaApiPaginada,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVO = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoLaboratorioService = {
@@ -15,8 +16,9 @@ export const GestionOperativoLaboratorioService = {
     page: number = 1,
     limit: number = 10
   ): Promise<RespuestaApi<RespuestaApiPaginada<FabricaRespuesta>>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVO}/${idOperativo}/fabricas?pagina=${page}&limite=${limit}`,
+      withCredentials: true,
     })
   },
 
@@ -24,8 +26,10 @@ export const GestionOperativoLaboratorioService = {
     idOperativo: number,
     id: number
   ): Promise<RespuestaApi<FabricaRespuesta>> {
-    return Servicios.delete({
+    return sesionPeticion({
       url: `${BASE_OPERATIVO}/${idOperativo}/fabricas/${id}`,
+      method: 'DELETE',
+      withCredentials: true,
     })
   },
 
@@ -33,9 +37,11 @@ export const GestionOperativoLaboratorioService = {
     idOperativo: number,
     payload: FabricaPayload
   ): Promise<RespuestaApi<FabricaRespuesta>> {
-    return Servicios.post({
+    return sesionPeticion({
       url: `${BASE_OPERATIVO}/${idOperativo}/fabricas`,
+      method: 'POST',
       body: payload,
+      withCredentials: true,
     })
   },
 }

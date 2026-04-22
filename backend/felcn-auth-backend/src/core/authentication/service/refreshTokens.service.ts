@@ -92,10 +92,10 @@ export class RefreshTokensService extends BaseService {
 
     const payload: PayloadType = {
       id: usuario.id,
-      usuario: usuario.usuario,
       roles,
       idRol: rol.idRol,
       rol: rol.rol,
+      numeroPase: usuario.numeroPase,
     }
     const data = {
       access_token: this.jwtService.sign(payload),

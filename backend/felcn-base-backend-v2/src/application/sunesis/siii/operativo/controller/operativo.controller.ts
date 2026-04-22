@@ -49,23 +49,23 @@ export class OperativoController extends BaseController {
 
   @ApiOperation({
     summary: 'Listar casos aprobados del usuario autenticado',
-    description: 'Filtra asignacion.usuario = JWT.usuario y TRIM(numero_caso) <> \'\'.',
+    description: 'Filtra asignacion.usuario = JWT.numeroPase y TRIM(numero_caso) <> \'\'.',
   })
   @Get('casos')
   async listarCasosAprobados(@Req() req: Request) {
-    const { usuario } = req.user as PassportUser
-    const datos = await this.operativoService.listarCasosAprobados(usuario)
+    const { numeroPase = '' } = req.user as PassportUser
+    const datos = await this.operativoService.listarCasosAprobados(numeroPase)
     return this.successList(datos)
   }
 
   @ApiOperation({
     summary: 'Listar casos no aprobados del usuario autenticado',
-    description: 'Filtra asignacion.usuario = JWT.usuario y TRIM(numero_caso) = \'\'.',
+    description: 'Filtra asignacion.usuario = JWT.numeroPase y TRIM(numero_caso) = \'\'.',
   })
   @Get('casos/no-aprobados')
   async listarCasosNoAprobados(@Req() req: Request) {
-    const { usuario } = req.user as PassportUser
-    const datos = await this.operativoService.listarCasosNoAprobados(usuario)
+    const { numeroPase = '' } = req.user as PassportUser
+    const datos = await this.operativoService.listarCasosNoAprobados(numeroPase)
     return this.successList(datos)
   }
 
