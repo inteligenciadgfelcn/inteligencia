@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import type {
   CatalogoCaracteristica,
   CatalogoBien,
@@ -10,7 +10,6 @@ import type {
   RespuestaApi,
 } from './types'
 
-const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 export const GestionOperativoCatalogosService = {

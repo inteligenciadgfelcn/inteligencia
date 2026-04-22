@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Profesion {
@@ -7,7 +7,6 @@ export interface Profesion {
   ocupaProfesion: boolean
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getProfesiones(): Promise<Profesion[]> {
   const response = await sesionPeticion({

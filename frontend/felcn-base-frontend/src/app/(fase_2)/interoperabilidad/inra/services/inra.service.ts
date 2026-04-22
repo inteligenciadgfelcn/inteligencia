@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 
 export type InraSearchType = 'TITULO' | 'IDENTIFICACION'
 
@@ -51,7 +51,6 @@ export interface InraResponse {
   }
 }
 
-const { sesionPeticion } = usePeticion()
 
 export const buscarInraPorNumeroTitulo = async (
   nroTitulo: string

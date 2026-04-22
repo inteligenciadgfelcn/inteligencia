@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks'
+import { sesionPeticion } from '@/utils/peticion'
 import { CasoActualizacionTable } from '../types/caso.actualizacion.table'
 import { Constantes } from '@/config/Constantes'
 import { DataTableParams } from '@/services'
@@ -18,7 +18,6 @@ interface Datos {
   total: number
   filas: CasoActualizacionTable[]
 }
-const { sesionPeticion } = usePeticion()
 
 export const getActualizacionData = async (
   registrados: boolean,

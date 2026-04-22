@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import type {
   DrogaCasoPayload,
   RespuestaApi,
@@ -7,7 +7,6 @@ import type {
   ResponseDroga,
 } from './types'
 
-const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 const buildFormData = (payload: DrogaCasoPayload) => {

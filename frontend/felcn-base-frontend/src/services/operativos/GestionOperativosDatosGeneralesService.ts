@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import type {
   CasoResumen,
   OperativoPayload,
@@ -7,7 +7,6 @@ import type {
   RespuestaApi,
 } from './types'
 
-const { sesionPeticion } = usePeticion()
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
 // ── Tipos del endpoint GET /operativos/caso/:idCaso ──────────────────────────

@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 import { ServicioTable } from '../types/servicio.table'
 import { DataTableParams } from '@/services'
@@ -14,7 +14,6 @@ interface Datos {
   filas: ServicioTable[]
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getServicios(
   params: DataTableParams
