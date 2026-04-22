@@ -88,9 +88,11 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   const [usuarioConServicio, setUsuarioConServicio] = useState(false)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
-  const { usuario } = useAuth()
+  const { usuario, estaEnServicio, codigoIcia } = useAuth()
 
   imprimir('Usuario en form', usuario)
+  imprimir('esta en servicio', estaEnServicio)
+  imprimir('codigo icia', codigoIcia)
 
   const {
     handleSubmit,

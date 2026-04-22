@@ -12,8 +12,11 @@ import IconRefresh from '@/components/Icon/IconRefresh'
 import { FormActualizacion } from './FormActualizacion'
 import { dateUtcToString } from '@/utils/fechas'
 import { imprimir } from '@/utils/imprimir'
+import { useAuth } from '@/context/AuthProvider'
 
 export function ActualizacionDataTable() {
+  const { verificarServicioUsuario } = useAuth()
+
   const [pagina, setPagina] = useState(1)
   const [limite, setLimite] = useState(10)
   const [search, setSearch] = useState('')
@@ -46,14 +49,23 @@ export function ActualizacionDataTable() {
   /* FETCH */
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['casos_registrados', pagina, limite, search, sortStatus],
-    queryFn: () =>
-      getActualizacionData(true, {
-        pagina: pagina,
-        limite: limite,
-        filtro: search || undefined,
-        ordenar: sortStatus.columnAccessor,
-        direccion: sortStatus.direction,
-      }),
+    queryFn: async () => {
+      const { codigoServicio } = await verificarServicioUsuario()
+      if (!codigoServicio) {
+        throw new Error('No se pudo obtener el código de servicio del usuario')
+      }
+      return getActualizacionData(
+        true,
+        {
+          pagina: pagina,
+          limite: limite,
+          filtro: search || undefined,
+          ordenar: sortStatus.columnAccessor,
+          direccion: sortStatus.direction,
+        },
+        codigoServicio
+      )
+    },
     placeholderData: keepPreviousData,
   })
 
