@@ -1,5 +1,5 @@
-import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
+import { usePeticion } from '@/hooks/usePeticion'
 import type {
   Continente,
   Departamento,
@@ -11,6 +11,7 @@ import type {
   RespuestaAPI,
 } from './types'
 
+const { sesionPeticion } = usePeticion()
 const BASE = `${Constantes.baseUrl}/siii-lookups`
 const BASE_OPERATIVO = `${Constantes.baseUrl}/operativos`
 type LookupGenerico = Record<string, unknown>
@@ -21,216 +22,195 @@ type LookupGenerico = Record<string, unknown>
 export const SiiiLookupsService = {
   /** Obtiene todos los continentes */
   obtenerContinentes(): Promise<RespuestaAPI<Continente>> {
-    return Servicios.get({ url: `${BASE}/continentes` })
+    return sesionPeticion({ url: `${BASE}/continentes`, withCredentials: true })
   },
 
   /** Obtiene todos los paises */
   obtenerPaises(): Promise<RespuestaAPI<Pais>> {
-    return Servicios.get({ url: `${BASE}/paises` })
+    return sesionPeticion({ url: `${BASE}/paises`, withCredentials: true })
   },
 
-  /**
-   * Obtiene los paises por continente.
-   * @param idContinente ID del continente
-   */
   obtenerPaisesPorContinente(
     idContinente: number
   ): Promise<RespuestaAPI<Pais>> {
-    return Servicios.get({ url: `${BASE}/paises/continente/${idContinente}` })
+    return sesionPeticion({ url: `${BASE}/paises/continente/${idContinente}`, withCredentials: true })
   },
 
   /** Obtiene los paises de destino */
   obtenerPaisesDestino(): Promise<RespuestaAPI<Pais>> {
-    return Servicios.get({ url: `${BASE}/paises-destino` })
+    return sesionPeticion({ url: `${BASE}/paises-destino`, withCredentials: true })
   },
 
   /** Obtiene todos los departamentos (incluye datos del país) */
   obtenerDepartamentos(): Promise<RespuestaAPI<Departamento>> {
-    return Servicios.get({ url: `${BASE}/departamentos` })
+    return sesionPeticion({ url: `${BASE}/departamentos`, withCredentials: true })
   },
 
-  /**
-   * Obtiene los departamentos por pais.
-   * @param idPais ID del pais
-   */
   obtenerDepartamentosPorPais(
     idPais: number
   ): Promise<RespuestaAPI<Departamento>> {
-    return Servicios.get({ url: `${BASE}/departamentos/pais/${idPais}` })
+    return sesionPeticion({ url: `${BASE}/departamentos/pais/${idPais}`, withCredentials: true })
   },
 
   /** Obtiene todas las provincias */
   obtenerTodasLasProvincias(): Promise<RespuestaAPI<Provincia>> {
-    return Servicios.get({ url: `${BASE}/provincias` })
+    return sesionPeticion({ url: `${BASE}/provincias`, withCredentials: true })
   },
 
-  /**
-   * Obtiene las provincias de un departamento.
-   * @param idDepartamento ID del departamento
-   */
   obtenerProvincias(idDepartamento: number): Promise<RespuestaAPI<Provincia>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE}/provincias/departamento/${idDepartamento}`,
+      withCredentials: true,
     })
   },
 
   /** Obtiene todas las localidades */
   obtenerTodasLasLocalidades(): Promise<RespuestaAPI<Localidad>> {
-    return Servicios.get({ url: `${BASE}/localidades` })
+    return sesionPeticion({ url: `${BASE}/localidades`, withCredentials: true })
   },
 
-  /**
-   * Obtiene las localidades de una provincia.
-   * @param idProvincia ID de la provincia
-   */
   obtenerLocalidades(idProvincia: number): Promise<RespuestaAPI<Localidad>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE}/localidades/provincia/${idProvincia}`,
+      withCredentials: true,
     })
   },
 
   obtenerTiposDroga(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-droga` })
+    return sesionPeticion({ url: `${BASE}/tipos-droga`, withCredentials: true })
   },
 
   obtenerTiposOperacion(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/tipos-operacion` })
+    return sesionPeticion({ url: `${BASE}/tipos-operacion`, withCredentials: true })
   },
 
   obtenerTiposPenal(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/tipos-penal` })
+    return sesionPeticion({ url: `${BASE}/tipos-penal`, withCredentials: true })
   },
 
   obtenerTiposRelevancia(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/tipos-relevancia` })
+    return sesionPeticion({ url: `${BASE}/tipos-relevancia`, withCredentials: true })
   },
 
   obtenerTiposPersona(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-persona` })
+    return sesionPeticion({ url: `${BASE}/tipos-persona`, withCredentials: true })
   },
 
   obtenerEstadosCiviles(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/estados-civiles` })
+    return sesionPeticion({ url: `${BASE}/estados-civiles`, withCredentials: true })
   },
 
   obtenerCategoriasOperativo(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/categorias-operativo` })
+    return sesionPeticion({ url: `${BASE}/categorias-operativo`, withCredentials: true })
   },
 
   obtenerTiposDenuncia(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/tipos-denuncia` })
+    return sesionPeticion({ url: `${BASE}/tipos-denuncia`, withCredentials: true })
   },
 
   obtenerTiposFabrica(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-fabrica` })
+    return sesionPeticion({ url: `${BASE}/tipos-fabrica`, withCredentials: true })
   },
 
   //TODO: cambiar a parametricas
   obtenerModelosFabrica(
     idTipoFabrica: number
   ): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({
+    return sesionPeticion({
       url: `${BASE_OPERATIVO}/catalogos/fabrica-modelos/${idTipoFabrica}`,
+      withCredentials: true,
     })
   },
 
   obtenerTiposDocumento(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-documento` })
+    return sesionPeticion({ url: `${BASE}/tipos-documento`, withCredentials: true })
   },
 
   obtenerTiposImplicado(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-implicado` })
+    return sesionPeticion({ url: `${BASE}/tipos-implicado`, withCredentials: true })
   },
 
   obtenerEstadosSujeto(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/estados-sujeto` })
+    return sesionPeticion({ url: `${BASE}/estados-sujeto`, withCredentials: true })
   },
 
   obtenerPlanesOperaciones(): Promise<RespuestaAPI<PlanOperacion>> {
-    return Servicios.get({ url: `${BASE}/planes-operaciones` })
+    return sesionPeticion({ url: `${BASE}/planes-operaciones`, withCredentials: true })
   },
 
   obtenerFormasTransporte(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/formas-transporte` })
+    return sesionPeticion({ url: `${BASE}/formas-transporte`, withCredentials: true })
   },
 
   obtenerEtapas(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/etapas` })
+    return sesionPeticion({ url: `${BASE}/etapas`, withCredentials: true })
   },
 
   obtenerEtapasInvestigacion(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/etapas-investigacion` })
+    return sesionPeticion({ url: `${BASE}/etapas-investigacion`, withCredentials: true })
   },
 
   obtenerRecursos(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/recursos` })
+    return sesionPeticion({ url: `${BASE}/recursos`, withCredentials: true })
   },
 
   obtenerSustanciasSolidasDesc(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/sustancias-solidas-desc` })
+    return sesionPeticion({ url: `${BASE}/sustancias-solidas-desc`, withCredentials: true })
   },
 
   obtenerSustanciasLiquidasDesc(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/sustancias-liquidas-desc` })
+    return sesionPeticion({ url: `${BASE}/sustancias-liquidas-desc`, withCredentials: true })
   },
 
   obtenerCocaProcedencias(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/coca-procedencias` })
+    return sesionPeticion({ url: `${BASE}/coca-procedencias`, withCredentials: true })
   },
 
   obtenerCocaEstados(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/coca-estados` })
+    return sesionPeticion({ url: `${BASE}/coca-estados`, withCredentials: true })
   },
 
   obtenerCocaDescripciones(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/coca-descripciones` })
+    return sesionPeticion({ url: `${BASE}/coca-descripciones`, withCredentials: true })
   },
 
   obtenerBienes(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/bienes` })
+    return sesionPeticion({ url: `${BASE}/bienes`, withCredentials: true })
   },
 
   obtenerCalidadesBien(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/calidades-bien` })
+    return sesionPeticion({ url: `${BASE}/calidades-bien`, withCredentials: true })
   },
 
   obtenerColoresPiel(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/colores-piel` })
+    return sesionPeticion({ url: `${BASE}/colores-piel`, withCredentials: true })
   },
 
   obtenerColoresOjos(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/colores-ojos` })
+    return sesionPeticion({ url: `${BASE}/colores-ojos`, withCredentials: true })
   },
 
   obtenerColoresCabello(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/colores-cabello` })
+    return sesionPeticion({ url: `${BASE}/colores-cabello`, withCredentials: true })
   },
 
   obtenerTiposCabello(): Promise<RespuestaAPI<LookupGenerico>> {
-    return Servicios.get({ url: `${BASE}/tipos-cabello` })
+    return sesionPeticion({ url: `${BASE}/tipos-cabello`, withCredentials: true })
   },
 
   obtenerUnidades(): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/unidades` })
+    return sesionPeticion({ url: `${BASE}/unidades`, withCredentials: true })
   },
 
-  /**
-   * Obtiene los distritales por unidad.
-   * @param idUnidad ID de la unidad
-   */
   obtenerDistritalesPorUnidad(
     idUnidad: number
   ): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/distritales/unidad/${idUnidad}` })
+    return sesionPeticion({ url: `${BASE}/distritales/unidad/${idUnidad}`, withCredentials: true })
   },
 
-  /**
-   * Obtiene los grupos por distrital.
-   * @param idDistrital ID del distrital
-   */
   obtenerGruposPorDistrital(
     idDistrital: number
   ): Promise<RespuestaAPI<LookupBasico>> {
-    return Servicios.get({ url: `${BASE}/grupos/distrital/${idDistrital}` })
+    return sesionPeticion({ url: `${BASE}/grupos/distrital/${idDistrital}`, withCredentials: true })
   },
 }
