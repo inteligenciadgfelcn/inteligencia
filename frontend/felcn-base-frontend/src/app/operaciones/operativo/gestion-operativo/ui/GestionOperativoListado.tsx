@@ -7,6 +7,8 @@ import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
 import { GestionOperativoService } from '@/services/operativos'
 import IconPencil from '@/components/Icon/IconPencil'
+import IconPrinter from '@/components/Icon/IconPrinter'
+import IconSend from '@/components/Icon/IconSend'
 import { useAuth } from '@/context/AuthProvider'
 import type { GestionOperativoItem } from '../types'
 
@@ -137,18 +139,40 @@ export function GestionOperativoListado({
         'sticky right-0 bg-white dark:bg-[#0e1726] z-10 shadow-[-4px_0_8px_rgba(0,0,0,0.05)] border-l border-white-light dark:border-[#191e3a]',
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
-          <button
-            type="button"
-            className="text-primary hover:text-primary/70 transition-colors"
-            onClick={() =>
-              router.push(
-                `/operaciones/operativo/gestion-operativo/registro?id=${row.idCaso}`
-              )
-            }
-            title="Ver / Editar"
-          >
-            <IconPencil className="h-5 w-5" />
-          </button>
+          {tipo !== 'aprobado' && (
+            <button
+              type="button"
+              className="text-primary hover:text-primary/70 transition-colors"
+              onClick={() =>
+                router.push(
+                  `/operaciones/operativo/gestion-operativo/registro?id=${row.idCaso}`
+                )
+              }
+              title="Ver / Editar"
+            >
+              <IconPencil className="h-5 w-5" />
+            </button>
+          )}
+          {tipo === 'aprobado' && (
+            <>
+              <button
+                type="button"
+                className="text-success hover:text-success/70 transition-colors"
+                onClick={() => window.print()}
+                title="Imprimir Reporte"
+              >
+                <IconPrinter className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                className="text-info hover:text-info/70 transition-colors"
+                onClick={() => alert('Enviando a Fiscalía...')}
+                title="Enviar a Fiscalía"
+              >
+                <IconSend className="h-5 w-5" />
+              </button>
+            </>
+          )}
         </div>
       ),
     },
