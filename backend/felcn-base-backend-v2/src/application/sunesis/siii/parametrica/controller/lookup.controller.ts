@@ -1,14 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common'
-import { ApiTags, ApiOperation } from '@nestjs/swagger'
+import { Controller, Get, Param, UseGuards } from '@nestjs/common'
+import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { LookupService } from '../service/lookup.service'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
-// TODO: Reactivar guards para producción
-// import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
-// import { CasbinGuard } from '@/core/authorization/guards/casbin.guard'
-// @ApiBearerAuth()
-// @UseGuards(JwtAuthGuard, CasbinGuard)
-
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('Lookups SIII (Paramétricas)')
 @Controller('siii-lookups')
 export class LookupController extends BaseController {
