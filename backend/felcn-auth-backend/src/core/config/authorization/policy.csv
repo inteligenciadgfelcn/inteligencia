@@ -2,7 +2,7 @@ ADMINISTRADOR, /api/autorizacion/politicas, GET|POST|DELETE|PATCH
 ADMINISTRADOR, /api/autorizacion/roles, GET
 ADMINISTRADOR, /api/autorizacion/modulos, GET
 ADMINISTRADOR, /api/usuarios, GET|POST
-ADMINISTRADOR, /api/usuarios/:id, PATCH
+ADMINISTRADOR, /api/usuarios/:id, GET|PATCH
 ADMINISTRADOR, /api/usuarios/cuenta/ciudadania, POST
 ADMINISTRADOR, /api/usuarios/:id/activacion, PATCH
 ADMINISTRADOR, /api/usuarios/:id/inactivacion, PATCH
@@ -14,5 +14,5 @@ TECNICO, /api/usuarios, GET
 TECNICO, /api/parametros, GET|POST
 *, /api/parametros/:grupo/listado, GET
 *, /api/autorizacion/permisos, GET
-*, /usuarios/cuenta/perfil, GET
-*, /usuarios/cuenta/contrasena, PATCH
+*, /api/usuarios/cuenta/perfil, GET
+*, /api/usuarios/cuenta/contrasena, PATCH
