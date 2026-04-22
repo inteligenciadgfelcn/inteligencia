@@ -125,12 +125,12 @@ export class ServicioService {
     const servicio = await this.servicioRepository
       .createQueryBuilder('s')
       .where(
-        '(s.usuario_principal = :usuario OR s.usuario_emergencia = :usuario)',
+        '(s.usuarioPrincipal = :usuario OR s.usuarioEmergencia = :usuario)',
         { usuario }
       )
       .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
-      .andWhere('s.fecha_hora_ingreso <= :ahora', { ahora })
-      .andWhere('s.fecha_hora_salida >= :ahora', { ahora })
+      .andWhere('s.fechaIngreso <= :ahora', { ahora })
+      .andWhere('s.fechaSalida >= :ahora', { ahora })
       .getOne()
 
     if (!servicio) {
