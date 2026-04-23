@@ -61,19 +61,19 @@ export const CasoSearchCard = ({
           </div>
           <div className="col-span-12 md:col-span-4 flex gap-2">
             <button
+              type="submit"
+              className="btn btn-primary btn-sm"
+              disabled={loading}
+            >
+              Buscar
+            </button>
+            <button
               type="button"
               className="btn btn-outline-danger btn-sm"
               onClick={handleClear}
               disabled={loading}
             >
               Limpiar
-            </button>
-            <button
-              type="submit"
-              className="btn btn-primary btn-sm"
-              disabled={loading}
-            >
-              Buscar
             </button>
           </div>
         </div>
@@ -94,15 +94,15 @@ export const CasoSearchCard = ({
           </div>
         )}
 
-      {status === 'success-disabled' && (
+      {/* {status === 'success-disabled' && (
         <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-4 py-2 text-sm font-semibold text-warning">
           Operativo ya registrado
         </div>
-      )}
+      )} */}
 
       {status === 'not-found' && (
         <div className="mt-3 rounded-md border border-danger/20 bg-danger/5 px-4 py-2 text-sm font-semibold text-danger">
-          Caso no encontrado
+          No se encontró información para ese caso
         </div>
       )}
     </div>

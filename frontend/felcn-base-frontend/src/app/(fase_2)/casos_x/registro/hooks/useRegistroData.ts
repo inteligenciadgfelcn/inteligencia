@@ -7,7 +7,7 @@ import {
   guardarRegistroOperativo,
   obtenerCatalogoGeografico,
   obtenerCatalogoPersona,
-} from '../services/registro-fake.service'
+} from '../services/registro.service'
 import {
   CasoResumen,
   Departamento,
@@ -63,10 +63,10 @@ export const useRegistroData = () => {
     cargarCatalogos()
   }, [])
 
-  const buscarCaso = async (nroCaso: string): Promise<CasoResumen | null> => {
+  const buscarCaso = async (nroCaso: string): Promise<CasoResumen> => {
     setLoadingBusqueda(true)
     try {
-      return await buscarCasoPorNumero(nroCaso, sesionPeticion)
+      return await buscarCasoPorNumero(nroCaso)
     } finally {
       setLoadingBusqueda(false)
     }

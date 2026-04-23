@@ -1,8 +1,8 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useMemo, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { CasoSearchCard } from './CasoSearchCard'
@@ -16,6 +16,7 @@ import {
 } from './schemas'
 import { useRegistroData } from '../hooks/useRegistroData'
 import { CasoResumen } from '../types/registro.types'
+import { nowDateToString } from '@/utils/fechas'
 
 type SearchStatus =
   | 'idle'
@@ -27,14 +28,10 @@ export const RegistroOperativoPage = () => {
   const { Alerta } = useAlerts()
 
   const {
-    departamentos,
-    provincias,
-    municipios,
     paises,
     tiposDocumento,
     estados,
     loadingCatalogos,
-    catalogosError,
     loadingBusqueda,
     loadingGuardado,
     buscarCaso,
@@ -48,10 +45,8 @@ export const RegistroOperativoPage = () => {
     resolver: zodResolver(operativoSchema),
     defaultValues: {
       codigoRadiograma: '',
-      fechaHoraOperativo: '',
+      fechaHoraOperativo: nowDateToString(),
       localidadODireccion: '',
-      operativoRealizadoEn: '',
-      unidadOperativa: '',
       alMandoDe: '',
       resumen: '',
     },
@@ -69,54 +64,18 @@ export const RegistroOperativoPage = () => {
     },
   })
 
-  const departamentoSeleccionado = useWatch({
-    control: operativoForm.control,
-    name: 'departamento',
-  })
-
-  const provinciaSeleccionada = useWatch({
-    control: operativoForm.control,
-    name: 'provincia',
-  })
-
-  useEffect(() => {
-    operativoForm.resetField('provincia')
-    operativoForm.resetField('municipio')
-  }, [departamentoSeleccionado?.value, operativoForm])
-
-  useEffect(() => {
-    operativoForm.resetField('municipio')
-  }, [provinciaSeleccionada?.value, operativoForm])
-
-  const provinciasFiltradas = useMemo(
-    () =>
-      provincias.filter(
-        (provincia) =>
-          provincia.idDepartamento === departamentoSeleccionado?.value
-      ),
-    [provincias, departamentoSeleccionado?.value]
-  )
-
-  const municipiosFiltrados = useMemo(
-    () =>
-      municipios.filter(
-        (municipio) => municipio.idProvincia === provinciaSeleccionada?.value
-      ),
-    [municipios, provinciaSeleccionada?.value]
-  )
-
   const handleSearch = async (nroCaso: string) => {
-    const found = await buscarCaso(nroCaso)
+    const casoResumen = await buscarCaso(nroCaso)
 
-    if (!found) {
+    if (casoResumen.mensaje) {
       setCasoActual(null)
       setSearchStatus('not-found')
       return
     }
 
-    setCasoActual(found)
-    if (found.operativoRegistrado) {
-      setSearchStatus('success-disabled')
+    setCasoActual(casoResumen)
+    if (casoResumen.nombreCaso) {
+      setSearchStatus('success-enabled')
       return
     }
 
@@ -158,36 +117,37 @@ export const RegistroOperativoPage = () => {
     const persona = personaForm.getValues()
 
     try {
-      const response = await guardarRegistro({
-        nroCaso: casoActual.nroCaso,
-        operativo: {
-          codigoRadiograma: operativo.codigoRadiograma,
-          fechaHoraOperativo: operativo.fechaHoraOperativo,
-          idDepartamento: operativo.departamento.value,
-          idProvincia: operativo.provincia.value,
-          idMunicipio: operativo.municipio.value,
-          localidadODireccion: operativo.localidadODireccion,
-          operativoRealizadoEn: operativo.operativoRealizadoEn,
-          unidadOperativa: operativo.unidadOperativa,
-          alMandoDe: operativo.alMandoDe,
-          resumen: operativo.resumen,
-        },
-        persona: {
-          nombres: persona.nombres,
-          paterno: persona.paterno,
-          materno: persona.materno,
-          apEsposo: persona.apEsposo,
-          idPais: persona.pais.value,
-          sexo: persona.sexo.original.value,
-          direccion: persona.direccion,
-          idTipoDocumento: persona.tipoDocumento.value,
-          numeroDocumento: persona.numeroDocumento,
-          idEstado: persona.estado.value,
-        },
-      })
+      // const response = await guardarRegistro({
+      //   nroCaso: casoActual.numeroCaso || '',
+      //   operativo: {
+      //     codigoRadiograma: operativo.codigoRadiograma,
+      //     fechaHoraOperativo: operativo.fechaHoraOperativo,
+      //     idDepartamento: operativo.departamento.value,
+      //     idProvincia: operativo.provincia.value,
+      //     idMunicipio: operativo.municipio.value,
+      //     localidadODireccion: operativo.localidadODireccion,
+      //     operativoRealizadoEn: operativo.operativoRealizadoEn,
+      //     unidadOperativa: operativo.unidadOperativa,
+      //     alMandoDe: operativo.alMandoDe,
+      //     resumen: operativo.resumen,
+      //   },
+      //   persona: {
+      //     nombres: persona.nombres,
+      //     paterno: persona.paterno,
+      //     materno: persona.materno,
+      //     apEsposo: persona.apEsposo,
+      //     idPais: persona.pais.value,
+      //     sexo: persona.sexo.original.value,
+      //     direccion: persona.direccion,
+      //     idTipoDocumento: persona.tipoDocumento.value,
+      //     numeroDocumento: persona.numeroDocumento,
+      //     idEstado: persona.estado.value,
+      //   },
+      // })
 
       Alerta({
-        mensaje: InterpreteMensajes({ mensaje: response.mensaje }),
+        // mensaje: InterpreteMensajes({ mensaje: response.mensaje }),
+        mensaje: InterpreteMensajes({ mensaje: '' }),
         variant: 'success',
       })
 
@@ -211,19 +171,13 @@ export const RegistroOperativoPage = () => {
         casoInfo={
           casoActual
             ? {
-                nombreCaso: casoActual.nombreCaso,
-                asignadoAlCaso: casoActual.asignadoAlCaso,
-                fiscalAsignado: casoActual.fiscalAsignado,
+                nombreCaso: casoActual.nombreCaso ?? '',
+                asignadoAlCaso: casoActual.asignado ?? '',
+                fiscalAsignado: casoActual.fiscalAsignado ?? '',
               }
             : null
         }
       />
-
-      {catalogosError && (
-        <div className="rounded-md border border-danger/20 bg-danger/5 px-4 py-3 text-sm font-semibold text-danger">
-          {catalogosError}
-        </div>
-      )}
 
       {loadingCatalogos && (
         <div className="rounded-md border border-primary/20 bg-primary/5 px-4 py-3 text-sm font-semibold text-primary">
@@ -231,27 +185,24 @@ export const RegistroOperativoPage = () => {
         </div>
       )}
 
-      {searchStatus === 'success-enabled' &&
-        !loadingCatalogos &&
-        !catalogosError && (
-          <>
-            <OperativoFormCard
-              form={operativoForm}
-              departamentos={departamentos}
-              provincias={provinciasFiltradas}
-              municipios={municipiosFiltrados}
-            />
+      {searchStatus === 'success-enabled' && !loadingCatalogos && (
+        <>
+          <OperativoFormCard
+            form={operativoForm}
+            loading={loadingGuardado}
+            onSave={handleSave}
+          />
 
-            <PersonaFormCard
-              form={personaForm}
-              paises={paises}
-              tiposDocumento={tiposDocumento}
-              estados={estados}
-              loading={loadingGuardado}
-              onSave={handleSave}
-            />
-          </>
-        )}
+          <PersonaFormCard
+            form={personaForm}
+            paises={paises}
+            tiposDocumento={tiposDocumento}
+            estados={estados}
+            loading={loadingGuardado}
+            onSave={handleSave}
+          />
+        </>
+      )}
     </div>
   )
 }
