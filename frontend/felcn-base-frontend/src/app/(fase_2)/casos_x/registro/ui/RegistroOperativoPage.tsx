@@ -3,10 +3,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAlerts, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { CasoSearchCard } from './CasoSearchCard'
 import { OperativoFormCard } from './OperativoFormCard'
+import { DetenidosDataTable } from './DetenidosDataTable'
 import { PersonaFormCard } from './PersonaFormCard'
 import {
   OperativoFormValues,
@@ -23,6 +25,7 @@ import { Constantes } from '@/config/Constantes'
 export const RegistroOperativoPage = () => {
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
+  const queryClient = useQueryClient()
 
   const { loadingCatalogos, loadingBusqueda, loadingGuardado, buscarCaso } =
     useRegistroData()
@@ -182,6 +185,8 @@ export const RegistroOperativoPage = () => {
         body: payload,
       })
 
+      await queryClient.invalidateQueries({ queryKey: ['detenidos'] })
+
       Alerta({
         mensaje: InterpreteMensajes({ mensaje: 'Guardado con exito' }),
         variant: 'success',
@@ -235,6 +240,8 @@ export const RegistroOperativoPage = () => {
               onSave={handleSavePersona}
             />
           )}
+
+          {idOperativo && <DetenidosDataTable />}
         </>
       )}
     </div>

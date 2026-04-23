@@ -62,3 +62,18 @@ export interface EstadoPersona {
   idEstado: number
   descripcion: string
 }
+
+export interface Detenido {
+  idDetenido: number
+  idOperativo: number
+  nombreCompleto: string
+  numeroDocumento: string
+  genero: string
+  idEstado: number
+  estado: string
+  tipoDocumento: string
+  idTipoDocumento: 1
+  pais: string
+  idPais: number
+  fechaCreacion: string
+}
