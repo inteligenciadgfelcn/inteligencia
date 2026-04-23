@@ -32,10 +32,10 @@ import { LocalidadModule } from './felcn_sospechoso/parametrica/localidad/locali
 import { CategoriaOperativoModule } from './felcn_sospechoso/parametrica/categoria_operativo/categoria_operativo.module';
 import { ItemOperativoModule } from './felcn_sospechoso/parametrica/item_operativo/item_operativo.module';
 import { EstadoSospechosoModule } from './felcn_sospechoso/parametrica/estado/estadoSospechoso.module';
-import { DetenidoModule } from './felcn_sospechoso/detenido/detenido.module';
 import { UnidadSospechosoModule } from './felcn_sospechoso/parametrica/unidad-sospechoso/unidad.module'
 import { DistritoSospechosoModule } from './felcn_sospechoso/parametrica/distrito-sospechoso/distrito-sospechoso.module';
 import { GrupoSospechosoModule } from './felcn_sospechoso/parametrica/grupo-sospechoso/grupo-sospechoso.module';
+import { DetenidoSospechosoModule } from './felcn_sospechoso/detenido/detenido.module'
 
 @Module({
   imports: [
@@ -71,7 +71,7 @@ import { GrupoSospechosoModule } from './felcn_sospechoso/parametrica/grupo-sosp
     CategoriaOperativoModule,
     ItemOperativoModule,
     EstadoSospechosoModule,
-    DetenidoModule, 
+    DetenidoSospechosoModule, 
     UnidadSospechosoModule, DistritoSospechosoModule, GrupoSospechosoModule,
   ],
 })

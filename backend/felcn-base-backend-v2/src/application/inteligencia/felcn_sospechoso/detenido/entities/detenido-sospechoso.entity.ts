@@ -1,7 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
+import { EstadoSospechoso } from '../../parametrica/estado/entities/estadoSospechoso.entity'
+import { TipoDocumentoSospechoso } from './tipo_documento-sospechoso.entity'
+import { PaisSospechoso } from './pais-sospechoso.entity'
 
 @Entity({ name: 'detenido', schema: 'public' })
-export class Detenido {
+export class DetenidoSospechoso {
   @PrimaryGeneratedColumn({
     type: 'int',
     name: 'id_detenido',
@@ -59,7 +68,7 @@ export class Detenido {
     name: 'genero',
     type: 'boolean',
     nullable: true,
-    comment: 'true = masculino, false = femenino (según diseño actual)',
+    comment: 'true = masculino, false = femenino',
   })
   genero!: boolean
 
@@ -74,7 +83,6 @@ export class Detenido {
   @Column({
     name: 'verificado',
     type: 'boolean',
-    nullable: true,
   })
   verificado!: boolean
 
@@ -114,4 +122,16 @@ export class Detenido {
     nullable: true,
   })
   usuarioCreacion!: string
+
+  @ManyToOne(() => EstadoSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_estado' })
+  estado!: EstadoSospechoso
+
+  @ManyToOne(() => TipoDocumentoSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_tipo_documento' })
+  tipoDocumento!: TipoDocumentoSospechoso
+
+  @ManyToOne(() => PaisSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_pais' })
+  pais!: PaisSospechoso
 }
