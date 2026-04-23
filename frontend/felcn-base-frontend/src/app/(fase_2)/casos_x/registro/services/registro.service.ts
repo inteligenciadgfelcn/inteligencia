@@ -11,9 +11,11 @@ import {
   Distrito,
   TipoDocumento,
   Unidad,
+  Detenido,
 } from '../types/registro.types'
 import { peticionFormatoMetodo } from '@/services/Servicios'
 import { Constantes } from '@/config/Constantes'
+import { DataTableParams } from '@/services'
 
 type Fetcher = (params: peticionFormatoMetodo) => Promise<unknown>
 
@@ -113,4 +115,24 @@ export async function getEstadosPersona(): Promise<EstadoPersona[]> {
     withCredentials: true,
   })
   return response
+}
+
+export async function getDetenidos(
+  params: DataTableParams
+): Promise<DetenidosResponse> {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/detenido`,
+    params: params,
+    withCredentials: true,
+  })
+  return response
+}
+
+export interface DetenidosResponse {
+  finalizado: boolean
+  mensaje: string
+  datos: {
+    total: number
+    filas: Detenido[]
+  }
 }
