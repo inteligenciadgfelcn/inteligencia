@@ -24,18 +24,11 @@ export const RegistroOperativoPage = () => {
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
 
-  const {
-    paises,
-    tiposDocumento,
-    estados,
-    loadingCatalogos,
-    loadingBusqueda,
-    loadingGuardado,
-    buscarCaso,
-    guardarRegistro,
-  } = useRegistroData()
+  const { loadingCatalogos, loadingBusqueda, loadingGuardado, buscarCaso } =
+    useRegistroData()
 
   const [msgSearch, setMsgSearch] = useState<string | null>()
+  const [idOperativo, setIdOperativo] = useState<number | null>()
   const [casoActual, setCasoActual] = useState<CasoResumen | null>(null)
 
   const operativoForm = useForm<OperativoFormValues>({
@@ -122,11 +115,13 @@ export const RegistroOperativoPage = () => {
     imprimir('payload operativo', payload)
 
     try {
-      await sesionPeticion({
+      const response = await sesionPeticion({
         url: `${Constantes.baseUrl}/operativo`,
         method: 'post',
         body: payload,
       })
+
+      setIdOperativo(response.idOperativo)
 
       Alerta({
         mensaje: InterpreteMensajes({ mensaje: 'Guardado con exito' }),
@@ -143,13 +138,10 @@ export const RegistroOperativoPage = () => {
     }
   }
 
-  const handleSave = async () => {
-    const [operativoValido, personaValido] = await Promise.all([
-      operativoForm.trigger(),
-      personaForm.trigger(),
-    ])
+  const handleSavePersona = async () => {
+    const personaValido = await personaForm.trigger()
 
-    if (!operativoValido || !personaValido) {
+    if (!personaValido) {
       Alerta({
         mensaje: InterpreteMensajes({
           mensaje: 'Completa todos los campos obligatorios antes de guardar',
@@ -159,53 +151,42 @@ export const RegistroOperativoPage = () => {
       return
     }
 
-    if (!casoActual) {
+    if (!idOperativo) {
       Alerta({
-        mensaje: InterpreteMensajes({ mensaje: 'No existe caso seleccionado' }),
+        mensaje: InterpreteMensajes({ mensaje: 'No existe operativo' }),
         variant: 'error',
       })
       return
     }
 
-    const operativo = operativoForm.getValues()
-    const persona = personaForm.getValues()
+    const payload = {
+      idOperativo: idOperativo,
+      nombres: personaForm.getValues().nombres,
+      apellidoPaterno: personaForm.getValues().paterno,
+      apellidoMaterno: personaForm.getValues().materno,
+      apellidoEsposo: personaForm.getValues().apEsposo,
+      idPais: personaForm.getValues().pais?.value,
+      genero: personaForm.getValues().sexo?.value == 1,
+      direccion: personaForm.getValues().direccion,
+      idTipoDocumento: personaForm.getValues().tipoDocumento?.value,
+      numeroDocumento: personaForm.getValues().numeroDocumento,
+      idEstado: personaForm.getValues().estado?.value,
+    }
+
+    imprimir('payload persona', payload)
 
     try {
-      // const response = await guardarRegistro({
-      //   nroCaso: casoActual.numeroCaso || '',
-      //   operativo: {
-      //     codigoRadiograma: operativo.codigoRadiograma,
-      //     fechaHoraOperativo: operativo.fechaHoraOperativo,
-      //     idDepartamento: operativo.departamento.value,
-      //     idProvincia: operativo.provincia.value,
-      //     idMunicipio: operativo.municipio.value,
-      //     localidadODireccion: operativo.localidadODireccion,
-      //     operativoRealizadoEn: operativo.operativoRealizadoEn,
-      //     unidadOperativa: operativo.unidadOperativa,
-      //     alMandoDe: operativo.alMandoDe,
-      //     resumen: operativo.resumen,
-      //   },
-      //   persona: {
-      //     nombres: persona.nombres,
-      //     paterno: persona.paterno,
-      //     materno: persona.materno,
-      //     apEsposo: persona.apEsposo,
-      //     idPais: persona.pais.value,
-      //     sexo: persona.sexo.original.value,
-      //     direccion: persona.direccion,
-      //     idTipoDocumento: persona.tipoDocumento.value,
-      //     numeroDocumento: persona.numeroDocumento,
-      //     idEstado: persona.estado.value,
-      //   },
-      // })
+      await sesionPeticion({
+        url: `${Constantes.baseUrl}/detenido`,
+        method: 'post',
+        body: payload,
+      })
 
       Alerta({
-        // mensaje: InterpreteMensajes({ mensaje: response.mensaje }),
-        mensaje: InterpreteMensajes({ mensaje: '' }),
+        mensaje: InterpreteMensajes({ mensaje: 'Guardado con exito' }),
         variant: 'success',
       })
 
-      operativoForm.reset()
       personaForm.reset()
     } catch (error) {
       Alerta({
@@ -247,14 +228,13 @@ export const RegistroOperativoPage = () => {
             onSave={handleSaveOperativo}
           />
 
-          <PersonaFormCard
-            form={personaForm}
-            paises={paises}
-            tiposDocumento={tiposDocumento}
-            estados={estados}
-            loading={loadingGuardado}
-            onSave={handleSave}
-          />
+          {idOperativo && (
+            <PersonaFormCard
+              form={personaForm}
+              loading={loadingGuardado}
+              onSave={handleSavePersona}
+            />
+          )}
         </>
       )}
     </div>

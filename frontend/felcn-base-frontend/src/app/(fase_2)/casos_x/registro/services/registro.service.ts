@@ -8,8 +8,6 @@ import {
   Municipio,
   Pais,
   Provincia,
-  RegistroCompletoPayload,
-  RegistroResponse,
   Distrito,
   TipoDocumento,
   Unidad,
@@ -20,26 +18,6 @@ import { Constantes } from '@/config/Constantes'
 type Fetcher = (params: peticionFormatoMetodo) => Promise<unknown>
 
 const USE_FAKE_DATA = true
-
-const paisesFake: Pais[] = [
-  { id: 1, descripcion: 'BOLIVIA' },
-  { id: 2, descripcion: 'PERU' },
-  { id: 3, descripcion: 'ARGENTINA' },
-]
-
-const tiposDocumentoFake: TipoDocumento[] = [
-  { id: 1, descripcion: 'CEDULA DE IDENTIDAD' },
-  { id: 2, descripcion: 'PASAPORTE' },
-  { id: 3, descripcion: 'LICENCIA DE CONDUCIR' },
-]
-
-const estadosFake: EstadoPersona[] = [
-  { id: 1, descripcion: 'APREHENDIDO' },
-  { id: 2, descripcion: 'INVESTIGADO' },
-  { id: 3, descripcion: 'LIBERADO' },
-]
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const { sesionPeticion } = usePeticion()
 
@@ -113,45 +91,26 @@ export async function getGrupos(idDistrito: number): Promise<Grupo[]> {
   return response
 }
 
-export const obtenerCatalogoPersona = async (sesionPeticion?: Fetcher) => {
-  if (USE_FAKE_DATA || !sesionPeticion) {
-    await sleep(200)
-    return {
-      paises: paisesFake,
-      tiposDocumento: tiposDocumentoFake,
-      estados: estadosFake,
-    }
-  }
-
+export async function getPaises(): Promise<Pais[]> {
   const response = await sesionPeticion({
-    url: '/api/catalogos/persona',
-    method: 'get',
+    url: `${Constantes.baseUrl}/pais/allGeneral`,
+    withCredentials: true,
   })
-
-  return response as {
-    paises: Pais[]
-    tiposDocumento: TipoDocumento[]
-    estados: EstadoPersona[]
-  }
+  return response
 }
 
-export const guardarRegistroOperativo = async (
-  payload: RegistroCompletoPayload,
-  sesionPeticion?: Fetcher
-): Promise<RegistroResponse> => {
-  if (USE_FAKE_DATA || !sesionPeticion) {
-    await sleep(350)
-    return {
-      idRegistro: `REG-${Date.now()}`,
-      mensaje: `Registro guardado para ${payload.nroCaso}`,
-    }
-  }
-
+export async function getTiposDocumentos(): Promise<TipoDocumento[]> {
   const response = await sesionPeticion({
-    url: '/api/registro-operativo',
-    method: 'post',
-    body: payload,
+    url: `${Constantes.baseUrl}/tipo-documento`,
+    withCredentials: true,
   })
+  return response
+}
 
-  return response as RegistroResponse
+export async function getEstadosPersona(): Promise<EstadoPersona[]> {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/estado-sospechoso`,
+    withCredentials: true,
+  })
+  return response
 }

@@ -47,54 +47,18 @@ export interface Grupo {
   descripcion: string
 }
 
+/// Persona types
 export interface Pais {
-  id: number
+  idPais: number
   descripcion: string
 }
 
 export interface TipoDocumento {
-  id: number
+  idTipoDocumento: number
   descripcion: string
 }
 
 export interface EstadoPersona {
-  id: number
-  descripcion: string
-}
-
-export interface OperativoPayload {
-  codigoRadiograma: string
-  fechaHoraOperativo: string
-  idDepartamento: number
-  idProvincia: number
-  idMunicipio: number
-  localidadODireccion: string
-  operativoRealizadoEn: string
-  unidadOperativa: string
-  alMandoDe: string
-  resumen: string
-}
-
-export interface PersonaPayload {
-  nombres: string
-  paterno: string
-  materno: string
-  apEsposo?: string
-  idPais: number
-  sexo: 'MASCULINO' | 'FEMENINO'
-  direccion: string
-  idTipoDocumento: number
-  numeroDocumento: string
   idEstado: number
-}
-
-export interface RegistroCompletoPayload {
-  nroCaso: string
-  operativo: OperativoPayload
-  persona: PersonaPayload
-}
-
-export interface RegistroResponse {
-  idRegistro: string
-  mensaje: string
+  descripcion: string
 }
