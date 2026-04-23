@@ -20,7 +20,7 @@ type Props = {
     asignadoAlCaso: string
     fiscalAsignado: string
   } | null
-  status: 'idle' | 'success-enabled' | 'success-disabled' | 'not-found'
+  msgSearch?: string | null
 }
 
 export const CasoSearchCard = ({
@@ -28,7 +28,7 @@ export const CasoSearchCard = ({
   onSearch,
   onClear,
   casoInfo,
-  status,
+  msgSearch,
 }: Props) => {
   const {
     handleSubmit,
@@ -79,20 +79,19 @@ export const CasoSearchCard = ({
         </div>
       </form>
 
-      {(status === 'success-enabled' || status === 'success-disabled') &&
-        casoInfo && (
-          <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
-            <p className="text-sm">
-              <strong>Nombre de Caso:</strong> {casoInfo.nombreCaso}
-            </p>
-            <p className="text-sm">
-              <strong>Asignado al Caso:</strong> {casoInfo.asignadoAlCaso}
-            </p>
-            <p className="text-sm">
-              <strong>Fiscal asignado:</strong> {casoInfo.fiscalAsignado}
-            </p>
-          </div>
-        )}
+      {msgSearch == 'success' && casoInfo && (
+        <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 px-4 py-3">
+          <p className="text-sm">
+            <strong>Nombre de Caso:</strong> {casoInfo.nombreCaso}
+          </p>
+          <p className="text-sm">
+            <strong>Asignado al Caso:</strong> {casoInfo.asignadoAlCaso}
+          </p>
+          <p className="text-sm">
+            <strong>Fiscal asignado:</strong> {casoInfo.fiscalAsignado}
+          </p>
+        </div>
+      )}
 
       {/* {status === 'success-disabled' && (
         <div className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-4 py-2 text-sm font-semibold text-warning">
@@ -100,9 +99,9 @@ export const CasoSearchCard = ({
         </div>
       )} */}
 
-      {status === 'not-found' && (
+      {msgSearch && msgSearch != 'success' && (
         <div className="mt-3 rounded-md border border-danger/20 bg-danger/5 px-4 py-2 text-sm font-semibold text-danger">
-          No se encontró información para ese caso
+          {msgSearch}
         </div>
       )}
     </div>
