@@ -20,8 +20,14 @@ export const operativoSchema = z.object({
   provincia: selectSchema('Provincia obligatoria'),
   municipio: selectSchema('Municipio obligatorio'),
   localidadODireccion: z.string().min(1, 'Localidad o Direccion obligatoria'),
-  operativoRealizadoEn: z.string().min(1, 'Operativo realizado en obligatorio'),
-  unidadOperativa: z.string().min(1, 'Unidad operativa obligatoria'),
+
+  categoria: selectSchema('Categoria operativo obligatoria'),
+  itemOperativo: selectSchema('Item operativo obligatorio'),
+
+  unidad: selectSchema('Unidad operativa obligatoria'),
+  distrito: selectSchema('Distrito operativo obligatorio'),
+  grupo: selectSchema('Grupo operativo obligatorio'),
+
   alMandoDe: z.string().min(1, 'Al mando de obligatorio'),
   resumen: z.string().min(1, 'Resumen obligatorio'),
 })
