@@ -1,4 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm"
+import { Grupo } from "@/application/inteligencia/felcn_asignacion_caso/grupo/entities/grupo.entity"
+import { Unidad } from "@/application/inteligencia/felcn_asignacion_caso/unidad/entities/unidad.entity"
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm"
+import { CategoriaOperativo } from "../../parametrica/categoria_operativo/entities/categoria_operativo.entity"
+import { ItemOperativo } from "../../parametrica/item_operativo/entities/item_operativo.entity"
+import { Departamento } from "../../parametrica/provincia/entities/departamento.entity"
+import { Provincia } from "../../parametrica/provincia/entities/provincia.entity"
+import { DepartamentoSospechoso } from "../../detenido/entities/departamento-sospechoso.entity"
+import { GrupoSospechoso } from "../../parametrica/grupo-sospechoso/entities/grupo-sospechoso.entity"
+import { DistritoSospechoso } from "../../parametrica/distrito-sospechoso/entities/distrito-sospechoso.entity"
+import { UnidadSospechoso } from "../../parametrica/unidad-sospechoso/entities/unidad.entity"
+import { Localidad } from "../../parametrica/localidad/entities/localidad.entity"
 
 @Entity({ name: 'operativo', schema: 'public' })
 export class Operativo {
@@ -139,5 +150,38 @@ export class Operativo {
     nullable: true,
   })
   usuarioActualizacion!: string
+
+
+  @ManyToOne(() => DepartamentoSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_departamento' })
+  departamento!: DepartamentoSospechoso
+
+  @ManyToOne(() => Provincia, { nullable: true })
+  @JoinColumn({ name: 'id_provincia' })
+  provincia!: Provincia
+
+  @ManyToOne(() => Localidad, { nullable: true })
+  @JoinColumn({ name: 'id_localidad' })
+  municipio!: Localidad
+
+  @ManyToOne(() => UnidadSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_unidad' })
+  unidad!: UnidadSospechoso
+
+  @ManyToOne(() => DistritoSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_distrital' })
+  distrito!: DistritoSospechoso
+
+  @ManyToOne(() => GrupoSospechoso, { nullable: true })
+  @JoinColumn({ name: 'id_grupo' })
+  grupo!: GrupoSospechoso
+
+  @ManyToOne(() => CategoriaOperativo, { nullable: true })
+  @JoinColumn({ name: 'id_categoria_operativo' })
+  categoriaOperativo!: CategoriaOperativo
+
+  @ManyToOne(() => ItemOperativo, { nullable: true })
+  @JoinColumn({ name: 'id_item_operativo' })
+  itemOperativo!: ItemOperativo
 
 }
