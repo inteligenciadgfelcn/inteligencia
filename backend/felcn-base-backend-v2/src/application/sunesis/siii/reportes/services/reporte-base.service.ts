@@ -9,7 +9,7 @@ export class ReportBaseService implements OnModuleDestroy {
   private async getBrowser(): Promise<puppeteer.Browser> {
     if (!this.browser) {
       this.browser = await puppeteer.launch({
-        headless: 'shell',
+        headless: true,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',

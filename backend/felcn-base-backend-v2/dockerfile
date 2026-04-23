@@ -21,6 +21,16 @@ RUN npm ci --omit=dev --prefer-offline --no-audit
 FROM node:22-alpine AS app
 WORKDIR /home/node/app
 
+# Chromium + dependencias de fuentes para Puppeteer en Alpine
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto
+
 # 👇 crear carpeta de logs con permisos correctos
 RUN mkdir -p /tmp/logs && chown -R node:node /tmp/logs
 
@@ -36,7 +46,9 @@ ARG CI_COMMIT_REF_NAME
 ENV CI_COMMIT_SHORT_SHA=$CI_COMMIT_SHORT_SHA \
     CI_COMMIT_MESSAGE=$CI_COMMIT_MESSAGE \
     CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME \
-    NODE_ENV=production
+    NODE_ENV=production \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # seguridad
 USER node
