@@ -2,8 +2,8 @@
 import { BadRequestException } from "@nestjs/common"
 import { Repository } from "typeorm"
 import { Servicio } from "../entities/servicio.entity"
-import { formatearFecha } from "./fecha.util"
 import { Estado } from "@/application/inteligencia/felcn_siii/estado.enum"
+import { formatearFecha } from "@/common/utils/date.util"
 
 
 export function generarCodigoServicio(
