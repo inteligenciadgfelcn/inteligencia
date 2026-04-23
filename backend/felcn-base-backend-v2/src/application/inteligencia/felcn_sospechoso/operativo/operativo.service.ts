@@ -6,11 +6,15 @@ import { SiiiRepository } from './repositories/siii.repository'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Operativo } from './entities/operativo.entity'
-import { DB_SOSPECHOSO } from '@/core/config/database/database.module'
+import {
+  DB_ASIG_CASOS,
+  DB_SOSPECHOSO,
+} from '@/core/config/database/database.module'
 import { Departamento } from '../parametrica/provincia/entities/departamento.entity'
 import { BuscarAntecedenteDto } from './dto/buscar-antecedente.dto'
 import { Estado } from '@/common/constants'
 import { PaginacionQueryDto } from '@/common/dto'
+import { AsignacionASIG } from '../../felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 
 @Injectable()
 export class OperativoService {
@@ -22,7 +26,10 @@ export class OperativoService {
     private readonly operativoRepo: Repository<Operativo>,
 
     @InjectRepository(Departamento, DB_SOSPECHOSO)
-    private readonly departamentoRepo: Repository<Departamento>
+    private readonly departamentoRepo: Repository<Departamento>,
+
+    @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
+    private readonly asignacionRepo: Repository<AsignacionASIG>
   ) {}
 
   async create(dto: CreateOperativoDto) {
@@ -88,36 +95,36 @@ export class OperativoService {
   }
 
   async findOneRegistro(numero_caso: string) {
-    const limpio = decodeURIComponent(numero_caso).trim()
+    const limpio = decodeURIComponent(numero_caso).trim().toUpperCase()
 
-    const existe = await this.operativoRepo.findOne({
+    const existeOperativo = await this.operativoRepo.count({
       where: { numeroCaso: limpio },
     })
 
-    if (existe) {
+    if (existeOperativo > 0) {
       return {
         existe: true,
-        mensaje: 'Ya existe un registro con ese número de caso',
+        mensaje: 'Esta registrado el operativo',
       }
     }
 
-    const result = await this.siiiRepo.getOperativoRegistrado(limpio)
+    const asignacion = await this.asignacionRepo.findOne({
+      where: { nroCaso: limpio },
+    })
 
-    if (!result.length) {
+    if (!asignacion) {
       return {
         existe: false,
         mensaje: 'No se encontró información para ese caso',
       }
     }
 
-    const operativo = result[0]
-
     return {
       existe: false,
-      numeroCaso: operativo.numero_caso,
-      nombreCaso: operativo.nombre_caso,
-      asignado: operativo.asignado_caso,
-      fiscalAsignado: operativo.fiscal_asignado_caso,
+      numeroCaso: asignacion.nroCaso,
+      nombreCaso: asignacion.nombreCaso,
+      asignado: asignacion.nombreSolicitud,
+      fiscalAsignado: asignacion.fiscalAsignado,
     }
   }
 
