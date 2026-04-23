@@ -5,27 +5,45 @@ export type SelectOption<T = unknown> = {
 }
 
 export interface CasoResumen {
-  nroCaso: string
-  nombreCaso: string
-  asignadoAlCaso: string
-  fiscalAsignado: string
-  operativoRegistrado: boolean
-}
-
-export interface Departamento {
-  id: number
-  descripcion: string
+  mensaje: string | null
+  numeroCaso: string | null
+  nombreCaso: string | null
+  asignado: string | null
+  fiscalAsignado: string | null
 }
 
 export interface Provincia {
-  id: number
-  idDepartamento: number
+  idProvincia: number
   descripcion: string
 }
 
 export interface Municipio {
+  idLocalidad: number
+  descripcion: string
+}
+
+export interface CategoriaOperativo {
+  idCategoriaOperativo: number
+  descripcion: string
+}
+
+export interface IdItemOperativo {
+  idItemOperativo: number
+  descripcion: string
+}
+
+export interface Unidad {
   id: number
-  idProvincia: number
+  descripcion: string
+}
+
+export interface Distrito {
+  idDistrital: number
+  descripcion: string
+}
+
+export interface Grupo {
+  idGrupo: number
   descripcion: string
 }
 
