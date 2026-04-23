@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useAlerts } from '@/hooks'
+import { useAlerts, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { CasoSearchCard } from './CasoSearchCard'
 import { OperativoFormCard } from './OperativoFormCard'
@@ -16,16 +16,13 @@ import {
 } from './schemas'
 import { useRegistroData } from '../hooks/useRegistroData'
 import { CasoResumen } from '../types/registro.types'
-import { nowDateToString } from '@/utils/fechas'
-
-type SearchStatus =
-  | 'idle'
-  | 'success-enabled'
-  | 'success-disabled'
-  | 'not-found'
+import { formatDateToBackend, nowDateToString } from '@/utils/fechas'
+import { imprimir } from '@/utils/imprimir'
+import { Constantes } from '@/config/Constantes'
 
 export const RegistroOperativoPage = () => {
   const { Alerta } = useAlerts()
+  const { sesionPeticion } = useSession()
 
   const {
     paises,
@@ -38,7 +35,7 @@ export const RegistroOperativoPage = () => {
     guardarRegistro,
   } = useRegistroData()
 
-  const [searchStatus, setSearchStatus] = useState<SearchStatus>('idle')
+  const [msgSearch, setMsgSearch] = useState<string | null>()
   const [casoActual, setCasoActual] = useState<CasoResumen | null>(null)
 
   const operativoForm = useForm<OperativoFormValues>({
@@ -69,24 +66,81 @@ export const RegistroOperativoPage = () => {
 
     if (casoResumen.mensaje) {
       setCasoActual(null)
-      setSearchStatus('not-found')
+      setMsgSearch(casoResumen.mensaje)
       return
     }
 
     setCasoActual(casoResumen)
-    if (casoResumen.nombreCaso) {
-      setSearchStatus('success-enabled')
-      return
-    }
-
-    setSearchStatus('success-enabled')
+    setMsgSearch('success')
   }
 
   const handleClear = () => {
-    setSearchStatus('idle')
+    setMsgSearch(null)
     setCasoActual(null)
     operativoForm.reset()
     personaForm.reset()
+  }
+
+  const handleSaveOperativo = async () => {
+    const operativoValido = await operativoForm.trigger()
+
+    if (!operativoValido) {
+      Alerta({
+        mensaje: InterpreteMensajes({
+          mensaje: 'Completa todos los campos obligatorios antes de guardar',
+        }),
+        variant: 'error',
+      })
+      return
+    }
+
+    if (!casoActual) {
+      Alerta({
+        mensaje: InterpreteMensajes({ mensaje: 'No existe caso seleccionado' }),
+        variant: 'error',
+      })
+      return
+    }
+
+    const operativo = operativoForm.getValues()
+    const payload = {
+      numeroCaso: casoActual.numeroCaso,
+      numeroOperativo: operativo.codigoRadiograma,
+      fechaOperativo: formatDateToBackend(operativo.fechaHoraOperativo),
+      idDepartamento: operativo.departamento?.original?.abreviatura,
+      idProvincia: operativo.provincia?.value,
+      idLocalidad: operativo.municipio?.value,
+      lugar: operativo.localidadODireccion,
+      idCategoriaOperativo: operativo.categoria.value,
+      idItemOperativo: operativo.itemOperativo.value,
+      idUnidad: operativo.unidad.value,
+      idDistrital: operativo.distrito.value,
+      idGrupo: operativo.grupo.value,
+      mando: operativo.alMandoDe,
+    }
+
+    imprimir('payload operativo', payload)
+
+    try {
+      await sesionPeticion({
+        url: `${Constantes.baseUrl}/operativo`,
+        method: 'post',
+        body: payload,
+      })
+
+      Alerta({
+        mensaje: InterpreteMensajes({ mensaje: 'Guardado con exito' }),
+        variant: 'success',
+      })
+
+      // operativoForm.reset()
+      // personaForm.reset()
+    } catch (error) {
+      Alerta({
+        mensaje: InterpreteMensajes(error),
+        variant: 'error',
+      })
+    }
   }
 
   const handleSave = async () => {
@@ -167,7 +221,7 @@ export const RegistroOperativoPage = () => {
         loading={loadingBusqueda}
         onSearch={handleSearch}
         onClear={handleClear}
-        status={searchStatus}
+        msgSearch={msgSearch}
         casoInfo={
           casoActual
             ? {
@@ -185,12 +239,12 @@ export const RegistroOperativoPage = () => {
         </div>
       )}
 
-      {searchStatus === 'success-enabled' && !loadingCatalogos && (
+      {msgSearch == 'success' && (
         <>
           <OperativoFormCard
             form={operativoForm}
             loading={loadingGuardado}
-            onSave={handleSave}
+            onSave={handleSaveOperativo}
           />
 
           <PersonaFormCard
