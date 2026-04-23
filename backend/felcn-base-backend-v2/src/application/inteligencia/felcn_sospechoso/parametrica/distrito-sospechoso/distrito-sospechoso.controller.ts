@@ -1,7 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common'
+import { Controller, Get, Param, UseGuards } from '@nestjs/common'
 import { DistritoSospechosoService } from './distrito-sospechoso.service'
-import { ApiOperation } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiTags('Casos X - distritos')
 @Controller('distrito')
 export class DistritoSospechosoController {
   constructor(
