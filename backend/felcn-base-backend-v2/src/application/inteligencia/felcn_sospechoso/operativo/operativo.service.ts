@@ -58,12 +58,20 @@ export class OperativoService {
   async findAllPaginado(pagination: PaginacionQueryDto) {
     const { limite, saltar, filtro } = pagination
     const query = this.operativoRepo
-      .createQueryBuilder('a')
+      .createQueryBuilder('o')
+      .leftJoinAndSelect('o.departamento', 'departamento')
+      .leftJoinAndSelect('o.provincia', 'provincia')
+      .leftJoinAndSelect('o.municipio', 'municipio')
+      .leftJoinAndSelect('o.unidad', 'unidad')
+      .leftJoinAndSelect('o.distrito', 'distrito')
+      .leftJoinAndSelect('o.grupo', 'grupo')
+      .leftJoinAndSelect('o.categoriaOperativo', 'categoria')
+      .leftJoinAndSelect('o.itemOperativo', 'item')
       .take(limite)
       .skip(saltar)
 
     if (filtro) {
-      query.andWhere('a.numeroCaso ILIKE :filtro', {
+      query.andWhere('o.numeroCaso ILIKE :filtro', {
         filtro: `%${filtro}%`,
       })
     }
