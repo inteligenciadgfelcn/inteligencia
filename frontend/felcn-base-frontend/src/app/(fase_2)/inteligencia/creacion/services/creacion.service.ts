@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
 
@@ -28,7 +28,6 @@ export interface GenerateServiceBody {
   fechaSalida: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function postServicio(
   body: CreateServiceBody

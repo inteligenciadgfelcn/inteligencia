@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import type {
   Continente,
   Departamento,
@@ -11,7 +11,6 @@ import type {
   RespuestaAPI,
 } from './types'
 
-const { sesionPeticion } = usePeticion()
 const BASE = `${Constantes.baseUrl}/siii-lookups`
 const BASE_OPERATIVO = `${Constantes.baseUrl}/operativos`
 type LookupGenerico = Record<string, unknown>

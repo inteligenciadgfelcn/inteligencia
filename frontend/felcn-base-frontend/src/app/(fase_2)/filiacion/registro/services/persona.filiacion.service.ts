@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface PersonaFiliacion {
@@ -18,7 +18,6 @@ export interface PersonaFiliacion {
   enviado: number
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getPersonaFiliacion(
   idPersona: string | number
