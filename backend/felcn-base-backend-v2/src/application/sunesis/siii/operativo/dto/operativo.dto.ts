@@ -20,7 +20,7 @@ export class OperativoDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(20)
-  numeroOperativo: string
+  numeroInforme: string
 
   @ApiProperty({ description: 'ID tipo de relevancia', example: 1 })
   @IsNotEmpty()

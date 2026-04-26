@@ -18,7 +18,7 @@ export class AsignacionSiiiRepository {
   constructor(
     @InjectDataSource(DB_SIII)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
   private get repository() {
     return this.dataSource.getRepository(AsignacionSiii)
@@ -32,6 +32,34 @@ export class AsignacionSiiiRepository {
    */
   async buscarPorId(idCaso: string): Promise<AsignacionSiii | null> {
     return this.repository.findOne({ where: { idCaso } })
+  }
+
+  /**
+   * Listar todos los de un usuario.
+   * Equivale a FRM-OP-ING.aspx → muestraoperativos() pero filtrando
+   * solo los que tienen NroCaso no vacío.
+   */
+  async buscarCasosPorUsuario(usuario: string): Promise<any[]> {
+    return this.dataSource.query(
+      `SELECT
+        a.id_caso AS "idCaso",
+        COALESCE(u.descripcion, a.abreviatura_unidad) AS "unidadDescripcion",
+        COALESCE(d.descripcion, '') AS "distritaleDescripcion",
+        COALESCE(g.descripcion, '') AS "grupoDescripcion",
+        a.numero_caso AS "numeroCaso",
+        a.numero_caso_per_dom AS "numeroCasoPerDom",
+        a.numero_operativo AS "numeroOperativo",
+        a.nombre_caso AS "nombreCaso",
+        a.asignado_caso AS "asignadoCaso",
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+      FROM public.asignacion a
+      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
+      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      WHERE a.usuario = $1
+      ORDER BY u.descripcion, d.descripcion, g.descripcion`,
+      [usuario]
+    )
   }
 
   /**
@@ -91,6 +119,33 @@ export class AsignacionSiiiRepository {
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.numero_caso, '')) = ''
+      ORDER BY u.descripcion, d.descripcion, g.descripcion`,
+      [usuario]
+    )
+  }
+
+  /**
+   * Post-Interoprabilidad
+   */
+  async buscarCasosConCudPorUsuario(usuario: string): Promise<any[]> {
+    return this.dataSource.query(
+      `SELECT
+        a.id_caso AS "idCaso",
+        COALESCE(u.descripcion, a.abreviatura_unidad) AS "unidadDescripcion",
+        COALESCE(d.descripcion, '') AS "distritaleDescripcion",
+        COALESCE(g.descripcion, '') AS "grupoDescripcion",
+        a.numero_caso AS "numeroCaso",
+        a.numero_caso_per_dom AS "numeroCasoPerDom",
+        a.numero_operativo AS "numeroOperativo",
+        a.nombre_caso AS "nombreCaso",
+        a.asignado_caso AS "asignadoCaso",
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.ianus AS "ianus"
+      FROM public.asignacion a
+      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
+      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      WHERE a.usuario = $1 AND TRIM(COALESCE(a.ianus, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
     )

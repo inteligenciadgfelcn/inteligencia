@@ -18,6 +18,7 @@ import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
 import { Coca } from '../entity/coca.entity'
 import { ServidorPolicial } from '../entity/servidor-policial.entity'
+import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
 
 // Catalogos
 import { EstadoDroga } from '../entity/estado-droga.entity'
@@ -69,7 +70,14 @@ export class OperativoRepository {
   async buscarPorNumeroOperativo(
     numeroOperativo: string
   ): Promise<Operativo | null> {
-    return this.operativoRepo.findOne({ where: { numeroOperativo } })
+    return this.operativoRepo.createQueryBuilder('operativo')
+      .innerJoin(AsignacionSiii, 'asignacion', 'operativo.idCaso = asignacion.idCaso')
+      .where('asignacion.numeroOperativo = :numeroOperativo', { numeroOperativo })
+      .leftJoinAndSelect('operativo.unidad', 'unidad')
+      .leftJoinAndSelect('operativo.planOperacion', 'planOperacion')
+      .leftJoinAndSelect('operativo.tipoOperacion', 'tipoOperacion')
+      .orderBy('operativo.fechaOperativo', 'DESC')
+      .getOne()
   }
 
   async resolverPorCaso(idCaso: string): Promise<Operativo | null> {
