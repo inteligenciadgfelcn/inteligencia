@@ -708,24 +708,24 @@ export function DatosGeneralesForm({
         idDistrital > 0 ? cargarGrupos(idDistrital) : Promise.resolve(),
         idCategoria > 0
           ? (async () => {
-              try {
-                const res =
-                  await GestionOperativoCatalogosService.obtenerItemsOperativo(
-                    idCategoria
-                  )
-                if (res?.finalizado) {
-                  setOpcionesOperativoEn(
-                    res.datos.map((t) => ({
-                      id: String(t.id),
-                      value: String(t.id),
-                      label: t.descripcion,
-                    }))
-                  )
-                }
-              } catch {
-                setOpcionesOperativoEn([])
+            try {
+              const res =
+                await GestionOperativoCatalogosService.obtenerItemsOperativo(
+                  idCategoria
+                )
+              if (res?.finalizado) {
+                setOpcionesOperativoEn(
+                  res.datos.map((t) => ({
+                    id: String(t.id),
+                    value: String(t.id),
+                    label: t.descripcion,
+                  }))
+                )
               }
-            })()
+            } catch {
+              setOpcionesOperativoEn([])
+            }
+          })()
           : Promise.resolve(),
       ])
 
@@ -1617,10 +1617,10 @@ export function DatosGeneralesForm({
                 variant="warning"
                 size="sm"
                 onClick={() => {
-                  const idOp = Number(datosCaso?.operativos?.[0]?.id ?? 0)
-                  if (idOp > 0) {
+                  const numeroOperativo = Number(datosCaso?.operativos?.[0]?.numeroOperativo ?? 0)
+                  if (numeroOperativo > 0) {
                     window.open(
-                      `${Constantes.baseUrl}/reportes/operativos/${idOp}/pdf`,
+                      `${Constantes.baseUrl}/reportes/operativos/${numeroOperativo}/pdf`,
                       '_blank'
                     )
                   }

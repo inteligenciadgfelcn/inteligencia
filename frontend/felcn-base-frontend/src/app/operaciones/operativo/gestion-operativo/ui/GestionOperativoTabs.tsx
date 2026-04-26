@@ -7,9 +7,10 @@ export function GestionOperativoTabs() {
   const [tabActiva, setTabActiva] = useState('no-aprobado')
 
   const TABS = [
-    { key: 'no-aprobado', label: 'Casos No Aprobados', icon: 'assignment' },
-    { key: 'aprobado', label: 'Casos Aprobados', icon: 'rule' },
-    { key: 'pendientes', label: 'Enviados a Fiscalía', icon: 'note' },
+    { key: 'no-aprobado', label: 'Casos sin Nº de Caso', icon: 'assignment' },
+    { key: 'aprobado', label: 'Casos con Nº de Caso', icon: 'rule' },
+    { key: 'con-cud', label: 'Casos con CUD', icon: 'verified' },
+    { key: 'todos', label: 'Todos mis Casos', icon: 'list_alt' },
   ]
 
   return (
@@ -40,21 +41,22 @@ export function GestionOperativoTabs() {
         {tabActiva === 'no-aprobado' && (
           <GestionOperativoListado
             tipo="no-aprobado"
-            titulo="Gestión de Operativos - No Aprobados"
           />
         )}
         {tabActiva === 'aprobado' && (
           <GestionOperativoListado
             tipo="aprobado"
-            titulo="Gestión de Operativos - Aprobados"
           />
         )}
-        {tabActiva === 'pendientes' && (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <Icono className="w-16 h-16 mb-4 opacity-10">note</Icono>
-            <p className="text-lg font-medium">Buzón de Operativos Pendientes</p>
-            <p className="text-sm text-gray-500">Actualmente no existen operativos pendientes de validación inicial.</p>
-          </div>
+        {tabActiva === 'con-cud' && (
+          <GestionOperativoListado
+            tipo="con-cud"
+          />
+        )}
+        {tabActiva === 'todos' && (
+          <GestionOperativoListado
+            tipo="todos"
+          />
         )}
       </div>
     </div>
