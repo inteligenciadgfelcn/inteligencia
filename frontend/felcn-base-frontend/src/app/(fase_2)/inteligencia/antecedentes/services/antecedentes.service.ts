@@ -1,11 +1,10 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import {
   AntecedentesResponse,
   AntecedentesSearchParams,
 } from '../types/antecedentes.types'
 
-const { sesionPeticion } = usePeticion()
 
 export async function getAntecedentes(
   searchParams: AntecedentesSearchParams

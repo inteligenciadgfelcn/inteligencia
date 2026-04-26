@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import IconSearch from '@/components/Icon/IconSearch'
+import IconGoogle from '@/components/Icon/IconGoogle'
 import { Constantes } from '@/config/Constantes'
+import { CustomDialog } from '@/components/modales/CustomDialog'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -180,6 +182,7 @@ export function DatosGeneralesForm({
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [modalGoogleMaps, setModalGoogleMaps] = useState(false)
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
     numeroOperativoCaso: '',
     nombreCaso: '',
@@ -1540,6 +1543,17 @@ export function DatosGeneralesForm({
               >
                 <IconSearch className="h-5 w-5" />
               </button>
+              <button
+                type="button"
+                className="text-danger hover:text-danger/80 flex items-center justify-center p-2"
+                onClick={() => {
+                  if (coordX && coordY) setModalGoogleMaps(true)
+                }}
+                disabled={!coordX || !coordY}
+                title="Ver en Google Maps"
+              >
+                <IconGoogle className="h-5 w-5" />
+              </button>
 
               {searchResults.length > 0 && (
                 <ul className="absolute top-full left-0 mt-1 z-[1000] w-full bg-white dark:bg-[#1b2e4b] border border-[#e0e6ed] dark:border-[#1b2e4b] rounded-md shadow-lg max-h-60 overflow-auto">
@@ -1627,6 +1641,25 @@ export function DatosGeneralesForm({
           </div>
         </div>
       </div>
+
+      <CustomDialog
+        isOpen={modalGoogleMaps}
+        handleClose={() => setModalGoogleMaps(false)}
+        title="Ver en Google Maps"
+        maxWidth="xl"
+      >
+        <div className="p-2">
+          <iframe
+            title="Google Maps"
+            width="100%"
+            height="600"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&output=embed`}
+          />
+        </div>
+      </CustomDialog>
     </div>
   )
 }

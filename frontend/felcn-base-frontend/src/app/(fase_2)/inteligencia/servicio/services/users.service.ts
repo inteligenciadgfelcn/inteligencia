@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Usuario {
@@ -20,7 +20,6 @@ export interface Grado {
   estado: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getUsersInteligencia(): Promise<Usuario[]> {
   const response = await sesionPeticion({

@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks'
+import { sesionPeticion } from '@/utils/peticion'
 import { DataTableParams } from '@/services'
 import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
 import { Constantes } from '@/config/Constantes'
@@ -76,7 +76,6 @@ export interface RegistroFiliacionResponse {
   datos?: unknown
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getPersonasFiliacionPorCaso(
   params: DataTableParams,
