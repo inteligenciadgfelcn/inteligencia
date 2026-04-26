@@ -15,7 +15,20 @@ export const GestionOperativoService = {
 
   listarAprobadosPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
     return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/aprobados`,
+      withCredentials: true,
+    })
+  },
+
+  listarPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/casos`,
+      withCredentials: true,
+    })
+  },
+  listarConCudPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/con-cud`,
       withCredentials: true,
     })
   },
