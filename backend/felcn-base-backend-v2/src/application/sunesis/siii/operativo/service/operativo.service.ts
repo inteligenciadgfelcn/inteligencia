@@ -438,6 +438,7 @@ export class OperativoService extends BaseService {
       ...d,
       descripcionPais: paisNacionalidad?.descripcion ?? null,
       descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
+      genero: d.genero ? 'Masculino' : 'Femenino',
       urlFotoFrente: fotoFrente?.length
         ? `/api/operativos/${idOperativo}/personas/${d.id}/fotos/frente`
         : null,
