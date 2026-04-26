@@ -21,8 +21,8 @@ export class Operativo extends BaseEntity {
   @Column({ name: 'id_tipo_relevancia', type: 'integer' })
   idTipoRelevancia: number
 
-  @Column({ name: 'numero_operativo', type: 'varchar', length: 20 })
-  numeroOperativo: string
+  @Column({ name: 'numero_informe', type: 'varchar', length: 20 })
+  numeroInforme: string
 
   @Column({ name: 'id_tipo_denuncia', type: 'integer', nullable: true })
   idTipoDenuncia?: number

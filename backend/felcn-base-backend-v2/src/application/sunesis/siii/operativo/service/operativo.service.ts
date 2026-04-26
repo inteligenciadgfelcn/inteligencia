@@ -132,6 +132,25 @@ export class OperativoService extends BaseService {
     return this.operativoRepository.buscarPorCaso(idCaso)
   }
 
+  async buscarPorNumeroOperativo(numeroOperativo: string): Promise<any> {
+    const operativo = await this.operativoRepository.buscarPorNumeroOperativo(numeroOperativo)
+    if (!operativo) {
+      throw new NotFoundException(`Operativo con número ${numeroOperativo} no encontrado`)
+    }
+
+    const res: any = { ...operativo }
+    res.descripcionUnidad = operativo.unidad?.descripcion ?? null
+    res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
+    res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
+
+    // Clean up relation objects if needed, but not strictly required
+    delete res.unidad
+    delete res.planOperacion
+    delete res.tipoOperacion
+
+    return res
+  }
+
   // ==================== DROGAS ====================
 
   async agregarDroga(
@@ -592,6 +611,14 @@ export class OperativoService extends BaseService {
 
   async listarCasosNoAprobados(usuario: string): Promise<any[]> {
     return this.asignacionSiiiRepository.buscarNoAprobadosPorUsuario(usuario)
+  }
+
+  async listarTodosCasos(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarCasosPorUsuario(usuario)
+  }
+
+  async listarCasosConCud(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarCasosConCudPorUsuario(usuario)
   }
 
   // ==================== IMÁGENES (LAZY LOADING) ====================

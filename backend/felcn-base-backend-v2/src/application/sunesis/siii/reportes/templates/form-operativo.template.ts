@@ -27,9 +27,10 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
 
     static async fetchData(
         operativoService: OperativoService,
-        idOperativo: string
+        numeroOperativo: string
     ): Promise<any> {
-        const operativo = await operativoService.buscarPorId(idOperativo)
+        const operativo = await operativoService.buscarPorNumeroOperativo(decodeURIComponent(numeroOperativo))
+        const idOperativo = operativo.id
         const pagination = new PaginacionQueryDto()
         const fullLimit = { ...pagination, limite: 100 } as any
 
