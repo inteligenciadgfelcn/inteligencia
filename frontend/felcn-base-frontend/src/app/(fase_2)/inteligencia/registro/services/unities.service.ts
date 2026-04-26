@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Unidad {
@@ -10,7 +10,6 @@ export interface Unidad {
   abreviaturaReporte: string
   estado: string
 }
-const { sesionPeticion } = usePeticion()
 
 export async function getUnities(): Promise<Unidad[]> {
   const response = await sesionPeticion({

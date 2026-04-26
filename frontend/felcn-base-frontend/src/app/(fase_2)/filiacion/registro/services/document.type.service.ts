@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface TipoDocumento {
@@ -6,7 +6,6 @@ export interface TipoDocumento {
   descripcion: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getTiposDocumento(): Promise<TipoDocumento[]> {
   const response = await sesionPeticion({
