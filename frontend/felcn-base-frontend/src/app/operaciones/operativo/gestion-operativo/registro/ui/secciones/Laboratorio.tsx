@@ -11,6 +11,7 @@ import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { useAlerts } from '@/hooks/useAlerts'
 
 interface SeccionFormProps {
   titulo: string
@@ -30,7 +31,6 @@ export function Laboratorio({
   titulo,
   onGuardar,
   onEliminar,
-  onRecuperar,
   datos = [],
   totalRegistros,
   pagina = 1,
@@ -40,15 +40,18 @@ export function Laboratorio({
   cargando = false,
 }: SeccionFormProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   const [tipoFabrica, setTipoFabrica] = useState('')
   const [modeloFabrica, setModeloFabrica] = useState('')
-  const [cantidad, setCantidad] = useState('')
+  const [cantidad, setCantidad] = useState('1')
   const [opcionesTipos, setOpcionesTipos] = useState<
     { id: string; label: string; value: string }[]
   >([])
   const [opcionesModelos, setOpcionesModelos] = useState<
     { id: string; label: string; value: string }[]
   >([])
+
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     let activo = true
@@ -103,16 +106,13 @@ export function Laboratorio({
   }, [tipoFabrica])
 
   const agregarFabrica = async () => {
-    if (!tipoFabrica || !modeloFabrica || !cantidad) {
+    setSubmitted(true)
+    if (!tipoFabrica || !modeloFabrica || !cantidad || parseInt(cantidad) < 1) {
       return
     }
 
-    // const modeloOpcion = opcionesModelos.find(o => o.value === modeloFabrica)
     const nuevaFabrica = {
-      //idTipoFabrica: parseInt(tipoFabrica),
-      // tipoFabrica: opcionesTipos.find(o => o.value === tipoFabrica)?.label || tipoFabrica,
       idFabricaModelo: parseInt(modeloFabrica),
-      // fabricaModelo: modeloOpcion?.label || modeloFabrica,
       cantidad: parseInt(cantidad),
     }
 
@@ -120,7 +120,8 @@ export function Laboratorio({
 
     setTipoFabrica('')
     setModeloFabrica('')
-    setCantidad('')
+    setCantidad('1')
+    setSubmitted(false)
   }
 
   const handleEliminar = async (id: number) => {
@@ -135,7 +136,6 @@ export function Laboratorio({
   return (
     <div>
       <ConfirmDialog />
-      {/* LABORATORIOS Y FABRICAS */}
       <div className="rounded-md border border-[#e0e6ed] p-4 mt-5">
         <h4 className="mb-4 text-sm font-semibold">
           {titulo || 'LABORATORIOS Y FABRICAS'}
@@ -146,11 +146,11 @@ export function Laboratorio({
               htmlFor="laboratorioTipoFabrica"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo de Fábrica/Laboratorio
+              Tipo de Fábrica/Laboratorio <span className="text-danger">*</span>
             </label>
             <Select
               id="laboratorioTipoFabrica"
-              className="w-full"
+              className={`w-full ${!tipoFabrica && submitted ? 'border-danger' : ''}`}
               options={opcionesTipos.map((opt) => ({
                 value: opt.value,
                 label: opt.label,
@@ -159,6 +159,9 @@ export function Laboratorio({
               value={tipoFabrica}
               onChange={(e) => setTipoFabrica(e.target.value)}
             />
+            {!tipoFabrica && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           <div>
@@ -166,11 +169,11 @@ export function Laboratorio({
               htmlFor="laboratorioModeloFabrica"
               className="mb-1 block text-sm font-medium"
             >
-              Modelo de Fábrica
+              Modelo de Fábrica <span className="text-danger">*</span>
             </label>
             <Select
               id="laboratorioModeloFabrica"
-              className="w-full"
+              className={`w-full ${!modeloFabrica && submitted ? 'border-danger' : ''}`}
               options={opcionesModelos.map((opt) => ({
                 value: opt.value,
                 label: opt.label,
@@ -180,6 +183,9 @@ export function Laboratorio({
               onChange={(e) => setModeloFabrica(e.target.value)}
               disabled={!tipoFabrica || opcionesModelos.length === 0}
             />
+            {!modeloFabrica && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           <div>
@@ -187,17 +193,20 @@ export function Laboratorio({
               htmlFor="laboratorioCantidad"
               className="mb-1 block text-sm font-medium"
             >
-              Cantidad
+              Cantidad <span className="text-danger">*</span>
             </label>
             <Input
               id="laboratorioCantidad"
               type="number"
-              className="w-full"
+              className={`w-full ${(!cantidad || parseInt(cantidad) <= 0) && submitted ? 'border-danger' : ''}`}
               value={cantidad}
               onChange={(e) => setCantidad(e.target.value)}
-              placeholder="0"
-              min="0"
+              placeholder="1"
+              min="1"
             />
+            {(!cantidad || parseInt(cantidad) < 1) && submitted && (
+              <span className="text-danger text-xs mt-1">La cantidad debe ser al menos 1</span>
+            )}
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
@@ -223,10 +232,10 @@ export function Laboratorio({
               }
               limit={limite}
               page={pagina}
-              onPageChange={onCambioPagina ?? (() => {})}
-              onLimitChange={onCambioLimite ?? (() => {})}
+              onPageChange={onCambioPagina ?? (() => { })}
+              onLimitChange={onCambioLimite ?? (() => { })}
               search={''}
-              onSearchChange={() => {}}
+              onSearchChange={() => { }}
               columns={
                 [
                   { accessor: 'descripcionTipoFabrica', title: 'Tipo Fabrica' },

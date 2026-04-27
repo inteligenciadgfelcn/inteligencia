@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { siteName } from '@/utils'
 
 export const metadata: Metadata = {
-  title: `Gestion Operativo - ${siteName()}`,
+  title: `Gestión Operativo - ${siteName()}`,
   description: 'Listado de registros de gestion operativo',
 }
 
