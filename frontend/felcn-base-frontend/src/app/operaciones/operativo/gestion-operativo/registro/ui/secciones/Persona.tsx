@@ -13,6 +13,7 @@ import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { useAlerts } from '@/hooks/useAlerts'
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
 type Opcion = { id: string; label: string }
@@ -23,15 +24,16 @@ type FotosCache = {
 }
 
 // ─── DropzoneFoto ─────────────────────────────────────────────────────────────
-// Zona de carga con drag & drop. Estilo coherente con la sección, color verde.
 function DropzoneFoto({
   label,
   archivo,
   onChange,
+  error = false,
 }: {
   label: string
   archivo: File | null
   onChange: (file: File | null) => void
+  error?: boolean
 }) {
   const [arrastrar, setArrastrar] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -47,11 +49,12 @@ function DropzoneFoto({
     <div>
       <label className="mb-1 block text-sm font-medium">{label}</label>
       <div
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-          arrastrar
-            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
+          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+          : error
+            ? 'border-danger bg-red-50 dark:bg-red-900/10'
             : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-        }`}
+          }`}
         onDragOver={(e) => {
           e.preventDefault()
           setArrastrar(true)
@@ -107,6 +110,9 @@ function DropzoneFoto({
           </>
         )}
       </div>
+      {error && (
+        <span className="text-danger text-xs mt-1 block">Esta foto es obligatoria</span>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -168,8 +174,8 @@ function FotosExpansion({
     const fetchFoto = (path: string | null): Promise<string | null> =>
       path
         ? GestionOperativoPersonasService.obtenerFoto(path)
-            .then((blob) => URL.createObjectURL(blob))
-            .catch(() => null)
+          .then((blob) => URL.createObjectURL(blob))
+          .catch(() => null)
         : Promise.resolve(null)
 
     void Promise.all([
@@ -234,6 +240,7 @@ const ITEMS_POR_PAGINA = 10
 
 export function Persona({ titulo, idoperativo }: Props) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   // ── Opciones de selectores ────────────────────────────────────────────────
   const [opcionesEstado, setOpcionesEstado] = useState<Opcion[]>([])
   const [opcionesDocumento, setOpcionesDocumento] = useState<Opcion[]>([])
@@ -265,6 +272,8 @@ export function Persona({ titulo, idoperativo }: Props) {
   const [totalRegistros, setTotalRegistros] = useState(0)
   const [pagina, setPagina] = useState(1)
   const [expandedIds, setExpandedIds] = useState<string[]>([])
+
+  const [submitted, setSubmitted] = useState(false)
 
   // ── Cache de fotos ────────────────────────────────────────────────────────
   const [fotosCache, setFotosCache] = useState<Record<string, FotosCache>>({})
@@ -298,38 +307,36 @@ export function Persona({ titulo, idoperativo }: Props) {
   // ── Cargar paramétricas ───────────────────────────────────────────────────
   useEffect(() => {
     const cargar = async () => {
-      const [resEstados, resDocumentos, resPaises] = await Promise.all([
-        SiiiLookupsService.obtenerEstadosSujeto(),
-        SiiiLookupsService.obtenerTiposDocumento(),
-        SiiiLookupsService.obtenerPaises(),
-      ])
+      const dbEstados = await SiiiLookupsService.obtenerEstadosSujeto()
+      const dbDocumentos = await SiiiLookupsService.obtenerTiposDocumento()
+      const dbPaises = await SiiiLookupsService.obtenerPaises()
 
-      if (resEstados?.finalizado) {
+      if (dbEstados?.finalizado) {
         setOpcionesEstado(
-          (resEstados.datos ?? []).map((e: any) => ({
+          (dbEstados.datos ?? []).map((e: any) => ({
             id: String(e.id),
             label: String(e.descripcion),
           }))
         )
       }
 
-      if (resDocumentos?.finalizado) {
+      if (dbDocumentos?.finalizado) {
         setOpcionesDocumento(
-          (resDocumentos.datos ?? []).map((d: any) => ({
+          (dbDocumentos.datos ?? []).map((d: any) => ({
             id: String(d.id),
             label: String(d.descripcion),
           }))
         )
       }
 
-      if (resPaises?.finalizado) {
+      if (dbPaises?.finalizado) {
         setOpcionesPaises(
-          (resPaises.datos ?? []).map((p: any) => ({
+          (dbPaises.datos ?? []).map((p: any) => ({
             id: String(p.id),
             label: String(p.descripcion),
           }))
         )
-        const bolivia = (resPaises.datos ?? []).find(
+        const bolivia = (dbPaises.datos ?? []).find(
           (p: any) => String(p.descripcion).trim().toUpperCase() === 'BOLIVIA'
         )
         if (bolivia) {
@@ -386,12 +393,32 @@ export function Persona({ titulo, idoperativo }: Props) {
     setFotoFrente(null)
     setFotoPerfil(null)
     setFotoDocumento(null)
-    setDropzoneToken((t) => t + 1) // re-monta los DropzoneFoto
+    setDropzoneToken((t) => t + 1)
+    setSubmitted(false)
   }, [idBoliviaDefault])
 
   // ── Guardar persona ───────────────────────────────────────────────────────
   const guardarPersona = async () => {
+    setSubmitted(true)
     if (!idoperativo) return
+
+    if (
+      !nombres ||
+      !primerApellido ||
+      !idEstadoSujeto ||
+      !genero ||
+      !idTipoDocumento ||
+      !numeroDocumento ||
+      !idPais ||
+      !fechaNacimiento ||
+      !direccion ||
+      !fotoFrente ||
+      !fotoPerfil ||
+      !fotoDocumento
+    ) {
+      return
+    }
+
     setCargando(true)
     try {
       const res = await GestionOperativoPersonasService.crear(idoperativo, {
@@ -457,30 +484,36 @@ export function Persona({ titulo, idoperativo }: Props) {
           {/* Fila 1: Nombres y apellidos */}
           <div>
             <label htmlFor="nombres" className="mb-1 block text-sm font-medium">
-              Nombre(s)
+              Nombre(s) <span className="text-danger">*</span>
             </label>
             <Input
               id="nombres"
               type="text"
-              className="w-full"
+              className={`w-full ${!nombres && submitted ? 'border-danger' : ''}`}
               value={nombres}
               onChange={(e) => setNombres(e.target.value.toUpperCase())}
             />
+            {!nombres && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label
               htmlFor="primerApellido"
               className="mb-1 block text-sm font-medium"
             >
-              Primer Apellido
+              Primer Apellido <span className="text-danger">*</span>
             </label>
             <Input
               id="primerApellido"
               type="text"
-              className="w-full"
+              className={`w-full ${!primerApellido && submitted ? 'border-danger' : ''}`}
               value={primerApellido}
               onChange={(e) => setPrimerApellido(e.target.value.toUpperCase())}
             />
+            {!primerApellido && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label
@@ -519,11 +552,11 @@ export function Persona({ titulo, idoperativo }: Props) {
               htmlFor="idEstadoSujeto"
               className="mb-1 block text-sm font-medium"
             >
-              Estado / Tipo Implicado
+              Estado / Tipo Implicado <span className="text-danger">*</span>
             </label>
             <Select
               id="idEstadoSujeto"
-              className="w-full"
+              className={`w-full ${!idEstadoSujeto && submitted ? 'border-danger' : ''}`}
               value={idEstadoSujeto}
               onChange={(e) => setIdEstadoSujeto(e.target.value)}
               options={opcionesEstado.map((o) => ({
@@ -532,14 +565,17 @@ export function Persona({ titulo, idoperativo }: Props) {
               }))}
               placeholder="Seleccione un dato"
             />
+            {!idEstadoSujeto && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label htmlFor="genero" className="mb-1 block text-sm font-medium">
-              Género
+              Género <span className="text-danger">*</span>
             </label>
             <Select
               id="genero"
-              className="w-full"
+              className={`w-full ${!genero && submitted ? 'border-danger' : ''}`}
               value={genero}
               onChange={(e) => setGenero(e.target.value)}
               options={[
@@ -548,17 +584,20 @@ export function Persona({ titulo, idoperativo }: Props) {
               ]}
               placeholder="Seleccione un dato"
             />
+            {!genero && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label
               htmlFor="idTipoDocumento"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo de Documento
+              Tipo de Documento <span className="text-danger">*</span>
             </label>
             <Select
               id="idTipoDocumento"
-              className="w-full"
+              className={`w-full ${!idTipoDocumento && submitted ? 'border-danger' : ''}`}
               value={idTipoDocumento}
               onChange={(e) => setIdTipoDocumento(e.target.value)}
               options={opcionesDocumento.map((o) => ({
@@ -567,21 +606,27 @@ export function Persona({ titulo, idoperativo }: Props) {
               }))}
               placeholder="Seleccione un dato"
             />
+            {!idTipoDocumento && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label
               htmlFor="numeroDocumento"
               className="mb-1 block text-sm font-medium"
             >
-              Nro. Documento
+              Nro. Documento <span className="text-danger">*</span>
             </label>
             <Input
               id="numeroDocumento"
               type="text"
-              className="w-full"
+              className={`w-full ${!numeroDocumento && submitted ? 'border-danger' : ''}`}
               value={numeroDocumento}
               onChange={(e) => setNumeroDocumento(e.target.value.toUpperCase())}
             />
+            {!numeroDocumento && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           {/* Fila 3: Fecha, Dirección, Nacionalidad */}
@@ -590,38 +635,44 @@ export function Persona({ titulo, idoperativo }: Props) {
               htmlFor="fechaNacimiento"
               className="mb-1 block text-sm font-medium"
             >
-              Fecha de Nacimiento
+              Fecha de Nacimiento <span className="text-danger">*</span>
             </label>
             <Input
               id="fechaNacimiento"
               type="date"
-              className="w-full"
+              className={`w-full ${!fechaNacimiento && submitted ? 'border-danger' : ''}`}
               value={fechaNacimiento}
               onChange={(e) => setFechaNacimiento(e.target.value)}
             />
+            {!fechaNacimiento && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div className="col-span-1 lg:col-span-2">
             <label
               htmlFor="direccion"
               className="mb-1 block text-sm font-medium"
             >
-              Dirección
+              Dirección <span className="text-danger">*</span>
             </label>
             <Input
               id="direccion"
               type="text"
-              className="w-full"
+              className={`w-full ${!direccion && submitted ? 'border-danger' : ''}`}
               value={direccion}
               onChange={(e) => setDireccion(e.target.value.toUpperCase())}
             />
+            {!direccion && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label htmlFor="idPais" className="mb-1 block text-sm font-medium">
-              Nacionalidad
+              Nacionalidad <span className="text-danger">*</span>
             </label>
             <Select
               id="idPais"
-              className="w-full"
+              className={`w-full ${!idPais && submitted ? 'border-danger' : ''}`}
               value={idPais}
               onChange={(e) => setIdPais(e.target.value)}
               options={opcionesPaises.map((o) => ({
@@ -630,6 +681,9 @@ export function Persona({ titulo, idoperativo }: Props) {
               }))}
               placeholder="Seleccione un dato"
             />
+            {!idPais && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           {/* Fila 4: Fotos — DropzoneFoto con drag & drop */}
@@ -640,18 +694,21 @@ export function Persona({ titulo, idoperativo }: Props) {
                 label="Foto Frente"
                 archivo={fotoFrente}
                 onChange={setFotoFrente}
+                error={!fotoFrente && submitted}
               />
               <DropzoneFoto
                 key={`perfil-${dropzoneToken}`}
                 label="Foto Perfil Izquierdo"
                 archivo={fotoPerfil}
                 onChange={setFotoPerfil}
+                error={!fotoPerfil && submitted}
               />
               <DropzoneFoto
                 key={`documento-${dropzoneToken}`}
                 label="Foto Documento / SEGIP"
                 archivo={fotoDocumento}
                 onChange={setFotoDocumento}
+                error={!fotoDocumento && submitted}
               />
             </div>
           </div>
@@ -680,7 +737,7 @@ export function Persona({ titulo, idoperativo }: Props) {
               limit={ITEMS_POR_PAGINA}
               page={pagina}
               onPageChange={handleCambioPagina}
-              onLimitChange={() => {}}
+              onLimitChange={() => { }}
               columns={
                 [
                   {
@@ -761,30 +818,32 @@ export function Persona({ titulo, idoperativo }: Props) {
       </div>
 
       {/* ── Lightbox ── */}
-      {imagenAmpliada && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
-          onClick={() => setImagenAmpliada(null)}
-        >
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imagenAmpliada}
-              alt="Vista ampliada"
-              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            />
-            <Button
-              type="button"
-              variant="dark"
-              size="sm"
-              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
-              onClick={() => setImagenAmpliada(null)}
-            >
-              ✕
-            </Button>
+      {
+        imagenAmpliada && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+            onClick={() => setImagenAmpliada(null)}
+          >
+            <div className="relative" onClick={(e) => e.stopPropagation()}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imagenAmpliada as string}
+                alt="Vista ampliada"
+                className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              />
+              <Button
+                type="button"
+                variant="dark"
+                size="sm"
+                className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+                onClick={() => setImagenAmpliada(null)}
+              >
+                ✕
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </div>
   )
 }

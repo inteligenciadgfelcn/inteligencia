@@ -51,8 +51,7 @@ export interface CasoResumen {
   telefonoFiscal: string
 }
 export interface OperativoPayload {
-  // numeroInforme: string
-  numeroOperativo: string // numeroOperativo
+  numeroInforme: string
   idTipoRelevancia: number
   idTipoDenuncia: number
   idTipoPenal: number
