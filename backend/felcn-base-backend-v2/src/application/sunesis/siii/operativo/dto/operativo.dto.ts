@@ -15,11 +15,11 @@ import {
 export class OperativoDto {
   @ApiProperty({
     description: 'Número de informe del operativo (ingresado por el usuario)',
-    example: 'IC-042/2026',
+    example: 'INF-042/2026',
   })
   @IsNotEmpty()
   @IsString()
-  @MaxLength(20)
+  @MaxLength(30)
   numeroInforme: string
 
   @ApiProperty({ description: 'ID tipo de relevancia', example: 1 })
