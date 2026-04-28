@@ -24,6 +24,8 @@ import {
 import { GestionOperativosDatosGeneralesService } from '@/services/operativos'
 import { Icono } from '@/components/Icono'
 
+import { BackButton } from '@/components/ui/BackButton'
+
 interface FormGestionOperativoProps {
   idGestionOperativo?: string
 }
@@ -130,7 +132,10 @@ export function FormGestionOperativo({
         <DatosGeneralesForm
           titulo="DATOS GENERALES"
           onGuardar={seccion1.mutation.mutateAsync}
-          onOperativoGuardado={verificarOperativo}
+          onOperativoGuardado={async () => {
+            await verificarOperativo()
+            void seccion1.query.refetch()
+          }}
           cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
           datosCaso={seccion1.query.data?.datos ?? null}
           tieneOperativo={tieneOperativo ?? undefined}
@@ -261,13 +266,11 @@ export function FormGestionOperativo({
 
   return (
     <div className="space-y-4">
-      <div className="panel">
-        <h2 className="text-lg font-semibold">Gestion Operativo</h2>
-        {/* <p className="text-sm text-gray-500">
-                    {esEdicion
-                        ? `Editando registro #${id}`
-                        : 'Nuevo registro (debe crearse cabecera para habilitar guardado de secciones)'}
-                </p> */}
+      <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <BackButton />
+          <h2 className="text-lg font-semibold">Gestion Operativo</h2>
+        </div>
       </div>
 
       <div className="panel p-0">
@@ -280,13 +283,12 @@ export function FormGestionOperativo({
                 key={seccion.key}
                 type="button"
                 disabled={deshabilitada}
-                className={`flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-all ${
-                  deshabilitada
-                    ? 'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600'
-                    : activa
-                      ? 'border-primary text-primary bg-primary/5'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                }`}
+                className={`flex items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-all ${deshabilitada
+                  ? 'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600'
+                  : activa
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                  }`}
                 onClick={() =>
                   !deshabilitada && handleSetSeccionActiva(seccion.key)
                 }

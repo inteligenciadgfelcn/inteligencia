@@ -20,11 +20,11 @@ export class CreateOperativoDto {
   @IsNumber()
   idTipoRelevancia: number
 
-  @ApiProperty({ description: 'Número del operativo', example: 'OP-2024-001' })
+  @ApiProperty({ description: 'Número del informe del operativo', example: 'OP-2024-001' })
   @IsNotEmpty()
   @IsString()
   @MaxLength(20)
-  numeroOperativo: string
+  numeroInforme: string
 
   @ApiPropertyOptional({ description: 'ID tipo de denuncia', example: 1 })
   @IsOptional()

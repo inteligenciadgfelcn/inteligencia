@@ -22,17 +22,17 @@ export class ReportController extends BaseController {
     description: 'Lee del felcn_siii.public.operativo y sus tablas relacionadas.',
   })
   @SetRequestTimeout(120)
-  @Get('operativos/:id/pdf')
-  async generateOperativePdf(@Param('id') id: string, @Res() res: Response) {
+  @Get('operativos/:numeroOperativo/pdf')
+  async generateOperativePdf(@Param('numeroOperativo') numeroOperativo: string, @Res() res: Response) {
     try {
       const template = new OperativeReportTemplate()
-      const data = await OperativeReportTemplate.fetchData(this.operativoService, id)
+      const data = await OperativeReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
       const pdfBuffer = await this.reportService.generatePdf(template, data)
 
       res.set({
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=formulario-operativo-${id}.pdf`,
+        'Content-Disposition': `attachment; filename=formulario-operativo-${numeroOperativo}.pdf`,
         'Content-Length': pdfBuffer.length,
       })
 
