@@ -18,6 +18,7 @@ import type {
   ResponseDroga,
 } from '@/services/operativos'
 import { useConfirmDialog, useParametricas } from '@/hooks'
+import { useAlerts } from '@/hooks/useAlerts'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type FotosCacheDroga = { pruebaCampo: string | null; pesaje: string | null }
@@ -27,10 +28,12 @@ function DropzoneFoto({
   label,
   archivo,
   onChange,
+  error = false,
 }: {
   label: string
   archivo: File | null
   onChange: (file: File | null) => void
+  error?: boolean
 }) {
   const [arrastrar, setArrastrar] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -46,11 +49,12 @@ function DropzoneFoto({
     <div>
       <label className="mb-1 block text-sm font-medium">{label}</label>
       <div
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-          arrastrar
-            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
+          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+          : error
+            ? 'border-danger bg-red-50 dark:bg-red-900/10'
             : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-        }`}
+          }`}
         onDragOver={(e) => {
           e.preventDefault()
           setArrastrar(true)
@@ -106,6 +110,11 @@ function DropzoneFoto({
           </>
         )}
       </div>
+      {error && (
+        <div className="mt-1">
+          <span className="text-danger text-xs block italic">Esta fotografía es obligatoria</span>
+        </div>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -149,46 +158,6 @@ function FotoSlot({
   )
 }
 
-// ─── ImagenAutenticada ────────────────────────────────────────────────────────
-function ImagenAutenticada({
-  path,
-  alt,
-  className,
-  onClick,
-}: {
-  path: string
-  alt: string
-  className?: string
-  onClick?: (src: string) => void
-}) {
-  const [src, setSrc] = useState<string | null>(null)
-
-  useEffect(() => {
-    let objectUrl: string
-    GestionOperativoDrogasService.obtenerFoto(path)
-      .then((blob) => {
-        objectUrl = URL.createObjectURL(blob)
-        setSrc(objectUrl)
-      })
-      .catch(() => setSrc(null))
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-    }
-  }, [path])
-
-  if (!src) return null
-  // blob URLs no son compatibles con next/image — se usa <img> intencionalmente
-  // eslint-disable-next-line @next/next/no-img-element
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={onClick ? `${className ?? ''} cursor-zoom-in` : className}
-      onClick={() => onClick?.(src)}
-    />
-  )
-}
-
 // ─── LogotiposPanel ───────────────────────────────────────────────────────────
 function LogotiposPanel({
   idoperativo,
@@ -201,6 +170,7 @@ function LogotiposPanel({
   onZoom: (src: string) => void
   onEliminarConfirm: (texto: string, onConfirm: () => Promise<void>) => void
 }) {
+  const { Alerta } = useAlerts()
   const [imagen, setImagen] = useState('')
   const [descripcionLogo, setDescripcionLogo] = useState('')
   const [organizacion, setOrganizacion] = useState('')
@@ -208,6 +178,7 @@ function LogotiposPanel({
   const [observacion, setObservacion] = useState('')
   const [fotografia, setFotografia] = useState<File | null>(null)
   const [dropzoneToken, setDropzoneToken] = useState(0)
+  const [submitted, setSubmitted] = useState(false)
 
   // ── Thumbnail de foto con estado de carga ─────────────────────────────────
   function FotoLogotipoThumb({
@@ -291,9 +262,15 @@ function LogotiposPanel({
     setObservacion('')
     setFotografia(null)
     setDropzoneToken((t) => t + 1)
+    setSubmitted(false)
   }
 
   const guardar = async () => {
+    setSubmitted(true)
+    if (!imagen || !descripcionLogo || !organizacion || !fotografia || !blanco || !observacion) {
+      return
+    }
+
     setCargando(true)
     try {
       const res = await GestionOperativoLogotiposService.crear(
@@ -334,61 +311,87 @@ function LogotiposPanel({
       {/* Formulario siempre visible */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div>
-          <label className="mb-1 block text-sm font-medium">Imagen</label>
+          <label className="mb-1 block text-sm font-medium">Imagen <span className="text-danger">*</span></label>
           <Input
             type="text"
-            className="w-full"
+            className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
             value={imagen}
             onChange={(e) => setImagen(e.target.value)}
           />
+          {!imagen && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">
-            Descripción del Logo
+            Descripción del Logo <span className="text-danger">*</span>
           </label>
           <Input
             type="text"
-            className="w-full"
+            className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
             value={descripcionLogo}
             onChange={(e) => setDescripcionLogo(e.target.value)}
           />
+          {!descripcionLogo && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">
-            Organización Criminal
+            Organización Criminal <span className="text-danger">*</span>
           </label>
           <Input
             type="text"
-            className="w-full"
+            className={`w-full ${!organizacion && submitted ? 'border-danger' : ''}`}
             value={organizacion}
             onChange={(e) => setOrganizacion(e.target.value)}
           />
+          {!organizacion && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">
-            Posibles Blancos
+            Posibles Blancos <span className="text-danger">*</span>
           </label>
           <Input
             value={blanco}
             onChange={(e) => setBlanco(e.target.value)}
-            className="w-full"
+            className={`w-full ${!blanco && submitted ? 'border-danger' : ''}`}
           />
+          {!blanco && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div className="col-span-1 md:col-span-2 lg:col-span-2">
-          <label className="mb-1 block text-sm font-medium">Observación</label>
+          <label className="mb-1 block text-sm font-medium">Observación <span className="text-danger">*</span></label>
           <Textarea
             value={observacion}
             onChange={(e) => setObservacion(e.target.value)}
             rows={2}
-            className="w-full"
+            className={`w-full ${!observacion && submitted ? 'border-danger' : ''}`}
           />
+          {!observacion && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div className="col-span-1 lg:col-span-3">
           <DropzoneFoto
             key={`logo-foto-${dropzoneToken}`}
-            label="Fotografía"
+            label="Fotografía del Logo"
             archivo={fotografia}
             onChange={setFotografia}
+            error={!fotografia && submitted}
           />
         </div>
         <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
@@ -412,8 +415,8 @@ function LogotiposPanel({
           total={logotiposItems.length}
           page={1}
           limit={logotiposItems.length || 10}
-          onPageChange={() => {}}
-          onLimitChange={() => {}}
+          onPageChange={() => { }}
+          onLimitChange={() => { }}
           columns={[
             { accessor: 'id', title: '#' },
             {
@@ -496,8 +499,8 @@ function ExpansionContenidoDroga({
     ): Promise<string | null> =>
       path
         ? GestionOperativoDrogasService.obtenerFoto(path)
-            .then((blob) => URL.createObjectURL(blob))
-            .catch(() => null)
+          .then((blob) => URL.createObjectURL(blob))
+          .catch(() => null)
         : Promise.resolve(null)
 
     void Promise.all([
@@ -511,9 +514,6 @@ function ExpansionContenidoDroga({
   return (
     <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700">
       {/* Fotos */}
-      {/* <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
-                Fotografías de la Droga
-            </p> */}
       {!cache ? (
         <div className="grid grid-cols-2 gap-4">
           {[0, 1].map((i) => (
@@ -575,6 +575,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   idoperativo = 0,
 }: SeccionFormProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   // ── Paramétricas ──────────────────────────────────────────────────────────
   const {
     paises,
@@ -596,12 +597,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
   // ── Campos del formulario ─────────────────────────────────────────────────
   const [idTipoDroga, setIdTipoDroga] = useState('')
   const [idEstadoDroga, setIdEstadoDroga] = useState('')
-  const [cantidadUnidades, setCantidadUnidades] = useState('')
-  const [cantidadTn, setCantidadTn] = useState('')
-  const [cantidadKg, setCantidadKg] = useState('')
-  const [cantidadG, setCantidadG] = useState('')
-  const [cantidadMg, setCantidadMg] = useState('')
-  const [costo, setCosto] = useState('')
+  const [cantidadUnidades, setCantidadUnidades] = useState('1')
+  const [cantidadTn, setCantidadTn] = useState('0')
+  const [cantidadKg, setCantidadKg] = useState('0')
+  const [cantidadG, setCantidadG] = useState('0')
+  const [cantidadMg, setCantidadMg] = useState('0')
+  const [costo, setCosto] = useState('0')
   const [idFormaTransporte, setIdFormaTransporte] = useState('')
   const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
   const [idPaisDestino, setIdPaisDestino] = useState('')
@@ -616,12 +617,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [totalRegistros, setTotalRegistros] = useState(0)
   const [pagina, setPagina] = useState(1)
   const [expandedIds, setExpandedIds] = useState<(string | number)[]>([])
+  const [submitted, setSubmitted] = useState(false)
 
   // ── Cache de fotos ────────────────────────────────────────────────────────
-  const [fotosCache, setFotosCache] = useState<Record<number, FotosCacheDroga>>(
+  const [fotosCache, setFotosCache] = useState<Record<string, FotosCacheDroga>>(
     {}
   )
-  const fotosCacheRef = useRef<Record<number, FotosCacheDroga>>({})
+  const fotosCacheRef = useRef<Record<string, FotosCacheDroga>>({})
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
 
   const actualizarCache = useCallback((id: number, fotos: FotosCacheDroga) => {
@@ -630,10 +632,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
   }, [])
 
   const limpiarCache = useCallback(() => {
-    Object.values(fotosCacheRef.current).forEach(({ pruebaCampo, pesaje }) => {
-      if (pruebaCampo) URL.revokeObjectURL(pruebaCampo)
-      if (pesaje) URL.revokeObjectURL(pesaje)
-    })
+    Object.values(fotosCacheRef.current).forEach(
+      ({ pruebaCampo, pesaje }) => {
+        if (pruebaCampo) URL.revokeObjectURL(pruebaCampo)
+        if (pesaje) URL.revokeObjectURL(pesaje)
+      }
+    )
     fotosCacheRef.current = {}
     setFotosCache({})
   }, [])
@@ -645,20 +649,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     [limpiarCache]
   )
 
-  // ── Bolivia default ───────────────────────────────────────────────────────
-  useEffect(() => {
-    if (paises.length > 0) {
-      const bolivia = paises.find(
-        (p) => p.descripcion.trim().toLowerCase() === 'bolivia'
-      )
-      if (bolivia) {
-        const id = String(bolivia.id)
-        setIdPaisProcedencia(id)
-        setIdPaisDestino(id)
-      }
-    }
-  }, [paises])
-
   // ── Cascading: tipo → estados ─────────────────────────────────────────────
   useEffect(() => {
     if (!idTipoDroga) {
@@ -666,15 +656,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
       setIdEstadoDroga('')
       return
     }
-    setIdEstadoDroga('')
-    void GestionOperativoCatalogosService.obtenerEstadosDroga(
-      Number(idTipoDroga)
-    )
+    let activo = true
+    GestionOperativoCatalogosService.obtenerEstadosDroga(Number(idTipoDroga))
       .then((res) => {
-        if (res?.finalizado)
-          setEstadosDroga(Array.isArray(res.datos) ? res.datos : [])
+        if (activo && res?.finalizado) setEstadosDroga(res.datos ?? [])
       })
       .catch(() => setEstadosDroga([]))
+    return () => {
+      activo = false
+    }
   }, [idTipoDroga])
 
   // ── Cargar drogas ─────────────────────────────────────────────────────────
@@ -709,27 +699,44 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const resetForm = useCallback(() => {
     setIdTipoDroga('')
     setIdEstadoDroga('')
-    setCantidadUnidades('')
-    setCantidadTn('')
-    setCantidadKg('')
-    setCantidadG('')
-    setCantidadMg('')
-    setCosto('')
+    setCantidadUnidades('1')
+    setCantidadTn('0')
+    setCantidadKg('0')
+    setCantidadG('0')
+    setCantidadMg('0')
+    setCosto('0')
     setIdFormaTransporte('')
+    setIdPaisProcedencia('')
+    setIdPaisDestino('')
     setObservaciones('')
     setPruebaCampo(null)
     setPesaje(null)
     setDropzoneToken((t) => t + 1)
+    setSubmitted(false)
   }, [])
 
   // ── Guardar droga ─────────────────────────────────────────────────────────
   const guardarDroga = async () => {
+    setSubmitted(true)
     if (!idoperativo) return
-    const gramos =
-      parseNumber(cantidadTn) * 1_000_000 +
-      parseNumber(cantidadKg) * 1_000 +
+
+    if (!idTipoDroga || !idEstadoDroga || !idFormaTransporte || !idPaisProcedencia || !idPaisDestino) {
+      return
+    }
+
+    const totalGramos =
+      parseNumber(cantidadTn) * 1000000 +
+      parseNumber(cantidadKg) * 1000 +
       parseNumber(cantidadG) +
       parseNumber(cantidadMg) / 1000
+
+    if (totalGramos < 0.001) {
+      return
+    }
+
+    if (parseNumber(costo) <= 0 || !pruebaCampo || !pesaje) {
+      return
+    }
 
     setCargando(true)
     try {
@@ -737,12 +744,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
         id: 0,
         idTipoDroga: Number(idTipoDroga),
         idEstadoDroga: Number(idEstadoDroga),
-        cantidadGramos: gramos,
-        cantidadUnidades: parseNumber(cantidadUnidades),
-        costo: costo !== '' ? parseNumber(costo) : undefined,
+        cantidadUnidades: parseNumber(cantidadUnidades) || 1,
+        cantidadGramos: totalGramos,
         idFormaTransporte: Number(idFormaTransporte),
         idPaisProcedencia: Number(idPaisProcedencia),
         idPaisDestino: Number(idPaisDestino),
+        costo: costo ? parseNumber(costo) : undefined,
         observaciones: observaciones || undefined,
         pruebaCampo: pruebaCampo ?? undefined,
         pesaje: pesaje ?? undefined,
@@ -760,12 +767,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
   // ── Eliminar droga ────────────────────────────────────────────────────────
   const handleEliminar = async (id: number) => {
     confirm({
-      texto: '¿Está seguro de eliminar esta droga?',
+      texto: '¿Está seguro de eliminar este registro de droga?',
       onConfirm: async () => {
         setCargando(true)
         try {
           await GestionOperativoDrogasService.eliminar(idoperativo, id)
-          setExpandedIds((prev) => prev.filter((eid) => eid !== id))
+          setExpandedIds((prev) => prev.filter((eid) => Number(eid) !== id))
           await cargarDrogas(pagina)
         } finally {
           setCargando(false)
@@ -774,14 +781,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
     })
   }
 
-  const handleEliminarConfirm = (
-    texto: string,
-    onConfirm: () => Promise<void>
-  ) => {
-    confirm({
-      texto,
-      onConfirm,
-    })
+  const handleEliminarConfirm = (texto: string, onConfirm: () => Promise<void>) => {
+    confirm({ texto, onConfirm })
   }
 
   const handleCambioPagina = (nuevaPagina: number) => {
@@ -789,7 +790,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     void cargarDrogas(nuevaPagina)
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
       <ConfirmDialog />
@@ -800,7 +800,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Tipo de Droga
+              Tipo de Droga <span className="text-danger">*</span>
             </label>
             <Select
               options={tiposDroga.map((t) => ({
@@ -810,12 +810,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
               placeholder="Seleccione un dato"
               value={idTipoDroga}
               onChange={(e) => setIdTipoDroga(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idTipoDroga && submitted ? 'border-danger' : ''}`}
             />
+            {!idTipoDroga && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Estado de la Droga
+              Estado de la Droga <span className="text-danger">*</span>
             </label>
             <Select
               options={estadosDroga.map((e) => ({
@@ -826,15 +829,20 @@ export function SeccionDrogasFotografiaLogotiposForm({
               value={idEstadoDroga}
               onChange={(e) => setIdEstadoDroga(e.target.value)}
               disabled={estadosDroga.length === 0}
-              className="w-full"
+              className={`w-full ${!idEstadoDroga && submitted ? 'border-danger' : ''}`}
             />
+            {!idEstadoDroga && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Cantidad de Unidades
             </label>
             <Input
+              id="cantidadUnidades"
               type="text"
+              placeholder="1"
               className="w-full"
               value={cantidadUnidades}
               onChange={(e) => {
@@ -844,16 +852,20 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 }
               }}
             />
+            {/* Se quita el error visual de unidades si solo depende del peso */}
           </div>
 
           {/* Cantidad multi-unidad */}
           <div className="col-span-1 md:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Cantidad</label>
+            <label className="mb-1 block text-sm font-medium">Cantidad <span className="text-danger">*</span></label>
             <div className="grid grid-cols-4 gap-2">
               <div className="flex items-center gap-1">
                 <span className="text-xs font-bold text-gray-500">Tn</span>
                 <Input
                   id="cantidadTn"
+                  type="text"
+                  placeholder="0"
+                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
                   value={cantidadTn}
                   onChange={(e) => {
                     const val = e.target.value
@@ -862,13 +874,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     }
                   }}
                   size="sm"
-                  className="w-full"
                 />
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs font-bold text-gray-500">Kg</span>
                 <Input
                   id="cantidadKg"
+                  type="text"
+                  placeholder="0"
+                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
                   value={cantidadKg}
                   onChange={(e) => {
                     const val = e.target.value
@@ -880,13 +894,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     }
                   }}
                   size="sm"
-                  className="w-full"
                 />
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs font-bold text-gray-500">g</span>
                 <Input
                   id="cantidadG"
+                  type="text"
+                  placeholder="0"
+                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
                   value={cantidadG}
                   onChange={(e) => {
                     const val = e.target.value
@@ -898,13 +914,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     }
                   }}
                   size="sm"
-                  className="w-full"
                 />
               </div>
               <div className="flex items-center gap-1">
                 <span className="text-xs font-bold text-gray-500">Mg</span>
                 <Input
                   id="cantidadMg"
+                  type="text"
+                  placeholder="0"
+                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
                   value={cantidadMg}
                   onChange={(e) => {
                     const val = e.target.value
@@ -916,18 +934,19 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     }
                   }}
                   size="sm"
-                  className="w-full"
                 />
               </div>
             </div>
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Costo (Bs.)
+              Costo (Bs.) <span className="text-danger">*</span>
             </label>
             <Input
+              id="costo"
               type="text"
-              className="w-full"
+              placeholder="0"
+              className={`w-full ${parseNumber(costo) <= 0 && submitted ? 'border-danger' : ''}`}
               value={costo}
               onChange={(e) => {
                 const val = e.target.value
@@ -936,25 +955,31 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 }
               }}
             />
+            {parseNumber(costo) <= 0 && submitted && (
+              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Forma de Transporte
+              Forma de Transporte <span className="text-danger">*</span>
             </label>
             <Select
-              options={formasTransporte.map((t) => ({
-                value: String(t.id),
-                label: t.descripcion,
+              options={formasTransporte.map((f) => ({
+                value: String(f.id),
+                label: f.descripcion,
               }))}
               placeholder="Seleccione un dato"
               value={idFormaTransporte}
               onChange={(e) => setIdFormaTransporte(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idFormaTransporte && submitted ? 'border-danger' : ''}`}
             />
+            {!idFormaTransporte && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              País Procedencia
+              País de Procedencia <span className="text-danger">*</span>
             </label>
             <Select
               options={paises.map((p) => ({
@@ -964,12 +989,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
               placeholder="Seleccione un dato"
               value={idPaisProcedencia}
               onChange={(e) => setIdPaisProcedencia(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idPaisProcedencia && submitted ? 'border-danger' : ''}`}
             />
+            {!idPaisProcedencia && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              País Destino
+              País de Destino <span className="text-danger">*</span>
             </label>
             <Select
               options={paises.map((p) => ({
@@ -979,8 +1007,11 @@ export function SeccionDrogasFotografiaLogotiposForm({
               placeholder="Seleccione un dato"
               value={idPaisDestino}
               onChange={(e) => setIdPaisDestino(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idPaisDestino && submitted ? 'border-danger' : ''}`}
             />
+            {!idPaisDestino && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
             <label className="mb-1 block text-sm font-medium">
@@ -1002,12 +1033,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 label="Fotografía Prueba de Campo"
                 archivo={pruebaCampo}
                 onChange={setPruebaCampo}
+                error={!pruebaCampo && submitted}
               />
               <DropzoneFoto
                 key={`pesaje-${dropzoneToken}`}
                 label="Fotografía Cuantificación y Pesaje"
                 archivo={pesaje}
                 onChange={setPesaje}
+                error={!pesaje && submitted}
               />
             </div>
           </div>
@@ -1036,7 +1069,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
               page={pagina}
               limit={ITEMS_POR_PAGINA}
               onPageChange={handleCambioPagina}
-              onLimitChange={() => {}}
+              onLimitChange={() => { }}
               columns={[
                 {
                   accessor: 'descripcionTipoDroga',
@@ -1139,13 +1172,15 @@ export function SeccionDrogasFotografiaLogotiposForm({
               alt="Vista ampliada"
               className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
             />
-            <button
+            <Button
               type="button"
+              variant="dark"
+              size="sm"
               className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
               onClick={() => setImagenAmpliada(null)}
             >
               ✕
-            </button>
+            </Button>
           </div>
         </div>
       )}

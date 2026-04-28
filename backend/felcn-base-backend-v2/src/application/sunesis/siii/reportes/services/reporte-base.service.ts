@@ -9,7 +9,7 @@ export class ReportBaseService implements OnModuleDestroy {
   private async getBrowser(): Promise<puppeteer.Browser> {
     if (!this.browser) {
       this.browser = await puppeteer.launch({
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
