@@ -1,7 +1,6 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
-const { sesionPeticion } = usePeticion()
 
 export interface VerificarServicioResponse {
   enServicio: boolean

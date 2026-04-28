@@ -51,7 +51,7 @@ export class OperativoController extends BaseController {
     summary: 'Listar casos aprobados del usuario autenticado',
     description: 'Filtra asignacion.usuario = JWT.numeroPase y TRIM(numero_caso) <> \'\'.',
   })
-  @Get('casos')
+  @Get('casos/aprobados')
   async listarCasosAprobados(@Req() req: Request) {
     const { numeroPase = '' } = req.user as PassportUser
     const datos = await this.operativoService.listarCasosAprobados(numeroPase)
@@ -66,6 +66,28 @@ export class OperativoController extends BaseController {
   async listarCasosNoAprobados(@Req() req: Request) {
     const { numeroPase = '' } = req.user as PassportUser
     const datos = await this.operativoService.listarCasosNoAprobados(numeroPase)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
+    summary: 'Listar todos los casos del usuario autenticado',
+    description: 'Filtra asignacion.usuario = JWT.numeroPase.',
+  })
+  @Get('casos')
+  async listarTodosCasos(@Req() req: Request) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const datos = await this.operativoService.listarTodosCasos(numeroPase)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
+    summary: 'Listar casos con CUD (post-interoperabilidad) del usuario autenticado',
+    description: 'Filtra asignacion.usuario = JWT.numeroPase y TRIM(ianus) <> \'\'.',
+  })
+  @Get('casos/con-cud')
+  async listarCasosConCud(@Req() req: Request) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const datos = await this.operativoService.listarCasosConCud(numeroPase)
     return this.successList(datos)
   }
 

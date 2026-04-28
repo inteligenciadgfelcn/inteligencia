@@ -11,6 +11,7 @@ import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { useAlerts } from '@/hooks/useAlerts'
 
 interface SeccionFormProps {
   titulo: string
@@ -27,10 +28,8 @@ interface SeccionFormProps {
 }
 
 export function SustanciasLiquidas({
-  titulo,
   onGuardar,
   onEliminar,
-  onRecuperar,
   datos = [],
   totalRegistros,
   pagina = 1,
@@ -40,13 +39,16 @@ export function SustanciasLiquidas({
   cargando = false,
 }: SeccionFormProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   const [tipoSustancia, setTipoSustancia] = useState('')
-  const [litros, setLitros] = useState('')
-  const [mililitros, setMililitros] = useState('')
-  const [costo, setCosto] = useState('')
+  const [litros, setLitros] = useState('0')
+  const [mililitros, setMililitros] = useState('0')
+  const [costo, setCosto] = useState('0')
   const [opciones, setOpciones] = useState<
     { id: string; label: string; value: string }[]
   >([])
+
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     let activo = true
@@ -62,7 +64,7 @@ export function SustanciasLiquidas({
         }))
         setOpciones(items)
       } catch {
-        // Mantener fallback o fallar silenciosamente
+        // Silencioso
       }
     }
     void cargarOpciones()
@@ -72,12 +74,24 @@ export function SustanciasLiquidas({
   }, [])
 
   const agregarSustancia = async () => {
-    if (!tipoSustancia || (!litros && !mililitros)) {
+    setSubmitted(true)
+    if (!tipoSustancia) {
+      return
+    }
+    if (!litros && !mililitros) {
       return
     }
 
     const totalLitros =
       parseFloat(litros || '0') + parseFloat(mililitros || '0') / 1000
+
+    if (totalLitros < 0.001) {
+      return
+    }
+
+    if (parseFloat(costo || '0') <= 0) {
+      return
+    }
 
     const nuevaSustancia = {
       idSustanciaLiquidaDescripcion: parseInt(tipoSustancia),
@@ -88,9 +102,10 @@ export function SustanciasLiquidas({
     await onGuardar(nuevaSustancia)
 
     setTipoSustancia('')
-    setLitros('')
-    setMililitros('')
-    setCosto('')
+    setLitros('0')
+    setMililitros('0')
+    setCosto('0')
+    setSubmitted(false)
   }
 
   const handleEliminar = async (id: number) => {
@@ -102,10 +117,11 @@ export function SustanciasLiquidas({
     })
   }
 
+  const totalCantidad = parseFloat(litros || '0') + parseFloat(mililitros || '0') / 1000
+
   return (
     <div>
       <ConfirmDialog />
-      {/* SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS */}
       <div className="rounded-md border border-[#e0e6ed] p-4">
         <h4 className="mb-4 text-sm font-semibold">
           SUSTANCIAS QUIMICAS CONTROLADAS LIQUIDAS
@@ -116,16 +132,19 @@ export function SustanciasLiquidas({
               htmlFor="sustanciaQuimicaLiquidaTipo"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo de Sustancia
+              Tipo de Sustancia <span className="text-danger">*</span>
             </label>
             <Select
               id="sustanciaQuimicaLiquidaTipo"
-              className="w-full"
+              className={`w-full ${!tipoSustancia && submitted ? 'border-danger' : ''}`}
               options={opciones}
               placeholder="Seleccione un Dato"
               value={tipoSustancia}
               onChange={(e) => setTipoSustancia(e.target.value)}
             />
+            {!tipoSustancia && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           <div>
@@ -133,12 +152,12 @@ export function SustanciasLiquidas({
               htmlFor="sustanciaLiquidaCosto"
               className="mb-1 block text-sm font-medium"
             >
-              Costo
+              Costo (Bs)
             </label>
             <Input
               id="sustanciaLiquidaCosto"
               type="number"
-              className="w-full"
+              className={`w-full ${parseFloat(costo || '0') <= 0 && submitted ? 'border-danger' : ''}`}
               value={costo}
               onChange={(e) => {
                 const val = e.target.value
@@ -150,6 +169,9 @@ export function SustanciasLiquidas({
               min="0"
               step="0.01"
             />
+            {parseFloat(costo || '0') <= 0 && submitted && (
+              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
+            )}
           </div>
 
           <div>
@@ -162,7 +184,7 @@ export function SustanciasLiquidas({
             <Input
               id="sustanciaQuimicaSolidalitros"
               type="text"
-              className="w-full"
+              className={`w-full ${totalCantidad < 0.001 && submitted ? 'border-danger' : ''}`}
               value={litros}
               onChange={(e) => {
                 const val = e.target.value
@@ -184,7 +206,7 @@ export function SustanciasLiquidas({
             <Input
               id="sustanciaQuimicaSolidamililitros"
               type="text"
-              className="w-full"
+              className={`w-full ${totalCantidad < 0.001 && submitted ? 'border-danger' : ''}`}
               value={mililitros}
               onChange={(e) => {
                 const val = e.target.value
@@ -198,6 +220,12 @@ export function SustanciasLiquidas({
               placeholder="0"
             />
           </div>
+
+          {totalCantidad < 0.001 && submitted && (
+            <div className="col-span-1 lg:col-span-4 mt-1">
+              <span className="text-danger text-xs">La cantidad total debe ser al menos 0.001 Litros (1 ml)</span>
+            </div>
+          )}
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
             <Button
@@ -221,10 +249,10 @@ export function SustanciasLiquidas({
               }
               page={pagina}
               limit={limite}
-              onPageChange={onCambioPagina ?? (() => {})}
-              onLimitChange={onCambioLimite ?? (() => {})}
+              onPageChange={onCambioPagina ?? (() => { })}
+              onLimitChange={onCambioLimite ?? (() => { })}
               search=""
-              onSearchChange={() => {}}
+              onSearchChange={() => { }}
               loading={cargando}
               columns={[
                 {

@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Continente {
@@ -14,7 +14,6 @@ export interface Pais {
 	continente: Continente
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getPaises(): Promise<Pais[]> {
 	const response = await sesionPeticion({

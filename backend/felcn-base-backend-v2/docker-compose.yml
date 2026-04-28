@@ -1,31 +1,71 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: postgres16
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: auth
+  base-backend-v2:
+    build:
+      context: ./backend/felcn-base-backend-v2
+      dockerfile: dockerfile
+    container_name: base-backend-v2
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "5433:5432"
+      - "3015:3000"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - logs_data:/tmp/logs
+    networks:
+      - felcn-network
+    environment:
+      - NODE_ENV=production
+      - DB_DATABASE=felcn_auth
+      - DB_SCHEMA_USUARIOS=usuarios
+      - DB_SCHEMA_PARAMETRICAS=parametricas
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: postgres
+  base-auth:
+    build:
+      context: ./backend/felcn-auth-backend
+      dockerfile: dockerfile
+    container_name: auth-backend
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "9090:80"
-    depends_on:
-      - postgres
+      - "3016:3000"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - logs_data:/tmp/logs
+    networks:
+      - felcn-network
+    environment:
+      - NODE_ENV=production
+
+  base-frontend:
+    build:
+      context: ./frontend/felcn-base-frontend
+      dockerfile: dockerfile
+      args:
+        NEXT_PUBLIC_PATH: felcn
+    container_name: base-frontend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3017:3000"
+    networks:
+      - felcn-network
+    depends_on:
+      - base-backend-v2
+      - base-auth
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_ENV=production
+      - NEXT_PUBLIC_SITE_NAME=FELCN
+      - NEXT_PUBLIC_BASE_URL=https://boliviancode.cloud/felcn/api
+      - NEXT_PUBLIC_AUTH_URL=https://boliviancode.cloud/felcn/auth/api
+      - NEXT_PUBLIC_IMAGES_DOMAIN=boliviancode.cloud
+      - NEXT_PUBLIC_COOKIE_SECURE=true
+      - NEXT_PUBLIC_PATH=
 
 volumes:
-  postgres_data:
-  pgadmin_data:
+  logs_data:
+
+networks:
+  felcn-network:
+    driver: bridge

@@ -1,8 +1,7 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import type { GestionOperativoItem } from '@/app/operaciones/operativo/gestion-operativo/types'
 
-const { sesionPeticion } = usePeticion()
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
@@ -16,7 +15,20 @@ export const GestionOperativoService = {
 
   listarAprobadosPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
     return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/aprobados`,
+      withCredentials: true,
+    })
+  },
+
+  listarPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
       url: `${BASE_OPERATIVOS}/casos`,
+      withCredentials: true,
+    })
+  },
+  listarConCudPorUsuario(): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/con-cud`,
       withCredentials: true,
     })
   },
