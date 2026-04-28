@@ -11,6 +11,7 @@ import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { useAlerts } from '@/hooks/useAlerts'
 
 interface SeccionFormProps {
   titulo: string
@@ -27,10 +28,8 @@ interface SeccionFormProps {
 }
 
 export function SustanciasSolidas({
-  titulo,
   onGuardar,
   onEliminar,
-  onRecuperar,
   datos = [],
   totalRegistros,
   pagina = 1,
@@ -40,15 +39,18 @@ export function SustanciasSolidas({
   cargando = false,
 }: SeccionFormProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   const [tipoSustancia, setTipoSustancia] = useState('')
-  const [toneladas, setToneladas] = useState('')
-  const [kilos, setKilos] = useState('')
-  const [gramos, setGramos] = useState('')
-  const [miligramos, setMiligramos] = useState('')
-  const [costo, setCosto] = useState('')
+  const [toneladas, setToneladas] = useState('0')
+  const [kilos, setKilos] = useState('0')
+  const [gramos, setGramos] = useState('0')
+  const [miligramos, setMiligramos] = useState('0')
+  const [costo, setCosto] = useState('0')
   const [opciones, setOpciones] = useState<
     { id: string; label: string; value: string }[]
   >([])
+
+  const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
     let activo = true
@@ -64,7 +66,7 @@ export function SustanciasSolidas({
         }))
         setOpciones(items)
       } catch {
-        // Silently fail or use fallback
+        // Silencioso
       }
     }
     void cargarOpciones()
@@ -74,7 +76,11 @@ export function SustanciasSolidas({
   }, [])
 
   const agregarSustancia = async () => {
-    if (!tipoSustancia || (!toneladas && !kilos && !gramos && !miligramos)) {
+    setSubmitted(true)
+    if (!tipoSustancia) {
+      return
+    }
+    if (!toneladas && !kilos && !gramos && !miligramos) {
       return
     }
 
@@ -83,6 +89,14 @@ export function SustanciasSolidas({
       parseFloat(kilos || '0') +
       parseFloat(gramos || '0') / 1000 +
       parseFloat(miligramos || '0') / 1000000
+
+    if (totalKilos < 0.001) {
+      return
+    }
+
+    if (parseFloat(costo || '0') <= 0) {
+      return
+    }
 
     const nuevaSustancia = {
       idSustanciaSolidaDescripcion: parseInt(tipoSustancia),
@@ -93,11 +107,12 @@ export function SustanciasSolidas({
     await onGuardar(nuevaSustancia)
 
     setTipoSustancia('')
-    setToneladas('')
-    setKilos('')
-    setGramos('')
-    setMiligramos('')
-    setCosto('')
+    setToneladas('0')
+    setKilos('0')
+    setGramos('0')
+    setMiligramos('0')
+    setCosto('0')
+    setSubmitted(false)
   }
 
   const handleEliminar = async (id: number) => {
@@ -109,10 +124,15 @@ export function SustanciasSolidas({
     })
   }
 
+  const totalCantidad =
+    parseFloat(toneladas || '0') * 1000 +
+    parseFloat(kilos || '0') +
+    parseFloat(gramos || '0') / 1000 +
+    parseFloat(miligramos || '0') / 1000000
+
   return (
     <div>
       <ConfirmDialog />
-      {/* SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS */}
       <div className="rounded-md border border-[#e0e6ed] p-4">
         <h4 className="mb-4 text-sm font-semibold">
           SUSTANCIAS QUIMICAS CONTROLADAS SOLIDAS
@@ -123,7 +143,7 @@ export function SustanciasSolidas({
               htmlFor="sustanciaQuimicaSolidaTipo"
               className="mb-1 block text-sm font-medium"
             >
-              Tipo de Sustancia
+              Tipo de Sustancia <span className="text-danger">*</span>
             </label>
             <Select
               id="sustanciaQuimicaSolidaTipo"
@@ -134,7 +154,11 @@ export function SustanciasSolidas({
               placeholder="Seleccione un Dato"
               value={tipoSustancia}
               onChange={(e) => setTipoSustancia(e.target.value)}
+              className={!tipoSustancia && submitted ? 'border-danger' : ''}
             />
+            {!tipoSustancia && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           <div>
@@ -142,7 +166,7 @@ export function SustanciasSolidas({
               htmlFor="sustanciaSolidaCosto"
               className="mb-1 block text-sm font-medium"
             >
-              Costo
+              Costo (Bs)
             </label>
             <Input
               id="sustanciaSolidaCosto"
@@ -157,7 +181,11 @@ export function SustanciasSolidas({
               placeholder="0"
               min="0"
               step="0.01"
+              className={`w-full ${parseFloat(costo || '0') <= 0 && submitted ? 'border-danger' : ''}`}
             />
+            {parseFloat(costo || '0') <= 0 && submitted && (
+              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
+            )}
           </div>
 
           <div className="hidden lg:block"></div>
@@ -181,6 +209,7 @@ export function SustanciasSolidas({
                 }
               }}
               placeholder="0"
+              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
             />
           </div>
 
@@ -205,6 +234,7 @@ export function SustanciasSolidas({
                 }
               }}
               placeholder="0"
+              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
             />
           </div>
 
@@ -229,6 +259,7 @@ export function SustanciasSolidas({
                 }
               }}
               placeholder="0"
+              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
             />
           </div>
 
@@ -253,8 +284,15 @@ export function SustanciasSolidas({
                 }
               }}
               placeholder="0"
+              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
             />
           </div>
+
+          {totalCantidad < 0.001 && submitted && (
+            <div className="col-span-1 lg:col-span-4 mt-1">
+              <span className="text-danger text-xs">La cantidad total debe ser al menos 0.001 Kg (1 g)</span>
+            </div>
+          )}
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
             <Button
@@ -277,10 +315,10 @@ export function SustanciasSolidas({
               }
               page={pagina}
               limit={limite}
-              onPageChange={onCambioPagina ?? (() => {})}
-              onLimitChange={onCambioLimite ?? (() => {})}
+              onPageChange={onCambioPagina ?? (() => { })}
+              onLimitChange={onCambioLimite ?? (() => { })}
               search=""
-              onSearchChange={() => {}}
+              onSearchChange={() => { }}
               loading={cargando}
               columns={
                 [

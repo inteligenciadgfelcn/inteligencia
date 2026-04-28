@@ -9,6 +9,9 @@ export interface GestionOperativoItem {
   nombreCaso: string
   asignadoCaso: string
   fiscalAsignadoCaso: string
+  ianus?: string
+  id?: number | string
+  idOperativo?: number | string
 }
 
 export interface GestionOperativoCabeceraPayload {

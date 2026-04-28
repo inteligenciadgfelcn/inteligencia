@@ -27,9 +27,10 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
 
     static async fetchData(
         operativoService: OperativoService,
-        idOperativo: string
+        numeroOperativo: string
     ): Promise<any> {
-        const operativo = await operativoService.buscarPorId(idOperativo)
+        const operativo = await operativoService.buscarPorNumeroOperativo(decodeURIComponent(numeroOperativo))
+        const idOperativo = operativo.id
         const pagination = new PaginacionQueryDto()
         const fullLimit = { ...pagination, limite: 100 } as any
 
@@ -196,7 +197,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                         urlFotoBien,
                         caracteristicas: caracteristicasRaw.map((c) => ({
                             label: c.descripcionCaracteristica,
-                            value: c.valor,
+                            value: c.descripcion,
                         })),
                     }
                 })
@@ -405,7 +406,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                         </div>
                         <div class="info-value-cell" style="font-size: 13px;">${persona.descripcionPais || 'N/A'}</div>
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
-                            <strong>Genero</strong>
+                            <strong>Género</strong>
                         </div>
                         <div class="info-value-cell" style="font-size: 13px;">${persona.genero || 'N/A'}</div>
                     </td>
@@ -425,17 +426,17 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Tipo de Documento</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px;">${persona.tipoDocumento || 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px;">${persona.descripcionTipoDocumento || 'N/A'}</div>
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Numero de Documento</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${persona.numeroDocumento || 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${persona.nroDocumento || 'N/A'}</div>
                     </td>
                     <td class="info-value-cell" style="padding: 20px; text-align: center;">
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Direccion</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${persona.domicilio || 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${persona.direccion || 'N/A'}</div>
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Estado</strong>
                         </div>
@@ -457,19 +458,16 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 <td>${bien.descripcionCatalogoTipo || 'N/A'}</td>
                 <td>${bien.cantidadBien || 0}</td>
                 <td style="text-align: center;"><img src="${bien.urlFotoBien || ''}" class="img-standard img-bien-thumb" /></td>
-                <td>
-                    <table style="width: 100%; border: none;">
+                 <td>
+                    <div style="font-size: 10px;">
                         ${bien.caracteristicas
                         .map(
                             (c) => `
-                            <tr>
-                                <td style="border: none; padding: 2px;"><strong>${c.label}:</strong></td>
-                                <td style="border: none; padding: 2px;">${c.value}</td>
-                            </tr>
+                            <div><strong>${c.label}:</strong> ${c.value}</div>
                         `
                         )
                         .join('')}
-                    </table>
+                    </div>
                 </td>
             </tr>
         `

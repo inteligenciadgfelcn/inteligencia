@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface ColorPiel {
@@ -6,7 +6,6 @@ export interface ColorPiel {
   descripcion: string
 }
 
-const { sesionPeticion } = usePeticion()
 
 export async function getColorPieles(): Promise<ColorPiel[]> {
   const response = await sesionPeticion({

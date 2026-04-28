@@ -34,11 +34,23 @@ export class PdfService {
     // generar html final
     const html = template(data)
 
-    // lanzar navegador
+    // local
     const browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    })
+    });
+
+    // producción
+    // const browser = await puppeteer.launch({
+    //   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium',
+    //   args: [
+    //     '--no-sandbox',
+    //     '--disable-setuid-sandbox',
+    //     '--disable-dev-shm-usage',
+    //     '--headless=new',
+    //   ],
+    // });
+
 
     const page = await browser.newPage()
 

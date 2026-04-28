@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import IconSearch from '@/components/Icon/IconSearch'
+import IconGoogle from '@/components/Icon/IconGoogle'
 import { Constantes } from '@/config/Constantes'
+import { CustomDialog } from '@/components/modales/CustomDialog'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -75,8 +77,7 @@ const toDatetimeLocal = (value: unknown): string => {
 }
 
 const DEFAULT_VALUES: OperativoPayload = {
-  numeroOperativo: '',
-  // numeroInforme: '',
+  numeroInforme: '',
   idTipoRelevancia: 0,
   idTipoDenuncia: 0,
   idTipoPenal: 0,
@@ -123,7 +124,7 @@ const mapCasoOperativoToForm = (
   caso: CasoResumen,
   operativo: OperativoResponse | null
 ): Partial<OperativoPayload> => ({
-  numeroOperativo: operativo?.numeroOperativo ?? DEFAULT_VALUES.numeroOperativo,
+  numeroInforme: operativo?.numeroInforme,
   idTipoRelevancia: operativo?.idTipoRelevancia
     ? Number(operativo.idTipoRelevancia)
     : 0,
@@ -150,14 +151,14 @@ const mapCasoOperativoToForm = (
   idTipoOperacion: toNumberOrZero(operativo?.idTipoOperacion),
   clanFamiliar: operativo?.clanFamiliar ?? '',
   organizacion: operativo?.organizacion ?? '',
-  coordX: operativo?.coordX ?? DEFAULT_VALUES.coordX,
-  coordY: operativo?.coordY ?? DEFAULT_VALUES.coordY,
-  gradosX: operativo?.gradosX ?? 0,
-  minX: operativo?.minX ?? 0,
-  segX: operativo?.segX ?? 0,
-  gradosY: operativo?.gradosY ?? 0,
-  minY: operativo?.minY ?? 0,
-  segY: operativo?.segY ?? 0,
+  coordX: toNumberOrZero(operativo?.coordX ?? DEFAULT_VALUES.coordX),
+  coordY: toNumberOrZero(operativo?.coordY ?? DEFAULT_VALUES.coordY),
+  gradosX: toNumberOrZero(operativo?.gradosX),
+  minX: toNumberOrZero(operativo?.minX),
+  segX: toNumberOrZero(operativo?.segX),
+  gradosY: toNumberOrZero(operativo?.gradosY),
+  minY: toNumberOrZero(operativo?.minY),
+  segY: toNumberOrZero(operativo?.segY),
   breveDetalle: operativo?.breveDetalle ?? operativo?.descripcion ?? '',
   descripcion: operativo?.descripcion ?? operativo?.breveDetalle ?? '',
 })
@@ -180,6 +181,7 @@ export function DatosGeneralesForm({
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  const [modalGoogleMaps, setModalGoogleMaps] = useState(false)
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
     numeroOperativoCaso: '',
     nombreCaso: '',
@@ -331,7 +333,7 @@ export function DatosGeneralesForm({
   useEffect(() => {
     if (coordX !== null && coordX !== undefined) {
       const num = Number(coordX)
-      if (!Number.isNaN(num) && num !== lastEmittedLat.current) {
+      if (!Number.isNaN(num) && (lastEmittedLat.current === null || num !== lastEmittedLat.current)) {
         const absolute = Math.abs(num)
         const d = Math.trunc(absolute)
         const m = Math.trunc((absolute - d) * 60)
@@ -351,7 +353,7 @@ export function DatosGeneralesForm({
   useEffect(() => {
     if (coordY !== null && coordY !== undefined) {
       const num = Number(coordY)
-      if (!Number.isNaN(num) && num !== lastEmittedLng.current) {
+      if (!Number.isNaN(num) && (lastEmittedLng.current === null || num !== lastEmittedLng.current)) {
         const absolute = Math.abs(num)
         const d = Math.trunc(absolute)
         const m = Math.trunc((absolute - d) * 60)
@@ -587,7 +589,7 @@ export function DatosGeneralesForm({
     try {
       if (idCaso > 0) {
         const payloadOperativo: OperativoPayload = {
-          numeroOperativo: payload.numeroOperativo, //numeroInforme
+          numeroInforme: payload.numeroInforme,
           idTipoRelevancia: toNumberOrZero(payload.idTipoRelevancia),
           idTipoDenuncia: toNumberOrZero(payload.idTipoDenuncia),
           idTipoPenal: toNumberOrZero(payload.idTipoPenal),
@@ -705,24 +707,24 @@ export function DatosGeneralesForm({
         idDistrital > 0 ? cargarGrupos(idDistrital) : Promise.resolve(),
         idCategoria > 0
           ? (async () => {
-              try {
-                const res =
-                  await GestionOperativoCatalogosService.obtenerItemsOperativo(
-                    idCategoria
-                  )
-                if (res?.finalizado) {
-                  setOpcionesOperativoEn(
-                    res.datos.map((t) => ({
-                      id: String(t.id),
-                      value: String(t.id),
-                      label: t.descripcion,
-                    }))
-                  )
-                }
-              } catch {
-                setOpcionesOperativoEn([])
+            try {
+              const res =
+                await GestionOperativoCatalogosService.obtenerItemsOperativo(
+                  idCategoria
+                )
+              if (res?.finalizado) {
+                setOpcionesOperativoEn(
+                  res.datos.map((t) => ({
+                    id: String(t.id),
+                    value: String(t.id),
+                    label: t.descripcion,
+                  }))
+                )
               }
-            })()
+            } catch {
+              setOpcionesOperativoEn([])
+            }
+          })()
           : Promise.resolve(),
       ])
 
@@ -781,20 +783,20 @@ export function DatosGeneralesForm({
           </div>
           <div>
             <label
-              htmlFor="numeroOperativo"
+              htmlFor="numeroInforme"
               className="mb-1 block text-sm font-medium"
             >
               Número de Informe <span className="text-danger">*</span>
             </label>
             <Input
-              id="numeroOperativo"
+              id="numeroInforme"
               type="text"
-              className={`w-full ${errors.numeroOperativo ? 'border-danger' : ''}`}
-              {...register('numeroOperativo', reglaObligatorio)}
+              className={`w-full ${errors.numeroInforme ? 'border-danger' : ''}`}
+              {...register('numeroInforme', reglaObligatorio)}
             />
-            {errors.numeroOperativo && (
+            {errors.numeroInforme && (
               <div className="mt-1 text-xs text-danger">
-                {errors.numeroOperativo.message}
+                {errors.numeroInforme.message}
               </div>
             )}
           </div>
@@ -1342,7 +1344,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Grados"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordX ? 'border-danger' : ''}`}
                     value={latD}
                     min={-90}
                     max={90}
@@ -1366,7 +1368,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Minutos"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordX ? 'border-danger' : ''}`}
                     value={latM}
                     min={0}
                     max={59}
@@ -1390,7 +1392,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Segundos"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordX ? 'border-danger' : ''}`}
                     value={latS}
                     min={0}
                     max={59.999}
@@ -1443,7 +1445,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Grados"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordY ? 'border-danger' : ''}`}
                     value={lngD}
                     min={-180}
                     max={180}
@@ -1467,7 +1469,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Minutos"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordY ? 'border-danger' : ''}`}
                     value={lngM}
                     min={0}
                     max={59}
@@ -1491,7 +1493,7 @@ export function DatosGeneralesForm({
                   <Input
                     type="number"
                     placeholder="Segundos"
-                    className="w-full pr-8"
+                    className={`w-full pr-8 ${errors.coordY ? 'border-danger' : ''}`}
                     value={lngS}
                     min={0}
                     max={59.999}
@@ -1539,6 +1541,17 @@ export function DatosGeneralesForm({
                 title="Buscar dirección"
               >
                 <IconSearch className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                className="text-danger hover:text-danger/80 flex items-center justify-center p-2"
+                onClick={() => {
+                  if (coordX && coordY) setModalGoogleMaps(true)
+                }}
+                disabled={!coordX || !coordY}
+                title="Ver en Google Maps"
+              >
+                <IconGoogle className="h-5 w-5" />
               </button>
 
               {searchResults.length > 0 && (
@@ -1597,24 +1610,6 @@ export function DatosGeneralesForm({
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end gap-2">
-            {tieneOperativo && (
-              <Button
-                type="button"
-                variant="warning"
-                size="sm"
-                onClick={() => {
-                  const idOp = Number(datosCaso?.operativos?.[0]?.id ?? 0)
-                  if (idOp > 0) {
-                    window.open(
-                      `${Constantes.baseUrl}/reportes/operativos/${idOp}/pdf`,
-                      '_blank'
-                    )
-                  }
-                }}
-              >
-                Generar Reporte
-              </Button>
-            )}
             <Button
               type="button"
               variant="success"
@@ -1627,6 +1622,25 @@ export function DatosGeneralesForm({
           </div>
         </div>
       </div>
+
+      <CustomDialog
+        isOpen={modalGoogleMaps}
+        handleClose={() => setModalGoogleMaps(false)}
+        title="Ver en Google Maps"
+        maxWidth="xl"
+      >
+        <div className="p-2">
+          <iframe
+            title="Google Maps"
+            width="100%"
+            height="600"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&output=embed`}
+          />
+        </div>
+      </CustomDialog>
     </div>
   )
 }
