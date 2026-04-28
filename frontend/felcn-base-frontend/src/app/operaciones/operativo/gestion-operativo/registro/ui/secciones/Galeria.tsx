@@ -15,10 +15,12 @@ function DropzoneFoto({
   label,
   archivo,
   onChange,
+  error,
 }: {
   label: string
   archivo: File | null
   onChange: (file: File | null) => void
+  error?: boolean
 }) {
   const [arrastrar, setArrastrar] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -34,11 +36,12 @@ function DropzoneFoto({
     <div>
       <label className="mb-1 block text-sm font-medium">{label}</label>
       <div
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-          arrastrar
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
             ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-            : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-        }`}
+            : error
+              ? 'border-danger bg-danger/5'
+              : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
+          }`}
         onDragOver={(e) => {
           e.preventDefault()
           setArrastrar(true)
@@ -170,6 +173,7 @@ export function Galeria({ titulo, idoperativo }: Props) {
   const [totalRegistros, setTotalRegistros] = useState(0)
   const [pagina, setPagina] = useState(1)
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
   const cargar = useCallback(
     async (pag: number = 1) => {
@@ -201,11 +205,12 @@ export function Galeria({ titulo, idoperativo }: Props) {
     setIdTipoTamano('')
     setArchivo(null)
     setDropzoneToken((t) => t + 1)
+    setSubmitted(false)
   }
 
   const handleGuardar = async () => {
+    setSubmitted(true)
     if (!idoperativo || !descripcion || !archivo) {
-      alert('Por favor complete todos los campos requeridos.')
       return
     }
     setCargando(true)
@@ -263,15 +268,19 @@ export function Galeria({ titulo, idoperativo }: Props) {
               htmlFor="descripcion"
               className="mb-1 block text-sm font-medium"
             >
-              Descripción
+              Descripción <span className="text-danger">*</span>
             </label>
             <Input
               id="descripcion"
               type="text"
               placeholder="Ingrese una descripción"
+              className={`w-full ${!descripcion && submitted ? 'border-danger' : ''}`}
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value.toUpperCase())}
             />
+            {!descripcion && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           {/* <div>
                         <label htmlFor="idTipoTamano" className="mb-1 block text-sm font-medium">
@@ -296,7 +305,11 @@ export function Galeria({ titulo, idoperativo }: Props) {
               label="Fotografía"
               archivo={archivo}
               onChange={setArchivo}
+              error={!archivo && submitted}
             />
+            {!archivo && submitted && (
+              <span className="text-danger text-xs mt-1">Debe subir una fotografía</span>
+            )}
           </div>
 
           <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
@@ -323,7 +336,7 @@ export function Galeria({ titulo, idoperativo }: Props) {
               onPageChange={handleCambioPagina}
               onLimitChange={handleCambioLimite}
               search=""
-              onSearchChange={() => {}}
+              onSearchChange={() => { }}
               columns={[
                 { accessor: 'id', title: 'Cod. Id' },
                 { accessor: 'descripcion', title: 'Descripción' },
