@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 import { Unidad } from './unities.service'
 
@@ -8,7 +8,6 @@ export interface Distrital {
   estado: string
   unidad: Unidad
 }
-const { sesionPeticion } = usePeticion()
 
 export async function getDistritales(idUnity: number): Promise<Distrital[]> {
   const response = await sesionPeticion({

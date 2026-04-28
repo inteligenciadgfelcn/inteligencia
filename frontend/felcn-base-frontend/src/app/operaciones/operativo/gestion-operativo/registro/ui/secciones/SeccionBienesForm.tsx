@@ -16,6 +16,7 @@ import {
 } from '@/services/operativos'
 import { LookupBasico, SiiiLookupsService } from '@/services/parametricas'
 import { useConfirmDialog } from '@/hooks'
+import { useAlerts } from '@/hooks/useAlerts'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type FotosBienCache = { foto: string | null }
@@ -44,11 +45,10 @@ function DropzoneFoto({
     <div>
       <label className="mb-1 block text-sm font-medium">{label}</label>
       <div
-        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
-          arrastrar
-            ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-            : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
-        }`}
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-4 text-center transition-colors ${arrastrar
+          ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+          : 'border-[#e0e6ed] hover:border-green-400 dark:border-[#1b2e4b] dark:hover:border-green-600'
+          }`}
         onDragOver={(e) => {
           e.preventDefault()
           setArrastrar(true)
@@ -155,6 +155,7 @@ function CaracteristicasPanel({
   bien: BienResponse
   onEliminarConfirm: (id: number, onConfirm: () => Promise<void>) => void
 }) {
+  const { Alerta } = useAlerts()
   // ── Lista de características ──────────────────────────────────────────────
   const [caracteristicas, setCaracteristicas] = useState<
     BienCaracteristicaResponse[]
@@ -201,6 +202,7 @@ function CaracteristicasPanel({
   const [idCatalogoCaracteristica, setIdCatalogoCaracteristica] = useState('')
   const [descripcionCaracteristica, setDescripcionCaracteristica] = useState('')
   const [cargandoForm, setCargandoForm] = useState(false)
+  const [submittedLocal, setSubmittedLocal] = useState(false)
 
   useEffect(() => {
     if (!bien.idCatalogoClase) return
@@ -231,7 +233,12 @@ function CaracteristicasPanel({
   }, [bien.idCatalogoClase])
 
   const guardar = async () => {
-    if (!idoperativo || !idCatalogoCaracteristica) return
+    setSubmittedLocal(true)
+    if (!idoperativo) return
+    if (!idCatalogoCaracteristica || !descripcionCaracteristica) {
+      return
+    }
+
     setCargandoForm(true)
     try {
       const res = await GestionOperativoBienesService.crearCaracteristica(
@@ -245,6 +252,7 @@ function CaracteristicasPanel({
       if (res?.finalizado) {
         setIdCatalogoCaracteristica('')
         setDescripcionCaracteristica('')
+        setSubmittedLocal(false)
         void cargarLista()
       }
     } finally {
@@ -301,7 +309,7 @@ function CaracteristicasPanel({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Característica
+              Característica <span className="text-danger">*</span>
             </label>
             <Select
               options={opcionesCaracteristica.map((o) => ({
@@ -312,19 +320,25 @@ function CaracteristicasPanel({
               value={idCatalogoCaracteristica}
               onChange={(e) => setIdCatalogoCaracteristica(e.target.value)}
               disabled={cargandoForm || opcionesCaracteristica.length === 0}
-              className="w-full"
+              className={`w-full ${!idCatalogoCaracteristica && submittedLocal ? 'border-danger' : ''}`}
             />
+            {!idCatalogoCaracteristica && submittedLocal && (
+              <span className="text-danger text-xs mt-1 block italic">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Descripción
+              Descripción <span className="text-danger">*</span>
             </label>
             <Input
               type="text"
               value={descripcionCaracteristica}
               onChange={(e) => setDescripcionCaracteristica(e.target.value)}
-              className="w-full"
+              className={`w-full ${!descripcionCaracteristica && submittedLocal ? 'border-danger' : ''}`}
             />
+            {!descripcionCaracteristica && submittedLocal && (
+              <span className="text-danger text-xs mt-1 block italic">Este campo es obligatorio</span>
+            )}
           </div>
         </div>
         <div className="mt-3 flex justify-end">
@@ -333,9 +347,9 @@ function CaracteristicasPanel({
             size="sm"
             type="button"
             onClick={() => void guardar()}
-            disabled={cargandoForm || !idCatalogoCaracteristica}
+            disabled={cargandoForm}
           >
-            Guardar Característica
+            Guardar
           </Button>
         </div>
       </div>
@@ -366,8 +380,8 @@ function ExpansionContenidoBien({
     ): Promise<string | null> =>
       path
         ? GestionOperativoBienesService.obtenerFoto(path)
-            .then((blob) => URL.createObjectURL(blob))
-            .catch(() => null)
+          .then((blob) => URL.createObjectURL(blob))
+          .catch(() => null)
         : Promise.resolve(null)
 
     void fetchFoto(bien.urlFotoBien).then((foto) => {
@@ -420,6 +434,7 @@ export function SeccionBienesForm({
   idoperativo = 0,
 }: SeccionFormProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
   // ── Catálogos ─────────────────────────────────────────────────────────────
   const [bienes, setBienes] = useState<LookupBasico[]>([])
   const [clases, setClases] = useState<CatalogoClaseBien[]>([])
@@ -435,9 +450,9 @@ export function SeccionBienesForm({
   const [idBien, setIdBien] = useState('')
   const [idCatalogoClase, setIdCatalogoClase] = useState('')
   const [idCatalogoTipo, setIdCatalogoTipo] = useState('')
-  const [cantidadBien, setCantidadBien] = useState('')
-  const [costoAproximado, setCostoAproximado] = useState('')
-  const [costoCuantificado, setCostoCuantificado] = useState('')
+  const [cantidadBien, setCantidadBien] = useState('1')
+  const [costoAproximado, setCostoAproximado] = useState('0')
+  const [costoCuantificado, setCostoCuantificado] = useState('0')
   const [enInvestigacion, setEnInvestigacion] = useState('')
   const [dropzoneToken, setDropzoneToken] = useState(0)
   const [foto, setFoto] = useState<File | null>(null)
@@ -455,6 +470,8 @@ export function SeccionBienesForm({
   )
   const fotosCacheRef = useRef<Record<string, FotosBienCache>>({})
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
+
+  const [submitted, setSubmitted] = useState(false)
 
   const actualizarCache = useCallback((id: string, fotos: FotosBienCache) => {
     fotosCacheRef.current[id] = fotos
@@ -534,19 +551,30 @@ export function SeccionBienesForm({
     setIdBien('')
     setIdCatalogoClase('')
     setIdCatalogoTipo('')
-    setCantidadBien('')
-    setCostoAproximado('')
-    setCostoCuantificado('')
+    setCantidadBien('1')
+    setCostoAproximado('0')
+    setCostoCuantificado('0')
     setEnInvestigacion('')
     setFoto(null)
     setClases([])
     setTipos([])
     setDropzoneToken((t) => t + 1)
+    setSubmitted(false)
   }, [])
 
   // ── Guardar bien ──────────────────────────────────────────────────────────
   const guardarBien = async () => {
+    setSubmitted(true)
     if (!idoperativo) return
+
+    if (!idBien || !idCatalogoClase || !idCatalogoTipo || parseFloat(cantidadBien || '0') < 1 || !enInvestigacion) {
+      return
+    }
+
+    if (parseFloat(costoAproximado || '0') <= 0 || parseFloat(costoCuantificado || '0') <= 0) {
+      return
+    }
+
     setCargando(true)
     try {
       const res = await GestionOperativoBienesService.crear(idoperativo, {
@@ -609,7 +637,7 @@ export function SeccionBienesForm({
         {/* ── Formulario de registro ── */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <label className="mb-1 block text-sm font-medium">Bien</label>
+            <label className="mb-1 block text-sm font-medium">Bien <span className="text-danger">*</span></label>
             <Select
               options={bienes.map((b) => ({
                 value: String(b.id),
@@ -618,11 +646,14 @@ export function SeccionBienesForm({
               placeholder="Seleccione un dato"
               value={idBien}
               onChange={(e) => void handleChangeBien(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idBien && submitted ? 'border-danger' : ''}`}
             />
+            {!idBien && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Clase</label>
+            <label className="mb-1 block text-sm font-medium">Clase <span className="text-danger">*</span></label>
             <Select
               options={clases.map((c) => ({
                 value: String(c.id),
@@ -632,11 +663,14 @@ export function SeccionBienesForm({
               value={idCatalogoClase}
               disabled={clases.length === 0}
               onChange={(e) => void handleChangeClase(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idCatalogoClase && submitted ? 'border-danger' : ''}`}
             />
+            {!idCatalogoClase && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Tipo</label>
+            <label className="mb-1 block text-sm font-medium">Tipo <span className="text-danger">*</span></label>
             <Select
               options={tipos.map((t) => ({
                 value: String(t.id),
@@ -646,65 +680,79 @@ export function SeccionBienesForm({
               value={idCatalogoTipo}
               disabled={tipos.length === 0}
               onChange={(e) => setIdCatalogoTipo(e.target.value)}
-              className="w-full"
+              className={`w-full ${!idCatalogoTipo && submitted ? 'border-danger' : ''}`}
             />
+            {!idCatalogoTipo && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium">Cantidad</label>
+            <label className="mb-1 block text-sm font-medium">
+              Cantidad <span className="text-danger">*</span>
+            </label>
             <Input
-              type="text"
+              type="number"
+              placeholder="1"
+              min="1"
+              className={`w-full ${(!cantidadBien || parseFloat(cantidadBien || '0') < 1) && submitted ? 'border-danger' : ''}`}
               value={cantidadBien}
               onChange={(e) => setCantidadBien(e.target.value)}
-              className="w-full"
             />
+            {(!cantidadBien || parseFloat(cantidadBien || '0') < 1) && submitted && (
+              <span className="text-danger text-xs mt-1">La cantidad debe ser al menos 1</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Costo Aproximado (Bs.)
+              Costo Aproximado (Bs.) <span className="text-danger">*</span>
             </label>
             <Input
-              type="text"
+              type="number"
+              placeholder="0"
+              min="0"
+              step="0.01"
+              className={`w-full ${parseFloat(costoAproximado || '0') <= 0 && submitted ? 'border-danger' : ''}`}
               value={costoAproximado}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
-                  setCostoAproximado(val)
-                }
-              }}
-              className="w-full"
+              onChange={(e) => setCostoAproximado(e.target.value)}
             />
+            {parseFloat(costoAproximado || '0') <= 0 && submitted && (
+              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Costo Cuantificado (Bs.)
+              Costo Cuantificado (Bs.) <span className="text-danger">*</span>
             </label>
             <Input
-              type="text"
+              type="number"
+              placeholder="0"
+              min="0"
+              step="0.01"
+              className={`w-full ${parseFloat(costoCuantificado || '0') <= 0 && submitted ? 'border-danger' : ''}`}
               value={costoCuantificado}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
-                  setCostoCuantificado(val)
-                }
-              }}
-              className="w-full"
+              onChange={(e) => setCostoCuantificado(e.target.value)}
             />
+            {parseFloat(costoCuantificado || '0') <= 0 && submitted && (
+              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              ¿En Investigación?
+              ¿En Investigación? <span className="text-danger">*</span>
             </label>
             <Select
               options={[
-                { value: '', label: 'Seleccione un dato' },
                 { value: 'true', label: 'SI' },
                 { value: 'false', label: 'NO' },
               ]}
               placeholder="Seleccione un dato"
               value={enInvestigacion}
               onChange={(e) => setEnInvestigacion(e.target.value)}
-              className="w-full"
+              className={`w-full ${!enInvestigacion && submitted ? 'border-danger' : ''}`}
             />
+            {!enInvestigacion && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
           </div>
 
           {/* Foto — DropzoneFoto */}
@@ -741,7 +789,7 @@ export function SeccionBienesForm({
               limit={ITEMS_POR_PAGINA}
               page={pagina}
               onPageChange={handleCambioPagina}
-              onLimitChange={() => {}}
+              onLimitChange={() => { }}
               columns={[
                 { accessor: 'descripcionBien', title: 'Bien' },
                 { accessor: 'descripcionCatalogoClase', title: 'Clase' },
@@ -815,13 +863,15 @@ export function SeccionBienesForm({
               alt="Vista ampliada"
               className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
             />
-            <button
+            <Button
               type="button"
+              variant="dark"
+              size="sm"
               className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
               onClick={() => setImagenAmpliada(null)}
             >
               ✕
-            </button>
+            </Button>
           </div>
         </div>
       )}

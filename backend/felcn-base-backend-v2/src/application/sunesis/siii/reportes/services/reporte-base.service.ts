@@ -9,7 +9,7 @@ export class ReportBaseService implements OnModuleDestroy {
   private async getBrowser(): Promise<puppeteer.Browser> {
     if (!this.browser) {
       this.browser = await puppeteer.launch({
-        headless: 'shell',
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -17,6 +17,7 @@ export class ReportBaseService implements OnModuleDestroy {
           '--disable-gpu',
           '--disable-extensions',
           '--disable-background-networking',
+          '--headless=new',
         ],
       });
     }
