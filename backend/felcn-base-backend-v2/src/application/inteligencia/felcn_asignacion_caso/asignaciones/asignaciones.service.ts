@@ -17,6 +17,7 @@ import {
 import { Estado } from '../../felcn_siii/estado.enum'
 import { AsignacionesRepository } from './repository/asignaciones.repository'
 import { AsignacionASIG } from './entities/asignacionAsig.entity'
+import { cleanText } from '@/common/utils/text.util'
 
 @Injectable()
 export class AsignacionesService {
@@ -207,7 +208,7 @@ export class AsignacionesService {
 
     await this.asignacionesRepository.actualizarNumeroCasoDual(
       nroOperativo,
-      nroCaso,
+      cleanText(nroCaso),
       letra
     )
 

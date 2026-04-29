@@ -114,12 +114,12 @@ export class FiliacionService {
       await Promise.all(operations)
 
       try {
-        await this.dataSourceSIII
-          .createQueryBuilder()
-          .update('public.persona_auxiliar')
-          .set({ enviado: 1 })
-          .where('id_persona_auxiliar = :id', { id: dto.idPersona })
-          .execute()
+       await this.dataSourceSIII.query(
+  `UPDATE public.persona_auxiliar 
+   SET enviado = 1 
+   WHERE id_persona_auxiliar = $1`,
+  [dto.idPersona]
+)
       } catch (error) {
         console.error('Error actualizando persona_auxiliar:', error)
       }
