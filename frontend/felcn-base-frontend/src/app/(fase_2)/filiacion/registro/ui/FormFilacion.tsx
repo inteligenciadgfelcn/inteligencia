@@ -297,7 +297,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
   }
 
-  const sendFingers = async () => {
+  const sendFingers = async (id: number) => {
     const allFingers = [...rigthFingers, ...leftFingers]
     const fingersWithImage = allFingers.filter((f) => f.image.length > 0)
 
@@ -306,7 +306,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     await Promise.all(
       fingersWithImage.map((item) =>
         postRegistroHuella({
-          personaId: persona?.id_persona_auxiliar ?? '-1',
+          personaId: String(id) ?? '-1',
           imagen: item.image,
           calidad: item.calidad,
           dedo: item.id,
@@ -326,7 +326,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
 
     try {
-      await sendFingers()
+      
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
           fileToBase64(values.fotoFrontal),
@@ -334,7 +334,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           fileToBase64(values.fotoPerfilIzquierdo),
         ])
 
-      await postRegistroFiliacion({
+      const response = await postRegistroFiliacion({
         idPersona: Number(persona.id_persona_auxiliar),
         estadoPersona: values.estadoPersona.label,
         numeroCaso: persona.numero_caso,
@@ -394,6 +394,8 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           fotoDedoDerecho: '',
         },
       })
+
+      await sendFingers(response.idDetenido)
 
       Alerta({
         mensaje: 'Registro de filiacion guardado correctamente',
