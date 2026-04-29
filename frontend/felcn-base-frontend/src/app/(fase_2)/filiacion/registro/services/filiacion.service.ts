@@ -73,6 +73,7 @@ export interface RegistroFiliacionBody {
 export interface RegistroFiliacionResponse {
   finalizado?: boolean
   mensaje?: string
+  idDetenido: number
   datos?: unknown
 }
 
