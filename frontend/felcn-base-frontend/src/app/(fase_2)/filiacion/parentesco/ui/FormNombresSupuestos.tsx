@@ -1,7 +1,15 @@
+import React, { useState } from 'react'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { useMutation, useQuery, keepPreviousData } from '@tanstack/react-query'
+import { Column, VristoDataTable } from '@/components/datatable/VristoDataTable'
+import {
+  NombresSupuestosItem,
+  registerNombresSupuestos,
+  listNombresSupuestos,
+} from '../services/nombres.supuestos.service'
 
 const formSchema = z.object({
   nombres: z.string().min(1, 'El nombre es requerido'),
@@ -12,17 +20,54 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-export function FormNombresSupuestos() {
+interface FormNombresSupuestosProps {
+  idDetenido?: number
+}
+
+export function FormNombresSupuestos({
+  idDetenido,
+}: FormNombresSupuestosProps) {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
   })
 
-  const onSubmitSupuestos = (values: FormValues) => {}
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
+  const query = useQuery({
+    queryKey: ['nombres-supuestos', idDetenido],
+    queryFn: () => listNombresSupuestos(idDetenido ?? 0),
+    enabled: !!idDetenido,
+    placeholderData: keepPreviousData,
+  })
+
+  const mutation = useMutation({
+    mutationFn: (payload: any) => registerNombresSupuestos(payload),
+    onSuccess: () => {
+      query.refetch()
+      reset()
+    },
+  })
+
+  const onSubmitSupuestos = (values: FormValues) => {
+    if (!idDetenido) return
+
+    const payload = {
+      idDetenido,
+      nombres: values.nombres,
+      paterno: values.apPaterno,
+      materno: values.apMaterno,
+      apellidoEsposo: values.apEsposo,
+    }
+
+    mutation.mutate(payload)
+  }
 
   return (
     <div className="panel p-4">
@@ -71,6 +116,27 @@ export function FormNombresSupuestos() {
           </div>
         </div>
       </form>
+
+      {idDetenido && (
+        <div className="mt-4">
+          <VristoDataTable<NombresSupuestosItem>
+            rows={query.data ?? []}
+            total={query.data?.length ?? 0}
+            page={page}
+            limit={limit}
+            onPageChange={(p) => setPage(p)}
+            onLimitChange={(l) => setLimit(l)}
+            columns={[
+              { accessor: 'idNombresSupuestos', title: 'ID' },
+              { accessor: 'nombres', title: 'Nombres' },
+              { accessor: 'paterno', title: 'Ap. Paterno' },
+              { accessor: 'materno', title: 'Ap. Materno' },
+              { accessor: 'apellidoEsposo', title: 'Ap. Esposo' },
+            ]}
+            loading={query.isLoading}
+          />
+        </div>
+      )}
     </div>
   )
 }
