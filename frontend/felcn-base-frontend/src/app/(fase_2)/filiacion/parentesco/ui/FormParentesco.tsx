@@ -1,12 +1,20 @@
 'use client'
 
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
 import { AsyncSearchSelect } from '@/components/form/FormAsyncSelect'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { getParentescos, Parentesco } from '../services/parentesco.service'
+import { keepPreviousData, useQuery, useMutation } from '@tanstack/react-query'
+import {
+  getParentescos,
+  Parentesco,
+  DatosFamiliaresItem,
+  registerDatosFamiliares,
+  listDatosFamiliares,
+} from '../services/parentesco.service'
+import { Column, VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 interface OptionBase {
@@ -50,12 +58,17 @@ const ESTADO_OPTIONS: OptionBase[] = [
   { id: 2, descripcion: 'Fallecido' },
 ]
 
-export function FormParentesco() {
+interface FormParentescoProps {
+  idDetenido?: number
+}
+
+export function FormParentesco({ idDetenido }: FormParentescoProps) {
   const {
     register: registerParentesco,
     control: controlParentezco,
     handleSubmit: handleSubmitParentesco,
     formState: { errors },
+    reset,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {},
@@ -67,8 +80,41 @@ export function FormParentesco() {
     placeholderData: keepPreviousData,
   })
 
-  const onSubmitParentezco = (values: FormValues) => {
-    // Placeholder submit handler until endpoint integration is defined.
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
+  const datosQuery = useQuery({
+    queryKey: ['datos-familiares', idDetenido],
+    queryFn: () => listDatosFamiliares(idDetenido ?? 0),
+    enabled: !!idDetenido,
+    placeholderData: keepPreviousData,
+  })
+
+  const mutation = useMutation({
+    mutationFn: (payload: any) => registerDatosFamiliares(payload),
+    onSuccess: () => {
+      datosQuery.refetch()
+      reset()
+    },
+  })
+
+  const onSubmitParentesco = (values: FormValues) => {
+    if (!idDetenido) return
+
+    const payload = {
+      idDetenido,
+      idParentezco: values.parentesco.value,
+      nombres: values.nombres,
+      paterno: values.apPaterno,
+      materno: values.apMaterno,
+      edad: Number(values.edad) || values.edad,
+      direccion: values.direccion,
+      telefono: values.telefono,
+      vivo: values.estado.value === 1,
+      implicado: values.implicado.value === 1,
+    }
+
+    mutation.mutate(payload)
   }
 
   return (
@@ -76,7 +122,7 @@ export function FormParentesco() {
       <div className="panel p-4">
         <h2 className="text-lg font-semibold text-primary mb-4">Parentescos</h2>
 
-        <form onSubmit={handleSubmitParentesco(onSubmitParentezco)}>
+        <form onSubmit={handleSubmitParentesco(onSubmitParentesco)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             <div className="md:col-span-6">
               <AsyncSearchSelect<Parentesco>
@@ -181,6 +227,42 @@ export function FormParentesco() {
             </button>
           </div>
         </form>
+        {idDetenido && (
+          <div className=" mt-4">
+            <VristoDataTable<DatosFamiliaresItem>
+              rows={datosQuery.data ?? []}
+              total={datosQuery.data?.length ?? 0}
+              page={page}
+              limit={limit}
+              onPageChange={(p) => setPage(p)}
+              onLimitChange={(l) => setLimit(l)}
+              columns={[
+                {
+                  accessor: 'parentezco',
+                  title: 'Parentesco',
+                  render: (r) => r.parentezco?.descripcion ?? '',
+                },
+                { accessor: 'nombres', title: 'Nombres' },
+                { accessor: 'paterno', title: 'Ap. Paterno' },
+                { accessor: 'materno', title: 'Ap. Materno' },
+                { accessor: 'edad', title: 'Edad' },
+                { accessor: 'direccion', title: 'Dirección' },
+                { accessor: 'telefono', title: 'Teléfono' },
+                {
+                  accessor: 'vivo',
+                  title: 'Vivo',
+                  render: (r) => (r.vivo ? 'SI' : 'NO'),
+                },
+                {
+                  accessor: 'implicado',
+                  title: 'Implicado',
+                  render: (r) => (r.implicado ? 'SI' : 'NO'),
+                },
+              ]}
+              loading={datosQuery.isLoading}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

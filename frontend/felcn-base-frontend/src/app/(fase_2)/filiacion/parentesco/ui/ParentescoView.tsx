@@ -83,8 +83,8 @@ export const ParentescoView = () => {
         statusFiliacion={1}
       />
 
-      <FormParentesco />
-      <FormNombresSupuestos />
+      <FormParentesco idDetenido={personaSelected?.id_detenido} />
+      <FormNombresSupuestos idDetenido={personaSelected?.id_detenido} />
 
       {detenidoDetalle && (
         <div className="grid grid-cols-1 gap-5">

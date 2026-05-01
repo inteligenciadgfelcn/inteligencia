@@ -6,9 +6,15 @@ import { SiiiRepository } from './repositories/siii.repository'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Operativo } from './entities/operativo.entity'
-import { DB_SOSPECHOSO } from '@/core/config/database/database.module'
+import {
+  DB_ASIG_CASOS,
+  DB_SOSPECHOSO,
+} from '@/core/config/database/database.module'
 import { Departamento } from '../parametrica/provincia/entities/departamento.entity'
 import { BuscarAntecedenteDto } from './dto/buscar-antecedente.dto'
+import { Estado } from '@/common/constants'
+import { PaginacionQueryDto } from '@/common/dto'
+import { AsignacionASIG } from '../../felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 
 @Injectable()
 export class OperativoService {
@@ -20,7 +26,10 @@ export class OperativoService {
     private readonly operativoRepo: Repository<Operativo>,
 
     @InjectRepository(Departamento, DB_SOSPECHOSO)
-    private readonly departamentoRepo: Repository<Departamento>
+    private readonly departamentoRepo: Repository<Departamento>,
+
+    @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
+    private readonly asignacionRepo: Repository<AsignacionASIG>
   ) {}
 
   async create(dto: CreateOperativoDto) {
@@ -46,8 +55,28 @@ export class OperativoService {
     return await this.operativoRepo.save(operativo)
   }
 
-  findAll() {
-    return `This action returns all operativo`
+  async findAllPaginado(pagination: PaginacionQueryDto) {
+    const { limite, saltar, filtro } = pagination
+    const query = this.operativoRepo
+      .createQueryBuilder('o')
+      .leftJoinAndSelect('o.departamento', 'departamento')
+      .leftJoinAndSelect('o.provincia', 'provincia')
+      .leftJoinAndSelect('o.municipio', 'municipio')
+      .leftJoinAndSelect('o.unidad', 'unidad')
+      .leftJoinAndSelect('o.distrito', 'distrito')
+      .leftJoinAndSelect('o.grupo', 'grupo')
+      .leftJoinAndSelect('o.categoriaOperativo', 'categoria')
+      .leftJoinAndSelect('o.itemOperativo', 'item')
+      .take(limite)
+      .skip(saltar)
+
+    if (filtro) {
+      query.andWhere('o.numeroCaso ILIKE :filtro', {
+        filtro: `%${filtro}%`,
+      })
+    }
+
+    return await query.getManyAndCount()
   }
 
   async findOne(numero_caso: string) {
@@ -73,6 +102,40 @@ export class OperativoService {
     }
   }
 
+  async findOneRegistro(numero_caso: string) {
+    const limpio = decodeURIComponent(numero_caso).trim().toUpperCase()
+
+    const existeOperativo = await this.operativoRepo.count({
+      where: { numeroCaso: limpio },
+    })
+
+    if (existeOperativo > 0) {
+      return {
+        existe: true,
+        mensaje: 'Esta registrado el operativo',
+      }
+    }
+
+    const asignacion = await this.asignacionRepo.findOne({
+      where: { nroCaso: limpio },
+    })
+
+    if (!asignacion) {
+      return {
+        existe: false,
+        mensaje: 'No se encontró información para ese caso',
+      }
+    }
+
+    return {
+      existe: false,
+      numeroCaso: asignacion.nroCaso,
+      nombreCaso: asignacion.nombreCaso,
+      asignado: asignacion.nombreSolicitud,
+      fiscalAsignado: asignacion.fiscalAsignado,
+    }
+  }
+
   async verificarAntecedentes(dto: BuscarAntecedenteDto) {
     const personas = await this.siiiRepo.buscarPersonaDetenida(dto)
 
@@ -93,13 +156,5 @@ export class OperativoService {
         tieneAntecedentes: p.cantidad_operativos >= 1,
       })),
     }
-  }
-
-  update(id: number, updateOperativoDto: UpdateOperativoDto) {
-    return `This action updates a #${id} operativo`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} operativo`
   }
 }

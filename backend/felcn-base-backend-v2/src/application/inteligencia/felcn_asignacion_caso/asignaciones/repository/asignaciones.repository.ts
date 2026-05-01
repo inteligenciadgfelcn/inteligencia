@@ -107,17 +107,24 @@ export class AsignacionesRepository {
       `
     SELECT 
       a.numero_operativo,
-      o.id_operativo
+      o.id_operativo,
+      a.id_caso
     FROM operativo o
     INNER JOIN asignacion a ON o.id_caso = a.id_caso
     WHERE a.numero_operativo = ANY($1)
     `,
       [numeros]
     )
-    const mapOperativos = new Map<string, number>()
+    const mapOperativos = new Map<
+      string,
+      { idOperativo: number; idCaso: number }
+    >()
 
     operativos.forEach((o: any) => {
-      mapOperativos.set(o.numero_operativo, o.id_operativo)
+      mapOperativos.set(o.numero_operativo, {
+        idOperativo: o.id_operativo,
+        idCaso: o.id_caso,
+      })
     })
 
     const resultado = asignaciones
@@ -127,7 +134,8 @@ export class AsignacionesRepository {
 
         return {
           ...a,
-          idOperativo: idOperativo || null,
+          idOperativo: idOperativo?.idOperativo || null,
+          idCaso: idOperativo?.idCaso || null,
           existe,
         }
       })

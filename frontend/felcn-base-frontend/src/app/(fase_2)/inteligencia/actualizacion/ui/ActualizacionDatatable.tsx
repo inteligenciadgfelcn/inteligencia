@@ -13,9 +13,13 @@ import { FormActualizacion } from './FormActualizacion'
 import { dateUtcToString } from '@/utils/fechas'
 import { imprimir } from '@/utils/imprimir'
 import { useAuth } from '@/context/AuthProvider'
+import { IconoTooltip } from '@/components/botones/IconoTooltip'
+import { useRouter } from 'next/navigation'
+import { Constantes } from '@/config/Constantes'
 
 export function ActualizacionDataTable() {
   const { verificarServicioUsuario } = useAuth()
+  const router = useRouter()
 
   const [pagina, setPagina] = useState(1)
   const [limite, setLimite] = useState(10)
@@ -170,17 +174,54 @@ export function ActualizacionDataTable() {
       title: 'Acciones',
       render: (row: CasoActualizacionTable) => {
         const isSelected = selectedCaso?.idAsignacion == row.idAsignacion
-
+        // 3 buttons, 2 icon buttons and 1 normal button, if the row is selected, the normal button should say "Deseleccionar" and be red, otherwise it should say "Seleccionar" and be blue
         return (
-          <button
-            type="button"
-            className={`btn btn-sm m-1 ${
-              isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
-            }`}
-            onClick={() => toggleSelected(row)}
-          >
-            {isSelected ? 'Deseleccionar' : 'Seleccionar'}
-          </button>
+          <div className="flex gap-2">
+            <IconoTooltip
+              id="1"
+              titulo={'Editar caso'}
+              color={'info'}
+              accion={() => {
+                // redirect to http://localhost:8080/operaciones/operativo/gestion-operativo/registro/?id=36 using router
+                router.push(
+                  `/operaciones/operativo/gestion-operativo/registro/?id=${row.idCaso}`
+                )
+              }}
+              icono={'edit'}
+              name={'Editar caso'}
+            />
+            <IconoTooltip
+              id="1"
+              titulo={'Generar reporte'}
+              color={'info'}
+              accion={() => {
+                window.open(
+                  `${Constantes.baseUrl}/reportes/operativos/${row.idOperativo}/pdf`,
+                  '_blank'
+                )
+              }}
+              icono={'download'}
+              name={'Generar reporte'}
+            />
+            {/* <IconoTooltip
+              id={`reenviarCorreoActivacion-${params.row.id}`}
+              titulo={'Reenviar correo de activación'}
+              color={'info'}
+              accion={() => abrirAlertaReenvioCorreo(params.row)}
+              desactivado={params.row.ciudadaniaDigital}
+              icono={'forward_to_inbox'}
+              name={'Reenviar correo de activación'}
+            /> */}
+            <button
+              type="button"
+              className={`btn btn-sm m-1 ${
+                isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
+              }`}
+              onClick={() => toggleSelected(row)}
+            >
+              {isSelected ? 'Deseleccionar' : 'Seleccionar'}
+            </button>
+          </div>
         )
       },
     },

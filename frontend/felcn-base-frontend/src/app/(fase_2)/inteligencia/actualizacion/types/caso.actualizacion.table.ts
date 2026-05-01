@@ -12,17 +12,22 @@ export interface CasoActualizacionTable {
   fiscalAsignado: string
 
   abreviaturaDepartamento: string
+  idOperativo: number
+  idCaso: number
 }
 
 // {
-//         "idAsignacion": "23",
-//         "codigoServicio": "ICIA-1818032026",
-//         "numeroOperativo": "CH-CC-18/26",
+//         "idAsignacion": "61",
+//         "codigoServicio": "ICIA-2222042026",
+//         "numeroOperativo": "LP-UFLCN-LP-6/26",
 //         "numeroCaso": null,
-//         "nombreCaso": "Operativo Antinarcóticos",
-//         "fechaOperativo": "2025-12-05T20:00:00.000Z",
-//         "departamento": "CHUQUISACA",
-//         "unidad": "Unidad Movil de Patrullaje Rural",
-//         "asignacionCaso": "Juan Marquez",
-//         "fiscalAsignado": "Dra. María López"
+//         "nombreCaso": "PRUEBA 1",
+//         "fechaOperativo": "2026-03-23T09:00:00.000Z",
+//         "abreviaturaDepartamento": "LP",
+//         "departamento": "La Paz",
+//         "unidad": "GRUPO ESPECIAL DE CONTROL DE COCA",
+//         "asignacionCaso": "CAP. JUAN PEREZ CARDENAS",
+//         "fiscalAsignado": "JUAN PEREZ",
+//         "idOperativo": "25",
+//         "existe": true
 //       }
