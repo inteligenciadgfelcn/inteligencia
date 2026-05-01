@@ -1,0 +1,46 @@
+CIUDADANIA DIGITAL - PANDORA
+-------------------------------------------------------------------------------------------------
+
+Issuer
+https://proveedor.ciudadania.demo.agetic.gob.bo
+
+Cliente ID
+8XyOPLxGb-lT_UojkMcRxSMcGbUi3MM7v03s4qa3usk
+
+Secreto del cliente
+3SHNCUueLTrJFQNfS3-xN_s5q44znc-4ksNsEF8WkoxtF3YB7X4rAO3SLrfyoxV4Q3NVUjYC11ZezVYE70Ev5g
+
+URL de redireccion autenticacion
+https://desarrollo.felcn.gob.bo/login/ciudadania
+
+URL de redirecciÃ³n al cerrar sesion
+openid profile fecha_nacimiento email celular offline_access 
+
+Scopes
+openid profile fecha_nacimiento email celular offline_access 
+
+
+APROBACION DE DOCUMENTOS - PANDORA
+-------------------------------------------------------------------------------------------------
+Url de redirección (FrontEnd)
+https://desarrollo.felcn.gob.bo/aprobacion
+
+Url de notificación (BackEnd)
+https://desarrollo.felcn.gob.bo/api/aprobacion/callback
+NOTA: NO SE REMITIO EL TOKEN DEL SERVICIO
+
+
+URL de servidor Aprobador de Documentos
+https://aprobador.ciudadania.demo.agetic.gob.bo/v1/aprobaciones
+
+Token aprobador, necesario para realizar las aprobaciones de los documentos.
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkNDQ4OGRjNTNiMDU2NTM3ZWQxZjQxZjIwNDg5MmNjMCIsImlhdCI6MTc3MzMzMzQzMywiZXhwIjoxOTMxMTIxNDMzfQ.21riZpUhD9jUx2tuWE7xpFHO0JhYMkRaXY6ylaJzSLI
+
+APROBACION DE DOCUMENTOS - PANDORA
+-------------------------------------------------------------------------------------------------
+LA URL PROPORCIONADA NO PUDO SER VERIFICADA
+https://desarrollo.felcn.gob.bo/api/notificacion/callback
+
+URL PARA APK DE CIUDADANIA DE PRUEBA PARA - PANDORA
+-------------------------------------------------------------------------------------------------
+https://intranet.agetic.gob.bo/nube/s/HtystCtWiGak7Cz?openfile=true
