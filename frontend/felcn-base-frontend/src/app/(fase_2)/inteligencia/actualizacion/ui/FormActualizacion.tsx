@@ -213,8 +213,6 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
               register={register}
               error={errors.nroRegistro?.message as string}
             />
-            {caso && <IconPrinter />}
-            {caso && <IconEdit />}
           </div>
 
           <div className="col-span-12 md:col-span-4">

@@ -15,26 +15,18 @@ export class PruebaController {
     private readonly exportService: ExportService
   ) {}
 
-  @Get('export/pdf')
-  async exportPDF(@Res() res: Response) {
-    const data = await this.pruebaService.GenerarPDF()
+  @Get('export/pdf/:id')
+  async exportPDF(@Param('id') id: number, @Res() res: Response) {
+    const data = await this.pruebaService.GenerarPDF(+id)
+
     const buffer = await this.exportService.generatePDF('prueba', data)
+
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename=prueba.pdf',
+      'Content-Disposition': `attachment; filename=prueba-${id}.pdf`,
     })
+
     res.send(buffer)
   }
 
-  @Get('export/excel')
-  async exportExcel(@Res() res: Response) {
-    const data = await this.pruebaService.GenerarExcel()
-    const buffer = await this.exportService.generateExcel('prueba', data)
-    res.set({
-      'Content-Type':
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': 'attachment; filename=prueba.xlsx',
-    })
-    res.send(buffer)
-  }
 }

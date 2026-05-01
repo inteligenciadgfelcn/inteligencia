@@ -1,30 +1,351 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>DEPARTAMENTO NACIONAL DE INTELIGENCIA
-REGISTRO DE OPERACIONES CON RESULTADOS A NIVEL NACIONAL</title>
-</head>
-<body>
+<style>
+@page {
+  size: Letter;
+  margin: 12mm;
+}
 
-  <!-- ENCABEZADO -->
-  <header>
-    <img src="{{institucional}}" alt="Institucional">
-  </header>
+* {
+  box-sizing: border-box;
+}
 
-  <!-- CONTENIDO -->
-  <main>
-    <h2>DEPARTAMENTO NACIONAL DE INTELIGENCIA
-REGISTRO DE OPERACIONES CON RESULTADOS A NIVEL NACIONAL<br>
-    </h2>
-  </main>
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #eef3ef;
+  margin: 0;
+}
 
-  <!-- PIE DE PÁGINA -->
-  <footer>
-    <div><strong>"nro de paginas</strong></div>
-    <div><br />
+/* CONTENEDOR */
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* 🔥 HEADER PRINCIPAL */
+.header {
+  position: relative;
+  background: #ffffff;
+  padding: 12px 15px 10px;
+  border-radius: 6px 6px 0 0;
+}
+
+/* 🔴🟡🟢 LINEA */
+.header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to right, #c8102e 33%, #f4d00c 33%, #f4d00c 66%, #007a33 66%);
+}
+
+/* FILA HEADER */
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LOGOS */
+.logo {
+  width: 120px;
+}
+
+.header-center {
+  text-align: center;
+  flex: 1;
+}
+
+/* TITULOS */
+.title-main {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1F3F2B;
+}
+
+.title-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2E5E3E;
+  letter-spacing: 1px;
+}
+
+/* LINEA VERDE */
+.header-line {
+  height: 2px;
+  background: #2E5E3E;
+  margin: 6px 0;
+}
+
+/* INFO */
+.header-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+/* 🔷 SUB HEADER */
+.header-doc {
+  background: #2E5E3E;
+  color: white;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* CARD */
+.card {
+  background: #fff;
+  border: 1px solid #d6e2da;
+}
+
+/* SECCIONES */
+.section {
+  border-top: 1px solid #e3ebe5;
+}
+
+.section-title {
+  background: #f3f8f5;
+  color: #2E5E3E;
+  font-weight: bold;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-left: 4px solid #2E5E3E;
+}
+
+/* FILAS */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 11px;
+  padding: 6px 10px;
+  border-top: 1px solid #eef2ef;
+}
+
+.cell {
+  flex: 1 1 33%;
+  min-width: 140px;
+}
+
+/* FOTOS */
+.photos {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.photo-box {
+  width: 85px;
+  height: 105px;
+  border: 2px solid #2E5E3E;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* HUELLAS */
+.fingerprints {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.finger-box {
+  height: 65px;
+  border: 1px dashed #2E5E3E;
+  background: #f4faf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* OBS */
+.obs-box {
+  border: 1px dashed #2E5E3E;
+  background: #f4faf6;
+  min-height: 60px;
+  margin: 8px 10px;
+  padding: 6px;
+  font-size: 11px;
+}
+/* 🔥 CONTENEDOR 2 COLUMNAS */
+.identificacion {
+  display: flex;
+  gap: 15px;
+  padding: 10px;
+}
+
+/* IZQUIERDA (FOTOS) */
+.ident-left {
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* DERECHA (DATOS) */
+.ident-right {
+  flex: 1;
+}
+
+/* AJUSTE DE FILAS */
+.ident-right .row {
+  display: flex;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.ident-right .cell {
+  flex: 1;
+  font-size: 11px;
+}
+
+/* FOTOS */
+.photo-box {
+  width: 100%;
+  height: 120px;
+  border: 2px solid #2E5E3E;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.photo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-top">
+      <img src="{{institucional}}" class="logo">
+
+      <div class="header-center">
+        <div class="title-main">DEPARTAMENTO NACIONAL DE INTELIGENCIA</div>
+        <div class="title-sub">ANTINARCÓTICOS</div>
+        <div class="title-sub">Caso: {{nombreCaso}}</div>
+        <div class="title-sub">N°: {{numeroCaso}}</div>
+      </div>
+
+      <img src="{{escudo}}" class="logo">
     </div>
-  </footer>
+  </div>
 
-</body>
-</html>
+  <!-- SUBHEADER -->
+  <div class="header-doc">
+    FICHA DACTILOSCÓPICA
+  </div>
+
+  <div class="card">
+
+    <!-- IDENTIFICACIÓN -->
+    <div class="section">
+  <div class="section-title">IDENTIFICACIÓN</div>
+
+  <div class="identificacion">
+
+    <!-- 📸 COLUMNA IZQUIERDA -->
+    <div class="ident-left">
+      <div class="photo-box">
+        <img src="{{fotoFrontal}}">
+      </div>
+      <div class="photo-box">
+        <img src="{{fotoPerfil}}">
+      </div>
+    </div>
+
+    <!-- 📄 COLUMNA DERECHA -->
+    <div class="ident-right">
+
+      <div class="row">
+        <div class="cell"><span class="label">Nombre:</span> {{nombre}}</div>
+        <div class="cell"><span class="label">Alias:</span> {{alias}}</div>
+      </div>
+
+      <div class="row">
+        <div class="cell"><span class="label">Nacionalidad:</span> {{nacionalidad}}</div>
+        <div class="cell"><span class="label">Fecha Nac.:</span> {{fechaNacimiento}}</div>
+      </div>
+
+      <div class="row">
+        <div class="cell"><span class="label">Estado Civil:</span> {{estadoCivil}}</div>
+        <div class="cell"><span class="label">Profesión:</span> {{profesion}}</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+    <!-- HUELLAS DERECHA -->
+   <div class="section">
+  <div class="section-title">MANO DERECHA</div>
+
+  <div class="fingerprints">
+    <div class="finger-box">
+  <img src="{{manoDerecha.PULGAR_DER}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoDerecha.INDICE_DER}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoDerecha.MEDIO_DER}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoDerecha.ANULAR_DER}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoDerecha.MENIQUE_DER}}" width="100%" />
+</div>
+    <div class="finger-box"></div> <!-- espacio -->
+  </div>
+</div>
+
+    <!-- HUELLAS IZQUIERDA -->
+   <div class="section">
+  <div class="section-title">MANO IZQUIERDA</div>
+
+  <div class="fingerprints">
+   <div class="finger-box">
+  <img src="{{manoIzquierda.PULGAR_IZQ}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoIzquierda.INDICE_IZQ}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoIzquierda.MEDIO_IZQ}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoIzquierda.ANULAR_IZQ}}" width="100%" />
+</div>
+
+<div class="finger-box">
+  <img src="{{manoIzquierda.MENIQUE_IZQ}}" width="100%" />
+</div>
+    <div class="finger-box"></div>
+  </div>
+</div>
+
+    <!-- OBSERVACIONES -->
+    <div class="section">
+      <div class="section-title">OBSERVACIONES</div>
+      <div class="obs">
+        <div class="obs-box">
+          {{observaciones}}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

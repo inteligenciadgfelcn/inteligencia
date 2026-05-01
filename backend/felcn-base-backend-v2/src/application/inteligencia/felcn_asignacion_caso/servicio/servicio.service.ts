@@ -9,7 +9,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { Servicio } from './entities/servicio.entity'
 import { DataSource, Repository } from 'typeorm'
 import { CreateServicioDto } from './dto/create-servicio.dto'
-import { formatearFecha, validarRangoFechas } from './utils/fecha.util'
+import { validarRangoFechas } from './utils/fecha.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import {
   buscarServicioPorFecha,
@@ -18,6 +18,7 @@ import {
   validarCruceServicios,
 } from './utils/servicio.util'
 import { Estado } from '../../felcn_siii/estado.enum'
+import { formatearFecha } from '@/common/utils/date.util'
 
 type UsuarioAuth = {
   usuario: string

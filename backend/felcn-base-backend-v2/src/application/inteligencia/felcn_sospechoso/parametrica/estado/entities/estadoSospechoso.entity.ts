@@ -3,11 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   Index,
+  OneToMany,
 } from 'typeorm'
+import { DetenidoSospechoso } from '../../../detenido/entities/detenido-sospechoso.entity'
 
-@Entity({ name: 'estado' })
+@Entity({ name: 'estado', schema: 'public' })
 export class EstadoSospechoso {
-
   @PrimaryGeneratedColumn({
     type: 'int',
     name: 'id_estado',
