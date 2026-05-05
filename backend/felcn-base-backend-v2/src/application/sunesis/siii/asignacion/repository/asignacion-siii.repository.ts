@@ -30,8 +30,25 @@ export class AsignacionSiiiRepository {
    *        FiscalAsigCaso, FonoF, NroOperativo, NroCaso
    * FROM ASIGNACION WHERE Casos_Id = X
    */
-  async buscarPorId(idCaso: string): Promise<AsignacionSiii | null> {
-    return this.repository.findOne({ where: { idCaso } })
+  async buscarPorId(idCaso: string): Promise<any | null> {
+    const result = await this.dataSource.query(
+      `SELECT
+        a.id_caso AS "idCaso",
+        a.numero_operativo AS "numeroOperativo",
+        a.nombre_caso AS "nombreCaso",
+        a.fiscal_solicitud AS "fiscalSolicitud",
+        a.telefono_solicitud AS "telefonoSolicitud",
+        a.asignado_caso AS "asignadoCaso",
+        a.telefono_asignado AS "telefonoAsignado",
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.telefono_fiscal AS "telefonoFiscal",
+        dc.descripcion AS "departamento"
+      FROM public.asignacion a
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
+      WHERE a.id_caso = $1`,
+      [idCaso]
+    )
+    return result[0] || null
   }
 
   /**
@@ -51,11 +68,13 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
       WHERE a.usuario = $1
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -77,11 +96,13 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      left join public.departamento_caso dc on dc.id_departamento_caso = a.id_departamento_caso
       WHERE TRIM(a.abreviatura_unidad) = TRIM($1) AND TRIM(COALESCE(a.numero_caso, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [abreviaturaUnidad]
@@ -105,11 +126,13 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.numero_caso, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -139,11 +162,13 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.numero_caso, '')) = ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -166,11 +191,13 @@ export class AsignacionSiiiRepository {
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
-        a.ianus AS "ianus"
+        a.ianus AS "ianus",
+        dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.ianus, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]

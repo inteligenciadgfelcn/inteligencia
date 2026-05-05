@@ -65,6 +65,7 @@ export class OperativoService extends BaseService {
       telefonoAsignado: asignacion.telefonoAsignado,
       fiscalAsignadoCaso: asignacion.fiscalAsignadoCaso,
       telefonoFiscal: asignacion.telefonoFiscal,
+      departamento: asignacion.departamento,
     }
 
     const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
