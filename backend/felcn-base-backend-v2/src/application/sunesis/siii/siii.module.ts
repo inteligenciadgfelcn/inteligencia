@@ -91,10 +91,12 @@ import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
+import { AsignacionSiiiController } from './asignacion/controller/asignacion-siii.controller'
 
 // Services
 import { LookupService } from './parametrica/service/lookup.service'
 import { OperativoService } from './operativo/service/operativo.service'
+import { AsignacionSiiiService } from './asignacion/service/asignacion-siii.service'
 
 // Repositories
 import { LookupRepository } from './parametrica/repository/lookup.repository'
@@ -188,14 +190,15 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController],
+  controllers: [LookupController, OperativoController, AsignacionSiiiController],
   providers: [
     LookupService,
     OperativoService,
+    AsignacionSiiiService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
   ],
-  exports: [LookupService, OperativoService],
+  exports: [LookupService, OperativoService, AsignacionSiiiService],
 })
 export class SiiiModule {}

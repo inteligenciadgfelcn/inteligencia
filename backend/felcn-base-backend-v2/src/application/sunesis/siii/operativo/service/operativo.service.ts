@@ -622,6 +622,10 @@ export class OperativoService extends BaseService {
     return this.asignacionSiiiRepository.buscarCasosConCudPorUsuario(usuario)
   }
 
+  async listarCasosPorUnidad(abreviaturaUnidad: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarCasosPorUnidad(abreviaturaUnidad)
+  }
+
   // ==================== IMÁGENES (LAZY LOADING) ====================
 
   async obtenerFotoGaleria(idOperativo: string, idFoto: string): Promise<Buffer> {

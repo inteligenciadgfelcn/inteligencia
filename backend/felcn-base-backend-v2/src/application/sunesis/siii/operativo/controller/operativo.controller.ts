@@ -91,6 +91,17 @@ export class OperativoController extends BaseController {
     return this.successList(datos)
   }
 
+  @ApiOperation({
+    summary: 'Listar casos por abreviatura de unidad',
+    description: 'Obtiene todos los casos filtrados por la abreviatura de la unidad.',
+  })
+  @ApiParam({ name: 'abreviaturaUnidad', description: 'Abreviatura de la unidad (ej. DG-FELCN)' })
+  @Get('casos/unidad/:abreviaturaUnidad')
+  async listarCasosPorUnidad(@Param('abreviaturaUnidad') abreviaturaUnidad: string) {
+    const datos = await this.operativoService.listarCasosPorUnidad(abreviaturaUnidad)
+    return this.successList(datos)
+  }
+
   // ==================== CATÁLOGOS ====================
 
   @ApiOperation({ summary: 'Listar estados de droga por tipo' })
