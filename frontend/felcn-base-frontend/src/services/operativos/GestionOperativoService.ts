@@ -32,4 +32,13 @@ export const GestionOperativoService = {
       withCredentials: true,
     })
   },
+
+  listarPorUnidad(
+    abreviaturaUnidad: string
+  ): Promise<{ datos: GestionOperativoItem[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/unidad/${abreviaturaUnidad}`,
+      withCredentials: true,
+    })
+  },
 }

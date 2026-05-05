@@ -14,14 +14,16 @@ import type { GestionOperativoItem } from '../types'
 import { Constantes } from '@/config/Constantes'
 
 export interface GestionOperativoListadoProps {
-  tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos'
+  tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos' | 'mi-unidad'
+  renderAcciones?: (row: GestionOperativoItem) => React.ReactNode
 }
 
 export function GestionOperativoListado({
   tipo = 'no-aprobado',
+  renderAcciones,
 }: GestionOperativoListadoProps) {
   const router = useRouter()
-  const { usuario } = useAuth()
+  const { usuario, abreviaturaUnidad } = useAuth()
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -30,12 +32,17 @@ export function GestionOperativoListado({
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['gestion-operativo-listado', tipo],
     queryFn: () => {
-      if (tipo === 'aprobado') return GestionOperativoService.listarAprobadosPorUsuario()
-      if (tipo === 'con-cud') return GestionOperativoService.listarConCudPorUsuario()
+      if (tipo === 'aprobado')
+        return GestionOperativoService.listarAprobadosPorUsuario()
+      if (tipo === 'con-cud')
+        return GestionOperativoService.listarConCudPorUsuario()
       if (tipo === 'todos') return GestionOperativoService.listarPorUsuario()
+      if (tipo === 'mi-unidad') {
+        return GestionOperativoService.listarPorUnidad(abreviaturaUnidad || '')
+      }
       return GestionOperativoService.listarNoAprobadosPorUsuario()
     },
-    enabled: !!usuario,
+    enabled: !!usuario && (tipo !== 'mi-unidad' || !!abreviaturaUnidad),
   })
 
   const filas: GestionOperativoItem[] = useMemo(() => data?.datos ?? [], [data])
@@ -200,6 +207,7 @@ export function GestionOperativoListado({
                 <IconSend className="h-5 w-5" />
               </button>
             )}
+            {renderAcciones && renderAcciones(row)}
           </div>
         ),
       },

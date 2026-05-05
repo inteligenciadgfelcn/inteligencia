@@ -39,6 +39,7 @@ interface ContextProps {
   progresoLogin: boolean
   permisoUsuario: (routerName: string) => Promise<CasbinTypes>
   permisoAccion: (objeto: string, accion: string) => Promise<boolean>
+  abreviaturaUnidad: string | undefined
 }
 
 const AuthContext = createContext<ContextProps>({} as ContextProps)
@@ -264,6 +265,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
             rol: rolUsuario()?.rol ?? '',
             accion,
           }),
+        abreviaturaUnidad: user?.grupo?.distrital?.unidad?.abreviatura,
       }}
     >
       {children}

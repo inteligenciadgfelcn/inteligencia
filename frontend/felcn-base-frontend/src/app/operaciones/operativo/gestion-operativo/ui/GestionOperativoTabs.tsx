@@ -10,6 +10,7 @@ export function GestionOperativoTabs() {
     { key: 'no-aprobado', label: 'Casos sin Nº de Caso', icon: 'assignment' },
     { key: 'aprobado', label: 'Casos con Nº de Caso', icon: 'rule' },
     { key: 'con-cud', label: 'Casos con CUD', icon: 'verified' },
+    { key: 'mi-unidad', label: 'Casos de mi Unidad', icon: 'home_work' },
     { key: 'todos', label: 'Todos mis Casos', icon: 'list_alt' },
   ]
 
@@ -53,11 +54,10 @@ export function GestionOperativoTabs() {
             tipo="con-cud"
           />
         )}
-        {tabActiva === 'todos' && (
-          <GestionOperativoListado
-            tipo="todos"
-          />
+        {tabActiva === 'mi-unidad' && (
+          <GestionOperativoListado tipo="mi-unidad" />
         )}
+        {tabActiva === 'todos' && <GestionOperativoListado tipo="todos" />}
       </div>
     </div>
   )
