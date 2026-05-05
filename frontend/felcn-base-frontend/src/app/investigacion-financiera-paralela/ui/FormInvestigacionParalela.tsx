@@ -8,22 +8,19 @@ import { Textarea } from '@/components/ui/Textarea'
 import type { GestionOperativoItem } from '../../operaciones/operativo/gestion-operativo/types'
 import IconArrowLeft from '@/components/Icon/IconArrowLeft'
 import IconSave from '@/components/Icon/IconSave'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { InvestigacionParalelaService } from '@/services/operativos/InvestigacionParalelaService'
 import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import dayjs from 'dayjs'
+import type { InvestigacionParalelaPayload } from '@/services/operativos/InvestigacionParalelaService'
 
 const schema = z.object({
   delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
   detalleDelitoPrecedente: z.string().min(1, 'El detalle es requerido'),
   informeInteligencia: z.string().min(1, 'El informe es requerido'),
-  fechaEnvioFiscalia: z.string().min(1, 'La fecha es requerida'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -51,7 +48,6 @@ export const FormInvestigacionParalela = ({
       delitoPrecedente: 'Fabricación (Art. 47 Ley 1008)',
       detalleDelitoPrecedente: '',
       informeInteligencia: '',
-      fechaEnvioFiscalia: dayjs().format('YYYY-MM-DD'),
     },
   })
 
@@ -60,10 +56,22 @@ export const FormInvestigacionParalela = ({
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
-      const payload = {
+      const payload: InvestigacionParalelaPayload = {
         idCaso: caso.idCaso,
-        idOperativo: caso.numeroOperativo,
-        ...data,
+        idDepartamentoCaso: caso.idDepartamentoCaso || '',
+        abreviaturaUnidad: caso.abreviaturaUnidad || '',
+        idDistrital: caso.idDistrital || 0,
+        idGrupo: caso.idGrupo || 0,
+        delito: data.delitoPrecedente,
+        numeroCaso: caso.numeroCaso || '',
+        asignadoCaso: caso.asignadoCaso || '',
+        fiscalAsignadoCaso: caso.fiscalAsignadoCaso || '',
+        idOperativo: caso.numeroOperativo || '',
+        delitoPrecedente: data.detalleDelitoPrecedente,
+        informe: data.informeInteligencia,
+        fechaEnvioInvestigacionParalela: dayjs().format('YYYY-MM-DD'),
+        resultado: false,
+        respuestaInvestigacionParalela: false,
       }
       await InvestigacionParalelaService.guardar(payload)
       Alerta({
@@ -184,7 +192,7 @@ export const FormInvestigacionParalela = ({
             <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
               Información de la Investigación Paralela
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-1">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Delito Precedente <span className="text-danger">*</span>
@@ -219,35 +227,6 @@ export const FormInvestigacionParalela = ({
 
               <div className="md:col-span-1">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
-                  Fecha de Envío a Fiscalía <span className="text-danger">*</span>
-                </label>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <Controller
-                    name="fechaEnvioFiscalia"
-                    control={control}
-                    render={({ field }) => (
-                      <DatePicker
-                        {...field}
-                        value={field.value ? dayjs(field.value) : null}
-                        onChange={(date) =>
-                          field.onChange(date ? date.format('YYYY-MM-DD') : '')
-                        }
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            size: 'small',
-                            error: !!errors.fechaEnvioFiscalia,
-                            helperText: errors.fechaEnvioFiscalia?.message,
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </LocalizationProvider>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Asignado al Caso
                 </label>
                 <Input
@@ -257,7 +236,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-1">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Fiscal de Sustancias Controladas
                 </label>
@@ -268,7 +247,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Delito Precedente (Detalle) <span className="text-danger">*</span>
                 </label>

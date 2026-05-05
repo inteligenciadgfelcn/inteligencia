@@ -13,6 +13,10 @@ export interface GestionOperativoItem {
   id?: number | string
   idOperativo?: number | string
   departamento?: string
+  idDepartamentoCaso?: string
+  abreviaturaUnidad?: string
+  idDistrital?: number
+  idGrupo?: number
 }
 
 export interface GestionOperativoCabeceraPayload {
