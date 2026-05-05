@@ -105,7 +105,7 @@ export const FormInvestigacionParalela = ({
             <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
               Datos de Identificación del Caso
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div>
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Nro. de Caso
@@ -122,6 +122,16 @@ export const FormInvestigacionParalela = ({
                 </label>
                 <Input
                   value={caso.numeroOperativo || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Nombre de Caso
+                </label>
+                <Input
+                  value={caso.nombreCaso || ''}
                   disabled
                   className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
                 />
@@ -161,7 +171,7 @@ export const FormInvestigacionParalela = ({
                   Departamento
                 </label>
                 <Input
-                  value={caso.departamentoDescripcion || ''}
+                  value={caso.departamento || ''}
                   disabled
                   className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
                 />
@@ -305,7 +315,7 @@ export const FormInvestigacionParalela = ({
             </Button>
             <Button variant="primary" type="submit" disabled={loading}>
               <IconSave className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
-              {loading ? 'Guardando...' : 'Guardar Caso Paralelo'}
+              {loading ? 'Guardando...' : 'Guardar'}
             </Button>
           </div>
         </form>

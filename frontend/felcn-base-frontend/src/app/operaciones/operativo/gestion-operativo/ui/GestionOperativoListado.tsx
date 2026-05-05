@@ -58,6 +58,7 @@ export function GestionOperativoListado({
         f.asignadoCaso?.toLowerCase().includes(q) ||
         f.fiscalAsignadoCaso?.toLowerCase().includes(q) ||
         f.unidadDescripcion?.toLowerCase().includes(q) ||
+        f.departamento?.toLowerCase().includes(q) ||
         f.ianus?.toLowerCase().includes(q)
     )
   }, [filas, search])
@@ -101,6 +102,17 @@ export function GestionOperativoListado({
         ),
       })
     }
+
+    cols.push({
+      accessor: 'departamento',
+      title: 'Departamento',
+      sortable: true,
+      render: (row) => (
+        <span className="badge badge-outline-info text-xs">
+          {row.departamento || '-'}
+        </span>
+      ),
+    })
 
     cols.push(
       {
