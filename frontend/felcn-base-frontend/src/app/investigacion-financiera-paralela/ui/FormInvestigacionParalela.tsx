@@ -46,7 +46,7 @@ export const FormInvestigacionParalela = ({
     resolver: zodResolver(schema),
     defaultValues: {
       delitoPrecedente: 'Fabricación (Art. 47 Ley 1008)',
-      detalleDelitoPrecedente: '',
+      detalleDelitoPrecedente: caso?.descripcionOperativo || '',
       informeInteligencia: '',
     },
   })

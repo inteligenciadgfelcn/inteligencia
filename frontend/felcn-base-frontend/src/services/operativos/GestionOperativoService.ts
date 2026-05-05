@@ -41,4 +41,11 @@ export const GestionOperativoService = {
       withCredentials: true,
     })
   },
+
+  buscarPorCasoDetalle(idCaso: string): Promise<{ datos: any[] }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/buscar-por-caso-detalle/${idCaso}`,
+      withCredentials: true,
+    })
+  },
 }

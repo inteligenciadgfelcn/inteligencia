@@ -16,11 +16,20 @@ import { Constantes } from '@/config/Constantes'
 export interface GestionOperativoListadoProps {
   tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos' | 'mi-unidad'
   renderAcciones?: (row: GestionOperativoItem) => React.ReactNode
+  hideActions?: boolean
+  rowExpansion?: {
+    idField: keyof GestionOperativoItem
+    expandedIds: (string | number)[]
+    onExpandChange: (ids: (string | number)[]) => void
+    renderContent: (row: GestionOperativoItem) => React.ReactNode
+  }
 }
 
 export function GestionOperativoListado({
   tipo = 'no-aprobado',
   renderAcciones,
+  hideActions = false,
+  rowExpansion,
 }: GestionOperativoListadoProps) {
   const router = useRouter()
   const { usuario, abreviaturaUnidad } = useAuth()
@@ -170,7 +179,10 @@ export function GestionOperativoListado({
           </span>
         ),
       },
-      {
+    )
+
+    if (!hideActions) {
+      cols.push({
         accessor: 'idCaso',
         title: 'Acciones',
         className:
@@ -222,11 +234,11 @@ export function GestionOperativoListado({
             {renderAcciones && renderAcciones(row)}
           </div>
         ),
-      },
-    )
+      })
+    }
 
     return cols
-  }, [tipo])
+  }, [tipo, hideActions, renderAcciones, router])
 
   return (
     <div className="space-y-4">
@@ -248,6 +260,7 @@ export function GestionOperativoListado({
           }}
           columns={columns}
           loading={isLoading}
+          rowExpansion={rowExpansion}
           extraButtons={
             <Button
               variant="outline-secondary"

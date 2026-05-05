@@ -7,11 +7,28 @@ import { ListadoInvestigacionParalela } from './ui/ListadoInvestigacionParalela'
 import type { GestionOperativoItem } from '../operaciones/operativo/gestion-operativo/types'
 import { Button } from '@/components/ui/Button'
 import IconCircleCheck from '@/components/Icon/IconCircleCheck'
+import { ExpansionContenidoAsignacion } from './ui/ExpansionContenidoAsignacion'
 
 export default function InvestigacionFinancieraParalelaPage() {
   const [view, setView] = useState<'pendientes' | 'registrados'>('pendientes')
   const [casoSeleccionado, setCasoSeleccionado] =
     useState<GestionOperativoItem | null>(null)
+  const [expandedIds, setExpandedIds] = useState<(string | number)[]>([])
+
+  const handleSelectOperativo = (
+    asignacion: GestionOperativoItem,
+    operativo: any
+  ) => {
+    // Combinamos los datos de la asignación con los del operativo seleccionado
+    setCasoSeleccionado({
+      ...asignacion,
+      idOperativo: operativo.idOperativo,
+      numeroOperativo: operativo.idOperativo, // Para que el formulario use este ID
+      numeroInforme: operativo.numeroInforme,
+      fechaOperativo: operativo.fechaOperativo,
+      descripcionOperativo: operativo.descripcionOperativo,
+    })
+  }
 
   if (casoSeleccionado) {
     return (
@@ -48,16 +65,18 @@ export default function InvestigacionFinancieraParalelaPage() {
         {view === 'pendientes' ? (
           <GestionOperativoListado
             tipo="mi-unidad"
-            renderAcciones={(row) => (
-              <button
-                type="button"
-                className="text-success hover:text-success/70 transition-colors"
-                onClick={() => setCasoSeleccionado(row)}
-                title="Seleccionar para Investigación Paralela"
-              >
-                <IconCircleCheck className="h-5 w-5" />
-              </button>
-            )}
+            hideActions
+            rowExpansion={{
+              idField: 'idCaso',
+              expandedIds,
+              onExpandChange: setExpandedIds,
+              renderContent: (row) => (
+                <ExpansionContenidoAsignacion
+                  asignacion={row}
+                  onSelectOperativo={handleSelectOperativo}
+                />
+              ),
+            }}
           />
         ) : (
           <ListadoInvestigacionParalela />

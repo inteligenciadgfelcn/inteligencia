@@ -17,6 +17,9 @@ export interface GestionOperativoItem {
   abreviaturaUnidad?: string
   idDistrital?: number
   idGrupo?: number
+  numeroInforme?: string
+  fechaOperativo?: string
+  descripcionOperativo?: string
 }
 
 export interface GestionOperativoCabeceraPayload {
