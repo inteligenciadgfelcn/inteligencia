@@ -42,6 +42,10 @@ export class AsignacionSiiiRepository {
         a.telefono_asignado AS "telefonoAsignado",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
         a.telefono_fiscal AS "telefonoFiscal",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
@@ -69,6 +73,10 @@ export class AsignacionSiiiRepository {
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
@@ -97,6 +105,10 @@ export class AsignacionSiiiRepository {
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
@@ -127,6 +139,10 @@ export class AsignacionSiiiRepository {
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
@@ -163,6 +179,10 @@ export class AsignacionSiiiRepository {
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
@@ -192,6 +212,10 @@ export class AsignacionSiiiRepository {
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
         a.ianus AS "ianus",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
         dc.descripcion AS "departamento"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura

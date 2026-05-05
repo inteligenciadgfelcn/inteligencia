@@ -80,11 +80,25 @@ export class OperativoRepository {
       .getOne()
   }
 
-  async resolverPorCaso(idCaso: string): Promise<Operativo | null> {
-    return this.operativoRepo.findOne({
-      where: { idCaso },
-      order: { fechaOperativo: 'DESC' },
-    })
+  async buscarOperativoPorCaso(idCaso: string): Promise<any[]> {
+    return this.operativoRepo
+      .createQueryBuilder('o')
+      .leftJoin('o.departamento', 'd')
+      .leftJoin('o.provincia', 'p')
+      .leftJoin('o.localidad', 'l')
+      .leftJoin('o.unidad', 'u')
+      .leftJoin('o.distrital', 'dist')
+      .select([
+        'o.id AS "idOperativo"',
+        'o.numeroInforme AS "numeroInforme"',
+        'o.fechaOperativo AS "fechaOperativo"',
+        "CONCAT(COALESCE(d.descripcion, ''), ' ', COALESCE(p.descripcion, ''), ' ', COALESCE(l.descripcion, ''), ' ', COALESCE(o.lugar, '')) AS \"departamento\"",
+        "CONCAT(COALESCE(u.descripcion, ''), ' ', COALESCE(dist.descripcion, '')) AS \"unidad\"",
+        'o.descripcion AS "descripcionOperativo"',
+      ])
+      .where('o.idCaso = :idCaso', { idCaso })
+      .orderBy('o.fechaOperativo', 'DESC')
+      .getRawMany()
   }
 
   async actualizarOperativo(operativo: Operativo): Promise<Operativo> {

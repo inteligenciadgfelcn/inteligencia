@@ -11,6 +11,7 @@ import { PaisDestino } from './parametrica/entity/geografia/pais-destino.entity'
 import { Departamento } from './parametrica/entity/geografia/departamento.entity'
 import { Provincia } from './parametrica/entity/geografia/provincia.entity'
 import { Localidad } from './parametrica/entity/geografia/localidad.entity'
+import { DepartamentoCaso } from './parametrica/entity/geografia/departamento-caso.entity'
 
 // Tipos
 import { TipoDroga } from './parametrica/entity/tipo/tipo-droga.entity'
@@ -88,20 +89,27 @@ import { FabricaModelo } from './operativo/entity/fabrica-modelo.entity'
 import { EstadoDroga } from './operativo/entity/estado-droga.entity'
 import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 
+// Casos Paralelos
+import { InvestigacionParalela } from './casos-paralelos/entity/investigacion-paralela.entity'
+import { Investigador } from './casos-paralelos/entity/investigador.entity'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
 import { AsignacionSiiiController } from './asignacion/controller/asignacion-siii.controller'
+import { CasosParalelosController } from './casos-paralelos/controller/casos-paralelos.controller'
 
 // Services
 import { LookupService } from './parametrica/service/lookup.service'
 import { OperativoService } from './operativo/service/operativo.service'
 import { AsignacionSiiiService } from './asignacion/service/asignacion-siii.service'
+import { CasosParalelosService } from './casos-paralelos/service/casos-paralelos.service'
 
 // Repositories
 import { LookupRepository } from './parametrica/repository/lookup.repository'
 import { OperativoRepository } from './operativo/repository/operativo.repository'
 import { AsignacionSiiiRepository } from './asignacion/repository/asignacion-siii.repository'
+import { CasosParalelosRepository } from './casos-paralelos/repository/casos-paralelos.repository'
 
 const entitiesParametricas = [
   // Geografía
@@ -109,6 +117,7 @@ const entitiesParametricas = [
   Pais,
   PaisDestino,
   Departamento,
+  DepartamentoCaso,
   Provincia,
   Localidad,
   // Tipos
@@ -180,6 +189,9 @@ const entitiesOperativas = [
   FabricaModelo,
   EstadoDroga,
   ItemOperativo,
+  // Casos Paralelos
+  InvestigacionParalela,
+  Investigador,
 ]
 
 @Module({
@@ -190,15 +202,17 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController, AsignacionSiiiController],
+  controllers: [LookupController, OperativoController, AsignacionSiiiController, CasosParalelosController],
   providers: [
     LookupService,
     OperativoService,
     AsignacionSiiiService,
+    CasosParalelosService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
+    CasosParalelosRepository,
   ],
-  exports: [LookupService, OperativoService, AsignacionSiiiService],
+  exports: [LookupService, OperativoService, AsignacionSiiiService, CasosParalelosService],
 })
 export class SiiiModule {}

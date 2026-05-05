@@ -3,6 +3,10 @@ import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { TipoOperacion } from '../../parametrica/entity/tipo/tipo-operacion.entity'
 import { Unidad } from '../../parametrica/entity/estructura/unidad.entity'
 import { PlanOperaciones } from '../../parametrica/entity/operativo/plan-operaciones.entity'
+import { Departamento } from '../../parametrica/entity/geografia/departamento.entity'
+import { Provincia } from '../../parametrica/entity/geografia/provincia.entity'
+import { Localidad } from '../../parametrica/entity/geografia/localidad.entity'
+import { Distrital } from '../../parametrica/entity/estructura/distrital.entity'
 
 /**
  * Entidad Operativo
@@ -157,6 +161,22 @@ export class Operativo extends BaseEntity {
   @ManyToOne(() => Unidad)
   @JoinColumn({ name: 'id_unidad' })
   unidad: Unidad;
+
+  @ManyToOne(() => Departamento)
+  @JoinColumn({ name: 'id_departamento' })
+  departamento: Departamento;
+
+  @ManyToOne(() => Provincia)
+  @JoinColumn({ name: 'id_provincia' })
+  provincia: Provincia;
+
+  @ManyToOne(() => Localidad)
+  @JoinColumn({ name: 'id_localidad' })
+  localidad: Localidad;
+
+  @ManyToOne(() => Distrital)
+  @JoinColumn({ name: 'id_distrital' })
+  distrital: Distrital;
 
   constructor(data?: Partial<Operativo>) {
     super()

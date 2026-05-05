@@ -74,6 +74,13 @@ export class OperativoService extends BaseService {
   }
 
   /**
+   * Obtiene el operativo más reciente de un caso.
+   */
+  async buscarOperativoPorCaso(idCaso: string): Promise<any[] | null> {
+    return await this.operativoRepository.buscarOperativoPorCaso(idCaso)
+  }
+
+  /**
    * POST /caso/:idCaso — crea un nuevo operativo para el caso.
    * Un caso puede tener múltiples operativos (1:N).
    * Retorna el operativo con su idOperativo para usar en las secciones.

@@ -163,6 +163,17 @@ export class OperativoController extends BaseController {
   }
 
   @ApiOperation({
+    summary: 'Obtener datos formateados del operativo por idCaso (para investigación paralela)',
+    description: 'Devuelve campos Op1...Op6 concatenados según el requerimiento del sistema legado.',
+  })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso (asignacion)' })
+  @Get('buscar-por-caso-detalle/:idCaso')
+  async buscarPorCasoDetalle(@Param('idCaso') idCaso: string) {
+    const datos = await this.operativoService.buscarOperativoPorCaso(idCaso)
+    return this.successList(datos)
+  }
+
+  @ApiOperation({
     summary: 'Crear operativo para un caso',
     description:
       'Un caso puede tener múltiples operativos. ' +

@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
+import { InvestigacionParalela } from '../entity/investigacion-paralela.entity'
+import { Investigador } from '../entity/investigador.entity'
+import { PaginacionQueryDto } from '@/common/dto'
 
 @Injectable()
 export class CasosParalelosRepository {
@@ -10,32 +13,75 @@ export class CasosParalelosRepository {
     private dataSource: DataSource
   ) { }
 
-  /**
-   * Busca casos por unidad y número de caso (Lógica SQL legacy)
-   * SELECT ASIGNACION.Casos_Id AS Cas1, UNIDADES.Uni_Descripcion AS Cas2, DISTRITALES.Dis_Descripcion AS Cas3, ASIGNACION.NroOperativo AS Cas4, ASIGNACION.NombreCaso AS Cas5, ASIGNACION.NroCaso AS Cas6, ASIGNACION.AsigCaso AS Cas7, ASIGNACION.FiscalAsigCaso AS Cas8
-   * FROM ASIGNACION 
-   * INNER JOIN UNIDADES ON ASIGNACION.Uni_Abrev = UNIDADES.Uni_Abrev 
-   * INNER JOIN DISTRITALES ON ASIGNACION.Dis_Id = DISTRITALES.Dis_Id
-   * WHERE (ASIGNACION.Uni_Abrev = :unidad) AND (ASIGNACION.NroCaso = :numeroCaso) 
-   * ORDER BY Cas1
-   */
-  async buscarPorUnidadYNumeroCaso(unidad: string, numeroCaso: string): Promise<any[]> {
-    return this.dataSource.query(
-      `SELECT 
-        a.id_caso AS "idCaso", 
-        u.descripcion AS "unidadDescripcion", 
-        d.descripcion AS "distritaleDescripcion", 
-        a.numero_operativo AS "numeroOperativo", 
-        a.nombre_caso AS "nombreCaso", 
-        a.numero_caso AS "numeroCaso", 
-        a.asignado_caso AS "asignadoCaso", 
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
-      FROM public.asignacion a 
-      INNER JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura 
-      INNER JOIN public.distrital d ON a.id_distrital = d.id_distrital
-      WHERE a.abreviatura_unidad = $1 AND a.numero_caso = $2
-      ORDER BY a.id_caso`,
-      [unidad, numeroCaso]
-    )
+  private get repo() {
+    return this.dataSource.getRepository(InvestigacionParalela)
   }
+
+  async crearInvestigacionParalela(
+    investigacion: Partial<InvestigacionParalela>
+  ): Promise<InvestigacionParalela> {
+    const nueva = this.repo.create(investigacion)
+    return this.repo.save(nueva)
+  }
+
+  async listar(
+    paginacion: PaginacionQueryDto
+  ): Promise<[InvestigacionParalela[], number]> {
+    return this.repo.findAndCount({
+      skip: paginacion.saltar,
+      take: paginacion.limite,
+      order: { fechaHoraIngreso: 'DESC' },
+    })
+  }
+
+  async buscarPorUnidadYResultado(
+    abreviaturaUnidad: string,
+    resultado: boolean,
+    paginacion: PaginacionQueryDto
+  ): Promise<[InvestigacionParalela[], number]> {
+    return this.repo
+      .createQueryBuilder('ip')
+      .leftJoinAndSelect('ip.departamento', 'd')
+      .leftJoinAndSelect('ip.unidad', 'u')
+      .leftJoinAndSelect('ip.distrital', 'dist')
+      .leftJoinAndSelect('ip.grupo', 'g')
+      .where('ip.abreviaturaUnidad = :abreviaturaUnidad', { abreviaturaUnidad })
+      .andWhere('ip.resultado = :resultado', { resultado })
+      .orderBy('ip.fechaHoraIngreso', 'DESC')
+      .skip(paginacion.saltar)
+      .take(paginacion.limite)
+      .getManyAndCount()
+  }
+
+  async buscarPorId(id: string): Promise<InvestigacionParalela | null> {
+    return this.repo.findOne({
+      where: { id },
+      relations: ['asignacion', 'operativo'],
+    })
+  }
+
+  async actualizarInvestigacionParalela(
+    investigacion: Partial<InvestigacionParalela>
+  ): Promise<InvestigacionParalela> {
+    return this.repo.save(investigacion)
+  }
+
+  /*// ==================== INVESTIGADOR ====================
+
+  private get investigadorRepo() {
+    return this.dataSource.getRepository(Investigador)
+  }
+
+  async crearInvestigador(investigador: Partial<Investigador>): Promise<Investigador> {
+    const nuevo = this.investigadorRepo.create(investigador)
+    return this.investigadorRepo.save(nuevo)
+  }
+
+  async listarInvestigadoresPorCaso(idCaso: string): Promise<Investigador[]> {
+    return this.investigadorRepo.find({
+      where: { idCaso },
+      relations: ['grado'],
+      order: { fecha: 'DESC' }
+    })
+  }*/
 }

@@ -1,7 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  BeforeInsert,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
 import { Operativo } from '../../operativo/entity/operativo.entity'
+import { DepartamentoCaso } from '../../parametrica/entity/geografia/departamento-caso.entity'
+import { Unidad } from '../../parametrica/entity/estructura/unidad.entity'
+import { Distrital } from '../../parametrica/entity/estructura/distrital.entity'
+import { Grupo } from '../../parametrica/entity/estructura/grupo.entity'
 
 /**
  * Entidad InvestigacionParalela
@@ -20,14 +32,17 @@ export class InvestigacionParalela extends BaseEntity {
   @Column({ name: 'id_departamento_caso', type: 'varchar', length: 2 })
   idDepartamentoCaso: string
 
-  @Column({ name: 'abreviatura_unidad', type: 'varchar', length: 3 })
-  abreviaturaUnidad: string
-
   @Column({ name: 'id_distrital', type: 'integer' })
   idDistrital: number
 
   @Column({ name: 'id_grupo', type: 'integer' })
   idGrupo: number
+
+  @Column({ name: 'id_operativo', type: 'bigint' })
+  idOperativo: string
+
+  @Column({ name: 'abreviatura_unidad', type: 'varchar', length: 3 })
+  abreviaturaUnidad: string
 
   @Column({ name: 'delito', type: 'varchar', length: 35 })
   delito: string
@@ -41,9 +56,6 @@ export class InvestigacionParalela extends BaseEntity {
   @Column({ name: 'fiscal_asignado_caso', type: 'varchar', length: 70 })
   fiscalAsignadoCaso: string
 
-  @Column({ name: 'id_operativo', type: 'bigint' })
-  idOperativo: string
-
   @Column({ name: 'delito_precedente', type: 'text' })
   delitoPrecedente: string
 
@@ -56,7 +68,11 @@ export class InvestigacionParalela extends BaseEntity {
   @Column({ name: 'resultado', type: 'boolean' })
   resultado: boolean
 
-  @Column({ name: 'fecha_respuesta_investigacion_paralela', type: 'timestamp', nullable: true })
+  @Column({
+    name: 'fecha_respuesta_investigacion_paralela',
+    type: 'timestamp',
+    nullable: true,
+  })
   fechaRespuestaInvestigacionParalela?: Date
 
   @Column({ name: 'respuesta_investigacion_paralela', type: 'boolean' })
@@ -75,13 +91,31 @@ export class InvestigacionParalela extends BaseEntity {
     }
   }
 
+  // ==================== RELACIONES ====================
+
   @ManyToOne(() => AsignacionSiii)
   @JoinColumn({ name: 'id_caso' })
   asignacion: AsignacionSiii
 
+  @ManyToOne(() => DepartamentoCaso)
+  @JoinColumn({ name: 'id_departamento_caso' })
+  departamento: DepartamentoCaso
+
+  @ManyToOne(() => Distrital)
+  @JoinColumn({ name: 'id_distrital' })
+  distrital: Distrital
+
+  @ManyToOne(() => Grupo)
+  @JoinColumn({ name: 'id_grupo' })
+  grupo: Grupo
+
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo: Operativo
+
+  @ManyToOne(() => Unidad)
+  @JoinColumn({ name: 'abreviatura_unidad', referencedColumnName: 'abreviatura' })
+  unidad: Unidad
 
   constructor(data?: Partial<InvestigacionParalela>) {
     super()
