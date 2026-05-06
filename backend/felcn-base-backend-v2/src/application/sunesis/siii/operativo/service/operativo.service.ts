@@ -630,6 +630,10 @@ export class OperativoService extends BaseService {
     return this.asignacionSiiiRepository.buscarCasosConCudPorUsuario(usuario)
   }
 
+  async buscarCasosporInvestigador(usuario: string): Promise<any[]> {
+    return this.asignacionSiiiRepository.buscarCasosporInvestigador(usuario);
+  }
+
   async listarCasosPorUnidad(abreviaturaUnidad: string): Promise<any[]> {
     return this.asignacionSiiiRepository.buscarCasosPorUnidad(abreviaturaUnidad)
   }

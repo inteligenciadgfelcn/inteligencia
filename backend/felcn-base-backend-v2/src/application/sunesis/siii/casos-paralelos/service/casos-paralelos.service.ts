@@ -26,9 +26,10 @@ export class CasosParalelosService {
   async buscarPorUnidadYResultado(
     unidad: string,
     resultado: boolean,
-    paginacion: PaginacionQueryDto
+    paginacion: PaginacionQueryDto,
+    respInvParalela?: boolean
   ): Promise<[InvestigacionParalela[], number]> {
-    return this.repository.buscarPorUnidadYResultado(unidad, resultado, paginacion)
+    return this.repository.buscarPorUnidadYResultado(unidad, resultado, paginacion, respInvParalela)
   }
 
   async buscarPorId(id: string): Promise<InvestigacionParalela | null> {

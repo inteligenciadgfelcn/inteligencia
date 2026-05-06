@@ -37,16 +37,23 @@ export class CasosParalelosRepository {
   async buscarPorUnidadYResultado(
     abreviaturaUnidad: string,
     resultado: boolean,
-    paginacion: PaginacionQueryDto
+    paginacion: PaginacionQueryDto,
+    respInvParalela?: boolean
   ): Promise<[InvestigacionParalela[], number]> {
-    return this.repo
+    const query = this.repo
       .createQueryBuilder('ip')
       .leftJoinAndSelect('ip.departamento', 'd')
       .leftJoinAndSelect('ip.unidad', 'u')
       .leftJoinAndSelect('ip.distrital', 'dist')
       .leftJoinAndSelect('ip.grupo', 'g')
-      .where('ip.abreviaturaUnidad = :abreviaturaUnidad', { abreviaturaUnidad })
+      .where('TRIM(ip.abreviaturaUnidad) = TRIM(:abreviaturaUnidad)', { abreviaturaUnidad })
       .andWhere('ip.resultado = :resultado', { resultado })
+
+    if (respInvParalela) {
+      query.andWhere('ip.respuestaInvestigacionParalela = :respInvParalela', { respInvParalela })
+    }
+
+    return query
       .orderBy('ip.fechaHoraIngreso', 'DESC')
       .skip(paginacion.saltar)
       .take(paginacion.limite)

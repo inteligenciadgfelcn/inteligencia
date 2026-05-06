@@ -92,6 +92,44 @@ export class AsignacionSiiiRepository {
   /**
    * Listar todos los de una unidad.
    */
+  /**
+   * Listar casos filtrados por investigador.
+   * INNER JOIN INVESTIGADOR ON ASIGNACION.id_caso = INVESTIGADOR.id_caso
+   * WHERE INVESTIGADOR.usuario = $1
+   */
+  async buscarCasosporInvestigador(usuario: string): Promise<any[]> {
+    return this.dataSource.query(
+      `SELECT
+        a.id_caso AS "idCaso",
+        COALESCE(u.descripcion, a.abreviatura_unidad) AS "unidadDescripcion",
+        COALESCE(d.descripcion, '') AS "distritaleDescripcion",
+        COALESCE(g.descripcion, '') AS "grupoDescripcion",
+        a.numero_caso AS "numeroCaso",
+        a.numero_caso_per_dom AS "numeroCasoPerDom",
+        a.numero_operativo AS "numeroOperativo",
+        a.nombre_caso AS "nombreCaso",
+        a.asignado_caso AS "asignadoCaso",
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.id_departamento_caso AS "idDepartamentoCaso",
+        a.abreviatura_unidad AS "abreviaturaUnidad",
+        a.id_distrital AS "idDistrital",
+        a.id_grupo AS "idGrupo",
+        dc.descripcion AS "departamento"
+      FROM public.asignacion a
+      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
+      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN public.departamento_caso dc ON a.id_departamento_caso = dc.id_departamento_caso
+      INNER JOIN public.investigador i ON a.id_caso = i.id_caso
+      WHERE i.usuario = $1
+      ORDER BY u.descripcion, d.descripcion, g.descripcion`,
+      [usuario]
+    )
+  }
+
+  /**
+   * Listar todos los de una unidad.
+   */
   async buscarCasosPorUnidad(abreviaturaUnidad: string): Promise<any[]> {
     return this.dataSource.query(
       `SELECT
@@ -114,12 +152,14 @@ export class AsignacionSiiiRepository {
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
       LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
-      left join public.departamento_caso dc on dc.id_departamento_caso = a.id_departamento_caso
+      LEFT JOIN public.departamento_caso dc ON dc.id_departamento_caso = a.id_departamento_caso
       WHERE TRIM(a.abreviatura_unidad) = TRIM($1) AND TRIM(COALESCE(a.numero_caso, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [abreviaturaUnidad]
-    )
+    );
   }
+
+  /**
 
   /**
    * Listar casos APROBADOS de un usuario (tienen numero_caso asignado).

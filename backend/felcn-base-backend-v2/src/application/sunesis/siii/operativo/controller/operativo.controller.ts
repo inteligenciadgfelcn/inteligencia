@@ -102,6 +102,13 @@ export class OperativoController extends BaseController {
     return this.successList(datos)
   }
 
+  @ApiOperation({ summary: 'Listar casos por investigador', description: 'Filtra casos asignados al investigador dado.' })
+  @Get('casos/investigador/:usuario')
+  async listarCasosporInvestigador(@Param('usuario') usuario: string) {
+    const datos = await this.operativoService.buscarCasosporInvestigador(usuario)
+    return this.successList(datos)
+  }
+
   // ==================== CATÁLOGOS ====================
 
   @ApiOperation({ summary: 'Listar estados de droga por tipo' })

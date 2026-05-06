@@ -31,22 +31,21 @@ export class CasosParalelosController extends BaseController {
   constructor(private readonly service: CasosParalelosService) {
     super()
   }
-
   @ApiOperation({
-    summary: 'Buscar investigaciones paralelas por unidad y resultado',
+    summary: 'Buscar investigaciones paralelas por unidad y resultado (filtros en body)',
   })
-  @ApiQuery({ name: 'unidad', description: 'Abreviatura de la unidad' })
-  @ApiQuery({ name: 'resultado', description: 'Resultado (true/false)' })
-  @Get('buscar-por-unidad-resultado')
+  @Post('buscar-por-unidad-resultado')
   async buscarPorUnidadYResultado(
-    @Query('unidad') unidad: string,
-    @Query('resultado', ParseBoolPipe) resultado: boolean,
+    @Body('unidad') unidad: string,
+    @Body('resultado', ParseBoolPipe) resultado: boolean,
+    @Body('respInvParalela') respInvParalela: boolean | undefined,
     @Query() paginacion: PaginacionQueryDto
   ) {
     const [datos, total] = await this.service.buscarPorUnidadYResultado(
       unidad,
       resultado,
-      paginacion
+      paginacion,
+      respInvParalela
     )
     return this.successPagedRows([datos, total], paginacion)
   }
