@@ -43,12 +43,14 @@ export const InvestigacionParalelaService = {
   buscarPorUnidadYResultado(
     unidad: string,
     resultado: boolean,
+    respInvParalela?: boolean,
     params?: any
   ): Promise<RespuestaApi<[any[], number]>> {
     return sesionPeticion({
       url: `${BASE}/buscar-por-unidad-resultado`,
-      method: 'get',
-      params: { unidad, resultado, ...params },
+      method: 'post',
+      body: { unidad, resultado, respInvParalela },
+      params,
       withCredentials: true,
     })
   },

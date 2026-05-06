@@ -1,16 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { GestionOperativoListado } from '../operaciones/operativo/gestion-operativo/ui/GestionOperativoListado'
 import { FormInvestigacionParalela } from './ui/FormInvestigacionParalela'
-import { ListadoInvestigacionParalela } from './ui/ListadoInvestigacionParalela'
 import type { GestionOperativoItem } from '../operaciones/operativo/gestion-operativo/types'
 import { Button } from '@/components/ui/Button'
-import IconCircleCheck from '@/components/Icon/IconCircleCheck'
 import { ExpansionContenidoAsignacion } from './ui/ExpansionContenidoAsignacion'
 
 export default function InvestigacionFinancieraParalelaPage() {
-  const [view, setView] = useState<'pendientes' | 'registrados'>('pendientes')
+  const router = useRouter()
   const [casoSeleccionado, setCasoSeleccionado] =
     useState<GestionOperativoItem | null>(null)
   const [expandedIds, setExpandedIds] = useState<(string | number)[]>([])
@@ -46,15 +45,12 @@ export default function InvestigacionFinancieraParalelaPage() {
           Investigación Financiera Paralela
         </h2>
         <div className="flex items-center gap-2">
-          <Button
-            variant={view === 'pendientes' ? 'primary' : 'outline-primary'}
-            onClick={() => setView('pendientes')}
-          >
+          <Button variant="primary">
             Seleccionar Caso
           </Button>
           <Button
-            variant={view === 'registrados' ? 'primary' : 'outline-primary'}
-            onClick={() => setView('registrados')}
+            variant="outline-primary"
+            onClick={() => router.push('/investigacion-financiera-paralela/listado')}
           >
             Investigaciones Registradas
           </Button>
@@ -62,25 +58,21 @@ export default function InvestigacionFinancieraParalelaPage() {
       </div>
 
       <div className="panel p-6">
-        {view === 'pendientes' ? (
-          <GestionOperativoListado
-            tipo="mi-unidad"
-            hideActions
-            rowExpansion={{
-              idField: 'idCaso',
-              expandedIds,
-              onExpandChange: setExpandedIds,
-              renderContent: (row) => (
-                <ExpansionContenidoAsignacion
-                  asignacion={row}
-                  onSelectOperativo={handleSelectOperativo}
-                />
-              ),
-            }}
-          />
-        ) : (
-          <ListadoInvestigacionParalela />
-        )}
+        <GestionOperativoListado
+          tipo="mi-unidad"
+          hideActions
+          rowExpansion={{
+            idField: 'idCaso',
+            expandedIds,
+            onExpandChange: setExpandedIds,
+            renderContent: (row) => (
+              <ExpansionContenidoAsignacion
+                asignacion={row}
+                onSelectOperativo={handleSelectOperativo}
+              />
+            ),
+          }}
+        />
       </div>
     </div>
   )

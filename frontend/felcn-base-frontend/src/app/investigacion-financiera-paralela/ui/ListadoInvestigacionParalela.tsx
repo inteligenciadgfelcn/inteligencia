@@ -14,14 +14,23 @@ export function ListadoInvestigacionParalela() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [search, setSearch] = useState('')
-  const [resultado, setResultado] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<'1' | '2' | '3'>('1')
+
+  const tabConfig = {
+    '1': { resultado: false, respInvParalela: undefined, label: 'Casos Paralelos en Analisis' },
+    '2': { resultado: true, respInvParalela: true, label: 'Casos Paralelos Judicializados' },
+    '3': { resultado: true, respInvParalela: false, label: 'Casos Paralelos Desestimados' },
+  }
+
+  const { resultado, respInvParalela } = tabConfig[activeTab]
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['investigacion-paralela-listado', abreviaturaUnidad, resultado],
+    queryKey: ['investigacion-paralela-listado', abreviaturaUnidad, activeTab],
     queryFn: () =>
       InvestigacionParalelaService.buscarPorUnidadYResultado(
         abreviaturaUnidad || '',
         resultado,
+        respInvParalela,
         { pagina: page, limite: limit }
       ),
     enabled: !!abreviaturaUnidad,
@@ -57,16 +66,16 @@ export function ListadoInvestigacionParalela() {
     },
     {
       accessor: 'resultado',
-      title: 'Resultado',
-      render: (row) => (
-        <span
-          className={`badge ${
-            row.resultado ? 'badge-outline-success' : 'badge-outline-warning'
-          }`}
-        >
-          {row.resultado ? 'Positivo' : 'En proceso'}
-        </span>
-      ),
+      title: 'Estado',
+      render: (row) => {
+        if (!row.resultado) {
+          return <span className="badge badge-outline-warning">En proceso</span>
+        }
+        if (row.respInvParalela === '1' || row.respInvParalela === true || row.respInvParalela === 1) {
+          return <span className="badge badge-outline-success">Positivo</span>
+        }
+        return <span className="badge badge-outline-danger">Negativo</span>
+      },
     },
     {
       accessor: 'id',
@@ -89,22 +98,23 @@ export function ListadoInvestigacionParalela() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <Button
-            variant={!resultado ? 'primary' : 'outline-primary'}
-            size="sm"
-            onClick={() => setResultado(false)}
-          >
-            En Proceso
-          </Button>
-          <Button
-            variant={resultado ? 'primary' : 'outline-primary'}
-            size="sm"
-            onClick={() => setResultado(true)}
-          >
-            Finalizados
-          </Button>
+          {(Object.keys(tabConfig) as Array<keyof typeof tabConfig>).map(
+            (key) => (
+              <Button
+                key={key}
+                variant={activeTab === key ? 'primary' : 'outline-primary'}
+                size="sm"
+                onClick={() => {
+                  setActiveTab(key)
+                  setPage(1)
+                }}
+              >
+                {tabConfig[key].label}
+              </Button>
+            )
+          )}
         </div>
         <Button
           variant="outline-secondary"

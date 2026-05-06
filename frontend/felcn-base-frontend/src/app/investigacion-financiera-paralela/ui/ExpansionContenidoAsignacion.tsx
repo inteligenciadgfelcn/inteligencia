@@ -7,6 +7,7 @@ import IconCircleCheck from '@/components/Icon/IconCircleCheck'
 import IconCalendar from '@/components/Icon/IconCalendar'
 import IconMapPin from '@/components/Icon/IconMapPin'
 import IconInfoCircle from '@/components/Icon/IconInfoCircle'
+import { Textarea } from '@/components/ui/Textarea'
 import dayjs from 'dayjs'
 import type { GestionOperativoItem } from '../../operaciones/operativo/gestion-operativo/types'
 
@@ -84,14 +85,17 @@ export function ExpansionContenidoAsignacion({
                 </div>
               </div>
 
-              {/* Descripción */}
-              <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-900/40">
-                <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-300">
-                  <span className="mb-1 block font-bold uppercase tracking-tighter text-gray-400">
-                    Descripción del Operativo:
-                  </span>
-                  {op.descripcionOperativo || 'Sin descripción detallada.'}
-                </p>
+              {/* Descripción / Detalle */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  Breve Detalle del Operativo
+                </label>
+                <Textarea
+                  readOnly
+                  rows={3}
+                  className="bg-gray-50 text-xs leading-relaxed dark:bg-gray-900/40"
+                  value={op.detalleOperativo || op.descripcionOperativo || 'Sin descripción detallada.'}
+                />
               </div>
 
               {/* Botón de Acción */}
