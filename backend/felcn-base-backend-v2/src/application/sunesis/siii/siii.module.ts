@@ -93,6 +93,11 @@ import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 import { InvestigacionParalela } from './casos-paralelos/entity/investigacion-paralela.entity'
 import { Investigador } from './casos-paralelos/entity/investigador.entity'
 
+// Investigación Paralela
+import { InvestigacionController } from './investigacion/controller/investigacion.controller'
+import { InvestigacionService } from './investigacion/service/investigacion.service'
+import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
@@ -202,17 +207,19 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController, AsignacionSiiiController, CasosParalelosController],
+  controllers: [LookupController, OperativoController, AsignacionSiiiController, CasosParalelosController, InvestigacionController],
   providers: [
     LookupService,
     OperativoService,
     AsignacionSiiiService,
     CasosParalelosService,
+    InvestigacionService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
     CasosParalelosRepository,
+    InvestigacionRepository,
   ],
-  exports: [LookupService, OperativoService, AsignacionSiiiService, CasosParalelosService],
+  exports: [LookupService, OperativoService, AsignacionSiiiService, CasosParalelosService, InvestigacionService],
 })
 export class SiiiModule {}
