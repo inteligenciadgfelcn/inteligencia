@@ -38,7 +38,7 @@ export function BusquedaCasos({ onSearch }: BusquedaCasosProps) {
 
   const { data: investigadoresData } = useQuery({
     queryKey: ['investigadores', abreviaturaUnidad],
-    queryFn: () => InvestigacionService.listarInvestigadores(abreviaturaUnidad ?? ''),
+    queryFn: () => InvestigacionService.listarUsuariosUnidad(abreviaturaUnidad ?? ''),
     enabled: tipoFiltro === 'investigador' && !!abreviaturaUnidad,
   })
 

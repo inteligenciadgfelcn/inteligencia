@@ -2,7 +2,8 @@ import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type { RespuestaApi } from '@/services/operativos/types'
 
-const BASE = `${Constantes.baseUrl}/investigacion`
+const BASE_USUARIO = `${Constantes.baseUrl}/usuarios`
+const BASE_INVESTIGACION = `${Constantes.baseUrl}/operativos`
 
 export interface InvestigadorItem {
   usuario: string
@@ -89,18 +90,26 @@ export interface InvestigacionParalelaPayload {
 }
 
 export const InvestigacionService = {
-  listarInvestigadores(abreviaturaUnidad: string): Promise<RespuestaApi<InvestigadorItem[]>> {
+  // listarInvestigadores(abreviaturaUnidad: string): Promise<RespuestaApi<InvestigadorItem[]>> {
+  //   return sesionPeticion({
+  //     url: `${BASE}/asignacion/investigadores`,
+  //     method: 'get',
+  //     params: { abreviaturaUnidad },
+  //     withCredentials: true,
+  //   })
+  // },
+
+  listarUsuariosUnidad(abreviatura: string): Promise<RespuestaApi<InvestigadorItem[]>> {
     return sesionPeticion({
-      url: `${BASE}/asignacion/investigadores`,
+      url: `${BASE_USUARIO}/unidades/${abreviatura}`,
       method: 'get',
-      params: { abreviaturaUnidad },
       withCredentials: true,
     })
   },
 
   buscarAsignacion(params: BuscarAsignacionParams): Promise<RespuestaApi<AsignacionItem[]>> {
     return sesionPeticion({
-      url: `${BASE}/asignacion`,
+      url: `${BASE_INVESTIGACION}/asignacion`,
       method: 'get',
       params,
       withCredentials: true,
@@ -109,7 +118,7 @@ export const InvestigacionService = {
 
   listarOperativosPorCaso(idCaso: string): Promise<RespuestaApi<OperativoItem[]>> {
     return sesionPeticion({
-      url: `${BASE}/asignacion/${idCaso}/operativos`,
+      url: `${BASE_INVESTIGACION}/asignacion/${idCaso}/operativos`,
       method: 'get',
       withCredentials: true,
     })
@@ -121,7 +130,7 @@ export const InvestigacionService = {
     limite = 10
   ): Promise<RespuestaApi<PagedResponse<CasoParaleloItem>>> {
     return sesionPeticion({
-      url: `${BASE}/en-analisis`,
+      url: `${BASE_INVESTIGACION}/en-analisis`,
       method: 'get',
       params: { abreviaturaUnidad, pagina, limite },
       withCredentials: true,
@@ -134,7 +143,7 @@ export const InvestigacionService = {
     limite = 10
   ): Promise<RespuestaApi<PagedResponse<CasoParaleloItem>>> {
     return sesionPeticion({
-      url: `${BASE}/judicializados`,
+      url: `${BASE_INVESTIGACION}/judicializados`,
       method: 'get',
       params: { abreviaturaUnidad, pagina, limite },
       withCredentials: true,
@@ -147,7 +156,7 @@ export const InvestigacionService = {
     limite = 10
   ): Promise<RespuestaApi<PagedResponse<CasoParaleloItem>>> {
     return sesionPeticion({
-      url: `${BASE}/desestimados`,
+      url: `${BASE_INVESTIGACION}/desestimados`,
       method: 'get',
       params: { abreviaturaUnidad, pagina, limite },
       withCredentials: true,
@@ -156,7 +165,7 @@ export const InvestigacionService = {
 
   guardar(payload: InvestigacionParalelaPayload): Promise<RespuestaApi<any>> {
     return sesionPeticion({
-      url: `${BASE}`,
+      url: `${BASE_INVESTIGACION}`,
       method: 'post',
       body: payload,
       withCredentials: true,
