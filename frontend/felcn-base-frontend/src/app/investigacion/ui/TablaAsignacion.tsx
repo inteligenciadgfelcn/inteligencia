@@ -21,37 +21,37 @@ interface TablaAsignacionProps {
 
 const columns: Column<AsignacionItem>[] = [
   {
+    accessor: 'unidad',
+    title: 'Unidad',
+  },
+  {
+    accessor: 'distrital',
+    title: 'Regional',
+  },
+  {
     accessor: 'nroOperativo',
-    title: 'Nro. Operativo',
+    title: 'Nro. de Operativo',
     render: (row) => (
       <span className="badge badge-outline-primary">{row.nroOperativo}</span>
     ),
-  },
-  {
-    accessor: 'numeroCaso',
-    title: 'Nro. Caso',
-    sortable: true,
-    render: (row) => <span className="font-semibold">{row.numeroCaso}</span>,
   },
   {
     accessor: 'nombreCaso',
     title: 'Nombre del Caso',
   },
   {
-    accessor: 'unidad',
-    title: 'Unidad',
-  },
-  {
-    accessor: 'distrital',
-    title: 'Distrital',
+    accessor: 'numeroCaso',
+    title: 'Nro. Caso FELCN',
+    sortable: true,
+    render: (row) => <span className="font-semibold">{row.numeroCaso}</span>,
   },
   {
     accessor: 'asignadoCaso',
-    title: 'Asignado',
+    title: 'Asignado al Caso',
   },
   {
     accessor: 'fiscalAsignadoCaso',
-    title: 'Fiscal',
+    title: 'Fiscal Asignado',
   },
 ]
 

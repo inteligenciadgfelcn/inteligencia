@@ -11,11 +11,11 @@ import IconSave from '@/components/Icon/IconSave'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { InvestigacionParalelaService } from '@/services/operativos/InvestigacionParalelaService'
+import { InvestigacionService } from '@/services/investigacion/InvestigacionService'
+import type { InvestigacionParalelaPayload } from '@/services/investigacion/InvestigacionService'
 import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import dayjs from 'dayjs'
-import type { InvestigacionParalelaPayload } from '@/services/operativos/InvestigacionParalelaService'
 
 const schema = z.object({
   delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
@@ -40,7 +40,6 @@ export const FormInvestigacionParalela = ({
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -73,7 +72,7 @@ export const FormInvestigacionParalela = ({
         resultado: false,
         respuestaInvestigacionParalela: false,
       }
-      await InvestigacionParalelaService.guardar(payload)
+      await InvestigacionService.guardar(payload)
       Alerta({
         mensaje: 'Caso Paralelo guardado exitosamente',
         variant: 'success',
@@ -264,7 +263,7 @@ export const FormInvestigacionParalela = ({
                 )}
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-3">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Informe de Inteligencia financiera o patrimonial <span className="text-danger">*</span>
                 </label>

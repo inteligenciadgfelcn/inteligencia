@@ -69,6 +69,25 @@ interface PagedResponse<T> {
   }
 }
 
+export interface InvestigacionParalelaPayload {
+  idCaso: string
+  idDepartamentoCaso: string
+  abreviaturaUnidad: string
+  idDistrital: number
+  idGrupo: number
+  delito: string
+  numeroCaso: string
+  asignadoCaso: string
+  fiscalAsignadoCaso: string
+  idOperativo: string
+  delitoPrecedente: string
+  informe: string
+  fechaEnvioInvestigacionParalela: string
+  resultado: boolean
+  fechaRespuestaInvestigacionParalela?: string
+  respuestaInvestigacionParalela: boolean
+}
+
 export const InvestigacionService = {
   listarInvestigadores(abreviaturaUnidad: string): Promise<RespuestaApi<InvestigadorItem[]>> {
     return sesionPeticion({
@@ -131,6 +150,15 @@ export const InvestigacionService = {
       url: `${BASE}/desestimados`,
       method: 'get',
       params: { abreviaturaUnidad, pagina, limite },
+      withCredentials: true,
+    })
+  },
+
+  guardar(payload: InvestigacionParalelaPayload): Promise<RespuestaApi<any>> {
+    return sesionPeticion({
+      url: `${BASE}`,
+      method: 'post',
+      body: payload,
       withCredentials: true,
     })
   },

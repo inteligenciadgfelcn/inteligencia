@@ -26,12 +26,6 @@ const ESTADO_BADGE: Record<string, string> = {
 
 const columns: Column<CasoParaleloItem>[] = [
   {
-    accessor: 'numeroCaso',
-    title: 'Nro. Caso',
-    sortable: true,
-    render: (row) => <span className="font-semibold">{row.numeroCaso}</span>,
-  },
-  {
     accessor: 'estado',
     title: 'Estado',
     render: (row) => (
@@ -53,20 +47,50 @@ const columns: Column<CasoParaleloItem>[] = [
     title: 'Distrital',
   },
   {
+    accessor: 'grupo',
+    title: 'Grupo',
+  },
+  {
     accessor: 'delito',
     title: 'Delito',
   },
   {
+    accessor: 'numeroCaso',
+    title: 'Nro. de Caso',
+    sortable: true,
+    render: (row) => <span className="font-semibold">{row.numeroCaso}</span>,
+  },
+  {
     accessor: 'asignadoCaso',
-    title: 'Asignado',
+    title: 'Investigador Asignado',
   },
   {
     accessor: 'fiscalAsignadoCaso',
-    title: 'Fiscal',
+    title: 'Fiscal Asignado',
+  },
+  {
+    accessor: 'delitoPrecedente',
+    title: 'Delito Precedente',
+    render: (row) =>
+      row.delitoPrecedente ? (
+        <span className="line-clamp-2 max-w-xs text-xs">{row.delitoPrecedente}</span>
+      ) : (
+        '-'
+      ),
+  },
+  {
+    accessor: 'informe',
+    title: 'Informe de Inv. Paralela',
+    render: (row) =>
+      row.informe ? (
+        <span className="line-clamp-2 max-w-xs text-xs">{row.informe}</span>
+      ) : (
+        '-'
+      ),
   },
   {
     accessor: 'fechaEnvio',
-    title: 'Fecha Envío',
+    title: 'Fecha de Envío',
     render: (row) =>
       row.fechaEnvio ? dayjs(row.fechaEnvio).format('DD/MM/YYYY') : '-',
   },

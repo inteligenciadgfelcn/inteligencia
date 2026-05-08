@@ -79,6 +79,14 @@ export function ExpansionOperativos({ asignacion, onSelect }: ExpansionOperativo
                   <IconMapPin className="h-4 w-4 text-danger" />
                   <span className="truncate">{op.lugarCompleto}</span>
                 </div>
+                {op.unidadDistrital && (
+                  <div className="flex items-center gap-2 text-gray-600 md:col-span-2 dark:text-gray-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                      Unidad:
+                    </span>
+                    <span>{op.unidadDistrital}</span>
+                  </div>
+                )}
               </div>
 
               {op.relacionHecho && (

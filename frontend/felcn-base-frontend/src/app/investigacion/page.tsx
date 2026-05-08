@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { BusquedaCasos } from './ui/BusquedaCasos'
 import { TablaAsignacion } from './ui/TablaAsignacion'
-import { FormInvestigacionParalela } from '../investigacion-financiera-paralela/ui/FormInvestigacionParalela'
+import { FormInvestigacionParalela } from './ui/FormInvestigacionParalela'
 import type { BuscarAsignacionParams, AsignacionItem, OperativoItem } from '@/services/investigacion/InvestigacionService'
 import type { GestionOperativoItem } from '../operaciones/operativo/gestion-operativo/types'
 
