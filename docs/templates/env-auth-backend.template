@@ -1,0 +1,98 @@
+NODE_ENV=development
+PORT=3000
+
+# ============================================
+# BASE DE DATOS
+# ============================================
+DB_HOST=<DB_HOST>
+DB_PORT=5432
+DB_USERNAME=<DB_USERNAME>
+DB_PASSWORD=<DB_PASSWORD>
+DB_DATABASE=felcn_auth_v3
+DB_USE_SSL=false
+DB_VERIFY_SSL=false
+
+DB_SCHEMA=proyecto
+DB_SCHEMA_USUARIO=usuario
+DB_SCHEMA_PARAMETRO=parametro
+DB_SCHEMA_FELCN=felcn_estructura
+
+# ============================================
+# APLICACIÓN
+# ============================================
+PATH_SUBDOMAIN=api
+REQUEST_TIMEOUT_IN_SECONDS=30
+
+# ============================================
+# JWT — Usar el mismo JWT_SECRET que backend-v2
+# ============================================
+JWT_SECRET=<JWT_SECRET_256_BITS_HEX>
+JWT_EXPIRES_IN=1h
+
+REFRESH_TOKEN_NAME=jid
+REFRESH_TOKEN_EXPIRES_IN=3600000
+REFRESH_TOKEN_ROTATE_IN=900000
+REFRESH_TOKEN_SECURE=false
+# En producción: REFRESH_TOKEN_SECURE=true
+REFRESH_TOKEN_DOMAIN=<DOMINIO>
+REFRESH_TOKEN_PATH=/
+REFRESH_TOKEN_REVISIONS='*/5 * * * *'
+
+# ============================================
+# MENSAJERÍA
+# ============================================
+MSJ_URL=<MSJ_URL>
+MSJ_TOKEN=<MSJ_TOKEN>
+MSJ_TIMEOUT_EN_SEGUNDOS=10
+
+# ============================================
+# INTEROPERABILIDAD (IOP)
+# ============================================
+IOP_SEGIP_URL=<IOP_SEGIP_URL>
+IOP_SEGIP_TOKEN=<IOP_SEGIP_TOKEN>
+IOP_SEGIP_CONTRASTACION_ENABLED=false
+
+IOP_SIN_URL=<IOP_SIN_URL>
+IOP_SIN_TOKEN=<IOP_SIN_TOKEN>
+
+# ============================================
+# CIUDADANÍA DIGITAL (OIDC)
+# ============================================
+OIDC_ISSUER=<OIDC_ISSUER>
+OIDC_CLIENT_ID=<OIDC_CLIENT_ID>
+OIDC_CLIENT_SECRET=<OIDC_CLIENT_SECRET>
+OIDC_SCOPE=<OIDC_SCOPE>
+OIDC_REDIRECT_URI=<OIDC_REDIRECT_URI>
+OIDC_POST_LOGOUT_REDIRECT_URI=<OIDC_POST_LOGOUT_REDIRECT_URI>
+SESSION_SECRET=<SESSION_SECRET>
+
+# ============================================
+# FRONTEND Y ALMACENAMIENTO
+# ============================================
+URL_FRONTEND=https://<DOMINIO>/
+STORAGE_NFS_PATH=/home/user/storage/
+
+# ============================================
+# LOGS
+# ============================================
+LOG_ENABLED=true
+LOG_LEVEL=info
+LOG_AUDIT='application request response authentication mensajeria'
+LOG_CONSOLE=true
+LOG_SQL=true
+# En producción: LOG_CONSOLE=false, LOG_SQL=false
+
+LOG_FILE_ENABLED=true
+LOG_FILE_PATH=/tmp/logs/
+LOG_FILE_SIZE=50M
+LOG_FILE_INTERVAL=YM
+
+# ============================================
+# LOKI (logs centralizados — opcional)
+# ============================================
+LOG_LOKI_ENABLED=false
+LOG_LOKI_URL=http://localhost:3100/
+LOG_LOKI_USERNAME=
+LOG_LOKI_PASSWORD=
+LOG_LOKI_BATCHING=true
+LOG_LOKI_BATCH_INTERVAL=5
