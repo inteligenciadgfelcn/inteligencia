@@ -89,11 +89,9 @@ import { FabricaModelo } from './operativo/entity/fabrica-modelo.entity'
 import { EstadoDroga } from './operativo/entity/estado-droga.entity'
 import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 
-// Casos Paralelos
-import { InvestigacionParalela } from './casos-paralelos/entity/investigacion-paralela.entity'
-import { Investigador } from './casos-paralelos/entity/investigador.entity'
-
 // Investigación Paralela
+import { InvestigacionParalela } from './investigacion/entity/investigacion-paralela.entity'
+import { Investigador } from './investigacion/entity/investigador.entity'
 import { InvestigacionController } from './investigacion/controller/investigacion.controller'
 import { InvestigacionService } from './investigacion/service/investigacion.service'
 import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
@@ -102,19 +100,16 @@ import { InvestigacionRepository } from './investigacion/repository/investigacio
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
 import { AsignacionSiiiController } from './asignacion/controller/asignacion-siii.controller'
-import { CasosParalelosController } from './casos-paralelos/controller/casos-paralelos.controller'
 
 // Services
 import { LookupService } from './parametrica/service/lookup.service'
 import { OperativoService } from './operativo/service/operativo.service'
 import { AsignacionSiiiService } from './asignacion/service/asignacion-siii.service'
-import { CasosParalelosService } from './casos-paralelos/service/casos-paralelos.service'
 
 // Repositories
 import { LookupRepository } from './parametrica/repository/lookup.repository'
 import { OperativoRepository } from './operativo/repository/operativo.repository'
 import { AsignacionSiiiRepository } from './asignacion/repository/asignacion-siii.repository'
-import { CasosParalelosRepository } from './casos-paralelos/repository/casos-paralelos.repository'
 
 const entitiesParametricas = [
   // Geografía
@@ -207,19 +202,17 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController, AsignacionSiiiController, CasosParalelosController, InvestigacionController],
+  controllers: [LookupController, OperativoController, AsignacionSiiiController, InvestigacionController],
   providers: [
     LookupService,
     OperativoService,
     AsignacionSiiiService,
-    CasosParalelosService,
     InvestigacionService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
-    CasosParalelosRepository,
     InvestigacionRepository,
   ],
-  exports: [LookupService, OperativoService, AsignacionSiiiService, CasosParalelosService, InvestigacionService],
+  exports: [LookupService, OperativoService, AsignacionSiiiService, InvestigacionService],
 })
 export class SiiiModule {}

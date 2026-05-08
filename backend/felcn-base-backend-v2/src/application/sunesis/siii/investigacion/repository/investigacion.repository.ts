@@ -3,7 +3,8 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
 import { Operativo } from '../../operativo/entity/operativo.entity'
-import { InvestigacionParalela } from '../../casos-paralelos/entity/investigacion-paralela.entity'
+import { InvestigacionParalela } from '../entity/investigacion-paralela.entity'
+import { Investigador } from '../entity/investigador.entity'
 import { PaginacionQueryDto } from '@/common/dto'
 import { BuscarAsignacionQueryDto } from '../dto/buscar-asignacion-query.dto'
 
@@ -12,28 +13,32 @@ export class InvestigacionRepository {
   constructor(
     @InjectDataSource(DB_SIII)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
-  // ==================== ASIGNACION ====================
-
-  /**
-   * Lista investigadores (rol = 'I') de una unidad.
-   * Origen: asignados() — PAR-REG-CASO.aspx.cs
-   * Join: investigador → grado → asignacion (para filtrar por unidad)
-   */
-  async listarInvestigadoresPorUnidad(abreviaturaUnidad: string): Promise<{ usuario: string; nombreCompleto: string }[]> {
-    return this.dataSource.query(
-      `SELECT DISTINCT
-         inv.usuario,
-         TRIM(g.abreviatura) || ' ' || TRIM(inv.nombre_app) AS "nombreCompleto"
-       FROM public.investigador inv
-       INNER JOIN parametricas.grado g ON inv.id_grado = g.id_grado
-       INNER JOIN public.asignacion a ON inv.id_caso = a.id_caso
-       WHERE TRIM(a.abreviatura_unidad) = TRIM($1)
-       ORDER BY inv.id_grado`,
-      [abreviaturaUnidad]
-    )
+  private get repo() {
+    return this.dataSource.getRepository(InvestigacionParalela)
   }
+
+  // // ==================== ASIGNACION ====================
+
+  // /**
+  //  * Lista investigadores (rol = 'I') de una unidad.
+  //  * Origen: asignados() — PAR-REG-CASO.aspx.cs
+  //  * Join: investigador → grado → asignacion (para filtrar por unidad)
+  //  */
+  // async listarInvestigadoresPorUnidad(abreviaturaUnidad: string): Promise<{ usuario: string; nombreCompleto: string }[]> {
+  //   return this.dataSource.query(
+  //     `SELECT DISTINCT
+  //        inv.usuario,
+  //        TRIM(g.abreviatura) || ' ' || TRIM(inv.nombre_app) AS "nombreCompleto"
+  //      FROM public.investigador inv
+  //      INNER JOIN parametricas.grado g ON inv.id_grado = g.id_grado
+  //      INNER JOIN public.asignacion a ON inv.id_caso = a.id_caso
+  //      WHERE TRIM(a.abreviatura_unidad) = TRIM($1)
+  //      ORDER BY inv.id_grado`,
+  //     [abreviaturaUnidad]
+  //   )
+  // }
 
   /**
    * Busca casos de la tabla ASIGNACION con distintos criterios.
@@ -125,6 +130,36 @@ export class InvestigacionRepository {
 
   // ==================== INVESTIGACION PARALELA ====================
 
+  async crearInvestigacionParalela(
+    investigacion: Partial<InvestigacionParalela>
+  ): Promise<InvestigacionParalela> {
+    const nueva = this.repo.create(investigacion)
+    return this.repo.save(nueva)
+  }
+
+  async listar(
+    paginacion: PaginacionQueryDto
+  ): Promise<[InvestigacionParalela[], number]> {
+    return this.repo.findAndCount({
+      skip: paginacion.saltar,
+      take: paginacion.limite,
+      order: { fechaHoraIngreso: 'DESC' },
+    })
+  }
+
+  async buscarPorId(id: string): Promise<InvestigacionParalela | null> {
+    return this.repo.findOne({
+      where: { id },
+      relations: ['asignacion', 'operativo'],
+    })
+  }
+
+  async actualizarInvestigacionParalela(
+    investigacion: Partial<InvestigacionParalela>
+  ): Promise<InvestigacionParalela> {
+    return this.repo.save(investigacion)
+  }
+
   /**
    * Lista investigaciones paralelas filtradas por unidad y estado.
    * Origen: Muestracasos() — PAR-ING/JUD/RECH-CASO.aspx.cs
@@ -139,8 +174,7 @@ export class InvestigacionRepository {
     paginacion: PaginacionQueryDto,
     respuestaInvestigacionParalela?: boolean
   ): Promise<[InvestigacionParalela[], number]> {
-    const qb = this.dataSource
-      .getRepository(InvestigacionParalela)
+    const qb = this.repo
       .createQueryBuilder('ip')
       .leftJoinAndSelect('ip.departamento', 'dep')
       .leftJoinAndSelect('ip.unidad', 'u')
@@ -158,9 +192,28 @@ export class InvestigacionRepository {
     }
 
     return qb
-      .orderBy('ip.fechaEnvioInvestigacionParalela', 'ASC')
+      .orderBy('ip.fechaHoraIngreso', 'DESC')
       .skip(paginacion.saltar)
       .take(paginacion.limite)
       .getManyAndCount()
+  }
+
+  // ==================== INVESTIGADOR ====================
+
+  private get investigadorRepo() {
+    return this.dataSource.getRepository(Investigador)
+  }
+
+  async crearInvestigador(investigador: Partial<Investigador>): Promise<Investigador> {
+    const nuevo = this.investigadorRepo.create(investigador)
+    return this.investigadorRepo.save(nuevo)
+  }
+
+  async listarInvestigadoresPorCaso(idCaso: string): Promise<Investigador[]> {
+    return this.investigadorRepo.find({
+      where: { idCaso },
+      relations: ['grado'],
+      order: { fecha: 'DESC' },
+    })
   }
 }

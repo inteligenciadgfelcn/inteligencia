@@ -1,4 +1,15 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Body,
+  Req,
+  UseGuards,
+  ParseBoolPipe,
+} from '@nestjs/common'
+import { Request } from 'express'
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -11,6 +22,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { PaginacionQueryDto } from '@/common/dto'
 import { InvestigacionService } from '../service/investigacion.service'
 import { BuscarAsignacionQueryDto } from '../dto/buscar-asignacion-query.dto'
+import { CreateInvestigacionParalelaDto } from '../dto/create-investigacion-paralela.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -23,16 +35,16 @@ export class InvestigacionController extends BaseController {
 
   // ==================== ASIGNACION (PAR-REG-CASO) ====================
 
-  @ApiOperation({
-    summary: 'Lista investigadores (rol I) de una unidad para el dropdown',
-    description: 'Origen: asignados() — PAR-REG-CASO.aspx.cs. Join: investigador → grado → asignacion.',
-  })
-  @ApiQuery({ name: 'abreviaturaUnidad', required: true, description: 'Abreviatura de la unidad' })
-  @Get('asignacion/investigadores')
-  async listarInvestigadores(@Query('abreviaturaUnidad') abreviaturaUnidad: string) {
-    const datos = await this.service.listarInvestigadoresPorUnidad(abreviaturaUnidad)
-    return this.successList(datos)
-  }
+  // @ApiOperation({
+  //   summary: 'Lista investigadores (rol I) de una unidad para el dropdown',
+  //   description: 'Origen: asignados() — PAR-REG-CASO.aspx.cs. Join: investigador → grado → asignacion.',
+  // })
+  // @ApiQuery({ name: 'abreviaturaUnidad', required: true, description: 'Abreviatura de la unidad' })
+  // @Get('asignacion/investigadores')
+  // async listarInvestigadores(@Query('abreviaturaUnidad') abreviaturaUnidad: string) {
+  //   const datos = await this.service.listarInvestigadoresPorUnidad(abreviaturaUnidad)
+  //   return this.successList(datos)
+  // }
 
   @ApiOperation({
     summary: 'Busca casos (ASIGNACION) con filtros opcionales',
@@ -62,6 +74,51 @@ export class InvestigacionController extends BaseController {
   }
 
   // ==================== INVESTIGACION PARALELA ====================
+
+  @ApiOperation({ summary: 'Crear una nueva investigación paralela' })
+  @Post()
+  async crearInvestigacionParalela(
+    @Body() dto: CreateInvestigacionParalelaDto,
+    @Req() req: Request
+  ) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const nueva = await this.service.crearInvestigacionParalela(dto, numeroPase)
+    return this.successCreate(nueva)
+  }
+
+  @ApiOperation({ summary: 'Listar investigaciones paralelas con paginación' })
+  @Get()
+  async listar(@Query() paginacion: PaginacionQueryDto) {
+    const [datos, total] = await this.service.listar(paginacion)
+    return this.successPagedRows([datos, total], paginacion)
+  }
+
+  @ApiOperation({ summary: 'Obtener investigación paralela por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la investigación paralela' })
+  @Get(':id')
+  async buscarPorId(@Param('id') id: string) {
+    const dato = await this.service.buscarPorId(id)
+    return this.successList(dato)
+  }
+
+  @ApiOperation({
+    summary: 'Buscar investigaciones paralelas por unidad y resultado (filtros en body)',
+  })
+  @Post('buscar-por-unidad-resultado')
+  async buscarPorUnidadYResultado(
+    @Body('unidad') unidad: string,
+    @Body('resultado', ParseBoolPipe) resultado: boolean,
+    @Body('respInvParalela') respInvParalela: boolean | undefined,
+    @Query() paginacion: PaginacionQueryDto
+  ) {
+    const [datos, total] = await this.service.buscarPorUnidadYResultado(
+      unidad,
+      resultado,
+      paginacion,
+      respInvParalela
+    )
+    return this.successPagedRows([datos, total], paginacion)
+  }
 
   @ApiOperation({
     summary: 'Casos Paralelos en Análisis (sin respuesta)',

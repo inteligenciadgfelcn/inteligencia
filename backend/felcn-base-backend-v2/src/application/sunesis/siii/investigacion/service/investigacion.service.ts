@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common'
 import { InvestigacionRepository } from '../repository/investigacion.repository'
 import { BuscarAsignacionQueryDto } from '../dto/buscar-asignacion-query.dto'
+import { CreateInvestigacionParalelaDto } from '../dto/create-investigacion-paralela.dto'
 import { PaginacionQueryDto } from '@/common/dto'
-import { InvestigacionParalela } from '../../casos-paralelos/entity/investigacion-paralela.entity'
+import { InvestigacionParalela } from '../entity/investigacion-paralela.entity'
+import { Investigador } from '../entity/investigador.entity'
 import { Operativo } from '../../operativo/entity/operativo.entity'
 
 @Injectable()
 export class InvestigacionService {
-  constructor(private readonly repository: InvestigacionRepository) {}
+  constructor(private readonly repository: InvestigacionRepository) { }
 
   // ==================== ASIGNACION ====================
 
-  listarInvestigadoresPorUnidad(abreviaturaUnidad: string) {
-    return this.repository.listarInvestigadoresPorUnidad(abreviaturaUnidad)
-  }
+  // listarInvestigadoresPorUnidad(abreviaturaUnidad: string) {
+  //   return this.repository.listarInvestigadoresPorUnidad(abreviaturaUnidad)
+  // }
 
   buscarAsignacion(filtros: BuscarAsignacionQueryDto) {
     return this.repository.buscarAsignacion(filtros)
@@ -25,6 +27,50 @@ export class InvestigacionService {
   }
 
   // ==================== INVESTIGACION PARALELA ====================
+
+  async crearInvestigacionParalela(
+    dto: CreateInvestigacionParalelaDto,
+    usuario: string
+  ): Promise<InvestigacionParalela> {
+    dto.usuario = usuario
+    return this.repository.crearInvestigacionParalela(dto)
+  }
+
+  async actualizarInvestigacionParalela(
+    dto: Partial<InvestigacionParalela>
+  ): Promise<InvestigacionParalela> {
+    return this.repository.actualizarInvestigacionParalela(dto)
+  }
+
+  async listar(
+    paginacion: PaginacionQueryDto
+  ): Promise<[InvestigacionParalela[], number]> {
+    return this.repository.listar(paginacion)
+  }
+
+  async buscarPorId(id: string): Promise<InvestigacionParalela | null> {
+    return this.repository.buscarPorId(id)
+  }
+
+  async buscarPorUnidadYResultado(
+    unidad: string,
+    resultado: boolean,
+    paginacion: PaginacionQueryDto,
+    respInvParalela?: boolean
+  ) {
+    const [casos, total] = await this.repository.listarPorEstado(
+      unidad,
+      resultado,
+      paginacion,
+      respInvParalela
+    )
+    const estado = resultado
+      ? respInvParalela
+        ? 'JUDICIALIZADO'
+        : 'DESESTIMADO'
+      : 'SIN RESPUESTA'
+    return [this.mapearCasos(casos, estado), total] as const
+  }
 
   async listarEnAnalisis(abreviaturaUnidad: string, paginacion: PaginacionQueryDto) {
     const [casos, total] = await this.repository.listarPorEstado(
@@ -97,5 +143,15 @@ export class InvestigacionService {
       fechaEnvio: ip.fechaEnvioInvestigacionParalela,
       fechaRespuesta: ip.fechaRespuestaInvestigacionParalela ?? null,
     }))
+  }
+
+  // ==================== INVESTIGADOR ====================
+
+  async crearInvestigador(investigador: Partial<Investigador>): Promise<Investigador> {
+    return this.repository.crearInvestigador(investigador)
+  }
+
+  async listarInvestigadoresPorCaso(idCaso: string): Promise<Investigador[]> {
+    return this.repository.listarInvestigadoresPorCaso(idCaso)
   }
 }
