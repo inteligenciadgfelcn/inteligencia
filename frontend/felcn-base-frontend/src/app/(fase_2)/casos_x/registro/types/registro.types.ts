@@ -1,3 +1,27 @@
+export interface Departamento {
+  abreviatura: string
+  descripcion: string
+  idDepartamento: number
+  estado: string
+}
+
+export interface RegistroCompletoPayload {
+  numeroCaso: string | null
+  numeroOperativo: string
+  fechaOperativo: string
+  idDepartamento?: string
+  idProvincia?: number
+  idLocalidad?: number
+  lugar?: string
+  idCategoriaOperativo?: number
+  idItemOperativo?: number
+  idUnidad?: number
+  idDistrital?: number
+  idGrupo?: number
+  mando?: string
+  [key: string]: unknown
+}
+
 export type SelectOption<T = unknown> = {
   value: number
   label: string

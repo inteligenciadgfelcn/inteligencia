@@ -58,12 +58,8 @@ function ThemeComponent({ children }: { children: ReactNode }) {
     return effectiveMode === 'light' ? lightTheme : darkTheme
   }, [mode, systemMode])
 
-  if (!mounted) {
-    return null
-  }
-
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={mounted ? theme : lightTheme}>
       <CssBaseline />
       {children}
     </ThemeProvider>
