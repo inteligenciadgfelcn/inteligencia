@@ -3,7 +3,7 @@ import { sesionPeticion } from '@/utils/peticion'
 import type { RespuestaApi } from '@/services/operativos/types'
 
 const BASE_USUARIO = `${Constantes.baseUrl}/usuarios`
-const BASE_INVESTIGACION = `${Constantes.baseUrl}/operativos`
+const BASE_INVESTIGACION = `${Constantes.baseUrl}/investigacion`
 
 export interface InvestigadorItem {
   usuario: string
