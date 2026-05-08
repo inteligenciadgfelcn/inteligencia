@@ -174,7 +174,8 @@ export class InvestigacionRepository {
     paginacion: PaginacionQueryDto,
     respuestaInvestigacionParalela?: boolean
   ): Promise<[InvestigacionParalela[], number]> {
-    const qb = this.repo
+    const qb = this.dataSource
+      .getRepository(InvestigacionParalela)
       .createQueryBuilder('ip')
       .leftJoinAndSelect('ip.departamento', 'dep')
       .leftJoinAndSelect('ip.unidad', 'u')
@@ -192,7 +193,7 @@ export class InvestigacionRepository {
     }
 
     return qb
-      .orderBy('ip.fechaHoraIngreso', 'DESC')
+      .orderBy('ip.fechaEnvioInvestigacionParalela', 'ASC')
       .skip(paginacion.saltar)
       .take(paginacion.limite)
       .getManyAndCount()

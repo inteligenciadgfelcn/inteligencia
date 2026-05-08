@@ -88,7 +88,7 @@ export class InvestigacionService {
       paginacion,
       true
     )
-    return [this.mapearCasos(casos, 'JUDICIALIZADO'), total] as const
+    return [this.mapearCasos(casos, 'SIN RESPUESTA'), total] as const
   }
 
   async listarDesestimados(abreviaturaUnidad: string, paginacion: PaginacionQueryDto) {

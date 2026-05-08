@@ -93,14 +93,6 @@ export class InvestigacionController extends BaseController {
     return this.successPagedRows([datos, total], paginacion)
   }
 
-  @ApiOperation({ summary: 'Obtener investigación paralela por ID' })
-  @ApiParam({ name: 'id', description: 'ID de la investigación paralela' })
-  @Get(':id')
-  async buscarPorId(@Param('id') id: string) {
-    const dato = await this.service.buscarPorId(id)
-    return this.successList(dato)
-  }
-
   @ApiOperation({
     summary: 'Buscar investigaciones paralelas por unidad y resultado (filtros en body)',
   })
@@ -160,5 +152,13 @@ export class InvestigacionController extends BaseController {
   ) {
     const [datos, total] = await this.service.listarDesestimados(abreviaturaUnidad, paginacion)
     return this.successPagedRows([datos, total], paginacion)
+  }
+
+  @ApiOperation({ summary: 'Obtener investigación paralela por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la investigación paralela' })
+  @Get(':id')
+  async buscarPorId(@Param('id') id: string) {
+    const dato = await this.service.buscarPorId(id)
+    return this.successList(dato)
   }
 }
