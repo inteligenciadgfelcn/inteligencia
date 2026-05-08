@@ -1,4 +1,4 @@
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
 export interface Parentesco {
@@ -6,8 +6,6 @@ export interface Parentesco {
 	descripcion: string
 	estado: string
 }
-
-const { sesionPeticion } = usePeticion()
 
 export async function getParentescos(): Promise<Parentesco[]> {
 	const response = await sesionPeticion({

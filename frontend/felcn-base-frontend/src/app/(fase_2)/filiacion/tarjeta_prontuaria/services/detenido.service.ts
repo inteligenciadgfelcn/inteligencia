@@ -1,5 +1,5 @@
 import { Constantes } from '@/config/Constantes'
-import { usePeticion } from '@/hooks/usePeticion'
+import { sesionPeticion } from '@/utils/peticion'
 
 export interface DetenidoDocumento {
   numero: string
@@ -58,8 +58,6 @@ export interface DetenidoDetalle {
   datosFamiliares?: DetenidoFamiliares[]
   nombresSupuestos?: DetenidoNombreSupuesto[]
 }
-
-const { sesionPeticion } = usePeticion()
 
 export async function getDetenidoById(
   idDetenido: string | number

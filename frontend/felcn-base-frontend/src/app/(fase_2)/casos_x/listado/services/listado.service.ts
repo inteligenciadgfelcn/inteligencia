@@ -1,9 +1,7 @@
-import { usePeticion } from '@/hooks'
+import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 import { DataTableParams } from '@/services'
 import { OperativosResponse } from '../types/listado.types'
-
-const { sesionPeticion } = usePeticion()
 
 export async function getOperativos(
   params: DataTableParams
