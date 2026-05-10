@@ -1,32 +1,929 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>DEPARTAMENTO NACIONAL DE INTELIGENCIA
-REGISTRO DE OPERACIONES CON RESULTADOS A NIVEL NACIONAL</title>
-</head>
-<body>
+<style>
+  @page {
+    size: Letter;
+    margin: 10mm;
+  }
 
-  <!-- ENCABEZADO -->
-  <header>
-    <img src="{{institucional}}" alt="Institucional">
-  </header>
+  * {
+    box-sizing: border-box;
+  }
 
-  <!-- CONTENIDO -->
-  <main>
-    <h2>DEPARTAMENTO NACIONAL DE INTELIGENCIA
-REGISTRO DE OPERACIONES CON RESULTADOS A NIVEL NACIONAL<br>
-    </h2>
-  </main>
+  .inline-label {
+  font-weight: bold;
+  font-size: 11px;
+  color: #111;
+}
 
-  <!-- PIE DE PÁGINA -->
-  <footer>
-    <div><strong>"nro de paginas</strong></div>
-    <div><br />
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #eef3ef;
+    margin: 0;
+    color: #111;
+  }
+
+  /* CONTENEDOR */
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    position: relative;
+    background: #ffffff;
+    padding: 12px 15px 10px;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(
+      to right,
+      #c8102e 33%,
+      #f4d00c 33%,
+      #f4d00c 66%,
+      #007a33 66%
+    );
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    width: 100px;
+  }
+
+  .header-center {
+    flex: 1;
+    text-align: center;
+  }
+
+  .title-main {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f3f2b;
+  }
+
+  .title-sub {
+    font-size: 11px;
+    font-weight: 600;
+    color: #2e5e3e;
+    margin-top: 2px;
+  }
+
+  .header-doc {
+    background: #2e5e3e;
+    color: white;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-weight: bold;
+  }
+
+  /* CARD */
+  .card {
+    background: #fff;
+    border: 1px solid #d6e2da;
+    width: 100%;
+  }
+
+  /* SECCIONES */
+  .section {
+    border-top: 1px solid #e3ebe5;
+    break-inside: avoid;
+  }
+
+  .section-title {
+    background: #f3f8f5;
+    color: #2e5e3e;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-left: 4px solid #2e5e3e;
+  }
+
+  /* IDENTIFICACION */
+  .identificacion {
+    padding: 10px;
+  }
+
+  /* FILAS */
+  .row,
+  .info-row {
+    display: flex;
+    gap: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid #eef2ef;
+  }
+
+  /* CELDAS */
+  .cell,
+  .info-col {
+    flex: 1;
+    font-size: 11px;
+    word-break: break-word;
+  }
+
+  strong {
+    color: #111;
+  }
+
+  /* GRID FOTOS */
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  /* GRID HUELLAS */
+  .fingerprints-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 14px;
+  }
+
+  /* WRAPPERS */
+  .photo-wrapper,
+  .finger-wrapper {
+    width: 100%;
+  }
+
+  /* FOTO */
+  .photo-box {
+    width: 100%;
+    height: 220px;
+
+    border: 2px solid #2e5e3e;
+    border-radius: 5px;
+
+    overflow: hidden;
+
+    background: #fff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* HUELLAS */
+  .finger-box {
+    width: 100%;
+    height: 150px;
+
+    border: 2px solid #2e5e3e;
+    border-radius: 10px;
+
+    background: #fff;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 10px;
+  }
+
+  .finger-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: crisp-edges;
+    transform: scale(1.12);
+  }
+
+  /* LABELS */
+  .finger-label {
+    text-align: center;
+    font-size: 11px;
+    margin-top: 6px;
+    color: #2e5e3e;
+    font-weight: bold;
+  }
+
+  /* INFORMACION */
+  .info-final {
+    padding: 14px;
+  }
+
+  /* BLOQUES */
+  .info-block {
+    margin-bottom: 16px;
+  }
+
+  /* TEXTO */
+  .textarea-box {
+    margin-top: 6px;
+
+    border: 1px solid #d6d6d6;
+    background: #fafafa;
+
+    padding: 8px 10px;
+
+    line-height: 1.4;
+
+    min-height: 40px;
+
+    font-size: 11px;
+  }
+
+  /* TABLAS */
+  .family-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+
+  .family-table th {
+    background: #f3f8f5;
+    border: 1px solid #ccc;
+    padding: 6px;
+  }
+
+  .family-table td {
+    border: 1px solid #ddd;
+    padding: 6px;
+  }
+
+  .photo-wrapper,
+  .finger-wrapper,
+  .info-block,
+  .row {
+    break-inside: avoid;
+  }
+</style>
+
+<div class='container'>
+
+  <!-- HEADER -->
+  <div class='header'>
+
+    <div class='header-top'>
+
+      <img src='{{institucional}}' class='logo' />
+
+      <div class='header-center'>
+
+        <div class='title-main'>
+          DEPARTAMENTO NACIONAL DE INTELIGENCIA
+        </div>
+
+        <div class='title-sub'>
+          ANTINARCÓTICOS
+        </div>
+
+        <div class='title-sub'>
+          Caso:
+          {{numeroCaso}}
+        </div>
+
+      </div>
+
+      <img src='{{escudo}}' class='logo' />
+
     </div>
-  </footer>
 
-</body>
-</html>
+  </div>
 
+  <!-- TITULO -->
+  <div class='header-doc'>
+    FICHA DACTILOSCÓPICA
+  </div>
 
+  <div class='card'>
+
+    <!-- IDENTIFICACION -->
+    <div class='section'>
+
+      <div class='section-title'>
+        IDENTIFICACIÓN
+      </div>
+
+      <div class='identificacion'>
+
+        <!-- FOTOS -->
+        <div class='photos-grid'>
+
+          <div class='photo-wrapper'>
+
+            <div class='photo-box'>
+              <img src='{{{fotoFrontal}}}' />
+            </div>
+
+            <div class='finger-label'>
+              FRONTAL
+            </div>
+
+          </div>
+
+          <div class='photo-wrapper'>
+
+            <div class='photo-box'>
+              <img src='{{{fotoPerfilIzquierdo}}}' />
+            </div>
+
+            <div class='finger-label'>
+              PERFIL IZQUIERDO
+            </div>
+
+          </div>
+
+          <div class='photo-wrapper'>
+
+            <div class='photo-box'>
+              <img src='{{{fotoPerfil}}}' />
+            </div>
+
+            <div class='finger-label'>
+              PERFIL DERECHO
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- DATOS -->
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Nombre:</strong>
+            {{nombre}}
+          </div>
+
+          <div class='cell'>
+            <strong>Alias:</strong>
+            {{alias}}
+          </div>
+
+        </div>
+
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Nacionalidad:</strong>
+            {{nacionalidad}}
+          </div>
+
+          <div class='cell'>
+            <strong>Fecha Nac.:</strong>
+            {{fechaNacimiento}}
+          </div>
+
+        </div>
+
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Estado Civil:</strong>
+            {{estadoCivil}}
+          </div>
+
+          <div class='cell'>
+            <strong>Profesión:</strong>
+            {{profesion}}
+          </div>
+
+        </div>
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Dirección:</strong>
+            {{direccion}}
+          </div>
+
+        </div>
+
+        <!-- NOMBRES SUPUESTOS -->
+        <div class='info-block'>
+
+          <span class='inline-label'>
+            Nombres supuestos:
+          </span>
+
+          <div class='textarea-box'>
+
+            {{#if nombresSupuestos}}
+
+              {{nombresSupuestos}}
+
+            {{else}}
+
+              Sin registros
+
+            {{/if}}
+
+          </div>
+
+        </div>
+        <!-- FENOTIPO -->
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Estatura:</strong>
+            {{estatura}}
+          </div>
+
+          <div class='cell'>
+            <strong>Peso:</strong>
+            {{peso}}
+          </div>
+
+        </div>
+
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Color de piel:</strong>
+            {{colorPiel}}
+          </div>
+
+          <div class='cell'>
+            <strong>Color de ojos:</strong>
+            {{colorOjos}}
+          </div>
+
+        </div>
+
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Tipo de cabello:</strong>
+            {{tipoCabello}}
+          </div>
+
+          <div class='cell'>
+            <strong>Color de cabello:</strong>
+            {{colorCabello}}
+          </div>
+
+        </div>
+
+        <div class='row'>
+
+          <div class='cell'>
+            <strong>Señas particulares:</strong>
+            {{seniasParticulares}}
+          </div>
+
+          <div class='cell'>
+            <strong>Tatuajes:</strong>
+            {{tatuajes}}
+          </div>
+
+        </div>
+        <div class='info-block'>
+
+          <span class='inline-label'>
+            Observaciones:
+          </span>
+
+          <div class='textarea-box'>
+            {{#if observaciones}}
+
+              {{observaciones}}
+
+            {{else}}
+
+              Sin registros
+
+            {{/if}}
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- DATOS COMPLEMENTARIOS -->
+    <div class='section'>
+
+      <div class='section-title'>
+        DATOS DE PARENTESCO Y CONTACTO
+      </div>
+
+      <div class='info-final'>
+
+        <!-- DATOS FAMILIARES -->
+        <div class='info-block'>
+
+          <table class='family-table'>
+
+            <thead>
+
+              <tr>
+
+                <th>Nombre</th>
+
+                <th>Parentesco</th>
+
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Implicado</th>
+                <th>Estado</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {{#each datosFamiliares}}
+
+                <tr>
+
+                  <td>
+                    {{this.nombreCompleto}}
+                  </td>
+
+                  <td>
+                    {{this.parentesco}}
+                  </td>
+
+                  <td>
+                    {{this.telefono}}
+                  </td>
+
+                  <td>
+                    {{this.direccion}}
+                  </td>
+
+                  <td>
+                    {{this.implicado}}
+                  </td>
+
+                  <td>
+                    {{this.estado}}
+                  </td>
+
+                </tr>
+
+              {{else}}
+
+                <tr>
+
+                  <td
+                    colspan='3'
+                    style='
+                      text-align:center;
+                      color:#666;
+                      padding:10px;
+                    '
+                  >
+                    Sin registros familiares
+                  </td>
+
+                </tr>
+
+              {{/each}}
+
+            </tbody>
+
+          </table>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MANO DERECHA -->
+    <div class='section'>
+
+      <div class='section-title'>
+        MANO DERECHA
+      </div>
+
+      <div class='fingerprints-grid'>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoDerecha.Derecho_Pulgar}}}' />
+          </div>
+
+          <div class='finger-label'>
+            PULGAR
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoDerecha.Derecho_Indice}}}' />
+          </div>
+
+          <div class='finger-label'>
+            ÍNDICE
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoDerecha.Derecho_Medio}}}' />
+          </div>
+
+          <div class='finger-label'>
+            MEDIO
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoDerecha.Derecho_Anular}}}' />
+          </div>
+
+          <div class='finger-label'>
+            ANULAR
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoDerecha.Derecho_Menique}}}' />
+          </div>
+
+          <div class='finger-label'>
+            MEÑIQUE
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- MANO IZQUIERDA -->
+    <div class='section'>
+
+      <div class='section-title'>
+        MANO IZQUIERDA
+      </div>
+
+      <div class='fingerprints-grid'>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoIzquierda.Izquierdo_Pulgar}}}' />
+          </div>
+
+          <div class='finger-label'>
+            PULGAR
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoIzquierda.Izquierdo_Indice}}}' />
+          </div>
+
+          <div class='finger-label'>
+            ÍNDICE
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoIzquierda.Izquierdo_Medio}}}' />
+          </div>
+
+          <div class='finger-label'>
+            MEDIO
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoIzquierda.Izquierdo_Anular}}}' />
+          </div>
+
+          <div class='finger-label'>
+            ANULAR
+          </div>
+
+        </div>
+
+        <div class='finger-wrapper'>
+
+          <div class='finger-box'>
+            <img src='{{{manoIzquierda.Izquierdo_Menique}}}' />
+          </div>
+
+          <div class='finger-label'>
+            MEÑIQUE
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+     <div class='section'>
+
+      <div class='section-title'>
+        INFORMACIÓN COMPLEMENTARIA
+      </div>
+
+      <div class='info-block'>
+
+  <div class='row'>
+
+    <div class='cell'>
+
+      <span class='inline-label'>
+        Motivo:
+      </span>
+
+      {{motivo}}
+
+    </div>
+
+    <div class='cell'>
+
+      <span class='inline-label'>
+        Fecha Aprehensión:
+      </span>
+
+      {{fechaAprehension}}
+
+    </div>
+
+  </div>
+
+  <div
+    class='row'
+    style='margin-top:10px;'
+  >
+
+    <div class='cell'>
+
+      <span class='inline-label'>
+        Remitido MP:
+      </span>
+
+      {{remitidoMP}}
+
+    </div>
+
+    <div class='cell'>
+
+      <span class='inline-label'>
+        Puesto en Libertad:
+      </span>
+
+      {{puestoLibertad}}
+
+    </div>
+
+    <div class='cell'>
+
+      <span class='inline-label'>
+        Fecha Remisión:
+      </span>
+
+      {{fechaRemision}}
+
+    </div>
+
+  </div>
+
+  <div
+    style='margin-top:10px;'
+  >
+
+    <span class='inline-label'>
+      Autoridad que dispuso libertad:
+    </span>
+
+    <div class='textarea-box'>
+      {{autoridadLibertad}}
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- 🔥 OBSERVACIONES -->
+<!-- ===================================================== -->
+
+<div class='section-title'>
+  OBSERVACIONES COMPLEMENTARIAS
+</div>
+
+<div class='textarea-box'>
+  {{observaciones}}
+</div>
+
+<!-- ===================================================== -->
+<!-- 🔥 REGISTRO -->
+<!-- ===================================================== -->
+
+<div
+  class='info-block'
+  style='margin-top:15px;'
+>
+
+  <span class='inline-label'>
+    Lugar y Fecha de Registro:
+  </span>
+
+  <div class='textarea-box'>
+    {{lugarRegistro}}
+  </div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- 🔥 FIRMAS -->
+<!-- ===================================================== -->
+
+<div
+  class='row'
+  style='margin-top:70px;'
+>
+
+  <div
+    class='cell'
+    style='text-align:center;'
+  >
+
+    ___________________________
+
+    <br /><br />
+
+    Firma del Registrado
+
+  </div>
+
+  <div
+    class='cell'
+    style='text-align:center;'
+  >
+
+    ___________________________
+
+    <br /><br />
+
+    Firma
+    <br />
+
+    Grado y Nombre del
+    <br />
+
+    Asignado al Caso
+
+  </div>
+
+  <div
+    class='cell'
+    style='text-align:center;'
+  >
+
+    ___________________________
+
+    <br /><br />
+
+    Firma
+    <br />
+
+    Grado y Nombre del Filiador
+
+  </div>
+
+</div>
+     </div>
+
+  </div>
+
+</div>
