@@ -8,6 +8,8 @@ import IconRefresh from '../Icon/IconRefresh'
 import IconSave from '../Icon/IconSave'
 import IconSearch from '../Icon/IconSearch'
 import IconTrashLines from '../Icon/IconTrashLines'
+import IconX from '../Icon/IconX'
+import IconCircleCheck from '../Icon/IconCircleCheck'
 import IconMenuAuthentication from '../Icon/Menu/IconMenuAuthentication'
 import IconMenuCalendar from '../Icon/Menu/IconMenuCalendar'
 import IconMenuCharts from '../Icon/Menu/IconMenuCharts'
@@ -60,6 +62,12 @@ export const menuIconMap: Record<string, any> = {
   refresh: IconRefresh,
   reload: IconRefresh,
   add: IconPlus,
+
+  cancel: IconX,
+  close: IconX,
+  gavel: IconMenuTodo,
+  check: IconCircleCheck,
+  done: IconCircleCheck,
 
   save: IconSave,
   download: IconDownload,
