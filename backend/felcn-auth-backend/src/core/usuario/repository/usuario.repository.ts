@@ -13,7 +13,7 @@ import { RolEstado, UsuarioRolEstado } from '@/core/authorization/constant'
 
 @Injectable()
 export class UsuarioRepository {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async listar(paginacionQueryDto: FiltrosUsuarioDto) {
     const { limite, saltar, filtro, rol, orden, sentido } = paginacionQueryDto
@@ -241,6 +241,8 @@ export class UsuarioRepository {
       })
       .leftJoin('usuario.grado', 'grado')
       .leftJoin('usuario.grupo', 'grupo')
+      .leftJoin('grupo.distrital', 'distrital')
+      .leftJoin('distrital.unidad', 'unidad')
       .select([
         'usuario.id',
         'usuario.usuario',
@@ -266,7 +268,12 @@ export class UsuarioRepository {
         'grado.descripcion',
         'grupo.id',
         'grupo.descripcion',
-        'usuario.numeroPase'
+        'usuario.numeroPase',
+        'distrital.id',
+        'distrital.descripcion',
+        'unidad.id',
+        'unidad.abreviatura',
+        'unidad.descripcion',
       ])
       .where({ id })
       .getOne()
