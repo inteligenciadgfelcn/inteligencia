@@ -44,9 +44,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           configService.get('DB_USE_SSL') === 'true'
             ? {
-                rejectUnauthorized:
-                  configService.get('DB_VERIFY_SSL') === 'true',
-              }
+              rejectUnauthorized:
+                configService.get('DB_VERIFY_SSL') === 'true',
+            }
             : false,
         subscribers:
           configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -70,7 +70,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
     // Esquemas: usuarios (usuarios, roles, permisos), proyecto (otros)
     // Tablas: usuarios, personas, roles, usuarios_roles, modulos, casbin_rule, refresh_tokens
     // =============================================
-     TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       name: DB_AUTH,
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -88,15 +88,15 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         password:
           config.get<string>('DB_AUTH_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_AUTH_DATABASE'),
+        database: config.get<string>('DB_AUTH_DATABASE') || config.get<string>('DB_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-                rejectUnauthorized:
-                  config.get('DB_VERIFY_SSL') === 'true',
-              }
+              rejectUnauthorized:
+                config.get('DB_VERIFY_SSL') === 'true',
+            }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -118,7 +118,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
     // Base de datos: felcn_asignacion_casos
     // Tablas: asignacion, servicio, departamento, unidad, letra, etc.
     // =============================================
-      TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       name: DB_ASIG_CASOS,
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -129,7 +129,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
           config.get<string>('DB_HOST'),
         port: Number(
           config.get('DB_ASIG_CASOS_PORT') ||
-            config.get('DB_PORT'),
+          config.get('DB_PORT'),
         ),
         username:
           config.get<string>('DB_ASIG_CASOS_USERNAME') ||
@@ -143,9 +143,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-                rejectUnauthorized:
-                  config.get('DB_VERIFY_SSL') === 'true',
-              }
+              rejectUnauthorized:
+                config.get('DB_VERIFY_SSL') === 'true',
+            }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -158,12 +158,12 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-            '/../../../application/inteligencia/felcn_asignacion_caso/**/*.entity{.ts,.js}',
+          '/../../../application/inteligencia/felcn_asignacion_caso/**/*.entity{.ts,.js}',
         ],
       }),
     }),
 
-     // =============================================
+    // =============================================
     // CONEXIÓN: SII
     // Base de datos: felcn_sii
     // Tablas: usuario, rol, grado, unidad, distrital, grupo, menu, etc.
@@ -192,9 +192,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-                rejectUnauthorized:
-                  config.get('DB_VERIFY_SSL') === 'true',
-              }
+              rejectUnauthorized:
+                config.get('DB_VERIFY_SSL') === 'true',
+            }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -207,7 +207,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-            '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
+          '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -217,7 +217,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
     // Base de datos: felcn_sospechosos
     // Tablas: plan_operacion, categoria_operativo, continente, departamento, detenido, distrital, estado, etc.
     // =============================================
-   TypeOrmModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       name: DB_SOSPECHOSO,
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -228,7 +228,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
           config.get<string>('DB_HOST'),
         port: Number(
           config.get('DB_SOSPECHOSO_PORT') ||
-            config.get('DB_PORT'),
+          config.get('DB_PORT'),
         ),
         username:
           config.get<string>('DB_SOSPECHOSO_USERNAME') ||
@@ -242,9 +242,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-                rejectUnauthorized:
-                  config.get('DB_VERIFY_SSL') === 'true',
-              }
+              rejectUnauthorized:
+                config.get('DB_VERIFY_SSL') === 'true',
+            }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -257,10 +257,10 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-            '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
+          '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
         ],
       }),
     }),
   ],
 })
-export class DataBaseModule {}
+export class DataBaseModule { }
