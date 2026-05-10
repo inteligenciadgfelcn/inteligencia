@@ -12,6 +12,14 @@ export interface GestionOperativoItem {
   ianus?: string
   id?: number | string
   idOperativo?: number | string
+  departamento?: string
+  idDepartamentoCaso?: string
+  abreviaturaUnidad?: string
+  idDistrital?: number
+  idGrupo?: number
+  numeroInforme?: string
+  fechaOperativo?: string
+  descripcionOperativo?: string
 }
 
 export interface GestionOperativoCabeceraPayload {
