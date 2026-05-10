@@ -6,6 +6,7 @@ const BASE_USUARIO = `${Constantes.baseUrl}/usuarios`
 const BASE_INVESTIGACION = `${Constantes.baseUrl}/investigacion`
 
 export interface InvestigadorItem {
+  idUsuario?: string
   usuario: string
   nombreCompleto: string
 }
@@ -99,12 +100,22 @@ export const InvestigacionService = {
   //   })
   // },
 
-  listarUsuariosUnidad(abreviatura: string): Promise<RespuestaApi<InvestigadorItem[]>> {
-    return sesionPeticion({
+  async listarUsuariosUnidad(abreviatura: string): Promise<RespuestaApi<InvestigadorItem[]>> {
+    const res = await sesionPeticion<any>({
       url: `${BASE_USUARIO}/unidades/${abreviatura}`,
       method: 'get',
       withCredentials: true,
     })
+
+    // Si la respuesta es un array directo (backend base v2), lo envolvemos en RespuestaApi
+    if (Array.isArray(res)) {
+      return {
+        finalizado: true,
+        mensaje: 'ok',
+        datos: res,
+      }
+    }
+    return res
   },
 
   buscarAsignacion(params: BuscarAsignacionParams): Promise<RespuestaApi<AsignacionItem[]>> {

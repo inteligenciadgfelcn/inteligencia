@@ -36,19 +36,23 @@ export function BusquedaCasos({ onSearch }: BusquedaCasosProps) {
   const [tipoFiltro, setTipoFiltro] = useState<TipoFiltro>('todos')
   const [valorFiltro, setValorFiltro] = useState('')
 
-  const { data: investigadoresData } = useQuery({
-    queryKey: ['investigadores', abreviaturaUnidad],
+  const { data: investigadoresData, isLoading: isLoadingInvestigadores } = useQuery({
+    queryKey: ['investigadores', abreviaturaUnidad, tipoFiltro],
     queryFn: () => InvestigacionService.listarUsuariosUnidad(abreviaturaUnidad ?? ''),
     enabled: tipoFiltro === 'investigador' && !!abreviaturaUnidad,
   })
 
-  const investigadores = investigadoresData?.datos ?? []
+  // Manejar tanto el formato { datos: [] } como el array directo
+  const investigadores = Array.isArray(investigadoresData) 
+    ? investigadoresData 
+    : (investigadoresData?.datos ?? [])
 
   const handleSearch = () => {
     const params: BuscarAsignacionParams = {}
 
     if (tipoFiltro === 'investigador') {
       params.investigador = valorFiltro
+      params.abreviaturaUnidad = abreviaturaUnidad ?? ''
     } else {
       params.abreviaturaUnidad = abreviaturaUnidad ?? ''
       if (tipoFiltro === 'nroCaso') params.nroCaso = valorFiltro
@@ -85,7 +89,7 @@ export function BusquedaCasos({ onSearch }: BusquedaCasosProps) {
           </label>
           <Select
             value={valorFiltro}
-            placeholder="Seleccionar..."
+            placeholder={isLoadingInvestigadores ? 'Cargando...' : 'Seleccionar...'}
             options={investigadores.map((inv) => ({
               value: inv.usuario,
               label: inv.nombreCompleto,
