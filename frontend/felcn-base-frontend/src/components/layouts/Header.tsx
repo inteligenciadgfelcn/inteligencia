@@ -30,7 +30,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     await cerrarSesion()
-    router.push('/login')
+    // router.push('/login')
   }
 
   const normalizeText = (text: string) => {
