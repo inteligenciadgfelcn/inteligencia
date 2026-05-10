@@ -54,6 +54,24 @@ export interface PersonaType {
   telefono?: string | null
 }
 
+export interface UnidadType {
+  id: number
+  abreviatura: string
+  descripcion: string
+}
+
+export interface DistritalType {
+  id: number
+  descripcion: string
+  unidad: UnidadType
+}
+
+export interface GrupoType {
+  id: number
+  descripcion: string
+  distrital: DistritalType
+}
+
 export interface UsuarioType {
   access_token: string
   id: string
@@ -66,6 +84,8 @@ export interface UsuarioType {
   idRol: string
   numeroPase: string
   urlFoto?: string | null
+  idGrupo?: number | null
+  grupo?: GrupoType | null
 }
 
 export interface PoliticaType {

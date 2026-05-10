@@ -1,0 +1,303 @@
+'use client'
+
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
+import type { GestionOperativoItem } from '../../operaciones/operativo/gestion-operativo/types'
+import IconArrowLeft from '@/components/Icon/IconArrowLeft'
+import IconSave from '@/components/Icon/IconSave'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { InvestigacionService } from '@/services/investigacion/InvestigacionService'
+import type { InvestigacionParalelaPayload } from '@/services/investigacion/InvestigacionService'
+import { useAlerts } from '@/hooks'
+import { InterpreteMensajes } from '@/utils'
+import dayjs from 'dayjs'
+
+const schema = z.object({
+  delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
+  detalleDelitoPrecedente: z.string().min(1, 'El detalle es requerido'),
+  informeInteligencia: z.string().min(1, 'El informe es requerido'),
+})
+
+type FormData = z.infer<typeof schema>
+
+interface FormInvestigacionParalelaProps {
+  caso: GestionOperativoItem | null
+  onBack: () => void
+}
+
+export const FormInvestigacionParalela = ({
+  caso,
+  onBack,
+}: FormInvestigacionParalelaProps) => {
+  const [loading, setLoading] = useState(false)
+  const { Alerta } = useAlerts()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      delitoPrecedente: 'Fabricación (Art. 47 Ley 1008)',
+      detalleDelitoPrecedente: caso?.descripcionOperativo || '',
+      informeInteligencia: '',
+    },
+  })
+
+  if (!caso) return null
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true)
+      const payload: InvestigacionParalelaPayload = {
+        idCaso: caso.idCaso,
+        idDepartamentoCaso: caso.idDepartamentoCaso || '',
+        abreviaturaUnidad: caso.abreviaturaUnidad || '',
+        idDistrital: caso.idDistrital || 0,
+        idGrupo: caso.idGrupo || 0,
+        delito: data.delitoPrecedente,
+        numeroCaso: caso.numeroCaso || '',
+        asignadoCaso: caso.asignadoCaso || '',
+        fiscalAsignadoCaso: caso.fiscalAsignadoCaso || '',
+        idOperativo: caso.numeroOperativo || '',
+        delitoPrecedente: data.detalleDelitoPrecedente,
+        informe: data.informeInteligencia,
+        fechaEnvioInvestigacionParalela: dayjs().format('YYYY-MM-DD'),
+        resultado: false,
+        respuestaInvestigacionParalela: false,
+      }
+      await InvestigacionService.guardar(payload)
+      Alerta({
+        mensaje: 'Caso Paralelo guardado exitosamente',
+        variant: 'success',
+      })
+      onBack()
+    } catch (error) {
+      Alerta({
+        mensaje: InterpreteMensajes(error),
+        variant: 'error',
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="panel flex items-center justify-between px-5 py-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="text-primary hover:text-primary/70 transition-colors"
+            title="Volver al listado"
+          >
+            <IconArrowLeft className="h-6 w-6" />
+          </button>
+          <h2 className="text-xl font-bold text-dark dark:text-white-light">
+            Registro de Caso Paralelo
+          </h2>
+        </div>
+      </div>
+
+      <div className="panel p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Sección: Datos de Identificación (Lectura) */}
+          <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+            <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
+              Datos de Identificación del Caso
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Nro. de Caso
+                </label>
+                <Input
+                  value={caso.numeroCaso || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Nro. de Operativo
+                </label>
+                <Input
+                  value={caso.numeroOperativo || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Nombre de Caso
+                </label>
+                <Input
+                  value={caso.nombreCaso || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Unidad
+                </label>
+                <Input
+                  value={caso.unidadDescripcion || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Distrital
+                </label>
+                <Input
+                  value={caso.distritaleDescripcion || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Grupo
+                </label>
+                <Input
+                  value={caso.grupoDescripcion || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Departamento
+                </label>
+                <Input
+                  value={caso.departamento || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sección: Datos del Caso Paralelo */}
+          <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+            <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
+              Información de la Investigación Paralela
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Delito Precedente <span className="text-danger">*</span>
+                </label>
+                <Select
+                  {...register('delitoPrecedente')}
+                  options={[
+                    {
+                      id: 'Fabricación (Art. 47 Ley 1008)',
+                      value: 'Fabricación (Art. 47 Ley 1008)',
+                      label: 'Fabricación (Art. 47 Ley 1008)',
+                    },
+                    {
+                      id: 'Transporte (Art. 55 Ley 1008)',
+                      value: 'Transporte (Art. 55 Ley 1008)',
+                      label: 'Transporte (Art. 55 Ley 1008)',
+                    },
+                    {
+                      id: 'Tráfico (Art. 48 Ley 1008)',
+                      value: 'Tráfico (Art. 48 Ley 1008)',
+                      label: 'Tráfico (Art. 48 Ley 1008)',
+                    },
+                  ]}
+                  error={!!errors.delitoPrecedente}
+                />
+                {errors.delitoPrecedente && (
+                  <p className="text-danger text-xs mt-1">
+                    {errors.delitoPrecedente.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Asignado al Caso
+                </label>
+                <Input
+                  value={caso.asignadoCaso || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Fiscal de Sustancias Controladas
+                </label>
+                <Input
+                  value={caso.fiscalAsignadoCaso || ''}
+                  disabled
+                  className="bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Delito Precedente (Detalle) <span className="text-danger">*</span>
+                </label>
+                <Textarea
+                  {...register('detalleDelitoPrecedente')}
+                  placeholder="Detalle del delito precedente..."
+                  rows={4}
+                  error={!!errors.detalleDelitoPrecedente}
+                />
+                {errors.detalleDelitoPrecedente && (
+                  <p className="text-danger text-xs mt-1">
+                    {errors.detalleDelitoPrecedente.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Informe de Inteligencia financiera o patrimonial <span className="text-danger">*</span>
+                </label>
+                <Textarea
+                  {...register('informeInteligencia')}
+                  placeholder="Informe de inteligencia financiera..."
+                  rows={4}
+                  error={!!errors.informeInteligencia}
+                />
+                {errors.informeInteligencia && (
+                  <p className="text-danger text-xs mt-1">
+                    {errors.informeInteligencia.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <Button
+              variant="outline-danger"
+              type="button"
+              onClick={onBack}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button variant="primary" type="submit" disabled={loading}>
+              <IconSave className="h-5 w-5 ltr:mr-2 rtl:ml-2" />
+              {loading ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
