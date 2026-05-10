@@ -84,9 +84,15 @@ export async function getPersonasFiliacionPorCaso(
   /// Filiado (1), No Filiado (0)
   statusFiliacion: number
 ): Promise<PersonasFiliacionResponse> {
+  const queryParams = {
+    ...params,
+    caso: nroCaso,
+    filiado: statusFiliacion,
+  }
+
   const response = await sesionPeticion({
-    url: `${Constantes.baseUrl}/filiacion/personas/${encodeURIComponent(nroCaso)}/${statusFiliacion}`,
-    params: params,
+    url: `${Constantes.baseUrl}/filiacion/personas`,
+    params: queryParams,
     withCredentials: true,
   })
 
