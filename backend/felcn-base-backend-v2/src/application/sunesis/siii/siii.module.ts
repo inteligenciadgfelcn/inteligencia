@@ -11,6 +11,7 @@ import { PaisDestino } from './parametrica/entity/geografia/pais-destino.entity'
 import { Departamento } from './parametrica/entity/geografia/departamento.entity'
 import { Provincia } from './parametrica/entity/geografia/provincia.entity'
 import { Localidad } from './parametrica/entity/geografia/localidad.entity'
+import { DepartamentoCaso } from './parametrica/entity/geografia/departamento-caso.entity'
 
 // Tipos
 import { TipoDroga } from './parametrica/entity/tipo/tipo-droga.entity'
@@ -88,6 +89,13 @@ import { FabricaModelo } from './operativo/entity/fabrica-modelo.entity'
 import { EstadoDroga } from './operativo/entity/estado-droga.entity'
 import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 
+// Investigación Paralela
+import { InvestigacionParalela } from './investigacion/entity/investigacion-paralela.entity'
+import { Investigador } from './investigacion/entity/investigador.entity'
+import { InvestigacionController } from './investigacion/controller/investigacion.controller'
+import { InvestigacionService } from './investigacion/service/investigacion.service'
+import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
@@ -107,6 +115,7 @@ const entitiesParametricas = [
   Pais,
   PaisDestino,
   Departamento,
+  DepartamentoCaso,
   Provincia,
   Localidad,
   // Tipos
@@ -178,6 +187,9 @@ const entitiesOperativas = [
   FabricaModelo,
   EstadoDroga,
   ItemOperativo,
+  // Casos Paralelos
+  InvestigacionParalela,
+  Investigador,
 ]
 
 @Module({
@@ -188,14 +200,16 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController],
+  controllers: [LookupController, OperativoController, InvestigacionController],
   providers: [
     LookupService,
     OperativoService,
+    InvestigacionService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
+    InvestigacionRepository,
   ],
-  exports: [LookupService, OperativoService],
+  exports: [LookupService, OperativoService, InvestigacionService],
 })
-export class SiiiModule {}
+export class SiiiModule { }

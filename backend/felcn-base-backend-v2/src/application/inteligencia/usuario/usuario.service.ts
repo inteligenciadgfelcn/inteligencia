@@ -8,7 +8,7 @@ export class UsuarioService {
   constructor(
     @InjectDataSource(DB_AUTH)
     private readonly dataSource: DataSource
-  ) {}
+  ) { }
 
   private baseQuery = `
     SELECT 
@@ -78,5 +78,12 @@ export class UsuarioService {
     }
 
     return result[0]
+  }
+
+  async findByUnidadAbreviatura(abreviatura: string) {
+    return this.dataSource.query(
+      this.buildQuery(`AND un.abreviatura = $1`),
+      [abreviatura]
+    )
   }
 }

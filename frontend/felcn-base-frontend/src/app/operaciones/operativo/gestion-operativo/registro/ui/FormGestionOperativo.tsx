@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/Button'
 
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
 import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
@@ -56,6 +58,8 @@ export function FormGestionOperativo({
     seccionActiva,
     setSeccionActiva,
   } = useGestionOperativoForm(idGestionOperativo)
+
+  const router = useRouter()
 
   const [tieneOperativo, setTieneOperativo] = useState<boolean | null>(null)
   const [idOperativo, setIdOperativo] = useState<number>(0)
@@ -269,8 +273,15 @@ export function FormGestionOperativo({
       <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <BackButton />
-          <h2 className="text-lg font-semibold">Gestion Operativo</h2>
+          <h2 className="text-lg font-semibold">Gestión Operativo</h2>
         </div>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => router.push('/operaciones/operativo/gestion-operativo')}
+        >
+          Casos Registrados
+        </Button>
       </div>
 
       <div className="panel p-0">

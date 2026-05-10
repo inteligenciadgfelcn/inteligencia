@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 @ApiTags('Usuario')
 @Controller('usuarios')
 export class UsuarioController {
-  constructor(private readonly usuarioService: UsuarioService) {}
+  constructor(private readonly usuarioService: UsuarioService) { }
 
   @Get('unidad/inteligencia')
   @ApiOperation({
@@ -39,12 +39,18 @@ export class UsuarioController {
     return this.usuarioService.findByDistrito(id)
   }
 
-  @Get('unidad/:id')
+  @Get('unidad/:valor')
   @ApiOperation({
     summary: 'Lista de usuarios activos por unidad',
   })
-  findByUnidad(@Param('id') id: number) {
-    return this.usuarioService.findByUnidad(id)
+  findByUnidad(@Param('valor') valor: string) {
+    const esNumero = !isNaN(Number(valor))
+
+    if (esNumero) {
+      return this.usuarioService.findByUnidad(Number(valor))
+    }
+
+    return this.usuarioService.findByUnidadAbreviatura(valor)
   }
 
   @Get('usuario/:usuario')
