@@ -196,7 +196,7 @@ export function ActualizacionDataTable() {
               color={'info'}
               accion={() => {
                 window.open(
-                  `${Constantes.baseUrl}/reportes/operativos/${row.idOperativo}/pdf`,
+                  `${Constantes.baseUrl}/reportes/operativos/${row.numeroCaso}/pdf`,
                   '_blank'
                 )
               }}
