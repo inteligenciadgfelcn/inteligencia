@@ -53,12 +53,15 @@ import { Unidad } from '../entity/estructura/unidad.entity'
 import { Distrital } from '../entity/estructura/distrital.entity'
 import { Grupo } from '../entity/estructura/grupo.entity'
 
+// Otros
+import { ContenidoCaso } from '../entity/bien/contenido-caso.entity'
+
 @Injectable()
 export class LookupRepository {
   constructor(
     @InjectDataSource(DB_SIII)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
   // Geografía
   async listarContinentes(): Promise<Continente[]> {
@@ -322,5 +325,11 @@ export class LookupRepository {
     return this.dataSource
       .getRepository(Grupo)
       .find({ where: { idDistrital }, order: { descripcion: 'ASC' } })
+  }
+
+  async listarContenidoCaso(): Promise<ContenidoCaso[]> {
+    return this.dataSource
+      .getRepository(ContenidoCaso)
+      .find({ order: { descripcion: 'ASC' } })
   }
 }
