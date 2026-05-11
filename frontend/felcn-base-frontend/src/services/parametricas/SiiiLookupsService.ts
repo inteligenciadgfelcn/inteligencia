@@ -212,4 +212,14 @@ export const SiiiLookupsService = {
   ): Promise<RespuestaAPI<LookupBasico>> {
     return sesionPeticion({ url: `${BASE}/grupos/distrital/${idDistrital}`, withCredentials: true })
   },
+
+  /** Obtiene todos los grados policiales */
+  obtenerGrados(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/grados`, withCredentials: true })
+  },
+
+  /** Obtiene los tipos de contenido de caso (documentos) */
+  obtenerContenidoCaso(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/contenido-caso`, withCredentials: true })
+  },
 }
