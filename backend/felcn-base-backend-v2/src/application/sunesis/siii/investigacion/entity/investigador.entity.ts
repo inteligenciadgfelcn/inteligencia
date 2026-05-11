@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
-import { Grado } from '../../parametrica/entity/bien/grado.entity'
 
 /**
  * Entidad Investigador
@@ -57,10 +56,6 @@ export class Investigador extends BaseEntity {
   @ManyToOne(() => AsignacionSiii)
   @JoinColumn({ name: 'id_caso' })
   asignacion: AsignacionSiii
-
-  @ManyToOne(() => Grado)
-  @JoinColumn({ name: 'id_grado' })
-  grado: Grado
 
   constructor(data?: Partial<Investigador>) {
     super()

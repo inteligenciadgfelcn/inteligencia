@@ -306,4 +306,10 @@ export class LookupController extends BaseController {
       await this.lookupService.listarGruposPorDistrital(parseInt(id))
     )
   }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de caso (documentos)' })
+  @Get('contenido-caso')
+  async listarContenidoCaso() {
+    return this.successList(await this.lookupService.listarContenidoCaso())
+  }
 }
