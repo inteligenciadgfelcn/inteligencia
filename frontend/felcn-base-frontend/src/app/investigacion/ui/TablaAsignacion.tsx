@@ -66,7 +66,10 @@ export function TablaAsignacion({
 
   const { data, isLoading } = useQuery({
     queryKey: ['asignacion', queryParams],
-    queryFn: () => InvestigacionService.buscarAsignacion(queryParams),
+    queryFn: () => {
+      const { abreviaturaUnidad = '', ...filtros } = queryParams
+      return InvestigacionService.buscarAsignacion(abreviaturaUnidad, filtros)
+    },
     enabled: Object.keys(queryParams).length > 0,
   })
 
