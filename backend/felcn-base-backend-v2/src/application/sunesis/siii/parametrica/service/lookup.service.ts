@@ -208,4 +208,8 @@ export class LookupService extends BaseService {
   async listarGruposPorDistrital(idDistrital: number) {
     return this.lookupRepository.listarGruposPorDistrital(idDistrital)
   }
+
+  async listarContenidoCaso() {
+    return this.lookupRepository.listarContenidoCaso()
+  }
 }

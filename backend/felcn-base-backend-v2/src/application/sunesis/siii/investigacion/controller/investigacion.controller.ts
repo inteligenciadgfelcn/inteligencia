@@ -35,17 +35,6 @@ export class InvestigacionController extends BaseController {
 
   // ==================== ASIGNACION (PAR-REG-CASO) ====================
 
-  // @ApiOperation({
-  //   summary: 'Lista investigadores (rol I) de una unidad para el dropdown',
-  //   description: 'Origen: asignados() — PAR-REG-CASO.aspx.cs. Join: investigador → grado → asignacion.',
-  // })
-  // @ApiQuery({ name: 'abreviaturaUnidad', required: true, description: 'Abreviatura de la unidad' })
-  // @Get('asignacion/investigadores')
-  // async listarInvestigadores(@Query('abreviaturaUnidad') abreviaturaUnidad: string) {
-  //   const datos = await this.service.listarInvestigadoresPorUnidad(abreviaturaUnidad)
-  //   return this.successList(datos)
-  // }
-
   @ApiOperation({
     summary: 'Busca casos (ASIGNACION) con filtros opcionales',
     description: `Origen: Button1/3/5/6/8/9_Click — PAR-REG-CASO.aspx.cs.

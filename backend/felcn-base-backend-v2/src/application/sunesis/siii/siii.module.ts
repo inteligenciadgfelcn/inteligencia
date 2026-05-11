@@ -96,6 +96,15 @@ import { InvestigacionController } from './investigacion/controller/investigacio
 import { InvestigacionService } from './investigacion/service/investigacion.service'
 import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
 
+// Seguimiento
+import { Fiscal } from './seguimiento/entity/fiscal.entity'
+import { Jurisdiccion } from './seguimiento/entity/jurisdiccion.entity'
+import { ControlJurisdiccional } from './seguimiento/entity/control-jurisdiccional.entity'
+import { Archivo } from './seguimiento/entity/archivo.entity'
+import { SeguimientoController } from './seguimiento/controller/seguimiento.controller'
+import { SeguimientoService } from './seguimiento/service/seguimiento.service'
+import { SeguimientoRepository } from './seguimiento/repository/seguimiento.repository'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
@@ -190,6 +199,11 @@ const entitiesOperativas = [
   // Casos Paralelos
   InvestigacionParalela,
   Investigador,
+  // Seguimiento
+  Fiscal,
+  Jurisdiccion,
+  ControlJurisdiccional,
+  Archivo,
 ]
 
 @Module({
@@ -200,16 +214,28 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController, InvestigacionController],
+  controllers: [
+    LookupController,
+    OperativoController,
+    InvestigacionController,
+    SeguimientoController,
+  ],
   providers: [
     LookupService,
     OperativoService,
     InvestigacionService,
+    SeguimientoService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
     InvestigacionRepository,
+    SeguimientoRepository,
   ],
-  exports: [LookupService, OperativoService, InvestigacionService],
+  exports: [
+    LookupService,
+    OperativoService,
+    InvestigacionService,
+    SeguimientoService,
+  ],
 })
 export class SiiiModule { }
