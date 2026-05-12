@@ -12,11 +12,10 @@ import IconDownload from '@/components/Icon/IconDownload'
 import IconFile from '@/components/Icon/IconFile'
 import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
+import { IconoTooltip } from '@/components/botones/IconoTooltip'
 
 export const TarjetaProntuariaView = () => {
-
   const [refreshKey] = useState(0)
-
 
   const { Alerta } = useAlerts()
   const [nroCaso, setNroCaso] = useState<string | null>(null)
@@ -40,7 +39,7 @@ export const TarjetaProntuariaView = () => {
           direccion: '',
         },
         nroCaso,
-        1,
+        1
       )
       setPersonasData(response.datos.filas)
       setSelectedFiliacion(null)
@@ -59,31 +58,35 @@ export const TarjetaProntuariaView = () => {
     setPersonasData([])
   }
 
-  const handleSelected = async (filiacionPersonaTable: FiliacionPersonaTable | undefined) => {
-    if (!filiacionPersonaTable) { return; }
-      try {
-        const response = await sesionPeticion({
-          url: `${Constantes.baseUrl}/reporte/export/pdf/${filiacionPersonaTable?.id_detenido}`,
-          withCredentials: true,
-          responseType: 'arraybuffer',
-        })
-
-        const blob = new Blob([response], { type: 'application/pdf' })
-
-        const url = URL.createObjectURL(blob)
-
-        const newTab = window.open()
-        if (newTab) {
-          newTab.location.href = url
-        } else {
-          throw new Error('No se pudo abrir una nueva pestaña')
-        }
-
-        URL.revokeObjectURL(url)
-      } catch (error) {
-        console.error('Error al intentar abrir el PDF:', error)
-      }
+  const handleSelected = async (
+    filiacionPersonaTable: FiliacionPersonaTable | undefined
+  ) => {
+    if (!filiacionPersonaTable) {
+      return
     }
+    try {
+      const response = await sesionPeticion({
+        url: `${Constantes.baseUrl}/reporte/export/pdf/${filiacionPersonaTable?.id_detenido}`,
+        withCredentials: true,
+        responseType: 'arraybuffer',
+      })
+
+      const blob = new Blob([response], { type: 'application/pdf' })
+
+      const url = URL.createObjectURL(blob)
+
+      const newTab = window.open()
+      if (newTab) {
+        newTab.location.href = url
+      } else {
+        throw new Error('No se pudo abrir una nueva pestaña')
+      }
+
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error al intentar abrir el PDF:', error)
+    }
+  }
 
   useEffect(() => {
     handleSelected(selectedFiliacion ?? undefined)
@@ -126,13 +129,16 @@ export const TarjetaProntuariaView = () => {
           selectedFiliacion?.id_persona_auxiliar == row.id_persona_auxiliar
 
         return (
-          <button
-            type="button"
-            className={`btn btn-danger btn-sm`}
-            onClick={() => handleSelected(row)}
-          >
-            <IconFile />
-          </button>
+          <IconoTooltip
+            id="1"
+            titulo={'Generar reporte'}
+            color={'info'}
+            accion={() => {
+              handleSelected(row)
+            }}
+            icono={'download'}
+            name={'Generar reporte'}
+          />
         )
       },
     },
@@ -194,5 +200,5 @@ export const TarjetaProntuariaView = () => {
         </div>
       )}
     </div>
-  ) 
+  )
 }
