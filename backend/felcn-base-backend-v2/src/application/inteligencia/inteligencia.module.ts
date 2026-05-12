@@ -72,7 +72,7 @@ import { ReporteModule } from './reportes/reporte/reporte.module';
     ItemOperativoModule,
     EstadoSospechosoModule,
     DetenidoSospechosoModule, 
-    UnidadSospechosoModule, DistritoSospechosoModule, GrupoSospechosoModule,
+    UnidadSospechosoModule, DistritoSospechosoModule, GrupoSospechosoModule
   ],
 })
 export class InteligenciaModule {}
