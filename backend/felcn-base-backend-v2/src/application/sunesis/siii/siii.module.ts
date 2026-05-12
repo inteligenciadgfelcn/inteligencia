@@ -97,13 +97,13 @@ import { InvestigacionService } from './investigacion/service/investigacion.serv
 import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
 
 // Seguimiento
-import { Fiscal } from './seguimiento/entity/fiscal.entity'
-import { Jurisdiccion } from './seguimiento/entity/jurisdiccion.entity'
-import { ControlJurisdiccional } from './seguimiento/entity/control-jurisdiccional.entity'
-import { Archivo } from './seguimiento/entity/archivo.entity'
-import { SeguimientoController } from './seguimiento/controller/seguimiento.controller'
-import { SeguimientoService } from './seguimiento/service/seguimiento.service'
-import { SeguimientoRepository } from './seguimiento/repository/seguimiento.repository'
+import { Fiscal } from './seguimiento/casos/entity/fiscal.entity'
+import { Jurisdiccion } from './seguimiento/casos/entity/jurisdiccion.entity'
+import { ControlJurisdiccional } from './seguimiento/casos/entity/control-jurisdiccional.entity'
+import { Archivo } from './seguimiento/casos/entity/archivo.entity'
+import { SeguimientoController } from './seguimiento/casos/controller/seguimiento.controller'
+import { SeguimientoService } from './seguimiento/casos/service/seguimiento.service'
+import { SeguimientoRepository } from './seguimiento/casos/repository/seguimiento.repository'
 
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'

@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
-import { SCHEMA_PUBLIC } from '../../../shared/constants'
-import { ContenidoCaso } from '../../parametrica/entity/bien/contenido-caso.entity'
+import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
+import { SCHEMA_PUBLIC } from '../../../../shared/constants'
+import { ContenidoCaso } from '../../../parametrica/entity/bien/contenido-caso.entity'
 
 /**
  * Entidad Archivo
