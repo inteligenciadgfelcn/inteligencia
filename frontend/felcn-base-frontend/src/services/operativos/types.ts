@@ -1,7 +1,7 @@
 export interface RespuestaApi<T> {
   finalizado: boolean
   mensaje: string
-  datos: T
+  datos: T | any // Using any for compatibility with nested structures
 }
 
 export interface RespuestaApiPaginada<T> {

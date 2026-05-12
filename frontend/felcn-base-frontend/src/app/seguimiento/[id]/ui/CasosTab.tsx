@@ -1,0 +1,101 @@
+'use client'
+
+import { useState } from 'react'
+import { Icono } from '@/components/Icono'
+import { MetadatosSeccion } from './secciones/MetadatosSeccion'
+import { FiscalesSeccion } from './secciones/FiscalesSeccion'
+import { JurisdiccionSeccion } from './secciones/JurisdiccionSeccion'
+import { ControlJurisdiccionalSeccion } from './secciones/ControlJurisdiccionalSeccion'
+import { PolicialesSeccion } from './secciones/PolicialesSeccion'
+import { ArchivosSeccion } from './secciones/ArchivosSeccion'
+import { InvestigadoresSeccion } from './secciones/InvestigadoresSeccion'
+
+type SeccionKey =
+  | 'metadatos'
+  | 'archivos'
+  | 'policiales'
+  | 'jurisdiccion'
+  | 'control'
+  | 'investigadores'
+  | 'fiscales'
+
+const SECCIONES_CASOS = [
+  { key: 'metadatos' as SeccionKey, label: 'ACTUALIZACION DEL INFORME', icon: 'description' },
+  { key: 'archivos' as SeccionKey, label: 'CUADERNO DE INVESTIGACION DIGITAL', icon: 'folder_open' },
+  { key: 'policiales' as SeccionKey, label: 'SERVIDORES POLICIALES (OPERATIVO)', icon: 'local_police' },
+  { key: 'jurisdiccion' as SeccionKey, label: 'JURISDICCION DEL CASO', icon: 'gavel' },
+  { key: 'control' as SeccionKey, label: 'CONTROL JURISDICCIONAL', icon: 'account_balance' },
+  { key: 'investigadores' as SeccionKey, label: 'INVESTIGADOR(ES) ASIGNADO(S)', icon: 'person' },
+  { key: 'fiscales' as SeccionKey, label: 'FISCAL(ES) ASIGNADO(S)', icon: 'person_search' },
+]
+
+interface Props {
+  idCaso: string
+  idOperativo: string | null
+  datos: any
+  onGuardar: () => void
+}
+
+export function CasosTab({ idCaso, idOperativo, datos, onGuardar }: Props) {
+  const [seccionActiva, setSeccionActiva] = useState<SeccionKey>('metadatos')
+
+  const renderSeccion = () => {
+    if (!datos) return null
+    switch (seccionActiva) {
+      case 'metadatos':
+        return (
+          <MetadatosSeccion
+            idCaso={idCaso}
+            idOperativo={idOperativo}
+            cabecera={datos.cabecera}
+            operativo={datos.operativos?.[0]}
+            onGuardar={onGuardar}
+          />
+        )
+      case 'fiscales':
+        return <FiscalesSeccion idCaso={idCaso} datos={datos.fiscales} onGuardar={onGuardar} />
+      case 'jurisdiccion':
+        return <JurisdiccionSeccion idCaso={idCaso} datos={datos.jurisdicciones} onGuardar={onGuardar} />
+      case 'control':
+        return <ControlJurisdiccionalSeccion idCaso={idCaso} datos={datos.controles} onGuardar={onGuardar} />
+      case 'policiales':
+        return <PolicialesSeccion idOperativo={idOperativo} onGuardar={onGuardar} />
+      case 'archivos':
+        return <ArchivosSeccion idCaso={idCaso} datos={datos.archivos} onGuardar={onGuardar} />
+      case 'investigadores':
+        return <InvestigadoresSeccion idCaso={idCaso} datos={datos.investigadores} onGuardar={onGuardar} />
+      default:
+        return null
+    }
+  }
+
+  return (
+    <>
+      <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b] bg-white dark:bg-gray-900">
+        {SECCIONES_CASOS.map((seccion) => {
+          const activa = seccionActiva === seccion.key
+          return (
+            <button
+              key={seccion.key}
+              type="button"
+              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 text-xs font-semibold border-b-2 transition-all ${
+                activa
+                  ? 'border-secondary text-secondary bg-white dark:bg-gray-900'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+              onClick={() => setSeccionActiva(seccion.key)}
+            >
+              <Icono className={`w-4 h-4 ${activa ? 'text-secondary' : ''}`}>
+                {seccion.icon}
+              </Icono>
+              {seccion.label}
+            </button>
+          )
+        })}
+      </div>
+      <div className="p-6 bg-white dark:bg-gray-900 min-h-[500px]">
+        {renderSeccion()}
+      </div>
+    </>
+  )
+}
