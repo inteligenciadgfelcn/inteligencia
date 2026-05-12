@@ -105,6 +105,11 @@ import { SeguimientoController } from './seguimiento/casos/controller/seguimient
 import { SeguimientoService } from './seguimiento/casos/service/seguimiento.service'
 import { SeguimientoRepository } from './seguimiento/casos/repository/seguimiento.repository'
 
+// Seguimiento - Asignaciones Ingreso (FRM-INF-ING)
+import { AsignacionesIngresoController } from './seguimiento/asignaciones/controller/asignaciones-ingreso.controller'
+import { AsignacionesIngresoService } from './seguimiento/asignaciones/service/asignaciones-ingreso.service'
+import { AsignacionesIngresoRepository } from './seguimiento/asignaciones/repository/asignaciones-ingreso.repository'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
@@ -219,6 +224,7 @@ const entitiesOperativas = [
     OperativoController,
     InvestigacionController,
     SeguimientoController,
+    AsignacionesIngresoController,
   ],
   providers: [
     LookupService,
@@ -230,6 +236,8 @@ const entitiesOperativas = [
     AsignacionSiiiRepository,
     InvestigacionRepository,
     SeguimientoRepository,
+    AsignacionesIngresoService,
+    AsignacionesIngresoRepository,
   ],
   exports: [
     LookupService,
