@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
-import { DB_SIII } from '../../../shared/constants'
+import { DB_SIII } from '../../../../shared/constants'
 import { Fiscal } from '../entity/fiscal.entity'
 import { Jurisdiccion } from '../entity/jurisdiccion.entity'
 import { ControlJurisdiccional } from '../entity/control-jurisdiccional.entity'
-import { ServidorPolicial } from '../../operativo/entity/servidor-policial.entity'
+import { ServidorPolicial } from '../../../operativo/entity/servidor-policial.entity'
 import { Archivo } from '../entity/archivo.entity'
-import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
-import { Operativo } from '../../operativo/entity/operativo.entity'
-import { Investigador } from '../../investigacion/entity/investigador.entity'
+import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
+import { Operativo } from '../../../operativo/entity/operativo.entity'
+import { Investigador } from '../../../investigacion/entity/investigador.entity'
 
 /**
  * Repositorio SeguimientoRepository

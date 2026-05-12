@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
-import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
-import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
+import { SCHEMA_PUBLIC } from '../../../../shared/constants'
 
 /**
  * Entidad ControlJurisdiccional
