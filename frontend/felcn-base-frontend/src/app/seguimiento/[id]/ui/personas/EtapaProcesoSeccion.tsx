@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { DataTable } from 'mantine-datatable'
-import { PersonasServiceInstance, CreateEtapaProcesoPayload } from '@/services/personas/PersonasService'
+import { PersonasServiceInstance, CreateEtapaProcesoPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 
 interface Props {

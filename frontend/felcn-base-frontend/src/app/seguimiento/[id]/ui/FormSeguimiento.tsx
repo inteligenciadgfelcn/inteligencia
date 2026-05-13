@@ -8,9 +8,9 @@ import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import { useAlerts } from '@/hooks/useAlerts'
 
 import { PersonasTab } from './personas/PersonasTab'
-import { CasosTab } from './CasosTab'
+import { CasosTab } from './casos/CasosTab'
 
-import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoService'
+import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoCasosService'
 
 type TabPrincipal = 'casos' | 'personas'
 
@@ -35,7 +35,7 @@ export function FormSeguimiento({ idCaso, tabInicial }: Props) {
   const cargarDatos = useCallback(async () => {
     try {
       // Solo mostrar loading la primera vez o si no hay datos
-      setCargando((prev) => !datos && prev) 
+      setCargando((prev) => !datos && prev)
       const res = await SeguimientoServiceInstance.obtenerDetalle(idCaso)
       if (res.finalizado) {
         setDatos(res.datos)
