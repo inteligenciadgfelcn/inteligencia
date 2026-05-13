@@ -4,6 +4,8 @@ import { firstValueFrom } from 'rxjs'
 import { ConsultarItvDto } from '../dto/consultar-itv.dto'
 import { ConsultarSegipDto } from '../dto/consultar-segip.dto'
 import { SinConsultaContribuyenteDto } from '../dto/sin-consulta-contribuyente.dto'
+import { fakeSegip } from './fake.segip.service'
+import { contribuyentes } from './fake.sin.service'
 
 @Injectable()
 export class InteroperabilidadService {
@@ -63,10 +65,10 @@ export class InteroperabilidadService {
   }
 
   async consultarSegip(payload: ConsultarSegipDto) {
-    this.ensureConfig(
-      [this.segipUrl, this.segipToken],
-      'Falta configurar IOP_SEGIP_URL o IOP_SEGIP_TOKEN en variables de entorno'
-    )
+    // this.ensureConfig(
+    //   [this.segipUrl, this.segipToken],
+    //   'Falta configurar IOP_SEGIP_URL o IOP_SEGIP_TOKEN en variables de entorno'
+    // )
 
     const body = {
       ced: payload.ced,
@@ -77,16 +79,28 @@ export class InteroperabilidadService {
     }
 
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(this.segipUrl, body, {
-          headers: {
-            Authorization: this.authHeader(this.segipToken, 'Bearer'),
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        })
+      const data = fakeSegip.find(
+        (persona) =>
+          persona.NumeroDocumento === body.ced &&
+          persona.Complemento === body.com 
       )
-      return response.data
+
+      if(!data) {
+        throw new BadGatewayException(
+          'No se encontró una persona que coincida con los datos proporcionados'
+        )
+      }
+      return data
+      // const response = await firstValueFrom(
+      //   this.httpService.post(this.segipUrl, body, {
+      //     headers: {
+      //       Authorization: this.authHeader(this.segipToken, 'Bearer'),
+      //       Accept: 'application/json',
+      //       'Content-Type': 'application/json',
+      //     },
+      //   })
+      // )
+      // return response.data
     } catch (error) {
       throw new BadGatewayException(
         'No se pudo obtener una respuesta valida del servicio SEGIP'
@@ -147,24 +161,35 @@ export class InteroperabilidadService {
   }
 
   async consultarSinDatosContribuyente(payload: SinConsultaContribuyenteDto) {
-    this.ensureConfig(
-      [this.sinUrl, this.sinToken],
-      'Falta configurar IOP_SIN_URL o IOP_SIN_TOKEN en variables de entorno'
-    )
+    // this.ensureConfig(
+    //   [this.sinUrl, this.sinToken],
+    //   'Falta configurar IOP_SIN_URL o IOP_SIN_TOKEN en variables de entorno'
+    // )
 
     const url = `${this.sinUrl.replace(/\/$/, '')}/consultaDatosContribuyente`
 
     try {
-      const response = await firstValueFrom(
-        this.httpService.post(url, payload, {
-          headers: {
-            Authorization: this.authHeader(this.sinToken, 'Token'),
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-        })
+      const data = contribuyentes.find(
+        (contribuyente) =>
+          contribuyente.datosContribuyente.nit.toString() === payload.nitConsulta
       )
-      return response.data
+
+      if(!data) {
+        throw new BadGatewayException(
+          'No se encontró un contribuyente que coincida con los datos proporcionados'
+        )
+      }
+      return data
+      // const response = await firstValueFrom(
+      //   this.httpService.post(url, payload, {
+      //     headers: {
+      //       Authorization: this.authHeader(this.sinToken, 'Token'),
+      //       Accept: 'application/json',
+      //       'Content-Type': 'application/json',
+      //     },
+      //   })
+      // )
+      // return response.data
     } catch (error) {
       throw new BadGatewayException(
         'No se pudo obtener una respuesta valida del servicio SIN (consultaDatosContribuyente)'
