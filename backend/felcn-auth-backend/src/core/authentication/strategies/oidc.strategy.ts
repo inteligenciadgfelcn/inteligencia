@@ -94,13 +94,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         correoElectronico: userinfo.email,
       }
 
-      // Solo validar usuario
-      /*const usuario = await this.autenticacionService.validarUsuarioOidc(
-        persona,
-      );*/
-
-      // Para validar y crear usuario
-      const usuario = await this.autenticacionService.validarOCrearUsuarioOidc(
+      const usuario = await this.autenticacionService.validarUsuarioOidc(
         persona,
         datosUsuario
       )

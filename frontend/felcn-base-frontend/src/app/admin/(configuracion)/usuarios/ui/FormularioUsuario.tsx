@@ -17,6 +17,8 @@ import {
   Chip,
   FormHelperText,
   FormControl,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import { useAlerts, useSession } from '@/hooks'
@@ -73,6 +75,7 @@ const formSchema = z.object({
   roles: z.array(z.string()).min(1, {
     message: 'Debe seleccionar al menos un rol.',
   }),
+  ciudadaniaDigital: z.boolean().default(false),
   idGrado: z.number().nullable().optional(),
   idGrupo: z.number().nullable().optional(),
   numeroPase: z.string().nullable().optional(),
@@ -183,6 +186,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       correoElectronico: '',
       telefono: '',
       roles: [],
+      ciudadaniaDigital: false,
       idGrado: null,
       idGrupo: null,
       numeroPase: '',
@@ -200,6 +204,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         correoElectronico: usuario.correoElectronico,
         telefono: usuario.persona.telefono,
         roles: usuario.usuarioRol.map((value: any) => value.rol.id),
+        ciudadaniaDigital: usuario.ciudadaniaDigital ?? false,
         idGrado: usuario.idGrado ?? null,
         idGrupo: usuario.idGrupo ?? null,
         numeroPase: usuario.numeroPase ?? '',
@@ -472,6 +477,25 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                       {errors.roles.message}
                     </FormHelperText>
                   )}
+                </Grid>
+
+                <Grid size={12}>
+                  <Controller
+                    name="ciudadaniaDigital"
+                    control={control}
+                    render={({ field }) => (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={field.value}
+                            onChange={(e) => field.onChange(e.target.checked)}
+                            disabled={loading}
+                          />
+                        }
+                        label="Habilitar autenticación con Ciudadanía Digital"
+                      />
+                    )}
+                  />
                 </Grid>
               </Grid>
 
