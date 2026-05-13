@@ -8,11 +8,9 @@ import {
   IsBoolean,
   IsDateString,
   MaxLength,
-  IsEnum,
 } from 'class-validator'
-import { EstadoPersonaAuxiliar } from '../entity/detenido-auxiliar.entity'
 
-export class CreateDetenidoDto {
+export class CreatePersonaAuxiliarDto {
   @ApiProperty({ description: 'Nombres', example: 'JUAN CARLOS' })
   @IsNotEmpty()
   @IsString()
@@ -76,12 +74,9 @@ export class CreateDetenidoDto {
   @MaxLength(255)
   direccion: string
 
-  @ApiProperty({
-    description: 'Estado de la persona en el operativo',
-    example: EstadoPersonaAuxiliar.APREHENDIDO,
-    enum: EstadoPersonaAuxiliar,
-  })
+  @ApiProperty({ description: 'Estado', example: 'APREHENDIDO' })
   @IsNotEmpty()
-  @IsEnum(EstadoPersonaAuxiliar)
-  estado: EstadoPersonaAuxiliar
+  @IsString()
+  @MaxLength(30)
+  estado: string
 }

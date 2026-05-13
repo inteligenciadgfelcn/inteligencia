@@ -89,29 +89,4 @@ export class PersonasService {
     return this.repository.guardarEtapaProceso(etapaProceso)
   }
 
-  // ==================== LOOKUPS ====================
-
-  /**
-   * Lista todas las situaciones legales (para dropdown).
-   * Origen: Situlegal() — FRM-JUR-02.aspx.cs
-   */
-  async listarSituacionesLegales() {
-    return this.repository.listarSituacionesLegales()
-  }
-
-  /**
-   * Lista todas las etapas del proceso (para dropdown).
-   * Origen: Etapalegal() — FRM-JUR-02.aspx.cs
-   */
-  async listarEtapas() {
-    return this.repository.listarEtapas()
-  }
-
-  /**
-   * Lista los estados filtrados por etapa (cascade dropdown).
-   * Origen: ddletapa_SelectedIndexChanged() — FRM-JUR-02.aspx.cs
-   */
-  async listarEstadosPorEtapa(idEtapa: number) {
-    return this.repository.listarEstadosPorEtapa(idEtapa)
-  }
 }

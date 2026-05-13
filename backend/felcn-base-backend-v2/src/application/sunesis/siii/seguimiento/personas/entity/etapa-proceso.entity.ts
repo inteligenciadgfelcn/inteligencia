@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../../shared/constants'
-import { DetenidoAuxiliar } from '../../../operativo/entity/detenido-auxiliar.entity'
+import { DetenidoAuxiliar } from './detenido-auxiliar.entity'
 import { Estado } from './estado.entity'
 
 /**

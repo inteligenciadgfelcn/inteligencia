@@ -212,4 +212,12 @@ export class LookupService extends BaseService {
   async listarContenidoCaso() {
     return this.lookupRepository.listarContenidoCaso()
   }
+
+  async listarEstadosPorEtapa(idEtapa: number) {
+    return this.lookupRepository.listarEstadosPorEtapa(idEtapa)
+  }
+
+  async listarSituacionesLegales() {
+    return this.lookupRepository.listarSituacionesLegales()
+  }
 }

@@ -80,26 +80,5 @@ export class PersonasController extends BaseController {
     return this.successCreate(nuevo)
   }
 
-  // ==================== LOOKUPS ====================
-
-  @ApiOperation({ summary: 'Listar situaciones legales (dropdown)' })
-  @Get('lookup/situaciones-legales')
-  async listarSituacionesLegales() {
-    const datos = await this.service.listarSituacionesLegales()
-    return this.successList(datos)
-  }
-
-  @ApiOperation({ summary: 'Listar etapas del proceso (dropdown)' })
-  @Get('lookup/etapas')
-  async listarEtapas() {
-    const datos = await this.service.listarEtapas()
-    return this.successList(datos)
-  }
-
-  @ApiOperation({ summary: 'Listar estados del proceso por etapa (cascade dropdown)' })
-  @Get('lookup/estados/:idEtapa')
-  async listarEstadosPorEtapa(@Param('idEtapa', ParseIntPipe) idEtapa: number) {
-    const datos = await this.service.listarEstadosPorEtapa(idEtapa)
-    return this.successList(datos)
-  }
 }
+

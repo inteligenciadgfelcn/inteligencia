@@ -1,11 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../../shared/constants'
-import { DetenidoAuxiliar } from '../../../operativo/entity/detenido-auxiliar.entity'
+import { DetenidoAuxiliar } from './detenido-auxiliar.entity'
 import { SituacionLegal } from '../../../parametrica/entity/sustancia/situacion-legal.entity'
 
 /**
  * Entidad Situacion
- * Historial de situaciones legales de un implicado (persona_auxiliar).
+ * Historial de situaciones legales de un implicado.
  * Origen: FRM-JUR-02.aspx.cs — btnsituacion_Click / Muestrasitu
  * Tabla: public.situacion
  */

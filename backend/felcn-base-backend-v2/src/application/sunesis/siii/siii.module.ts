@@ -34,7 +34,7 @@ import { TipoCabello } from './parametrica/entity/persona/tipo-cabello.entity'
 // Operativo params
 import { CategoriaOperativo } from './parametrica/entity/operativo/categoria-operativo.entity'
 import { PlanOperaciones } from './parametrica/entity/operativo/plan-operaciones.entity'
-import { Etapa } from './parametrica/entity/operativo/etapa.entity'
+import { EtapaOperativo } from './parametrica/entity/operativo/etapa.entity'
 import { EtapaInvestigacion } from './parametrica/entity/operativo/etapa-investigacion.entity'
 import { FormaTransporte } from './parametrica/entity/operativo/forma-transporte.entity'
 import { Recurso } from './parametrica/entity/operativo/recurso.entity'
@@ -74,7 +74,6 @@ import { SustanciaLiquida } from './operativo/entity/sustancia-liquida.entity'
 import { Fabrica } from './operativo/entity/fabrica.entity'
 import { ItemBienSecuestrado } from './operativo/entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from './operativo/entity/item-bien-caracteristica.entity'
-import { DetenidoAuxiliar } from './operativo/entity/detenido-auxiliar.entity'
 import { ArrestadoAuxiliar } from './operativo/entity/arrestado-auxiliar.entity'
 import { Galeria } from './operativo/entity/galeria.entity'
 import { Logotipo } from './operativo/entity/logotipo.entity'
@@ -109,6 +108,15 @@ import { SeguimientoRepository } from './seguimiento/casos/repository/seguimient
 import { AsignacionesIngresoController } from './seguimiento/asignaciones/controller/asignaciones-ingreso.controller'
 import { AsignacionesIngresoService } from './seguimiento/asignaciones/service/asignaciones-ingreso.service'
 import { AsignacionesIngresoRepository } from './seguimiento/asignaciones/repository/asignaciones-ingreso.repository'
+
+// Seguimiento - Personas (FRM-JUR-02)
+import { DetenidoAuxiliar } from './seguimiento/personas/entity/detenido-auxiliar.entity'
+import { Situacion } from './seguimiento/personas/entity/situacion.entity'
+import { EtapaProceso } from './seguimiento/personas/entity/etapa-proceso.entity'
+import { Estado } from './seguimiento/personas/entity/estado.entity'
+import { PersonasController } from './seguimiento/personas/controller/personas.controller'
+import { PersonasService } from './seguimiento/personas/service/personas.service'
+import { PersonasRepository } from './seguimiento/personas/repository/personas.repository'
 
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
@@ -151,7 +159,7 @@ const entitiesParametricas = [
   // Operativo params
   CategoriaOperativo,
   PlanOperaciones,
-  Etapa,
+  EtapaOperativo,
   EtapaInvestigacion,
   FormaTransporte,
   Recurso,
@@ -188,7 +196,6 @@ const entitiesOperativas = [
   Fabrica,
   ItemBienSecuestrado,
   ItemBienCaracteristica,
-  DetenidoAuxiliar,
   ArrestadoAuxiliar,
   Galeria,
   Logotipo,
@@ -209,6 +216,11 @@ const entitiesOperativas = [
   Jurisdiccion,
   ControlJurisdiccional,
   Archivo,
+  // Seguimiento - Personas
+  DetenidoAuxiliar,
+  Situacion,
+  EtapaProceso,
+  Estado,
 ]
 
 @Module({
@@ -225,6 +237,7 @@ const entitiesOperativas = [
     InvestigacionController,
     SeguimientoController,
     AsignacionesIngresoController,
+    PersonasController,
   ],
   providers: [
     LookupService,
@@ -238,12 +251,15 @@ const entitiesOperativas = [
     SeguimientoRepository,
     AsignacionesIngresoService,
     AsignacionesIngresoRepository,
+    PersonasService,
+    PersonasRepository,
   ],
   exports: [
     LookupService,
     OperativoService,
     InvestigacionService,
     SeguimientoService,
+    PersonasService,
   ],
 })
 export class SiiiModule { }

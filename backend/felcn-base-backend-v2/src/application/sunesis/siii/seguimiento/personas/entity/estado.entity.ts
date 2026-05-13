@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../../shared/constants'
-import { Etapa } from '../../../parametrica/entity/operativo/etapa.entity'
+import { EtapaOperativo } from '../../../parametrica/entity/operativo/etapa.entity'
 
 /**
  * Entidad Estado
@@ -19,9 +19,9 @@ export class Estado {
   @Column({ name: 'descripcion', type: 'varchar', length: 40 })
   descripcion: string
 
-  @ManyToOne(() => Etapa)
+  @ManyToOne(() => EtapaOperativo)
   @JoinColumn({ name: 'id_etapa' })
-  etapa?: Etapa
+  etapa?: EtapaOperativo
 
   constructor(data?: Partial<Estado>) {
     if (data) Object.assign(this, data)
