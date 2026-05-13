@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
 import { DataTable } from 'mantine-datatable'
-import { PersonasServiceInstance } from '@/services/personas/PersonasService'
+import { PersonasServiceInstance } from '@/services/seguimiento/SeguimientoPersonasService'
 import { SituacionLegalSeccion } from './SituacionLegalSeccion'
 import { EtapaProcesoSeccion } from './EtapaProcesoSeccion'
 
@@ -126,11 +126,10 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${
-                    activa
-                      ? 'border-primary text-primary bg-white dark:bg-gray-900'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
+                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activa
+                    ? 'border-primary text-primary bg-white dark:bg-gray-900'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
                   onClick={() => setTabActiva(tab.key)}
                 >
                   <Icono className={`w-5 h-5 ${activa ? 'text-primary' : ''}`}>{tab.icon}</Icono>

@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { Icono } from '@/components/Icono'
-import { MetadatosSeccion } from './secciones/MetadatosSeccion'
-import { FiscalesSeccion } from './secciones/FiscalesSeccion'
-import { JurisdiccionSeccion } from './secciones/JurisdiccionSeccion'
-import { ControlJurisdiccionalSeccion } from './secciones/ControlJurisdiccionalSeccion'
-import { PolicialesSeccion } from './secciones/PolicialesSeccion'
-import { ArchivosSeccion } from './secciones/ArchivosSeccion'
-import { InvestigadoresSeccion } from './secciones/InvestigadoresSeccion'
+import { MetadatosSeccion } from './MetadatosSeccion'
+import { FiscalesSeccion } from './FiscalesSeccion'
+import { JurisdiccionSeccion } from './JurisdiccionSeccion'
+import { ControlJurisdiccionalSeccion } from './ControlJurisdiccionalSeccion'
+import { PolicialesSeccion } from './PolicialesSeccion'
+import { ArchivosSeccion } from './ArchivosSeccion'
+import { InvestigadoresSeccion } from './InvestigadoresSeccion'
 
 type SeccionKey =
   | 'metadatos'

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { Icono } from '@/components/Icono'
-import { SeguimientoServiceInstance, UpdateMetadatosPayload } from '@/services/seguimiento/SeguimientoService'
+import { SeguimientoServiceInstance, UpdateMetadatosPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 
 interface MetadatosSeccionProps {

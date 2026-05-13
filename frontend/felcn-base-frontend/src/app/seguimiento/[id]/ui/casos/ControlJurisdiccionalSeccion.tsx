@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
-import { SeguimientoServiceInstance, ControlJurisdiccionalPayload } from '@/services/seguimiento/SeguimientoService'
+import { SeguimientoServiceInstance, ControlJurisdiccionalPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import { DataTable } from 'mantine-datatable'
 

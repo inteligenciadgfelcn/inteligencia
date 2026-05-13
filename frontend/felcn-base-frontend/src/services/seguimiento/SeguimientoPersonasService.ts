@@ -2,6 +2,7 @@ import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 
 const BASE = `${Constantes.baseUrl}/personas`
+const BASE_PAR = `${Constantes.baseUrl}/siii-lookups`
 
 export interface CreateSituacionPayload {
   idSituacionLegal: number
@@ -66,7 +67,7 @@ export const PersonasServiceInstance = {
 
   listarSituacionesLegales() {
     return sesionPeticion({
-      url: `${BASE}/lookup/situaciones-legales`,
+      url: `${BASE_PAR}/situaciones-legales`,
       method: 'get',
       withCredentials: true,
     })
@@ -74,7 +75,7 @@ export const PersonasServiceInstance = {
 
   listarEtapas() {
     return sesionPeticion({
-      url: `${BASE}/lookup/etapas`,
+      url: `${BASE_PAR}/etapas`,
       method: 'get',
       withCredentials: true,
     })
@@ -82,7 +83,7 @@ export const PersonasServiceInstance = {
 
   listarEstadosPorEtapa(idEtapa: number) {
     return sesionPeticion({
-      url: `${BASE}/lookup/estados/${idEtapa}`,
+      url: `${BASE_PAR}/estados/${idEtapa}`,
       method: 'get',
       withCredentials: true,
     })
