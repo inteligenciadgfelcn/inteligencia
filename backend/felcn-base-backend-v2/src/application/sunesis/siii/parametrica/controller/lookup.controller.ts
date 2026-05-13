@@ -181,6 +181,14 @@ export class LookupController extends BaseController {
     )
   }
 
+  @ApiOperation({ summary: 'Listar estados del proceso por etapa (cascade dropdown)' })
+  @Get('estados/:idEtapa')
+  async listarEstadosPorEtapa(@Param('idEtapa') idEtapa: string) {
+    return this.successList(
+      await this.lookupService.listarEstadosPorEtapa(parseInt(idEtapa))
+    )
+  }
+
   @ApiOperation({ summary: 'Listar recursos' })
   @Get('recursos')
   async listarRecursos() {
@@ -221,6 +229,12 @@ export class LookupController extends BaseController {
   @Get('coca-descripciones')
   async listarCocaDescripciones() {
     return this.successList(await this.lookupService.listarCocaDescripciones())
+  }
+
+  @ApiOperation({ summary: 'Listar situaciones legales (dropdown)' })
+  @Get('situaciones-legales')
+  async listarSituacionesLegales() {
+    return this.successList(await this.lookupService.listarSituacionesLegales())
   }
 
   // ==================== BIENES ====================

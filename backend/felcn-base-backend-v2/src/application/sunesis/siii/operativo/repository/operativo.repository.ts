@@ -12,7 +12,7 @@ import { SustanciaLiquida } from '../entity/sustancia-liquida.entity'
 import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
-import { DetenidoAuxiliar } from '../entity/detenido-auxiliar.entity'
+import { PersonaAuxiliar } from '../entity/persona-auxiliar.entity'
 import { ArrestadoAuxiliar } from '../entity/arrestado-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
@@ -265,21 +265,21 @@ export class OperativoRepository {
 
   // ==================== DETENIDOS ====================
 
-  private get detenidoRepo() {
-    return this.dataSource.getRepository(DetenidoAuxiliar)
+  private get personaAuxiliarRepo() {
+    return this.dataSource.getRepository(PersonaAuxiliar)
   }
 
-  async crearDetenido(detenido: DetenidoAuxiliar): Promise<DetenidoAuxiliar> {
-    return this.detenidoRepo.save(detenido)
+  async crearDetenido(persona: PersonaAuxiliar): Promise<PersonaAuxiliar> {
+    return this.personaAuxiliarRepo.save(persona)
   }
 
   async listarDetenidosPorOperativo(
     idOperativo: string,
     paginacion: PaginacionQueryDto
-  ): Promise<[DetenidoAuxiliar[], number]> {
-    return this.detenidoRepo.findAndCount({
+  ): Promise<[PersonaAuxiliar[], number]> {
+    return this.personaAuxiliarRepo.findAndCount({
       where: { idOperativo },
-      relations: ['paisNacionalidad', 'tipoDocumento'],
+      relations: ['pais', 'tipoDocumento'],
       order: { fechaHoraIngreso: 'DESC' },
       skip: paginacion.saltar,
       take: paginacion.limite,
@@ -287,7 +287,7 @@ export class OperativoRepository {
   }
 
   async eliminarDetenido(id: string): Promise<void> {
-    await this.detenidoRepo.delete(id)
+    await this.personaAuxiliarRepo.delete(id)
   }
 
   async actualizarFotoDetenido(
@@ -295,7 +295,7 @@ export class OperativoRepository {
     campo: 'foto_frente' | 'foto_documento' | 'foto_perfil_izquierdo',
     foto: Buffer
   ): Promise<void> {
-    await this.detenidoRepo.update(id, { [campo]: foto } as any)
+    await this.personaAuxiliarRepo.update(id, { [campo]: foto } as any)
   }
 
   // ==================== GALERÍA ====================
@@ -415,7 +415,7 @@ export class OperativoRepository {
       this.sustanciaLiquidaRepo.count({ where: { idOperativo } }),
       this.fabricaRepo.count({ where: { idOperativo } }),
       this.bienRepo.count({ where: { idOperativo } }),
-      this.detenidoRepo.count({ where: { idOperativo } }),
+      this.personaAuxiliarRepo.count({ where: { idOperativo } }),
       this.galeriaRepo.count({ where: { idOperativo } }),
     ])
 
@@ -436,8 +436,8 @@ export class OperativoRepository {
     return this.galeriaRepo.findOne({ where: { id } })
   }
 
-  async buscarDetenidoPorId(id: string): Promise<DetenidoAuxiliar | null> {
-    return this.detenidoRepo.findOne({ where: { id } })
+  async buscarDetenidoPorId(id: string): Promise<PersonaAuxiliar | null> {
+    return this.personaAuxiliarRepo.findOne({ where: { id } })
   }
 
   async buscarBienPorId(id: string): Promise<ItemBienSecuestrado | null> {
