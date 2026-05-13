@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
-import { SeguimientoServiceInstance, ServidorPolicialPayload } from '@/services/seguimiento/SeguimientoService'
+import { SeguimientoServiceInstance, ServidorPolicialPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import { DataTable } from 'mantine-datatable'
 
