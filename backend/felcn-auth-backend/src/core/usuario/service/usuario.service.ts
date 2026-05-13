@@ -974,7 +974,7 @@ export class UsuarioService extends BaseService {
         await this.actualizarRoles(id, roles, usuarioAuditoria, transaction)
       }
 
-      if (ciudadaniaDigital) {
+      if (ciudadaniaDigital !== undefined && ciudadaniaDigital !== null) {
         await this.usuarioRepositorio.actualizar(
           id,
           {
