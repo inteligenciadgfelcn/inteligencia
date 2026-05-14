@@ -21,7 +21,7 @@ export default function SeguimientoPage() {
   const idDistrital = usuario?.grupo?.distrital?.id ?? 0
 
   // Tab activa
-  const [tabActiva, setTabActiva] = useState<TabActiva>('sin-registrar')
+  const [tabActiva, setTabActiva] = useState<TabActiva>('registrados')
 
   // Estado tab 1 — Sin registrar
   const [rowsSin, setRowsSin] = useState<AsignacionIngresoItem[]>([])
@@ -165,11 +165,10 @@ export default function SeguimientoPage() {
                 key={tab.key}
                 type="button"
                 onClick={() => setTabActiva(tab.key)}
-                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${
-                  activa
-                    ? 'border-primary text-primary bg-white dark:bg-gray-900'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
-                }`}
+                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activa
+                  ? 'border-primary text-primary bg-white dark:bg-gray-900'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+                  }`}
               >
                 <Icono className={`w-5 h-5 ${activa ? 'text-primary' : ''}`}>{tab.icon}</Icono>
                 {tab.label}

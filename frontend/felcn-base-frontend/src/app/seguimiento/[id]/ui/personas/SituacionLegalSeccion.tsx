@@ -63,7 +63,11 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Registrar Situación Legal</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-medium mb-1">Fecha de la Resolución</label>
+              <Input type="date" {...register('fecha', { required: true })} size="sm" />
+            </div>
             <div>
               <label className="block text-xs font-medium mb-1">Situación Legal</label>
               <Select
@@ -82,14 +86,10 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input {...register('lugar', { required: true })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha de la Resolución</label>
-              <Input type="date" {...register('fecha', { required: true })} size="sm" />
-            </div>
-            <div>
               <label className="block text-xs font-medium mb-1">Autoridad (Nombre del Juez)</label>
               <Input {...register('autoridad', { required: true })} size="sm" />
             </div>
-            <div>
+            <div className="md:col-span-3">
               <label className="block text-xs font-medium mb-1">Juzgado o Tribunal</label>
               <Input {...register('fjt', { required: true })} size="sm" />
             </div>
