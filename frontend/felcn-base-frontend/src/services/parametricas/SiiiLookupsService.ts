@@ -222,4 +222,9 @@ export const SiiiLookupsService = {
   obtenerContenidoCaso(): Promise<RespuestaAPI<LookupGenerico>> {
     return sesionPeticion({ url: `${BASE}/contenido-caso`, withCredentials: true })
   },
+
+  /** Obtiene los tipos de contenido de bien (documentos adjuntos de bienes) */
+  obtenerContenidoBien(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/contenido-bien`, withCredentials: true })
+  },
 }

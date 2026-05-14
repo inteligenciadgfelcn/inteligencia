@@ -9,10 +9,11 @@ import { useAlerts } from '@/hooks/useAlerts'
 
 import { PersonasTab } from './personas/PersonasTab'
 import { CasosTab } from './casos/CasosTab'
+import { BienesTab } from './bienes/BienesTab'
 
 import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoCasosService'
 
-type TabPrincipal = 'casos' | 'personas'
+type TabPrincipal = 'casos' | 'personas' | 'bienes'
 
 
 
@@ -98,6 +99,16 @@ export function FormSeguimiento({ idCaso, tabInicial }: Props) {
         {tabPrincipal === 'personas' && (
           <div className="p-6 bg-white dark:bg-gray-900 min-h-[500px]">
             <PersonasTab
+              idCaso={idCaso}
+              idOperativo={idOperativo}
+              cabecera={datos?.cabecera}
+            />
+          </div>
+        )}
+
+        {tabPrincipal === 'bienes' && (
+          <div className="p-6 bg-white dark:bg-gray-900 min-h-[500px]">
+            <BienesTab
               idCaso={idCaso}
               idOperativo={idOperativo}
               cabecera={datos?.cabecera}

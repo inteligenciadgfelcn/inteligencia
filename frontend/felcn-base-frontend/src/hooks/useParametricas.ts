@@ -74,6 +74,7 @@ export function useParametricas() {
   const [unidadesSiii, setUnidadesSiii] = useState<LookupBasico[]>([])
   // const [grados, setGrados] = useState<LookupBasico[]>([])
   const [contenidoCaso, setContenidoCaso] = useState<LookupBasico[]>([])
+  const [contenidoBien, setContenidoBien] = useState<LookupBasico[]>([])
 
   // ── asig-lookups ──────────────────────────────────────────────────────────
   const [unidadesAsig, setUnidadesAsig] = useState<UnidadAsig[]>([])
@@ -534,6 +535,16 @@ export function useParametricas() {
     }
   }, [])
 
+  const cargarContenidoBien = useCallback(async () => {
+    setCargando(true)
+    try {
+      const res = await SiiiLookupsService.obtenerContenidoBien()
+      if (res.finalizado) setContenidoBien(res.datos as unknown as LookupBasico[])
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
   return {
     cargando,
     // siii-lookups
@@ -611,6 +622,8 @@ export function useParametricas() {
     // cargarGrados,
     contenidoCaso,
     cargarContenidoCaso,
+    contenidoBien,
+    cargarContenidoBien,
     // asig-lookups
     unidadesAsig,
     cargarUnidadesAsig,
