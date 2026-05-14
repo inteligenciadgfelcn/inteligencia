@@ -25,7 +25,7 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
   const [nombreCaso, setNombreCaso] = useState('')
   const [desde, setDesde] = useState(() => {
     const d = new Date()
-    d.setDate(d.getDate() - 10)
+    d.setDate(d.getDate() - 365)
     return d.toISOString().split('T')[0]
   })
   const [hasta, setHasta] = useState(() => new Date().toISOString().split('T')[0])

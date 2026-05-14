@@ -79,7 +79,11 @@ export function EtapaProcesoSeccion({ idDetenido }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Registrar Etapa del Proceso</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-medium mb-1">Fecha de la Resolución</label>
+              <Input type="date" {...register('fecha', { required: true })} size="sm" />
+            </div>
             <div>
               <label className="block text-xs font-medium mb-1">Etapa del Proceso</label>
               <select
@@ -110,10 +114,6 @@ export function EtapaProcesoSeccion({ idDetenido }: Props) {
             <div>
               <label className="block text-xs font-medium mb-1">Departamento, Provincia, Lugar</label>
               <Input {...register('lugar', { required: true })} size="sm" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Fecha de la Resolución</label>
-              <Input type="date" {...register('fecha', { required: true })} size="sm" />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Autoridad que emite la Resolución</label>

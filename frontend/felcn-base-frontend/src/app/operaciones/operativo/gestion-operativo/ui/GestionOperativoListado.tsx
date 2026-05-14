@@ -14,7 +14,7 @@ import type { GestionOperativoItem } from '../types'
 import { Constantes } from '@/config/Constantes'
 
 export interface GestionOperativoListadoProps {
-  tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos'
+  tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos' | 'impresion' | 'envio-fiscalia'
 }
 
 export function GestionOperativoListado({
@@ -30,7 +30,8 @@ export function GestionOperativoListado({
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['gestion-operativo-listado', tipo],
     queryFn: () => {
-      if (tipo === 'aprobado') return GestionOperativoService.listarAprobadosPorUsuario()
+      if (tipo === 'aprobado' || tipo === 'impresion' || tipo === 'envio-fiscalia')
+        return GestionOperativoService.listarAprobadosPorUsuario()
       if (tipo === 'con-cud') return GestionOperativoService.listarConCudPorUsuario()
       if (tipo === 'todos') return GestionOperativoService.listarPorUsuario()
       return GestionOperativoService.listarNoAprobadosPorUsuario()
@@ -172,7 +173,10 @@ export function GestionOperativoListado({
                 <IconPencil className="h-5 w-5" />
               </button>
             )}
-            {(tipo === 'aprobado' || tipo === 'con-cud' || tipo === 'todos') && (
+            {(tipo === 'aprobado' ||
+              tipo === 'con-cud' ||
+              tipo === 'todos' ||
+              tipo === 'impresion') && (
               <button
                 type="button"
                 className="text-success hover:text-success/70 transition-colors"
@@ -190,7 +194,7 @@ export function GestionOperativoListado({
                 <IconPrinter className="h-5 w-5" />
               </button>
             )}
-            {tipo === 'aprobado' && (
+            {(tipo === 'aprobado' || tipo === 'envio-fiscalia') && (
               <button
                 type="button"
                 className="text-info hover:text-info/70 transition-colors"
