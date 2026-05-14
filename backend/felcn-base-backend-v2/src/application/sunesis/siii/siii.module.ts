@@ -118,6 +118,17 @@ import { PersonasController } from './seguimiento/personas/controller/personas.c
 import { PersonasService } from './seguimiento/personas/service/personas.service'
 import { PersonasRepository } from './seguimiento/personas/repository/personas.repository'
 
+// Seguimiento - Bienes (FRM-JUR-03)
+import { BienSecuestrado } from './seguimiento/bienes/entity/bien-secuestrado.entity'
+import { BienIncautado } from './seguimiento/bienes/entity/bien-incautado.entity'
+import { BienConfiscado } from './seguimiento/bienes/entity/bien-confiscado.entity'
+import { PerdidaDominio } from './seguimiento/bienes/entity/perdida-dominio.entity'
+import { SituacionBien } from './seguimiento/bienes/entity/situacion-bien.entity'
+import { ArchivoBien } from './seguimiento/bienes/entity/archivo-bien.entity'
+import { BienesController } from './seguimiento/bienes/controller/bienes.controller'
+import { BienesService } from './seguimiento/bienes/service/bienes.service'
+import { BienesRepository } from './seguimiento/bienes/repository/bienes.repository'
+
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
 import { OperativoController } from './operativo/controller/operativo.controller'
@@ -221,6 +232,13 @@ const entitiesOperativas = [
   Situacion,
   EtapaProceso,
   Estado,
+  // Seguimiento - Bienes
+  BienSecuestrado,
+  BienIncautado,
+  BienConfiscado,
+  PerdidaDominio,
+  SituacionBien,
+  ArchivoBien,
 ]
 
 @Module({
@@ -238,6 +256,7 @@ const entitiesOperativas = [
     SeguimientoController,
     AsignacionesIngresoController,
     PersonasController,
+    BienesController,
   ],
   providers: [
     LookupService,
@@ -253,6 +272,8 @@ const entitiesOperativas = [
     AsignacionesIngresoRepository,
     PersonasService,
     PersonasRepository,
+    BienesService,
+    BienesRepository,
   ],
   exports: [
     LookupService,
@@ -260,6 +281,7 @@ const entitiesOperativas = [
     InvestigacionService,
     SeguimientoService,
     PersonasService,
+    BienesService,
   ],
 })
 export class SiiiModule { }

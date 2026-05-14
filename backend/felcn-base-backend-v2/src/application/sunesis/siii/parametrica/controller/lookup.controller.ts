@@ -326,4 +326,10 @@ export class LookupController extends BaseController {
   async listarContenidoCaso() {
     return this.successList(await this.lookupService.listarContenidoCaso())
   }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de bien (documentos adjuntos de bienes)' })
+  @Get('contenido-bien')
+  async listarContenidoBien() {
+    return this.successList(await this.lookupService.listarContenidoBien())
+  }
 }

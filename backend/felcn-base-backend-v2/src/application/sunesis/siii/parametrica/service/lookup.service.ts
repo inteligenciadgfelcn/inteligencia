@@ -220,4 +220,8 @@ export class LookupService extends BaseService {
   async listarSituacionesLegales() {
     return this.lookupRepository.listarSituacionesLegales()
   }
+
+  async listarContenidoBien() {
+    return this.lookupRepository.listarContenidoBien()
+  }
 }

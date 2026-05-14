@@ -48,6 +48,7 @@ import { SituacionLegal } from '../entity/sustancia/situacion-legal.entity'
 // Bienes
 import { Bienes } from '../entity/bien/bienes.entity'
 import { CalidadBien } from '../entity/bien/calidad-bien.entity'
+import { ContenidoBien } from '../entity/bien/contenido-bien.entity'
 
 // Estructura organizacional
 import { Unidad } from '../entity/estructura/unidad.entity'
@@ -344,6 +345,12 @@ export class LookupRepository {
   async listarSituacionesLegales(): Promise<SituacionLegal[]> {
     return this.dataSource
       .getRepository(SituacionLegal)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarContenidoBien(): Promise<ContenidoBien[]> {
+    return this.dataSource
+      .getRepository(ContenidoBien)
       .find({ order: { descripcion: 'ASC' } })
   }
 }
