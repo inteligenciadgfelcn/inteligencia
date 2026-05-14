@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react'
 import { useSession } from '@/hooks'
 import { Constantes } from '@/config/Constantes'
 import { socket } from '@/services/socket'
-import IconSave from '../Icon/IconSave'
 
 interface Props {
   id: string
@@ -21,14 +20,22 @@ export default function FingerprintCapture({
 
   const [scannerEstado, setScannerEstado] = useState('DESCONECTADO')
   const [imagen, setImagen] = useState<string | null>(null)
+  const [scannerId, setScannerId] = useState<string | null>(null)
   const [preview, setPreview] = useState<any>(null)
   const [estado, setEstado] = useState('esperando')
 
   useEffect(() => {
+    const getScannerId = async () => {
+      const response = await fetch('http://127.0.0.1:5055/scanner')
+      const body = await response.json()
+      setScannerId(body.scannerId)
+      setScannerEstado('CONECTADO')
+    }
+
     if (!socket.connected) socket.connect()
 
     const onConnect = () => {
-      // console.log('🟢 Socket conectado')
+      console.log('🟢 Socket conectado')
     }
 
     const onScannerStatus = (data: any) => {
@@ -53,6 +60,9 @@ export default function FingerprintCapture({
     socket.on('connect', onConnect)
     socket.on('scanner-status', onScannerStatus)
     socket.on('fingerprint-preview', onPreview)
+    if (scannerId === null) {
+      getScannerId()
+    }
 
     // 🔥 LIMPIAR BIEN
     return () => {
@@ -63,6 +73,11 @@ export default function FingerprintCapture({
   }, [])
 
   const capturar = async () => {
+    if (!scannerId) {
+      alert('❌ No se encontró el scanner')
+      return
+    }
+
     if (scannerEstado !== 'CONECTADO') {
       alert('❌ Scanner no conectado')
       return
@@ -75,6 +90,7 @@ export default function FingerprintCapture({
       url: `${Constantes.baseUrl}/scanner/capturar`,
       method: 'POST',
       body: {
+        scannerId: scannerId,
         personaId: 123,
         dedo: id,
       },
