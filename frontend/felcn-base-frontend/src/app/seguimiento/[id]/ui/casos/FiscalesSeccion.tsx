@@ -40,24 +40,28 @@ export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionPro
     <div className="space-y-8">
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Registrar Nuevo Fiscal</h3>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          <div>
-            <label className="block text-xs font-medium mb-1">Nombre y Apellidos</label>
-            <Input {...register('nombreApellidos', { required: true })} size="sm" />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="md:col-span-4">
+              <div className="md:w-1/4">
+                <label className="block text-xs font-medium mb-1">Fecha Asignación</label>
+                <Input type="date" {...register('fecha', { required: true })} size="sm" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Nombre y Apellidos</label>
+              <Input {...register('nombreApellidos', { required: true })} size="sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Celular</label>
+              <Input {...register('telefonoCelular')} size="sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1">Tel. Fijo Oficina</label>
+              <Input {...register('telefonoFijo')} size="sm" />
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Celular</label>
-            <Input {...register('telefonoCelular')} size="sm" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Tel. Fijo Oficina</label>
-            <Input {...register('telefonoFijo')} size="sm" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Fecha Asignación</label>
-            <Input type="date" {...register('fecha', { required: true })} size="sm" />
-          </div>
-          <div className="lg:col-span-4 flex justify-end">
+          <div className="flex justify-end">
             <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
               Guardar Fiscal
             </Button>

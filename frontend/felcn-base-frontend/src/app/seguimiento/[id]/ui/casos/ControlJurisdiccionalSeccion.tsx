@@ -46,10 +46,12 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Registrar Nuevo Control Jurisdiccional</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Fecha Inicio Investigación</label>
-              <Input type="date" {...register('fecha', { required: true })} size="sm" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-4">
+              <div className="md:w-1/4">
+                <label className="block text-xs font-medium mb-1">Fecha Inicio Investigación</label>
+                <Input type="date" {...register('fecha', { required: true })} size="sm" />
+              </div>
             </div>
             <div>
               <label className="block text-xs font-medium mb-1">Juzgado de Instrucción en lo Penal y/o Cautelar</label>

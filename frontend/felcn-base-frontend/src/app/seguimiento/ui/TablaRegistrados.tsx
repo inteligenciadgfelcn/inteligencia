@@ -37,7 +37,6 @@ export function TablaRegistrados({
       onPageChange={onPageChange}
       onLimitChange={onLimitChange}
       columns={[
-        { accessor: 'idCaso', title: 'Id' },
         { accessor: 'unidad', title: 'Unidad' },
         { accessor: 'distrital', title: 'Distrital' },
         { accessor: 'grupo', title: 'Grupo' },
@@ -51,31 +50,31 @@ export function TablaRegistrados({
           accessor: 'procedimientos',
           title: 'Procedimientos',
           render: (row) => (
-            <div className="flex gap-1">
-              <Button
-                variant="primary"
-                size="sm"
+            <div className="flex gap-3">
+              <button
+                type="button"
+                className="text-primary hover:text-primary/70 transition-colors"
                 onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=casos`)}
+                title="Casos"
               >
-                <Icono className="w-4 h-4 mr-1">folder_open</Icono>
-                Casos
-              </Button>
-              <Button
-                variant="info"
-                size="sm"
+                <Icono className="w-5 h-5">folder_open</Icono>
+              </button>
+              <button
+                type="button"
+                className="text-info hover:text-info/70 transition-colors"
                 onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=personas`)}
+                title="Personas"
               >
-                <Icono className="w-4 h-4 mr-1">people</Icono>
-                Personas
-              </Button>
-              <Button
-                variant="success"
-                size="sm"
+                <Icono className="w-5 h-5">people</Icono>
+              </button>
+              <button
+                type="button"
+                className="text-success hover:text-success/70 transition-colors"
                 onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=bienes`)}
+                title="Bienes"
               >
-                <Icono className="w-4 h-4 mr-1">inventory_2</Icono>
-                Bienes
-              </Button>
+                <Icono className="w-5 h-5">home</Icono>
+              </button>
             </div>
           ),
         },

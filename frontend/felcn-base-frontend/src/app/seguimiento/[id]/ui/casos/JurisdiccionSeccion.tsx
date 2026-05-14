@@ -39,20 +39,24 @@ export function JurisdiccionSeccion({ idCaso, datos, onGuardar }: JurisdiccionSe
     <div className="space-y-8">
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Registrar Nueva Jurisdicción</h3>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-          <div>
-            <label className="block text-xs font-medium mb-1">Fecha del Operativo</label>
-            <Input type="date" {...register('fecha', { required: true })} size="sm" />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <div className="md:col-span-4">
+              <div className="md:w-1/4">
+                <label className="block text-xs font-medium mb-1">Fecha del Operativo</label>
+                <Input type="date" {...register('fecha', { required: true })} size="sm" />
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium mb-1">Jurisdicción</label>
+              <Input {...register('jurisdiccion', { required: true })} size="sm" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-medium mb-1">Observación</label>
+              <Input {...register('observacion')} size="sm" />
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Jurisdicción</label>
-            <Input {...register('jurisdiccion', { required: true })} size="sm" />
-          </div>
-          <div className="md:col-span-2 lg:col-span-1">
-            <label className="block text-xs font-medium mb-1">Observación</label>
-            <Input {...register('observacion')} size="sm" />
-          </div>
-          <div className="lg:col-span-3 flex justify-end">
+          <div className="flex justify-end">
             <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
               Guardar Jurisdicción
             </Button>
