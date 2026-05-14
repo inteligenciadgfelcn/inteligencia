@@ -200,17 +200,14 @@ export const FormInvestigacionParalela = ({
                   {...register('delitoPrecedente')}
                   options={[
                     {
-                      id: 'Fabricación (Art. 47 Ley 1008)',
                       value: 'Fabricación (Art. 47 Ley 1008)',
                       label: 'Fabricación (Art. 47 Ley 1008)',
                     },
                     {
-                      id: 'Transporte (Art. 55 Ley 1008)',
                       value: 'Transporte (Art. 55 Ley 1008)',
                       label: 'Transporte (Art. 55 Ley 1008)',
                     },
                     {
-                      id: 'Tráfico (Art. 48 Ley 1008)',
                       value: 'Tráfico (Art. 48 Ley 1008)',
                       label: 'Tráfico (Art. 48 Ley 1008)',
                     },
