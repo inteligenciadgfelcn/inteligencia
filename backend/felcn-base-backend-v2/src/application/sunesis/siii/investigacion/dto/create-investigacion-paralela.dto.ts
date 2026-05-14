@@ -20,7 +20,7 @@ export class CreateInvestigacionParalelaDto {
 
   @ApiProperty()
   @IsString()
-  @MaxLength(3)
+  @MaxLength(20)
   abreviaturaUnidad: string
 
   @ApiProperty()

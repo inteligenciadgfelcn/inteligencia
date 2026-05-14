@@ -41,7 +41,7 @@ export class InvestigacionParalela extends BaseEntity {
   @Column({ name: 'id_operativo', type: 'bigint' })
   idOperativo: string
 
-  @Column({ name: 'abreviatura_unidad', type: 'varchar', length: 3 })
+  @Column({ name: 'abreviatura_unidad', type: 'varchar', length: 20 })
   abreviaturaUnidad: string
 
   @Column({ name: 'delito', type: 'varchar', length: 35 })
