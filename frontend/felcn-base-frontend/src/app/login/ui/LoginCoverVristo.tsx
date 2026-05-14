@@ -15,7 +15,7 @@ const LoginCoverVristo = ({ children }: Props) => {
       {/* Fondo */}
       <div className="absolute inset-0">
         <img
-          src={`${base}/assets/images/auth/bg-gradient.png`}
+          src={`${base}/assets/images/auth/wallp3.jpg`}
           alt="bg"
           className="h-full w-full object-cover"
         />
@@ -23,7 +23,7 @@ const LoginCoverVristo = ({ children }: Props) => {
 
       <div
         className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6 py-10 dark:bg-[#060818]"
-        style={{ backgroundImage: `url(${base}/assets/images/auth/map.png)` }}
+        
       >
         <div className="relative flex w-full max-w-[1500px] flex-col overflow-hidden rounded-md bg-white/60 backdrop-blur-lg dark:bg-black/50 lg:min-h-[750px] lg:flex-row">
           {/* PANEL IZQUIERDO */}

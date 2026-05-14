@@ -144,6 +144,7 @@ export function RegistrosDataTable() {
       ),
     },
     { accessor: 'nroOperativo', title: 'Nro Registro' },
+    { accessor: 'nroCaso', title: 'Nro Caso' },
     { accessor: 'fechaSolicitud', title: 'Fecha y hora del Operativo' },
     { accessor: 'nombreCaso', title: 'Nombre del caso' },
     {
