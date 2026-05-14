@@ -40,6 +40,7 @@ RUN mkdir -p /tmp/logs && chown -R node:node /tmp/logs /home/node
 # Copiar archivos
 COPY --from=prod-deps /home/node/app/node_modules ./node_modules
 COPY --from=build /home/node/app/dist ./dist
+COPY --from=build /home/node/app/src ./src
 
 # metadata (opcional)
 ARG CI_COMMIT_SHORT_SHA
