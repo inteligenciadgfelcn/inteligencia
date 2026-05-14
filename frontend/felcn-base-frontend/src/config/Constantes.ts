@@ -11,5 +11,7 @@ export const Constantes = {
   appEnv: env('NEXT_PUBLIC_APP_ENV') ?? '',
   ciudadaniaUrl: env('NEXT_PUBLIC_CIUDADANIA_URL') ?? '',
   firmadorUrl: env('NEXT_PUBLIC_FIRMADOR_URL') ?? '',
+  consultaPersonaUrl: env('NEXT_PUBLIC_CONSULTA_PERSONA_URL') ?? '',
+  consultaPersonaApiKey: env('NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY') ?? '',
   apiOpenStreetMap: 'https://nominatim.openstreetmap.org',
 }
