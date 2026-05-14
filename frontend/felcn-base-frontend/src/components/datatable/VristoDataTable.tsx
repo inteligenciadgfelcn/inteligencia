@@ -250,9 +250,10 @@ export function VristoDataTable<T>({
                   return (
                     <React.Fragment key={i}>
                       <tr
-                        className={
-                          expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''
-                        }
+                        className={`
+                          ${expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''}
+                          ${rowClassName ? rowClassName(row) : ''}
+                        `}
                       >
                         {rowExpansion && (
                           <td className="w-10">
