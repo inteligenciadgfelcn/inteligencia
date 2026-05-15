@@ -108,20 +108,20 @@ export function EtapaProcesoSeccion({ idDetenido }: Props) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Nro. de Resolución</label>
-              <Input {...register('nroResolucion', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Nro. de Resolución <span className="text-danger">*</span></label>
+              <Input {...register('nroResolucion', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Departamento, Provincia, Lugar</label>
-              <Input {...register('lugar', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Lugar <span className="text-danger">*</span></label>
+              <Input {...register('lugar', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Autoridad que emite la Resolución</label>
-              <Input {...register('autoridad', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Autoridad que emite la Resolución <span className="text-danger">*</span></label>
+              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-medium mb-1">Fiscalía, Juzgado o Tribunal</label>
-              <Input {...register('fjt', { required: true })} size="sm" />
+            <div>
+              <label className="block text-sm font-medium mb-1">Fiscalía, Juzgado o Tribunal <span className="text-danger">*</span></label>
+              <Input {...register('fjt', { required: 'Campo requerido' })} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">

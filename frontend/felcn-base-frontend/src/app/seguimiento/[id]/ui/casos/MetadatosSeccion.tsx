@@ -94,21 +94,21 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           <div>
-            <label className="block text-sm font-bold mb-2">CUD Fiscalía</label>
+            <label className="block text-sm font-medium mb-2">CUD Fiscalía</label>
             <Input
               {...register('ianus')}
               placeholder="Ingrese el CUD"
             />
           </div>
           <div>
-            <label className="block text-sm font-bold mb-2">Num. Caso Perdida de Dominio</label>
+            <label className="block text-sm font-medium mb-2">Num. Caso Perdida de Dominio</label>
             <Input
               {...register('numeroCasoPerDom')}
               placeholder="Ingrese número de caso"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-bold mb-2">Etapa investigativa</label>
+            <label className="block text-sm font-medium mb-2">Etapa investigativa</label>
             <Select
               {...register('idEtapaInvestigacion', { valueAsNumber: true })}
               options={etapasInvestigacion.map(e => ({ value: String(e.id), label: e.descripcion }))}

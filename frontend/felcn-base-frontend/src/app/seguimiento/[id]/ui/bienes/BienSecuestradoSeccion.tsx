@@ -57,25 +57,23 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">BIENES SECUESTRADOS</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-xs font-medium mb-1">Nombres y Apellidos del Fiscal</label>
-              <Input {...register('fiscal', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fiscal <span className="text-danger">*</span></label>
+              <Input {...register('fiscal', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha del Acta del Secuestro</label>
-              <Input type="date" {...register('fechaActoSecuestro', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fecha del Acta <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fechaActoSecuestro', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium mb-1">
-                Nombre y Apellidos del Investigador que Secuestró el Bien
-              </label>
-              <Input {...register('investigador', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Investigador que Secuestró el Bien <span className="text-danger">*</span></label>
+              <Input {...register('investigador', { required: 'Campo requerido' })} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">
             <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
-              Guardar Información
+              Guardar
             </Button>
           </div>
         </form>

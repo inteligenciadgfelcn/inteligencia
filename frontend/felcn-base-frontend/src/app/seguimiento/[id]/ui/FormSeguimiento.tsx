@@ -82,8 +82,33 @@ export function FormSeguimiento({ idCaso, tabInicial }: Props) {
         </div>
       </div>
 
-      {/* Tabs principales: CASOS | PERSONAS */}
+      {/* Tabs principales: CASOS | PERSONAS | BIENES */}
       <div className="panel p-0 overflow-hidden">
+        <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b]">
+          {(['casos', 'personas', 'bienes'] as TabPrincipal[]).map((tab) => {
+            const activa = tabPrincipal === tab
+            const label = tab.charAt(0).toUpperCase() + tab.slice(1)
+            const icon = tab === 'casos' ? 'description' : tab === 'personas' ? 'people' : 'inventory_2'
+            
+            return (
+              <button
+                key={tab}
+                type="button"
+                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${
+                  activa
+                    ? 'border-primary text-primary bg-primary/5'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+                onClick={() => setTabPrincipal(tab)}
+              >
+                <Icono className={`w-5 h-5 ${activa ? 'text-primary' : ''}`}>
+                  {icon}
+                </Icono>
+                {label.toUpperCase()}
+              </button>
+            )
+          })}
+        </div>
 
 
         {/* Contenido según Tab */}

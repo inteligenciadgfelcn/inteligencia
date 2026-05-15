@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
 import { Button } from '@/components/ui/Button'
@@ -187,6 +188,7 @@ export function BienesTab({ idCaso, idOperativo, cabecera }: Props) {
                     onExpandChange: setIdsExpandidos,
                     renderContent: (row: any) => (
                       <ExpansionContenidoBienSimple
+                        idOperativo={idOperativo}
                         bien={row}
                         cache={fotosCache[row.id]}
                         onCacheLoad={actualizarCache}
@@ -245,7 +247,7 @@ export function BienesTab({ idCaso, idOperativo, cabecera }: Props) {
                       <button
                         key={tab.key}
                         type="button"
-                        className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activa
+                        className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${activa
                           ? 'border-primary text-primary bg-white dark:bg-gray-900'
                           : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}
@@ -349,16 +351,29 @@ function FotoSlot({
 }
 
 function ExpansionContenidoBienSimple({
+  idOperativo,
   bien,
   cache,
   onCacheLoad,
   onZoom,
 }: {
+  idOperativo: string | null
   bien: any
   cache: { foto: string | null } | undefined
   onCacheLoad: (id: string, fotos: { foto: string | null }) => void
   onZoom: (src: string) => void
 }) {
+  const { data: resCarac, isLoading: loadingCarac } = useQuery({
+    queryKey: ['caracteristicas-bien', bien.id],
+    queryFn: () =>
+      idOperativo
+        ? GestionOperativoBienesService.listarCaracteristicas(Number(idOperativo), Number(bien.id))
+        : Promise.reject('No idOperativo'),
+    enabled: !!idOperativo && !!bien.id,
+  })
+
+  const caracteristicas = resCarac?.datos?.filas ?? []
+
   useEffect(() => {
     if (cache) return
     const fetchFoto = (path: string | null | undefined): Promise<string | null> =>
@@ -393,10 +408,30 @@ function ExpansionContenidoBienSimple({
           <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
             Características
           </p>
-          <div className="rounded border border-[#e0e6ed] p-3 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
-            <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-              {bien.caracteristicas || 'Sin características registradas'}
-            </p>
+          <div className="rounded border border-[#e0e6ed] p-3 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm min-h-[100px]">
+            {loadingCarac ? (
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+                <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100 dark:bg-gray-800" />
+              </div>
+            ) : caracteristicas.length > 0 ? (
+              <div className="space-y-2">
+                {caracteristicas.map((c: any) => (
+                  <div key={c.id} className="flex gap-2 text-sm">
+                    <span className="font-bold text-gray-500 dark:text-gray-400">
+                      {c.descripcionCaracteristica}:
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {c.descripcion}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 dark:text-gray-600 italic">
+                Sin características registradas
+              </p>
+            )}
           </div>
         </div>
       </div>

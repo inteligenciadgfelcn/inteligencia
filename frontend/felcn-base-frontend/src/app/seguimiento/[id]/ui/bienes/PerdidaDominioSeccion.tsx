@@ -57,25 +57,23 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">PÉRDIDA DE DOMINIO</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Fiscalía que Emitió la Pérdida de Dominio
-              </label>
-              <Input {...register('fiscalia', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fiscalía <span className="text-danger">*</span></label>
+              <Input {...register('fiscalia', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha</label>
-              <Input type="date" {...register('fechaResolucion', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fecha <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fechaResolucion', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium mb-1">A Requerimiento del Fiscal</label>
-              <Input {...register('autoridad', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">A Requerimiento del Fiscal <span className="text-danger">*</span></label>
+              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">
             <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
-              Guardar Información
+              Guardar
             </Button>
           </div>
         </form>

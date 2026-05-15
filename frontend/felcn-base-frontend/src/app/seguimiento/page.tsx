@@ -109,6 +109,18 @@ export default function SeguimientoPage() {
 
   const [ultimaBusqueda, setUltimaBusqueda] = useState<ValoresBusqueda | null>(null)
 
+  useEffect(() => {
+    if (!idDistrital) return
+    const d = new Date()
+    const hasta = d.toISOString().split('T')[0]
+    d.setDate(d.getDate() - 365)
+    const desde = d.toISOString().split('T')[0]
+
+    const busquedaInicial: ValoresBusqueda = { modo: 'fecha', desde, hasta }
+    setUltimaBusqueda(busquedaInicial)
+    void buscarRegistrados(busquedaInicial, 1, limitReg)
+  }, [idDistrital, limitReg, buscarRegistrados])
+
   const handleBuscar = (valores: ValoresBusqueda) => {
     setUltimaBusqueda(valores)
     void buscarRegistrados(valores, 1, limitReg)

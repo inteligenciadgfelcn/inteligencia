@@ -78,21 +78,21 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
     <div className="space-y-8">
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">Agregar Servidor Policial</h3>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
-            <label className="block text-xs font-medium mb-1">Grado</label>
+            <label className="block text-sm font-medium mb-1">Grado <span className="text-danger">*</span></label>
             <Select
-              {...register('idGrado', { valueAsNumber: true, required: true })}
+              {...register('idGrado', { valueAsNumber: true, required: 'Campo requerido' })}
               options={grados.map(g => ({ value: String(g.id), label: g.descripcion }))}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1">Nombre y Apellidos</label>
-            <Input {...register('nombreApellidos', { required: true })} size="sm" />
+            <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
+            <Input {...register('nombreApellidos', { required: 'Campo requerido' })} size="sm" />
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end lg:col-span-2">
             <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
-              Guardar Servidor
+              Guardar
             </Button>
           </div>
         </form>

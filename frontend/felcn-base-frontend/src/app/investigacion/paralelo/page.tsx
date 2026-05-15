@@ -48,13 +48,14 @@ export default function InvestigacionPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="panel flex items-center justify-between px-5 py-4">
-        <h2 className="text-xl font-bold text-dark dark:text-white-light">
-          Investigación Paralela
-        </h2>
+    <div className="space-y-4">
+      <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold text-primary">Investigación Paralela (SIII)</h2>
+        </div>
         <Button
           variant="outline-primary"
+          size="sm"
           onClick={() => router.push('/investigacion/listado')}
         >
           Casos Registrados
