@@ -5,7 +5,7 @@ import { CreateInvestigacionParalelaDto } from '../dto/create-investigacion-para
 import { PaginacionQueryDto } from '@/common/dto'
 import { InvestigacionParalela } from '../entity/investigacion-paralela.entity'
 import { Investigador } from '../entity/investigador.entity'
-import { Operativo } from '../../operativo/entity/operativo.entity'
+import { Operativo } from '../../../operativo/entity/operativo.entity'
 
 @Injectable()
 export class InvestigacionService {

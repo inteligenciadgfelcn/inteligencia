@@ -7,13 +7,13 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
-import { SCHEMA_PUBLIC } from '../../../shared/constants'
-import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
-import { Operativo } from '../../operativo/entity/operativo.entity'
-import { DepartamentoCaso } from '../../parametrica/entity/geografia/departamento-caso.entity'
-import { Unidad } from '../../parametrica/entity/estructura/unidad.entity'
-import { Distrital } from '../../parametrica/entity/estructura/distrital.entity'
-import { Grupo } from '../../parametrica/entity/estructura/grupo.entity'
+import { SCHEMA_PUBLIC } from '../../../../shared/constants'
+import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
+import { Operativo } from '../../../operativo/entity/operativo.entity'
+import { DepartamentoCaso } from '../../../parametrica/entity/geografia/departamento-caso.entity'
+import { Unidad } from '../../../parametrica/entity/estructura/unidad.entity'
+import { Distrital } from '../../../parametrica/entity/estructura/distrital.entity'
+import { Grupo } from '../../../parametrica/entity/estructura/grupo.entity'
 
 /**
  * Entidad InvestigacionParalela
