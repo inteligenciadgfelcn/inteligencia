@@ -89,11 +89,11 @@ import { EstadoDroga } from './operativo/entity/estado-droga.entity'
 import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 
 // Investigación Paralela
-import { InvestigacionParalela } from './investigacion/entity/investigacion-paralela.entity'
-import { Investigador } from './investigacion/entity/investigador.entity'
-import { InvestigacionController } from './investigacion/controller/investigacion.controller'
-import { InvestigacionService } from './investigacion/service/investigacion.service'
-import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
+import { InvestigacionParalela } from './investigacion/paralelo/entity/investigacion-paralela.entity'
+import { Investigador } from './investigacion/paralelo/entity/investigador.entity'
+import { InvestigacionController } from './investigacion/paralelo/controller/investigacion.controller'
+import { InvestigacionService } from './investigacion/paralelo/service/investigacion.service'
+import { InvestigacionRepository } from './investigacion/paralelo/repository/investigacion.repository'
 
 // Seguimiento
 import { Fiscal } from './seguimiento/casos/entity/fiscal.entity'

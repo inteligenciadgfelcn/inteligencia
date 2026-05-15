@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { SeguimientoRepository } from '../repository/seguimiento.repository'
-import { InvestigacionRepository } from '../../../investigacion/repository/investigacion.repository'
+import { InvestigacionRepository } from '../../../investigacion/paralelo/repository/investigacion.repository'
 import { Fiscal } from '../entity/fiscal.entity'
 import { Jurisdiccion } from '../entity/jurisdiccion.entity'
 import { ControlJurisdiccional } from '../entity/control-jurisdiccional.entity'
 import { ServidorPolicial } from '../../../operativo/entity/servidor-policial.entity'
 import { Archivo } from '../entity/archivo.entity'
-import { Investigador } from '../../../investigacion/entity/investigador.entity'
+import { Investigador } from '../../../investigacion/paralelo/entity/investigador.entity'
 
 /**
  * Servicio SeguimientoService

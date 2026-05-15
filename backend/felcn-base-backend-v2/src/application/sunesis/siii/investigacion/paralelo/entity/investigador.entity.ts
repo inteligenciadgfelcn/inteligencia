@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
-import { SCHEMA_PUBLIC } from '../../../shared/constants'
-import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
+import { SCHEMA_PUBLIC } from '../../../../shared/constants'
+import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
 
 /**
  * Entidad Investigador
