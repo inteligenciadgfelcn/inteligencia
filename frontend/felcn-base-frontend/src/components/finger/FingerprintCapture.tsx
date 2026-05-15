@@ -39,7 +39,7 @@ export default function FingerprintCapture({
     }
 
     const onScannerStatus = (data: any) => {
-      console.log('📡 Estado scanner:', data)
+      // console.log('📡 Estado scanner:', data)
       setScannerEstado(data.estado)
     }
 
