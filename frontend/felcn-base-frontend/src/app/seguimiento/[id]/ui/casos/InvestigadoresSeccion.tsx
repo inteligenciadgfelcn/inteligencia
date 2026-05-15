@@ -63,35 +63,33 @@ export function InvestigadoresSeccion({ idCaso, datos, onGuardar }: Investigador
         <h3 className="text-md font-semibold mb-4 text-primary font-bold uppercase">Investigador(es) Asignado(s) al Caso</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div className="md:col-span-4">
-              <div className="md:w-1/4">
-                <label className="block text-xs font-medium mb-1">Fecha Asignación</label>
-                <Input type="date" {...register('fecha', { required: true })} size="sm" />
-              </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Fecha Asignación <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Grado</label>
+              <label className="block text-sm font-medium mb-1">Grado <span className="text-danger">*</span></label>
               <Select
-                {...register('idGrado', { valueAsNumber: true, required: true })}
+                {...register('idGrado', { valueAsNumber: true, required: 'Campo requerido' })}
                 options={grados.map(g => ({ value: String(g.id), label: g.descripcion }))}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Nombre y Apellidos</label>
-              <Input {...register('nombreApp', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
+              <Input {...register('nombreApp', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Teléfono Celular</label>
+              <label className="block text-sm font-medium mb-1">Teléfono Celular</label>
               <Input {...register('telefonoCelular')} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Teléfono Fijo Unidad</label>
+              <label className="block text-sm font-medium mb-1">Teléfono Fijo Unidad</label>
               <Input {...register('telefonoFijo')} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">
             <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
-              Guardar Investigador
+              Guardar
             </Button>
           </div>
         </form>

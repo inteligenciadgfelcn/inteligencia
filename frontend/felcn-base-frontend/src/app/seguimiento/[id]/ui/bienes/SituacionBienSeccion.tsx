@@ -74,62 +74,62 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">ENTREGA O DEVOLUCIÓN DEL BIEN</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Fecha del Requerimiento Fiscal de Entrega o Devolución del Bien
+              <label className="block text-sm font-medium mb-1">
+                Fecha del Requerimiento <span className="text-danger">*</span>
               </label>
-              <Input type="date" {...register('fechaRequerimiento', { required: true })} size="sm" />
+              <Input type="date" {...register('fechaRequerimiento', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Nombres y Apellidos del Fiscal que Emite el Requerimiento
+              <label className="block text-sm font-medium mb-1">
+                Fiscal del Requerimiento <span className="text-danger">*</span>
               </label>
-              <Input {...register('fiscalRequerimiento', { required: true })} size="sm" />
+              <Input {...register('fiscalRequerimiento', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Condición Legal de la Entrega del Bien
+              <label className="block text-sm font-medium mb-1">
+                Condición Legal <span className="text-danger">*</span>
               </label>
               <Select
                 size="sm"
                 placeholder="Seleccione..."
                 options={calidadesBien.map((c) => ({ value: String(c.id), label: c.descripcion }))}
-                {...register('idCalidadBien', { required: true })}
+                {...register('idCalidadBien', { required: 'Campo requerido' })}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha de Entrega del Bien</label>
-              <Input type="date" {...register('fechaEntrega', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fecha de Entrega <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fechaEntrega', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Nombres, Apellidos y Cargo del Responsable de la Entrega del Bien
+              <label className="block text-sm font-medium mb-1">
+                Responsable de la Entrega <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableEntrega', { required: true })} size="sm" />
+              <Input {...register('responsableEntrega', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Nombres, Apellidos y Cargo del Responsable de la Recepción del Bien
+              <label className="block text-sm font-medium mb-1">
+                Responsable de la Recepción <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableRecepcion', { required: true })} size="sm" />
+              <Input {...register('responsableRecepcion', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Institución Responsable del Bien
+              <label className="block text-sm font-medium mb-1">
+                Institución Responsable <span className="text-danger">*</span>
               </label>
-              <Input {...register('institucion', { required: true })} size="sm" />
+              <Input {...register('institucion', { required: 'Campo requerido' })} size="sm" />
               <p className="text-[10px] text-gray-400 mt-1">
-                Ej. DIRCABI, Min. Defensa, Min. Público, Personas Naturales o Jurídicas
+                Ej. DIRCABI, Min. Defensa...
               </p>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">
-                Ubicación Física del Bien
+              <label className="block text-sm font-medium mb-1">
+                Ubicación Física del Bien <span className="text-danger">*</span>
               </label>
-              <Input {...register('ubicacion', { required: true })} size="sm" />
+              <Input {...register('ubicacion', { required: 'Campo requerido' })} size="sm" />
               <p className="text-[10px] text-gray-400 mt-1">
-                Departamento, Provincia, Localidad o Ciudad, Dirección y Numeración
+                Dep, Prov, Loc...
               </p>
             </div>
           </div>

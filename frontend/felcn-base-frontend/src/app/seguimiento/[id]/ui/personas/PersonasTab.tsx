@@ -126,7 +126,7 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activa
+                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${activa
                     ? 'border-primary text-primary bg-white dark:bg-gray-900'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}

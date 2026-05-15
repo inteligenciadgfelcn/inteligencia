@@ -65,20 +65,19 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha de la Resolución</label>
-              <Input type="date" {...register('fecha', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fecha de Situación Legal <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Situación Legal</label>
+              <label className="block text-sm font-medium mb-1">Situación Legal <span className="text-danger">*</span></label>
               <Select
                 size="sm"
                 placeholder="Seleccione..."
                 options={situacionesLegales}
-                {...register('idSituacionLegal', { required: true })}
+                {...register('idSituacionLegal', { required: 'Campo requerido' })}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Nro. Resolución del Acta de Medida Cautelar</label>
               <Input {...register('nroResolucion', { required: true })} size="sm" />
             </div>
             <div>
@@ -86,12 +85,12 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input {...register('lugar', { required: true })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Autoridad (Nombre del Juez)</label>
-              <Input {...register('autoridad', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Autoridad (Nombre del Juez) <span className="text-danger">*</span></label>
+              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
             </div>
-            <div className="md:col-span-3">
-              <label className="block text-xs font-medium mb-1">Juzgado o Tribunal</label>
-              <Input {...register('fjt', { required: true })} size="sm" />
+            <div>
+              <label className="block text-sm font-medium mb-1">Juzgado o Tribunal <span className="text-danger">*</span></label>
+              <Input {...register('fjt', { required: 'Campo requerido' })} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">

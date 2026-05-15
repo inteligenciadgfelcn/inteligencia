@@ -89,19 +89,17 @@ export const FormInvestigacionParalela = ({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="panel flex items-center justify-between px-5 py-4">
+    <div className="space-y-4">
+      <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
             className="text-primary hover:text-primary/70 transition-colors"
-            title="Volver al listado"
+            title="Volver"
           >
             <IconArrowLeft className="h-6 w-6" />
           </button>
-          <h2 className="text-xl font-bold text-dark dark:text-white-light">
-            Registro de Caso Paralelo
-          </h2>
+          <h2 className="text-lg font-semibold text-primary">Registro de Caso Paralelo</h2>
         </div>
       </div>
 
@@ -109,7 +107,7 @@ export const FormInvestigacionParalela = ({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           {/* Sección: Datos de Identificación (Lectura) */}
           <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
-            <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
+            <h4 className="mb-4 text-sm font-semibold text-primary">
               Datos de Identificación del Caso
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -124,7 +122,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Nro. de Operativo
                 </label>
                 <Input
@@ -134,7 +132,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div className="lg:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Nombre de Caso
                 </label>
                 <Input
@@ -144,7 +142,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Unidad
                 </label>
                 <Input
@@ -154,7 +152,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Distrital
                 </label>
                 <Input
@@ -164,7 +162,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Grupo
                 </label>
                 <Input
@@ -174,7 +172,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Departamento
                 </label>
                 <Input
@@ -188,7 +186,7 @@ export const FormInvestigacionParalela = ({
 
           {/* Sección: Datos del Caso Paralelo */}
           <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
-            <h4 className="mb-4 text-sm font-semibold uppercase text-primary">
+            <h4 className="mb-4 text-sm font-semibold text-primary">
               Información de la Investigación Paralela
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -225,7 +223,7 @@ export const FormInvestigacionParalela = ({
               </div>
 
               <div className="md:col-span-1">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Asignado al Caso
                 </label>
                 <Input
@@ -236,7 +234,7 @@ export const FormInvestigacionParalela = ({
               </div>
 
               <div className="md:col-span-1">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Fiscal de Sustancias Controladas
                 </label>
                 <Input
@@ -247,7 +245,7 @@ export const FormInvestigacionParalela = ({
               </div>
 
               <div className="md:col-span-3">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Delito Precedente (Detalle) <span className="text-danger">*</span>
                 </label>
                 <Textarea
@@ -264,7 +262,7 @@ export const FormInvestigacionParalela = ({
               </div>
 
               <div className="md:col-span-3">
-                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                <label className="mb-1 block text-sm font-medium">
                   Informe de Inteligencia financiera o patrimonial <span className="text-danger">*</span>
                 </label>
                 <Textarea

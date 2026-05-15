@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -89,60 +89,47 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[#5D7B9D] text-white">
-                <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">
-                  PASO 1: Seleccionar Documento
-                </th>
-                <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">
-                  Paso 2: Nombre de Documento
-                </th>
-                <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">Paso 3: Tipo</th>
-                <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">
-                  Paso 4: Seleccionar Documento
-                </th>
-                <th className="px-3 py-2 text-left font-semibold whitespace-nowrap">
-                  Paso 5: Finalizar Guardando los archivos
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="bg-gray-50 dark:bg-gray-800/40">
-                <td className="px-3 py-3">
-                  <Select
-                    {...register('idContenidoBien', { required: true })}
-                    options={contenidoBien.map((c) => ({ value: String(c.id), label: c.descripcion }))}
-                    placeholder="Seleccione..."
-                  />
-                </td>
-                <td className="px-3 py-3">
-                  <Input
-                    {...register('nombre', { required: true })}
-                    size="sm"
-                    placeholder="Nombre del documento"
-                  />
-                </td>
-                <td className="px-3 py-3">
-                  <Select {...register('tipo', { required: true })} options={TIPOS_DOC} />
-                </td>
-                <td className="px-3 py-3">
-                  <input
-                    type="file"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-warning file:text-white hover:file:bg-warning/80 cursor-pointer border rounded-md p-1 bg-white dark:bg-gray-900"
-                  />
-                </td>
-                <td className="px-3 py-3">
-                  <Button type="submit" variant="warning" size="sm" loading={isSubmitting}>
-                    Finalizar Ingreso
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <form onSubmit={handleSubmit(onSubmit)} className="panel border border-warning/20">
+        <div className="mb-4 flex items-center gap-2 text-warning font-bold uppercase text-xs tracking-wider">
+          <Icono className="w-5 h-5">upload_file</Icono>
+          Ingreso de Documentación Digitalizada
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <div className="lg:col-span-1">
+            <label className="block text-sm font-medium mb-1">Paso 1: Categoría</label>
+            <Select
+              {...register('idContenidoBien', { required: true })}
+              options={contenidoBien.map((c) => ({ value: String(c.id), label: c.descripcion }))}
+              placeholder="Seleccione..."
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <label className="block text-sm font-medium mb-1">Paso 2: Nombre</label>
+            <Input
+              {...register('nombre', { required: true })}
+              size="sm"
+              placeholder="Ej: Resolución 123/2024"
+            />
+          </div>
+          <div className="lg:col-span-1">
+            <label className="block text-sm font-medium mb-1">Paso 3: Tipo</label>
+            <Select {...register('tipo', { required: true })} options={TIPOS_DOC} />
+          </div>
+          <div className="lg:col-span-1">
+            <Button type="submit" variant="warning" className="w-full" loading={isSubmitting}>
+              Paso 5: Finalizar Guardado
+            </Button>
+          </div>
+
+          <div className="lg:col-span-4 mt-2">
+            <label className="block text-sm font-medium mb-2">Paso 4: Seleccionar Documento o Imagen</label>
+            <Dropzone
+              file={file}
+              onChange={setFile}
+              placeholder="Arrastre el archivo aquí o haga clic para seleccionar"
+            />
+          </div>
         </div>
       </form>
 
@@ -190,6 +177,88 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
           ]}
         />
       </div>
+    </div>
+  )
+}
+
+function Dropzone({
+  file,
+  onChange,
+  placeholder,
+}: {
+  file: File | null
+  onChange: (file: File | null) => void
+  placeholder: string
+}) {
+  const [drag, setDrag] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setDrag(false)
+    const droppedFile = e.dataTransfer.files?.[0]
+    if (droppedFile) onChange(droppedFile)
+  }
+
+  return (
+    <div
+      className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-all ${
+        drag
+          ? 'border-success bg-success/10 scale-[0.99]'
+          : 'border-[#e0e6ed] dark:border-[#1b2e4b] hover:border-success dark:hover:border-success/50 bg-gray-50/50 dark:bg-gray-800/20'
+      }`}
+      onDragOver={(e) => {
+        e.preventDefault()
+        setDrag(true)
+      }}
+      onDragEnter={() => setDrag(true)}
+      onDragLeave={() => setDrag(false)}
+      onDrop={handleDrop}
+      onClick={() => inputRef.current?.click()}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        hidden
+        onChange={(e) => onChange(e.target.files?.[0] || null)}
+      />
+      
+      {file ? (
+        <div className="flex items-center justify-center gap-3 animate-in fade-in zoom-in duration-300">
+          <div className="p-3 bg-success/20 rounded-full">
+            <Icono className="w-8 h-8 text-success">description</Icono>
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-bold text-gray-700 dark:text-gray-200 truncate max-w-[300px]">
+              {file.name}
+            </p>
+            <p className="text-xs text-gray-500">
+              {(file.size / 1024 / 1024).toFixed(2)} MB
+            </p>
+          </div>
+          <button
+            type="button"
+            className="ml-4 p-2 hover:bg-danger/10 text-danger rounded-full transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              onChange(null)
+              if (inputRef.current) inputRef.current.value = ''
+            }}
+          >
+            <Icono className="w-5 h-5">close</Icono>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="mx-auto w-12 h-12 mb-2 flex items-center justify-center rounded-full bg-success/10 text-success">
+            <Icono className="w-6 h-6">cloud_upload</Icono>
+          </div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {placeholder}
+          </p>
+          <p className="text-xs text-gray-400">PDF, DOC, PNG, JPG (Máx. 10MB)</p>
+        </div>
+      )}
     </div>
   )
 }
