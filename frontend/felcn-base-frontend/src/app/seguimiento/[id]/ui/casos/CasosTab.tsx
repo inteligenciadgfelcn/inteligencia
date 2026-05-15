@@ -71,14 +71,14 @@ export function CasosTab({ idCaso, idOperativo, datos, onGuardar }: Props) {
 
   return (
     <>
-      <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b] bg-white dark:bg-gray-900">
+      <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b] bg-gray-50/50 dark:bg-gray-800/20">
         {SECCIONES_CASOS.map((seccion) => {
           const activa = seccionActiva === seccion.key
           return (
             <button
               key={seccion.key}
               type="button"
-              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 text-xs font-semibold border-b-2 transition-all ${
+              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 text-xs font-bold border-b-2 transition-all ${
                 activa
                   ? 'border-secondary text-secondary bg-white dark:bg-gray-900'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800'

@@ -47,33 +47,17 @@ export function TablaRegistrados({
         { accessor: 'asignadoCaso', title: 'Asignado al Caso' },
         { accessor: 'fiscalAsignadoCaso', title: 'Fiscal Asignado' },
         {
-          accessor: 'procedimientos',
-          title: 'Procedimientos',
+          accessor: 'idCaso',
+          title: 'Acciones',
           render: (row) => (
-            <div className="flex gap-3">
+            <div className="flex items-center justify-center">
               <button
                 type="button"
                 className="text-primary hover:text-primary/70 transition-colors"
-                onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=casos`)}
-                title="Casos"
+                onClick={() => router.push(`/seguimiento/${row.idCaso}`)}
+                title="Ingresar al Seguimiento"
               >
-                <Icono className="w-5 h-5">folder_open</Icono>
-              </button>
-              <button
-                type="button"
-                className="text-info hover:text-info/70 transition-colors"
-                onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=personas`)}
-                title="Personas"
-              >
-                <Icono className="w-5 h-5">people</Icono>
-              </button>
-              <button
-                type="button"
-                className="text-success hover:text-success/70 transition-colors"
-                onClick={() => router.push(`/seguimiento/${row.idCaso}?tab=bienes`)}
-                title="Bienes"
-              >
-                <Icono className="w-5 h-5">home</Icono>
+                <Icono className="w-5 h-5">login</Icono>
               </button>
             </div>
           ),

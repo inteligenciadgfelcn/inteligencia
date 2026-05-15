@@ -57,25 +57,23 @@ export function BienConfiscadoSeccion({ idItemBien }: Props) {
       <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
         <h3 className="text-md font-semibold mb-4 text-primary">BIENES CONFISCADOS</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-xs font-medium mb-1">Número de Sentencia Judicial</label>
-              <Input {...register('numeroSentenciaJudicial', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Nro. de Sentencia <span className="text-danger">*</span></label>
+              <Input {...register('numeroSentenciaJudicial', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Fecha de la Sentencia Judicial</label>
-              <Input type="date" {...register('fechaSentenciaJudicial', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Fecha de Sentencia <span className="text-danger">*</span></label>
+              <Input type="date" {...register('fechaSentenciaJudicial', { required: 'Campo requerido' })} size="sm" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium mb-1">
-                Nombres, Apellidos y Cargo de la Autoridad que Emite la Sentencia
-              </label>
-              <Input {...register('autoridad', { required: true })} size="sm" />
+              <label className="block text-sm font-medium mb-1">Autoridad que Emite la Sentencia <span className="text-danger">*</span></label>
+              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
             </div>
           </div>
           <div className="flex justify-end">
             <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
-              Guardar Información
+              Guardar
             </Button>
           </div>
         </form>
