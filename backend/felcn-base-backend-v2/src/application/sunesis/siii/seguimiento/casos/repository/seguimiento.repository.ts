@@ -9,7 +9,7 @@ import { ServidorPolicial } from '../../../operativo/entity/servidor-policial.en
 import { Archivo } from '../entity/archivo.entity'
 import { AsignacionSiii } from '../../../asignacion/entity/asignacion-siii.entity'
 import { Operativo } from '../../../operativo/entity/operativo.entity'
-import { Investigador } from '../../../investigacion/entity/investigador.entity'
+import { Investigador } from '../../../investigacion/paralelo/entity/investigador.entity'
 
 /**
  * Repositorio SeguimientoRepository
