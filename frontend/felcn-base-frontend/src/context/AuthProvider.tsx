@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   }
 
   const login = async ({ usuario, contrasena }: LoginType) => {
-    console.log('...');
+    // console.log('...');
     try {
       setLoading(true)
 
