@@ -26,7 +26,7 @@ import { OperativoService } from '../service/operativo.service'
 import {
   OperativoDto,
   CreateDrogaDto,
-  CreateDetenidoDto,
+  CreatePersonaAuxiliarDto,
   CreateBienSecuestradoDto,
   CreateBienCaracteristicaDto,
   CreateFabricaDto,
@@ -585,7 +585,7 @@ export class OperativoController extends BaseController {
   )
   async agregarDetenido(
     @Param('idOperativo') idOperativo: string,
-    @Body() data: CreateDetenidoDto,
+    @Body() data: CreatePersonaAuxiliarDto,
     @UploadedFiles()
     files: {
       fotoFrente?: Express.Multer.File[]

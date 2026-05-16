@@ -72,6 +72,9 @@ export function useParametricas() {
   const [coloresOjos, setColoresOjos] = useState<LookupBasico[]>([])
   const [coloresCabello, setColoresCabello] = useState<LookupBasico[]>([])
   const [unidadesSiii, setUnidadesSiii] = useState<LookupBasico[]>([])
+  // const [grados, setGrados] = useState<LookupBasico[]>([])
+  const [contenidoCaso, setContenidoCaso] = useState<LookupBasico[]>([])
+  const [contenidoBien, setContenidoBien] = useState<LookupBasico[]>([])
 
   // ── asig-lookups ──────────────────────────────────────────────────────────
   const [unidadesAsig, setUnidadesAsig] = useState<UnidadAsig[]>([])
@@ -512,6 +515,36 @@ export function useParametricas() {
     }
   }, [])
 
+  // const cargarGrados = useCallback(async () => {
+  //   setCargando(true)
+  //   try {
+  //     const res = await SiiiLookupsService.obtenerGrados()
+  //     if (res.finalizado) setGrados(res.datos as unknown as LookupBasico[])
+  //   } finally {
+  //     setCargando(false)
+  //   }
+  // }, [])
+
+  const cargarContenidoCaso = useCallback(async () => {
+    setCargando(true)
+    try {
+      const res = await SiiiLookupsService.obtenerContenidoCaso()
+      if (res.finalizado) setContenidoCaso(res.datos as unknown as LookupBasico[])
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
+  const cargarContenidoBien = useCallback(async () => {
+    setCargando(true)
+    try {
+      const res = await SiiiLookupsService.obtenerContenidoBien()
+      if (res.finalizado) setContenidoBien(res.datos as unknown as LookupBasico[])
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
   return {
     cargando,
     // siii-lookups
@@ -585,6 +618,12 @@ export function useParametricas() {
     cargarColoresCabello,
     unidadesSiii,
     cargarUnidadesSiii,
+    // grados,
+    // cargarGrados,
+    contenidoCaso,
+    cargarContenidoCaso,
+    contenidoBien,
+    cargarContenidoBien,
     // asig-lookups
     unidadesAsig,
     cargarUnidadesAsig,

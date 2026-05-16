@@ -6,7 +6,7 @@
 /**
  * Conexión a la base de datos SIII (felcn_siii)
  * Esquema 'parametricas': tipo_droga, pais, continente, departamento, provincia, localidad, etc.
- * Esquema 'public': operativo, detenido_auxiliar, arrestado_auxiliar, galeria, etc.
+ * Esquema 'public': operativo, persona_auxiliar, arrestado_auxiliar, galeria, etc.
  */
 export const DB_SIII = 'siii'
 

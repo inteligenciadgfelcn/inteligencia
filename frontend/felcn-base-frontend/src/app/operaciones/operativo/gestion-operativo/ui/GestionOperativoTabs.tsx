@@ -7,9 +7,10 @@ export function GestionOperativoTabs() {
   const [tabActiva, setTabActiva] = useState('no-aprobado')
 
   const TABS = [
-    { key: 'no-aprobado', label: 'Casos sin Nº de Caso', icon: 'assignment' },
-    { key: 'aprobado', label: 'Casos con Nº de Caso', icon: 'rule' },
-    { key: 'con-cud', label: 'Casos con CUD', icon: 'verified' },
+    { key: 'no-aprobado', label: 'Registro de Operativos', icon: 'assignment' },
+    { key: 'impresion', label: 'Impresión de Informe operativo', icon: 'print' },
+    { key: 'envio-fiscalia', label: 'Envio a la fiscalia', icon: 'send' },
+    { key: 'con-cud', label: 'Enviados a Fiscalía', icon: 'verified' },
     { key: 'todos', label: 'Todos mis Casos', icon: 'list_alt' },
   ]
 
@@ -43,9 +44,14 @@ export function GestionOperativoTabs() {
             tipo="no-aprobado"
           />
         )}
-        {tabActiva === 'aprobado' && (
+        {tabActiva === 'impresion' && (
           <GestionOperativoListado
-            tipo="aprobado"
+            tipo="impresion"
+          />
+        )}
+        {tabActiva === 'envio-fiscalia' && (
+          <GestionOperativoListado
+            tipo="envio-fiscalia"
           />
         )}
         {tabActiva === 'con-cud' && (
