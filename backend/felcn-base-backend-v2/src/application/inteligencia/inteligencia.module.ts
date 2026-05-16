@@ -3,7 +3,6 @@ import { UsuarioModule } from './usuario/usuario.module'
 import { Module } from '@nestjs/common'
 import { GrupoModule } from './felcn_asignacion_caso/grupo/grupo.module'
 import { ServicioModule } from './felcn_asignacion_caso/servicio/servicio.module'
-import { PruebaModule } from './reportes/prueba/prueba.module'
 import { ProfesionModule } from './felcn_sii/parametricas/profesion/profesion.module';
 import { EstadoCivilModule } from './felcn_sii/parametricas/estado_civil/estado_civil.module';
 import { TipoNarizModule } from './felcn_sii/parametricas/tipo_nariz/tipo_nariz.module';
@@ -36,6 +35,7 @@ import { UnidadSospechosoModule } from './felcn_sospechoso/parametrica/unidad-so
 import { DistritoSospechosoModule } from './felcn_sospechoso/parametrica/distrito-sospechoso/distrito-sospechoso.module';
 import { GrupoSospechosoModule } from './felcn_sospechoso/parametrica/grupo-sospechoso/grupo-sospechoso.module';
 import { DetenidoSospechosoModule } from './felcn_sospechoso/detenido/detenido.module'
+import { ReporteModule } from './reportes/reporte/reporte.module';
 
 @Module({
   imports: [
@@ -48,7 +48,7 @@ import { DetenidoSospechosoModule } from './felcn_sospechoso/detenido/detenido.m
     DepartamentoModule,
     AsignacionesModule,
     ServicioModule,
-    PruebaModule,
+    ReporteModule,
     TipoDocumentoModule,
     ProfesionModule,
     EstadoCivilModule,
@@ -72,7 +72,7 @@ import { DetenidoSospechosoModule } from './felcn_sospechoso/detenido/detenido.m
     ItemOperativoModule,
     EstadoSospechosoModule,
     DetenidoSospechosoModule, 
-    UnidadSospechosoModule, DistritoSospechosoModule, GrupoSospechosoModule,
+    UnidadSospechosoModule, DistritoSospechosoModule, GrupoSospechosoModule
   ],
 })
 export class InteligenciaModule {}
