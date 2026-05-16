@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
-import { DB_SIII } from '../shared/constants'
+import { DB_SIII, DB_LGI } from '../shared/constants'
 
 
 // Geografía
@@ -94,6 +94,11 @@ import { Investigador } from './investigacion/paralelo/entity/investigador.entit
 import { InvestigacionController } from './investigacion/paralelo/controller/investigacion.controller'
 import { InvestigacionService } from './investigacion/paralelo/service/investigacion.service'
 import { InvestigacionRepository } from './investigacion/paralelo/repository/investigacion.repository'
+
+// LGI — Sistema legacy GIAEF (felcn_lgi)
+import { LgiController } from './investigacion/lgi/controller/lgi.controller'
+import { LgiService } from './investigacion/lgi/service/lgi.service'
+import { LgiRepository } from './investigacion/lgi/repository/lgi.repository'
 
 // Seguimiento
 import { Fiscal } from './seguimiento/casos/entity/fiscal.entity'
@@ -257,6 +262,7 @@ const entitiesOperativas = [
     AsignacionesIngresoController,
     PersonasController,
     BienesController,
+    LgiController,
   ],
   providers: [
     LookupService,
@@ -274,6 +280,8 @@ const entitiesOperativas = [
     PersonasRepository,
     BienesService,
     BienesRepository,
+    LgiService,
+    LgiRepository,
   ],
   exports: [
     LookupService,
@@ -282,6 +290,7 @@ const entitiesOperativas = [
     SeguimientoService,
     PersonasService,
     BienesService,
+    LgiService,
   ],
 })
 export class SiiiModule { }
