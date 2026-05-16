@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common'
 import { FiliacionService } from './filiacion.service'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
@@ -24,22 +24,39 @@ export class FiliacionController extends BaseController {
     super()
   }
 
-  @Get('personas/:caso/:filiado')
-  @ApiOperation({ summary: 'Listar personas para filiación' })
-  @ApiParam({
+  @Get('personas')
+  @ApiOperation({
+    summary: 'Listar personas para filiación',
+  })
+  @ApiQuery({
     name: 'caso',
-    example: 'BN-C-1/26',
+    example: 'LP-ADM-14/26',
     description: 'Número de caso',
   })
-  @ApiParam({
+  @ApiQuery({
     name: 'filiado',
     example: 1,
     description: 'Estado de filiación: 1 = Filiado, 0 = No Filiado',
   })
+  @ApiQuery({
+    name: 'pagina',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limite',
+    example: 10,
+    required: false,
+  })
   async obtenerPersonas(
-    @Param('caso') caso: string,
-    @Param('filiado', ParseIntPipe) filiado: number,
-    @Query() pagination: PaginacionQueryDto
+    @Query('caso')
+    caso: string,
+
+    @Query('filiado', ParseIntPipe)
+    filiado: number,
+
+    @Query()
+    pagination: PaginacionQueryDto
   ) {
     const result = await this.filiacionService.obtenerPersonasPorCaso(
       caso,

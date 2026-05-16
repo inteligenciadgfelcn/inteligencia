@@ -1,12 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty }
+  from '@nestjs/swagger';
 
-export class CapturarHuellaDto {
-  @ApiProperty({ example: 123, description: 'ID de la persona' })
-  personaId: number;
+export class CapturarHuellaDto
+{
+  @ApiProperty({
+    example:
+      'DESKTOP-ABC_ZF1 28068351',
+  })
+  scannerId!: string;
 
   @ApiProperty({
-    example: 'INDICE_DERECHO',
-    description: 'Dedo a capturar',
+    example: 123,
   })
-  dedo: string;
+  personaId!: number;
+
+  @ApiProperty({
+    example:
+      'INDICE_DERECHO',
+  })
+  dedo!: string;
 }

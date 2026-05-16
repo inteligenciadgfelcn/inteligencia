@@ -29,6 +29,7 @@ export enum Messages {
   INVALID_USER = 'El usuario no existe o no tiene un estado válido.',
   INVALID_CREDENTIALS = 'Credenciales incorrectas.',
   INACTIVE_USER = 'El usuario está inactivo.',
+  CIUDADANIA_DIGITAL_NOT_ENABLED = 'El usuario no tiene habilitada la autenticación con Ciudadanía Digital.',
   PENDING_USER = 'El usuario está pendiente de activación. Revisa tu correo electrónico.',
   INACTIVE_PERSON = 'El registro de persona está inactivo.',
   INVALID_PASSWORD_SCORE = 'La nueva contraseña no cumple con el nivel de seguridad necesario.',

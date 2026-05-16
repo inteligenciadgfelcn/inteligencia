@@ -1,35 +1,92 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
-import { ScannerGateway } from './scanner.gateway';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CapturarHuellaDto } from './dto/capturar.dto';
-import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard';
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
+
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+
+import { JwtAuthGuard }
+  from '@/core/config/authorization/guards/jwt-auth.guard';
+
+import { ScannerGateway }
+  from './scanner.gateway';
+
+import { CapturarHuellaDto }
+  from './dto/capturar.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('Scanner - Huellas')
 @Controller('scanner')
-export class ScannerController {
-  constructor(private gateway: ScannerGateway) {}
+export class ScannerController
+{
+  constructor(
+    private readonly gateway:
+      ScannerGateway,
+  ) {}
 
   @Post('capturar')
-  @ApiOperation({ summary: 'Enviar solicitud de captura de huella al scanner' })
-  capturar(@Body() dto: CapturarHuellaDto) {
-    const scannerId = this.gateway.getScannerDisponible();
+  @ApiOperation({
+    summary:
+      'Capturar huella',
+  })
+  capturar(
+    @Body()
+    dto: CapturarHuellaDto,
+  )
+  {
+    /*
+     VALIDAR
+    */
+    const scanner =
+      this.gateway.getScanner(
+        dto.scannerId,
+      );
 
-    if (!scannerId) {
-      throw new Error('No hay scanners disponibles');
+    if (!scanner)
+    {
+      throw new BadRequestException(
+        'Scanner no encontrado',
+      );
     }
 
-    // ENVÍO DINÁMICO DESDE FRONTEND
-    this.gateway.sendToScanner(scannerId, 'capture-fingerprint', {
-      personaId: dto.personaId,
-      dedo: dto.dedo,
-    });
+    if (
+      scanner.estado !==
+      'DISPONIBLE'
+    )
+    {
+      throw new BadRequestException(
+        'Scanner no disponible',
+      );
+    }
+
+    /*
+     ENVIAR
+    */
+    this.gateway.sendToScanner(
+      dto.scannerId,
+      'capture-fingerprint',
+      {
+        personaId:
+          dto.personaId,
+
+        dedo:
+          dto.dedo,
+      },
+    );
 
     return {
       ok: true,
-      scannerId,
-      mensaje: 'Captura enviada al scanner',
+
+      mensaje:
+        'Captura enviada',
     };
   }
 }

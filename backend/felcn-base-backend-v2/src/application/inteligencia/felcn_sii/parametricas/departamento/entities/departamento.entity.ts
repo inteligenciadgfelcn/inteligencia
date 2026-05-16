@@ -20,7 +20,7 @@ export class Departamento {
     name: 'id_departamento',
     comment: 'Clave primaria del registro',
   })
-  idDepartamento: number
+  idDepartamento!: number
 
   @Index({ unique: true })
   @Column({
@@ -30,7 +30,7 @@ export class Departamento {
     nullable: false,
     comment: 'Abreviatura del departamento',
   })
-  abreviatura: string
+  abreviatura!: string
 
 
   @Index(['pais'], { unique: true })
@@ -40,7 +40,7 @@ export class Departamento {
     nullable: false,
     comment: 'Nombre del departamento',
   })
-  descripcion: string
+  descripcion!: string
 
   @ManyToOne(() => Pais, (pais) => pais.departamentos, {
     nullable: false,
@@ -49,7 +49,7 @@ export class Departamento {
   @JoinColumn({
     name: 'id_pais',
   })
-  pais: Pais
+  pais!: Pais
 
   @Column({
     type: 'enum',
@@ -57,7 +57,7 @@ export class Departamento {
     default: Estado.ACTIVO,
     comment: 'Estado del registro',
   })
-  estado: Estado
+  estado!: Estado
 
   @BeforeInsert()
   setEstadoPorDefecto() {

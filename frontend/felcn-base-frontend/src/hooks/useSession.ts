@@ -90,7 +90,7 @@ export const useSession = () => {
       if (respuesta?.url) {
         window.location.href = respuesta?.url
       } else {
-        window.location.reload()
+        window.location.href = '/login';
       }
     } catch (e) {
       imprimir(`Error al cerrar sesión: `, e)

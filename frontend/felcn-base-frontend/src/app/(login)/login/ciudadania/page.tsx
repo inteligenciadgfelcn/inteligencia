@@ -25,13 +25,16 @@ export default function CiudadaniaPage() {
 
   const manejarError = useCallback(
     async (mensaje: string) => {
-      Alerta({ mensaje, variant: 'error' })
-      mostrarFullScreen()
-      await delay(1000)
+      Alerta({
+        mensaje: mensaje || 'No tiene acceso al sistema. Contacte al administrador.',
+        variant: 'error',
+        persist: true,
+        anchorOrigin: { vertical: 'top', horizontal: 'center' },
+      })
+      await delay(6000)
       router.replace('/login')
-      ocultarFullScreen()
     },
-    [Alerta, mostrarFullScreen, router, ocultarFullScreen]
+    [Alerta, router]
   )
 
   const autorizarCiudadania = useCallback(

@@ -167,36 +167,60 @@ export class AuthenticationService extends BaseService {
     return await this.autenticar(usuarioRol)
   }
 
-  async validarUsuarioOidc(persona: PersonaDto) {
+  async validarUsuarioOidc(
+    persona: PersonaDto,
+    datosUsuario: { correoElectronico: string }
+  ) {
     const respuesta = await this.usuarioService.buscarUsuarioPorCI(persona)
 
     if (!respuesta) {
       return null
     }
 
-    if (respuesta?.usuarioRol.length === 0) {
-      throw new UnauthorizedException(Messages.NO_PERMISSION_USER)
+    if (!respuesta.ciudadaniaDigital) {
+      throw new UnauthorizedException(Messages.CIUDADANIA_DIGITAL_NOT_ENABLED)
     }
-
-    const { persona: datosPersona } = respuesta
 
     if (respuesta.estado === UsuarioEstado.INACTIVE) {
       throw new UnauthorizedException(Messages.INACTIVE_USER)
     }
 
-    // actualizar datos persona
+    const rolesActivos = respuesta.usuarioRol.filter(
+      (ur) => ur.estado === UsuarioRolEstado.ACTIVE
+    )
+
+    if (rolesActivos.length === 0) {
+      throw new UnauthorizedException(Messages.NO_PERMISSION_USER)
+    }
+
+    const { persona: datosPersona } = respuesta
+
+    // Actualizar datos de persona si cambiaron desde Ciudadanía Digital
     if (
       datosPersona.nombres !== persona.nombres ||
       datosPersona.primerApellido !== persona.primerApellido ||
       datosPersona.segundoApellido !== persona.segundoApellido ||
-      datosPersona.fechaNacimiento !== persona.fechaNacimiento
+      datosPersona.fechaNacimiento !== persona.fechaNacimiento ||
+      datosPersona.uuidCiudadano !== persona.uuidCiudadano
     ) {
       await this.usuarioService.actualizarDatosPersona(persona)
     }
 
+    // Sincronizar correo con el registrado en Ciudadanía Digital
+    if (datosUsuario.correoElectronico !== respuesta.correoElectronico) {
+      await this.usuarioService.actualizarDatos(
+        respuesta.id,
+        {
+          correoElectronico: datosUsuario.correoElectronico,
+          roles: respuesta.usuarioRol.map((value) => value.rol.id),
+        },
+        USUARIO_SISTEMA
+      )
+    }
+
     return {
       id: respuesta.id,
-      roles: respuesta.usuarioRol.map((usuarioRol) => usuarioRol.rol.rol),
+      roles: rolesActivos.map((ur) => ur.rol.rol),
     }
   }
 
