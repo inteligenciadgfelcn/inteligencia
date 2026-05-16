@@ -33,7 +33,7 @@ import { TipoCabello } from '../entity/persona/tipo-cabello.entity'
 import { CategoriaOperativo } from '../entity/operativo/categoria-operativo.entity'
 import { PlanOperaciones } from '../entity/operativo/plan-operaciones.entity'
 import { FormaTransporte } from '../entity/operativo/forma-transporte.entity'
-import { Etapa } from '../entity/operativo/etapa.entity'
+import { EtapaOperativo } from '../entity/operativo/etapa.entity'
 import { EtapaInvestigacion } from '../entity/operativo/etapa-investigacion.entity'
 import { Recurso } from '../entity/operativo/recurso.entity'
 
@@ -43,22 +43,28 @@ import { SustanciaLiquidaDescripcion } from '../entity/sustancia/sustancia-liqui
 import { CocaProcedencia } from '../entity/sustancia/coca-procedencia.entity'
 import { CocaEstado } from '../entity/sustancia/coca-estado.entity'
 import { CocaDescripcion } from '../entity/sustancia/coca-descripcion.entity'
+import { SituacionLegal } from '../entity/sustancia/situacion-legal.entity'
 
 // Bienes
 import { Bienes } from '../entity/bien/bienes.entity'
 import { CalidadBien } from '../entity/bien/calidad-bien.entity'
+import { ContenidoBien } from '../entity/bien/contenido-bien.entity'
 
 // Estructura organizacional
 import { Unidad } from '../entity/estructura/unidad.entity'
 import { Distrital } from '../entity/estructura/distrital.entity'
 import { Grupo } from '../entity/estructura/grupo.entity'
 
+// Otros
+import { ContenidoCaso } from '../entity/bien/contenido-caso.entity'
+import { Estado } from '../../seguimiento/personas/entity/estado.entity'
+
 @Injectable()
 export class LookupRepository {
   constructor(
     @InjectDataSource(DB_SIII)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
   // Geografía
   async listarContinentes(): Promise<Continente[]> {
@@ -218,9 +224,9 @@ export class LookupRepository {
       .find({ order: { descripcion: 'ASC' } })
   }
 
-  async listarEtapas(): Promise<Etapa[]> {
+  async listarEtapas(): Promise<EtapaOperativo[]> {
     return this.dataSource
-      .getRepository(Etapa)
+      .getRepository(EtapaOperativo)
       .find({ order: { descripcion: 'ASC' } })
   }
 
@@ -322,5 +328,29 @@ export class LookupRepository {
     return this.dataSource
       .getRepository(Grupo)
       .find({ where: { idDistrital }, order: { descripcion: 'ASC' } })
+  }
+
+  async listarContenidoCaso(): Promise<ContenidoCaso[]> {
+    return this.dataSource
+      .getRepository(ContenidoCaso)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarEstadosPorEtapa(idEtapa: number): Promise<Estado[]> {
+    return this.dataSource
+      .getRepository(Estado)
+      .find({ where: { idEtapa }, order: { descripcion: 'ASC' } })
+  }
+
+  async listarSituacionesLegales(): Promise<SituacionLegal[]> {
+    return this.dataSource
+      .getRepository(SituacionLegal)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarContenidoBien(): Promise<ContenidoBien[]> {
+    return this.dataSource
+      .getRepository(ContenidoBien)
+      .find({ order: { descripcion: 'ASC' } })
   }
 }

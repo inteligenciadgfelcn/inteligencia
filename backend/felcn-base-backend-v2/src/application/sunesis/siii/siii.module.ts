@@ -34,7 +34,7 @@ import { TipoCabello } from './parametrica/entity/persona/tipo-cabello.entity'
 // Operativo params
 import { CategoriaOperativo } from './parametrica/entity/operativo/categoria-operativo.entity'
 import { PlanOperaciones } from './parametrica/entity/operativo/plan-operaciones.entity'
-import { Etapa } from './parametrica/entity/operativo/etapa.entity'
+import { EtapaOperativo } from './parametrica/entity/operativo/etapa.entity'
 import { EtapaInvestigacion } from './parametrica/entity/operativo/etapa-investigacion.entity'
 import { FormaTransporte } from './parametrica/entity/operativo/forma-transporte.entity'
 import { Recurso } from './parametrica/entity/operativo/recurso.entity'
@@ -74,7 +74,6 @@ import { SustanciaLiquida } from './operativo/entity/sustancia-liquida.entity'
 import { Fabrica } from './operativo/entity/fabrica.entity'
 import { ItemBienSecuestrado } from './operativo/entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from './operativo/entity/item-bien-caracteristica.entity'
-import { DetenidoAuxiliar } from './operativo/entity/detenido-auxiliar.entity'
 import { ArrestadoAuxiliar } from './operativo/entity/arrestado-auxiliar.entity'
 import { Galeria } from './operativo/entity/galeria.entity'
 import { Logotipo } from './operativo/entity/logotipo.entity'
@@ -90,11 +89,45 @@ import { EstadoDroga } from './operativo/entity/estado-droga.entity'
 import { ItemOperativo } from './operativo/entity/item-operativo.entity'
 
 // Investigación Paralela
-import { InvestigacionParalela } from './investigacion/entity/investigacion-paralela.entity'
-import { Investigador } from './investigacion/entity/investigador.entity'
-import { InvestigacionController } from './investigacion/controller/investigacion.controller'
-import { InvestigacionService } from './investigacion/service/investigacion.service'
-import { InvestigacionRepository } from './investigacion/repository/investigacion.repository'
+import { InvestigacionParalela } from './investigacion/paralelo/entity/investigacion-paralela.entity'
+import { Investigador } from './investigacion/paralelo/entity/investigador.entity'
+import { InvestigacionController } from './investigacion/paralelo/controller/investigacion.controller'
+import { InvestigacionService } from './investigacion/paralelo/service/investigacion.service'
+import { InvestigacionRepository } from './investigacion/paralelo/repository/investigacion.repository'
+
+// Seguimiento
+import { Fiscal } from './seguimiento/casos/entity/fiscal.entity'
+import { Jurisdiccion } from './seguimiento/casos/entity/jurisdiccion.entity'
+import { ControlJurisdiccional } from './seguimiento/casos/entity/control-jurisdiccional.entity'
+import { Archivo } from './seguimiento/casos/entity/archivo.entity'
+import { SeguimientoController } from './seguimiento/casos/controller/seguimiento.controller'
+import { SeguimientoService } from './seguimiento/casos/service/seguimiento.service'
+import { SeguimientoRepository } from './seguimiento/casos/repository/seguimiento.repository'
+
+// Seguimiento - Asignaciones Ingreso (FRM-INF-ING)
+import { AsignacionesIngresoController } from './seguimiento/asignaciones/controller/asignaciones-ingreso.controller'
+import { AsignacionesIngresoService } from './seguimiento/asignaciones/service/asignaciones-ingreso.service'
+import { AsignacionesIngresoRepository } from './seguimiento/asignaciones/repository/asignaciones-ingreso.repository'
+
+// Seguimiento - Personas (FRM-JUR-02)
+import { DetenidoAuxiliar } from './seguimiento/personas/entity/detenido-auxiliar.entity'
+import { Situacion } from './seguimiento/personas/entity/situacion.entity'
+import { EtapaProceso } from './seguimiento/personas/entity/etapa-proceso.entity'
+import { Estado } from './seguimiento/personas/entity/estado.entity'
+import { PersonasController } from './seguimiento/personas/controller/personas.controller'
+import { PersonasService } from './seguimiento/personas/service/personas.service'
+import { PersonasRepository } from './seguimiento/personas/repository/personas.repository'
+
+// Seguimiento - Bienes (FRM-JUR-03)
+import { BienSecuestrado } from './seguimiento/bienes/entity/bien-secuestrado.entity'
+import { BienIncautado } from './seguimiento/bienes/entity/bien-incautado.entity'
+import { BienConfiscado } from './seguimiento/bienes/entity/bien-confiscado.entity'
+import { PerdidaDominio } from './seguimiento/bienes/entity/perdida-dominio.entity'
+import { SituacionBien } from './seguimiento/bienes/entity/situacion-bien.entity'
+import { ArchivoBien } from './seguimiento/bienes/entity/archivo-bien.entity'
+import { BienesController } from './seguimiento/bienes/controller/bienes.controller'
+import { BienesService } from './seguimiento/bienes/service/bienes.service'
+import { BienesRepository } from './seguimiento/bienes/repository/bienes.repository'
 
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
@@ -137,7 +170,7 @@ const entitiesParametricas = [
   // Operativo params
   CategoriaOperativo,
   PlanOperaciones,
-  Etapa,
+  EtapaOperativo,
   EtapaInvestigacion,
   FormaTransporte,
   Recurso,
@@ -174,7 +207,6 @@ const entitiesOperativas = [
   Fabrica,
   ItemBienSecuestrado,
   ItemBienCaracteristica,
-  DetenidoAuxiliar,
   ArrestadoAuxiliar,
   Galeria,
   Logotipo,
@@ -190,6 +222,23 @@ const entitiesOperativas = [
   // Casos Paralelos
   InvestigacionParalela,
   Investigador,
+  // Seguimiento
+  Fiscal,
+  Jurisdiccion,
+  ControlJurisdiccional,
+  Archivo,
+  // Seguimiento - Personas
+  DetenidoAuxiliar,
+  Situacion,
+  EtapaProceso,
+  Estado,
+  // Seguimiento - Bienes
+  BienSecuestrado,
+  BienIncautado,
+  BienConfiscado,
+  PerdidaDominio,
+  SituacionBien,
+  ArchivoBien,
 ]
 
 @Module({
@@ -200,16 +249,39 @@ const entitiesOperativas = [
       DB_SIII
     ),
   ],
-  controllers: [LookupController, OperativoController, InvestigacionController],
+  controllers: [
+    LookupController,
+    OperativoController,
+    InvestigacionController,
+    SeguimientoController,
+    AsignacionesIngresoController,
+    PersonasController,
+    BienesController,
+  ],
   providers: [
     LookupService,
     OperativoService,
     InvestigacionService,
+    SeguimientoService,
     LookupRepository,
     OperativoRepository,
     AsignacionSiiiRepository,
     InvestigacionRepository,
+    SeguimientoRepository,
+    AsignacionesIngresoService,
+    AsignacionesIngresoRepository,
+    PersonasService,
+    PersonasRepository,
+    BienesService,
+    BienesRepository,
   ],
-  exports: [LookupService, OperativoService, InvestigacionService],
+  exports: [
+    LookupService,
+    OperativoService,
+    InvestigacionService,
+    SeguimientoService,
+    PersonasService,
+    BienesService,
+  ],
 })
 export class SiiiModule { }

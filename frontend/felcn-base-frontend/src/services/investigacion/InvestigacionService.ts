@@ -110,11 +110,14 @@ export const InvestigacionService = {
     return res
   },
 
-  buscarAsignacion(params: BuscarAsignacionParams): Promise<RespuestaApi<AsignacionItem[]>> {
+  buscarAsignacion(
+    abreviaturaUnidad: string,
+    filtros: Omit<BuscarAsignacionParams, 'abreviaturaUnidad'>
+  ): Promise<RespuestaApi<AsignacionItem[]>> {
     return sesionPeticion({
       url: `${BASE_INVESTIGACION}/asignacion`,
       method: 'get',
-      params,
+      params: { ...filtros, abreviaturaUnidad },
       withCredentials: true,
     })
   },
