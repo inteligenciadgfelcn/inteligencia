@@ -7,6 +7,8 @@ export interface AlertType {
   mensaje: string
   variant?: VariantType
   anchorOrigin?: SnackbarOrigin
+  autoHideDuration?: number
+  persist?: boolean
 }
 
 export const useAlerts = () => {
@@ -20,10 +22,14 @@ export const useAlerts = () => {
         vertical: 'top',
         horizontal: 'center',
       },
+      autoHideDuration,
+      persist = false,
     }: AlertType) => {
       enqueueSnackbar(mensaje, {
         variant,
         anchorOrigin,
+        autoHideDuration,
+        persist,
         action: (key) => (
           <IconButton
             color="inherit"

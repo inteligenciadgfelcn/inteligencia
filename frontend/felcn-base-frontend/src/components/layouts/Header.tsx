@@ -30,7 +30,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     await cerrarSesion()
-    router.push('/login')
+    // router.push('/login')
   }
 
   const normalizeText = (text: string) => {
@@ -123,11 +123,11 @@ const Header = () => {
             <Link href="/" className="main-logo flex shrink-0 items-center">
               <img
                 className="inline w-8 ltr:-ml-1 rtl:-mr-1"
-                src={`${BASE_PATH}/assets/images/logo.svg`}
+                src={`${BASE_PATH}/assets/images/sombrero.png`}
                 alt="logo"
               />
               <span className="hidden align-middle text-2xl  font-semibold  transition-all duration-300 ltr:ml-1.5 rtl:mr-1.5 dark:text-white-light md:inline">
-                VRISTO
+                SUNESIS
               </span>
             </Link>
             <button
