@@ -61,4 +61,12 @@ export class UsuarioController {
   findOne(@Param('usuario') usuario: string) {
     return this.usuarioService.findOne(usuario)
   }
+
+  @Get('grados')
+  @ApiOperation({
+    summary: 'Lista de grados policiales',
+  })
+  listarGrados() {
+    return this.usuarioService.listarGrados()
+  }
 }

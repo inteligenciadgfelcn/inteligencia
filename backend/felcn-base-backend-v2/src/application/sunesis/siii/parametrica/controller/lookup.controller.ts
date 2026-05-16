@@ -181,6 +181,14 @@ export class LookupController extends BaseController {
     )
   }
 
+  @ApiOperation({ summary: 'Listar estados del proceso por etapa (cascade dropdown)' })
+  @Get('estados/:idEtapa')
+  async listarEstadosPorEtapa(@Param('idEtapa') idEtapa: string) {
+    return this.successList(
+      await this.lookupService.listarEstadosPorEtapa(parseInt(idEtapa))
+    )
+  }
+
   @ApiOperation({ summary: 'Listar recursos' })
   @Get('recursos')
   async listarRecursos() {
@@ -221,6 +229,12 @@ export class LookupController extends BaseController {
   @Get('coca-descripciones')
   async listarCocaDescripciones() {
     return this.successList(await this.lookupService.listarCocaDescripciones())
+  }
+
+  @ApiOperation({ summary: 'Listar situaciones legales (dropdown)' })
+  @Get('situaciones-legales')
+  async listarSituacionesLegales() {
+    return this.successList(await this.lookupService.listarSituacionesLegales())
   }
 
   // ==================== BIENES ====================
@@ -305,5 +319,17 @@ export class LookupController extends BaseController {
     return this.successList(
       await this.lookupService.listarGruposPorDistrital(parseInt(id))
     )
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de caso (documentos)' })
+  @Get('contenido-caso')
+  async listarContenidoCaso() {
+    return this.successList(await this.lookupService.listarContenidoCaso())
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de bien (documentos adjuntos de bienes)' })
+  @Get('contenido-bien')
+  async listarContenidoBien() {
+    return this.successList(await this.lookupService.listarContenidoBien())
   }
 }
