@@ -15,14 +15,14 @@ interface CeldaPillsProps {
 function CeldaPills({ campo, colorClase }: CeldaPillsProps) {
   const items = parsearItems(campo)
   if (items.length === 0) {
-    return <span className="text-gray-300 dark:text-gray-700 select-none">—</span>
+    return <span className="text-gray-300 dark:text-gray-700 select-none text-xs">—</span>
   }
   return (
     <div className="flex flex-wrap gap-1">
       {items.map((item, i) => (
         <span
           key={i}
-          className={`inline-block text-[10px] leading-relaxed px-1.5 py-0.5 rounded whitespace-pre-wrap text-left ${colorClase}`}
+          className={`inline-block text-xs font-semibold leading-relaxed px-2.5 py-0.5 rounded whitespace-pre-wrap text-left ${colorClase}`}
         >
           {item}
         </span>
@@ -77,7 +77,7 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                      <span className="text-xs font-bold px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
                         {row.numeroOperativo}
                       </span>
                       <span className="font-semibold text-dark dark:text-white-light truncate max-w-[130px]" title={row.numeroCaso}>
@@ -85,18 +85,18 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
                       </span>
                     </div>
                     {row.nombreCaso && (
-                      <p className="text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2" title={row.nombreCaso}>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2" title={row.nombreCaso}>
                         {row.nombreCaso}
                       </p>
                     )}
                     {row.asignadoCaso && (
-                      <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-0.5 truncate" title={row.asignadoCaso}>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5 truncate" title={row.asignadoCaso}>
                         Asig.: {row.asignadoCaso}
                       </p>
                     )}
-                    <p className="text-[10px] text-gray-400">{row.fechaOperativo}</p>
+                    <p className="text-xs text-gray-400">{row.fechaOperativo}</p>
                     {row.ubicacionGeografica && (
-                      <div className="flex items-start text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex items-start text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 mt-[3px] shrink-0 text-gray-400">
                           <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
                           <circle cx="12" cy="10" r="3"></circle>
@@ -105,7 +105,7 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
                       </div>
                     )}
                     {row.ubicacionInstitucional?.replace(/-/g, '').trim() && (
-                      <div className="flex items-start text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex items-start text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 mt-[3px] shrink-0 text-gray-400">
                           <rect width="16" height="20" x="4" y="2" rx="2" ry="2"></rect>
                           <path d="M9 22v-4h6v4"></path>
@@ -123,7 +123,7 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
                       </div>
                     )}
                     {row.totalHojaCoca && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full
+                      <span className="inline-flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-full
                         bg-green-100 text-green-700 border border-green-200
                         dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                         🌿 {row.totalHojaCoca} kg

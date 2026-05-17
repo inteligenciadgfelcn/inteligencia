@@ -16,9 +16,11 @@ export type BusquedaCuadro =
   | { tipo: 'tipo-droga';     idTipoDroga: number;      fechaInicio: string; fechaFin: string }
   | { tipo: 'tipo-operativo'; idTipoOperacion: number;  fechaInicio: string; fechaFin: string }
   | { tipo: 'relevancia';     idTipoRelevancia: number; fechaInicio: string; fechaFin: string }
+  | { tipo: 'persona';        nombres: string; apellidoPaterno: string; apellidoMaterno: string; apellidoEsposo: string }
 
 interface FiltrosCuadrosProps {
   onBuscar: (busqueda: BusquedaCuadro) => void
+  onLimpiar?: () => void
   cargando: boolean
 }
 
@@ -36,7 +38,7 @@ function hace10Dias(): string {
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
-export function FiltrosCuadros({ onBuscar, cargando }: FiltrosCuadrosProps) {
+export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadrosProps) {
   const [fechaInicio, setFechaInicio] = useState(hace10Dias)
   const [fechaFin, setFechaFin]       = useState(hoy)
 
@@ -45,6 +47,12 @@ export function FiltrosCuadros({ onBuscar, cargando }: FiltrosCuadrosProps) {
   const [idTipoDroga,    setIdTipoDroga]    = useState<number | ''>('')
   const [idTipoOperacion, setIdTipoOperacion] = useState<number | ''>('')
   const [idTipoRelevancia, setIdTipoRelevancia] = useState<number | ''>('')
+
+  // ── Filtro: Por Nombre de Persona ───────────────────────────────────────────
+  const [nombres, setNombres] = useState('')
+  const [apellidoPaterno, setApellidoPaterno] = useState('')
+  const [apellidoMaterno, setApellidoMaterno] = useState('')
+  const [apellidoEsposo, setApellidoEsposo] = useState('')
 
   const [opTiposDroga, setOpTiposDroga] = useState<SelectOption[]>([])
   const [opTiposOp,    setOpTiposOp]    = useState<SelectOption[]>([])
@@ -69,7 +77,16 @@ export function FiltrosCuadros({ onBuscar, cargando }: FiltrosCuadrosProps) {
     setIdTipoDroga('')
     setIdTipoOperacion('')
     setIdTipoRelevancia('')
+    setNombres('')
+    setApellidoPaterno('')
+    setApellidoMaterno('')
+    setApellidoEsposo('')
+    if (onLimpiar) {
+      onLimpiar()
+    }
   }
+
+  const hayDatoPersona = nombres.trim() || apellidoPaterno.trim() || apellidoMaterno.trim() || apellidoEsposo.trim()
 
   return (
     <div className="panel space-y-5">
@@ -230,6 +247,70 @@ export function FiltrosCuadros({ onBuscar, cargando }: FiltrosCuadrosProps) {
               Buscar
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* ── Fila 4: Por Nombre de Persona ───────────────────────────────────── */}
+      <div className="rounded-lg border border-[#e0e6ed] dark:border-[#1b2e4b] px-4 py-3 space-y-2">
+        <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+          Por Nombre de Persona
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div>
+            <label className="mb-1 block text-xs text-gray-500">Nombres</label>
+            <Input
+              size="sm"
+              value={nombres}
+              onChange={(e) => setNombres(e.target.value)}
+              placeholder="Nombres"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-gray-500">Ap. Paterno</label>
+            <Input
+              size="sm"
+              value={apellidoPaterno}
+              onChange={(e) => setApellidoPaterno(e.target.value)}
+              placeholder="Apellido paterno"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-gray-500">Ap. Materno</label>
+            <Input
+              size="sm"
+              value={apellidoMaterno}
+              onChange={(e) => setApellidoMaterno(e.target.value)}
+              placeholder="Apellido materno"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-gray-500">Ap. Esposo/a</label>
+            <Input
+              size="sm"
+              value={apellidoEsposo}
+              onChange={(e) => setApellidoEsposo(e.target.value)}
+              placeholder="Apellido esposo"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap pt-1">
+          <Button
+            variant="success"
+            size="sm"
+            disabled={!hayDatoPersona || cargando}
+            onClick={() =>
+              onBuscar({
+                tipo: 'persona',
+                nombres: nombres.trim(),
+                apellidoPaterno: apellidoPaterno.trim(),
+                apellidoMaterno: apellidoMaterno.trim(),
+                apellidoEsposo: apellidoEsposo.trim(),
+              })
+            }
+          >
+            <Icono className="w-4 h-4 mr-1">person_search</Icono>
+            Buscar Persona
+          </Button>
         </div>
       </div>
     </div>
