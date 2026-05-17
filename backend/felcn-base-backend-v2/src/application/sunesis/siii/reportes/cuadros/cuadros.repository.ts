@@ -70,8 +70,8 @@ export class CuadrosRepository {
         SELECT STRING_AGG(
           TRIM(per.nombres) || ' ' || TRIM(per.apellido_paterno) || ' '
             || TRIM(per.apellido_materno) || ' ' || TRIM(per.apellido_esposo)
-            || ' Nac.: ' || pa.descripcion
-            || ' Estado: ' || per.estado,
+            || E'\n   Nac.: ' || pa.descripcion
+            || E'\n   Estado: ' || per.estado,
           ' | '
         )
         FROM public.persona_auxiliar per
@@ -83,10 +83,10 @@ export class CuadrosRepository {
       COALESCE((
         SELECT STRING_AGG(
           td.descripcion
-            || ' Estado: ' || ed.descripcion
-            || ' Cantidad: ' || TO_CHAR(dr.cantidad, 'FM999G999G999D99')
+            || E'\n   Estado: ' || ed.descripcion
+            || E'\n   Cantidad: ' || TO_CHAR(dr.cantidad, 'FM999G999G999D99')
             || ' ' || ed.medida
-            || ' Forma de Transporte: ' || ft.descripcion,
+            || E'\n   Forma de Transporte: ' || ft.descripcion,
           ' | '
         )
         FROM public.droga dr
@@ -461,5 +461,28 @@ export class CuadrosRepository {
       `o.fecha_operativo BETWEEN $1::timestamp AND $2::timestamp AND o.id_tipo_relevancia = $3`,
       [`${fechaInicio} 00:00:00`, `${fechaFin} 23:59:59`, idTipoRelevancia],
     )
+  }
+
+  /**
+   * Reporte de operativos que contienen una persona en la tabla public.persona_auxiliar
+   * con el nombre indicado.
+   */
+  async buscarPorPersona(
+    nombres: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string,
+    apellidoEsposo: string,
+  ): Promise<RespuestaCuadro> {
+    const where = `
+      EXISTS (
+        SELECT 1 FROM public.persona_auxiliar per2
+        WHERE per2.id_operativo = o.id_operativo
+          AND per2.nombres          ILIKE '%' || $1 || '%'
+          AND per2.apellido_paterno ILIKE '%' || $2 || '%'
+          AND per2.apellido_materno ILIKE '%' || $3 || '%'
+          AND per2.apellido_esposo  ILIKE '%' || $4 || '%'
+      )
+    `
+    return this.ejecutar(where, [nombres, apellidoPaterno, apellidoMaterno, apellidoEsposo])
   }
 }
