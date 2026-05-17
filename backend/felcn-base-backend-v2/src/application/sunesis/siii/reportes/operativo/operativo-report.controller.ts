@@ -1,15 +1,15 @@
 import { Controller, Get, Param, Res } from '@nestjs/common'
 import type { Response } from 'express'
-import { ReportBaseService } from './services/reporte-base.service'
-import { OperativoService } from '../operativo/service/operativo.service'
+import { ReportBaseService } from '../services/reporte-base.service'
+import { OperativoService } from '../../operativo/service/operativo.service'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { OperativeReportTemplate } from './templates/form-operativo.template'
 import { SetRequestTimeout } from '@/common/interceptors'
 
 @ApiTags('Reportes Operativos (SIII)')
-@Controller('reportes')
-export class ReportController extends BaseController {
+@Controller('reportes/operativo')
+export class OperativeReportController extends BaseController {
   constructor(
     private readonly reportService: ReportBaseService,
     private readonly operativoService: OperativoService
@@ -22,7 +22,7 @@ export class ReportController extends BaseController {
     description: 'Lee del felcn_siii.public.operativo y sus tablas relacionadas.',
   })
   @SetRequestTimeout(120)
-  @Get('operativos/:numeroOperativo/pdf')
+  @Get(':numeroOperativo/pdf')
   async generateOperativePdf(@Param('numeroOperativo') numeroOperativo: string, @Res() res: Response) {
     try {
       const template = new OperativeReportTemplate()
