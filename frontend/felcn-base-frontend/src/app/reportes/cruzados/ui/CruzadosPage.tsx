@@ -53,6 +53,11 @@ export default function CruzadasPage() {
     }
   }
 
+  const handleLimpiar = () => {
+    setRows([])
+    setFiltroActivo(null)
+  }
+
   return (
     <div className="space-y-4">
       {/* Encabezado */}
@@ -69,7 +74,7 @@ export default function CruzadasPage() {
       </div>
 
       {/* Filtros */}
-      <FiltrosCruzadas onBuscar={handleBuscar} cargando={cargando} />
+      <FiltrosCruzadas onBuscar={handleBuscar} onLimpiar={handleLimpiar} cargando={cargando} />
 
       {/* Resultados */}
       <div className="panel">

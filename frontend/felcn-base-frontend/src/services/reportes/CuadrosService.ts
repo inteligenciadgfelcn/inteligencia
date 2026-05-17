@@ -127,4 +127,19 @@ export const CuadrosService = {
       withCredentials: true,
     })
   },
+
+  /** Reporte por nombre de persona implicada. */
+  porPersona(params: {
+    nombres?: string
+    apellidoPaterno?: string
+    apellidoMaterno?: string
+    apellidoEsposo?: string
+  }) {
+    return sesionPeticion<RespuestaAPICuadro>({
+      url: `${BASE}/por-persona`,
+      method: 'get',
+      params,
+      withCredentials: true,
+    })
+  },
 }

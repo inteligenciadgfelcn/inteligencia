@@ -46,6 +46,14 @@ export default function CuadrosPage() {
             fechaFin:         busqueda.fechaFin,
           })
           break
+        case 'persona':
+          res = await CuadrosService.porPersona({
+            nombres:         busqueda.nombres,
+            apellidoPaterno: busqueda.apellidoPaterno,
+            apellidoMaterno: busqueda.apellidoMaterno,
+            apellidoEsposo:  busqueda.apellidoEsposo,
+          })
+          break
       }
       setDatos(res.datos)
     } catch {
@@ -54,6 +62,11 @@ export default function CuadrosPage() {
     } finally {
       setCargando(false)
     }
+  }
+
+  const handleLimpiar = () => {
+    setDatos(null)
+    setFiltroActivo(null)
   }
 
   return (
@@ -72,7 +85,7 @@ export default function CuadrosPage() {
       </div>
 
       {/* Filtros */}
-      <FiltrosCuadros onBuscar={handleBuscar} cargando={cargando} />
+      <FiltrosCuadros onBuscar={handleBuscar} onLimpiar={handleLimpiar} cargando={cargando} />
 
       {/* Resultados: filas + resumen + fábricas + coordenadas */}
       <ResultadosCuadros datos={datos} cargando={cargando} filtroActivo={filtroActivo} />

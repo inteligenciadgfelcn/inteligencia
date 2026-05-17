@@ -35,7 +35,7 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
       >
         <span className={colorTitulo}>{titulo}</span>
         <div className="flex items-center gap-1.5">
-          <span className={`inline-flex items-center justify-center text-[10px] font-bold w-5 h-5 rounded-full
+          <span className={`inline-flex items-center justify-center text-xs font-bold w-5 h-5 rounded-full
             ${tieneItems ? colorBadge : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600'}`}>
             {items.length}
           </span>
@@ -50,13 +50,13 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
           )}
         </div>
       </button>
-
+ 
       {abierta && tieneItems && (
         <div className="px-3 pb-2.5 flex flex-wrap gap-1.5">
           {items.map((item, i) => (
             <span
               key={i}
-              className={`inline-block text-[11px] px-2 py-0.5 rounded-md leading-relaxed whitespace-pre-wrap text-left w-full ${colorBadge}`}
+              className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-md leading-relaxed whitespace-pre-wrap text-left w-full ${colorBadge}`}
             >
               {item}
             </span>
@@ -90,7 +90,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
           <div className="flex-1 min-w-0">
             {/* Nro. Operativo + Nro. Caso */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 shrink-0">
                 {row.numeroOperativo}
               </span>
               <span className="text-xs font-bold text-dark dark:text-white-light truncate">
@@ -155,9 +155,8 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
         {/* Hoja de Coca (cantidad total en kg) */}
         {row.totalHojaCoca && (
           <div className="mt-1.5">
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full
-              bg-green-100 text-green-700 border border-green-200
-              dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded
+              bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
               🌿 Hoja de Coca: {row.totalHojaCoca} kg
             </span>
           </div>
