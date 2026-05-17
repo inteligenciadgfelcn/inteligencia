@@ -121,6 +121,15 @@ export const SiiiLookupsService = {
     })
   },
 
+  obtenerEstadosDroga(
+    idTipoDroga: number
+  ): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVO}/catalogos/estados-droga/${idTipoDroga}`,
+      withCredentials: true,
+    })
+  },
+
   obtenerTiposDocumento(): Promise<RespuestaAPI<LookupGenerico>> {
     return sesionPeticion({ url: `${BASE}/tipos-documento`, withCredentials: true })
   },
