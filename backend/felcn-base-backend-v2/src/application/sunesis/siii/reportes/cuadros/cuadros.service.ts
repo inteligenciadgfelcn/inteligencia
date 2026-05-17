@@ -48,4 +48,14 @@ export class CuadrosService {
   ): Promise<RespuestaCuadro> {
     return this.cuadrosRepository.buscarPorRelevancia(idTipoRelevancia, fechaInicio, fechaFin)
   }
+
+  /** Reporte de operativos por nombre de persona implicada. */
+  buscarPorPersona(
+    nombres: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string,
+    apellidoEsposo: string,
+  ): Promise<RespuestaCuadro> {
+    return this.cuadrosRepository.buscarPorPersona(nombres, apellidoPaterno, apellidoMaterno, apellidoEsposo)
+  }
 }

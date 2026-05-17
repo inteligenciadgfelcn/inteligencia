@@ -134,4 +134,29 @@ export class CuadrosController extends BaseController {
     const result = await this.cuadrosService.buscarPorRelevancia(+idTipoRelevancia, fechaInicio, fechaFin)
     return this.success(result)
   }
+
+  /**
+   * Reporte de operativos que contienen una persona por nombre (implicada).
+   */
+  @ApiOperation({
+    summary: 'Reporte de cuadro por nombre de persona implicada',
+    description:
+      'Búsqueda parcial (ILIKE) sobre public.persona_auxiliar.',
+  })
+  @ApiQuery({ name: 'nombres', required: false, example: 'Juan', description: 'Nombres (parcial)' })
+  @ApiQuery({ name: 'apellidoPaterno', required: false, example: 'Perez', description: 'Apellido paterno (parcial)' })
+  @ApiQuery({ name: 'apellidoMaterno', required: false, example: 'Lopez', description: 'Apellido materno (parcial)' })
+  @ApiQuery({ name: 'apellidoEsposo', required: false, example: '', description: 'Apellido de esposo/a (parcial)' })
+  @Get('por-persona')
+  async porPersona(
+    @Query('nombres') nombres = '',
+    @Query('apellidoPaterno') apellidoPaterno = '',
+    @Query('apellidoMaterno') apellidoMaterno = '',
+    @Query('apellidoEsposo') apellidoEsposo = '',
+  ) {
+    const result = await this.cuadrosService.buscarPorPersona(
+      nombres, apellidoPaterno, apellidoMaterno, apellidoEsposo,
+    )
+    return this.success(result)
+  }
 }
