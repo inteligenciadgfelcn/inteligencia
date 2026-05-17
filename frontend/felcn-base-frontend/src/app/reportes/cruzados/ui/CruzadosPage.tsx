@@ -63,7 +63,7 @@ export default function CruzadasPage() {
       {/* Encabezado */}
       <div className="panel">
         <div className="flex items-center gap-3">
-          <Icono nombre="IconSearch" className="w-6 h-6 text-primary" />
+          <Icono className="w-6 h-6 text-primary">search</Icono>
           <div>
             <h1 className="text-lg font-semibold">Búsqueda Cruzada</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -79,7 +79,7 @@ export default function CruzadasPage() {
       {/* Resultados */}
       <div className="panel">
         <div className="mb-3 flex items-center gap-2">
-          <Icono nombre="IconTable" className="w-4 h-4 text-gray-500" />
+          <Icono className="w-4 h-4 text-gray-500">table_chart</Icono>
           <h2 className="text-sm font-semibold">Resultados</h2>
         </div>
         <TablaCruzadas rows={rows} loading={cargando} filtroActivo={filtroActivo} />
