@@ -1,8 +1,7 @@
-import { ReportTemplate } from '../interfaces/reporte-template.interface'
+import { ReportTemplate } from '../../interfaces/reporte-template.interface'
 import { PDFOptions } from 'puppeteer'
-import { OperativoService } from '../../operativo/service/operativo.service'
+import { OperativoService } from '../../../operativo/service/operativo.service'
 import { PaginacionQueryDto } from '@/common/dto'
-import axios from 'axios'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sharp = require('sharp')
 
