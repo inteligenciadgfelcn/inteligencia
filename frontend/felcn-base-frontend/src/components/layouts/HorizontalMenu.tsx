@@ -25,7 +25,7 @@ const AppMenuHorizontal = () => {
         {
           id: 'temporal-asignaciones',
           label: 'Asignaciones',
-          url: '/operaciones/operativo/asignaciones',
+          url: '/operativos/asignaciones',
           propiedades: {
             icono: 'grid_on',
           },

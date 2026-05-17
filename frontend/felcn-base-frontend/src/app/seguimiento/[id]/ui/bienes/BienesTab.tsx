@@ -7,7 +7,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { Button } from '@/components/ui/Button'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesService'
-import { GestionOperativoBienesService } from '@/services/operativos'
+import { BienesService } from '@/services/operativos'
 import { BienSecuestradoSeccion } from './BienSecuestradoSeccion'
 import { BienIncautadoSeccion } from './BienIncautadoSeccion'
 import { BienConfiscadoSeccion } from './BienConfiscadoSeccion'
@@ -78,7 +78,7 @@ export function BienesTab({ idCaso, idOperativo, cabecera }: Props) {
       limpiarCache()
       setIdsExpandidos([])
       try {
-        const res = await GestionOperativoBienesService.listar(
+        const res = await BienesService.listar(
           Number(idOperativo),
           pag,
           ITEMS_POR_PAGINA
@@ -367,7 +367,7 @@ function ExpansionContenidoBienSimple({
     queryKey: ['caracteristicas-bien', bien.id],
     queryFn: () =>
       idOperativo
-        ? GestionOperativoBienesService.listarCaracteristicas(Number(idOperativo), Number(bien.id))
+        ? BienesService.listarCaracteristicas(Number(idOperativo), Number(bien.id))
         : Promise.reject('No idOperativo'),
     enabled: !!idOperativo && !!bien.id,
   })
@@ -378,7 +378,7 @@ function ExpansionContenidoBienSimple({
     if (cache) return
     const fetchFoto = (path: string | null | undefined): Promise<string | null> =>
       path
-        ? GestionOperativoBienesService.obtenerFoto(path)
+        ? BienesService.obtenerFoto(path)
           .then((blob) => URL.createObjectURL(blob))
           .catch(() => null)
         : Promise.resolve(null)
