@@ -123,7 +123,8 @@ export class CruzadasRepository {
         SELECT STRING_AGG(
           '- ' || TRIM(arr.nombres)          || ' ' || TRIM(arr.apellido_paterno) || ' '
             || TRIM(arr.apellido_materno) || ' ' || TRIM(arr.apellido_esposo)
-            || ' Nacionalidad: ' || pa_arr.descripcion,
+            || E'\n   Nac.: ' || pa_arr.descripcion
+            || E'\n   Estado: Arrestado',
           ' | '
         )
         FROM public.arrestado_auxiliar arr
@@ -136,7 +137,8 @@ export class CruzadasRepository {
         SELECT STRING_AGG(
           '- ' || TRIM(per.nombres)          || ' ' || TRIM(per.apellido_paterno) || ' '
             || TRIM(per.apellido_materno) || ' ' || TRIM(per.apellido_esposo)
-            || ' ' || pa_per.descripcion,
+            || E'\n   Nac.: ' || pa_per.descripcion
+            || E'\n   Estado: ' || per.estado,
           ' | '
         )
         FROM public.persona_auxiliar per
