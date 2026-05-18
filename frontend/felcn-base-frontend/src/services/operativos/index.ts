@@ -1,6 +1,5 @@
 export * from './types'
 export * from './OperativoService'
-export * from './CatalogosService'
 export * from './DatosGeneralesService'
 export * from './PersonasPorIdService'
 export * from './EvidenciaPorIdService'

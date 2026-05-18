@@ -1,6 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
-import type { GestionOperativoItem } from '@/app/operativos/gestion-operativo/types'
+import type { GestionOperativoItem } from '@/app/operativos/types'
 
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`

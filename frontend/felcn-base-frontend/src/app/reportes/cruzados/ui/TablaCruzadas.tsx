@@ -297,8 +297,8 @@ export function TablaCruzadas({ rows, loading, filtroActivo }: TablaCruzadasProp
       {hayResultados && vista === 'tarjetas' && (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {pagedRows.map(row => (
-              <OperativoCard key={row.op1} row={row} />
+            {pagedRows.map((row, idx) => (
+              <OperativoCard key={`${row.idOperativo}-${idx}`} row={row} />
             ))}
           </div>
           <PaginacionBar
