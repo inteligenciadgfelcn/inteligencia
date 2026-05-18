@@ -1,19 +1,22 @@
-import { FormularioOperativo } from '@/components/organismos/operativo/FormularioOperativo'
 
-const OperativoPage = () => {
+
+'use client'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/Button'
+import { GestionOperativoTabs } from './ui/GestionOperativoTabs'
+
+export default function GestionOperativoPage() {
+  const router = useRouter()
+
   return (
-    <div>
-      <div className="panel flex items-center overflow-x-auto whitespace-nowrap p-3 text-primary">
-        <div className="ltr:mr-3 rtl:ml-3">
-          <span className="icon-bell" />
-        </div>
-        <span className="text-md font-bold">Formulario Operativo</span>
+    <div className="space-y-6">
+      <div className="panel px-5 py-4">
+        <h2 className="text-xl font-bold text-dark dark:text-white-light">
+          Gestión Operativo - Casos Registrados
+        </h2>
       </div>
-      <div className="mt-5">
-        <FormularioOperativo />
-      </div>
+
+      <GestionOperativoTabs />
     </div>
   )
 }
-
-export default OperativoPage

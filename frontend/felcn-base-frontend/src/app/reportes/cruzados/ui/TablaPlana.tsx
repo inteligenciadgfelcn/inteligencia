@@ -68,7 +68,7 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
               ? 'bg-white dark:bg-[#0e1726]'
               : 'bg-gray-50/60 dark:bg-[#0c1528]'
             return (
-              <tr key={row.idOperativo} className={bgRow}>
+              <tr key={`${row.idOperativo}-${idx}`} className={bgRow}>
 
                 {/* ── Identidad del operativo (sticky) ─────────────────── */}
                 <td
