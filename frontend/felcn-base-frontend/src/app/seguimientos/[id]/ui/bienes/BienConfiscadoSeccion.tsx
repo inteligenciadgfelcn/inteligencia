@@ -11,6 +11,7 @@ import {
   CreateBienConfiscadoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idItemBien: string
@@ -23,7 +24,7 @@ export function BienConfiscadoSeccion({ idItemBien }: Props) {
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
     useForm<CreateBienConfiscadoPayload>({
-      defaultValues: { numeroSentenciaJudicial: '', fechaSentenciaJudicial: '', autoridad: '' },
+      defaultValues: { numeroSentenciaJudicial: '', fechaSentenciaJudicial: dayjs().format('YYYY-MM-DD'), autoridad: '' },
     })
 
   const cargarRegistros = async () => {

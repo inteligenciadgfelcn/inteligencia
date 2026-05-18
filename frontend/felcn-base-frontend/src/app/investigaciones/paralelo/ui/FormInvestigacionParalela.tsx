@@ -21,6 +21,7 @@ const schema = z.object({
   delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
   detalleDelitoPrecedente: z.string().min(1, 'El detalle es requerido'),
   informeInteligencia: z.string().min(1, 'El informe es requerido'),
+  fechaEnvioInvestigacionParalela: z.string().min(1, 'La fecha de envío es requerida'),
 })
 
 type FormData = z.infer<typeof schema>
@@ -47,6 +48,7 @@ export const FormInvestigacionParalela = ({
       delitoPrecedente: 'Fabricación (Art. 47 Ley 1008)',
       detalleDelitoPrecedente: caso?.descripcionOperativo || '',
       informeInteligencia: '',
+      fechaEnvioInvestigacionParalela: dayjs().format('YYYY-MM-DD'),
     },
   })
 
@@ -68,7 +70,7 @@ export const FormInvestigacionParalela = ({
         idOperativo: caso.numeroOperativo || '',
         delitoPrecedente: data.detalleDelitoPrecedente,
         informe: data.informeInteligencia,
-        fechaEnvioInvestigacionParalela: dayjs().format('YYYY-MM-DD'),
+        fechaEnvioInvestigacionParalela: data.fechaEnvioInvestigacionParalela,
         resultado: false,
         respuestaInvestigacionParalela: false,
       }
@@ -189,8 +191,8 @@ export const FormInvestigacionParalela = ({
             <h4 className="mb-4 text-sm font-semibold text-primary">
               Información de la Investigación Paralela
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="col-span-1">
                 <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
                   Delito Precedente <span className="text-danger">*</span>
                 </label>
@@ -219,7 +221,7 @@ export const FormInvestigacionParalela = ({
                 )}
               </div>
 
-              <div className="md:col-span-1">
+              <div className="col-span-1">
                 <label className="mb-1 block text-sm font-medium">
                   Asignado al Caso
                 </label>
@@ -230,7 +232,7 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
 
-              <div className="md:col-span-1">
+              <div className="col-span-1">
                 <label className="mb-1 block text-sm font-medium">
                   Fiscal de Sustancias Controladas
                 </label>
@@ -241,7 +243,23 @@ export const FormInvestigacionParalela = ({
                 />
               </div>
 
-              <div className="md:col-span-3">
+              <div className="col-span-1">
+                <label className="mb-1 block text-sm font-medium text-dark dark:text-white-light">
+                  Fecha de Envío a Fiscalía <span className="text-danger">*</span>
+                </label>
+                <Input
+                  type="date"
+                  {...register('fechaEnvioInvestigacionParalela')}
+                  error={!!errors.fechaEnvioInvestigacionParalela}
+                />
+                {errors.fechaEnvioInvestigacionParalela && (
+                  <p className="text-danger text-xs mt-1">
+                    {errors.fechaEnvioInvestigacionParalela.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-2 lg:col-span-4">
                 <label className="mb-1 block text-sm font-medium">
                   Delito Precedente (Detalle) <span className="text-danger">*</span>
                 </label>
@@ -258,7 +276,7 @@ export const FormInvestigacionParalela = ({
                 )}
               </div>
 
-              <div className="md:col-span-3">
+              <div className="md:col-span-2 lg:col-span-4">
                 <label className="mb-1 block text-sm font-medium">
                   Informe de Inteligencia financiera o patrimonial <span className="text-danger">*</span>
                 </label>

@@ -11,6 +11,7 @@ import {
   CreateBienSecuestradoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idItemBien: string
@@ -23,7 +24,7 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
     useForm<CreateBienSecuestradoPayload>({
-      defaultValues: { fiscal: '', fechaActoSecuestro: '', investigador: '' },
+      defaultValues: { fiscal: '', fechaActoSecuestro: dayjs().format('YYYY-MM-DD'), investigador: '' },
     })
 
   const cargarRegistros = async () => {

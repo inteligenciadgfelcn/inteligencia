@@ -11,6 +11,7 @@ import {
   CreateBienIncautadoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idItemBien: string
@@ -23,7 +24,7 @@ export function BienIncautadoSeccion({ idItemBien }: Props) {
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
     useForm<CreateBienIncautadoPayload>({
-      defaultValues: { numeroResolucion: '', fechaResolucion: '', autoridad: '' },
+      defaultValues: { numeroResolucion: '', fechaResolucion: dayjs().format('YYYY-MM-DD'), autoridad: '' },
     })
 
   const cargarRegistros = async () => {
