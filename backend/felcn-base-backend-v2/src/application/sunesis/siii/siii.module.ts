@@ -81,12 +81,12 @@ import { Coca } from './operativo/entity/coca.entity'
 import { ServidorPolicial } from './operativo/entity/servidor-policial.entity'
 
 // Operativo - Catálogos
-import { CatalogoClase } from './operativo/entity/catalogo-clase.entity'
-import { CatalogoTipo } from './operativo/entity/catalogo-tipo.entity'
-import { CatalogoCaracteristica } from './operativo/entity/catalogo-caracteristica.entity'
-import { FabricaModelo } from './operativo/entity/fabrica-modelo.entity'
-import { EstadoDroga } from './operativo/entity/estado-droga.entity'
-import { ItemOperativo } from './operativo/entity/item-operativo.entity'
+import { CatalogoClase } from './parametrica/entity/operativo/catalogo-clase.entity'
+import { CatalogoTipo } from './parametrica/entity/operativo/catalogo-tipo.entity'
+import { CatalogoCaracteristica } from './parametrica/entity/operativo/catalogo-caracteristica.entity'
+import { FabricaModelo } from './parametrica/entity/operativo/fabrica-modelo.entity'
+import { EstadoDroga } from './parametrica/entity/operativo/estado-droga.entity'
+import { ItemOperativo } from './parametrica/entity/operativo/item-operativo.entity'
 
 // Investigación Paralela
 import { InvestigacionParalela } from './investigacion/paralelo/entity/investigacion-paralela.entity'
@@ -136,11 +136,11 @@ import { BienesRepository } from './seguimiento/bienes/repository/bienes.reposit
 
 // Controllers
 import { LookupController } from './parametrica/controller/lookup.controller'
-import { OperativoController } from './operativo/controller/operativo.controller'
+import { OperativoController } from './operativo/controller/operativo.controller';
 
 // Services
 import { LookupService } from './parametrica/service/lookup.service'
-import { OperativoService } from './operativo/service/operativo.service'
+import { OperativoService } from './operativo/service/operativo.service';
 
 // Repositories
 import { LookupRepository } from './parametrica/repository/lookup.repository'

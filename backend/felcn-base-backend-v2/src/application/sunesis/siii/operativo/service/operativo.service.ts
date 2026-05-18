@@ -222,9 +222,9 @@ export class OperativoService extends BaseService {
     await this.operativoRepository.eliminarDroga(idDroga)
   }
 
-  async obtenerPesajeDrogas(idOperativo: string): Promise<any> {
-    return this.operativoRepository.obtenerResumenDrogas(idOperativo)
-  }
+  // async obtenerPesajeDrogas(idOperativo: string): Promise<any> {
+  //   return this.operativoRepository.obtenerResumenDrogas(idOperativo)
+  // }
 
   async obtenerFotoDroga(
     idOperativo: string,
@@ -429,11 +429,11 @@ export class OperativoService extends BaseService {
       fotoPerfilIzquierdo: fotoPerfilIzquierdo?.length ? fotoPerfilIzquierdo : undefined,
       usuario,
     })
-    return this.operativoRepository.crearDetenido(persona)
+    return this.operativoRepository.crearPersonaAuxiliar(persona)
   }
 
-  async listarDetenidos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
-    const [personas, total] = await this.operativoRepository.listarDetenidosPorOperativo(idOperativo, paginacion)
+  async listarPersonasAuxiliares(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+    const [personas, total] = await this.operativoRepository.listarPersonasAuxiliaresPorOperativo(idOperativo, paginacion)
     const filas = personas.map(({ fotoFrente, fotoDocumento, fotoPerfilIzquierdo, pais, tipoDocumento, operativo, ...d }) => ({
       ...d,
       descripcionPais: pais?.descripcion ?? null,
@@ -452,8 +452,8 @@ export class OperativoService extends BaseService {
     return [filas, total]
   }
 
-  async eliminarDetenido(idOperativo: string, idDetenido: string): Promise<void> {
-    await this.operativoRepository.eliminarDetenido(idDetenido)
+  async eliminarPersonaAuxiliar(idOperativo: string, idDetenido: string): Promise<void> {
+    await this.operativoRepository.eliminarPersonaAuxiliar(idDetenido)
   }
 
   async actualizarFotoDetenido(
@@ -462,7 +462,7 @@ export class OperativoService extends BaseService {
     tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo',
     foto: Buffer
   ): Promise<void> {
-    const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    const detenido = await this.operativoRepository.buscarPersonaAuxiliarPorId(idDetenido)
     if (!detenido || detenido.idOperativo !== idOperativo) {
       throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
     }
@@ -471,7 +471,7 @@ export class OperativoService extends BaseService {
       'foto-documento': 'foto_documento',
       'perfil-izquierdo': 'foto_perfil_izquierdo',
     } as const
-    await this.operativoRepository.actualizarFotoDetenido(idDetenido, campoMap[tipo], foto)
+    await this.operativoRepository.actualizarFotoPersonaAuxiliar(idDetenido, campoMap[tipo], foto)
   }
 
   // ==================== GALERÍA ====================
@@ -578,31 +578,7 @@ export class OperativoService extends BaseService {
     await this.operativoRepository.eliminarLogotipo(idLogotipo)
   }
 
-  // ==================== CATÁLOGOS ====================
 
-  async listarEstadosDroga(idTipoDroga: number) {
-    return this.operativoRepository.listarEstadosDrogaPorTipo(idTipoDroga)
-  }
-
-  async listarFabricaModelos(idTipoFabrica: number) {
-    return this.operativoRepository.listarFabricaModelosPorTipo(idTipoFabrica)
-  }
-
-  async listarItemsOperativo(idCategoriaOperativo: number) {
-    return this.operativoRepository.listarItemsOperativoPorCategoria(idCategoriaOperativo)
-  }
-
-  async listarCatalogoClases(idBien: number) {
-    return this.operativoRepository.listarCatalogoClasesPorBien(idBien)
-  }
-
-  async listarCatalogoTipos(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoTiposPorClase(idCatalogoClase)
-  }
-
-  async listarCatalogoCaracteristicas(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(idCatalogoClase)
-  }
 
   // ==================== CASOS DE USUARIO ====================
 
@@ -637,7 +613,7 @@ export class OperativoService extends BaseService {
     idDetenido: string,
     tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo'
   ): Promise<Buffer> {
-    const persona = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    const persona = await this.operativoRepository.buscarPersonaAuxiliarPorId(idDetenido)
     if (!persona || persona.idOperativo !== idOperativo) {
       throw new NotFoundException(`Persona con ID ${idDetenido} no encontrada`)
     }
