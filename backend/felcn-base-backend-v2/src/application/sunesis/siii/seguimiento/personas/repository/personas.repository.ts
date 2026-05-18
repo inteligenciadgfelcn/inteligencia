@@ -53,41 +53,41 @@ export class PersonasRepository {
     return this.dataSource.query(sql, [idOperativo])
   }
 
-  // ==================== SITUACION LEGAL ====================
+  // // ==================== SITUACION LEGAL ====================
 
-  /**
-   * Lista el historial de situaciones legales de una persona implicada.
-   * Origen: Muestrasitu() — FRM-JUR-02.aspx.cs
-   * Tablas: situacion, situacion_legal
-   */
-  async listarSituacionesPorPersona(idDetenido: string): Promise<Record<string, unknown>[]> {
-    const sql = `
-      SELECT
-        s.id_situacion                                                      AS "id",
-        sl.descripcion                                                      AS "situacionLegal",
-        s.nro_resolucion                                                    AS "nroResolucion",
-        s.lugar                                                             AS "lugar",
-        CASE WHEN s.fecha IS NULL
-             THEN ''
-             ELSE TO_CHAR(s.fecha, 'DD/MM/YYYY')
-        END                                                                 AS "fecha",
-        s.autoridad                                                         AS "autoridad",
-        s.fjt                                                               AS "fjt"
-      FROM public.situacion s
-      INNER JOIN parametricas.situacion_legal sl ON s.id_situacion_legal = sl.id_situacion_legal
-      WHERE s.id_detenido_auxiliar = $1
-      ORDER BY s.fecha DESC`
+  // /**
+  //  * Lista el historial de situaciones legales de una persona implicada.
+  //  * Origen: Muestrasitu() — FRM-JUR-02.aspx.cs
+  //  * Tablas: situacion, situacion_legal
+  //  */
+  // async listarSituacionesPorPersona(idDetenido: string): Promise<Record<string, unknown>[]> {
+  //   const sql = `
+  //     SELECT
+  //       s.id_situacion                                                      AS "id",
+  //       sl.descripcion                                                      AS "situacionLegal",
+  //       s.nro_resolucion                                                    AS "nroResolucion",
+  //       s.lugar                                                             AS "lugar",
+  //       CASE WHEN s.fecha IS NULL
+  //            THEN ''
+  //            ELSE TO_CHAR(s.fecha, 'DD/MM/YYYY')
+  //       END                                                                 AS "fecha",
+  //       s.autoridad                                                         AS "autoridad",
+  //       s.fjt                                                               AS "fjt"
+  //     FROM public.situacion s
+  //     INNER JOIN parametricas.situacion_legal sl ON s.id_situacion_legal = sl.id_situacion_legal
+  //     WHERE s.id_detenido_auxiliar = $1
+  //     ORDER BY s.fecha DESC`
 
-    return this.dataSource.query(sql, [idDetenido])
-  }
+  //   return this.dataSource.query(sql, [idDetenido])
+  // }
 
-  /**
-   * Guarda una nueva situación legal para la persona implicada.
-   * Origen: btnsituacion_Click() — FRM-JUR-02.aspx.cs
-   */
-  async guardarSituacion(situacion: Partial<Situacion>): Promise<Situacion> {
-    return this.dataSource.getRepository(Situacion).save(situacion)
-  }
+  // /**
+  //  * Guarda una nueva situación legal para la persona implicada.
+  //  * Origen: btnsituacion_Click() — FRM-JUR-02.aspx.cs
+  //  */
+  // async guardarSituacion(situacion: Partial<Situacion>): Promise<Situacion> {
+  //   return this.dataSource.getRepository(Situacion).save(situacion)
+  // }
 
   // ==================== ETAPA DEL PROCESO ====================
 

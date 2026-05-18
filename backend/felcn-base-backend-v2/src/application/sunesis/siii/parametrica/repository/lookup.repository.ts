@@ -58,6 +58,12 @@ import { Grupo } from '../entity/estructura/grupo.entity'
 // Otros
 import { ContenidoCaso } from '../entity/bien/contenido-caso.entity'
 import { Estado } from '../../seguimiento/personas/entity/estado.entity'
+import { CatalogoCaracteristica } from '../entity/operativo/catalogo-caracteristica.entity'
+import { CatalogoTipo } from '../entity/operativo/catalogo-tipo.entity'
+import { CatalogoClase } from '../entity/operativo/catalogo-clase.entity'
+import { ItemOperativo } from '../entity/operativo/item-operativo.entity'
+import { FabricaModelo } from '../entity/operativo/fabrica-modelo.entity'
+import { EstadoDroga } from '../entity/operativo/estado-droga.entity'
 
 @Injectable()
 export class LookupRepository {
@@ -352,5 +358,49 @@ export class LookupRepository {
     return this.dataSource
       .getRepository(ContenidoBien)
       .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarEstadosDrogaPorTipo(idTipoDroga: number): Promise<EstadoDroga[]> {
+    return this.dataSource.getRepository(EstadoDroga).find({
+      where: { idTipoDroga },
+    })
+  }
+
+  async listarFabricaModelosPorTipo(
+    idTipoFabrica: number
+  ): Promise<FabricaModelo[]> {
+    return this.dataSource.getRepository(FabricaModelo).find({
+      where: { idTipoFabrica },
+    })
+  }
+
+  async listarItemsOperativoPorCategoria(
+    idCategoriaOperativo: number
+  ): Promise<ItemOperativo[]> {
+    return this.dataSource.getRepository(ItemOperativo).find({
+      where: { idCategoriaOperativo },
+    })
+  }
+
+  async listarCatalogoClasesPorBien(idBien: number): Promise<CatalogoClase[]> {
+    return this.dataSource.getRepository(CatalogoClase).find({
+      where: { idBien },
+    })
+  }
+
+  async listarCatalogoTiposPorClase(
+    idCatalogoClase: number
+  ): Promise<CatalogoTipo[]> {
+    return this.dataSource.getRepository(CatalogoTipo).find({
+      where: { idCatalogoClase },
+    })
+  }
+
+  async listarCatalogoCaracteristicasPorClase(
+    idCatalogoClase: number
+  ): Promise<CatalogoCaracteristica[]> {
+    return this.dataSource.getRepository(CatalogoCaracteristica).find({
+      where: { idCatalogoClase },
+    })
   }
 }

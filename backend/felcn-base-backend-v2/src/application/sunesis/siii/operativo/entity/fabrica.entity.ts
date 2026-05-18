@@ -8,7 +8,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
-import { FabricaModelo } from './fabrica-modelo.entity'
+import { FabricaModelo } from '../../parametrica/entity/operativo/fabrica-modelo.entity'
 
 /**
  * Entidad Fábrica/Laboratorio
