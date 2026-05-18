@@ -9,7 +9,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
-import { CatalogoTipo } from './catalogo-tipo.entity'
+import { CatalogoTipo } from '../../parametrica/entity/operativo/catalogo-tipo.entity'
 
 /**
  * Entidad Item Bien Secuestrado
