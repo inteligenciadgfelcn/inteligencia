@@ -9,6 +9,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { DataTable } from 'mantine-datatable'
 import { PersonasServiceInstance, CreateSituacionPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idDetenido: string
@@ -20,7 +21,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
   const [registros, setRegistros] = useState<any[]>([])
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<CreateSituacionPayload>({
-    defaultValues: { idSituacionLegal: 0, nroResolucion: '', lugar: '', fecha: '', autoridad: '', fjt: '' }
+    defaultValues: { idSituacionLegal: 0, nroResolucion: '', lugar: '', fecha: dayjs().format('YYYY-MM-DD'), autoridad: '', fjt: '' }
   })
 
   useEffect(() => {

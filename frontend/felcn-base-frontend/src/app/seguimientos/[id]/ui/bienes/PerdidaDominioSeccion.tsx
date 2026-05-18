@@ -11,6 +11,7 @@ import {
   CreatePerdidaDominioPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idItemBien: string
@@ -23,7 +24,7 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
     useForm<CreatePerdidaDominioPayload>({
-      defaultValues: { fiscalia: '', fechaResolucion: '', autoridad: '' },
+      defaultValues: { fiscalia: '', fechaResolucion: dayjs().format('YYYY-MM-DD'), autoridad: '' },
     })
 
   const cargarRegistros = async () => {
