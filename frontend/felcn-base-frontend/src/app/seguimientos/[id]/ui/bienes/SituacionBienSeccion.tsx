@@ -13,6 +13,7 @@ import {
   CreateSituacionBienPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import dayjs from 'dayjs'
 
 interface Props {
   idItemBien: string
@@ -27,10 +28,10 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
     useForm<CreateSituacionBienPayload>({
       defaultValues: {
-        fechaRequerimiento: '',
+        fechaRequerimiento: dayjs().format('YYYY-MM-DD'),
         fiscalRequerimiento: '',
         idCalidadBien: 0,
-        fechaEntrega: '',
+        fechaEntrega: dayjs().format('YYYY-MM-DD'),
         responsableEntrega: '',
         responsableRecepcion: '',
         institucion: '',

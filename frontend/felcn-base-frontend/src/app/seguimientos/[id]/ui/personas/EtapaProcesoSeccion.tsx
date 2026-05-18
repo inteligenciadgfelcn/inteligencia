@@ -10,6 +10,7 @@ import { DataTable } from 'mantine-datatable'
 import { PersonasServiceInstance, CreateEtapaProcesoPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import { SiiiLookupsService } from '@/services/parametricas/SiiiLookupsService'
+import dayjs from 'dayjs'
 
 interface Props {
   idDetenido: string
@@ -23,7 +24,7 @@ export function EtapaProcesoSeccion({ idDetenido }: Props) {
   const [idEtapaSeleccionada, setIdEtapaSeleccionada] = useState<number>(0)
 
   const { register, handleSubmit, reset, setValue, formState: { isSubmitting } } = useForm<CreateEtapaProcesoPayload>({
-    defaultValues: { idEstado: 0, nroResolucion: '', lugar: '', fecha: '', autoridad: '', fjt: '' }
+    defaultValues: { idEstado: 0, nroResolucion: '', lugar: '', fecha: dayjs().format('YYYY-MM-DD'), autoridad: '', fjt: '' }
   })
 
   useEffect(() => {
