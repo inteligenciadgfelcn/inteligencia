@@ -20,13 +20,6 @@ import { Coca } from '../entity/coca.entity'
 import { ServidorPolicial } from '../entity/servidor-policial.entity'
 import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
 
-// Catalogos
-import { EstadoDroga } from '../entity/estado-droga.entity'
-import { FabricaModelo } from '../entity/fabrica-modelo.entity'
-import { ItemOperativo } from '../entity/item-operativo.entity'
-import { CatalogoClase } from '../entity/catalogo-clase.entity'
-import { CatalogoTipo } from '../entity/catalogo-tipo.entity'
-import { CatalogoCaracteristica } from '../entity/catalogo-caracteristica.entity'
 
 @Injectable()
 export class OperativoRepository {
@@ -263,17 +256,17 @@ export class OperativoRepository {
     await this.bienCaracteristicaRepo.delete(id)
   }
 
-  // ==================== DETENIDOS ====================
+  // ==================== perosnas aux ====================
 
   private get personaAuxiliarRepo() {
     return this.dataSource.getRepository(PersonaAuxiliar)
   }
 
-  async crearDetenido(persona: PersonaAuxiliar): Promise<PersonaAuxiliar> {
+  async crearPersonaAuxiliar(persona: PersonaAuxiliar): Promise<PersonaAuxiliar> {
     return this.personaAuxiliarRepo.save(persona)
   }
 
-  async listarDetenidosPorOperativo(
+  async listarPersonasAuxiliaresPorOperativo(
     idOperativo: string,
     paginacion: PaginacionQueryDto
   ): Promise<[PersonaAuxiliar[], number]> {
@@ -286,11 +279,11 @@ export class OperativoRepository {
     })
   }
 
-  async eliminarDetenido(id: string): Promise<void> {
+  async eliminarPersonaAuxiliar(id: string): Promise<void> {
     await this.personaAuxiliarRepo.delete(id)
   }
 
-  async actualizarFotoDetenido(
+  async actualizarFotoPersonaAuxiliar(
     id: string,
     campo: 'foto_frente' | 'foto_documento' | 'foto_perfil_izquierdo',
     foto: Buffer
@@ -342,53 +335,9 @@ export class OperativoRepository {
     await this.logotipoRepo.delete(id)
   }
 
-  // ==================== CATÁLOGOS ====================
-
-  async listarEstadosDrogaPorTipo(idTipoDroga: number): Promise<EstadoDroga[]> {
-    return this.dataSource.getRepository(EstadoDroga).find({
-      where: { idTipoDroga },
-    })
-  }
-
-  async listarFabricaModelosPorTipo(
-    idTipoFabrica: number
-  ): Promise<FabricaModelo[]> {
-    return this.dataSource.getRepository(FabricaModelo).find({
-      where: { idTipoFabrica },
-    })
-  }
-
-  async listarItemsOperativoPorCategoria(
-    idCategoriaOperativo: number
-  ): Promise<ItemOperativo[]> {
-    return this.dataSource.getRepository(ItemOperativo).find({
-      where: { idCategoriaOperativo },
-    })
-  }
-
-  async listarCatalogoClasesPorBien(idBien: number): Promise<CatalogoClase[]> {
-    return this.dataSource.getRepository(CatalogoClase).find({
-      where: { idBien },
-    })
-  }
-
-  async listarCatalogoTiposPorClase(
-    idCatalogoClase: number
-  ): Promise<CatalogoTipo[]> {
-    return this.dataSource.getRepository(CatalogoTipo).find({
-      where: { idCatalogoClase },
-    })
-  }
-
-  async listarCatalogoCaracteristicasPorClase(
-    idCatalogoClase: number
-  ): Promise<CatalogoCaracteristica[]> {
-    return this.dataSource.getRepository(CatalogoCaracteristica).find({
-      where: { idCatalogoClase },
-    })
-  }
 
   // ==================== RESUMEN/PESAJE ====================
+
 
   async obtenerResumenDrogas(idOperativo: string): Promise<any> {
     const result = await this.drogaRepo
@@ -436,7 +385,7 @@ export class OperativoRepository {
     return this.galeriaRepo.findOne({ where: { id } })
   }
 
-  async buscarDetenidoPorId(id: string): Promise<PersonaAuxiliar | null> {
+  async buscarPersonaAuxiliarPorId(id: string): Promise<PersonaAuxiliar | null> {
     return this.personaAuxiliarRepo.findOne({ where: { id } })
   }
 

@@ -15,9 +15,14 @@ import { BASE_PATH } from '@/imageLoader'
 
 const Sidebar = () => {
   const { rolUsuario } = useAuth()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   /* AGREGADO MANUALMENTE PARA FORMULARIO OPERATIVO */
-  const modulosBackend = rolUsuario?.modulos || []
+  const modulosBackend = mounted ? (rolUsuario?.modulos || []) : []
   const modulos = [
     ...modulosBackend,
     // {
