@@ -221,6 +221,10 @@ export const AuthProvider = ({ children }: AuthContextType) => {
       url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
     })
 
+    if (!respuestaUsuario || !respuestaUsuario.datos) {
+      throw new Error('Respuesta del perfil del usuario vacía o incorrecta')
+    }
+
     setUser(respuestaUsuario.datos)
     imprimir(
       `rol definido en obtenerUsuarioRol 👨‍💻: ${respuestaUsuario.datos.idRol}`

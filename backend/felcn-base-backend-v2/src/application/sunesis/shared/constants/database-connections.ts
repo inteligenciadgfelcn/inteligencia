@@ -23,3 +23,4 @@ export const DB_LGI = 'lgi'
  */
 export const SCHEMA_PARAMETRICAS = 'parametricas'
 export const SCHEMA_PUBLIC = 'public'
+export const SCHEMA_AUTH_FDW = 'auth_fdw'

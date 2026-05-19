@@ -8,6 +8,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
+import { Grado } from '../../parametrica/entity/estructura/grado.entity'
 
 /**
  * Entidad Servidor Policial
@@ -42,6 +43,10 @@ export class ServidorPolicial {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => Grado)
+  @JoinColumn({ name: 'id_grado' })
+  grado?: Grado
 
   @BeforeInsert()
   insertarFechaIngreso() {

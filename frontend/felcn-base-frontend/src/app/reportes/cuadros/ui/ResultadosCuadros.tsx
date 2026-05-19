@@ -420,11 +420,11 @@ function PanelCoordenadas({ coordenadas }: { coordenadas: CoordenadaOp[] }) {
 // ─── Generación de Documentos HTML para Leaflet ────────────────────────────────
 
 function generateMapaOperativosSrcDoc(coordenadas: CoordenadaOp[]) {
-  const coordFiltradas = coordenadas.filter(c => c.coordX && c.coordY && !isNaN(parseFloat(c.coordX)) && !isNaN(parseFloat(c.coordY)))
+  const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
   const markersJson = JSON.stringify(
     coordFiltradas.map(c => ({
-      lat: parseFloat(c.coordX),
-      lng: parseFloat(c.coordY),
+      lat: parseFloat(String(c.coordX)),
+      lng: parseFloat(String(c.coordY)),
       caso: c.numeroCaso,
       operativo: c.numeroOperativo,
     }))
@@ -508,9 +508,9 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaOp[]) {
 }
 
 function generateMapaCalorSrcDoc(coordenadas: CoordenadaOp[]) {
-  const coordFiltradas = coordenadas.filter(c => c.coordX && c.coordY && !isNaN(parseFloat(c.coordX)) && !isNaN(parseFloat(c.coordY)))
+  const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
   const pointsJson = JSON.stringify(
-    coordFiltradas.map(c => [parseFloat(c.coordX), parseFloat(c.coordY), 1.0])
+    coordFiltradas.map(c => [parseFloat(String(c.coordX)), parseFloat(String(c.coordY)), 1.0])
   )
   return `
     <!DOCTYPE html>
@@ -755,7 +755,7 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
         {activeTab === 'resultados' && (
           <div className="panel space-y-3">
             <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
-              <Icono nombre="IconTable" className="w-4 h-4 text-gray-500" />
+              <Icono className="w-4 h-4 text-gray-500">table_chart</Icono>
               <h2 className="text-sm font-semibold text-dark dark:text-white-light">Resultados</h2>
               {hayResultados && (
                 <span className="badge badge-outline-info text-xs ml-auto">
@@ -934,7 +934,7 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
       {/* ── Modal pantalla completa ──────────────────────────────────────── */}
       {activeMapModal && (() => {
         const coordenadas = datos?.coordenadas ?? []
-        const validas = coordenadas.filter(c => c.coordX && c.coordY && !isNaN(parseFloat(c.coordX)) && !isNaN(parseFloat(c.coordY)))
+        const validas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
         return (
           <div className="fixed inset-0 z-[99999] bg-white dark:bg-[#0e1726] flex flex-col overflow-hidden">
             {/* Header */}

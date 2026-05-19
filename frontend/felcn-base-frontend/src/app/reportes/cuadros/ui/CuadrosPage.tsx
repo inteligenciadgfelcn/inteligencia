@@ -74,7 +74,7 @@ export default function CuadrosPage() {
       {/* Encabezado */}
       <div className="panel">
         <div className="flex items-center gap-3">
-          <Icono nombre="IconClipboardList" className="w-6 h-6 text-primary" />
+          <Icono className="w-6 h-6 text-primary">checklist</Icono>
           <div>
             <h1 className="text-lg font-semibold">Registro de Operaciones con Resultados a Nivel Nacional</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400">

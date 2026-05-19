@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import {
-  AsigLookupsService,
   Continente,
   Departamento,
   EstructuraService,
@@ -471,15 +470,15 @@ export function useParametricas() {
     }
   }, [])
 
-  const cargarUnidadesAsig = useCallback(async () => {
-    setCargando(true)
-    try {
-      const res = await AsigLookupsService.obtenerUnidades()
-      if (res.finalizado) setUnidadesAsig(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  // const cargarUnidadesAsig = useCallback(async () => {
+  //   setCargando(true)
+  //   try {
+  //     const res = await AsigLookupsService.obtenerUnidades()
+  //     if (res.finalizado) setUnidadesAsig(res.datos)
+  //   } finally {
+  //     setCargando(false)
+  //   }
+  // }, [])
 
   const cargarUnidadesEstructura = useCallback(async () => {
     setCargando(true)
@@ -514,16 +513,6 @@ export function useParametricas() {
       setCargando(false)
     }
   }, [])
-
-  // const cargarGrados = useCallback(async () => {
-  //   setCargando(true)
-  //   try {
-  //     const res = await SiiiLookupsService.obtenerGrados()
-  //     if (res.finalizado) setGrados(res.datos as unknown as LookupBasico[])
-  //   } finally {
-  //     setCargando(false)
-  //   }
-  // }, [])
 
   const cargarContenidoCaso = useCallback(async () => {
     setCargando(true)
@@ -626,7 +615,6 @@ export function useParametricas() {
     cargarContenidoBien,
     // asig-lookups
     unidadesAsig,
-    cargarUnidadesAsig,
     // estructura
     unidadesEstructura,
     distritales,
