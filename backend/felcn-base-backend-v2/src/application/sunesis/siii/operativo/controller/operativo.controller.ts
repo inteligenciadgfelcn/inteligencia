@@ -91,49 +91,7 @@ export class OperativoController extends BaseController {
     return this.successList(datos)
   }
 
-  // ==================== CATÁLOGOS ====================
 
-  @ApiOperation({ summary: 'Listar estados de droga por tipo' })
-  @Get('catalogos/estados-droga/:idTipoDroga')
-  async listarEstadosDroga(@Param('idTipoDroga') idTipoDroga: string) {
-    const estados = await this.operativoService.listarEstadosDroga(parseInt(idTipoDroga))
-    return this.successList(estados)
-  }
-
-  @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
-  @Get('catalogos/fabrica-modelos/:idTipoFabrica')
-  async listarFabricaModelos(@Param('idTipoFabrica') idTipoFabrica: string) {
-    const modelos = await this.operativoService.listarFabricaModelos(parseInt(idTipoFabrica))
-    return this.successList(modelos)
-  }
-
-  @ApiOperation({ summary: 'Listar items de operativo por categoría' })
-  @Get('catalogos/items-operativo/:idCategoriaOperativo')
-  async listarItemsOperativo(@Param('idCategoriaOperativo') idCategoriaOperativo: string) {
-    const items = await this.operativoService.listarItemsOperativo(parseInt(idCategoriaOperativo))
-    return this.successList(items)
-  }
-
-  @ApiOperation({ summary: 'Listar clases de catálogo por bien' })
-  @Get('catalogos/clases/:idBien')
-  async listarCatalogoClases(@Param('idBien') idBien: string) {
-    const clases = await this.operativoService.listarCatalogoClases(parseInt(idBien))
-    return this.successList(clases)
-  }
-
-  @ApiOperation({ summary: 'Listar tipos de catálogo por clase' })
-  @Get('catalogos/tipos/:idCatalogoClase')
-  async listarCatalogoTipos(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const tipos = await this.operativoService.listarCatalogoTipos(parseInt(idCatalogoClase))
-    return this.successList(tipos)
-  }
-
-  @ApiOperation({ summary: 'Listar características de catálogo por clase' })
-  @Get('catalogos/caracteristicas/:idCatalogoClase')
-  async listarCatalogoCaracteristicas(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const caracteristicas = await this.operativoService.listarCatalogoCaracteristicas(parseInt(idCatalogoClase))
-    return this.successList(caracteristicas)
-  }
 
   // ==================== CASO (1:N) ====================
 
@@ -181,65 +139,65 @@ export class OperativoController extends BaseController {
   // Sección 2 = Drogas (los datos se manejan vía /drogas), aquí devuelve resumen.
   // Secciones 6, 7, 10 están embebidas en el operativo principal.
 
-  @ApiOperation({ summary: 'Obtener datos de sección 2 (drogas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion2')
-  async getSeccion2(@Param('idOperativo') idOperativo: string) {
-    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
-    return this.successList({ idOperativo, pesaje })
-  }
+  // @ApiOperation({ summary: 'Obtener datos de sección 2 (drogas) del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/pesaje-drogas')
+  // async getPesajeDrogas(@Param('idOperativo') idOperativo: string) {
+  //   const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
+  //   return this.successList({ idOperativo, pesaje })
+  // }
 
   @ApiOperation({ summary: 'Guardar datos de sección 2 (drogas) del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion2')
-  async postSeccion2(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+  @Post(':idOperativo/pesaje-drogas')
+  async postPesajeDrogas(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
     return this.successUpdate({ idOperativo, ...body })
   }
 
-  @ApiOperation({ summary: 'Obtener datos de sección 6 (personas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion6')
-  async getSeccion6(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
+  // @ApiOperation({ summary: 'Obtener datos de sección 6 (personas) del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/personas')
+  // async getPersonas(@Param('idOperativo') idOperativo: string) {
+  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
+  //   return this.successList(operativo)
+  // }
 
-  @ApiOperation({ summary: 'Guardar datos de sección 6 (personas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion6')
-  async postSeccion6(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
+  // @ApiOperation({ summary: 'Guardar datos de sección 6 (personas) del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Post(':idOperativo/personas')
+  // async postPersonas(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+  //   return this.successUpdate({ idOperativo, ...body })
+  // }
 
-  @ApiOperation({ summary: 'Obtener datos de sección 7 (bienes) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion7')
-  async getSeccion7(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
+  // @ApiOperation({ summary: 'Obtener datos de sección 7 (bienes) del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/bienes')
+  // async getBienes(@Param('idOperativo') idOperativo: string) {
+  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
+  //   return this.successList(operativo)
+  // }
 
-  @ApiOperation({ summary: 'Guardar datos de sección 7 (bienes) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion7')
-  async postSeccion7(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
+  // @ApiOperation({ summary: 'Guardar datos de sección 7 (bienes) del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Post(':idOperativo/bienes')
+  // async postBienes(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+  //   return this.successUpdate({ idOperativo, ...body })
+  // }
 
-  @ApiOperation({ summary: 'Obtener datos de sección 10 del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion10')
-  async getSeccion10(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
+  // @ApiOperation({ summary: 'Obtener datos de sección 10 del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/documentos')
+  // async getDocumentos(@Param('idOperativo') idOperativo: string) {
+  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
+  //   return this.successList(operativo)
+  // }
 
-  @ApiOperation({ summary: 'Guardar datos de sección 10 del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion10')
-  async postSeccion10(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
+  // @ApiOperation({ summary: 'Guardar datos de sección 10 del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Post(':idOperativo/documentos')
+  // async postDocumentos(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+  //   return this.successUpdate({ idOperativo, ...body })
+  // }
 
   // ==================== OPERATIVO POR ID ====================
 
@@ -261,13 +219,13 @@ export class OperativoController extends BaseController {
 
   // ==================== DROGAS ====================
 
-  @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/drogas/pesaje')
-  async obtenerPesaje(@Param('idOperativo') idOperativo: string) {
-    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
-    return this.successList(pesaje)
-  }
+  // @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/drogas/pesaje')
+  // async obtenerPesaje(@Param('idOperativo') idOperativo: string) {
+  //   const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
+  //   return this.successList(pesaje)
+  // }
 
   @ApiOperation({ summary: 'Listar drogas del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
@@ -564,8 +522,8 @@ export class OperativoController extends BaseController {
   @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
   @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
   @Get(':idOperativo/personas')
-  async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
-    const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
+  async listarPersonasAuxiliares(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarPersonasAuxiliares(idOperativo, paginacion)
     return this.successPagedRows(resultado, paginacion)
   }
 
@@ -650,11 +608,11 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Eliminar aprehendido del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Delete(':idOperativo/personas/:id')
-  async eliminarDetenido(
+  async eliminarPersonaAuxiliar(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarDetenido(idOperativo, id)
+    await this.operativoService.eliminarPersonaAuxiliar(idOperativo, id)
     return this.successDelete(null)
   }
 

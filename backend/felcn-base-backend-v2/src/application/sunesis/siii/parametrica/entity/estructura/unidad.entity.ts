@@ -1,30 +1,23 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
-import { SCHEMA_PUBLIC } from '../../../../shared/constants'
+import { SCHEMA_AUTH_FDW } from '../../../../shared/constants'
 
 /**
  * Entidad Unidad
- * Base de datos: felcn_siii
- * Schema: public / Tabla: unidad
+ * Base de datos: felcn_siii / Tabla foránea: auth_fdw.unidad → parametro.unidad (felcn_auth_v3)
  * Fuente ASP: SELECT Uni_Id, Uni_Descripcion FROM UNIDADES
  * Combo: cbounidad
  */
-@Entity({ name: 'unidad', schema: SCHEMA_PUBLIC })
+@Entity({ name: 'unidad', schema: SCHEMA_AUTH_FDW })
 export class Unidad {
-  @PrimaryGeneratedColumn({ type: 'integer', name: 'id_unidad' })
+  @PrimaryGeneratedColumn({ type: 'integer', name: 'id' })
   id: number
 
-  @Column({ name: 'abreviatura', type: 'varchar', length: 3 })
+  @Column({ name: 'abreviatura', type: 'varchar', length: 20 })
   abreviatura: string
 
-  @Column({ name: 'descripcion', type: 'varchar', length: 80 })
+  @Column({ name: 'descripcion', type: 'varchar', length: 150 })
   descripcion: string
-
-  @Column({ name: 'abreviatura_icia', type: 'varchar', length: 2 })
-  abreviaturaIcia: string
 
   @Column({ name: 'es_operativa_admin', type: 'boolean' })
   esOperativaAdmin: boolean
-
-  @Column({ name: 'abreviatura_reporte', type: 'varchar', length: 10 })
-  abreviaturaReporte: string
 }

@@ -332,4 +332,52 @@ export class LookupController extends BaseController {
   async listarContenidoBien() {
     return this.successList(await this.lookupService.listarContenidoBien())
   }
+
+  @ApiOperation({ summary: 'Listar items de operativo por categoría' })
+  @Get('items-operativo/:id')
+  async listarItemsOperativoPorCategoria(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarItemsOperativo(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar clases de bien por id de bien' })
+  @Get('clases/:id')
+  async listarCatalogoClases(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoClases(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de bien por id de clase de bien' })
+  @Get('tipos/:id')
+  async listarCatalogoTipos(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoTipos(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar características de bien por id de clase de bien' })
+  @Get('caracteristicas/:id')
+  async listarCatalogoCaracteristicas(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoCaracteristicas(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar estados de droga por tipo' })
+  @Get('estados-droga/:id')
+  async listarEstadosDroga(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarEstadosDroga(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
+  @Get('fabrica-modelos/:id')
+  async listarFabricaModelos(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarFabricaModelos(parseInt(id))
+    )
+  }
 }

@@ -72,7 +72,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
             operativoService.listarSustanciasLiquidas(idOperativo, fullLimit),
             operativoService.listarFabricas(idOperativo, fullLimit),
             operativoService.listarBienes(idOperativo, fullLimit),
-            operativoService.listarDetenidos(idOperativo, fullLimit),
+            operativoService.listarPersonasAuxiliares(idOperativo, fullLimit),
             operativoService.listarGaleria(idOperativo, fullLimit),
             (() => {
                 if (operativo.coordX && operativo.coordY) {

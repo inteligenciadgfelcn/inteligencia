@@ -182,9 +182,9 @@ export function ActualizacionDataTable() {
               titulo={'Editar caso'}
               color={'info'}
               accion={() => {
-                // redirect to http://localhost:8080/operaciones/operativo/gestion-operativo/registro/?id=36 using router
+                // redirect to http://localhost:8080/operativos/gestion-operativo/registro/?id=36 using router
                 router.push(
-                  `/operaciones/operativo/gestion-operativo/registro/?id=${row.idCaso}`
+                  `/operativos/registro/?id=${row.idCaso}`
                 )
               }}
               icono={'edit'}
@@ -214,9 +214,8 @@ export function ActualizacionDataTable() {
             /> */}
             <button
               type="button"
-              className={`btn btn-sm m-1 ${
-                isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
-              }`}
+              className={`btn btn-sm m-1 ${isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
+                }`}
               onClick={() => toggleSelected(row)}
             >
               {isSelected ? 'Deseleccionar' : 'Seleccionar'}
