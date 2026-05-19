@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import type { ResultadoCruzada } from '@/services/reportes/CruzadosService'
+import { Constantes } from '@/config/Constantes'
+import IconPrinter from '@/components/Icon/IconPrinter'
 
 function parsearItems(campo: string | null | undefined): string[] {
   if (!campo?.trim()) return []
@@ -114,9 +116,27 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
           </div>
 
           {/* Fecha del operativo */}
-          <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 whitespace-nowrap">
-            {row.fechaOperativo}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              className="text-success hover:text-success/75 transition-colors p-1 rounded hover:bg-success/5"
+              onClick={() => {
+                const num = row.numeroOperativo
+                if (num) {
+                  window.open(
+                    `${Constantes.baseUrl}/reportes/general/${encodeURIComponent(num)}/pdf`,
+                    '_blank'
+                  )
+                }
+              }}
+              title="Imprimir Reporte General"
+            >
+              <IconPrinter className="h-4.5 w-4.5" />
+            </button>
+            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
+              {row.fechaOperativo}
+            </span>
+          </div>
         </div>
 
         {/* Departamento · Provincia · Localidad · Lugar */}
