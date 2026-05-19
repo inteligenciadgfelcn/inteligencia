@@ -121,6 +121,7 @@ export class SeguimientoRepository {
   async listarInvestigadoresPorCaso(idCaso: string): Promise<Investigador[]> {
     return this.dataSource.getRepository(Investigador).find({
       where: { idCaso },
+      relations: ['grado'],
       order: { fecha: 'DESC' },
     })
   }
@@ -150,6 +151,7 @@ export class SeguimientoRepository {
   async listarServidoresPolicialesPorOperativo(idOperativo: string): Promise<ServidorPolicial[]> {
     return this.dataSource.getRepository(ServidorPolicial).find({
       where: { idOperativo },
+      relations: ['grado'],
       order: { idGrado: 'ASC' },
     })
   }
