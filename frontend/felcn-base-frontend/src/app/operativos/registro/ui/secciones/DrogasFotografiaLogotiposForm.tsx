@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
+import { Switch } from '@/components/ui/Switch'
 import {
   DrogasService,
   LogotiposService,
@@ -602,6 +603,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [cantidadKg, setCantidadKg] = useState('0')
   const [cantidadG, setCantidadG] = useState('0')
   const [cantidadMg, setCantidadMg] = useState('0')
+  const [esLiquido, setEsLiquido] = useState(false)
+  const [cantidadLts, setCantidadLts] = useState('0')
+  const [cantidadMl, setCantidadMl] = useState('0')
   const [costo, setCosto] = useState('0')
   const [idFormaTransporte, setIdFormaTransporte] = useState('')
   const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
@@ -704,6 +708,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setCantidadKg('0')
     setCantidadG('0')
     setCantidadMg('0')
+    setEsLiquido(false)
+    setCantidadLts('0')
+    setCantidadMl('0')
     setCosto('0')
     setIdFormaTransporte('')
     setIdPaisProcedencia('')
@@ -724,8 +731,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
       return
     }
 
-    const totalGramos =
-      parseNumber(cantidadTn) * 1000000 +
+    const totalGramos = esLiquido
+      ? parseNumber(cantidadLts) + parseNumber(cantidadMl) / 1000
+      : parseNumber(cantidadTn) * 1000000 +
       parseNumber(cantidadKg) * 1000 +
       parseNumber(cantidadG) +
       parseNumber(cantidadMg) / 1000
@@ -797,7 +805,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
 
         {/* ── Formulario de registro ── */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div>
             <label className="mb-1 block text-sm font-medium">
               Tipo de Droga <span className="text-danger">*</span>
@@ -854,90 +862,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
             />
             {/* Se quita el error visual de unidades si solo depende del peso */}
           </div>
-
-          {/* Cantidad multi-unidad */}
-          <div className="col-span-1 md:col-span-2">
-            <label className="mb-1 block text-sm font-medium">Cantidad <span className="text-danger">*</span></label>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Tn</span>
-                <Input
-                  id="cantidadTn"
-                  type="text"
-                  placeholder="0"
-                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
-                  value={cantidadTn}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    if (val === '' || /^\d*$/.test(val)) {
-                      setCantidadTn(val)
-                    }
-                  }}
-                  size="sm"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Kg</span>
-                <Input
-                  id="cantidadKg"
-                  type="text"
-                  placeholder="0"
-                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
-                  value={cantidadKg}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    if (
-                      val === '' ||
-                      (parseInt(val) >= 0 && parseInt(val) <= 999)
-                    ) {
-                      setCantidadKg(val)
-                    }
-                  }}
-                  size="sm"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">g</span>
-                <Input
-                  id="cantidadG"
-                  type="text"
-                  placeholder="0"
-                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
-                  value={cantidadG}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    if (
-                      val === '' ||
-                      (parseInt(val) >= 0 && parseInt(val) <= 999)
-                    ) {
-                      setCantidadG(val)
-                    }
-                  }}
-                  size="sm"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">Mg</span>
-                <Input
-                  id="cantidadMg"
-                  type="text"
-                  placeholder="0"
-                  className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
-                  value={cantidadMg}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    if (
-                      val === '' ||
-                      (parseInt(val) >= 0 && parseInt(val) <= 999)
-                    ) {
-                      setCantidadMg(val)
-                    }
-                  }}
-                  size="sm"
-                />
-              </div>
-            </div>
-          </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Costo (Bs.) <span className="text-danger">*</span>
@@ -959,7 +883,148 @@ export function SeccionDrogasFotografiaLogotiposForm({
               <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
             )}
           </div>
-          <div>
+
+          {/* Interruptor de tipo de medida (Sólido / Líquido) */}
+          <div className="col-span-1 md:col-span-2">
+            <label className="mb-1 block text-sm font-medium">
+              La Cantidad de la droga, estupefaciente o psicotropico es?
+            </label>
+            <div className="flex items-center h-10 mt-1">
+              <Switch
+                label={esLiquido ? 'Líquido' : 'Sólido'}
+                checked={esLiquido}
+                onChange={(e) => setEsLiquido(e.target.checked)}
+              />
+            </div>
+          </div>
+
+          {/* Cantidad multi-unidad */}
+          {!esLiquido ? (
+            <div className="col-span-1 md:col-span-2">
+              <label className="mb-1 block text-sm font-medium">Cantidad <span className="text-danger">*</span></label>
+              <div className="grid grid-cols-4 gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Tn</span>
+                  <Input
+                    id="cantidadTn"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadTn}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || /^\d*$/.test(val)) {
+                        setCantidadTn(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Kg</span>
+                  <Input
+                    id="cantidadKg"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadKg}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (
+                        val === '' ||
+                        (parseInt(val) >= 0 && parseInt(val) <= 999)
+                      ) {
+                        setCantidadKg(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">g</span>
+                  <Input
+                    id="cantidadG"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadG}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (
+                        val === '' ||
+                        (parseInt(val) >= 0 && parseInt(val) <= 999)
+                      ) {
+                        setCantidadG(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Mg</span>
+                  <Input
+                    id="cantidadMg"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadMg}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (
+                        val === '' ||
+                        (parseInt(val) >= 0 && parseInt(val) <= 999)
+                      ) {
+                        setCantidadMg(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="col-span-1 md:col-span-2">
+              <label className="mb-1 block text-sm font-medium">Cantidad <span className="text-danger">*</span></label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">Lts</span>
+                  <Input
+                    id="cantidadLts"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadLts) + parseNumber(cantidadMl) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadLts}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || /^\d*$/.test(val)) {
+                        setCantidadLts(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-gray-500">ml</span>
+                  <Input
+                    id="cantidadMl"
+                    type="text"
+                    placeholder="0"
+                    className={`w-full ${(parseNumber(cantidadLts) + parseNumber(cantidadMl) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    value={cantidadMl}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === '' || /^\d*$/.test(val)) {
+                        setCantidadMl(val)
+                      }
+                    }}
+                    size="sm"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="col-span-1 md:col-span-2">
             <label className="mb-1 block text-sm font-medium">
               Forma de Transporte <span className="text-danger">*</span>
             </label>
@@ -1013,7 +1078,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
-          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+
+          <div className="col-span-1 md:col-span-2 lg:col-span-4">
             <label className="mb-1 block text-sm font-medium">
               Observaciones
             </label>
@@ -1026,7 +1092,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
           </div>
 
           {/* Fotos — DropzoneFoto */}
-          <div className="col-span-1 lg:col-span-3">
+          <div className="col-span-1 lg:col-span-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <DropzoneFoto
                 key={`prueba-${dropzoneToken}`}
@@ -1046,7 +1112,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
           </div>
 
           {/* Botón guardar */}
-          <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
+          <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
             <Button
               type="button"
               variant="success"
@@ -1079,30 +1145,40 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 },
                 {
                   accessor: 'descripcionEstadoDroga',
-                  title: 'Estado',
+                  title: 'Estado de la Droga',
                   render: (r) =>
                     r.descripcionEstadoDroga ?? String(r.idEstadoDroga ?? '—'),
                 },
                 {
-                  accessor: 'cantidadUnidades',
-                  title: 'Unidades',
-                },
-                {
                   accessor: 'cantidadGramos',
-                  title: 'Gramos',
+                  title: 'Peso',
                   render: (r) =>
                     r.cantidadGramos != null
                       ? Number(r.cantidadGramos).toFixed(3)
                       : '0.000',
                 },
                 {
+                  accessor: 'unidadMedida',
+                  title: 'Unidad de Medida',
+                  render: (r) => {
+                    const desc = (r.descripcionEstadoDroga ?? '').toLowerCase();
+                    return desc.includes('liqui') || desc.includes('líqui') ? 'Lts' : 'Gramos';
+                  },
+                },
+                {
                   accessor: 'costo',
-                  title: 'Costo (Bs.)',
-                  render: (r) => (r.costo != null ? `${r.costo}` : '—'),
+                  title: 'Precio en Bolivianos',
+                  render: (r) =>
+                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')} Bs` : '—',
+                },
+                {
+                  accessor: 'cantidadUnidades',
+                  title: 'Nro. de Pastillas o Capsulas',
+                  render: (r) => r.cantidadUnidades ?? '0',
                 },
                 {
                   accessor: 'descripcionFormaTransporte',
-                  title: 'Forma Transporte',
+                  title: 'Forma de Transporte',
                   render: (r) =>
                     r.descripcionFormaTransporte ??
                     String(r.idFormaTransporte ?? '—'),

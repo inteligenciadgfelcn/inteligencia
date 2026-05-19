@@ -1,6 +1,8 @@
 'use client'
 
 import type { ResultadoCruzada } from '@/services/reportes/CruzadasService'
+import { Constantes } from '@/config/Constantes'
+import IconPrinter from '@/components/Icon/IconPrinter'
 
 function parsearItems(campo: string | null | undefined): string[] {
   if (!campo?.trim()) return []
@@ -83,6 +85,22 @@ export function TablaPlana({ rows }: { rows: ResultadoCruzada[] }) {
                       <span className="font-semibold text-dark dark:text-white-light truncate max-w-[130px]" title={row.numeroCaso}>
                         {row.numeroCaso}
                       </span>
+                      <button
+                        type="button"
+                        className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
+                        onClick={() => {
+                          const num = row.numeroOperativo
+                          if (num) {
+                            window.open(
+                              `${Constantes.baseUrl}/reportes/general/${encodeURIComponent(num)}/pdf`,
+                              '_blank'
+                            )
+                          }
+                        }}
+                        title="Imprimir Reporte General"
+                      >
+                        <IconPrinter className="h-4 w-4" />
+                      </button>
                     </div>
                     {row.nombreCaso && (
                       <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2" title={row.nombreCaso}>
