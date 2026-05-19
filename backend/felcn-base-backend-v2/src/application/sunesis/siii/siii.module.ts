@@ -53,7 +53,7 @@ import { Bienes } from './parametrica/entity/bien/bienes.entity'
 import { CalidadBien } from './parametrica/entity/bien/calidad-bien.entity'
 import { ContenidoBien } from './parametrica/entity/bien/contenido-bien.entity'
 import { ContenidoCaso } from './parametrica/entity/bien/contenido-caso.entity'
-import { Grado } from './parametrica/entity/bien/grado.entity'
+import { Grado } from './parametrica/entity/estructura/grado.entity'
 import { Letra } from './parametrica/entity/bien/letra.entity'
 
 // Estructura organizacional (público)
