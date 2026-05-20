@@ -20,6 +20,7 @@ export interface ResultadoAvanzado {
   asignadoFiscal: string
   tipoOperativo: string
   tipoRelevancia: string
+  colorRelevancia: string
   categoriaOperativo: string
   planOperacion: string
   tipoDenuncia: string | null
