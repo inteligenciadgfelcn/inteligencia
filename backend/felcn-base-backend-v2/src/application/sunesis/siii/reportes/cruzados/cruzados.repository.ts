@@ -313,9 +313,11 @@ SELECT
   a.numero_caso                                                 AS "numeroCaso",
   a.numero_operativo                                            AS "numeroOperativo",
   o.numero_informe                                              AS "numeroInforme",
-  COALESCE(TRIM(uni.descripcion), '')
-    || ' - ' || COALESCE(TRIM(dis.descripcion), '')
-    || ' - ' || COALESCE(TRIM(grp.descripcion), '')            AS "ubicacionInstitucional",
+  --COALESCE(TRIM(uni.descripcion), '')
+  --  || ' - ' || COALESCE(TRIM(dis.descripcion), '')
+  --  || ' - ' || COALESCE(TRIM(grp.descripcion), '')            AS "ubicacionInstitucional",
+  COALESCE(TRIM(uni.abreviatura), '')
+    || ' - ' || COALESCE(TRIM(dis.descripcion), '')              AS "ubicacionInstitucional",
   dep.descripcion
     || ' - ' || prov.descripcion
     || ' - ' || UPPER(loc.descripcion)
@@ -327,6 +329,7 @@ SELECT
   TRIM(a.fiscal_asignado_caso)                                  AS "asignadoFiscal",
   top.descripcion                                               AS "tipoOperativo",
   tr.descripcion                                                AS "tipoRelevancia",
+  COALESCE(tr.color, '')                                        AS "colorRelevancia",
   cat.descripcion                                               AS "categoriaOperativo",
   po.nombre                                                     AS "planOperacion",
   tden.descripcion                                              AS "tipoDenuncia",
