@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Autenticación mediante los protocolos OAuth 2.0 y OpenID Connect de Ciudadanía Digital Bolivia.">
+    <title>Autenticación mediante los protocolos OAuth 2.0 y OpenID Connect de Ciudadanía Digital Bolivia.</title>
+    <style>
+        /* FONTS */
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 300;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLDz8Z1xlFd2qDA.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrJJnecmNE.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 500;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7Z1xlFd2qDA.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 600;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLEj6Z1xlFd2qDA.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Poppins';
+            font-style: normal;
+            font-weight: 700;
+            src: url('https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCj7Z1xlFd2qDA.woff2') format('woff2');
+        }
+
+        /* GENERAL STYLES */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* LOGO SUPERIOR */
+        .logo-header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-header img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* MAIN CARD */
+        .main-container {
+            background: #2a2a2a;
+            border-radius: 16px;
+            padding: 60px;
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            gap: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* LEFT SIDE - FORM */
+        .form-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .form-header .subtitle {
+            font-size: 14px;
+            color: #90caf9;
+            font-weight: 500;
+        }
+
+        .icon-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .icon-header svg {
+            width: 40px;
+            height: 40px;
+            stroke: #ffffff;
+        }
+
+        /* FORM FIELDS */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        label span {
+            color: #ff6b6b;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #444444;
+            border-radius: 8px;
+            background: #3a3a3a;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #90caf9;
+        }
+
+        .help-button {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #90caf9;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #90caf9;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* FORM LINKS */
+        .form-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            font-size: 13px;
+        }
+
+        .form-links a {
+            color: #90caf9;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .form-links a:hover {
+            color: #64b5f6;
+        }
+
+        /* BUTTONS */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #555555;
+            color: #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background: #3a3a3a;
+            border-color: #90caf9;
+            color: #90caf9;
+        }
+
+        .btn-primary {
+            background: #90caf9;
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            background: #64b5f6;
+        }
+
+        /* RIGHT SIDE - QR */
+        .qr-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-container {
+            background: #3a3a3a;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .qr-container img {
+            width: 200px;
+            height: 200px;
+            display: block;
+        }
+
+        .qr-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .qr-steps {
+            list-style: none;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #cccccc;
+        }
+
+        .qr-steps li {
+            margin-bottom: 12px;
+        }
+
+        .qr-steps strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* FOOTER */
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #888888;
+            position: absolute;
+            bottom: 20px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        /* THEME BUTTONS */
+        .top-buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-button {
+            background: transparent;
+            border: 1px solid #555555;
+            color: #90caf9;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .icon-button:hover {
+            background: #3a3a3a;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                padding: 40px;
+                gap: 40px;
+            }
+
+            .form-header h1 {
+                font-size: 24px;
+            }
+
+            .footer {
+                position: relative;
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Buttons -->
+    <div class="top-buttons">
+        <button class="icon-button" title="Ayuda">?</button>
+        <button class="icon-button" title="Cambiar tema">🌙</button>
+    </div>
+
+    <!-- Logo Header -->
+    <div class="logo-header">
+        <svg width="65" height="65" viewBox="0 0 65 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Logo SVG aquí -->
+        </svg>
+        <svg width="135" height="57" viewBox="0 0 135 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Texto Logo SVG aquí -->
+        </svg>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="icon-header">
+                <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M2 17h20"></path>
+                    <path d="M6 20h12"></path>
+                </svg>
+            </div>
+            <div class="form-header">
+                <h1>Inicia sesión</h1>
+                <div class="subtitle">Developer</div>
+            </div>
+
+            <form>
+                <div class="form-group">
+                    <label>Cédula de identidad <span>*</span></label>
+                    <div class="input-wrapper">
+                        <input type="text" placeholder="Ingresa tu número de CI/CIE" value="5808569">
+                        <button type="button" class="help-button" title="Si tu número de documento cuenta con un complemento, añade el mismo a continuación del número de doc">?</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña <span>*</span></label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="Ingresa tu contraseña" value="password">
+                        <button type="button" class="password-toggle" id="togglePassword">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-links">
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                    <a href="#">Crear cuenta</a>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary">Volver</button>
+                    <button type="submit" class="btn-primary">Ingresar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- QR Section -->
+        <div class="qr-section">
+            <div class="qr-container">
+                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAAMgCAYAAAA7Lg1tAAAJkklEQVR4nO3d0W6iQBRA0YFMS62trdaOVNv2/7/1ta1tqR1tm1IQBphhGGAGZuaee3MEBx5g7+HeO8PCwtePHz+WpaWlpf0d29vby+r6+vpvXl1d/TXL83y5ubn57peWlpb2d2wvX16+PDc2Nha73e6vvLi4+C39fv8XA0jTdHl5eRmRUkqLi4v/yfDwcPn4+Hi1Wq0+pWkakJZl+S/YbDb/p9Fo9FWqVqtfM5/PF5+fn/m73W4XW1tbv+bh4aFYrVYXGUAWRRExOTk52mw2f8rZbBaxs7OTly0Wi4rJZBLNZjNCCFUMDAwkpmmG1WpVRhAE4fV6VTAMA0tLS/m7Tz+lf/Pzc7FarQrBYFAcjUYXGUDsdnt4PB4xOzub55mZmfkjlsvlMjo6etrZbHZlNBrl+f39/ep5dXWVJ4jC4XC4uLiIy8vLoyyV0+kscjweL0ajUWkGBoZnR2xsbFxkAHEcR4zH45iamhrf3d2dkV6vl/dX6vV6X/N+v8/jRCIRxWg0KuZyuSjJ8/yKI0h1OhyOoig4Ho9ibGwsMgxDjI6OxuDgYH5eHo8nms1mZTabvQqDwaD4+PjIy/L5fOT5fHnkRqOhrFYrJ0MnlqGhIbHZbP6IxWIRkUgkqVarBcdxyePxRCqVyjuabred8HjKqVRKzM7O5rfZbDZvvD4A/AvkzwWgJxEAIIBAAAABCAAAAgQAQIAAACABCBAAAAgQAQIAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECACBAAIEAECAC
