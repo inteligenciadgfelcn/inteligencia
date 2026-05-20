@@ -55,8 +55,13 @@ export class OperativoService extends BaseService {
       throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
     }
 
+    const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
+    const firstOperativo = operativos[0] ?? null
+
     const caso = {
       idCaso: asignacion.idCaso,
+      numeroCaso: asignacion.numeroCaso,
+      numeroCasoPerDom: asignacion.numeroCasoPerDom,
       numeroOperativo: asignacion.numeroOperativo,
       nombreCaso: asignacion.nombreCaso,
       fiscalSolicitud: asignacion.fiscalSolicitud,
@@ -65,9 +70,9 @@ export class OperativoService extends BaseService {
       telefonoAsignado: asignacion.telefonoAsignado,
       fiscalAsignadoCaso: asignacion.fiscalAsignadoCaso,
       telefonoFiscal: asignacion.telefonoFiscal,
+      ianus: asignacion.ianus,
+      relevanciaCaso: firstOperativo?.tipoRelevancia?.descripcion ?? 'N/A',
     }
-
-    const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
 
     return { caso, operativos }
   }
@@ -142,11 +147,17 @@ export class OperativoService extends BaseService {
     res.descripcionUnidad = operativo.unidad?.descripcion ?? null
     res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
     res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
+    res.descripcionTipoDenuncia = operativo.tipoDenuncia?.descripcion ?? null
+    res.descripcionTipoPenal = operativo.tipoPenal?.descripcion ?? null
+    res.relevanciaCaso = operativo.tipoRelevancia?.descripcion ?? null
 
     // Clean up relation objects if needed, but not strictly required
     delete res.unidad
     delete res.planOperacion
     delete res.tipoOperacion
+    delete res.tipoDenuncia
+    delete res.tipoPenal
+    delete res.tipoRelevancia
 
     return res
   }
