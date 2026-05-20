@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import type { ResultadoCruzada } from '@/services/reportes/cruzadas/CruzadasService'
 import { OperativoCard } from './OperativoCard'
 import { TablaPlana } from './TablaPlana'
+import IconFile from '@/components/Icon/IconFile'
+import IconPrinter from '@/components/Icon/IconPrinter'
+import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
 
 const ETIQUETAS_FILTRO: Record<string, string> = {
   fecha: 'Por Rango de Fechas',
@@ -214,6 +217,87 @@ export function TablaCruzadas({ rows, loading, filtroActivo }: TablaCruzadasProp
             </>
           )}
         </div>
+
+        {/* Botones de exportación */}
+        {hayResultados && (
+          <div className="flex items-center gap-1 mr-2">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm flex items-center gap-1"
+              onClick={() => {
+                const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
+                const keys: (keyof ResultadoCruzada)[] = [
+                  'numeroOperativo', 
+                  'numeroCaso', 
+                  'fechaOperativo', 
+                  'ubicacionGeografica', 
+                  'totalHojaCoca', 
+                  'drogasDecomisadas', 
+                  'sustanciasSolidas', 
+                  'sustanciasLiquidas', 
+                  'laboratoriosFabricas', 
+                  'arrestados', 
+                  'personasImplicadas', 
+                  'bienesIncautados'
+                ]
+                exportToCSV(rows, headers, keys, 'cruzados')
+              }}
+            >
+              <IconFile className="w-4 h-4" />
+              CSV
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm flex items-center gap-1"
+              onClick={() => {
+                const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
+                const keys: (keyof ResultadoCruzada)[] = [
+                  'numeroOperativo', 
+                  'numeroCaso', 
+                  'fechaOperativo', 
+                  'ubicacionGeografica', 
+                  'totalHojaCoca', 
+                  'drogasDecomisadas', 
+                  'sustanciasSolidas', 
+                  'sustanciasLiquidas', 
+                  'laboratoriosFabricas', 
+                  'arrestados', 
+                  'personasImplicadas', 
+                  'bienesIncautados'
+                ]
+                exportToExcel(rows, headers, keys, 'cruzados')
+              }}
+            >
+              <IconFile className="w-4 h-4" />
+              EXCEL
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm flex items-center gap-1"
+              onClick={() => {
+                const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
+                const keys: (keyof ResultadoCruzada)[] = [
+                  'numeroOperativo', 
+                  'numeroCaso', 
+                  'fechaOperativo', 
+                  'ubicacionGeografica', 
+                  'totalHojaCoca', 
+                  'drogasDecomisadas', 
+                  'sustanciasSolidas', 
+                  'sustanciasLiquidas', 
+                  'laboratoriosFabricas', 
+                  'arrestados', 
+                  'personasImplicadas', 
+                  'bienesIncautados'
+                ]
+                exportToPrint(rows, headers, keys, 'Búsqueda Cruzada')
+              }}
+            >
+              <IconPrinter className="w-4 h-4" />
+              PRINT
+            </button>
+          </div>
+        )}
 
         {/* Selector de vista (tabs pill) */}
         <div className="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-[#1b2e4b]/60">
