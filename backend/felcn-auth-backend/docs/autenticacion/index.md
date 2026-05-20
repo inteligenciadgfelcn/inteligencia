@@ -15,6 +15,9 @@ Los valores generados y configurados en el Módulo de Developer deberán utiliza
 
 Mas info: https://developer.ciudadaniadigital.bo/docs/empezar/registrar-mecanismo/autenticacion
 
+> **Desarrollo:** Durante el desarrollo se usa `fake-ciudadania-api` como proveedor OIDC simulado.
+> Para migrar al servicio real ver: [ciudadania-digital-migracion.md](./ciudadania-digital-migracion.md)
+
 ### Flujo de autenticación OIDC con el Proveedor de Ciudadanía Digital
 
 ```mermaid

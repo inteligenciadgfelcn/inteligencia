@@ -13,10 +13,17 @@ export class OidcAuthGuard extends AuthGuard('oidc') {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest()
 
+    console.log('[OIDC-GUARD] query:', request.query)
+    console.log('[OIDC-GUARD] session keys:', Object.keys(request.session || {}))
+    console.log('[OIDC-GUARD] session id:', request.session?.id)
+
     try {
       const isPermitted = (await super.canActivate(context)) as boolean
+      console.log('[OIDC-GUARD] isPermitted:', isPermitted)
       if (!isPermitted) throw new UnauthorizedException()
     } catch (err) {
+      console.error('[OIDC-GUARD] ERROR:', err?.message || err)
+      console.error('[OIDC-GUARD] ERROR stack:', err?.stack)
       throw new BaseException(err, {
         modulo: 'CIUDADANÍA:PROVEEDOR IDENTIDAD',
         mensaje: 'Error de autenticación con Ciudadanía',

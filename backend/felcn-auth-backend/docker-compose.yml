@@ -32,6 +32,50 @@ services:
       - pgadmin_data:/var/lib/pgadmin
 
   # ============================================================
+  # [FAKE] Ciudadanía Digital — solo entorno de desarrollo.
+  # Descomentar para levantar el fake junto con la infraestructura.
+  # Al integrar con la Ciudadanía Digital real: eliminar este bloque
+  # y quitar FAKE_CIUDADANIA_INTERNAL_URL del .env de auth-backend.
+  #
+  # ISSUER URL: el fake expone el puerto 3001 en el host, por lo que
+  # tanto el navegador como auth-backend (corriendo en el host) llegan
+  # a él como http://localhost:3001. No se requiere configuración extra.
+  #
+  # Si auth-backend también corre en Docker (ver nota al final), usar
+  # el Escenario B descrito en backend/fake-ciudadania-api/README.md.
+  # ============================================================
+  # fake-ciudadania:
+  #   build:
+  #     context: ../fake-ciudadania-api
+  #     dockerfile: Dockerfile
+  #   container_name: fake-ciudadania-api
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3001"         # expuesto al host → browser + auth-backend (host) lo alcanzan como localhost:3001
+  #   environment:
+  #     NODE_ENV: development
+  #     PORT: 3001
+  #     DB_HOST: host.docker.internal   # host donde corre postgres (ajustar si postgres está en este compose)
+  #     DB_PORT: 5433                   # puerto mapeado del servicio postgres de este compose
+  #     DB_USERNAME: postgres
+  #     DB_PASSWORD: postgres
+  #     DB_DATABASE: felcn_auth_v3
+  #     DB_USE_SSL: "false"
+  #     DB_SCHEMA_FAKE: fake_ciudadania
+  #     FAKE_ISSUER: http://localhost:3001
+  #     OIDC_CLIENT_ID: fake-ciudadania-client
+  #     OIDC_CLIENT_SECRET: fake-ciudadania-secret
+  #     SMTP_ENABLED: "false"
+  #     KEY_DATA_DIR: /app/data
+  #   volumes:
+  #     - fake_jwk_keys:/app/data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:3001/.well-known/openid-configuration"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+
+  # ============================================================
   # Keycloak - Identity Provider Central
   # Fase 2: Descomentar cuando se implemente integración KC
   # ============================================================
@@ -62,3 +106,4 @@ services:
 volumes:
   postgres_data:
   pgadmin_data:
+  # fake_jwk_keys:   # [FAKE] descomentar si se usa el servicio fake-ciudadania

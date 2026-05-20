@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticación mediante los protocolos OAuth 2.0 y OpenID Connect de Ciudadanía Digital Bolivia.</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Poppins', sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* BOTONES SUPERIORES */
+        .top-buttons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid #555555;
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: #3a3a3a;
+            border-color: #90caf9;
+            color: #90caf9;
+        }
+
+        /* LOGO HEADER */
+        .logo-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 50px;
+            justify-content: center;
+        }
+
+        .logo-header img {
+            height: auto;
+            display: block;
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+        .main-container {
+            background: #3a3a3a;
+            border-radius: 16px;
+            padding: 60px;
+            max-width: 1100px;
+            width: 100%;
+            display: flex;
+            gap: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            justify-content: space-between;
+        }
+
+        /* SECCIÓN FORMULARIO */
+        .form-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-icon {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: #ffffff;
+            stroke-width: 1.5;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .form-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .form-header .subtitle {
+            font-size: 14px;
+            color: #5ba3f5;
+            font-weight: 500;
+        }
+
+        /* CAMPOS DE FORMULARIO */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #ffffff;
+            text-transform: capitalize;
+        }
+
+        label .required {
+            color: #ff5252;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 40px 12px 16px;
+            border: 1px solid #555555;
+            border-radius: 6px;
+            background: #4a4a4a;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="password"]::placeholder {
+            color: #888888;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #5ba3f5;
+            background: #555555;
+            box-shadow: 0 0 8px rgba(91, 163, 245, 0.2);
+        }
+
+        .input-icon-btn {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #5ba3f5;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            transition: color 0.3s ease;
+        }
+
+        .input-icon-btn:hover {
+            color: #90caf9;
+        }
+
+        /* ENLACES FORMULARIO */
+        .form-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            font-size: 13px;
+            gap: 20px;
+        }
+
+        .form-links a {
+            color: #5ba3f5;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 400;
+        }
+
+        .form-links a:hover {
+            color: #90caf9;
+        }
+
+        /* BOTONES */
+        .form-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #666666;
+            color: #ffffff;
+        }
+
+        .btn-back:hover {
+            background: #4a4a4a;
+            border-color: #5ba3f5;
+            color: #5ba3f5;
+        }
+
+        .btn-login {
+            background: #5ba3f5;
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .btn-login:hover {
+            background: #90caf9;
+            color: #000000;
+        }
+
+        /* SECCIÓN QR */
+        .qr-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .qr-container {
+            background: #4a4a4a;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 240px;
+            height: 240px;
+        }
+
+        #qrcode {
+            width: 200px !important;
+            height: 200px !important;
+        }
+
+        #qrcode img {
+            width: 100% !important;
+            height: 100% !important;
+            image-rendering: pixelated;
+        }
+
+        .qr-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 10px;
+        }
+
+        .qr-steps {
+            list-style: none;
+            font-size: 13px;
+            line-height: 1.8;
+            color: #cccccc;
+            text-align: left;
+        }
+
+        .qr-steps li {
+            margin-bottom: 10px;
+        }
+
+        .qr-steps strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* PIE DE PÁGINA */
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .footer-logo {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #888888;
+            font-weight: 400;
+        }
+
+        /* MODAL/DIALOG */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #3a3a3a;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .modal-content p {
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-button {
+            background: #5ba3f5;
+            color: #000000;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .modal-button:hover {
+            background: #90caf9;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+                gap: 40px;
+                padding: 40px;
+            }
+
+            .form-header h1 {
+                font-size: 28px;
+            }
+
+            .footer {
+                position: relative;
+                width: 100%;
+                margin-top: 40px;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 30px;
+                gap: 30px;
+            }
+
+            .form-header h1 {
+                font-size: 24px;
+            }
+
+            .qr-section {
+                align-items: center;
+            }
+
+            .qr-steps {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .main-container {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            .form-header h1 {
+                font-size: 20px;
+            }
+
+            .form-header .subtitle {
+                font-size: 12px;
+            }
+
+            .logo-header {
+                margin-bottom: 30px;
+            }
+
+            button {
+                padding: 12px 16px;
+                font-size: 13px;
+            }
+
+            .form-links {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BOTONES SUPERIORES -->
+    <div class="top-buttons">
+        <button class="icon-btn" id="helpBtn" title="Ayuda">?</button>
+        <button class="icon-btn" id="themeBtn" title="Cambiar tema">🌙</button>
+    </div>
+
+    <!-- LOGO HEADER -->
+    <div class="logo-header">
+        <svg width="65" height="65" viewBox="0 0 136 136" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="68" cy="68" r="65" fill="none" stroke="#ffffff" stroke-width="2"/>
+            <circle cx="68" cy="68" r="45" fill="white"/>
+            <path d="M68 50V86M50 68H86" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg width="135" height="57" viewBox="0 0 258 109" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <text x="10" y="45" font-family="Poppins" font-size="42" font-weight="700" fill="white">Ciudadanía</text>
+            <text x="10" y="75" font-family="Poppins" font-size="24" font-weight="400" fill="white">Digital <tspan fill="#7cb342">Bolivia</tspan></text>
+        </svg>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="main-container">
+
+        <!-- SECCIÓN FORMULARIO -->
+        <div class="form-section">
+
+            <div class="form-icon">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="2" y1="17" x2="22" y2="17" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="6" y1="20" x2="18" y2="20" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </div>
+
+            <div class="form-header">
+                <h1>Inicia sesión</h1>
+                <div class="subtitle">Developer</div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Cédula de identidad <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <input type="text" id="cedula" placeholder="Ingresa tu número de CI/CIE" required>
+                        <button type="button" class="input-icon-btn" title="Si tu número de documento cuenta con un complemento, añade el mismo a continuación del número de doc">?</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
+                        <button type="button" class="input-icon-btn" id="togglePassword" title="Ver contraseña">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-links">
+                    <a href="#">¿Olvidaste tu contraseña?</a>
+                    <a href="#">Crear cuenta</a>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-back" id="backBtn">Volver</button>
+                    <button type="submit" class="btn-login">Ingresar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SECCIÓN QR -->
+        <div class="qr-section">
+            <div class="qr-container">
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="qr-title">Inicia sesión con código QR</div>
+
+            <ol class="qr-steps">
+                <li>Abre la aplicación de Ciudadanía Digital</li>
+                <li>En la pantalla principal haz clic en <strong>Escanear QR</strong></li>
+                <li>Escanea esta imagen para iniciar sesión</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA -->
+    <div class="footer">
+        <div class="footer-logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#7cb342" stroke-width="2"/>
+                <text x="50" y="60" font-family="Poppins" font-size="16" font-weight="700" text-anchor="middle" fill="#7cb342">BOL</text>
+            </svg>
+        </div>
+        <div class="footer-text">AGETIC 2026</div>
+    </div>
+
+    <!-- MODAL INFO -->
+    <div class="modal" id="helpModal">
+        <div class="modal-content">
+            <h2>Acerca de Ciudadanía Digital</h2>
+            <p>Bienvenido al inicio de sesión con Ciudadanía Digital. Esta plataforma utiliza autenticación segura mediante OAuth 2.0 y OpenID Connect.</p>
+            <button class="modal-button" id="closeModalBtn">Entendido</button>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Generar QR
+        document.addEventListener('DOMContentLoaded', function() {
+            new QRCode(document.getElementById("qrcode"), {
+                text: "https://proveedor.ciudadaniadigital.bo/qr/session?code=xOp29jiew7xcEnvO7BBgtsrZxOQ5AI36lNKhEganc26",
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        });
+
+        // Toggle visibilidad contraseña
+        document.getElementById('togglePassword').addEventListener('click', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('password');
+            const isPassword = input.type === 'password';
+            input.type = isPassword ? 'text' : 'password';
+            this.textContent = isPassword ? '👁️‍🗨️' : '👁️';
+        });
+
+        // Botón Volver
+        document.getElementById('backBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '#';
+        });
+
+        // Botón Ayuda
+        document.getElementById('helpBtn').addEventListener('click', function() {
+            document.getElementById('helpModal').classList.add('active');
+        });
+
+        // Cerrar modal
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('helpModal').classList.remove('active');
+        });
+
+        // Cambiar tema
+        document.getElementById('themeBtn').addEventListener('click', function() {
+            document.body.style.background = document.body.style.background === 'rgb(255, 255, 255)' ? '#0a0a0a' : '#ffffff';
+            document.querySelector('.main-container').style.background = document.body.style.background === 'rgb(255, 255, 255)' ? '#ffffff' : '#3a3a3a';
+        });
+
+        // Submit formulario
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const cedula = document.getElementById('cedula').value;
+            const password = document.getElementById('password').value;
+
+            if (cedula && password) {
+                alert('Datos de sesión enviados (demo)\nCédula: ' + cedula);
+            }
+        });
+    </script>
+
+</body>
+</html>
