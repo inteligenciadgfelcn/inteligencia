@@ -10,6 +10,7 @@ import type {
 } from '@/services/reportes/CuadrosService'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Icono } from '@/components/Icono'
+import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
 
 // ─── Etiquetas de filtro ──────────────────────────────────────────────────────
 
@@ -888,6 +889,21 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
                   }}
                   columns={columns}
                   loading={cargando}
+                  onExportCSV={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToCSV(filas, headers, keys, 'cuadros')
+                  }}
+                  onExportExcel={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToExcel(filas, headers, keys, 'cuadros')
+                  }}
+                  onExportPrint={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToPrint(filas, headers, keys, 'Resultados de Cuadros')
+                  }}
                 />
               </div>
             )}

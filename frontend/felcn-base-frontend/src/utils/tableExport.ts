@@ -34,7 +34,14 @@ export function exportToExcel<T extends Record<string, any>>(
     const obj: Record<string, string | number | boolean> = {}
 
     columns.forEach((c) => {
-      obj[c as string] = row[c]
+      const val = row[c]
+      if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
+        obj[c as string] = val
+      } else if (val === null || val === undefined) {
+        obj[c as string] = ''
+      } else {
+        obj[c as string] = String(val)
+      }
     })
 
     return obj
