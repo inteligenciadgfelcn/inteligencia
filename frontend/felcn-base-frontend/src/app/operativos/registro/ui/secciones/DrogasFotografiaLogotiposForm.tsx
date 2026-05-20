@@ -19,6 +19,7 @@ import type {
 } from '@/services/operativos'
 import { useConfirmDialog, useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { SiiiLookupsService } from '@/services/parametricas'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -305,6 +306,7 @@ function LogotiposPanel({
 
   return (
     <div className="mt-4 border-t border-[#e0e6ed] pt-4 dark:border-gray-700">
+      <LoadingDialog show={cargando} />
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
         Logotipos
       </p>
@@ -800,6 +802,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
 
   return (
     <div>
+      <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>

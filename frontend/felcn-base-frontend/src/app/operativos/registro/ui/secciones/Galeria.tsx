@@ -6,6 +6,7 @@ import IconTrash from '@/components/Icon/IconTrash'
 import { GaleriaService } from '@/services/operativos'
 import type { GaleriaResponse } from '@/services/operativos'
 import { useConfirmDialog } from '@/hooks'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -257,6 +258,7 @@ export function Galeria({ titulo, idoperativo }: Props) {
 
   return (
     <div>
+      <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
