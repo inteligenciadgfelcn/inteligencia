@@ -310,23 +310,23 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
           </div>
 
           <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
-          <VristoDataTable<ResultadoAvanzado>
-            rows={pagedRows}
-            total={rows.length}
-            page={safePage}
-            limit={limit}
-            onPageChange={setPage}
-            onLimitChange={(l) => {
-              setLimit(l)
-              setPage(1)
-            }}
-            columns={columns}
-            loading={loading}
-            onExportCSV={() => exportToCSV(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
-            onExportExcel={() => exportToExcel(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
-            onExportPrint={() => exportToPrint(rows, EXPORT_HEADERS, EXPORT_KEYS, 'Búsqueda Avanzada de Operativos')}
-          />
-        </div>
+            <VristoDataTable<ResultadoAvanzado>
+              rows={pagedRows}
+              total={rows.length}
+              page={safePage}
+              limit={limit}
+              onPageChange={setPage}
+              onLimitChange={(l) => {
+                setLimit(l)
+                setPage(1)
+              }}
+              columns={columns}
+              loading={loading}
+              onExportCSV={() => exportToCSV(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+              onExportExcel={() => exportToExcel(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+            // onExportPrint={() => exportToPrint(rows, EXPORT_HEADERS, EXPORT_KEYS, 'Búsqueda Avanzada de Operativos')}
+            />
+          </div>
         </>
       )}
 
