@@ -16,6 +16,7 @@ import {
 import { LookupBasico, SiiiLookupsService } from '@/services/parametricas'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type FotosBienCache = { foto: string | null }
@@ -629,6 +630,7 @@ export function SeccionBienesForm({
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
+      <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
