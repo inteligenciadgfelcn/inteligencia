@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 
 import { DatosGeneralesForm } from './secciones/DatosGeneralesForm'
-import { SeccionDrogasFotografiaLogotiposForm } from './secciones/SeccionDrogasFotografiaLogotiposForm'
+import { SeccionDrogasFotografiaLogotiposForm } from './secciones/DrogasFotografiaLogotiposForm'
 import { SustanciasSolidas } from './secciones/SustanciasSolidas'
 import { SustanciasLiquidas } from './secciones/SustanciasLiquidas'
 import { Laboratorio } from './secciones/Laboratorio'
 import { Persona } from './secciones/Persona'
-import { SeccionBienesForm } from './secciones/SeccionBienesForm'
+import { SeccionBienesForm } from './secciones/BienesForm'
 import { Galeria } from './secciones/Galeria'
 import {
   useGestionOperativoForm,

@@ -56,6 +56,7 @@ export class OperativoRepository {
   async buscarPorCaso(idCaso: string): Promise<Operativo[]> {
     return this.operativoRepo.find({
       where: { idCaso },
+      relations: ['unidad', 'planOperacion', 'tipoOperacion', 'tipoDenuncia', 'tipoPenal', 'tipoRelevancia'],
       order: { fechaOperativo: 'DESC' },
     })
   }
@@ -69,6 +70,9 @@ export class OperativoRepository {
       .leftJoinAndSelect('operativo.unidad', 'unidad')
       .leftJoinAndSelect('operativo.planOperacion', 'planOperacion')
       .leftJoinAndSelect('operativo.tipoOperacion', 'tipoOperacion')
+      .leftJoinAndSelect('operativo.tipoDenuncia', 'tipoDenuncia')
+      .leftJoinAndSelect('operativo.tipoPenal', 'tipoPenal')
+      .leftJoinAndSelect('operativo.tipoRelevancia', 'tipoRelevancia')
       .orderBy('operativo.fechaOperativo', 'DESC')
       .getOne()
   }
@@ -97,7 +101,15 @@ export class OperativoRepository {
   async listarDrogasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Droga[], number]> {
     return this.drogaRepo.findAndCount({
       where: { idOperativo },
-      relations: ['estadoDroga', 'estadoDroga.tipoDroga', 'formaTransporte', 'paisProcedencia', 'paisDestino'],
+      relations: [
+        'estadoDroga',
+        'estadoDroga.tipoDroga',
+        'formaTransporte',
+        'paisProcedencia',
+        'paisDestino',
+        'operativo',
+        'operativo.unidad',
+      ],
       order: { fechaHoraIngreso: 'DESC' },
       skip: paginacion.saltar,
       take: paginacion.limite,
