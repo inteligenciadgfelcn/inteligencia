@@ -15,21 +15,21 @@ export class AsignacionesRepository {
 
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
     private readonly asignacionAsigRepository: Repository<AsignacionASIG>
-  ) {}
+  ) { }
 
   async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
     const grupoData = await this.asignacionRepository.manager
       .createQueryBuilder()
       .select([
-        'd.id_distrital as "idDistrital"',
-        'u.id_unidad as "idUnidad"',
+        'd.id as "idDistrital"',
+        'u.id as "idUnidad"',
         'u.abreviatura as "abreviaturaUnidad"',
       ])
       .from('grupo', 'g')
-      .leftJoin('distrital', 'd', 'g.id_distrital = d.id_distrital')
-      .leftJoin('unidad', 'u', 'd.id_unidad = u.id_unidad')
-      .where('g.id_grupo = :idGrupo', { idGrupo: dto.idGrupo })
+      .leftJoin('distrital', 'd', 'g.id_distrital = d.id')
+      .leftJoin('unidad', 'u', 'd.id_unidad = u.id')
+      .where('g.id = :idGrupo', { idGrupo: dto.idGrupo })
       .getRawOne()
 
     if (!grupoData) {
