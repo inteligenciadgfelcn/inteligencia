@@ -105,7 +105,7 @@ export function ModulosDatatable() {
     placeholderData: keepPreviousData,
   })
 
-  const { data: seccionesData } = useQuery({
+  const { data: seccionesData, refetch: refetchSecciones } = useQuery({
     queryKey: ['secciones'],
     queryFn: obtenerSecciones,
   })
@@ -354,7 +354,10 @@ export function ModulosDatatable() {
 
             <button
               className="btn btn-outline-primary btn-sm m-1"
-              onClick={() => refetch()}
+              onClick={() => {
+                refetch()
+                refetchSecciones()
+              }}
             >
               <IconRefresh className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
               Actualizar
@@ -383,6 +386,7 @@ export function ModulosDatatable() {
           onSuccess={() => {
             setOpenForm(false)
             refetch()
+            refetchSecciones()
           }}
         />
       )}
@@ -395,6 +399,7 @@ export function ModulosDatatable() {
           onSuccess={() => {
             setOpenEstado(false)
             refetch()
+            refetchSecciones()
           }}
         />
       )}
