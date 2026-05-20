@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useAlerts } from '@/hooks/useAlerts'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 interface SeccionFormProps {
   titulo: string
@@ -135,6 +136,7 @@ export function Laboratorio({
 
   return (
     <div>
+      <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 mt-5">
         <h4 className="mb-4 text-sm font-semibold">
