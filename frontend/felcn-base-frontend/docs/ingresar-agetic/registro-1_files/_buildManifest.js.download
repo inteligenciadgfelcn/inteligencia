@@ -1,0 +1,46 @@
+self.__BUILD_MANIFEST = {
+  "/404": [
+    "static/chunks/619641f0dfdeb875.js"
+  ],
+  "/_error": [
+    "static/chunks/daa335c471c58290.js"
+  ],
+  "/error": [
+    "static/chunks/24cc088ff8e66174.js"
+  ],
+  "/interaction/[uuid]": [
+    "static/chunks/46f43f88ecfa6225.js"
+  ],
+  "/interaction/[uuid]/lock": [
+    "static/chunks/4c7ad27968fee7b5.js"
+  ],
+  "/interaction/[uuid]/lockcode": [
+    "static/chunks/60aa4f947dec7403.js"
+  ],
+  "/interaction/[uuid]/login": [
+    "static/chunks/26c177437f936bc3.js"
+  ],
+  "/interaction/[uuid]/validate": [
+    "static/chunks/f664e65eae30fcf6.js"
+  ],
+  "/usuarios/desbloquear": [
+    "static/chunks/3c9d0bc23a20b021.js"
+  ],
+  "__rewrites": {
+    "afterFiles": [],
+    "beforeFiles": [],
+    "fallback": []
+  },
+  "sortedPages": [
+    "/404",
+    "/_app",
+    "/_error",
+    "/error",
+    "/interaction/[uuid]",
+    "/interaction/[uuid]/lock",
+    "/interaction/[uuid]/lockcode",
+    "/interaction/[uuid]/login",
+    "/interaction/[uuid]/validate",
+    "/usuarios/desbloquear"
+  ]
+};self.__BUILD_MANIFEST_CB && self.__BUILD_MANIFEST_CB()
