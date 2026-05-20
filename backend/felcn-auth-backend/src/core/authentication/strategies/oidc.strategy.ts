@@ -32,9 +32,13 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
   }
 
   async validate(tokenset: TokenSet): Promise<PassportUser> {
+    console.log('[OIDC-STRATEGY] validate() llamado')
+    console.log('[OIDC-STRATEGY] tokenset.access_token:', tokenset.access_token?.slice(0, 30) + '...')
+    console.log('[OIDC-STRATEGY] tokenset.id_token:', tokenset.id_token?.slice(0, 30) + '...')
     try {
       const userinfo: UserinfoResponse<userInfoType> =
         await this.client.userinfo(tokenset)
+      console.log('[OIDC-STRATEGY] userinfo recibido:', JSON.stringify(userinfo, null, 2))
 
       const ci = <DocumentoIdentidadType>userinfo?.profile?.documento_identidad
       if (!ci) {
@@ -112,6 +116,8 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         exp: tokenset.expires_at,
       }
     } catch (err) {
+      console.error('[OIDC-STRATEGY] ERROR en validate:', err?.message || err)
+      console.error('[OIDC-STRATEGY] ERROR stack:', err?.stack)
       return {
         idToken: tokenset.id_token,
         error: err.message || Messages.EXCEPTION_UNAUTHORIZED,

@@ -115,6 +115,13 @@ export class UsuarioService extends BaseService {
       )
     }
 
+    // [FAKE] Si está configurada la URL interna del fake de Ciudadanía Digital,
+    // activar automáticamente la bandera ciudadaniaDigital en el nuevo usuario.
+    const fakeCiudadaniaUrl = this.configService.get<string>('FAKE_CIUDADANIA_INTERNAL_URL')
+    if (fakeCiudadaniaUrl) {
+      usuarioDto.ciudadaniaDigital = true
+    }
+
     const contrasena = TextService.generateShortRandomText()
     const datosCorreo = {
       correo: usuarioDto.correoElectronico,
@@ -161,6 +168,14 @@ export class UsuarioService extends BaseService {
       const mensaje = `Falló al enviar la contraseña del usuario por correo electrónico`
       this.logger.error(error, mensaje)
     })
+
+    // [FAKE] Dar de alta en el fake de Ciudadanía Digital (fire-and-forget).
+    // Se elimina esta llamada al desacoplar el fake; no afecta el flujo principal.
+    if (fakeCiudadaniaUrl) {
+      this.darDeAltaEnFakeCiudadania(fakeCiudadaniaUrl, usuarioDto, contrasena).catch((err) => {
+        this.logger.warn(`[FAKE] No se pudo registrar en fake-ciudadania-api: ${err.message}`)
+      })
+    }
 
     return crearResult
   }
@@ -1395,5 +1410,47 @@ export class UsuarioService extends BaseService {
 
   async obtenerCodigoTest(idUser: string) {
     return await this.usuarioRepositorio.obtenerCodigoTest(idUser)
+  }
+
+  /**
+   * [FAKE] Registra el usuario recién creado en el fake de Ciudadanía Digital.
+   * Usa fetch nativo (Node 18+). Es fire-and-forget — nunca bloquea el registro.
+   * Al desacoplar el fake se elimina este método y las dos líneas que lo invocan.
+   */
+  private async darDeAltaEnFakeCiudadania(
+    baseUrl: string,
+    dto: CrearUsuarioDto,
+    contrasena: string
+  ): Promise<void> {
+    const fechaNac = dto.persona.fechaNacimiento
+      ? (() => {
+          const d = new Date(dto.persona.fechaNacimiento as Date)
+          const dd = String(d.getUTCDate()).padStart(2, '0')
+          const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+          const yyyy = d.getUTCFullYear()
+          return `${dd}/${mm}/${yyyy}`
+        })()
+      : ''
+
+    const body = {
+      ci: dto.persona.nroDocumento,
+      password: contrasena,
+      email: dto.correoElectronico,
+      nombres: dto.persona.nombres,
+      primerApellido: dto.persona.primerApellido ?? '',
+      segundoApellido: dto.persona.segundoApellido ?? null,
+      fechaNacimiento: fechaNac,
+      celular: dto.telefonoCelular ?? null,
+    }
+
+    const resp = await fetch(`${baseUrl}/internal/usuarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status} ${resp.statusText}`)
+    }
   }
 }
