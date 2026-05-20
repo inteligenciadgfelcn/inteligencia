@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { CruzadasService } from './cruzados.service'
+import { ConsultaAvanzadaQueryDto } from './interfaces/consulta-avanzada-filtro.interface'
 
 /**
  * Controlador CruzadasController
@@ -19,6 +20,23 @@ import { CruzadasService } from './cruzados.service'
 export class CruzadasController extends BaseController {
   constructor(private readonly cruzadasService: CruzadasService) {
     super()
+  }
+
+  /**
+   * Búsqueda avanzada con 42 filtros todos opcionales.
+   * Consulta unificada que reemplaza los 8 botones del formulario SEG-CAS-04.aspx.cs.
+   */
+  @ApiOperation({
+    summary: 'Búsqueda avanzada de operativos (todos los filtros opcionales)',
+    description:
+      'Acepta hasta 42 query params opcionales. Cuando un parámetro no se envía ' +
+      'el filtro correspondiente se ignora. Devuelve operativos con todas sus ' +
+      'subentidades (drogas, personas, bienes, sustancias, laboratorios).',
+  })
+  @Get('avanzado')
+  async avanzado(@Query() filtro: ConsultaAvanzadaQueryDto) {
+    const result = await this.cruzadasService.buscarAvanzado(filtro)
+    return this.successList(result)
   }
 
   /**

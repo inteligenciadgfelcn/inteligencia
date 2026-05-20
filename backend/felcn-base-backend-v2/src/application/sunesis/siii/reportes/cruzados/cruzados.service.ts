@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CruzadasRepository } from './cruzados.repository'
 import { ResultadoCruzada } from './interfaces/cruzada-filtro.interface'
+import { ConsultaAvanzadaQueryDto, ResultadoConsultaAvanzada } from './interfaces/consulta-avanzada-filtro.interface'
 
 /**
  * Servicio CruzadasService
@@ -49,6 +50,11 @@ export class CruzadasService {
     apellidoEsposo: string,
   ): Promise<ResultadoCruzada[]> {
     return this.cruzadasRepository.buscarPorAprehendido(nombres, apellidoPaterno, apellidoMaterno, apellidoEsposo)
+  }
+
+  /** Búsqueda avanzada con 42 filtros todos opcionales. */
+  buscarAvanzado(filtro: ConsultaAvanzadaQueryDto): Promise<ResultadoConsultaAvanzada[]> {
+    return this.cruzadasRepository.buscarAvanzado(filtro)
   }
 
   /** Operativos que contienen un arrestado con el nombre indicado. */
