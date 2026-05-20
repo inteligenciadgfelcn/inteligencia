@@ -559,6 +559,44 @@ function generateMapaCalorSrcDoc(coordenadas: CoordenadaOp[]) {
   `
 }
 
+// ─── Exportación KML ──────────────────────────────────────────────────────────
+
+function generarKML(coordenadas: CoordenadaOp[]): string {
+  const validas = coordenadas.filter(
+    c => c.coordX != null && c.coordY != null &&
+      !isNaN(parseFloat(String(c.coordX))) &&
+      !isNaN(parseFloat(String(c.coordY)))
+  )
+
+  const placemarks = validas.map(c => `
+    <Placemark>
+      <name>Caso: ${c.numeroCaso}</name>
+      <description>Operativo: ${c.numeroOperativo}</description>
+      <Point>
+        <coordinates>${parseFloat(String(c.coordY))},${parseFloat(String(c.coordX))},0</coordinates>
+      </Point>
+    </Placemark>`).join('')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Operativos FELCN</name>
+    <description>Exportación de coordenadas GPS de operativos</description>${placemarks}
+  </Document>
+</kml>`
+}
+
+function descargarKML(coordenadas: CoordenadaOp[]) {
+  const contenido = generarKML(coordenadas)
+  const blob = new Blob([contenido], { type: 'application/vnd.google-earth.kml+xml' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `operativos_felcn_${new Date().toISOString().slice(0, 10)}.kml`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 
 function CardSkeleton() {
@@ -978,6 +1016,24 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-600">ESC para cerrar</span>
+                {validas.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => descargarKML(coordenadas)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+                      text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200
+                      hover:bg-green-50 dark:hover:bg-green-900/20 border border-green-300 dark:border-green-700
+                      transition-colors"
+                    title="Descargar coordenadas en formato KML (Google Earth)"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" x2="12" y1="15" y2="3"></line>
+                    </svg>
+                    Descargar KML
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setActiveMapModal(null)}
