@@ -65,8 +65,8 @@ export const useSession = () => {
   }
 
   const borrarCookiesSesion = () => {
-    eliminarCookie('token') // Eliminando access_token
-    eliminarCookie('jid') // Eliminando refresh token
+    eliminarCookie('token')
+    // jid es httpOnly — solo el backend puede eliminarlo vía Set-Cookie
   }
 
   const cerrarSesion = async () => {
@@ -94,7 +94,7 @@ export const useSession = () => {
       }
     } catch (e) {
       imprimir(`Error al cerrar sesión: `, e)
-      window.location.reload()
+      window.location.href = '/login'
     } finally {
       sesionCerrando = false
       ocultarFullScreen()
