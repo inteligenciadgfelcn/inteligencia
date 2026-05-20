@@ -11,6 +11,8 @@ import type {
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Icono } from '@/components/Icono'
 import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
+import { MapaFullModal } from '../../components/MapaFullModal'
+import { PanelCoordenadas } from '../../components/PanelCoordenadas'
 
 // ─── Etiquetas de filtro ──────────────────────────────────────────────────────
 
@@ -22,7 +24,7 @@ const ETIQUETAS_FILTRO: Record<string, string> = {
   relevancia: 'Por Tipo de Relevancia',
 }
 
-const OPCIONES_LIMITE = [10, 25, 50, 100] as const
+const OPCIONES_LIMITE = [10, 20, 30, 50] as const
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -354,211 +356,6 @@ function PanelResumen({ resumen, fabricas }: { resumen: ResumenEstadistico; fabr
   )
 }
 
-// ─── Sección: Coordenadas ─────────────────────────────────────────────────────
-
-function PanelCoordenadas({ coordenadas }: { coordenadas: CoordenadaOp[] }) {
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
-
-  if (coordenadas.length === 0)
-    return <p className="text-xs text-gray-400 dark:text-gray-600 italic py-2">Sin coordenadas GPS registradas</p>
-
-  const totalPages = Math.max(1, Math.ceil(coordenadas.length / limit))
-  const safePage = Math.min(page, totalPages)
-  const pagedCoords = coordenadas.slice((safePage - 1) * limit, safePage * limit)
-
-  const columns: Column<CoordenadaOp>[] = useMemo(() => [
-    {
-      accessor: 'numeroCaso',
-      title: 'Nro. Caso',
-      render: (row) => <span className="badge badge-outline-primary text-xs font-semibold">{row.numeroCaso || '—'}</span>
-    },
-    {
-      accessor: 'numeroOperativo',
-      title: 'Nro. Operativo',
-      render: (row) => <span className="text-gray-700 dark:text-gray-300 font-medium">{row.numeroOperativo || '—'}</span>
-    },
-    {
-      accessor: 'coordenadas',
-      title: 'Coordenadas (Lat, Lng)',
-      render: (row) => <span className="font-mono text-xs text-gray-600 dark:text-gray-400">{row.coordX}, {row.coordY}</span>
-    },
-    {
-      accessor: 'ver',
-      title: 'Acciones',
-      className: 'text-right',
-      render: (row) => (
-        <a
-          href={`https://maps.google.com/?q=${row.coordX},${row.coordY}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline text-xs font-bold"
-        >
-          📍 Ver ubicación
-        </a>
-      )
-    }
-  ], [])
-
-  return (
-    <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
-      <VristoDataTable<CoordenadaOp>
-        rows={pagedCoords}
-        total={coordenadas.length}
-        page={safePage}
-        limit={limit}
-        onPageChange={setPage}
-        onLimitChange={(l) => {
-          setLimit(l)
-          setPage(1)
-        }}
-        columns={columns}
-      />
-    </div>
-  )
-}
-
-// ─── Generación de Documentos HTML para Leaflet ────────────────────────────────
-
-function generateMapaOperativosSrcDoc(coordenadas: CoordenadaOp[]) {
-  const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
-  const markersJson = JSON.stringify(
-    coordFiltradas.map(c => ({
-      lat: parseFloat(String(c.coordX)),
-      lng: parseFloat(String(c.coordY)),
-      caso: c.numeroCaso,
-      operativo: c.numeroOperativo,
-    }))
-  )
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-      <style>
-        html, body, #map { height: 100%; margin: 0; padding: 0; }
-        .custom-popup .leaflet-popup-content-wrapper {
-          background: #0f172a;
-          color: #f8fafc;
-          border-radius: 8px;
-          font-family: 'Nunito', sans-serif;
-          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-        .custom-popup .leaflet-popup-tip {
-          background: #0f172a;
-        }
-        .leaflet-tooltip-own {
-          background: #0f172a !important;
-          color: #f8fafc !important;
-          border: 1px solid #3b82f6 !important;
-          border-radius: 6px !important;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;
-          font-family: 'Nunito', sans-serif !important;
-          padding: 4px 8px !important;
-        }
-        .leaflet-tooltip-own::before {
-          border-top-color: #3b82f6 !important;
-        }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        const markersData = ${markersJson};
-        const map = L.map('map').setView([0, 0], 2);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        }).addTo(map);
-
-        if (markersData.length > 0) {
-          const bounds = [];
-          markersData.forEach(m => {
-            const marker = L.marker([m.lat, m.lng]).addTo(map);
-            
-            // Tooltip que se muestra al pasar el puntero (hover)
-            marker.bindTooltip(\`
-              <div style="font-size: 11px; line-height: 1.3;">
-                <strong style="color: #38bdf8; font-weight: 700;">Caso: \${m.caso}</strong><br/>
-                <span style="color: #cbd5e1; font-weight: 500;">Op: \${m.operativo}</span>
-              </div>
-            \`, {
-              direction: 'top',
-              className: 'leaflet-tooltip-own',
-              opacity: 0.95
-            });
-
-            // Popup al hacer clic
-            marker.bindPopup(\`
-              <div class="custom-popup" style="font-size: 12px; line-height: 1.4;">
-                <strong style="color: #38bdf8; font-size: 13px;">Caso: \${m.caso}</strong><br/>
-                <span style="color: #cbd5e1;">Operativo: \${m.operativo}</span><br/>
-                <span style="color: #94a3b8; font-family: monospace; font-size: 10px;">Coordenadas: \${m.lat}, \${m.lng}</span>
-              </div>
-            \`);
-            bounds.push([m.lat, m.lng]);
-          });
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
-      </script>
-    </body>
-    </html>
-  `
-}
-
-function generateMapaCalorSrcDoc(coordenadas: CoordenadaOp[]) {
-  const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
-  const pointsJson = JSON.stringify(
-    coordFiltradas.map(c => [parseFloat(String(c.coordX)), parseFloat(String(c.coordY)), 1.0])
-  )
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-      <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-      <style>
-        html, body, #map { height: 100%; margin: 0; padding: 0; }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <script>
-        const pointsData = ${pointsJson};
-        const map = L.map('map').setView([0, 0], 2);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        }).addTo(map);
-
-        if (pointsData.length > 0) {
-          const heat = L.heatLayer(pointsData, {
-            radius: 35,
-            blur: 20,
-            maxZoom: 10,
-            max: 1.0,
-            gradient: {
-              0.4: 'blue',
-              0.6: 'cyan',
-              0.7: 'lime',
-              0.8: 'yellow',
-              1.0: 'red'
-            }
-          }).addTo(map);
-          
-          const bounds = pointsData.map(p => [p[0], p[1]]);
-          map.fitBounds(bounds, { padding: [50, 50] });
-        }
-      </script>
-    </body>
-    </html>
-  `
-}
-
 // ─── Skeletons ────────────────────────────────────────────────────────────────
 
 function CardSkeleton() {
@@ -596,7 +393,7 @@ type Vista = 'tabla' | 'tarjetas'
 export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosCuadrosProps) {
   const [vista, setVista] = useState<Vista>('tabla')
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(25)
+  const [limit, setLimit] = useState(10)
   const [activeTab, setActiveTab] = useState<'resultados' | 'resumen' | 'ubicacion'>('resultados')
   const [activeMapModal, setActiveMapModal] = useState<'mapa' | 'calor' | null>(null)
 
@@ -948,65 +745,13 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
       </div>
 
       {/* ── Modal pantalla completa ──────────────────────────────────────── */}
-      {activeMapModal && (() => {
-        const coordenadas = datos?.coordenadas ?? []
-        const validas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
-        return (
-          <div className="fixed inset-0 z-[99999] bg-white dark:bg-[#0e1726] flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-3 border-b border-[#e0e6ed] dark:border-[#1b2e4b] bg-gray-50 dark:bg-[#0c1528]/90 shrink-0">
-              <div className="flex items-center gap-2 min-w-0">
-                {activeMapModal === 'mapa' ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-primary">
-                    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
-                    <line x1="9" x2="9" y1="3" y2="18"></line>
-                    <line x1="15" x2="15" y1="6" y2="21"></line>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#805dca]">
-                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
-                  </svg>
-                )}
-                <h3 className="text-sm font-bold text-[#3e5f8a] dark:text-[#5a7ba8] truncate">
-                  {activeMapModal === 'mapa'
-                    ? 'Mapa de Distribución Geográfica de Operativos'
-                    : 'Mapa de Calor y Densidad de Operativos'}
-                </h3>
-                <span className="badge badge-outline-primary text-xs shrink-0">
-                  {validas.length} punto{validas.length !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-600">ESC para cerrar</span>
-                <button
-                  type="button"
-                  onClick={() => setActiveMapModal(null)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
-                    text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white
-                    hover:bg-gray-100 dark:hover:bg-[#1b2e4b] transition-colors"
-                  title="Cerrar (ESC)"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Cerrar
-                </button>
-              </div>
-            </div>
-
-            {/* Mapa de borde a borde */}
-            <div className="flex-1 min-h-0">
-              <iframe
-                srcDoc={activeMapModal === 'mapa'
-                  ? generateMapaOperativosSrcDoc(coordenadas)
-                  : generateMapaCalorSrcDoc(coordenadas)}
-                title={activeMapModal === 'mapa' ? 'Mapa de Operativos' : 'Mapa de Calor'}
-                className="w-full h-full border-0"
-              />
-            </div>
-          </div>
-        )
-      })()}
+      {activeMapModal && (
+        <MapaFullModal
+          tipo={activeMapModal}
+          coordenadas={datos?.coordenadas ?? []}
+          onClose={() => setActiveMapModal(null)}
+        />
+      )}
     </div>
   )
 }

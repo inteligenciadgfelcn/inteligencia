@@ -84,10 +84,10 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
   const unidadValida = row.ubicacionInstitucional?.replace(/-/g, '').trim()
 
   return (
-    <div className="rounded-lg border border-[#e0e6ed] dark:border-[#1b2e4b] bg-white dark:bg-[#1a2941] shadow-sm overflow-hidden">
+    <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b] shadow-none bg-white dark:bg-[#191e3a]">
 
       {/* ── Cabecera ──────────────────────────────────────────────────────── */}
-      <div className="px-3 py-2.5 bg-gradient-to-r from-gray-50 to-transparent dark:from-[#1b2e4b]/50 dark:to-transparent">
+      <div className="px-3 py-2.5 bg-gradient-to-r from-gray-50/50 to-transparent dark:from-black/10 dark:to-transparent">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {/* Nro. Operativo + Nro. Caso */}

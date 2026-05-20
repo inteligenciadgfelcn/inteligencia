@@ -138,7 +138,8 @@ export class AuthenticationController extends BaseController {
     @Res() res: Response,
     mensaje = ''
   ) {
-    const jid = req.cookies.jid || ''
+    const refreshTokenName = this.configService.get('REFRESH_TOKEN_NAME') || 'jid'
+    const jid = req.cookies[refreshTokenName] || ''
     if (jid) {
       await this.refreshTokensService.removeByid(jid)
     }
@@ -149,7 +150,7 @@ export class AuthenticationController extends BaseController {
     // req.logout();
     req.session.destroy(() => ({}))
     res.clearCookie('connect.sid')
-    res.clearCookie('jid', jid)
+    res.clearCookie(refreshTokenName, { path: this.configService.get('REFRESH_TOKEN_PATH') || '/' })
 
     let idUsuario: string | null = null
     try {
@@ -168,7 +169,7 @@ export class AuthenticationController extends BaseController {
 
     // Ciudadanía v2: solo si el usuario entró por OIDC
     if (!idToken) {
-      return res.status(200).json()
+      return res.status(200).json({})
     }
 
     const issuer = await Issuer.discover(

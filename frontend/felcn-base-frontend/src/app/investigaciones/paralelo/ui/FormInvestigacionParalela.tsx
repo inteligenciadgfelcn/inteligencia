@@ -16,6 +16,7 @@ import type { InvestigacionParalelaPayload } from '@/services/investigacion/Inve
 import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import dayjs from 'dayjs'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 const schema = z.object({
   delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
@@ -92,6 +93,7 @@ export const FormInvestigacionParalela = ({
 
   return (
     <div className="space-y-4">
+      <LoadingDialog show={loading} />
       <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button

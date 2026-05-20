@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { ResultadoCruzada } from '@/services/reportes/cruzadas/CruzadasService'
+import type { ResultadoCruzada } from '@/services/reportes/CruzadosService'
 import { OperativoCard } from './OperativoCard'
 import { TablaPlana } from './TablaPlana'
 import IconFile from '@/components/Icon/IconFile'
@@ -19,7 +19,7 @@ const ETIQUETAS_FILTRO: Record<string, string> = {
   arrestado: 'Por Arrestado',
 }
 
-const OPCIONES_LIMITE = [10, 25, 50, 100] as const
+const OPCIONES_LIMITE = [10, 20, 30, 50] as const
 
 interface TablaCruzadasProps {
   rows: ResultadoCruzada[]
@@ -181,7 +181,7 @@ type Vista = 'tabla' | 'tarjetas'
 export function TablaCruzadas({ rows, loading, filtroActivo }: TablaCruzadasProps) {
   const [vista, setVista] = useState<Vista>('tabla')
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(25)
+  const [limit, setLimit] = useState(10)
 
   // Resetea la paginación al recibir nuevos resultados o cambiar de vista
   useEffect(() => { setPage(1) }, [rows])
@@ -219,7 +219,7 @@ export function TablaCruzadas({ rows, loading, filtroActivo }: TablaCruzadasProp
         </div>
 
         {/* Botones de exportación */}
-        {hayResultados && (
+        {hayResultados && vista === 'tarjetas' && (
           <div className="flex items-center gap-1 mr-2">
             <button
               type="button"
@@ -365,16 +365,20 @@ export function TablaCruzadas({ rows, loading, filtroActivo }: TablaCruzadasProp
 
       {/* ── Tab 1: Tabla con pills inline (paginada) ─────────────────────── */}
       {hayResultados && vista === 'tabla' && (
-        <>
-          <TablaPlana rows={pagedRows} />
-          <PaginacionBar
+        <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
+          <TablaPlana
+            rows={pagedRows}
             total={rows.length}
             page={safeePage}
             limit={limit}
-            onPage={setPage}
-            onLimit={setLimit}
+            onPageChange={setPage}
+            onLimitChange={(l) => {
+              setLimit(l)
+              setPage(1)
+            }}
+            loading={loading}
           />
-        </>
+        </div>
       )}
 
       {/* ── Tab 2: Grilla de tarjetas (paginada) ─────────────────────────── */}

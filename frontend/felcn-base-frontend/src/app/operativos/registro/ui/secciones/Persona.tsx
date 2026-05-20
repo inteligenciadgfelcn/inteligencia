@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useAlerts } from '@/hooks/useAlerts'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
 type Opcion = { id: string; label: string }
@@ -475,6 +476,7 @@ export function Persona({ titulo, idoperativo }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div>
+      <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
