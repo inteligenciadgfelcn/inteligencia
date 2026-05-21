@@ -4,8 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import type {
   RespuestaCuadro,
   FilaCuadro,
-  ResumenEstadistico,
-  ResumenFabrica,
   CoordenadaOp,
 } from '@/services/reportes/CuadrosService'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
@@ -13,6 +11,7 @@ import { Icono } from '@/components/Icono'
 import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
 import { MapaFullModal } from '../../components/MapaFullModal'
 import { PanelCoordenadas } from '../../components/PanelCoordenadas'
+import { PanelResumen } from '../../components/PanelResumen'
 
 // ─── Etiquetas de filtro ──────────────────────────────────────────────────────
 
@@ -220,138 +219,6 @@ function PaginacionBar({ total, page, limit, onPage, onLimit }: {
       >
         {OPCIONES_LIMITE.map(l => <option key={l} value={l}>{l} / pág.</option>)}
       </select>
-    </div>
-  )
-}
-
-// ─── Sección: Resumen Estadístico ─────────────────────────────────────────────
-
-function SectionHeader({ title, count }: { title: string; count?: number }) {
-  return (
-    <div className="flex items-center gap-2 mb-3">
-      <div className="h-px flex-1 bg-[#e0e6ed] dark:bg-[#1b2e4b]" />
-      <span className="text-xs font-bold uppercase tracking-wide text-[#3e5f8a] dark:text-[#5a7ba8] px-2 whitespace-nowrap">
-        {title}{count !== undefined ? ` (${count})` : ''}
-      </span>
-      <div className="h-px flex-1 bg-[#e0e6ed] dark:bg-[#1b2e4b]" />
-    </div>
-  )
-}
-
-function PanelResumen({ resumen, fabricas }: { resumen: ResumenEstadistico; fabricas: ResumenFabrica[] }) {
-  return (
-    <div className="space-y-4">
-      <table className="w-full text-xs border-collapse rounded-lg overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 text-left text-white bg-[#3e5f8a] border border-[#2d4a6f] font-semibold w-1/2">Descripción</th>
-            <th className="px-4 py-2 text-left text-white bg-[#3e5f8a] border border-[#2d4a6f] font-semibold">Cantidad</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Clorhidrato de Cocaína</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.clorhidratoCocaina} Gramos</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Pasta Base de Cocaína</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.cocainaBasePasta} Gramos</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Agua Rica a Cocaína Base</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.drogasLiquidasLitros} Litros = {resumen.drogasLiquidasGramos} Gramos</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Cocaína Líquida a Clorhidrato</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.cocainaLiquidaLitros} Litros = {resumen.cocainaLiquidaGramos} Gramos</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Marihuana</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.marihuanaGramos} Gramos</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Marihuana Líquida</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.marihuanaLitros} Litros</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300 align-top">Estupefacientes y Psicotrópicos</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">
-              {resumen.otrasDrogas.length > 0 ? (
-                <table className="w-full text-xs border-collapse rounded overflow-hidden">
-                  <thead>
-                    <tr>
-                      {['Tipo Droga', 'Cantidad', 'Unidad de Medida', 'Estado de la Droga'].map(h => (
-                        <th key={h} className="px-3 py-1.5 text-left text-white bg-[#5a7ba8] border border-[#4a6a98] font-medium">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resumen.otrasDrogas.map((d, i) => (
-                      <tr key={i} className="bg-white dark:bg-[#0c1528]">
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-700 dark:text-gray-300">{d.descripcionTipo}</td>
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{d.cantidad}</td>
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{d.medida}</td>
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{d.descripcionEstado}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <span className="text-gray-400 italic">Sin registros</span>
-              )}
-            </td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Sustancias Químicas Sólidas</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.sustanciasSolidasKg} Kilos</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Sustancias Sólidas a Determinar</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.sustanciasSolidasSinDet} Kilos</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Sustancias Químicas Líquidas</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.sustanciasLiquidasLt} Litros</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Sustancias Líquidas a Determinar</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.sustanciasLiquidasSinDet} Litros</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300 align-top">Laboratorios - Fábricas</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">
-              {fabricas.length > 0 ? (
-                <table className="w-full max-w-md text-xs border-collapse rounded overflow-hidden">
-                  <thead>
-                    <tr>
-                      <th className="px-3 py-1.5 text-left text-white bg-[#5a7ba8] border border-[#4a6a98] font-medium">Fab./Poz</th>
-                      <th className="px-3 py-1.5 text-center text-white bg-[#5a7ba8] border border-[#4a6a98] font-medium w-24">Cantidad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {fabricas.map((f, i) => (
-                      <tr key={f.idTipoFabrica} className="bg-white dark:bg-[#0c1528]">
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-700 dark:text-gray-300">{f.descripcion}</td>
-                        <td className="px-3 py-1.5 border border-[#e0e6ed] dark:border-[#1b2e4b] text-center font-bold text-gray-700 dark:text-gray-300">{f.totalCantidad}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <span className="text-gray-400 italic">Sin registros</span>
-              )}
-            </td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Aprehendido(s)</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.totalAprehendidos}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-[#0c1528]/40">
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] font-medium text-gray-700 dark:text-gray-300">Arrestado(s)</td>
-            <td className="px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b] text-gray-600 dark:text-gray-400">{resumen.totalArrestados}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   )
 }
@@ -722,7 +589,7 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
           <div className="panel">
             <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
               <Icono className="w-4 h-4 text-gray-500">analytics</Icono>
-              <h2 className="text-sm font-semibold text-dark dark:text-white-light">Resumen Estadístico (Total Secuestrado)</h2>
+              <h2 className="text-sm font-semibold text-dark dark:text-white">Resumen Estadístico (Total Secuestrado)</h2>
             </div>
             <PanelResumen resumen={datos.resumen} fabricas={datos.fabricas ?? []} />
           </div>

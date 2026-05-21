@@ -5,97 +5,19 @@ import { useAlerts } from '@/hooks/useAlerts'
 import {
   CruzadosAllService,
   extraerFilasAvanzadas,
+  extraerResumen,
+  extraerFabricas,
   type ResultadoAvanzado,
   type FiltrosAvanzadosParams,
+  type ResumenEstadistico,
+  type ResumenFabrica,
 } from '@/services/reportes/CruzadosAllService'
 import { FiltrosAvanzados } from './FiltrosAvanzados'
 import { TablaAvanzada } from './TablaAvanzada'
 import { Icono } from '@/components/Icono'
 import { PanelCoordenadas } from '../../components/PanelCoordenadas'
+import { PanelResumen } from '../../components/PanelResumen'
 import type { CoordenadaOp } from '@/services/reportes/CuadrosService'
-
-// ─── Resumen calculado desde filas avanzadas ──────────────────────────────────
-
-function ResumenAvanzado({ rows }: { rows: ResultadoAvanzado[] }) {
-  const resumen = useMemo(() => {
-    const porRelevancia: Record<string, number> = {}
-    let costoTotal = 0
-    let conAprehendidos = 0
-    let conArrestados = 0
-    let positivos = 0
-    let icia = 0
-
-    for (const r of rows) {
-      const rel = r.tipoRelevancia || 'Sin relevancia'
-      porRelevancia[rel] = (porRelevancia[rel] ?? 0) + 1
-      if (r.esAprehendido) conAprehendidos++
-      if (r.esArrestado) conArrestados++
-      if (r.esPositivo) positivos++
-      if (r.esIcia) icia++
-      const costo = parseFloat((r.totalCosto ?? '').replace(/,/g, '')) || 0
-      costoTotal += costo
-    }
-
-    return { porRelevancia, costoTotal, conAprehendidos, conArrestados, positivos, icia }
-  }, [rows])
-
-  const tdBase = 'px-4 py-2 border border-[#e0e6ed] dark:border-[#1b2e4b]'
-  const tdLabel = `${tdBase} font-medium text-gray-700 dark:text-gray-300`
-  const tdVal = `${tdBase} text-gray-600 dark:text-gray-400`
-  const trAlt = 'bg-gray-50 dark:bg-[#0c1528]/40'
-
-  return (
-    <div className="space-y-6">
-      <table className="w-full text-xs border-collapse rounded-lg overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 text-left text-white bg-[#3e5f8a] border border-[#2d4a6f] font-semibold w-1/2">Descripción</th>
-            <th className="px-4 py-2 text-left text-white bg-[#3e5f8a] border border-[#2d4a6f] font-semibold">Cantidad</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className="bg-white dark:bg-transparent">
-            <td className={tdLabel}>Total de Operativos</td>
-            <td className={tdVal}>{rows.length}</td>
-          </tr>
-          <tr className={trAlt}>
-            <td className={tdLabel}>Con Aprehendidos</td>
-            <td className={tdVal}>{resumen.conAprehendidos}</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className={tdLabel}>Con Arrestados</td>
-            <td className={tdVal}>{resumen.conArrestados}</td>
-          </tr>
-          <tr className={trAlt}>
-            <td className={tdLabel}>Positivos</td>
-            <td className={tdVal}>{resumen.positivos}</td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className={tdLabel}>ICIA</td>
-            <td className={tdVal}>{resumen.icia}</td>
-          </tr>
-          <tr className={trAlt}>
-            <td className={tdLabel}>Costo Total Acumulado (Bs)</td>
-            <td className={`${tdVal} font-semibold text-green-700 dark:text-green-400`}>
-              {resumen.costoTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </td>
-          </tr>
-          <tr className="bg-white dark:bg-transparent">
-            <td className={tdLabel} style={{ verticalAlign: 'top' }}>Por Tipo de Relevancia</td>
-            <td className={tdVal}>
-              {Object.entries(resumen.porRelevancia).map(([rel, cnt]) => (
-                <div key={rel} className="flex justify-between gap-4 py-0.5">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">{rel}</span>
-                  <span className="font-bold">{cnt}</span>
-                </div>
-              ))}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  )
-}
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -104,6 +26,8 @@ type Tab = 'resultados' | 'resumen' | 'coordenadas'
 export default function CruzadosAllPage() {
   const { Alerta } = useAlerts()
   const [rows, setRows]         = useState<ResultadoAvanzado[]>([])
+  const [resumen, setResumen]   = useState<ResumenEstadistico | null>(null)
+  const [fabricas, setFabricas] = useState<ResumenFabrica[]>([])
   const [cargando, setCargando] = useState(false)
   const [buscado, setBuscado]   = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('resultados')
@@ -128,9 +52,13 @@ export default function CruzadosAllPage() {
     try {
       const res = await CruzadosAllService.avanzado(filtros)
       setRows(extraerFilasAvanzadas(res))
+      setResumen(extraerResumen(res))
+      setFabricas(extraerFabricas(res))
     } catch {
       Alerta({ mensaje: 'Error al realizar la búsqueda. Intente nuevamente.', variant: 'error' })
       setRows([])
+      setResumen(null)
+      setFabricas([])
     } finally {
       setCargando(false)
     }
@@ -138,6 +66,8 @@ export default function CruzadosAllPage() {
 
   const handleLimpiar = () => {
     setRows([])
+    setResumen(null)
+    setFabricas([])
     setBuscado(false)
     setActiveTab('resultados')
   }
@@ -220,14 +150,14 @@ export default function CruzadosAllPage() {
         )}
 
         {/* ── Tab: Resumen Estadístico ──────────────────────────────────────── */}
-        {activeTab === 'resumen' && hayResultados && (
+        {activeTab === 'resumen' && hayResultados && resumen && (
           <div>
             <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
               <Icono className="w-4 h-4 text-gray-500">analytics</Icono>
-              <h2 className="text-sm font-semibold text-dark dark:text-white-light">Resumen Estadístico</h2>
+              <h2 className="text-sm font-semibold text-dark dark:text-white-light">Resumen Estadístico (Total Secuestrado)</h2>
               <span className="badge badge-outline-info text-xs ml-auto">{rows.length} operativos</span>
             </div>
-            <ResumenAvanzado rows={rows} />
+            <PanelResumen resumen={resumen} fabricas={fabricas} />
           </div>
         )}
 
