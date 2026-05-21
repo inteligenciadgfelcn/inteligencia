@@ -106,7 +106,7 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
             <button
               type="button"
               className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
-              onClick={() => row.numeroOperativo && window.open(`${Constantes.baseUrl}/reportes/general/${encodeURIComponent(row.numeroOperativo)}/pdf`, '_blank')}
+              onClick={() => row.numeroOperativo && window.open(`${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`, '_blank')}
               title="Imprimir Reporte General"
             >
               <IconPrinter className="h-4 w-4" />
