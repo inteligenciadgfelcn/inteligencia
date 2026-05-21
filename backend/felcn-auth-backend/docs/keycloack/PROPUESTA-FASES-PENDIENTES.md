@@ -187,7 +187,7 @@ npm install passport-jwt  # ya instalado
 
 ### Objetivo
 
-Implementar 2FA obligatorio/opcional con envío de código OTP por **email** y/o **SMS** usando el servicio Mensajería (`MSJ_URL`) ya integrado en el proyecto.
+Implementar 2FA obligatorio/opcional con envío de código OTP por **email** usando `MensajeriaService` (SMTP via nodemailer) ya integrado en el proyecto, y por **WhatsApp** (Meta Cloud API, pendiente de credenciales WABA de FELCN).
 
 ### Estrategia
 
@@ -201,7 +201,7 @@ keycloak/providers/
     ├── pom.xml
     └── src/main/java/bo/gob/felcn/keycloak/
         ├── SmsOtpAuthenticator.java
-        │   └── → POST {MSJ_URL} con OTP generado
+        │   └── → MensajeriaService.sendEmail() con OTP generado
         ├── EmailOtpAuthenticator.java
         └── FelcnOtpAuthenticatorFactory.java
 ```
@@ -253,7 +253,7 @@ dos-fa/
 1. POST /auth  → credenciales válidas → si 2FA habilitado:
    ├── Generar OTP (6 dígitos)
    ├── Guardar hash(OTP) + expiración en Redis/DB
-   ├── Enviar por email Y/O SMS via MSJ_URL
+   ├── Enviar por email via MensajeriaService (SMTP) y/o WhatsApp via WhatsappService
    └── Retornar: { requires2FA: true, tempToken: "...", method: "SMS" }
 
 2. POST /auth/verificar-2fa  → { tempToken, otp }
