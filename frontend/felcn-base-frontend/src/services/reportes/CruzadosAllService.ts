@@ -1,5 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
+import type { ResumenEstadistico, ResumenFabrica } from './CuadrosService'
 
 const BASE = `${Constantes.baseUrl}/reportes/cruzadas`
 
@@ -95,12 +96,25 @@ export interface FiltrosAvanzadosParams {
 export interface RespuestaAvanzada {
   finalizado: boolean
   mensaje?: string
-  datos: ResultadoAvanzado[] | { filas: ResultadoAvanzado[]; total: number }
+  datos: {
+    filas: ResultadoAvanzado[]
+    resumen: ResumenEstadistico
+    fabricas: ResumenFabrica[]
+  }
 }
 
+export { type ResumenEstadistico, type ResumenFabrica }
+
 export function extraerFilasAvanzadas(res: RespuestaAvanzada): ResultadoAvanzado[] {
-  if (Array.isArray(res.datos)) return res.datos
-  return (res.datos as { filas: ResultadoAvanzado[] }).filas ?? []
+  return res.datos.filas ?? []
+}
+
+export function extraerResumen(res: RespuestaAvanzada): ResumenEstadistico | null {
+  return res.datos.resumen ?? null
+}
+
+export function extraerFabricas(res: RespuestaAvanzada): ResumenFabrica[] {
+  return res.datos.fabricas ?? []
 }
 
 export const CruzadosAllService = {
