@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Identidad Digital — Iniciar sesión</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{{publicBase}}/public/qrcode.min.js"></script>
+    <style>:root{--font-sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace;}</style>
     <style>
         /* ── Design tokens ── */
         :root {
@@ -741,8 +739,8 @@
     <!-- ── Topbar ── -->
     <header class="topbar">
         <div class="topbar-brand">
-            <img src="/public/img/logo-only-dark.svg" alt="" width="32" height="32">
-            <img src="/public/img/texto-logo-dark.svg" alt="Ciudadanía Digital" height="28" style="max-width:130px;object-fit:contain;">
+            <img src="{{publicBase}}/public/img/logo-only-dark.svg" alt="" width="32" height="32">
+            <img src="{{publicBase}}/public/img/texto-logo-dark.svg" alt="Ciudadanía Digital" height="28" style="max-width:130px;object-fit:contain;">
         </div>
         <div class="topbar-actions">
             <div class="lang-pill">
@@ -981,7 +979,7 @@
 
     <!-- ── Footer ── -->
     <footer class="footer">
-        <img src="/public/img/logo-estado.svg" alt="Estado Plurinacional de Bolivia" width="40" height="40">
+        <img src="{{publicBase}}/public/img/logo-estado.svg" alt="Estado Plurinacional de Bolivia" width="40" height="40">
         <span class="footer-text">AGETIC {{year}}</span>
     </footer>
 
