@@ -12,6 +12,11 @@
       {
         "include": "**/*.csv",
         "outDir": "dist/src"
+      },
+      {
+        "include": "**/assets/**/*.png",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ]
   }

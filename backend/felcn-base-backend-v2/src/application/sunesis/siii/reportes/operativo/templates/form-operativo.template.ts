@@ -2,6 +2,7 @@ import { ReportTemplate } from '../../interfaces/reporte-template.interface'
 import { PDFOptions } from 'puppeteer'
 import { OperativoService } from '../../../operativo/service/operativo.service'
 import { PaginacionQueryDto } from '@/common/dto'
+import { getLogoBase64 } from '../../report-logo.util'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sharp = require('sharp')
 
@@ -535,7 +536,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
 <body>
     <div class="document-container">
         <div class="header">
-            <img src="data:image/png;base64,${process.env.LOGO_REPORT}" width="100" height="100" style="object-fit: contain;" />
+            <img src="data:image/png;base64,${getLogoBase64()}" width="100" height="100" style="object-fit: contain;" />
             <div class="header-content">
                 <p style="font-size: 16px;"><strong>FORMULARIO UNICO DE REGISTRO DE OPERATIVOS ANTINARCOTICOS</strong></p>
                 <p><strong>Nombre del Caso:</strong> ${caso.nombreCaso || 'N/A'}</p>
