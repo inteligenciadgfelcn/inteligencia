@@ -716,12 +716,12 @@ export class UsuarioService extends BaseService {
       contrasena
     )
 
-    const result = await this.mensajeriaService.sendEmail(
+    await this.mensajeriaService.sendEmail(
       datosCorreo.correo,
       datosCorreo.asunto,
       template
     )
-    return result.finalizado
+    return true
   }
 
   verificarPermisos(usuarioAuditoria: string, id: string) {
