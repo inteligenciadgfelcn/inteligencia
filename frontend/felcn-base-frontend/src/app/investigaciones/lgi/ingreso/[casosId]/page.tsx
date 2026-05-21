@@ -1,6 +1,5 @@
 'use client'
 
-import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/components/ui/Button'
@@ -14,14 +13,14 @@ interface PageProps {
 }
 
 export default function LgiIng1Page({ params }: PageProps) {
-  const { casosId } = use(params)
+  const { casosId } = params as unknown as { casosId: string }
   const router = useRouter()
 
   const { data, isLoading } = useQuery({
     queryKey: ['lgi-caso-ingreso', casosId],
     queryFn: () => LgiService.buscarMisCasos({ pagina: 1, limite: 1 }),
     enabled: !!casosId,
-    select: (res) => res.datos?.filas?.find((f) => String(f.casosId) === casosId) ?? null,
+    select: (res) => res.datos?.filas?.find((f: any) => String(f.casosId) === casosId) ?? null,
   })
 
   return (

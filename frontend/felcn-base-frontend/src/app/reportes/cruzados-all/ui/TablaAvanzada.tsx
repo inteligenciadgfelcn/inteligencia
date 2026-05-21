@@ -66,13 +66,15 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
   const [activeMapModal, setActiveMapModal] = useState<'mapa' | 'calor' | null>(null)
 
   const coordenadas: CoordenadaOp[] = useMemo(() => {
-    return rows.map(r => ({
-      idOperativo: r.idOperativo,
-      numeroCaso: r.numeroCaso,
-      numeroOperativo: r.numeroOperativo,
-      coordX: r.coordX,
-      coordY: r.coordY,
-    }))
+    return rows
+      .filter(r => r.coordX != null && r.coordY != null)
+      .map(r => ({
+        idOperativo: r.idOperativo,
+        numeroCaso: r.numeroCaso,
+        numeroOperativo: r.numeroOperativo,
+        coordX: r.coordX as number,
+        coordY: r.coordY as number,
+      }))
   }, [rows])
 
   // Reset page when new rows arrive
