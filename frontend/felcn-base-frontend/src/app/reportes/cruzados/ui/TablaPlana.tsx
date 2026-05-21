@@ -77,7 +77,7 @@ export function TablaPlana({
                 const num = row.numeroOperativo
                 if (num) {
                   window.open(
-                    `${Constantes.baseUrl}/reportes/general/${encodeURIComponent(num)}/pdf`,
+                    `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(num)}`,
                     '_blank'
                   )
                 }
@@ -228,17 +228,17 @@ export function TablaPlana({
   const handleExportCSV = () => {
     const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
     const keys: (keyof ResultadoCruzada)[] = [
-      'numeroOperativo', 
-      'numeroCaso', 
-      'fechaOperativo', 
-      'ubicacionGeografica', 
-      'totalHojaCoca', 
-      'drogasDecomisadas', 
-      'sustanciasSolidas', 
-      'sustanciasLiquidas', 
-      'laboratoriosFabricas', 
-      'arrestados', 
-      'personasImplicadas', 
+      'numeroOperativo',
+      'numeroCaso',
+      'fechaOperativo',
+      'ubicacionGeografica',
+      'totalHojaCoca',
+      'drogasDecomisadas',
+      'sustanciasSolidas',
+      'sustanciasLiquidas',
+      'laboratoriosFabricas',
+      'arrestados',
+      'personasImplicadas',
       'bienesIncautados'
     ]
     exportToCSV(rows, headers, keys, 'cruzados')
@@ -247,17 +247,17 @@ export function TablaPlana({
   const handleExportExcel = () => {
     const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
     const keys: (keyof ResultadoCruzada)[] = [
-      'numeroOperativo', 
-      'numeroCaso', 
-      'fechaOperativo', 
-      'ubicacionGeografica', 
-      'totalHojaCoca', 
-      'drogasDecomisadas', 
-      'sustanciasSolidas', 
-      'sustanciasLiquidas', 
-      'laboratoriosFabricas', 
-      'arrestados', 
-      'personasImplicadas', 
+      'numeroOperativo',
+      'numeroCaso',
+      'fechaOperativo',
+      'ubicacionGeografica',
+      'totalHojaCoca',
+      'drogasDecomisadas',
+      'sustanciasSolidas',
+      'sustanciasLiquidas',
+      'laboratoriosFabricas',
+      'arrestados',
+      'personasImplicadas',
       'bienesIncautados'
     ]
     exportToExcel(rows, headers, keys, 'cruzados')
@@ -266,17 +266,17 @@ export function TablaPlana({
   const handleExportPrint = () => {
     const headers = ['Operativo', 'Caso', 'Fecha', 'Ubicación', 'Coca', 'Drogas', 'Precursores Sólidos', 'Precursores Líquidos', 'Laboratorios', 'Arrestados', 'Personas Implicadas', 'Bienes']
     const keys: (keyof ResultadoCruzada)[] = [
-      'numeroOperativo', 
-      'numeroCaso', 
-      'fechaOperativo', 
-      'ubicacionGeografica', 
-      'totalHojaCoca', 
-      'drogasDecomisadas', 
-      'sustanciasSolidas', 
-      'sustanciasLiquidas', 
-      'laboratoriosFabricas', 
-      'arrestados', 
-      'personasImplicadas', 
+      'numeroOperativo',
+      'numeroCaso',
+      'fechaOperativo',
+      'ubicacionGeografica',
+      'totalHojaCoca',
+      'drogasDecomisadas',
+      'sustanciasSolidas',
+      'sustanciasLiquidas',
+      'laboratoriosFabricas',
+      'arrestados',
+      'personasImplicadas',
       'bienesIncautados'
     ]
     exportToPrint(rows, headers, keys, 'Búsqueda Cruzada')

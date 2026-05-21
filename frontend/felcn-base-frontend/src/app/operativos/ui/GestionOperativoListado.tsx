@@ -184,7 +184,7 @@ export function GestionOperativoListado({
                     const numeroOperativo = row.numeroOperativo
                     if (numeroOperativo) {
                       window.open(
-                        `${Constantes.baseUrl}/reportes/operativo/${encodeURIComponent(numeroOperativo)}/pdf`,
+                        `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
                         '_blank'
                       )
                     }

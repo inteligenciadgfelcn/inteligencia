@@ -52,7 +52,7 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
           )}
         </div>
       </button>
- 
+
       {abierta && tieneItems && (
         <div className="px-3 pb-2.5 flex flex-wrap gap-1.5">
           {items.map((item, i) => (
@@ -124,7 +124,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
                 const num = row.numeroOperativo
                 if (num) {
                   window.open(
-                    `${Constantes.baseUrl}/reportes/general/${encodeURIComponent(num)}/pdf`,
+                    `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(num)}`,
                     '_blank'
                   )
                 }
