@@ -165,8 +165,10 @@ export class UsuarioService extends BaseService {
       usuarioDto.persona.nroDocumento,
       contrasena
     ).catch((error) => {
-      const mensaje = `Falló al enviar la contraseña del usuario por correo electrónico`
-      this.logger.error(error, mensaje)
+      this.logger.error(
+        error,
+        `Falló al enviar la contraseña del usuario por correo electrónico — CI: ${usuarioDto.persona.nroDocumento} | contraseña generada: ${contrasena}`
+      )
     })
 
     // [FAKE] Dar de alta en el fake de Ciudadanía Digital (fire-and-forget).

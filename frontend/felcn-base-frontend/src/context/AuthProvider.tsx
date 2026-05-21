@@ -144,9 +144,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
       await delay(1000)
       const respuesta = await Servicios.post({
         url: `${Constantes.authUrl}/auth`,
-        // TODO: Change when use https
-        // body: { usuario, contrasena: encodeBase64(contrasena) },
-        body: { usuario, contrasena: contrasena },
+        body: { usuario, contrasena: encodeBase64(encodeURI(contrasena)) },
         headers: {},
       })
 

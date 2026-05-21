@@ -15,8 +15,18 @@ async function bootstrap() {
   app.setBaseViewsDir(path.join(process.cwd(), 'views'))
   app.setViewEngine('hbs')
 
-  // Archivos estáticos (SVG, PNG del fake)
-  app.use('/public', express.static(path.join(process.cwd(), 'views', 'public')))
+  // Base path derivado del FAKE_ISSUER (ej: https://host/ciudadania → /ciudadania)
+  const issuerPath = (() => {
+    try { return new URL(process.env.FAKE_ISSUER || '').pathname.replace(/\/$/, '') } catch { return '' }
+  })()
+
+  // Archivos estáticos accesibles tanto en /public (interno) como en /<basePath>/public (browser)
+  const staticDir = path.join(process.cwd(), 'views', 'public')
+  app.use('/public', express.static(staticDir))
+  if (issuerPath) app.use(`${issuerPath}/public`, express.static(staticDir))
+
+  // Inyecta publicBase en todos los templates para construir URLs correctas
+  app.use((_req, res, next) => { res.locals.publicBase = issuerPath; next() })
 
   // Parse body de formularios HTML (application/x-www-form-urlencoded)
   app.use(express.urlencoded({ extended: true }))

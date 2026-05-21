@@ -46,7 +46,7 @@ export function descargarKML(coordenadas: CoordenadaBase[]) {
   URL.revokeObjectURL(url)
 }
 
-function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[]) {
+function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[], origin: string) {
   const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
   const markersJson = JSON.stringify(
     coordFiltradas.map(c => ({
@@ -61,8 +61,8 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[]) {
     <html>
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+      <link rel="stylesheet" href="${origin}/leaflet/leaflet.css"/>
+      <script src="${origin}/leaflet/leaflet.js"></script>
       <style>
         html, body, #map { height: 100%; margin: 0; padding: 0; }
         .custom-popup .leaflet-popup-content-wrapper {
@@ -134,7 +134,7 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[]) {
   `
 }
 
-function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[]) {
+function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[], origin: string) {
   const coordFiltradas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
   const pointsJson = JSON.stringify(
     coordFiltradas.map(c => [parseFloat(String(c.coordX)), parseFloat(String(c.coordY)), 1.0])
@@ -144,9 +144,9 @@ function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[]) {
     <html>
     <head>
       <meta charset="utf-8">
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-      <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-      <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+      <link rel="stylesheet" href="${origin}/leaflet/leaflet.css"/>
+      <script src="${origin}/leaflet/leaflet.js"></script>
+      <script src="${origin}/leaflet/leaflet-heat.js"></script>
       <style>
         html, body, #map { height: 100%; margin: 0; padding: 0; }
       </style>
@@ -192,6 +192,8 @@ interface MapaFullModalProps {
 }
 
 export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps) {
+  const basePath = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
+  const origin = typeof window !== 'undefined' ? `${window.location.origin}${basePath}` : ''
   const validas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
   
   return (
@@ -259,8 +261,8 @@ export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps
       <div className="flex-1 min-h-0">
         <iframe
           srcDoc={tipo === 'mapa'
-            ? generateMapaOperativosSrcDoc(coordenadas)
-            : generateMapaCalorSrcDoc(coordenadas)}
+            ? generateMapaOperativosSrcDoc(coordenadas, origin)
+            : generateMapaCalorSrcDoc(coordenadas, origin)}
           title={tipo === 'mapa' ? 'Mapa de Operativos' : 'Mapa de Calor'}
           className="w-full h-full border-0"
         />

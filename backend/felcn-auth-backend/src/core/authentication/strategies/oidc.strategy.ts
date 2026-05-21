@@ -59,11 +59,6 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         )
       }
 
-      if (!userinfo.celular) {
-        throw new Error(
-          'El cliente de ciudadanía (client.userinfo(tokenset)) no devolvió el campo "celular"'
-        )
-      }
 
       if (!userinfo.sub) {
         throw new Error(
@@ -91,7 +86,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
       persona.primerApellido = nombre.primer_apellido
       persona.segundoApellido = nombre.segundo_apellido
       // const correoElectronico = userinfo.email;
-      persona.telefono = userinfo.celular
+      persona.telefono = userinfo.celular || undefined
       persona.uuidCiudadano = userinfo.sub
 
       const datosUsuario = {
@@ -150,5 +145,5 @@ export interface userInfoType {
   profile: ProfileType
   fecha_nacimiento: string
   email: string
-  celular: string
+  celular?: string
 }
