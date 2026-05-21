@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CruzadasRepository } from './cruzados.repository'
 import { ResultadoCruzada } from './interfaces/cruzada-filtro.interface'
-import { ConsultaAvanzadaQueryDto, ResultadoConsultaAvanzada } from './interfaces/consulta-avanzada-filtro.interface'
+import { ConsultaAvanzadaQueryDto, RespuestaAvanzadaCompleta } from './interfaces/consulta-avanzada-filtro.interface'
 
 /**
  * Servicio CruzadasService
@@ -53,7 +53,7 @@ export class CruzadasService {
   }
 
   /** Búsqueda avanzada con 42 filtros todos opcionales. */
-  buscarAvanzado(filtro: ConsultaAvanzadaQueryDto): Promise<ResultadoConsultaAvanzada[]> {
+  buscarAvanzado(filtro: ConsultaAvanzadaQueryDto): Promise<RespuestaAvanzadaCompleta> {
     return this.cruzadasRepository.buscarAvanzado(filtro)
   }
 
