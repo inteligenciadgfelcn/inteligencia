@@ -87,9 +87,9 @@ export class OperativeReportController extends BaseController {
   @Get('/cruzadas-avanzado/pdf')
   async generateCruzadasPdf(@Query() filtro: ConsultaAvanzadaQueryDto, @Res() res: Response) {
     try {
-      const data = await this.cruzadasService.buscarAvanzado(filtro)
+      const { filas } = await this.cruzadasService.buscarAvanzado(filtro)
       const template = new CruzadasReportTemplate()
-      const pdfBuffer = await this.reportService.generatePdf(template, data)
+      const pdfBuffer = await this.reportService.generatePdf(template, filas)
 
       res.set({
         'Content-Type': 'application/pdf',
