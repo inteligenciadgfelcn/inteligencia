@@ -26,37 +26,37 @@ export class PersonasService {
 
   // ==================== SITUACION LEGAL ====================
 
-  // /**
-  //  * Lista el historial de situaciones legales de una persona.
-  //  * Origen: Muestrasitu() — FRM-JUR-02.aspx.cs
-  //  */
-  // async listarSituacionesPorPersona(idDetenido: string) {
-  //   return this.repository.listarSituacionesPorPersona(idDetenido)
-  // }
+  /**
+   * Lista el historial de situaciones legales de una persona.
+   * Origen: Muestrasitu() — FRM-JUR-02.aspx.cs
+   */
+  async listarSituacionesPorPersona(idDetenido: string) {
+    return this.repository.listarSituacionesPorPersona(idDetenido)
+  }
 
-  // /**
-  //  * Registra una nueva situación legal para una persona implicada.
-  //  * Origen: btnsituacion_Click() — FRM-JUR-02.aspx.cs
-  //  */
-  // async registrarSituacion(
-  //   idDetenido: string,
-  //   dto: CreateSituacionDto,
-  //   usuario: string
-  // ): Promise<Situacion> {
-  //   const situacion: Partial<Situacion> = {
-  //     idDetenidoAuxiliar: idDetenido,
-  //     idSituacionLegal: dto.idSituacionLegal,
-  //     nroResolucion: dto.nroResolucion.trim().toUpperCase(),
-  //     lugar: dto.lugar.trim().toUpperCase(),
-  //     fecha: new Date(dto.fecha),
-  //     autoridad: dto.autoridad.trim().toUpperCase(),
-  //     fjt: dto.fjt.trim().toUpperCase(),
-  //     updInf: '',
-  //     fechaHoraIngreso: new Date(),
-  //     usuario,
-  //   }
-  //   return this.repository.guardarSituacion(situacion)
-  // }
+  /**
+   * Registra una nueva situación legal para una persona implicada.
+   * Origen: btnsituacion_Click() — FRM-JUR-02.aspx.cs
+   */
+  async registrarSituacion(
+    idDetenido: string,
+    dto: CreateSituacionDto,
+    usuario: string
+  ): Promise<Situacion> {
+    const situacion: Partial<Situacion> = {
+      idDetenidoAuxiliar: idDetenido,
+      idSituacionLegal: dto.idSituacionLegal,
+      nroResolucion: dto.nroResolucion.trim().toUpperCase(),
+      lugar: dto.lugar.trim().toUpperCase(),
+      fecha: new Date(dto.fecha),
+      autoridad: dto.autoridad.trim().toUpperCase(),
+      fjt: dto.fjt.trim().toUpperCase(),
+      updInf: '',
+      fechaHoraIngreso: new Date(),
+      usuario,
+    }
+    return this.repository.guardarSituacion(situacion)
+  }
 
   // // ==================== ETAPA DEL PROCESO ====================
 
