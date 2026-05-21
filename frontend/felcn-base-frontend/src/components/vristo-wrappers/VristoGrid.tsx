@@ -82,7 +82,7 @@ export const VristoGrid: React.FC<VristoGridProps> = ({
   const getFlexClasses = () => {
     if (container && !item) return ''
 
-    const classes = []
+    const classes: string[] = []
 
     if (!container) {
       classes.push('flex')
