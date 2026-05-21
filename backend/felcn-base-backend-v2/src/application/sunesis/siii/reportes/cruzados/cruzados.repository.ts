@@ -3,7 +3,8 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
 import { ResultadoCruzada } from './interfaces/cruzada-filtro.interface'
-import { ConsultaAvanzadaQueryDto, ResultadoConsultaAvanzada } from './interfaces/consulta-avanzada-filtro.interface'
+import { ConsultaAvanzadaQueryDto, ResultadoConsultaAvanzada, RespuestaAvanzadaCompleta } from './interfaces/consulta-avanzada-filtro.interface'
+import type { ResumenEstadistico, ResumenFabrica, OtraDroga } from '../cuadros/interfaces/cuadro-filtro.interface'
 
 /**
  * Repositorio CruzadasRepository
@@ -540,7 +541,108 @@ WHERE
 ORDER BY o.fecha_operativo DESC
 `
 
-  async buscarAvanzado(filtro: ConsultaAvanzadaQueryDto): Promise<ResultadoConsultaAvanzada[]> {
+  private async calcularResumenPorIds(ids: string[]): Promise<ResumenEstadistico> {
+    if (ids.length === 0) {
+      return {
+        cocainaBasePasta: '0', clorhidratoCocaina: '0', marihuanaGramos: '0',
+        marihuanaLitros: '0', drogasLiquidasLitros: '0', drogasLiquidasGramos: '0',
+        cocainaLiquidaLitros: '0', cocainaLiquidaGramos: '0',
+        sustanciasSolidasKg: '0', sustanciasSolidasSinDet: '0',
+        sustanciasLiquidasLt: '0', sustanciasLiquidasSinDet: '0',
+        totalAprehendidos: 0, totalArrestados: 0, otrasDrogas: [],
+      }
+    }
+
+    const totalesSQL = `
+      SELECT
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          JOIN public.estado_droga ed ON dr.id_estado_droga = ed.id_estado_droga
+          WHERE ed.id_tipo_droga = 1 AND dr.id_operativo::text = ANY($1::text[])), 0) AS "cocainaBasePasta",
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          JOIN public.estado_droga ed ON dr.id_estado_droga = ed.id_estado_droga
+          WHERE ed.id_tipo_droga = 2 AND dr.id_operativo::text = ANY($1::text[])), 0) AS "clorhidratoCocaina",
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          JOIN public.estado_droga ed ON dr.id_estado_droga = ed.id_estado_droga
+          WHERE ed.id_tipo_droga = 4 AND ed.medida = 'Gramos' AND dr.id_operativo::text = ANY($1::text[])), 0) AS "marihuanaGramos",
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          JOIN public.estado_droga ed ON dr.id_estado_droga = ed.id_estado_droga
+          WHERE ed.id_tipo_droga = 4 AND ed.medida = 'Litros' AND dr.id_operativo::text = ANY($1::text[])), 0) AS "marihuanaLitros",
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          WHERE dr.id_estado_droga = 321 AND dr.id_operativo::text = ANY($1::text[])), 0) AS "drogasLiquidasLitros",
+        COALESCE((SELECT SUM(dr.cantidad) FROM public.droga dr
+          WHERE dr.id_estado_droga = 5 AND dr.id_operativo::text = ANY($1::text[])), 0) AS "cocainaLiquidaLitros",
+        COALESCE((SELECT SUM(ss.cantidad) FROM public.sustancia_solida ss
+          WHERE ss.id_sustancia_solida_descripcion <> 52 AND ss.id_operativo::text = ANY($1::text[])), 0) AS "sustanciasSolidasKg",
+        COALESCE((SELECT SUM(ss.cantidad) FROM public.sustancia_solida ss
+          WHERE ss.id_sustancia_solida_descripcion = 52 AND ss.id_operativo::text = ANY($1::text[])), 0) AS "sustanciasSolidasSinDet",
+        COALESCE((SELECT SUM(sl.cantidad) FROM public.sustancia_liquida sl
+          WHERE sl.id_sustancia_liquida_descripcion <> 69 AND sl.id_operativo::text = ANY($1::text[])), 0) AS "sustanciasLiquidasLt",
+        COALESCE((SELECT SUM(sl.cantidad) FROM public.sustancia_liquida sl
+          WHERE sl.id_sustancia_liquida_descripcion = 69 AND sl.id_operativo::text = ANY($1::text[])), 0) AS "sustanciasLiquidasSinDet",
+        (SELECT COUNT(*) FROM public.persona_auxiliar per
+          WHERE per.estado IN ('Aprehendido', 'Principal Aprehendido')
+            AND per.id_operativo::text = ANY($1::text[])) AS "totalAprehendidos",
+        (SELECT COUNT(*) FROM public.persona_auxiliar per
+          WHERE per.estado = 'Arrestado'
+            AND per.id_operativo::text = ANY($1::text[])) AS "totalArrestados"
+    `
+
+    const [totalesRow, otrasDrogas] = await Promise.all([
+      this.dataSource.query<Record<string, string>[]>(totalesSQL, [ids]),
+      this.dataSource.query<OtraDroga[]>(
+        `SELECT td.descripcion AS "descripcionTipo", ed.descripcion AS "descripcionEstado",
+                TO_CHAR(SUM(dr.cantidad), 'FM999G999G999D99') AS "cantidad", ed.medida AS "medida"
+         FROM public.droga dr
+         JOIN public.estado_droga ed ON dr.id_estado_droga = ed.id_estado_droga
+         JOIN parametricas.tipo_droga td ON ed.id_tipo_droga = td.id_tipo_droga
+         WHERE ed.id_tipo_droga NOT IN (1, 2, 3, 4, 206)
+           AND dr.id_operativo::text = ANY($1::text[])
+         GROUP BY dr.id_estado_droga, td.descripcion, ed.descripcion, ed.medida
+         ORDER BY dr.id_estado_droga`,
+        [ids],
+      ),
+    ])
+
+    const t = totalesRow[0] ?? {}
+    const litrosDrogasLiq = parseFloat(t.drogasLiquidasLitros ?? '0')
+    const litrosCocainaLiq = parseFloat(t.cocainaLiquidaLitros ?? '0')
+
+    return {
+      cocainaBasePasta: t.cocainaBasePasta ?? '0',
+      clorhidratoCocaina: t.clorhidratoCocaina ?? '0',
+      marihuanaGramos: t.marihuanaGramos ?? '0',
+      marihuanaLitros: t.marihuanaLitros ?? '0',
+      drogasLiquidasLitros: t.drogasLiquidasLitros ?? '0',
+      drogasLiquidasGramos: ((litrosDrogasLiq / 26.44) * 1000).toFixed(2),
+      cocainaLiquidaLitros: t.cocainaLiquidaLitros ?? '0',
+      cocainaLiquidaGramos: ((litrosCocainaLiq / 10) * 1000).toFixed(2),
+      sustanciasSolidasKg: t.sustanciasSolidasKg ?? '0',
+      sustanciasSolidasSinDet: t.sustanciasSolidasSinDet ?? '0',
+      sustanciasLiquidasLt: t.sustanciasLiquidasLt ?? '0',
+      sustanciasLiquidasSinDet: t.sustanciasLiquidasSinDet ?? '0',
+      totalAprehendidos: parseInt(t.totalAprehendidos ?? '0', 10),
+      totalArrestados: parseInt(t.totalArrestados ?? '0', 10),
+      otrasDrogas,
+    }
+  }
+
+  private async listarFabricasPorIds(ids: string[]): Promise<ResumenFabrica[]> {
+    if (ids.length === 0) return []
+    return this.dataSource.query(
+      `SELECT tf.id_tipo_fabrica AS "idTipoFabrica",
+              tf.descripcion || '(s)' AS "descripcion",
+              SUM(f.cantidad) AS "totalCantidad"
+       FROM public.fabrica f
+       JOIN public.fabrica_modelo fm ON f.id_fabrica_modelo = fm.id_fabrica_modelo
+       JOIN parametricas.tipo_fabrica tf ON fm.id_tipo_fabrica = tf.id_tipo_fabrica
+       WHERE f.id_operativo::text = ANY($1::text[])
+       GROUP BY tf.id_tipo_fabrica, tf.descripcion
+       ORDER BY tf.id_tipo_fabrica`,
+      [ids],
+    )
+  }
+
+  async buscarAvanzado(filtro: ConsultaAvanzadaQueryDto): Promise<RespuestaAvanzadaCompleta> {
     const s = (v?: string) => (v == null || v === '' ? null : v)
     const n = (v?: string) => (v == null || v === '' ? null : Number(v))
     const b = (v?: string) => (v == null || v === '' ? null : v === 'true')
@@ -590,7 +692,13 @@ ORDER BY o.fecha_operativo DESC
       s(filtro.asignadoCaso),         // $42
     ]
 
-    return this.dataSource.query(this.SQL_AVANZADO, params)
+    const filas = await this.dataSource.query<ResultadoConsultaAvanzada[]>(this.SQL_AVANZADO, params)
+    const ids = filas.map(r => r.idOperativo)
+    const [resumen, fabricas] = await Promise.all([
+      this.calcularResumenPorIds(ids),
+      this.listarFabricasPorIds(ids),
+    ])
+    return { filas, resumen, fabricas }
   }
 
   /**

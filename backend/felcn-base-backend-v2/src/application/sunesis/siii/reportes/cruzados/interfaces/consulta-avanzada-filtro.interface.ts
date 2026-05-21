@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
+import type { ResumenEstadistico, ResumenFabrica } from '../../cuadros/interfaces/cuadro-filtro.interface'
 
 /**
  * DTO de query para el endpoint GET /reportes/cruzadas/avanzado.
@@ -140,6 +141,12 @@ export class ConsultaAvanzadaQueryDto {
 
   @ApiProperty({ required: false, description: 'Costo total máximo consolidado (Bs)', example: '200000' })
   costoTotalMax?: string
+}
+
+export interface RespuestaAvanzadaCompleta {
+  filas: ResultadoConsultaAvanzada[]
+  resumen: ResumenEstadistico
+  fabricas: ResumenFabrica[]
 }
 
 /**
