@@ -67,10 +67,10 @@ export class AsignacionesIngresoRepository {
    */
   async findSinRegistrar(dto: BuscarIngresoDto): Promise<[unknown[], number]> {
     //TODO: agregar id_distrital, para que solo muestre casos del distrital logueado
-    // const where = `WHERE a.id_distrital = $1 AND COALESCE(o.descripcion, '') = ''`
-    // return this.paginar(where, [dto.idDistrital], dto.limite, dto.saltar)
-    const where = `WHERE COALESCE(o.descripcion, '') = ''`
-    return this.paginar(where, [], dto.limite, dto.saltar)
+    const where = `WHERE a.id_distrital = $1 AND COALESCE(o.descripcion, '') = ''`
+    return this.paginar(where, [dto.idDistrital], dto.limite, dto.saltar)
+    // const where = `WHERE COALESCE(o.descripcion, '') = ''`
+    // return this.paginar(where, [], dto.limite, dto.saltar)
   }
 
   /**
@@ -79,10 +79,10 @@ export class AsignacionesIngresoRepository {
    */
   async findRegistradosPorNumero(dto: BuscarIngresoDto): Promise<[unknown[], number]> {
     //TODO: agregar id_distrital, para que solo muestre casos del distrital logueado
-    // const where = `WHERE a.id_distrital = $1 AND a.numero_caso = $2 AND COALESCE(o.descripcion, '') != ''`
-    // return this.paginar(where, [dto.idDistrital, dto.nroCaso], dto.limite, dto.saltar)
-    const where = `WHERE a.numero_caso = $1 AND COALESCE(o.descripcion, '') != ''`
-    return this.paginar(where, [dto.nroCaso], dto.limite, dto.saltar)
+    const where = `WHERE a.id_distrital = $1 AND a.numero_caso = $2 AND COALESCE(o.descripcion, '') != ''`
+    return this.paginar(where, [dto.idDistrital, dto.nroCaso], dto.limite, dto.saltar)
+    // const where = `WHERE a.numero_caso = $1 AND COALESCE(o.descripcion, '') != ''`
+    // return this.paginar(where, [dto.nroCaso], dto.limite, dto.saltar)
   }
 
   /**
@@ -91,10 +91,10 @@ export class AsignacionesIngresoRepository {
    */
   async findRegistradosPorNombre(dto: BuscarIngresoDto): Promise<[unknown[], number]> {
     //TODO: agregar id_distrital, para que solo muestre casos del distrital logueado
-    // const where = `WHERE a.id_distrital = $1 AND UPPER(a.nombre_caso) = UPPER($2) AND COALESCE(o.descripcion, '') != ''`
-    // return this.paginar(where, [dto.idDistrital, dto.nombreCaso], dto.limite, dto.saltar)
-    const where = `WHERE UPPER(a.nombre_caso) = UPPER($1) AND COALESCE(o.descripcion, '') != ''`
-    return this.paginar(where, [dto.nombreCaso], dto.limite, dto.saltar)
+    const where = `WHERE a.id_distrital = $1 AND UPPER(a.nombre_caso) = UPPER($2) AND COALESCE(o.descripcion, '') != ''`
+    return this.paginar(where, [dto.idDistrital, dto.nombreCaso], dto.limite, dto.saltar)
+    // const where = `WHERE UPPER(a.nombre_caso) = UPPER($1) AND COALESCE(o.descripcion, '') != ''`
+    // return this.paginar(where, [dto.nombreCaso], dto.limite, dto.saltar)
   }
 
   /**
@@ -103,16 +103,17 @@ export class AsignacionesIngresoRepository {
    */
   async findRegistradosPorFecha(dto: BuscarIngresoDto): Promise<[unknown[], number]> {
     //TODO: agregar id_distrital, para que solo muestre casos del distrital logueado
-    // const where = `
-    //   WHERE a.id_distrital = $1
-    //   AND o.fecha_operativo BETWEEN $2::timestamp AND ($3::date + INTERVAL '1 day' - INTERVAL '1 millisecond')::timestamp
-    //   AND COALESCE(o.descripcion, '') != ''
-    // `
     const where = `
-      WHERE     
-      o.fecha_operativo BETWEEN $1::timestamp AND ($2::date + INTERVAL '1 day' - INTERVAL '1 millisecond')::timestamp
+      WHERE a.id_distrital = $1
+      AND o.fecha_operativo BETWEEN $2::timestamp AND ($3::date + INTERVAL '1 day' - INTERVAL '1 millisecond')::timestamp
       AND COALESCE(o.descripcion, '') != ''
     `
-    return this.paginar(where, [dto.desde, dto.hasta], dto.limite, dto.saltar)
+    return this.paginar(where, [dto.idDistrital, dto.desde, dto.hasta], dto.limite, dto.saltar)
+    // const where = `
+    //   WHERE     
+    //   o.fecha_operativo BETWEEN $1::timestamp AND ($2::date + INTERVAL '1 day' - INTERVAL '1 millisecond')::timestamp
+    //   AND COALESCE(o.descripcion, '') != ''
+    // `
+    // return this.paginar(where, [dto.desde, dto.hasta], dto.limite, dto.saltar)
   }
 }
