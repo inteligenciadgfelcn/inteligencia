@@ -40,24 +40,24 @@ export class PersonasController extends BaseController {
 
   // // ==================== SITUACION LEGAL ====================
 
-  // @ApiOperation({ summary: 'Listar situaciones legales registradas de una persona' })
-  // @Get(':idDetenido/situacion')
-  // async listarSituaciones(@Param('idDetenido') idDetenido: string) {
-  //   const datos = await this.service.listarSituacionesPorPersona(idDetenido)
-  //   return this.successList(datos)
-  // }
+  @ApiOperation({ summary: 'Listar situaciones legales registradas de una persona' })
+  @Get(':idDetenido/situacion')
+  async listarSituaciones(@Param('idDetenido') idDetenido: string) {
+    const datos = await this.service.listarSituacionesPorPersona(idDetenido)
+    return this.successList(datos)
+  }
 
-  // @ApiOperation({ summary: 'Registrar situación legal de una persona' })
-  // @Post(':idDetenido/situacion')
-  // async registrarSituacion(
-  //   @Param('idDetenido') idDetenido: string,
-  //   @Body() dto: CreateSituacionDto,
-  //   @Req() req: Request
-  // ) {
-  //   const { numeroPase = '' } = req.user as PassportUser
-  //   const nuevo = await this.service.registrarSituacion(idDetenido, dto, numeroPase)
-  //   return this.successCreate(nuevo)
-  // }
+  @ApiOperation({ summary: 'Registrar situación legal de una persona' })
+  @Post(':idDetenido/situacion')
+  async registrarSituacion(
+    @Param('idDetenido') idDetenido: string,
+    @Body() dto: CreateSituacionDto,
+    @Req() req: Request
+  ) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const nuevo = await this.service.registrarSituacion(idDetenido, dto, numeroPase)
+    return this.successCreate(nuevo)
+  }
 
   // // ==================== ETAPA DEL PROCESO ====================
 
