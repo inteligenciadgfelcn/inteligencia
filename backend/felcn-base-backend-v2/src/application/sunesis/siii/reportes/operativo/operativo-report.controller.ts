@@ -1,8 +1,8 @@
-import { Controller, Get, Param, Query, Res } from '@nestjs/common'
+import { Controller, Get, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import { ReportBaseService } from '../services/reporte-base.service'
 import { OperativoService } from '../../operativo/service/operativo.service'
-import { ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { OperativeReportTemplate } from './templates/form-operativo.template'
 import { CasoGralReportTemplate } from './templates/rep-caso-general.template'
@@ -26,9 +26,10 @@ export class OperativeReportController extends BaseController {
     summary: 'Genera el Formulario Operativo en formato PDF',
     description: 'Lee del felcn_siii.public.operativo y sus tablas relacionadas.',
   })
+  @ApiQuery({ name: 'numero', description: 'Número de operativo (puede contener "/", se envía URL-encoded)', example: 'OP%2F2024%2F001' })
   @SetRequestTimeout(120)
-  @Get('/operativo/:numeroOperativo/pdf')
-  async generateOperativePdf(@Param('numeroOperativo') numeroOperativo: string, @Res() res: Response) {
+  @Get('/operativo/pdf')
+  async generateOperativePdf(@Query('numero') numeroOperativo: string, @Res() res: Response) {
     try {
       const template = new OperativeReportTemplate()
       const data = await OperativeReportTemplate.fetchData(this.operativoService, numeroOperativo)
@@ -49,12 +50,13 @@ export class OperativeReportController extends BaseController {
   }
 
   @ApiOperation({
-    summary: 'Genera el Formulario Operativo en formato PDF',
+    summary: 'Genera el Reporte General en formato PDF',
     description: 'Lee del felcn_siii.public.operativo y sus tablas relacionadas.',
   })
+  @ApiQuery({ name: 'numero', description: 'Número de operativo (puede contener "/", se envía URL-encoded)', example: 'OP%2F2024%2F001' })
   @SetRequestTimeout(120)
-  @Get('/general/:numeroOperativo/pdf')
-  async generateReporteGEenralPDF(@Param('numeroOperativo') numeroOperativo: string, @Res() res: Response) {
+  @Get('/general/pdf')
+  async generateReporteGEenralPDF(@Query('numero') numeroOperativo: string, @Res() res: Response) {
     try {
       const template = new CasoGralReportTemplate()
       const data = await CasoGralReportTemplate.fetchData(this.operativoService, numeroOperativo)
