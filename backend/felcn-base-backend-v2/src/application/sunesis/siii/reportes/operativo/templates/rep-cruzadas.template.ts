@@ -1,6 +1,7 @@
 import { ReportTemplate } from '../../interfaces/reporte-template.interface'
 import { PDFOptions } from 'puppeteer'
 import { ResultadoConsultaAvanzada } from '../../cruzados/interfaces/consulta-avanzada-filtro.interface'
+import { getLogoBase64 } from '../../report-logo.util'
 
 export class CruzadasReportTemplate implements ReportTemplate<ResultadoConsultaAvanzada[]> {
   pdfOptions: PDFOptions = {
@@ -103,7 +104,7 @@ export class CruzadasReportTemplate implements ReportTemplate<ResultadoConsultaA
 <body>
   <div class="doc">
     <div class="header">
-      <img src="data:image/png;base64,${process.env.LOGO_REPORT}" width="80" height="80" style="object-fit:contain;" />
+      <img src="data:image/png;base64,${getLogoBase64()}" width="80" height="80" style="object-fit:contain;" />
       <div class="header-text">
         <p><strong>DEPARTAMENTO NACIONAL DE INTELIGENCIA</strong></p>
         <p><strong>REGISTRO DE OPERACIONES CON RESULTADOS A NIVEL NACIONAL</strong></p>
