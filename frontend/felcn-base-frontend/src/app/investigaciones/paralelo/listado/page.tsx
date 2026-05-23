@@ -13,7 +13,7 @@ export default function InvestigacionListadoPage() {
         <h2 className="text-xl font-bold text-dark dark:text-white-light">
           Casos Paralelos Registrados
         </h2>
-        <Button variant="outline-primary" onClick={() => router.push('/investigacion')}>
+        <Button variant="outline-primary" onClick={() => router.push('/investigaciones/paralelo')}>
           Registrar Nuevo
         </Button>
       </div>

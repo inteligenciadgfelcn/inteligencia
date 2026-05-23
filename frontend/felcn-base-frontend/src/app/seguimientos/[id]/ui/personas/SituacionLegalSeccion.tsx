@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { PersonasServiceInstance, CreateSituacionPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import dayjs from 'dayjs'
@@ -20,9 +20,17 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
   const [situacionesLegales, setSituacionesLegales] = useState<{ value: number; label: string }[]>([])
   const [registros, setRegistros] = useState<any[]>([])
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<CreateSituacionPayload>({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<CreateSituacionPayload>({
     defaultValues: { idSituacionLegal: 0, nroResolucion: '', lugar: '', fecha: dayjs().format('YYYY-MM-DD'), autoridad: '', fjt: '' }
   })
+
+  const reglaObligatorio = {
+    required: 'Campo obligatorio',
+    validate: (value: any) => {
+      if (typeof value === 'number') return value !== 0 || 'Campo obligatorio'
+      return String(value ?? '').trim() !== '' || 'Campo obligatorio'
+    },
+  }
 
   useEffect(() => {
     const cargarLookups = async () => {
@@ -61,56 +69,124 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">Registrar Situación Legal</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha de Situación Legal <span className="text-danger">*</span></label>
-              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} size="sm" />
+              <label htmlFor="fecha" className="mb-1 block text-sm font-medium">
+                Fecha de Situación Legal <span className="text-danger">*</span>
+              </label>
+              <Input
+                id="fecha"
+                type="date"
+                className={`w-full ${errors.fecha ? 'border-danger' : ''}`}
+                {...register('fecha', reglaObligatorio)}
+              />
+              {errors.fecha && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.fecha.message}
+                </div>
+              )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Situación Legal <span className="text-danger">*</span></label>
+              <label htmlFor="idSituacionLegal" className="mb-1 block text-sm font-medium">
+                Situación Legal <span className="text-danger">*</span>
+              </label>
               <Select
-                size="sm"
+                id="idSituacionLegal"
                 placeholder="Seleccione..."
                 options={situacionesLegales}
-                {...register('idSituacionLegal', { required: 'Campo requerido' })}
+                className={`w-full ${errors.idSituacionLegal ? 'border-danger' : ''}`}
+                {...register('idSituacionLegal', {
+                  ...reglaObligatorio,
+                  valueAsNumber: true,
+                })}
+              />
+              {errors.idSituacionLegal && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.idSituacionLegal.message}
+                </div>
+              )}
+            </div>
+            <div>
+              <label htmlFor="nroResolucion" className="mb-1 block text-sm font-medium">
+                Nro. de Resolución del Acta de Medida Cautelar
+              </label>
+              <Input
+                id="nroResolucion"
+                type="text"
+                className="w-full"
+                {...register('nroResolucion')}
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1">Nro. de Resolución del Acta de Medida Cautelar</label>
-              <Input {...register('nroResolucion')} size="sm" />
+              <label htmlFor="lugar" className="mb-1 block text-sm font-medium">
+                Departamento, Provincia, Lugar <span className="text-danger">*</span>
+              </label>
+              <Input
+                id="lugar"
+                type="text"
+                className={`w-full ${errors.lugar ? 'border-danger' : ''}`}
+                {...register('lugar', reglaObligatorio)}
+              />
+              {errors.lugar && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.lugar.message}
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Departamento, Provincia, Lugar</label>
-              <Input {...register('lugar', { required: true })} size="sm" />
+            <div className="md:col-span-2">
+              <label htmlFor="autoridad" className="mb-1 block text-sm font-medium">
+                Autoridad (Nombre del Juez) <span className="text-danger">*</span>
+              </label>
+              <Input
+                id="autoridad"
+                type="text"
+                className={`w-full ${errors.autoridad ? 'border-danger' : ''}`}
+                {...register('autoridad', reglaObligatorio)}
+              />
+              {errors.autoridad && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.autoridad.message}
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Autoridad (Nombre del Juez) <span className="text-danger">*</span></label>
-              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Juzgado o Tribunal <span className="text-danger">*</span></label>
-              <Input {...register('fjt', { required: 'Campo requerido' })} size="sm" />
+            <div className="md:col-span-2">
+              <label htmlFor="fjt" className="mb-1 block text-sm font-medium">
+                Juzgado o Tribunal <span className="text-danger">*</span>
+              </label>
+              <Input
+                id="fjt"
+                type="text"
+                className={`w-full ${errors.fjt ? 'border-danger' : ''}`}
+                {...register('fjt', reglaObligatorio)}
+              />
+              {errors.fjt && (
+                <div className="mt-1 text-xs text-danger">
+                  {errors.fjt.message}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end">
             <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
-              GUARDAR SITUACIÓN LEGAL
+              Guardar
             </Button>
           </div>
         </form>
       </div>
 
       <div>
-        <h3 className="text-md font-semibold mb-4">Historial de Situaciones Legales</h3>
+        <h4 className="mb-4 text-sm font-semibold">Historial de Situaciones Legales</h4>
         <div className="datatables">
-          <DataTable
-            noRecordsText="No hay situaciones registradas"
-            highlightOnHover
-            className="whitespace-nowrap table-hover"
-            records={registros}
+          <VristoDataTable
+            loading={false}
+            rows={registros}
+            total={registros.length}
+            page={1}
+            limit={registros.length || 10}
+            onPageChange={() => { }}
+            onLimitChange={() => { }}
             columns={[
               { accessor: 'situacionLegal', title: 'Situación Legal' },
               { accessor: 'nroResolucion', title: 'Nro. Resolución' },
@@ -118,7 +194,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               {
                 accessor: 'fecha',
                 title: 'Fecha',
-                render: ({ fecha }) => fecha ? new Date(fecha).toLocaleDateString('es-BO') : '-'
+                render: (row: any) => row.fecha ? new Date(row.fecha).toLocaleDateString('es-BO') : '-'
               },
               { accessor: 'autoridad', title: 'Autoridad' },
               { accessor: 'fjt', title: 'Fiscalía, Juzgado o Tribunal' },

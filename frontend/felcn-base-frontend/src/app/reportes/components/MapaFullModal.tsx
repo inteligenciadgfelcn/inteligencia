@@ -35,6 +35,26 @@ function generarKML(coordenadas: CoordenadaBase[]): string {
 </kml>`
 }
 
+export function descargarCSV(coordenadas: CoordenadaBase[]) {
+  const validas = coordenadas.filter(
+    c => c.coordX != null && c.coordY != null &&
+      !isNaN(parseFloat(String(c.coordX))) &&
+      !isNaN(parseFloat(String(c.coordY)))
+  )
+  const encabezado = 'Numero de Caso,Numero de Operativo,Latitud,Longitud'
+  const filas = validas.map(c =>
+    `${c.numeroCaso},${c.numeroOperativo},${parseFloat(String(c.coordX))},${parseFloat(String(c.coordY))}`
+  )
+  const contenido = [encabezado, ...filas].join('\n')
+  const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `operativos_felcn_${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function descargarKML(coordenadas: CoordenadaBase[]) {
   const contenido = generarKML(coordenadas)
   const blob = new Blob([contenido], { type: 'application/vnd.google-earth.kml+xml' })
@@ -224,22 +244,40 @@ export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps
         <div className="flex items-center gap-3 shrink-0">
           <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-600">ESC para cerrar</span>
           {validas.length > 0 && (
-            <button
-              type="button"
-              onClick={() => descargarKML(coordenadas)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
-                text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200
-                hover:bg-green-50 dark:hover:bg-green-900/20 border border-green-300 dark:border-green-700
-                transition-colors"
-              title="Descargar coordenadas en formato KML (Google Earth)"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" x2="12" y1="15" y2="3"></line>
-              </svg>
-              Descargar KML
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => descargarCSV(coordenadas)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+                  text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200
+                  hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-300 dark:border-blue-700
+                  transition-colors"
+                title="Descargar coordenadas en formato CSV"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" x2="12" y1="15" y2="3"></line>
+                </svg>
+                Descargar CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => descargarKML(coordenadas)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+                  text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200
+                  hover:bg-green-50 dark:hover:bg-green-900/20 border border-green-300 dark:border-green-700
+                  transition-colors"
+                title="Descargar coordenadas en formato KML (Google Earth)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" x2="12" y1="15" y2="3"></line>
+                </svg>
+                Descargar KML
+              </button>
+            </>
           )}
           <button
             type="button"

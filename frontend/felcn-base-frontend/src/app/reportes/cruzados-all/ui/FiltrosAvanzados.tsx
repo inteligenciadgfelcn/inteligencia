@@ -62,82 +62,82 @@ function SeccionFiltro({
 export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanzadosProps) {
 
   // ── Asignación / Caso ───────────────────────────────────────────────────────
-  const [fechaInicio, setFechaInicio]       = useState(hace30Dias)
-  const [fechaFin, setFechaFin]             = useState(hoy)
+  const [fechaInicio, setFechaInicio] = useState(hace30Dias)
+  const [fechaFin, setFechaFin] = useState(hoy)
   const [codigoServicio, setCodigoServicio] = useState('')
-  const [numeroCaso, setNumeroCaso]         = useState('')
-  const [nombreCaso, setNombreCaso]         = useState('')
+  const [numeroCaso, setNumeroCaso] = useState('')
+  const [nombreCaso, setNombreCaso] = useState('')
   const [numeroOperativo, setNumeroOperativo] = useState('')
-  const [ianus, setIanus]                   = useState('')
-  const [fiscal, setFiscal]                 = useState('')
+  const [ianus, setIanus] = useState('')
+  const [fiscal, setFiscal] = useState('')
   const [fiscalSolicitud, setFiscalSolicitud] = useState('')
-  const [asignadoCaso, setAsignadoCaso]     = useState('')
+  const [asignadoCaso, setAsignadoCaso] = useState('')
 
   // ── Clasificación ───────────────────────────────────────────────────────────
-  const [idTipoOperacion, setIdTipoOperacion]   = useState('')
+  const [idTipoOperacion, setIdTipoOperacion] = useState('')
   const [idTipoRelevancia, setIdTipoRelevancia] = useState('')
   const [idCategoriaOperativo, setIdCategoriaOperativo] = useState('')
-  const [idPlanOperacion, setIdPlanOperacion]   = useState('')
-  const [idUnidad, setIdUnidad]                 = useState('')
-  const [idTipoDenuncia, setIdTipoDenuncia]     = useState('')
-  const [idTipoPenal, setIdTipoPenal]           = useState('')
-  const [organizacion, setOrganizacion]         = useState('')
+  const [idPlanOperacion, setIdPlanOperacion] = useState('')
+  const [idUnidad, setIdUnidad] = useState('')
+  const [idTipoDenuncia, setIdTipoDenuncia] = useState('')
+  const [idTipoPenal, setIdTipoPenal] = useState('')
+  const [organizacion, setOrganizacion] = useState('')
 
   // ── Geografía ───────────────────────────────────────────────────────────────
   const [idDepartamento, setIdDepartamento] = useState('')
-  const [idProvincia, setIdProvincia]       = useState('')
-  const [idLocalidad, setIdLocalidad]       = useState('')
-  const [lugar, setLugar]                   = useState('')
+  const [idProvincia, setIdProvincia] = useState('')
+  const [idLocalidad, setIdLocalidad] = useState('')
+  const [lugar, setLugar] = useState('')
 
   // ── Droga ───────────────────────────────────────────────────────────────────
-  const [idTipoDroga, setIdTipoDroga]         = useState('')
-  const [idEstadoDroga, setIdEstadoDroga]     = useState('')
+  const [idTipoDroga, setIdTipoDroga] = useState('')
+  const [idEstadoDroga, setIdEstadoDroga] = useState('')
   const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
-  const [idPaisDestino, setIdPaisDestino]     = useState('')
-  const [costoDrogaMin, setCostoDrogaMin]     = useState('')
-  const [costoDrogaMax, setCostoDrogaMax]     = useState('')
+  const [idPaisDestino, setIdPaisDestino] = useState('')
+  const [costoDrogaMin, setCostoDrogaMin] = useState('')
+  const [costoDrogaMax, setCostoDrogaMax] = useState('')
 
   // ── Persona Implicada ───────────────────────────────────────────────────────
-  const [nombresPersona, setNombresPersona]   = useState('')
+  const [nombresPersona, setNombresPersona] = useState('')
   const [apellidoPaterno, setApellidoPaterno] = useState('')
   const [apellidoMaterno, setApellidoMaterno] = useState('')
-  const [nroDocumento, setNroDocumento]       = useState('')
-  const [idPaisPersona, setIdPaisPersona]     = useState('')
+  const [nroDocumento, setNroDocumento] = useState('')
+  const [idPaisPersona, setIdPaisPersona] = useState('')
 
   // ── Bienes y Costo ──────────────────────────────────────────────────────────
   const [idCatalogoTipo, setIdCatalogoTipo] = useState('')
-  const [costoTotalMin, setCostoTotalMin]   = useState('')
-  const [costoTotalMax, setCostoTotalMax]   = useState('')
+  const [costoTotalMin, setCostoTotalMin] = useState('')
+  const [costoTotalMax, setCostoTotalMax] = useState('')
 
   // ── Indicadores booleanos ───────────────────────────────────────────────────
-  const [esPositivo, setEsPositivo]         = useState('')
-  const [esAprehendido, setEsAprehendido]   = useState('')
-  const [esArrestado, setEsArrestado]       = useState('')
-  const [esIcia, setEsIcia]                 = useState('')
-  const [esParteDiario, setEsParteDiario]   = useState('')
-  const [esRevisado, setEsRevisado]         = useState('')
+  const [esPositivo, setEsPositivo] = useState('')
+  const [esAprehendido, setEsAprehendido] = useState('')
+  const [esArrestado, setEsArrestado] = useState('')
+  const [esIcia, setEsIcia] = useState('')
+  const [esParteDiario, setEsParteDiario] = useState('')
+  const [esRevisado, setEsRevisado] = useState('')
 
   // ── Opciones de combos ──────────────────────────────────────────────────────
-  const [opTiposOp, setOpTiposOp]               = useState<SelectOption[]>([])
-  const [opRelevancia, setOpRelevancia]         = useState<SelectOption[]>([])
-  const [opCategorias, setOpCategorias]         = useState<SelectOption[]>([])
-  const [opPlanes, setOpPlanes]                 = useState<SelectOption[]>([])
-  const [opUnidades, setOpUnidades]             = useState<SelectOption[]>([])
-  const [opTipoDenuncia, setOpTipoDenuncia]     = useState<SelectOption[]>([])
-  const [opTipoPenal, setOpTipoPenal]           = useState<SelectOption[]>([])
+  const [opTiposOp, setOpTiposOp] = useState<SelectOption[]>([])
+  const [opRelevancia, setOpRelevancia] = useState<SelectOption[]>([])
+  const [opCategorias, setOpCategorias] = useState<SelectOption[]>([])
+  const [opPlanes, setOpPlanes] = useState<SelectOption[]>([])
+  const [opUnidades, setOpUnidades] = useState<SelectOption[]>([])
+  const [opTipoDenuncia, setOpTipoDenuncia] = useState<SelectOption[]>([])
+  const [opTipoPenal, setOpTipoPenal] = useState<SelectOption[]>([])
 
-  const [opDepartamentos, setOpDepartamentos]   = useState<SelectOption[]>([])
-  const [opProvincias, setOpProvincias]         = useState<SelectOption[]>([])
-  const [opLocalidades, setOpLocalidades]       = useState<SelectOption[]>([])
-  const [cargandoProv, setCargandoProv]         = useState(false)
-  const [cargandoLoc, setCargandoLoc]           = useState(false)
+  const [opDepartamentos, setOpDepartamentos] = useState<SelectOption[]>([])
+  const [opProvincias, setOpProvincias] = useState<SelectOption[]>([])
+  const [opLocalidades, setOpLocalidades] = useState<SelectOption[]>([])
+  const [cargandoProv, setCargandoProv] = useState(false)
+  const [cargandoLoc, setCargandoLoc] = useState(false)
 
-  const [opTiposDroga, setOpTiposDroga]         = useState<SelectOption[]>([])
-  const [opEstadosDroga, setOpEstadosDroga]     = useState<SelectOption[]>([])
-  const [cargandoEstados, setCargandoEstados]   = useState(false)
+  const [opTiposDroga, setOpTiposDroga] = useState<SelectOption[]>([])
+  const [opEstadosDroga, setOpEstadosDroga] = useState<SelectOption[]>([])
+  const [cargandoEstados, setCargandoEstados] = useState(false)
 
-  const [opPaises, setOpPaises]                 = useState<SelectOption[]>([])
-  const [opBienes, setOpBienes]                 = useState<SelectOption[]>([])
+  const [opPaises, setOpPaises] = useState<SelectOption[]>([])
+  const [opBienes, setOpBienes] = useState<SelectOption[]>([])
 
   // ── Carga inicial de combos estáticos ───────────────────────────────────────
   useEffect(() => {
@@ -294,7 +294,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
             <Input size="sm" value={numeroOperativo} onChange={e => setNumeroOperativo(e.target.value)} placeholder="Ej: OP-2025-001" />
           </div>
           <div>
-            <label className={fieldLabel}>IANUS</label>
+            <label className={fieldLabel}>CUD</label>
             <Input size="sm" value={ianus} onChange={e => setIanus(e.target.value)} placeholder="Ej: IAN-001" />
           </div>
           <div>
@@ -499,12 +499,12 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
           {(
             [
-              ['¿Es Positivo?',     esPositivo,    setEsPositivo],
-              ['¿Aprehendido?',    esAprehendido, setEsAprehendido],
-              ['¿Arrestado?',      esArrestado,   setEsArrestado],
-              ['¿ICIA?',           esIcia,        setEsIcia],
-              ['¿Parte Diario?',   esParteDiario, setEsParteDiario],
-              ['¿Revisado?',       esRevisado,    setEsRevisado],
+              ['¿Es Positivo?', esPositivo, setEsPositivo],
+              ['¿Aprehendido?', esAprehendido, setEsAprehendido],
+              ['¿Arrestado?', esArrestado, setEsArrestado],
+              ['¿ICIA?', esIcia, setEsIcia],
+              ['¿Parte Diario?', esParteDiario, setEsParteDiario],
+              ['¿Revisado?', esRevisado, setEsRevisado],
             ] as [string, string, (v: string) => void][]
           ).map(([lbl, val, set]) => (
             <div key={lbl}>

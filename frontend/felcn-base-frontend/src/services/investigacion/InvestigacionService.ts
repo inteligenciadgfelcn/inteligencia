@@ -36,7 +36,7 @@ export interface OperativoItem {
 }
 
 export interface CasoParaleloItem {
-  id: number
+  id: string
   estado: string
   departamento: string
   unidad: string
@@ -69,6 +69,30 @@ interface PagedResponse<T> {
     totalElements: number
     totalPages: number
   }
+}
+
+export interface InvestigacionParalelaDetalle {
+  id: string
+  idCaso: string
+  idDepartamentoCaso: string
+  abreviaturaUnidad: string
+  idDistrital: number
+  idGrupo: number
+  idOperativo: string
+  delito: string
+  numeroCaso: string
+  asignadoCaso: string
+  fiscalAsignadoCaso: string
+  delitoPrecedente: string
+  informe: string
+  fechaEnvioInvestigacionParalela: string
+  resultado: boolean
+  respuestaInvestigacionParalela: boolean
+  fechaRespuestaInvestigacionParalela?: string | null
+  departamento?: { descripcion: string }
+  unidad?: { descripcion: string }
+  distrital?: { descripcion: string }
+  grupo?: { descripcion: string }
 }
 
 export interface InvestigacionParalelaPayload {
@@ -173,6 +197,34 @@ export const InvestigacionService = {
     return sesionPeticion({
       url: `${BASE_INVESTIGACION}`,
       method: 'post',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  obtenerPorId(id: string): Promise<RespuestaApi<InvestigacionParalelaDetalle>> {
+    return sesionPeticion({
+      url: `${BASE_INVESTIGACION}/${id}`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  obtenerPorOperativo(idOperativo: string): Promise<RespuestaApi<InvestigacionParalelaDetalle | null>> {
+    return sesionPeticion({
+      url: `${BASE_INVESTIGACION}/por-operativo/${idOperativo}`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  actualizar(
+    id: string,
+    payload: Partial<InvestigacionParalelaPayload>
+  ): Promise<RespuestaApi<any>> {
+    return sesionPeticion({
+      url: `${BASE_INVESTIGACION}/${id}`,
+      method: 'patch',
       body: payload,
       withCredentials: true,
     })

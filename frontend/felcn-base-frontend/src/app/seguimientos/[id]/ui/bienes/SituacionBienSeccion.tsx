@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import {
   BienesServiceInstance,
   CreateSituacionBienPayload,
@@ -25,7 +25,7 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
   const [registros, setRegistros] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } =
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } =
     useForm<CreateSituacionBienPayload>({
       defaultValues: {
         fechaRequerimiento: dayjs().format('YYYY-MM-DD'),
@@ -72,66 +72,68 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">ENTREGA O DEVOLUCIÓN DEL BIEN</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <h4 className="mb-4 text-sm font-semibold">ENTREGA O DEVOLUCIÓN DEL BIEN</h4>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">
                 Fecha del Requerimiento <span className="text-danger">*</span>
               </label>
-              <Input type="date" {...register('fechaRequerimiento', { required: 'Campo requerido' })} size="sm" />
+              <Input type="date" {...register('fechaRequerimiento', { required: 'Campo requerido' })} error={!!errors.fechaRequerimiento} />
+              {errors.fechaRequerimiento && <div className="mt-1 text-xs text-danger">{errors.fechaRequerimiento.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Fiscal del Requerimiento <span className="text-danger">*</span>
               </label>
-              <Input {...register('fiscalRequerimiento', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('fiscalRequerimiento', { required: 'Campo requerido' })} error={!!errors.fiscalRequerimiento} />
+              {errors.fiscalRequerimiento && <div className="mt-1 text-xs text-danger">{errors.fiscalRequerimiento.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Condición Legal <span className="text-danger">*</span>
               </label>
               <Select
-                size="sm"
                 placeholder="Seleccione..."
                 options={calidadesBien.map((c) => ({ value: String(c.id), label: c.descripcion }))}
                 {...register('idCalidadBien', { required: 'Campo requerido' })}
+                error={!!errors.idCalidadBien}
               />
+              {errors.idCalidadBien && <div className="mt-1 text-xs text-danger">{errors.idCalidadBien.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Fecha de Entrega <span className="text-danger">*</span></label>
-              <Input type="date" {...register('fechaEntrega', { required: 'Campo requerido' })} size="sm" />
+              <Input type="date" {...register('fechaEntrega', { required: 'Campo requerido' })} error={!!errors.fechaEntrega} />
+              {errors.fechaEntrega && <div className="mt-1 text-xs text-danger">{errors.fechaEntrega.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Responsable de la Entrega <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableEntrega', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('responsableEntrega', { required: 'Campo requerido' })} error={!!errors.responsableEntrega} />
+              {errors.responsableEntrega && <div className="mt-1 text-xs text-danger">{errors.responsableEntrega.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Responsable de la Recepción <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableRecepcion', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('responsableRecepcion', { required: 'Campo requerido' })} error={!!errors.responsableRecepcion} />
+              {errors.responsableRecepcion && <div className="mt-1 text-xs text-danger">{errors.responsableRecepcion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Institución Responsable <span className="text-danger">*</span>
               </label>
-              <Input {...register('institucion', { required: 'Campo requerido' })} size="sm" />
-              <p className="text-[10px] text-gray-400 mt-1">
-                Ej. DIRCABI, Min. Defensa...
-              </p>
+              <Input {...register('institucion', { required: 'Campo requerido' })} error={!!errors.institucion} />
+              {errors.institucion && <div className="mt-1 text-xs text-danger">{errors.institucion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Ubicación Física del Bien <span className="text-danger">*</span>
               </label>
-              <Input {...register('ubicacion', { required: 'Campo requerido' })} size="sm" />
-              <p className="text-[10px] text-gray-400 mt-1">
-                Dep, Prov, Loc...
-              </p>
+              <Input {...register('ubicacion', { required: 'Campo requerido' })} error={!!errors.ubicacion} />
+              {errors.ubicacion && <div className="mt-1 text-xs text-danger">{errors.ubicacion.message}</div>}
             </div>
           </div>
           <div className="flex justify-end">
@@ -143,19 +145,21 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
       </div>
 
       <div className="datatables">
-        <DataTable
-          noRecordsText="No hay registros de entrega o devolución"
-          highlightOnHover
-          fetching={cargando}
-          className="whitespace-nowrap table-hover"
-          records={registros}
+        <VristoDataTable
+          loading={cargando}
+          rows={registros}
+          total={registros.length}
+          page={1}
+          limit={registros.length || 10}
+          onPageChange={() => { }}
+          onLimitChange={() => { }}
           columns={[
             { accessor: 'fechaRequerimiento', title: 'Fecha Req. Fiscal o Dev. del Bien' },
             { accessor: 'fiscalRequerimiento', title: 'Fiscal' },
             {
               accessor: 'calidadBien',
               title: 'Condición Legal',
-              render: (row) => row.calidadBien?.descripcion ?? '-',
+              render: (row: any) => row.calidadBien?.descripcion ?? '-',
             },
             { accessor: 'fechaEntrega', title: 'Fecha de la Entrega del Bien' },
             { accessor: 'responsableEntrega', title: 'Responsable de la Entrega' },
