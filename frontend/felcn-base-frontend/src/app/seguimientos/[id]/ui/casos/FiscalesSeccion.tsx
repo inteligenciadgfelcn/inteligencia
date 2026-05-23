@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SeguimientoServiceInstance, FiscalPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface FiscalesSeccionProps {
   idCaso: string
@@ -16,7 +16,7 @@ interface FiscalesSeccionProps {
 
 export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionProps) {
   const { Alerta } = useAlerts()
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<FiscalPayload>({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<FiscalPayload>({
     defaultValues: {
       nombreApellidos: '',
       telefonoCelular: '',
@@ -38,29 +38,32 @@ export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionPro
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">Registrar Nuevo Fiscal</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">Fecha Asignación <span className="text-danger">*</span></label>
-              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} size="sm" />
+              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} error={!!errors.fecha} />
+              {errors.fecha && <div className="mt-1 text-xs text-danger">{errors.fecha.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
-              <Input {...register('nombreApellidos', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
+              {errors.nombreApellidos && <div className="mt-1 text-xs text-danger">{errors.nombreApellidos.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Celular</label>
-              <Input {...register('telefonoCelular')} size="sm" />
+              <Input {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
+              {errors.telefonoCelular && <div className="mt-1 text-xs text-danger">{errors.telefonoCelular.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Teléfono</label>
-              <Input {...register('telefonoFijo')} size="sm" />
+              <Input {...register('telefonoFijo')} error={!!errors.telefonoFijo} />
+              {errors.telefonoFijo && <div className="mt-1 text-xs text-danger">{errors.telefonoFijo.message}</div>}
             </div>
           </div>
           <div className="flex justify-end">
-            <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
+            <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
               Guardar
             </Button>
           </div>
@@ -68,28 +71,31 @@ export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionPro
       </div>
 
       <div>
-        <h3 className="text-md font-semibold mb-4">Historial de Fiscales</h3>
+        <h4 className="mb-4 text-sm font-semibold">Historial de Fiscales</h4>
         <div className="datatables">
-          <DataTable
-            noRecordsText="No hay fiscales registrados"
-            highlightOnHover
-            className="whitespace-nowrap table-hover"
-            records={datos || []}
+          <VristoDataTable
+            loading={false}
+            rows={datos || []}
+            total={(datos || []).length}
+            page={1}
+            limit={(datos || []).length || 10}
+            onPageChange={() => { }}
+            onLimitChange={() => { }}
             columns={[
               { accessor: 'nombreApellidos', title: 'Nombre y Apellidos' },
               {
                 accessor: 'fecha',
                 title: 'Fecha Asignación',
-                render: ({ fecha }) => fecha ? new Date(fecha).toLocaleDateString() : '-'
+                render: (row: any) => row.fecha ? new Date(row.fecha).toLocaleDateString() : '-'
               },
               { accessor: 'telefonoCelular', title: 'Celular' },
               { accessor: 'telefonoFijo', title: 'Tel. Fijo' },
               {
                 accessor: 'esActual',
                 title: 'Estado',
-                render: ({ esActual }) => (
-                  <span className={`badge ${esActual ? 'badge-outline-success' : 'badge-outline-dark'}`}>
-                    {esActual ? 'Actual' : 'Histórico'}
+                render: (row: any) => (
+                  <span className={`badge ${row.esActual ? 'badge-outline-success' : 'badge-outline-dark'}`}>
+                    {row.esActual ? 'Actual' : 'Histórico'}
                   </span>
                 )
               }

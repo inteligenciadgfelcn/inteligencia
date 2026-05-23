@@ -52,6 +52,10 @@ export class InvestigacionService {
     return this.repository.buscarPorId(id)
   }
 
+  async buscarPorOperativo(idOperativo: string): Promise<InvestigacionParalela | null> {
+    return this.repository.buscarPorOperativo(idOperativo)
+  }
+
   async buscarPorUnidadYResultado(
     unidad: string,
     resultado: boolean,

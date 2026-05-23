@@ -6,7 +6,6 @@ import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
 import { Button } from '@/components/ui/Button'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesService'
 import { BienesService } from '@/services/operativos'
 import { BienSecuestradoSeccion } from './BienSecuestradoSeccion'
 import { BienIncautadoSeccion } from './BienIncautadoSeccion'
@@ -14,21 +13,22 @@ import { BienConfiscadoSeccion } from './BienConfiscadoSeccion'
 import { PerdidaDominioSeccion } from './PerdidaDominioSeccion'
 import { SituacionBienSeccion } from './SituacionBienSeccion'
 import { ArchivosBienSeccion } from './ArchivosBienSeccion'
+import Input from '@mui/material/Input/Input'
 
 type TabBien = 'secuestrado' | 'incautado' | 'confiscado' | 'perdida-dominio' | 'situacion'
 type TabSeccion = 'bienes' | 'archivos'
 
 const TABS_BIEN: { key: TabBien; label: string; icon: string }[] = [
-  { key: 'secuestrado', label: 'BIENES SECUESTRADOS', icon: 'lock' },
-  { key: 'incautado', label: 'BIENES INCAUTADOS', icon: 'gavel' },
-  { key: 'confiscado', label: 'BIENES CONFISCADOS', icon: 'balance' },
-  { key: 'perdida-dominio', label: 'PÉRDIDA DE DOMINIO', icon: 'domain_disabled' },
-  { key: 'situacion', label: 'ENTREGA O DEVOLUCIÓN', icon: 'handshake' },
+  { key: 'secuestrado', label: 'Bienes Secuestrados', icon: 'lock' },
+  { key: 'incautado', label: 'Bienes Incautados', icon: 'gavel' },
+  { key: 'confiscado', label: 'Bienes Confiscados', icon: 'balance' },
+  { key: 'perdida-dominio', label: 'Pérdida de Dominio', icon: 'domain_disabled' },
+  { key: 'situacion', label: 'Entrega o Devolución', icon: 'handshake' },
 ]
 
 const TABS_SECCION: { key: TabSeccion; label: string; icon: string }[] = [
-  { key: 'bienes', label: 'INFORMACIÓN DEL CASO — BIENES', icon: 'inventory_2' },
-  { key: 'archivos', label: 'CUADERNO DE INVESTIGACIÓN DIGITAL', icon: 'folder_zip' },
+  { key: 'bienes', label: 'Información del Caso — Bienes', icon: 'inventory_2' },
+  { key: 'archivos', label: 'Cuaderno de Investigación Digital', icon: 'folder_zip' },
 ]
 
 interface Props {
@@ -108,15 +108,41 @@ export function BienesTab({ idCaso, idOperativo, cabecera }: Props) {
   return (
     <div className="space-y-6">
       {/* Info del caso */}
-      <div className="bg-gray-50 dark:bg-gray-800/40 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <InfoChip label="Número de Caso" value={cabecera?.numeroCaso} />
-        <InfoChip label="Número de Operativo" value={cabecera?.nroOperativo} />
-        <InfoChip label="CUD Fiscalía" value={cabecera?.ianus} />
-        <InfoChip label="Etapa Investigativa" value={cabecera?.etapaInvestigacion} />
-        <InfoChip label="Nombre del Caso" value={cabecera?.nombreCaso} className="col-span-2" />
-        <InfoChip label="Asignado al Caso" value={cabecera?.asignadoCaso} />
-        <InfoChip label="Fiscal Asignado" value={cabecera?.fiscalAsignadoCaso} />
-        <InfoChip label="Num. Caso Pérdida de Dominio" value={cabecera?.numeroCasoPerDom} className="col-span-2" />
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Número de Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.numeroCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Número de Operativo</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nroOperativo || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">CUD Fiscalía</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.ianus || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Etapa Investigativa</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.etapaInvestigacion || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Nombre del Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nombreCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Asignado al caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.asignadoCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Fiscal Asignado</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.fiscalAsignadoCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Num. Caso Pérdida de Dominio</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.numeroCasoPerDom || '-'} disabled readOnly />
+          </div>
+        </div>
       </div>
 
       {/* Tabs Principales de la Sección de Bienes */}
@@ -247,7 +273,7 @@ export function BienesTab({ idCaso, idOperativo, cabecera }: Props) {
                       <button
                         key={tab.key}
                         type="button"
-                        className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${activa
+                        className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-medium border-b-2 transition-all ${activa
                           ? 'border-primary text-primary bg-white dark:bg-gray-900'
                           : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}

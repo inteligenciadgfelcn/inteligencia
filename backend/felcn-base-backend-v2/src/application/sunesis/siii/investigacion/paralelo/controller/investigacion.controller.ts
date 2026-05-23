@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Query,
   Body,
@@ -143,11 +144,30 @@ export class InvestigacionController extends BaseController {
     return this.successPagedRows([datos, total], paginacion)
   }
 
+  @ApiOperation({ summary: 'Buscar investigación paralela por ID de operativo' })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @Get('por-operativo/:idOperativo')
+  async buscarPorOperativo(@Param('idOperativo') idOperativo: string) {
+    const dato = await this.service.buscarPorOperativo(idOperativo)
+    return this.successList(dato)
+  }
+
   @ApiOperation({ summary: 'Obtener investigación paralela por ID' })
   @ApiParam({ name: 'id', description: 'ID de la investigación paralela' })
   @Get(':id')
   async buscarPorId(@Param('id') id: string) {
     const dato = await this.service.buscarPorId(id)
     return this.successList(dato)
+  }
+
+  @ApiOperation({ summary: 'Actualizar investigación paralela por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la investigación paralela' })
+  @Patch(':id')
+  async actualizarInvestigacionParalela(
+    @Param('id') id: string,
+    @Body() dto: Partial<CreateInvestigacionParalelaDto>
+  ) {
+    const actualizada = await this.service.actualizarInvestigacionParalela({ ...dto, id })
+    return this.successList(actualizada)
   }
 }

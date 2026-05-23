@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
+import { Button } from '@/components/ui/Button'
 import { PersonasServiceInstance } from '@/services/seguimiento/SeguimientoPersonasService'
 import { SituacionLegalSeccion } from './SituacionLegalSeccion'
 import { EtapaProcesoSeccion } from './EtapaProcesoSeccion'
+import { Input } from '@/components/ui/Input'
 
 type TabPersona = 'situacion' | 'etapa'
 
 const TABS_PERSONA: { key: TabPersona; label: string; icon: string }[] = [
-  { key: 'situacion', label: 'SITUACIÓN LEGAL DEL IMPLICADO', icon: 'gavel' },
-  { key: 'etapa', label: 'ETAPA DEL PROCESO', icon: 'account_balance' },
+  { key: 'situacion', label: 'Situación Legal del Implicado', icon: 'gavel' },
+  { key: 'etapa', label: 'Etapa del Proceso', icon: 'account_balance' },
 ]
 
 interface Props {
@@ -48,26 +50,48 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
   return (
     <div className="space-y-6">
       {/* Info del caso */}
-      <div className="bg-gray-50 dark:bg-gray-800/40 rounded-lg p-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <InfoChip label="Número de Caso" value={cabecera?.numeroCaso} />
-        <InfoChip label="Número de Operativo" value={cabecera?.nroOperativo} />
-        <InfoChip label="CUD Fiscalía" value={cabecera?.ianus} />
-        <InfoChip label="Etapa Investigativa" value={cabecera?.etapaInvestigacion} />
-        <InfoChip label="Nombre del Caso" value={cabecera?.nombreCaso} className="col-span-2" />
-        <InfoChip label="Fiscal Asignado" value={cabecera?.fiscalAsignadoCaso} className="col-span-2" />
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Número de Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.numeroCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Número de Operativo</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nroOperativo || '-'} disabled readOnly />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium">CUD Fiscalía</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.ianus || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Etapa Investigativa</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.etapaInvestigacion || '-'} disabled readOnly />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="mb-1 block text-sm font-medium">Nombre del Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nombreCaso || '-'} disabled readOnly />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Fiscal Asignado</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.fiscalAsignadoCaso || '-'} disabled readOnly />
+          </div>
+        </div>
       </div>
 
       {/* Grilla de personas implicadas */}
       <div>
-        <h3 className="text-md font-semibold mb-3 dark:text-white-light">PERSONAS IMPLICADAS EN EL OPERATIVO</h3>
+        <h4 className="mb-4 text-sm font-semibold">PERSONAS IMPLICADAS EN EL OPERATIVO</h4>
         <div className="datatables">
-          <DataTable
-            noRecordsText={idOperativo ? 'No hay personas registradas para este operativo' : 'Sin operativo asignado'}
-            highlightOnHover
-            fetching={cargandoPersonas}
-            className="whitespace-nowrap table-hover"
-            records={personas}
-            rowClassName={(row) =>
+          <VristoDataTable
+            loading={cargandoPersonas}
+            rows={personas}
+            total={personas.length}
+            page={1}
+            limit={personas.length || 10}
+            onPageChange={() => { }}
+            onLimitChange={() => { }}
+            rowClassName={(row: any) =>
               personaSeleccionada?.id === row.id ? '!bg-primary/10 font-semibold' : ''
             }
             columns={[
@@ -78,8 +102,8 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
               {
                 accessor: 'fechaNacimiento',
                 title: 'Fecha Nac.',
-                render: ({ fechaNacimiento }) =>
-                  fechaNacimiento ? new Date(fechaNacimiento).toLocaleDateString('es-BO') : '*'
+                render: (row: any) =>
+                  row.fechaNacimiento ? new Date(row.fechaNacimiento).toLocaleDateString('es-BO') : '*'
               },
               { accessor: 'estadoCivil', title: 'Estado Civil' },
               { accessor: 'serie', title: 'Serie' },
@@ -87,18 +111,20 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
               { accessor: 'condicion', title: 'Condición' },
               {
                 accessor: 'acciones',
-                title: '',
-                render: (row) => (
-                  <button
+                title: 'Acciones',
+                className: 'text-right',
+                render: (row: any) => (
+                  <Button
                     type="button"
-                    className={`btn btn-sm ${personaSeleccionada?.id === row.id ? 'btn-primary' : 'btn-dark'}`}
+                    variant={personaSeleccionada?.id === row.id ? 'primary' : 'dark'}
+                    size="sm"
                     onClick={() => {
                       setPersonaSeleccionada(row)
                       setTabActiva('situacion')
                     }}
                   >
                     {personaSeleccionada?.id === row.id ? 'Seleccionado' : 'Seleccionar'}
-                  </button>
+                  </Button>
                 )
               }
             ]}
@@ -126,7 +152,7 @@ export function PersonasTab({ idCaso, idOperativo, cabecera }: Props) {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${activa
+                  className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-medium border-b-2 transition-all ${activa
                     ? 'border-primary text-primary bg-white dark:bg-gray-900'
                     : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}

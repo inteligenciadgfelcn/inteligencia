@@ -73,7 +73,7 @@ export function FormSeguimiento({ idCaso, tabInicial }: Props) {
       <div className="panel flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <BackButton />
-          <h2 className="text-lg font-semibold text-primary">Seguimiento Jurídico (SIII)</h2>
+          <h2 className="text-lg font-semibold text-primary">Seguimiento de Casos Jurídico</h2>
         </div>
         <div className="flex items-center gap-2">
           <span className="badge badge-outline-primary text-sm">
@@ -94,9 +94,9 @@ export function FormSeguimiento({ idCaso, tabInicial }: Props) {
               <button
                 key={tab}
                 type="button"
-                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-bold border-b-2 transition-all ${activa
-                    ? 'border-primary text-primary bg-primary/5'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
+                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-medium border-b-2 transition-all ${activa
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 onClick={() => setTabPrincipal(tab)}
               >

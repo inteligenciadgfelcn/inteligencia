@@ -9,7 +9,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
 import { SeguimientoServiceInstance, ServidorPolicialPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface PolicialesSeccionProps {
   idOperativo: string | null
@@ -22,7 +22,7 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
   const [servidores, setServidores] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<ServidorPolicialPayload>({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<ServidorPolicialPayload>({
     defaultValues: {
       idGrado: 0,
       nombreApellidos: ''
@@ -76,22 +76,24 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">Agregar Servidor Policial</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <label className="block text-sm font-medium mb-1">Grado <span className="text-danger">*</span></label>
             <Select
               {...register('idGrado', { valueAsNumber: true, required: 'Campo requerido' })}
               options={grados.map(g => ({ value: String(g.id), label: g.descripcion }))}
+              error={!!errors.idGrado}
             />
+            {errors.idGrado && <div className="mt-1 text-xs text-danger">{errors.idGrado.message}</div>}
           </div>
-          <div>
+          <div className="lg:col-span-2">
             <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
-            <Input {...register('nombreApellidos', { required: 'Campo requerido' })} size="sm" />
+            <Input {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
+            {errors.nombreApellidos && <div className="mt-1 text-xs text-danger">{errors.nombreApellidos.message}</div>}
           </div>
-          <div className="flex justify-end lg:col-span-2">
-            <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
+          <div className="flex justify-end lg:col-span-1">
+            <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
               Guardar
             </Button>
           </div>
@@ -99,25 +101,27 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
       </div>
 
       <div>
-        <h3 className="text-md font-semibold mb-4">Servidores Policiales que Intervienen</h3>
+        <h4 className="mb-4 text-sm font-semibold">Servidores Policiales que Intervienen</h4>
         <div className="datatables">
-          <DataTable
-            noRecordsText="No hay servidores registrados"
-            fetching={cargando}
-            highlightOnHover
-            className="whitespace-nowrap table-hover"
-            records={servidores}
+          <VristoDataTable
+            loading={cargando}
+            rows={servidores}
+            total={servidores.length}
+            page={1}
+            limit={servidores.length || 10}
+            onPageChange={() => { }}
+            onLimitChange={() => { }}
             columns={[
               {
                 accessor: 'grado',
                 title: 'Grado',
-                render: ({ grado }) => grado?.descripcion || '-'
+                render: (row: any) => row.grado?.descripcion || '-'
               },
               { accessor: 'nombreApellidos', title: 'Nombre y Apellidos' },
               {
                 accessor: 'fechaHoraIngreso',
                 title: 'Fecha Registro',
-                render: ({ fechaHoraIngreso }) => fechaHoraIngreso ? new Date(fechaHoraIngreso).toLocaleString() : '-'
+                render: (row: any) => row.fechaHoraIngreso ? new Date(row.fechaHoraIngreso).toLocaleString() : '-'
               }
             ]}
           />

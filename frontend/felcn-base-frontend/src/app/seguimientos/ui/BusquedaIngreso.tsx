@@ -38,7 +38,6 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
             Número de Caso
           </label>
           <Input
-            size="sm"
             value={nroCaso}
             onChange={(e) => setNroCaso(e.target.value)}
             placeholder="Ej: LP-A-1/25"
@@ -65,7 +64,6 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
             Nombre del Caso
           </label>
           <Input
-            size="sm"
             value={nombreCaso}
             onChange={(e) => setNombreCaso(e.target.value)}
             placeholder="Nombre del operativo"
@@ -91,13 +89,13 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
           <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
             Desde
           </label>
-          <Input size="sm" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
+          <Input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
         </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">
             Hasta
           </label>
-          <Input size="sm" type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
+          <Input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
         </div>
         <Button
           variant="secondary"
