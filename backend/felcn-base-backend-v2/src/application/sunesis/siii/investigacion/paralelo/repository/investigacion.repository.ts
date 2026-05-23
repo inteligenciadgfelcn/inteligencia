@@ -131,7 +131,14 @@ export class InvestigacionRepository {
   async buscarPorId(id: string): Promise<InvestigacionParalela | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['asignacion', 'operativo'],
+      relations: ['asignacion', 'operativo', 'departamento', 'unidad', 'distrital', 'grupo'],
+    })
+  }
+
+  async buscarPorOperativo(idOperativo: string): Promise<InvestigacionParalela | null> {
+    return this.repo.findOne({
+      where: { idOperativo },
+      relations: ['departamento', 'unidad', 'distrital', 'grupo'],
     })
   }
 
