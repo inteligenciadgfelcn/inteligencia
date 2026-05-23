@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 
@@ -28,7 +28,7 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
   const [registros, setRegistros] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm({
     defaultValues: { nombre: '', tipo: 'DOCUMENTO', idContenidoBien: '' },
   })
 
@@ -89,41 +89,40 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit(onSubmit)} className="panel border border-warning/20">
-        <div className="mb-4 flex items-center gap-2 text-warning font-bold uppercase text-xs tracking-wider">
-          <Icono className="w-5 h-5">upload_file</Icono>
-          Ingreso de Documentación Digitalizada
-        </div>
-
+      <form onSubmit={handleSubmit(onSubmit)} className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="lg:col-span-1">
-            <label className="block text-sm font-medium mb-1">Paso 1: Categoría</label>
+            <label className="block text-sm font-medium mb-1">Categoría</label>
             <Select
               {...register('idContenidoBien', { required: true })}
               options={contenidoBien.map((c) => ({ value: String(c.id), label: c.descripcion }))}
               placeholder="Seleccione..."
+              error={!!errors.idContenidoBien}
             />
+            {errors.idContenidoBien && <div className="mt-1 text-xs text-danger">Campo requerido</div>}
           </div>
           <div className="lg:col-span-1">
-            <label className="block text-sm font-medium mb-1">Paso 2: Nombre</label>
+            <label className="block text-sm font-medium mb-1">Nombre</label>
             <Input
               {...register('nombre', { required: true })}
-              size="sm"
               placeholder="Ej: Resolución 123/2024"
+              error={!!errors.nombre}
             />
+            {errors.nombre && <div className="mt-1 text-xs text-danger">Campo requerido</div>}
           </div>
           <div className="lg:col-span-1">
-            <label className="block text-sm font-medium mb-1">Paso 3: Tipo</label>
-            <Select {...register('tipo', { required: true })} options={TIPOS_DOC} />
+            <label className="block text-sm font-medium mb-1">Tipo</label>
+            <Select {...register('tipo', { required: true })} options={TIPOS_DOC} error={!!errors.tipo} />
+            {errors.tipo && <div className="mt-1 text-xs text-danger">Campo requerido</div>}
           </div>
           <div className="lg:col-span-1">
             <Button type="submit" variant="warning" className="w-full" loading={isSubmitting}>
-              Paso 5: Finalizar Guardado
+              Guardar
             </Button>
           </div>
 
           <div className="lg:col-span-4 mt-2">
-            <label className="block text-sm font-medium mb-2">Paso 4: Seleccionar Documento o Imagen</label>
+            <label className="block text-sm font-medium mb-2">Documento o Imagen</label>
             <Dropzone
               file={file}
               onChange={setFile}
@@ -134,17 +133,19 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
       </form>
 
       <div className="datatables">
-        <DataTable
-          noRecordsText="No hay archivos adjuntos"
-          highlightOnHover
-          fetching={cargando}
-          className="whitespace-nowrap table-hover"
-          records={registros}
+        <VristoDataTable
+          loading={cargando}
+          rows={registros}
+          total={registros.length}
+          page={1}
+          limit={registros.length || 10}
+          onPageChange={() => { }}
+          onLimitChange={() => { }}
           columns={[
             {
               accessor: 'contenidoBien',
               title: 'Documento',
-              render: ({ contenidoBien }) => contenidoBien?.descripcion || '-',
+              render: (row: any) => row.contenidoBien?.descripcion || '-',
             },
             { accessor: 'tipo', title: 'Tipo' },
             { accessor: 'nombre', title: 'Nombre del Documento' },
@@ -152,16 +153,16 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
             {
               accessor: 'acciones',
               title: '',
-              textAlign: 'center',
-              render: (row) => (
+              className: 'text-center',
+              render: (row: any) => (
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
                     onClick={() => handleDescargar(row.id, row.nombreArchivo)}
-                    className="text-info underline text-xs hover:text-info/80"
+                    className="btn btn-outline-info btn-sm p-1"
                     title="Descargar"
                   >
-                    Descargar
+                    <Icono className="w-4 h-4">download</Icono>
                   </button>
                   <button
                     type="button"
@@ -202,11 +203,10 @@ function Dropzone({
 
   return (
     <div
-      className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-all ${
-        drag
-          ? 'border-success bg-success/10 scale-[0.99]'
-          : 'border-[#e0e6ed] dark:border-[#1b2e4b] hover:border-success dark:hover:border-success/50 bg-gray-50/50 dark:bg-gray-800/20'
-      }`}
+      className={`relative cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-all ${drag
+        ? 'border-success bg-success/10 scale-[0.99]'
+        : 'border-[#e0e6ed] dark:border-[#1b2e4b] hover:border-success dark:hover:border-success/50 bg-gray-50/50 dark:bg-gray-800/20'
+        }`}
       onDragOver={(e) => {
         e.preventDefault()
         setDrag(true)
@@ -222,7 +222,7 @@ function Dropzone({
         hidden
         onChange={(e) => onChange(e.target.files?.[0] || null)}
       />
-      
+
       {file ? (
         <div className="flex items-center justify-center gap-3 animate-in fade-in zoom-in duration-300">
           <div className="p-3 bg-success/20 rounded-full">

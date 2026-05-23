@@ -20,13 +20,13 @@ type SeccionKey =
   | 'fiscales'
 
 const SECCIONES_CASOS = [
-  { key: 'metadatos' as SeccionKey, label: 'ACTUALIZACION DEL INFORME', icon: 'description' },
-  { key: 'archivos' as SeccionKey, label: 'CUADERNO DE INVESTIGACION DIGITAL', icon: 'folder_open' },
-  { key: 'policiales' as SeccionKey, label: 'SERVIDORES POLICIALES (OPERATIVO)', icon: 'local_police' },
-  { key: 'jurisdiccion' as SeccionKey, label: 'JURISDICCION DEL CASO', icon: 'gavel' },
-  { key: 'control' as SeccionKey, label: 'CONTROL JURISDICCIONAL', icon: 'account_balance' },
-  { key: 'investigadores' as SeccionKey, label: 'INVESTIGADOR(ES) ASIGNADO(S)', icon: 'person' },
-  { key: 'fiscales' as SeccionKey, label: 'FISCAL(ES) ASIGNADO(S)', icon: 'person_search' },
+  { key: 'metadatos' as SeccionKey, label: 'Actualización del Informe', icon: 'description' },
+  { key: 'archivos' as SeccionKey, label: 'Cuaderno de Investigación Digital', icon: 'note' },
+  { key: 'policiales' as SeccionKey, label: 'Servidores Policiales (Operativo)', icon: 'person' },
+  { key: 'jurisdiccion' as SeccionKey, label: 'Jurisdicción del Caso', icon: 'gavel' },
+  { key: 'control' as SeccionKey, label: 'Control Jurisdiccional', icon: 'account_balance' },
+  { key: 'investigadores' as SeccionKey, label: 'Investigador(es) Asignado(s)', icon: 'person' },
+  { key: 'fiscales' as SeccionKey, label: 'Fiscal(es) Asignado(s)', icon: 'user' },
 ]
 
 interface Props {
@@ -78,11 +78,10 @@ export function CasosTab({ idCaso, idOperativo, datos, onGuardar }: Props) {
             <button
               key={seccion.key}
               type="button"
-              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 text-xs font-bold border-b-2 transition-all ${
-                activa
-                  ? 'border-secondary text-secondary bg-white dark:bg-gray-900'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800'
-              }`}
+              className={`flex items-center gap-2 whitespace-nowrap px-5 py-3 text-sm font-medium border-b-2 transition-all ${activa
+                ? 'border-secondary text-secondary bg-white dark:bg-gray-900'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-secondary hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
               onClick={() => setSeccionActiva(seccion.key)}
             >
               <Icono className={`w-4 h-4 ${activa ? 'text-secondary' : ''}`}>

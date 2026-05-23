@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SeguimientoServiceInstance, ControlJurisdiccionalPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface ControlJurisdiccionalSeccionProps {
   idCaso: string
@@ -16,7 +16,7 @@ interface ControlJurisdiccionalSeccionProps {
 
 export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: ControlJurisdiccionalSeccionProps) {
   const { Alerta } = useAlerts()
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<ControlJurisdiccionalPayload>({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<ControlJurisdiccionalPayload>({
     defaultValues: {
       juzgadoInstruccion: '',
       juzgadoPartido: '',
@@ -43,33 +43,37 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">Registrar Nuevo Control Jurisdiccional</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">Fecha de Inicio <span className="text-danger">*</span></label>
-              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} size="sm" />
+              <Input type="date" {...register('fecha', { required: 'Campo requerido' })} error={!!errors.fecha} />
+              {errors.fecha && <div className="mt-1 text-xs text-danger">{errors.fecha.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado <span className="text-danger">*</span></label>
-              <Input {...register('juzgadoInstruccion', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('juzgadoInstruccion', { required: 'Campo requerido' })} error={!!errors.juzgadoInstruccion} />
+              {errors.juzgadoInstruccion && <div className="mt-1 text-xs text-danger">{errors.juzgadoInstruccion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado Mixto</label>
-              <Input {...register('juzgadoPartido')} size="sm" />
+              <Input {...register('juzgadoPartido')} error={!!errors.juzgadoPartido} />
+              {errors.juzgadoPartido && <div className="mt-1 text-xs text-danger">{errors.juzgadoPartido.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado de Ejecución Penal</label>
-              <Input {...register('juzgadoEjecucion')} size="sm" />
+              <Input {...register('juzgadoEjecucion')} error={!!errors.juzgadoEjecucion} />
+              {errors.juzgadoEjecucion && <div className="mt-1 text-xs text-danger">{errors.juzgadoEjecucion.message}</div>}
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Tribunal de Sentencia en lo Penal</label>
-              <Input {...register('tribunalSentencia')} size="sm" />
+              <Input {...register('tribunalSentencia')} error={!!errors.tribunalSentencia} />
+              {errors.tribunalSentencia && <div className="mt-1 text-xs text-danger">{errors.tribunalSentencia.message}</div>}
             </div>
           </div>
           <div className="flex justify-end">
-            <Button type="submit" variant="primary" size="sm" loading={isSubmitting}>
+            <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
               Guardar
             </Button>
           </div>
@@ -77,18 +81,21 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
       </div>
 
       <div>
-        <h3 className="text-md font-semibold mb-4">Historial de Control Jurisdiccional</h3>
+        <h4 className="mb-4 text-sm font-semibold">Historial de Control Jurisdiccional</h4>
         <div className="datatables">
-          <DataTable
-            noRecordsText="No hay registros de control"
-            highlightOnHover
-            className="whitespace-nowrap table-hover"
-            records={datos || []}
+          <VristoDataTable
+            loading={false}
+            rows={datos || []}
+            total={(datos || []).length}
+            page={1}
+            limit={(datos || []).length || 10}
+            onPageChange={() => { }}
+            onLimitChange={() => { }}
             columns={[
               {
                 accessor: 'fecha',
                 title: 'Fecha Inicio',
-                render: ({ fecha }) => fecha ? new Date(fecha).toLocaleDateString() : '-'
+                render: (row: any) => row.fecha ? new Date(row.fecha).toLocaleDateString() : '-'
               },
               { accessor: 'juzgadoInstruccion', title: 'J. Instrucción' },
               { accessor: 'juzgadoPartido', title: 'J. Partido' },
@@ -97,9 +104,9 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
               {
                 accessor: 'esActual',
                 title: 'Estado',
-                render: ({ esActual }) => (
-                  <span className={`badge ${esActual ? 'badge-outline-success' : 'badge-outline-dark'}`}>
-                    {esActual ? 'Actual' : 'Histórico'}
+                render: (row: any) => (
+                  <span className={`badge ${row.esActual ? 'badge-outline-success' : 'badge-outline-dark'}`}>
+                    {row.esActual ? 'Actual' : 'Histórico'}
                   </span>
                 )
               }
