@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
-import { DataTable } from 'mantine-datatable'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import {
   BienesServiceInstance,
   CreatePerdidaDominioPayload,
@@ -22,7 +22,7 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
   const [registros, setRegistros] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } =
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } =
     useForm<CreatePerdidaDominioPayload>({
       defaultValues: { fiscalia: '', fechaResolucion: dayjs().format('YYYY-MM-DD'), autoridad: '' },
     })
@@ -55,21 +55,24 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
 
   return (
     <div className="space-y-8">
-      <div className="bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <h3 className="text-md font-semibold mb-4 text-primary">PÉRDIDA DE DOMINIO</h3>
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <h4 className="mb-4 text-sm font-semibold">PÉRDIDA DE DOMINIO</h4>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">Fiscalía <span className="text-danger">*</span></label>
-              <Input {...register('fiscalia', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('fiscalia', { required: 'Campo requerido' })} error={!!errors.fiscalia} />
+              {errors.fiscalia && <div className="mt-1 text-xs text-danger">{errors.fiscalia.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Fecha <span className="text-danger">*</span></label>
-              <Input type="date" {...register('fechaResolucion', { required: 'Campo requerido' })} size="sm" />
+              <Input type="date" {...register('fechaResolucion', { required: 'Campo requerido' })} error={!!errors.fechaResolucion} />
+              {errors.fechaResolucion && <div className="mt-1 text-xs text-danger">{errors.fechaResolucion.message}</div>}
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">A Requerimiento del Fiscal <span className="text-danger">*</span></label>
-              <Input {...register('autoridad', { required: 'Campo requerido' })} size="sm" />
+              <Input {...register('autoridad', { required: 'Campo requerido' })} error={!!errors.autoridad} />
+              {errors.autoridad && <div className="mt-1 text-xs text-danger">{errors.autoridad.message}</div>}
             </div>
           </div>
           <div className="flex justify-end">
@@ -81,12 +84,14 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
       </div>
 
       <div className="datatables">
-        <DataTable
-          noRecordsText="No hay registros de pérdida de dominio"
-          highlightOnHover
-          fetching={cargando}
-          className="whitespace-nowrap table-hover"
-          records={registros}
+        <VristoDataTable
+          loading={cargando}
+          rows={registros}
+          total={registros.length}
+          page={1}
+          limit={registros.length || 10}
+          onPageChange={() => {}}
+          onLimitChange={() => {}}
           columns={[
             { accessor: 'fiscalia', title: 'Fiscalía que Emitió la Pérdida de Dominio' },
             { accessor: 'fechaResolucion', title: 'Fecha' },
