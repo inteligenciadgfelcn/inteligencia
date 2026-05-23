@@ -1176,38 +1176,28 @@ export function DatosGeneralesForm({
               htmlFor="clanFamiliar"
               className="mb-1 block text-sm font-medium"
             >
-              Clan Familiar <span className="text-danger">*</span>
+              Clan Familiar
             </label>
             <Input
               id="clanFamiliar"
               type="text"
-              className={`w-full ${errors.clanFamiliar ? 'border-danger' : ''}`}
-              {...register('clanFamiliar', reglaObligatorio)}
+              className="w-full"
+              {...register('clanFamiliar')}
             />
-            {errors.clanFamiliar && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.clanFamiliar.message}
-              </div>
-            )}
           </div>
           <div>
             <label
               htmlFor="organizacion"
               className="mb-1 block text-sm font-medium"
             >
-              Organización Criminal <span className="text-danger">*</span>
+              Organización Criminal
             </label>
             <Input
               id="organizacion"
               type="text"
-              className={`w-full ${errors.organizacion ? 'border-danger' : ''}`}
-              {...register('organizacion', reglaObligatorio)}
+              className="w-full"
+              {...register('organizacion')}
             />
-            {errors.organizacion && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.organizacion.message}
-              </div>
-            )}
           </div>
           <div className="hidden lg:block"></div>
 

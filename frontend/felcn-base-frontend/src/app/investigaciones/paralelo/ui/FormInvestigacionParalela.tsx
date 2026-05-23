@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -37,11 +37,14 @@ export const FormInvestigacionParalela = ({
   onBack,
 }: FormInvestigacionParalelaProps) => {
   const [loading, setLoading] = useState(false)
+  const [loadingDetalle, setLoadingDetalle] = useState(false)
+  const [investigacionIdInterno, setInvestigacionIdInterno] = useState<string | null>(null)
   const { Alerta } = useAlerts()
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -53,33 +56,67 @@ export const FormInvestigacionParalela = ({
     },
   })
 
+  useEffect(() => {
+    if (!caso?.idOperativo) return
+    const verificarExistente = async () => {
+      setLoadingDetalle(true)
+      try {
+        const res = await InvestigacionService.obtenerPorOperativo(String(caso.idOperativo))
+        const detalle = res.datos
+        if (detalle) {
+          setInvestigacionIdInterno(detalle.id)
+          reset({
+            delitoPrecedente: detalle.delito,
+            detalleDelitoPrecedente: detalle.delitoPrecedente,
+            informeInteligencia: detalle.informe,
+            fechaEnvioInvestigacionParalela: dayjs(detalle.fechaEnvioInvestigacionParalela).format('YYYY-MM-DD'),
+          })
+        }
+      } catch {
+        // sin registro previo — formulario vacío
+      } finally {
+        setLoadingDetalle(false)
+      }
+    }
+    void verificarExistente()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [caso?.idOperativo])
+
   if (!caso) return null
+  if (loadingDetalle) return <LoadingDialog show />
 
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
-      const payload: InvestigacionParalelaPayload = {
-        idCaso: caso.idCaso,
-        idDepartamentoCaso: caso.idDepartamentoCaso || '',
-        abreviaturaUnidad: caso.abreviaturaUnidad || '',
-        idDistrital: caso.idDistrital || 0,
-        idGrupo: caso.idGrupo || 0,
-        delito: data.delitoPrecedente,
-        numeroCaso: caso.numeroCaso || '',
-        asignadoCaso: caso.asignadoCaso || '',
-        fiscalAsignadoCaso: caso.fiscalAsignadoCaso || '',
-        idOperativo: caso.numeroOperativo || '',
-        delitoPrecedente: data.detalleDelitoPrecedente,
-        informe: data.informeInteligencia,
-        fechaEnvioInvestigacionParalela: data.fechaEnvioInvestigacionParalela,
-        resultado: false,
-        respuestaInvestigacionParalela: false,
+      if (investigacionIdInterno) {
+        await InvestigacionService.actualizar(investigacionIdInterno, {
+          delito: data.delitoPrecedente,
+          delitoPrecedente: data.detalleDelitoPrecedente,
+          informe: data.informeInteligencia,
+          fechaEnvioInvestigacionParalela: data.fechaEnvioInvestigacionParalela,
+        })
+        Alerta({ mensaje: 'Caso Paralelo actualizado exitosamente', variant: 'success' })
+      } else {
+        const payload: InvestigacionParalelaPayload = {
+          idCaso: caso.idCaso,
+          idDepartamentoCaso: caso.idDepartamentoCaso || '',
+          abreviaturaUnidad: caso.abreviaturaUnidad || '',
+          idDistrital: caso.idDistrital || 0,
+          idGrupo: caso.idGrupo || 0,
+          delito: data.delitoPrecedente,
+          numeroCaso: caso.numeroCaso || '',
+          asignadoCaso: caso.asignadoCaso || '',
+          fiscalAsignadoCaso: caso.fiscalAsignadoCaso || '',
+          idOperativo: String(caso.idOperativo) || '',
+          delitoPrecedente: data.detalleDelitoPrecedente,
+          informe: data.informeInteligencia,
+          fechaEnvioInvestigacionParalela: data.fechaEnvioInvestigacionParalela,
+          resultado: false,
+          respuestaInvestigacionParalela: false,
+        }
+        await InvestigacionService.guardar(payload)
+        Alerta({ mensaje: 'Caso Paralelo guardado exitosamente', variant: 'success' })
       }
-      await InvestigacionService.guardar(payload)
-      Alerta({
-        mensaje: 'Caso Paralelo guardado exitosamente',
-        variant: 'success',
-      })
       onBack()
     } catch (error) {
       Alerta({
@@ -103,7 +140,9 @@ export const FormInvestigacionParalela = ({
           >
             <IconArrowLeft className="h-6 w-6" />
           </button>
-          <h2 className="text-lg font-semibold text-primary">Registro de Caso Paralelo</h2>
+          <h2 className="text-lg font-semibold text-primary">
+            {investigacionIdInterno ? 'Editar Caso Paralelo' : 'Registro de Caso Paralelo'}
+          </h2>
         </div>
       </div>
 

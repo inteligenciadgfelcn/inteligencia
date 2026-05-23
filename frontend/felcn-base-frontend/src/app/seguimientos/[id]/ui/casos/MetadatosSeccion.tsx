@@ -24,7 +24,7 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
   const { Alerta } = useAlerts()
   const { etapasInvestigacion, cargarEtapasInvestigacion } = useParametricas()
 
-  const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<UpdateMetadatosPayload>({
+  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm<UpdateMetadatosPayload>({
     defaultValues: {
       ianus: '',
       numeroCasoPerDom: '',
@@ -65,70 +65,76 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
 
   return (
     <div className="space-y-6">
-      <div className="panel bg-gray-50 dark:bg-gray-800/40">
-        <h3 className="text-lg font-bold mb-4 text-primary uppercase">ACTUALIZACION DEL INFORME</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+      <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="text-gray-500 font-semibold block mb-1">Número de Caso</label>
-            <div className="font-bold text-dark dark:text-white-light">{cabecera?.numeroCaso || '-'}</div>
+            <label className="mb-1 block text-sm font-medium">Número de Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.numeroCaso || '-'} disabled readOnly />
           </div>
           <div>
-            <label className="text-gray-500 font-semibold block mb-1">Número de Operativo</label>
-            <div className="font-bold text-dark dark:text-white-light">{cabecera?.nroOperativo || '-'}</div>
+            <label className="mb-1 block text-sm font-medium">Número de Operativo</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nroOperativo || '-'} disabled readOnly />
           </div>
           <div className="sm:col-span-2">
-            <label className="text-gray-500 font-semibold block mb-1">Nombre del Caso</label>
-            <div className="font-bold text-dark dark:text-white-light">{cabecera?.nombreCaso || '-'}</div>
+            <label className="mb-1 block text-sm font-medium">Nombre del Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.nombreCaso || '-'} disabled readOnly />
           </div>
           <div className="sm:col-span-2">
-            <label className="text-gray-500 font-semibold block mb-1">Asignado al Caso</label>
-            <div className="font-bold text-dark dark:text-white-light">{cabecera?.asignadoCaso || '-'}</div>
+            <label className="mb-1 block text-sm font-medium">Asignado al Caso</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.asignadoCaso || '-'} disabled readOnly />
           </div>
           <div className="sm:col-span-2">
-            <label className="text-gray-500 font-semibold block mb-1">Fiscal Asignado</label>
-            <div className="font-bold text-dark dark:text-white-light">{cabecera?.fiscalAsignadoCaso || '-'}</div>
+            <label className="mb-1 block text-sm font-medium">Fiscal Asignado</label>
+            <Input className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500" value={cabecera?.fiscalAsignadoCaso || '-'} disabled readOnly />
           </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
-            <label className="block text-sm font-medium mb-2">CUD Fiscalía</label>
+            <label className="mb-1 block text-sm font-medium">CUD Fiscalía</label>
             <Input
               {...register('ianus')}
               placeholder="Ingrese el CUD"
+              error={!!errors.ianus}
             />
+            {errors.ianus && <div className="mt-1 text-xs text-danger">{errors.ianus.message}</div>}
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Num. Caso Perdida de Dominio</label>
+            <label className="mb-1 block text-sm font-medium">Num. Caso Perdida de Dominio</label>
             <Input
               {...register('numeroCasoPerDom')}
               placeholder="Ingrese número de caso"
+              error={!!errors.numeroCasoPerDom}
             />
+            {errors.numeroCasoPerDom && <div className="mt-1 text-xs text-danger">{errors.numeroCasoPerDom.message}</div>}
           </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium mb-2">Etapa investigativa</label>
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium">Etapa investigativa</label>
             <Select
               {...register('idEtapaInvestigacion', { valueAsNumber: true })}
               options={etapasInvestigacion.map(e => ({ value: String(e.id), label: e.descripcion }))}
               placeholder="Seleccione la etapa..."
+              error={!!errors.idEtapaInvestigacion}
             />
+            {errors.idEtapaInvestigacion && <div className="mt-1 text-xs text-danger">{errors.idEtapaInvestigacion.message}</div>}
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-bold mb-2 uppercase">Informe del Caso / Detalle del Hecho</label>
+          <label className="mb-1 block text-sm font-medium">Informe del Caso / Detalle del Hecho</label>
           <Textarea
             {...register('descripcionOperativo')}
             placeholder="Escriba el informe detallado del caso..."
             rows={20}
-            className="font-mono text-sm"
+            className={`font-mono text-sm ${errors.descripcionOperativo ? '!border-danger' : ''}`}
           />
+          {errors.descripcionOperativo && <div className="mt-1 text-xs text-danger">{errors.descripcionOperativo.message}</div>}
         </div>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="secondary" loading={isSubmitting}>
+          <Button type="submit" variant="success" size="sm" loading={isSubmitting}>
             <Icono className="w-4 h-4 mr-2">save</Icono>
             ACTUALIZAR INFORME
           </Button>
