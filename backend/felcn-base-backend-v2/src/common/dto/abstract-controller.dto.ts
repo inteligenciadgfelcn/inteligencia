@@ -36,10 +36,10 @@ export abstract class AbstractController {
   }
 
   successDelete<T>(
-    data: T,
+    data?: T,
     message = Messages.SUCCESS_DELETE
   ): SuccessResponseDto<T> {
-    return this.makeResponse(data, message)
+    return this.makeResponse((data ?? null) as unknown as T, message)
   }
 
   successCreate<T>(
@@ -61,12 +61,23 @@ export abstract class AbstractController {
     data: ListaCantidadType<T>,
     paginacion: { pagina?: number; limite?: number },
     message = Messages.SUCCESS_LIST
-  ): SuccessResponseDto<{ filas: Array<T>; page: { size: number; number: number; totalElements: number; totalPages: number } }> {
+  ): SuccessResponseDto<{
+    filas: Array<T>
+    page: {
+      size: number
+      number: number
+      totalElements: number
+      totalPages: number
+    }
+  }> {
     const [filas, totalElements] = data
     const size = paginacion?.limite ?? 10
     const number = paginacion?.pagina ?? 1
     const totalPages = size > 0 ? Math.ceil(totalElements / size) : 1
-    return this.makeResponse({ filas, page: { size, number, totalElements, totalPages } }, message)
+    return this.makeResponse(
+      { filas, page: { size, number, totalElements, totalPages } },
+      message
+    )
   }
 
   getUser(req) {
