@@ -5,9 +5,15 @@ import type { ResultadoAvanzado } from '@/services/reportes/CruzadosAllService'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Constantes } from '@/config/Constantes'
 import IconPrinter from '@/components/Icon/IconPrinter'
+import IconEye from '@/components/Icon/IconEye'
 import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
 import { MapaFullModal } from '../../components/MapaFullModal'
 import type { CoordenadaOp } from '@/services/reportes/CuadrosService'
+import { useAlerts } from '@/hooks/useAlerts'
+import { InterpreteMensajes } from '@/utils'
+import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
+import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
+import { VistaPreviaOperativo } from '../../components/VistaPreviaOperativo'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -61,9 +67,26 @@ const EXPORT_KEYS: (keyof ResultadoAvanzado)[] = [
 ]
 
 export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
+  const { Alerta } = useAlerts()
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [activeMapModal, setActiveMapModal] = useState<'mapa' | 'calor' | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const abrirPreview = async (numeroOperativo: string) => {
+    setPreviewData(null)
+    setPreviewUrl(`${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(numeroOperativo)}`)
+    setModalOpen(true)
+    try {
+      const res = await ReportesOperativoService.verPreviewGeneral(numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOpen(false)
+    }
+  }
 
   const coordenadas: CoordenadaOp[] = useMemo(() => {
     return rows
@@ -107,9 +130,17 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
             </span>
             <button
               type="button"
+              className="text-info hover:text-info/75 transition-colors p-0.5 rounded hover:bg-info/5"
+              onClick={() => row.numeroOperativo && void abrirPreview(row.numeroOperativo)}
+              title="Vista Previa del Reporte General"
+            >
+              <IconEye className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
               onClick={() => row.numeroOperativo && window.open(`${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`, '_blank')}
-              title="Imprimir Reporte General"
+              title="Descargar PDF Reporte General"
             >
               <IconPrinter className="h-4 w-4" />
             </button>
@@ -255,6 +286,14 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
   ], [])
 
   return (
+    <>
+      <VistaPreviaOperativo
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={previewData}
+        tipo="general"
+        urlPdf={previewUrl}
+      />
     <div className="space-y-3">
       {/* Sin resultados */}
       {!loading && buscado && rows.length === 0 && (
@@ -341,5 +380,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
         />
       )}
     </div>
+    </>
   )
 }

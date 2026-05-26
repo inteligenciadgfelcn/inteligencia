@@ -26,6 +26,10 @@ export interface MapaProps {
   zoomControl?: boolean
   scrollWheelZoom?: boolean
   maxZoom?: number
+  /** URL del tile principal. Por defecto usa OpenStreetMap. */
+  tileUrl?: string
+  /** URL de un segundo tile que se superpone (usado para modo híbrido). */
+  tileUrlOverlay?: string
 }
 
 interface ChangeMapViewProps {
@@ -54,6 +58,8 @@ const ChangeMapView: React.FC<ChangeMapViewProps> = memo(
 
 ChangeMapView.displayName = 'ChangeMapView'
 
+const DEFAULT_TILE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+
 const Mapa: React.FC<MapaProps> = ({
   mapRef,
   markers,
@@ -66,6 +72,8 @@ const Mapa: React.FC<MapaProps> = ({
   maxZoom = 19,
   scrollWheelZoom = false,
   zoomControl = false,
+  tileUrl = DEFAULT_TILE,
+  tileUrlOverlay,
 }) => {
   const memoizedOnClick = useCallback(
     (center: [number, number], zoom: number) => {
@@ -89,7 +97,8 @@ const Mapa: React.FC<MapaProps> = ({
         style={{ height, width }}
       >
         <ChangeMapView centro={centro} zoom={zoom} onClick={memoizedOnClick} />
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url={tileUrl} />
+        {tileUrlOverlay && <TileLayer url={tileUrlOverlay} />}
         <ZoomControl
           zoomInTitle="Acercar"
           zoomOutTitle="Alejar"

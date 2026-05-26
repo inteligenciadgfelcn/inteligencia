@@ -4,6 +4,12 @@ import { useState } from 'react'
 import type { ResultadoCruzada } from '@/services/reportes/CruzadosService'
 import { Constantes } from '@/config/Constantes'
 import IconPrinter from '@/components/Icon/IconPrinter'
+import IconEye from '@/components/Icon/IconEye'
+import { useAlerts } from '@/hooks/useAlerts'
+import { InterpreteMensajes } from '@/utils'
+import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
+import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
+import { VistaPreviaOperativo } from '../../components/VistaPreviaOperativo'
 
 function parsearItems(campo: string | null | undefined): string[] {
   if (!campo?.trim()) return []
@@ -72,6 +78,23 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
 // ─── Card principal ───────────────────────────────────────────────────────────
 
 export function OperativoCard({ row }: { row: ResultadoCruzada }) {
+  const { Alerta } = useAlerts()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
+
+  const abrirPreview = async () => {
+    if (!row.numeroOperativo) return
+    setPreviewData(null)
+    setModalOpen(true)
+    try {
+      const res = await ReportesOperativoService.verPreviewGeneral(row.numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOpen(false)
+    }
+  }
+
   const drogas = parsearItems(row.drogasDecomisadas)
   const sustSolidas = parsearItems(row.sustanciasSolidas)
   const sustLiquidas = parsearItems(row.sustanciasLiquidas)
@@ -83,7 +106,19 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
   // ubicacionInstitucional puede llegar como null o como '--' cuando los tres LEFT JOINs no retornan filas
   const unidadValida = row.ubicacionInstitucional?.replace(/-/g, '').trim()
 
+  const urlPdf = row.numeroOperativo
+    ? `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`
+    : null
+
   return (
+    <>
+      <VistaPreviaOperativo
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={previewData}
+        tipo="general"
+        urlPdf={urlPdf}
+      />
     <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b] shadow-none bg-white dark:bg-[#191e3a]">
 
       {/* ── Cabecera ──────────────────────────────────────────────────────── */}
@@ -119,6 +154,14 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
+              className="text-info hover:text-info/75 transition-colors p-1 rounded hover:bg-info/5"
+              onClick={() => void abrirPreview()}
+              title="Vista Previa del Reporte General"
+            >
+              <IconEye className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               className="text-success hover:text-success/75 transition-colors p-1 rounded hover:bg-success/5"
               onClick={() => {
                 const num = row.numeroOperativo
@@ -129,7 +172,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
                   )
                 }
               }}
-              title="Imprimir Reporte General"
+              title="Descargar PDF Reporte General"
             >
               <IconPrinter className="h-4.5 w-4.5" />
             </button>
@@ -241,5 +284,6 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
         colorTitulo="text-teal-700 dark:text-teal-400"
       />
     </div>
+    </>
   )
 }
