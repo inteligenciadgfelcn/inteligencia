@@ -18,11 +18,12 @@ import { NavbarSearch } from '@/components/navbars/NavbarUser/NavbarSearch'
 import { useAuth } from '@/context/AuthProvider'
 import AppMenuHorizontal from './HorizontalMenu'
 import { BASE_PATH } from '@/imageLoader'
+import { RoleType } from '@/app/login/types/loginTypes'
 
 const Header = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { rolUsuario, usuario } = useAuth()
+  const { rolUsuario, usuario, setRolUsuario } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [autocompleteOpen, setAutocompleteOpen] = useState(false)
@@ -242,6 +243,26 @@ const Header = () => {
                       Perfil
                     </Link>
                   </li>
+                  {(usuario?.roles?.length ?? 0) > 1 && (
+                    <li className="border-t border-white-light dark:border-white-light/10 px-4 py-2">
+                      <p className="text-xs text-gray-400 mb-2">Cambiar rol</p>
+                      <div className="flex flex-col gap-1">
+                        {usuario?.roles.map((rol: RoleType) => (
+                          <button
+                            key={rol.idRol}
+                            onClick={() => setRolUsuario({ idRol: rol.idRol })}
+                            className={`w-full text-left px-3 py-1.5 text-xs rounded border transition-colors ${
+                              rolUsuario?.idRol === rol.idRol
+                                ? 'bg-primary text-white border-primary'
+                                : 'border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            {rol.nombre}
+                          </button>
+                        ))}
+                      </div>
+                    </li>
+                  )}
                   <li className="border-t border-white-light dark:border-white-light/10">
                     <button
                       onClick={handleLogout}

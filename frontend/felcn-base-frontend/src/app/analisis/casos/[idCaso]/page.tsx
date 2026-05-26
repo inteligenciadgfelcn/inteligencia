@@ -9,8 +9,16 @@ import { SeccionBlancos } from './ui/SeccionBlancos'
 import { SeccionOrganizaciones } from './ui/SeccionOrganizaciones'
 import { SeccionBienes } from './ui/SeccionBienes'
 
-const TABS = ['Blancos', 'Organizaciones', 'Bienes'] as const
-type Tab = typeof TABS[number]
+import IconUsers from '@/components/Icon/IconUsers'
+import IconUsersGroup from '@/components/Icon/IconUsersGroup'
+import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
+
+const TABS = [
+  { key: 'Blancos', label: 'Blancos', Icon: IconUsers },
+  { key: 'Organizaciones', label: 'Organizaciones', Icon: IconUsersGroup },
+  { key: 'Bienes', label: 'Bienes', Icon: IconCashBanknotes },
+] as const
+type Tab = typeof TABS[number]['key']
 
 const formatFecha = (iso: string) => {
   if (!iso) return ''
@@ -49,11 +57,11 @@ export default function DetalleCasoPage() {
             {caso && (
               <p className="mt-1 text-xs text-gray-500">
                 {caso.nroCasoCer && <span className="mr-3 font-medium text-primary">{caso.nroCasoCer}</span>}
-                <span>{caso.descripcionPais} · {caso.lugar}</span>
+                <span>{caso.pais.descripcion} · {caso.lugar}</span>
                 <span className="mx-2">|</span>
-                <span>{caso.descripcionEstadoCaso}</span>
+                <span>{caso.estadoCaso.descripcion}</span>
                 <span className="mx-2">|</span>
-                <span>{caso.descripcionEtapa}</span>
+                <span>{caso.etapaInvestigacion.descripcion}</span>
                 <span className="mx-2">|</span>
                 <span>Inicio: {formatFecha(caso.fechaInicio)}</span>
               </p>
@@ -74,20 +82,24 @@ export default function DetalleCasoPage() {
       {/* ── Tabs ── */}
       <div className="panel">
         <div className="mb-4 flex gap-2 border-b border-[#e0e6ed] dark:border-gray-700">
-          {TABS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t)}
-              className={`-mb-px px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t
-                  ? 'border-b-2 border-primary text-primary'
-                  : 'text-gray-500 hover:text-primary'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+          {TABS.map((t) => {
+            const Icon = t.Icon
+            const activa = tab === t.key
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                className={`-mb-px flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-b-2 ${activa
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
+                  }`}
+              >
+                <Icon className="h-4 w-4" />
+                {t.label}
+              </button>
+            )
+          })}
         </div>
 
         {tab === 'Blancos' && <SeccionBlancos idCaso={idCaso} />}

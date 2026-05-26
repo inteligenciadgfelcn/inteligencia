@@ -87,7 +87,7 @@ function PanelFoto({ blanco }: { blanco: BlancoS2i }) {
       </div>
       <div className="flex justify-end">
         <Button variant="success" size="sm" onClick={() => void subir()} disabled={!foto || cargando}>
-          Actualizar Foto
+          Guardar
         </Button>
       </div>
       {imagenAmpliada && fotoUrl && (
@@ -195,7 +195,7 @@ function PanelAntecedentes({ blanco, opcionesPaises, opcionesDelito }: { blanco:
           <Textarea rows={2} value={hecho} onChange={(e) => setHecho(e.target.value)} error={req(hecho.trim())} className="w-full" />
         </div>
         <div className="lg:col-span-4 flex justify-end">
-          <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Registrar Antecedente</Button>
+          <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Guardar</Button>
         </div>
       </div>
       {lista.length === 0 ? (
@@ -303,7 +303,7 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
         </div>
         <div className="flex items-end">
           <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando} className="w-full">
-            Registrar Red
+            Guardar
           </Button>
         </div>
       </div>
@@ -362,19 +362,23 @@ function BlancoExpansion({
 
   return (
     <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700">
-      <div className="mb-3 flex flex-wrap gap-1">
-        {TABS_BLANCO.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
-              tab === t ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="mb-4 flex gap-2 border-b border-[#e0e6ed] dark:border-gray-700">
+        {TABS_BLANCO.map((t) => {
+          const activa = tab === t
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={`-mb-px flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-b-2 ${activa
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
+                }`}
+            >
+              {t}
+            </button>
+          )
+        })}
       </div>
       {tab === 'Foto' && <PanelFoto blanco={blanco} />}
       {tab === 'Antecedentes' && <PanelAntecedentes blanco={blanco} opcionesPaises={opcionesPaises} opcionesDelito={opcionesDelito} />}
@@ -519,7 +523,7 @@ export function SeccionBlancos({ idCaso }: Props) {
           {req(idPais) && <span className="mt-1 block text-xs italic text-danger">Obligatorio</span>}
         </div>
         <div className="lg:col-span-4 flex justify-end mt-2">
-          <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Registrar Blanco</Button>
+          <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Guardar</Button>
         </div>
       </div>
 
