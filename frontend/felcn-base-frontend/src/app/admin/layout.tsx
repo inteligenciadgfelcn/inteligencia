@@ -32,6 +32,8 @@ const useInitializeUser = () => {
 }
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  useInitializeUser()
+
   return (
     <Provider store={store}>
       <I18nextProvider i18n={i18n}>

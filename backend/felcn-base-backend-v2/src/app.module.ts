@@ -53,7 +53,6 @@ const logToLokiEnabled = String(process.env.LOG_LOKI_ENABLED) === 'true'
     CoreModule,
     ApplicationModule,
     AuthModule,
-
   ],
   controllers: [AppController],
   providers: [

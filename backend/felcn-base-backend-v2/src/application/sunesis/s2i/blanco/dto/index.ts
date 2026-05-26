@@ -1,0 +1,5 @@
+export * from './create-blanco.dto'
+export * from './create-antecedente.dto'
+export * from './create-red-social.dto'
+export * from './create-lugar-gis.dto'
+export * from './create-archivo.dto'
