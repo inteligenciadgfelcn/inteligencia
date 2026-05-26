@@ -22,6 +22,95 @@ export class OperativeReportController extends BaseController {
     super()
   }
 
+  // ── Helper compartido: mismos datos que los PDF pero sin imágenes ──────────
+
+  private async getPreviewData(numeroOperativo: string) {
+    const operativo = await this.operativoService.buscarPorNumeroOperativo(
+      decodeURIComponent(numeroOperativo),
+    )
+    const idOperativo = operativo.id
+    const fullLimit = { limite: 100 } as any
+
+    const [
+      { caso },
+      [drogas],
+      [sustanciasSolidas],
+      [sustanciasLiquidas],
+      [fabricas],
+      [bienesRaw],
+      [personas],
+      [galerias],
+    ] = await Promise.all([
+      this.operativoService.getOrInit(operativo.idCaso),
+      this.operativoService.listarDrogas(idOperativo, fullLimit),
+      this.operativoService.listarSustanciasSolidas(idOperativo, fullLimit),
+      this.operativoService.listarSustanciasLiquidas(idOperativo, fullLimit),
+      this.operativoService.listarFabricas(idOperativo, fullLimit),
+      this.operativoService.listarBienes(idOperativo, fullLimit),
+      this.operativoService.listarPersonasAuxiliares(idOperativo, fullLimit),
+      this.operativoService.listarGaleria(idOperativo, fullLimit),
+    ])
+
+    const bienes = await Promise.all(
+      bienesRaw.map(async (b: any) => {
+        const [caracteristicasRaw] = await this.operativoService.listarCaracteristicasBien(
+          idOperativo,
+          b.id,
+          fullLimit,
+        )
+        return {
+          ...b,
+          caracteristicas: (caracteristicasRaw as any[]).map((c) => ({
+            label: c.descripcionCaracteristica,
+            value: c.descripcion,
+          })),
+        }
+      }),
+    )
+
+    return {
+      caso,
+      operativo,
+      drogas,
+      sustanciasSolidas,
+      sustanciasLiquidas,
+      fabricas,
+      bienes,
+      personas,
+      galerias,
+      mapaCoords:
+        operativo.coordX && operativo.coordY
+          ? { lat: operativo.coordX, lon: operativo.coordY }
+          : null,
+    }
+  }
+
+  // ── Vista previa JSON — Formulario Operativo ──────────────────────────────
+
+  @ApiOperation({
+    summary: 'Datos del Formulario Operativo en JSON (vista previa)',
+    description: 'Misma estructura que el PDF pero sin imágenes.',
+  })
+  @ApiQuery({ name: 'numero', description: 'Número de operativo (URL-encoded)', example: 'OP%2F2024%2F001' })
+  @Get('/operativo/preview')
+  async previewOperativo(@Query('numero') numeroOperativo: string) {
+    const data = await this.getPreviewData(numeroOperativo)
+    return this.successCreate(data)
+  }
+
+  // ── Vista previa JSON — Reporte General ───────────────────────────────────
+
+  @ApiOperation({
+    summary: 'Datos del Reporte General en JSON (vista previa)',
+    description: 'Misma estructura que el PDF pero sin imágenes.',
+  })
+  @ApiQuery({ name: 'numero', description: 'Número de operativo (URL-encoded)', example: 'OP%2F2024%2F001' })
+  @Get('/general/preview')
+  async previewGeneral(@Query('numero') numeroOperativo: string) {
+    const data = await this.getPreviewData(numeroOperativo)
+    return this.successCreate(data)
+  }
+
   @ApiOperation({
     summary: 'Genera el Formulario Operativo en formato PDF',
     description: 'Lee del felcn_siii.public.operativo y sus tablas relacionadas.',
