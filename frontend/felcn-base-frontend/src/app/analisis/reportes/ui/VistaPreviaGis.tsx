@@ -1,12 +1,37 @@
 'use client'
 
-import { Fragment, useRef } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import dynamic from 'next/dynamic'
 import { CircleMarker, Tooltip } from 'react-leaflet'
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
 import type { GisCasoPreview, MarcadorGis } from '@/services/analisis'
+
+type TipoMapa = 'normal' | 'fisico' | 'satelital' | 'hibrido'
+
+const TILES: Record<TipoMapa, { url: string; overlay?: string }> = {
+  normal: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+  fisico: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+  },
+  satelital: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  },
+  hibrido: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    overlay: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  },
+}
+
+const BOTONES_MAPA: { tipo: TipoMapa; label: string; variant: string }[] = [
+  { tipo: 'normal',   label: 'Mapa Normal',   variant: 'btn-success' },
+  { tipo: 'fisico',   label: 'Mapa Fisico',   variant: 'btn-primary' },
+  { tipo: 'satelital',label: 'Mapa Satelital',variant: 'btn-info'    },
+  { tipo: 'hibrido',  label: 'Mapa Hibrido',  variant: 'btn-warning' },
+]
 
 // Leaflet solo se renderiza en cliente
 const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
@@ -46,6 +71,7 @@ const fmt = (f: string | null | undefined) => {
 
 export function VistaPreviaGis({ open, onClose, data, onDescargarPdf, descargando }: Props) {
   const mapRef = useRef<any>(null)
+  const [tipoMapa, setTipoMapa] = useState<TipoMapa>('normal')
 
   const { caso, marcadores } = data ?? { caso: null, marcadores: [] as MarcadorGis[] }
 
@@ -161,6 +187,20 @@ export function VistaPreviaGis({ open, onClose, data, onDescargarPdf, descargand
                         })}
                       </div>
 
+                      {/* Botones de tipo de mapa */}
+                      <div className="mb-3 flex flex-wrap gap-2">
+                        {BOTONES_MAPA.map((b) => (
+                          <button
+                            key={b.tipo}
+                            type="button"
+                            onClick={() => setTipoMapa(b.tipo)}
+                            className={`btn btn-sm ${b.variant} ${tipoMapa === b.tipo ? 'opacity-100 ring-2 ring-offset-1 ring-current' : 'opacity-70 hover:opacity-100'}`}
+                          >
+                            {b.label}
+                          </button>
+                        ))}
+                      </div>
+
                       {/* Mapa Leaflet interactivo */}
                       <div className="overflow-hidden rounded-lg border-2 border-[#3e5f8a]">
                         <Mapa
@@ -170,6 +210,8 @@ export function VistaPreviaGis({ open, onClose, data, onDescargarPdf, descargand
                           zoom={validos.length > 0 ? 12 : 6}
                           height={420}
                           scrollWheelZoom
+                          tileUrl={TILES[tipoMapa].url}
+                          tileUrlOverlay={TILES[tipoMapa].overlay}
                           markers={
                             <>
                               {validos.map((m, i) => (
