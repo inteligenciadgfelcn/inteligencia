@@ -115,7 +115,8 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th { background: #5D7B9D; color: white; padding: 6px 8px; text-align: left; }
     td { border: 1px solid #e5e7eb; padding: 6px 8px; }
-    #map { width: 100%; height: 480px; border: 3px solid #3e5f8a; border-radius: 6px; }
+    #map { width: 100%; height: 360px; border: 3px solid #3e5f8a; border-radius: 6px; }
+    .mapa-bloque { break-inside: avoid; page-break-inside: avoid; }
     @media print { body { background: white; padding: 0; }
                    .doc { box-shadow: none; } }
   </style>
@@ -162,14 +163,14 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
         </tbody>
       </table>
 
-      <!-- Leyenda -->
-      <div class="section-title">GIS de Actividad Delictual</div>
-      <div style="display:flex; gap:20px; margin-bottom:10px; font-size:11px;">
-        ${leyendaHtml}
+      <!-- Mapa GIS: break-inside:avoid mantiene título + leyenda + mapa juntos -->
+      <div class="mapa-bloque">
+        <div class="section-title">GIS de Actividad Delictual</div>
+        <div style="display:flex; gap:20px; margin-bottom:10px; font-size:11px;">
+          ${leyendaHtml}
+        </div>
+        <div id="map"></div>
       </div>
-
-      <!-- Mapa Leaflet -->
-      <div id="map"></div>
 
     </div>
   </div>
