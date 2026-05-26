@@ -16,6 +16,7 @@ export interface LookupSimple {
 // ─── Casos ────────────────────────────────────────────────────────────────────
 
 export interface CasoS2i {
+  [x: string]: any
   idCaso: string
   idPais: number
   lugar: string

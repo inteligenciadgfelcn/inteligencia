@@ -226,7 +226,7 @@ export function FormNuevoCaso() {
             Cancelar
           </Button>
           <Button type="button" variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>
-            Guardar Caso
+            Guardar
           </Button>
         </div>
       </div>
