@@ -9,14 +9,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   protected logger = LoggerService.getInstance()
 
   constructor(private configService: ConfigService) {
-    console.log('🔥 JWT STRATEGY CARGADA') 
+    console.log('🔥 JWT STRATEGY CARGADA')
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get('JWT_SECRET'),
     })
   }
- 
+
   validate(payload: PayloadType): PassportUser {
     return {
       id: payload.id,
