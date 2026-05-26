@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import IconTrash from '@/components/Icon/IconTrash'
+import IconDownload from '@/components/Icon/IconDownload'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -171,7 +172,7 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
 
       <div className="flex justify-end">
         <Button variant="success" size="sm" type="button" onClick={() => void guardar()} disabled={cargando}>
-          Subir Archivo
+          Guardar
         </Button>
       </div>
 
@@ -192,7 +193,7 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
                 </div>
                 <div className="flex shrink-0 gap-1">
                   <Button variant="info" size="sm" type="button" onClick={() => void descargar(a)}>
-                    Descargar
+                    <IconDownload className="h-4 w-4" />
                   </Button>
                   <Button variant="danger" size="sm" type="button" onClick={() => eliminar(a)}>
                     <IconTrash className="h-4 w-4" />

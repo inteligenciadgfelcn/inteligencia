@@ -170,7 +170,7 @@ export function GisPanel({ idEntidad, service, idField }: GisPanelProps) {
 
       <div className="flex justify-end">
         <Button variant="success" size="sm" type="button" onClick={() => void guardar()} disabled={cargando}>
-          Registrar Lugar
+          Guardar
         </Button>
       </div>
 
