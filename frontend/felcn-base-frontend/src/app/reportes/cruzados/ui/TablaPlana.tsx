@@ -1,11 +1,17 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import type { ResultadoCruzada } from '@/services/reportes/CruzadosService'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Constantes } from '@/config/Constantes'
 import IconPrinter from '@/components/Icon/IconPrinter'
+import IconEye from '@/components/Icon/IconEye'
 import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
+import { useAlerts } from '@/hooks/useAlerts'
+import { InterpreteMensajes } from '@/utils'
+import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
+import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
+import { VistaPreviaOperativo } from '../../../reportes/components/VistaPreviaOperativo'
 
 function parsearItems(campo: string | null | undefined): string[] {
   if (!campo?.trim()) return []
@@ -55,6 +61,23 @@ export function TablaPlana({
   onLimitChange,
   loading,
 }: TablaPlanaProps) {
+  const { Alerta } = useAlerts()
+  const [modalOpen, setModalOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const abrirPreview = async (numeroOperativo: string) => {
+    setPreviewData(null)
+    setPreviewUrl(`${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(numeroOperativo)}`)
+    setModalOpen(true)
+    try {
+      const res = await ReportesOperativoService.verPreviewGeneral(numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOpen(false)
+    }
+  }
 
   const columns: Column<ResultadoCruzada>[] = useMemo(() => [
     {
@@ -72,6 +95,14 @@ export function TablaPlana({
             </span>
             <button
               type="button"
+              className="text-info hover:text-info/75 transition-colors p-0.5 rounded hover:bg-info/5"
+              onClick={() => row.numeroOperativo && void abrirPreview(row.numeroOperativo)}
+              title="Vista Previa del Reporte General"
+            >
+              <IconEye className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
               onClick={() => {
                 const num = row.numeroOperativo
@@ -82,7 +113,7 @@ export function TablaPlana({
                   )
                 }
               }}
-              title="Imprimir Reporte General"
+              title="Descargar PDF Reporte General"
             >
               <IconPrinter className="h-4 w-4" />
             </button>
@@ -283,6 +314,14 @@ export function TablaPlana({
   }
 
   return (
+    <>
+      <VistaPreviaOperativo
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={previewData}
+        tipo="general"
+        urlPdf={previewUrl}
+      />
     <VristoDataTable<ResultadoCruzada>
       rows={rows}
       total={total}
@@ -296,5 +335,6 @@ export function TablaPlana({
       onExportExcel={handleExportExcel}
       onExportPrint={handleExportPrint}
     />
+    </>
   )
 }

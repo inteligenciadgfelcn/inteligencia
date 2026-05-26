@@ -8,10 +8,16 @@ import { Button } from '@/components/ui/Button'
 import { OperativoService } from '@/services/operativos'
 import IconPencil from '@/components/Icon/IconPencil'
 import IconPrinter from '@/components/Icon/IconPrinter'
+import IconEye from '@/components/Icon/IconEye'
 import IconSend from '@/components/Icon/IconSend'
 import { useAuth } from '@/context/AuthProvider'
+import { useAlerts } from '@/hooks/useAlerts'
+import { InterpreteMensajes } from '@/utils'
 import type { GestionOperativoItem } from '../types'
 import { Constantes } from '@/config/Constantes'
+import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
+import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
+import { VistaPreviaOperativo } from '@/app/reportes/components/VistaPreviaOperativo'
 
 export interface GestionOperativoListadoProps {
   tipo?: 'aprobado' | 'no-aprobado' | 'con-cud' | 'todos' | 'impresion' | 'envio-fiscalia'
@@ -22,10 +28,29 @@ export function GestionOperativoListado({
 }: GestionOperativoListadoProps) {
   const router = useRouter()
   const { usuario } = useAuth()
+  const { Alerta } = useAlerts()
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [search, setSearch] = useState('')
+
+  // ── Modal vista previa ─────────────────────────────────────────────────────
+  const [modalOpen, setModalOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const abrirPreview = async (numeroOperativo: string) => {
+    setPreviewData(null)
+    setPreviewUrl(`${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`)
+    setModalOpen(true)
+    try {
+      const res = await ReportesOperativoService.verPreviewOperativo(numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOpen(false)
+    }
+  }
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['gestion-operativo-listado', tipo],
@@ -177,22 +202,32 @@ export function GestionOperativoListado({
               tipo === 'con-cud' ||
               tipo === 'todos' ||
               tipo === 'impresion') && (
-                <button
-                  type="button"
-                  className="text-success hover:text-success/70 transition-colors"
-                  onClick={() => {
-                    const numeroOperativo = row.numeroOperativo
-                    if (numeroOperativo) {
-                      window.open(
-                        `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
-                        '_blank'
-                      )
-                    }
-                  }}
-                  title="Imprimir Reporte"
-                >
-                  <IconPrinter className="h-5 w-5" />
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="text-info hover:text-info/70 transition-colors"
+                    onClick={() => row.numeroOperativo && void abrirPreview(row.numeroOperativo)}
+                    title="Vista Previa del Reporte"
+                  >
+                    <IconEye className="h-5 w-5" />
+                  </button>
+                  <button
+                    type="button"
+                    className="text-success hover:text-success/70 transition-colors"
+                    onClick={() => {
+                      const numeroOperativo = row.numeroOperativo
+                      if (numeroOperativo) {
+                        window.open(
+                          `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
+                          '_blank'
+                        )
+                      }
+                    }}
+                    title="Descargar PDF"
+                  >
+                    <IconPrinter className="h-5 w-5" />
+                  </button>
+                </>
               )}
             {(tipo === 'aprobado' || tipo === 'envio-fiscalia') && (
               <button
@@ -214,6 +249,13 @@ export function GestionOperativoListado({
 
   return (
     <div className="space-y-4">
+      <VistaPreviaOperativo
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        data={previewData}
+        tipo="operativo"
+        urlPdf={previewUrl}
+      />
       <div className="panel p-0">
         <VristoDataTable<GestionOperativoItem>
           rows={filasPagina}
