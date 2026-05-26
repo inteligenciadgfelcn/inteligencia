@@ -9,7 +9,7 @@ export class CasoRepository {
   constructor(
     @InjectDataSource(DB_S2I)
     private dataSource: DataSource
-  ) {}
+  ) { }
 
   private get repo() {
     return this.dataSource.getRepository(S2iAsignacion)
@@ -27,7 +27,7 @@ export class CasoRepository {
   }
 
   async listarPorUsuario(
-    usuario: string,
+    numeroPase: string,
     idEtapa?: number
   ): Promise<S2iAsignacion[]> {
     const qb = this.repo
@@ -35,7 +35,7 @@ export class CasoRepository {
       .leftJoinAndSelect('a.pais', 'pais')
       .leftJoinAndSelect('a.estadoCaso', 'estadoCaso')
       .leftJoinAndSelect('a.etapaInvestigacion', 'etapaInvestigacion')
-      .where('a.usuario = :usuario', { usuario })
+      .where('a.usuario = :numeroPase', { numeroPase })
 
     if (idEtapa) qb.andWhere('a.idEtapaInvestigacion = :idEtapa', { idEtapa })
 
