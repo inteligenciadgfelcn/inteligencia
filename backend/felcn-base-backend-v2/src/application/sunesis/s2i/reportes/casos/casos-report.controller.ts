@@ -54,6 +54,36 @@ export class CasosReportController extends BaseController {
     return this.successList(casos)
   }
 
+  // ── RPT-MN-01 vista previa JSON ───────────────────────────────────────────
+
+  @ApiOperation({
+    summary: 'Datos del reporte detallado en JSON (vista previa RPT-MN-01)',
+    description:
+      'Devuelve caso, blancos con antecedentes/redes/GIS, ' +
+      'organizaciones con GIS y bienes con características.',
+  })
+  @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
+  @Get(':id/detalle')
+  async verDetalle(@Param('id') idCaso: string) {
+    const data = await this.reporteCasosService.obtenerDetalleCaso(idCaso)
+    return this.successCreate(data)
+  }
+
+  // ── RPT-MN-02 vista previa JSON ───────────────────────────────────────────
+
+  @ApiOperation({
+    summary: 'Marcadores GIS en JSON (vista previa RPT-MN-02)',
+    description:
+      'Devuelve datos del caso y marcadores de blancos, ' +
+      'organizaciones y bienes para el mapa interactivo.',
+  })
+  @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
+  @Get(':id/gis')
+  async verGis(@Param('id') idCaso: string) {
+    const data = await this.reporteCasosService.obtenerGisCaso(idCaso)
+    return this.successCreate(data)
+  }
+
   // ── RPT-MN-01 ─────────────────────────────────────────────────────────────
 
   @ApiOperation({
