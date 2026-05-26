@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { VristoDataTable, type Column } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
@@ -23,7 +23,7 @@ const formatFecha = (iso: string) => {
 
 export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProps) {
   const { Alerta } = useAlerts()
-  const descargandoRef = useRef<string | null>(null)
+  const [descargando, setDescargando] = useState<string | null>(null)
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -48,8 +48,8 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
 
   const descargar = async (idCaso: string, tipo: 'detalle' | 'gis') => {
     const key = `${idCaso}-${tipo}`
-    if (descargandoRef.current === key) return
-    descargandoRef.current = key
+    if (descargando === key) return
+    setDescargando(key)
     try {
       const blob =
         tipo === 'detalle'
@@ -64,7 +64,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
     } catch (e) {
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
     } finally {
-      descargandoRef.current = null
+      setDescargando(null)
     }
   }
 
@@ -142,6 +142,8 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
               size="sm"
               type="button"
               title="Descargar Reporte Detallado (RPT-MN-01)"
+              loading={descargando === `${row.idCaso}-detalle`}
+              disabled={descargando !== null}
               onClick={() => void descargar(row.idCaso, 'detalle')}
             >
               <IconDownload className="h-4 w-4" />
@@ -152,6 +154,8 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
               size="sm"
               type="button"
               title="Descargar Reporte GIS (RPT-MN-02)"
+              loading={descargando === `${row.idCaso}-gis`}
+              disabled={descargando !== null}
               onClick={() => void descargar(row.idCaso, 'gis')}
             >
               <IconPrinter className="h-4 w-4" />
@@ -161,7 +165,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
         ),
       },
     ],
-    [],
+    [descargando],
   )
 
   return (
