@@ -70,20 +70,20 @@ export const BienesS2iService = {
 
   crearLugar(idItemBien: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>> {
     return sesionPeticion({
-      url: `${BASE}/bienes/${idItemBien}/lugares-gis`,
+      url: `${BASE}/bienes/${idItemBien}/lugares-sig`,
       method: 'POST',
       body: payload,
       withCredentials: true,
     })
   },
 
-  listarLugares(idItemBien: string): Promise<RespuestaApi<LugarGis[]>> {
-    return sesionPeticion({ url: `${BASE}/bienes/${idItemBien}/lugares-gis`, withCredentials: true })
+  listarLugares(idItemBien: string): Promise<RespuestaApi<LugarSig[]>> {
+    return sesionPeticion({ url: `${BASE}/bienes/${idItemBien}/lugares-sig`, withCredentials: true })
   },
 
   eliminarLugar(idLugar: string): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
-      url: `${BASE}/lugares-gis-bien/${idLugar}`,
+      url: `${BASE}/lugares-sig-bien/${idLugar}`,
       method: 'DELETE',
       withCredentials: true,
     })

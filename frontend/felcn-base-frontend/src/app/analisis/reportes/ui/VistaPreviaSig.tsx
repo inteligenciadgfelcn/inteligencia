@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import { CircleMarker, Tooltip } from 'react-leaflet'
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
-import type { GisCasoPreview, MarcadorGis } from '@/services/analisis'
+import type { SigCasoPreview, MarcadorSig } from '@/services/analisis'
 
 type TipoMapa = 'normal' | 'fisico' | 'satelital' | 'hibrido'
 
@@ -27,10 +27,10 @@ const TILES: Record<TipoMapa, { url: string; overlay?: string }> = {
 }
 
 const BOTONES_MAPA: { tipo: TipoMapa; label: string; variant: string }[] = [
-  { tipo: 'normal',   label: 'Mapa Normal',   variant: 'btn-success' },
-  { tipo: 'fisico',   label: 'Mapa Fisico',   variant: 'btn-primary' },
-  { tipo: 'satelital',label: 'Mapa Satelital',variant: 'btn-info'    },
-  { tipo: 'hibrido',  label: 'Mapa Hibrido',  variant: 'btn-warning' },
+  { tipo: 'normal', label: 'Mapa Normal', variant: 'btn-success' },
+  { tipo: 'fisico', label: 'Mapa Fisico', variant: 'btn-primary' },
+  { tipo: 'satelital', label: 'Mapa Satelital', variant: 'btn-info' },
+  { tipo: 'hibrido', label: 'Mapa Hibrido', variant: 'btn-warning' },
 ]
 
 // Leaflet solo se renderiza en cliente
@@ -46,18 +46,18 @@ const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
 interface Props {
   open: boolean
   onClose: () => void
-  data: GisCasoPreview | null
+  data: SigCasoPreview | null
   onDescargarPdf: () => void
   descargando: boolean
 }
 
-const COLOR: Record<MarcadorGis['tipo'], string> = {
+const COLOR: Record<MarcadorSig['tipo'], string> = {
   blanco: '#dc2626',
   organizacion: '#2563eb',
   bien: '#16a34a',
 }
 
-const LEYENDA: { tipo: MarcadorGis['tipo']; label: string }[] = [
+const LEYENDA: { tipo: MarcadorSig['tipo']; label: string }[] = [
   { tipo: 'blanco', label: 'Personas Investigadas' },
   { tipo: 'organizacion', label: 'Organizaciones' },
   { tipo: 'bien', label: 'Bienes / Activos' },
@@ -69,20 +69,20 @@ const fmt = (f: string | null | undefined) => {
   return isNaN(d.getTime()) ? f : d.toLocaleDateString('es-BO')
 }
 
-export function VistaPreviaGis({ open, onClose, data, onDescargarPdf, descargando }: Props) {
+export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargando }: Props) {
   const mapRef = useRef<any>(null)
   const [tipoMapa, setTipoMapa] = useState<TipoMapa>('normal')
 
-  const { caso, marcadores } = data ?? { caso: null, marcadores: [] as MarcadorGis[] }
+  const { caso, marcadores } = data ?? { caso: null, marcadores: [] as MarcadorSig[] }
 
   const validos = marcadores.filter((m) => m.lat && m.lon && !isNaN(m.lat) && !isNaN(m.lon))
 
   const centro: [number, number] =
     validos.length > 0
       ? [
-          validos.reduce((s, m) => s + m.lat, 0) / validos.length,
-          validos.reduce((s, m) => s + m.lon, 0) / validos.length,
-        ]
+        validos.reduce((s, m) => s + m.lat, 0) / validos.length,
+        validos.reduce((s, m) => s + m.lon, 0) / validos.length,
+      ]
       : [-16.5, -68.1]
 
   return (
@@ -147,9 +147,9 @@ export function VistaPreviaGis({ open, onClose, data, onDescargarPdf, descargand
                       <div className="mb-5 overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-[#5D7B9D] text-white">
+                            <tr className="text-white">
                               {['Registro Nro.', 'País de Investigación', 'Lugar', 'Estado', 'Etapa', 'Fecha Inicio'].map((h) => (
-                                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
                           </thead>

@@ -13,10 +13,10 @@ import { ReportesS2iService } from '@/services/analisis'
 import type {
   CasoReporteS2i,
   DetalleCasoPreview,
-  GisCasoPreview,
+  SigCasoPreview,
 } from '@/services/analisis'
 import { VistaPreviaDetalle } from './VistaPreviaDetalle'
-import { VistaPreviaGis } from './VistaPreviaGis'
+import { VistaPreviaSig } from './VistaPreviaSig'
 
 interface ReporteCasosListadoProps {
   casos: CasoReporteS2i[]
@@ -58,7 +58,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
   const [modalDetalle, setModalDetalle] = useState(false)
   const [modalGis, setModalGis] = useState(false)
   const [dataDetalle, setDataDetalle] = useState<DetalleCasoPreview | null>(null)
-  const [dataGis, setDataGis] = useState<GisCasoPreview | null>(null)
+  const [dataGis, setDataGis] = useState<SigCasoPreview | null>(null)
   const [idActivo, setIdActivo] = useState<string | null>(null)
 
   // ── Estado descargas ───────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
     setDataGis(null)
     setModalGis(true)
     try {
-      const res = await ReportesS2iService.verGis(idCaso)
+      const res = await ReportesS2iService.verSig(idCaso)
       if (res?.finalizado) setDataGis(res.datos)
     } catch (e) {
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
@@ -99,7 +99,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
       const blob =
         tipo === 'detalle'
           ? await ReportesS2iService.descargarPdf(idCaso)
-          : await ReportesS2iService.descargarGisPdf(idCaso)
+          : await ReportesS2iService.descargarSigPdf(idCaso)
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -276,7 +276,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
       />
 
       {/* Modal vista previa RPT-MN-02 */}
-      <VistaPreviaGis
+      <VistaPreviaSig
         open={modalGis}
         onClose={() => setModalGis(false)}
         data={dataGis}

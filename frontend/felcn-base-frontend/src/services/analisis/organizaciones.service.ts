@@ -1,10 +1,11 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
-import type LugarGis, {
+import type {
+  LugarSig,
   ArchivoS2i,
   CreateArchivoPayload,
   CreateEmpresaPayload,
-  CreateLugarGisPayload,
+  CreateLugarSigPayload,
   EmpresaS2i,
   RespuestaApi,
 } from './types'
@@ -35,24 +36,24 @@ export const OrganizacionesService = {
     })
   },
 
-  // ── GIS ────────────────────────────────────────────────────────────────────
+  // ── SIG ────────────────────────────────────────────────────────────────────
 
-  crearLugar(idEmpresa: string, payload: CreateLugarGisPayload): Promise<RespuestaApi<LugarGis>> {
+  crearLugar(idEmpresa: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>> {
     return sesionPeticion({
-      url: `${BASE}/organizaciones/${idEmpresa}/lugares-gis`,
+      url: `${BASE}/organizaciones/${idEmpresa}/lugares-sig`,
       method: 'POST',
       body: payload,
       withCredentials: true,
     })
   },
 
-  listarLugares(idEmpresa: string): Promise<RespuestaApi<LugarGis[]>> {
-    return sesionPeticion({ url: `${BASE}/organizaciones/${idEmpresa}/lugares-gis`, withCredentials: true })
+  listarLugares(idEmpresa: string): Promise<RespuestaApi<LugarSig[]>> {
+    return sesionPeticion({ url: `${BASE}/organizaciones/${idEmpresa}/lugares-sig`, withCredentials: true })
   },
 
   eliminarLugar(idLugar: string): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
-      url: `${BASE}/lugares-gis-empresa/${idLugar}`,
+      url: `${BASE}/lugares-sig-empresa/${idLugar}`,
       method: 'DELETE',
       withCredentials: true,
     })
