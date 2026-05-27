@@ -10,7 +10,7 @@ import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
-import { GisPanel } from '@/app/analisis/ui/GisPanel'
+import { SIGPanel } from '@/app/analisis/ui/SigPanel'
 import { ArchivosPanel } from '@/app/analisis/ui/ArchivosPanel'
 import { OrganizacionesService, S2iLookupsService } from '@/services/analisis'
 import type { EmpresaS2i, LookupSimple } from '@/services/analisis'
@@ -24,13 +24,13 @@ interface Props {
   idCaso: string
 }
 
-const TABS_ORG = ['GIS', 'Archivos'] as const
+const TABS_ORG = ['SIG', 'Archivos'] as const
 type TabOrg = typeof TABS_ORG[number]
 
 function OrgExpansion({ empresa, opcionesContenido }: { empresa: EmpresaS2i; opcionesContenido: LookupSimple[] }) {
-  const [tab, setTab] = useState<TabOrg>('GIS')
+  const [tab, setTab] = useState<TabOrg>('SIG')
 
-  const gisService = {
+  const SIGService = {
     crearLugar: (id: string, p: Parameters<typeof OrganizacionesService.crearLugar>[1]) => OrganizacionesService.crearLugar(id, p),
     listarLugares: (id: string) => OrganizacionesService.listarLugares(id),
     eliminarLugar: (id: string) => OrganizacionesService.eliminarLugar(id),
@@ -55,8 +55,8 @@ function OrgExpansion({ empresa, opcionesContenido }: { empresa: EmpresaS2i; opc
               type="button"
               onClick={() => setTab(t)}
               className={`-mb-px flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-b-2 ${activa
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
                 }`}
             >
               {t}
@@ -64,7 +64,7 @@ function OrgExpansion({ empresa, opcionesContenido }: { empresa: EmpresaS2i; opc
           )
         })}
       </div>
-      {tab === 'GIS' && <GisPanel idEntidad={empresa.idEmpresa} service={gisService} idField="idLugarEmpresa" />}
+      {tab === 'SIG' && <SIGPanel idEntidad={empresa.idEmpresa} service={SIGService} idField="idLugarEmpresa" />}
       {tab === 'Archivos' && (
         <ArchivosPanel idEntidad={empresa.idEmpresa} service={archivosService} idField="idArchivo" opcionesContenido={opcionesContenido} />
       )}
@@ -131,7 +131,7 @@ export function SeccionOrganizaciones({ idCaso }: Props) {
         setIdTipoOrganizacion(''); setNombre(''); setNit(''); setMatricula(''); setRepresentante(''); setObservaciones('')
         setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Organización registrada', variant: 'success' })
+        Alerta({ mensaje: 'Organización reSIGtrada', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }

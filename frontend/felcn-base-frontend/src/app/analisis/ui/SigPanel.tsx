@@ -9,7 +9,7 @@ import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
-import type { CreateLugarGisPayload, LugarGis, RespuestaApi } from '@/services/analisis'
+import type { CreateLugarSigPayload, LugarSig, RespuestaApi } from '@/services/analisis'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -19,25 +19,25 @@ const MapaConMarcador = dynamic(
   }
 )
 
-interface GisPanelService {
-  crearLugar(idEntidad: string, payload: CreateLugarGisPayload): Promise<RespuestaApi<LugarGis>>
-  listarLugares(idEntidad: string): Promise<RespuestaApi<LugarGis[]>>
+interface SigPanelService {
+  crearLugar(idEntidad: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>>
+  listarLugares(idEntidad: string): Promise<RespuestaApi<LugarSig[]>>
   eliminarLugar(idLugar: string): Promise<RespuestaApi<unknown>>
 }
 
-interface GisPanelProps {
+interface SigPanelProps {
   idEntidad: string
-  service: GisPanelService
-  idField: keyof LugarGis
+  service: SigPanelService
+  idField: keyof LugarSig
 }
 
-export function GisPanel({ idEntidad, service, idField }: GisPanelProps) {
+export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const { Alerta } = useAlerts()
   const mapRef = useRef<any>(null)
 
   const [cargando, setCargando] = useState(false)
-  const [lugares, setLugares] = useState<LugarGis[]>([])
+  const [lugares, setLugares] = useState<LugarSig[]>([])
 
   const [descripcion, setDescripcion] = useState('')
   const [coordX, setCoordX] = useState<string>('-16.5')
@@ -177,7 +177,7 @@ export function GisPanel({ idEntidad, service, idField }: GisPanelProps) {
       {/* ── Lista ── */}
       {lugares.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-6 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin lugares GIS registrados</span>
+          <span className="text-xs text-gray-400">Sin lugares SIG registrados</span>
         </div>
       ) : (
         <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">

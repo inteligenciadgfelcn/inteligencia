@@ -6,7 +6,7 @@ import { getLogoBase64 } from '../../../../siii/reportes/report-logo.util'
 /**
  * Template del Reporte Detallado de Caso (RPT-MN-01).
  * Genera un PDF con: datos generales del caso, investigados (con antecedentes,
- * redes sociales y lugares de frecuencia GIS), organizaciones (con ubicación GIS)
+ * redes sociales y lugares de frecuencia SIG), organizaciones (con ubicación SIG)
  * y bienes/activos (con características).
  */
 export class RepCasoDetalleTemplate implements ReportTemplate<any> {
