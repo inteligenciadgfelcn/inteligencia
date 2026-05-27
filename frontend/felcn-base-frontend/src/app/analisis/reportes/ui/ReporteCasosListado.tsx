@@ -103,7 +103,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = tipo === 'detalle' ? `reporte-caso-${idCaso}.pdf` : `reporte-gis-caso-${idCaso}.pdf`
+      link.download = tipo === 'detalle' ? `reporte-caso-${idCaso}.pdf` : `reporte-sig-caso-${idCaso}.pdf`
       link.click()
       URL.revokeObjectURL(url)
     } catch (e) {
@@ -209,17 +209,17 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
               <IconDownload className="h-4 w-4" />
             </Button>
 
-            {/* Vista previa GIS (RPT-MN-02) */}
+            {/* Vista previa SIG (RPT-MN-02) */}
             <Button
               variant="outline-warning"
               size="sm"
               type="button"
-              title="Vista Previa — Reporte GIS (RPT-MN-02)"
+              title="Vista Previa — Reporte SIG (RPT-MN-02)"
               disabled={descargando !== null}
               onClick={() => void abrirGis(row.idCaso)}
             >
               <IconMapPin className="h-4 w-4" />
-              <span className="ml-1 hidden sm:inline text-xs">GIS</span>
+              <span className="ml-1 hidden sm:inline text-xs">SIG</span>
             </Button>
 
             {/* Descarga PDF directo GIS */}
