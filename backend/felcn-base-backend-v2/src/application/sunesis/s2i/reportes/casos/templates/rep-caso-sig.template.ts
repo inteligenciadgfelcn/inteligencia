@@ -4,14 +4,14 @@ import { ReporteCasosService } from '../../services/reporte-casos.service'
 import { getLogoBase64 } from '../../../../siii/reportes/report-logo.util'
 
 /**
- * Template del Reporte GIS de Caso (RPT-MN-02).
+ * Template del Reporte SIG de Caso (RPT-MN-02).
  * Genera un PDF con los datos generales del caso y un mapa Leaflet
  * que muestra los marcadores de blancos (personas), organizaciones y bienes,
  * diferenciados por color e ícono.
  *
  * Requiere acceso a internet desde Puppeteer para cargar los tiles de OpenStreetMap.
  */
-export class RepCasoGisTemplate implements ReportTemplate<any> {
+export class RepCasoSigTemplate implements ReportTemplate<any> {
   pdfOptions: PDFOptions = {
     format: 'letter',
     landscape: true,
@@ -31,7 +31,7 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
     service: ReporteCasosService,
     idCaso: string,
   ): Promise<any> {
-    return service.obtenerGisCaso(idCaso)
+    return service.obtenerSigCaso(idCaso)
   }
 
   generateHtml(data: any): string {
@@ -95,19 +95,19 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Reporte GIS — ${caso.nombreCaso}</title>
+  <title>Reporte SIG — ${caso.nombreCaso}</title>
   <!-- Leaflet CSS para el mapa -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     body { margin: 0; padding: 20px; background: #D2D2D2;
            font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; }
-    .doc { width: 100%; background: white; margin: 0 auto;
+    .doc { width: 976px; background: white; margin: 0 auto;
            box-shadow: 0 4px 20px rgba(0,0,0,.15); }
     .header { background: linear-gradient(135deg,#3e5f8a 0%,#1e3a5f 100%);
-              padding: 20px 40px; color: white;
+              padding: 10px 40px; color: white;
               display: flex; align-items: center; justify-content: space-between; }
     .header-text { flex: 1; text-align: center; }
-    .header-text p { margin: 3px 0; }
+    .header-text p { margin: 2px 0; }
     .content { padding: 20px 40px; }
     .section-title { font-size: 14px; font-weight: bold; color: #3e5f8a;
                      text-transform: uppercase; border-bottom: 3px solid #3e5f8a;
@@ -115,8 +115,7 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th { background: #5D7B9D; color: white; padding: 6px 8px; text-align: left; }
     td { border: 1px solid #e5e7eb; padding: 6px 8px; }
-    #map { width: 100%; height: 360px; border: 3px solid #3e5f8a; border-radius: 6px; }
-    .mapa-bloque { break-inside: avoid; page-break-inside: avoid; }
+    #map { display: block; box-sizing: border-box; position: relative; overflow: hidden; width: 896px; height: 420px; margin: 0 auto; border: 3px solid #3e5f8a; border-radius: 6px; page-break-inside: avoid; }
     @media print { body { background: white; padding: 0; }
                    .doc { box-shadow: none; } }
   </style>
@@ -126,14 +125,14 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
 
     <!-- Encabezado institucional -->
     <div class="header">
-      <img src="data:image/png;base64,${getLogoBase64()}" width="70" height="70"
+      <img src="data:image/png;base64,${getLogoBase64()}" width="50" height="50"
            style="object-fit:contain;" />
       <div class="header-text">
-        <p style="font-size:14px;"><strong>DEPARTAMENTO DE INTELIGENCIA</strong></p>
-        <p>REPORTE GIS — ACTIVIDAD DELICTUAL</p>
+        <p style="font-size:13px;"><strong>DEPARTAMENTO DE INTELIGENCIA</strong></p>
+        <p>REPORTE SIG — ACTIVIDAD DELICTUAL</p>
         <p>CASO: ${caso.nombreCaso ?? ''}</p>
       </div>
-      <div style="width:70px;"></div>
+      <div style="width:50px;"></div>
     </div>
 
     <div class="content">
@@ -163,14 +162,14 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
         </tbody>
       </table>
 
-      <!-- Mapa GIS: break-inside:avoid mantiene título + leyenda + mapa juntos -->
-      <div class="mapa-bloque">
-        <div class="section-title">GIS de Actividad Delictual</div>
-        <div style="display:flex; gap:20px; margin-bottom:10px; font-size:11px;">
-          ${leyendaHtml}
-        </div>
-        <div id="map"></div>
+      <!-- Leyenda -->
+      <div class="section-title">SIG de Actividad Delictual</div>
+      <div style="display:flex; gap:20px; margin-bottom:10px; font-size:11px;">
+        ${leyendaHtml}
       </div>
+
+      <!-- Mapa Leaflet Centrado -->
+      <div id="map"></div>
 
     </div>
   </div>
@@ -194,6 +193,15 @@ export class RepCasoGisTemplate implements ReportTemplate<any> {
            map.fitBounds(bounds, { padding: [30, 30] });`
         : ''
     }
+
+    // Forzar redibujado de Leaflet para rellenar toda la caja
+    map.invalidateSize();
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 200);
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 1000);
   </script>
 </body>
 </html>`

@@ -7,9 +7,9 @@ import type {
   CreateArchivoPayload,
   CreateBienPayload,
   CreateCaracteristicaPayload,
-  CreateLugarGisPayload,
+  CreateLugarSigPayload,
   LookupSimple,
-  LugarGis,
+  LugarSig,
   RespuestaApi,
 } from './types'
 
@@ -66,9 +66,9 @@ export const BienesS2iService = {
     })
   },
 
-  // ── GIS ────────────────────────────────────────────────────────────────────
+  // ── SIG ────────────────────────────────────────────────────────────────────
 
-  crearLugar(idItemBien: string, payload: CreateLugarGisPayload): Promise<RespuestaApi<LugarGis>> {
+  crearLugar(idItemBien: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>> {
     return sesionPeticion({
       url: `${BASE}/bienes/${idItemBien}/lugares-gis`,
       method: 'POST',

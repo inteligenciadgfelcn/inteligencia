@@ -72,7 +72,7 @@ export interface CreateBlancoPayload {
 }
 
 export interface AntecedenteBlanco {
-  idAntecedenteBlanco: string
+  idAntecedente: string
   idBlanco: string
   idTipoDelito: number
   idPais: number
@@ -105,9 +105,9 @@ export interface CreateRedSocialPayload {
   direccion: string
 }
 
-// ─── GIS (compartido) ─────────────────────────────────────────────────────────
+// ─── SIG (compartido) ─────────────────────────────────────────────────────────
 
-export interface LugarGis {
+export interface LugarSig {
   // blanco
   idLugarBlanco?: string
   // empresa
@@ -120,7 +120,7 @@ export interface LugarGis {
   contenido: string
 }
 
-export interface CreateLugarGisPayload {
+export interface CreateLugarSigPayload {
   descripcion: string
   coordenadasX: number
   coordenadasY: number
@@ -203,4 +203,42 @@ export interface CaracteristicaBien {
 export interface CreateCaracteristicaPayload {
   idCatalogoCaracteristica: number
   descripcion: string
+}
+
+// ─── Telefonía ────────────────────────────────────────────────────────────────
+
+export interface TelefonoS2i {
+  idTelefono: string
+  idCaso: string
+  numero1: string
+  propietario1: string
+  mensaje: string
+  numero2: string
+  propietario2: string
+}
+
+export interface CreateTelefonoPayload {
+  numero1: string
+  propietario1: string
+  mensaje: string
+  numero2: string
+  propietario2: string
+}
+
+// ─── Vehículos ────────────────────────────────────────────────────────────────
+
+export interface VehiculoS2i {
+  idVehiculo: string
+  idCaso: string
+  propietario: string
+  placa: string
+  color: string
+  marca: string
+}
+
+export interface CreateVehiculoPayload {
+  propietario: string
+  placa: string
+  color: string
+  marca: string
 }

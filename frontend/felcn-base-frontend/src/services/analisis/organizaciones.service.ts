@@ -1,12 +1,11 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
-import type {
+import type LugarGis, {
   ArchivoS2i,
   CreateArchivoPayload,
   CreateEmpresaPayload,
   CreateLugarGisPayload,
   EmpresaS2i,
-  LugarGis,
   RespuestaApi,
 } from './types'
 

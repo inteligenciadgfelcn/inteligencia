@@ -7,7 +7,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { ReportBaseService } from '../../../siii/reportes/services/reporte-base.service'
 import { ReporteCasosService, FiltroCasosDto } from '../services/reporte-casos.service'
 import { RepCasoDetalleTemplate } from './templates/rep-caso-detalle.template'
-import { RepCasoGisTemplate } from './templates/rep-caso-gis.template'
+import { RepCasoSigTemplate } from './templates/rep-caso-sig.template'
 
 /**
  * Controlador de reportes del módulo S2I (Casos de Investigación).
@@ -15,7 +15,7 @@ import { RepCasoGisTemplate } from './templates/rep-caso-gis.template'
  *   FRM-RP-01 → GET /s2i/reportes/casos (lista JSON)
  *   FRM-RP-02 → GET /s2i/reportes/casos (mismo endpoint, diferencia en el cliente)
  *   RPT-MN-01 → GET /s2i/reportes/casos/:id/pdf
- *   RPT-MN-02 → GET /s2i/reportes/casos/:id/gis/pdf
+ *   RPT-MN-02 → GET /s2i/reportes/casos/:id/sig/pdf
  */
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -59,8 +59,8 @@ export class CasosReportController extends BaseController {
   @ApiOperation({
     summary: 'Datos del reporte detallado en JSON (vista previa RPT-MN-01)',
     description:
-      'Devuelve caso, blancos con antecedentes/redes/GIS, ' +
-      'organizaciones con GIS y bienes con características.',
+      'Devuelve caso, blancos con antecedentes/redes/SIG, ' +
+      'organizaciones con SIG y bienes con características.',
   })
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
   @Get(':id/detalle')
@@ -72,15 +72,15 @@ export class CasosReportController extends BaseController {
   // ── RPT-MN-02 vista previa JSON ───────────────────────────────────────────
 
   @ApiOperation({
-    summary: 'Marcadores GIS en JSON (vista previa RPT-MN-02)',
+    summary: 'Marcadores SIG en JSON (vista previa RPT-MN-02)',
     description:
       'Devuelve datos del caso y marcadores de blancos, ' +
       'organizaciones y bienes para el mapa interactivo.',
   })
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
-  @Get(':id/gis')
-  async verGis(@Param('id') idCaso: string) {
-    const data = await this.reporteCasosService.obtenerGisCaso(idCaso)
+  @Get(':id/sig')
+  async verSig(@Param('id') idCaso: string) {
+    const data = await this.reporteCasosService.obtenerSigCaso(idCaso)
     return this.successCreate(data)
   }
 
@@ -90,7 +90,7 @@ export class CasosReportController extends BaseController {
     summary: 'Genera el Reporte Detallado de Caso en PDF (RPT-MN-01)',
     description:
       'Incluye: datos generales, investigados (con antecedentes, redes ' +
-      'sociales y lugares de frecuencia), organizaciones (con GIS) y ' +
+      'sociales y lugares de frecuencia), organizaciones (con SIG) y ' +
       'bienes/activos (con características).',
   })
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
@@ -124,7 +124,7 @@ export class CasosReportController extends BaseController {
   // ── RPT-MN-02 ─────────────────────────────────────────────────────────────
 
   @ApiOperation({
-    summary: 'Genera el Reporte GIS de Caso en PDF (RPT-MN-02)',
+    summary: 'Genera el Reporte SIG de Caso en PDF (RPT-MN-02)',
     description:
       'Incluye los datos generales del caso y un mapa Leaflet con los ' +
       'marcadores de personas investigadas, organizaciones y bienes, ' +
@@ -132,14 +132,14 @@ export class CasosReportController extends BaseController {
   })
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
   @SetRequestTimeout(120)
-  @Get(':id/gis/pdf')
-  async generarGisPdf(
+  @Get(':id/sig/pdf')
+  async generarSigPdf(
     @Param('id') idCaso: string,
     @Res() res: Response,
   ) {
     try {
-      const template = new RepCasoGisTemplate()
-      const data = await RepCasoGisTemplate.fetchData(
+      const template = new RepCasoSigTemplate()
+      const data = await RepCasoSigTemplate.fetchData(
         this.reporteCasosService,
         idCaso,
       )
@@ -148,13 +148,13 @@ export class CasosReportController extends BaseController {
 
       res.set({
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=reporte-gis-caso-${idCaso}.pdf`,
+        'Content-Disposition': `attachment; filename=reporte-sig-caso-${idCaso}.pdf`,
         'Content-Length': pdfBuffer.length,
       })
       res.end(Buffer.from(pdfBuffer))
     } catch (error) {
-      console.error('[CasosReport] Error generando PDF GIS:', error)
-      res.status(500).json({ message: 'Error al generar el PDF GIS', error: error.message })
+      console.error('[CasosReport] Error generando PDF SIG:', error)
+      res.status(500).json({ message: 'Error al generar el PDF SIG', error: error.message })
     }
   }
 }

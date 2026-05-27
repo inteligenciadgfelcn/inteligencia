@@ -12,7 +12,7 @@ import { CasosReportController } from './casos/casos-report.controller'
  * Rutas expuestas:
  *   GET /s2i/reportes/casos            → lista JSON (FRM-RP-01 / FRM-RP-02)
  *   GET /s2i/reportes/casos/:id/pdf    → PDF detallado (RPT-MN-01)
- *   GET /s2i/reportes/casos/:id/gis/pdf → PDF GIS con Leaflet (RPT-MN-02)
+ *   GET /s2i/reportes/casos/:id/sig/pdf → PDF SIG con Leaflet (RPT-MN-02)
  */
 @Module({
   imports: [S2iModule],

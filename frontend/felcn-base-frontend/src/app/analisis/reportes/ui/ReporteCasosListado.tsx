@@ -227,7 +227,7 @@ export function ReporteCasosListado({ casos, cargando }: ReporteCasosListadoProp
               variant="outline-success"
               size="sm"
               type="button"
-              title="Descargar PDF GIS (RPT-MN-02)"
+              title="Descargar PDF SIG (RPT-MN-02)"
               loading={descargando === `${row.idCaso}-gis`}
               disabled={descargando !== null}
               onClick={() => void descargar(row.idCaso, 'gis')}
