@@ -1,6 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
-import type {
+import type LugarGis, {
   AntecedenteBlanco,
   ArchivoS2i,
   BlancoS2i,
@@ -9,7 +9,6 @@ import type {
   CreateBlancoPayload,
   CreateLugarGisPayload,
   CreateRedSocialPayload,
-  LugarGis,
   RedSocial,
   RespuestaApi,
 } from './types'

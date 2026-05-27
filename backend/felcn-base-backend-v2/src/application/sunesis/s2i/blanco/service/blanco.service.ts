@@ -9,7 +9,7 @@ import {
   CreateBlancoDto,
   CreateAntecedenteDto,
   CreateRedSocialDto,
-  CreateLugarGisDto,
+  CreateLugarSigDto,
   CreateArchivoDto,
 } from '../dto'
 
@@ -19,7 +19,7 @@ import {
  *   - RegBlancos.InsertBlancos
  *   - RegBlancos.Insertantecedente
  *   - RegBlancos.InsertRedSocial
- *   - RegBlancos.InsertGis
+ *   - RegBlancos.InsertSig
  *   - Carga/eliminación de archivos (ArchivosBlanco)
  */
 @Injectable()
@@ -77,7 +77,8 @@ export class BlancoService {
 
   async crearAntecedente(
     idBlanco: string,
-    dto: CreateAntecedenteDto
+    dto: CreateAntecedenteDto,
+    usuario: string
   ): Promise<S2iAntecedenteBlanco> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
@@ -90,6 +91,7 @@ export class BlancoService {
       nroCaso: dto.nroCaso.trim().toUpperCase(),
       fechaHecho: new Date(dto.fechaHecho),
       hecho: dto.hecho.trim(),
+      usuario: usuario.trim(),
     })
     return this.repo.crearAntecedente(antecedente)
   }
@@ -111,7 +113,8 @@ export class BlancoService {
 
   async crearRedSocial(
     idBlanco: string,
-    dto: CreateRedSocialDto
+    dto: CreateRedSocialDto,
+    usuario: string
   ): Promise<S2iRedSocial> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
@@ -120,6 +123,7 @@ export class BlancoService {
       idBlanco,
       tipoRed: dto.tipoRed.trim(),
       direccion: dto.direccion.trim(),
+      usuario: usuario.trim(),
     })
     return this.repo.crearRedSocial(red)
   }
@@ -132,11 +136,12 @@ export class BlancoService {
     await this.repo.eliminarRedSocial(idRedSocial)
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(
     idBlanco: string,
-    dto: CreateLugarGisDto
+    dto: CreateLugarSigDto,
+    usuario: string
   ): Promise<S2iLugarBlanco> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
@@ -147,6 +152,7 @@ export class BlancoService {
       coordenadasX: dto.coordenadasX,
       coordenadasY: dto.coordenadasY,
       contenido: dto.contenido.trim(),
+      usuario: usuario.trim(),
     })
     return this.repo.crearLugar(lugar)
   }
@@ -165,7 +171,8 @@ export class BlancoService {
     idBlanco: string,
     dto: CreateArchivoDto,
     nombreArchivo: string,
-    data: Buffer
+    data: Buffer,
+    usuario: string
   ): Promise<any> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
@@ -177,6 +184,7 @@ export class BlancoService {
       nombre: dto.nombre.trim().toUpperCase(),
       nombreArchivo: nombreArchivo.trim(),
       data,
+      usuario: usuario.trim(),
     })
     const saved = await this.repo.crearArchivo(archivo)
     const { data: _data, ...resto } = saved

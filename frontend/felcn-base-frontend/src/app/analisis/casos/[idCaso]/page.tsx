@@ -8,15 +8,21 @@ import type { CasoS2i } from '@/services/analisis'
 import { SeccionBlancos } from './ui/SeccionBlancos'
 import { SeccionOrganizaciones } from './ui/SeccionOrganizaciones'
 import { SeccionBienes } from './ui/SeccionBienes'
+import { SeccionTelefonos } from './ui/SeccionTelefonos'
+import { SeccionVehiculos } from './ui/SeccionVehiculos'
 
 import IconUsers from '@/components/Icon/IconUsers'
 import IconUsersGroup from '@/components/Icon/IconUsersGroup'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
+import IconPhone from '@/components/Icon/IconPhone'
+import IconTag from '@/components/Icon/IconTag'
 
 const TABS = [
   { key: 'Blancos', label: 'Blancos', Icon: IconUsers },
   { key: 'Organizaciones', label: 'Organizaciones', Icon: IconUsersGroup },
   { key: 'Bienes', label: 'Bienes', Icon: IconCashBanknotes },
+  { key: 'Telefonos', label: 'Telefonía', Icon: IconPhone },
+  { key: 'Vehiculos', label: 'Vehículos', Icon: IconTag },
 ] as const
 type Tab = typeof TABS[number]['key']
 
@@ -81,7 +87,7 @@ export default function DetalleCasoPage() {
 
       {/* ── Tabs ── */}
       <div className="panel">
-        <div className="mb-4 flex gap-2 border-b border-[#e0e6ed] dark:border-gray-700">
+        <div className="mb-4 flex flex-wrap gap-2 border-b border-[#e0e6ed] dark:border-gray-700">
           {TABS.map((t) => {
             const Icon = t.Icon
             const activa = tab === t.key
@@ -105,6 +111,8 @@ export default function DetalleCasoPage() {
         {tab === 'Blancos' && <SeccionBlancos idCaso={idCaso} />}
         {tab === 'Organizaciones' && <SeccionOrganizaciones idCaso={idCaso} />}
         {tab === 'Bienes' && <SeccionBienes idCaso={idCaso} />}
+        {tab === 'Telefonos' && <SeccionTelefonos idCaso={idCaso} />}
+        {tab === 'Vehiculos' && <SeccionVehiculos idCaso={idCaso} />}
       </div>
     </div>
   )
