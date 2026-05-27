@@ -63,9 +63,9 @@ function TablaSimple({
     <div className="mb-4 overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-[#5D7B9D] text-white">
+          <tr className="text-white">
             {headers.map((h) => (
-              <th key={h} className="px-2 py-1 text-left">{h}</th>
+              <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
             ))}
           </tr>
         </thead>
@@ -301,9 +301,9 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       <div className="mb-4 overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-[#5D7B9D] text-white">
+                            <tr className="text-white">
                               {['Catálogo Bien', 'Clase', 'Tipo', 'Cant.', 'Características'].map((h) => (
-                                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
                           </thead>
