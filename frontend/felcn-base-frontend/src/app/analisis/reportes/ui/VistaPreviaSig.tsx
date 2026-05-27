@@ -118,7 +118,7 @@ export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargand
                   <div className="flex items-center justify-between">
                     <div className="flex-1 text-center">
                       <p className="text-base font-bold uppercase">Departamento de Inteligencia</p>
-                      <p className="text-sm">REPORTE GIS — ACTIVIDAD DELICTUAL</p>
+                      <p className="text-sm">REPORTE SIG — ACTIVIDAD DELICTUAL</p>
                       {caso && (
                         <p className="mt-1 text-sm font-semibold uppercase">CASO: {caso.nombreCaso}</p>
                       )}
@@ -168,7 +168,7 @@ export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargand
 
                       {/* Mapa GIS */}
                       <h4 className="mb-2 border-b-2 border-[#3e5f8a] pb-1 text-sm font-bold uppercase text-[#3e5f8a]">
-                        GIS de Actividad Delictual
+                        SIG de Actividad Delictual
                       </h4>
 
                       {/* Leyenda */}
@@ -238,7 +238,7 @@ export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargand
 
                       {validos.length === 0 && (
                         <p className="mt-2 text-center text-xs italic text-gray-400">
-                          No hay marcadores GIS registrados para este caso.
+                          No hay marcadores SIG registrados para este caso.
                         </p>
                       )}
                     </>
@@ -258,7 +258,7 @@ export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargand
                     onClick={onDescargarPdf}
                   >
                     <IconDownload className="mr-1 h-4 w-4" />
-                    Descargar PDF GIS
+                    Descargar PDF SIG
                   </Button>
                 </div>
               </Dialog.Panel>
