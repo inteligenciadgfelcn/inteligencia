@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  BeforeInsert,
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
@@ -38,6 +39,17 @@ export class S2iArchivoBlanco {
   /** Contenido binario del archivo */
   @Column({ name: 'data', type: 'bytea' })
   data: Buffer
+
+  @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
+  fechaHoraIngreso: Date
+
+  @Column({ name: 'usuario', type: 'varchar', length: 15 })
+  usuario: string
+
+  @BeforeInsert()
+  setFechaIngreso() {
+    if (!this.fechaHoraIngreso) this.fechaHoraIngreso = new Date()
+  }
 
   @ManyToOne(() => S2iBlanco)
   @JoinColumn({ name: 'id_blanco' })

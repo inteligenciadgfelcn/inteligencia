@@ -40,7 +40,7 @@ export interface RedSocialPreview {
   direccion: string
 }
 
-export interface LugarGisPreview {
+export interface LugarSigPreview {
   descripcion: string
   coordenadasX: number
   coordenadasY: number
@@ -57,7 +57,7 @@ export interface BlancoDetallePreview {
   descripcionPais: string | null
   antecedentes: DetalleAntecedentePreview[]
   redesSociales: RedSocialPreview[]
-  lugares: LugarGisPreview[]
+  lugares: LugarSigPreview[]
 }
 
 export interface OrganizacionDetallePreview {
@@ -68,7 +68,7 @@ export interface OrganizacionDetallePreview {
   matricula: string
   representante: string
   observaciones: string
-  lugares: LugarGisPreview[]
+  lugares: LugarSigPreview[]
 }
 
 export interface BienDetallePreview {
@@ -97,14 +97,14 @@ export interface DetalleCasoPreview {
   bienes: BienDetallePreview[]
 }
 
-export interface MarcadorGis {
+export interface MarcadorSig {
   lat: number
   lon: number
   descripcion: string
   tipo: 'blanco' | 'organizacion' | 'bien'
 }
 
-export interface GisCasoPreview {
+export interface SigCasoPreview {
   caso: {
     idCaso: string
     nombreCaso: string
@@ -115,7 +115,7 @@ export interface GisCasoPreview {
     etapaInvestigacion: string | null
     fechaInicio: string
   }
-  marcadores: MarcadorGis[]
+  marcadores: MarcadorSig[]
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -152,12 +152,12 @@ export const ReportesS2iService = {
   },
 
   /**
-   * Descarga el reporte GIS de un caso como PDF (RPT-MN-02).
+   * Descarga el reporte SIG de un caso como PDF (RPT-MN-02).
    * Devuelve un Blob con el mapa Leaflet renderizado por Puppeteer.
    */
-  descargarGisPdf(idCaso: string): Promise<Blob> {
+  descargarSigPdf(idCaso: string): Promise<Blob> {
     return sesionPeticion<Blob>({
-      url: `${BASE}/${idCaso}/gis/pdf`,
+      url: `${BASE}/${idCaso}/sig/pdf`,
       responseType: 'blob',
       withCredentials: true,
     })
@@ -171,10 +171,10 @@ export const ReportesS2iService = {
     })
   },
 
-  /** Vista previa del reporte GIS (RPT-MN-02) en JSON. */
-  verGis(idCaso: string) {
-    return sesionPeticion<{ finalizado: boolean; datos: GisCasoPreview }>({
-      url: `${BASE}/${idCaso}/gis`,
+  /** Vista previa del reporte SIG (RPT-MN-02) en JSON. */
+  verSig(idCaso: string) {
+    return sesionPeticion<{ finalizado: boolean; datos: SigCasoPreview }>({
+      url: `${BASE}/${idCaso}/sig`,
       withCredentials: true,
     })
   },

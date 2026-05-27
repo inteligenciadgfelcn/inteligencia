@@ -94,7 +94,7 @@ export class BlancoRepository {
     await this.dataSource.getRepository(S2iRedSocial).delete(idRedSocial)
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(lugar: S2iLugarBlanco): Promise<S2iLugarBlanco> {
     return this.dataSource.getRepository(S2iLugarBlanco).save(lugar)

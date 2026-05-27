@@ -107,7 +107,7 @@ export class BienRepository {
       .getMany()
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(lugar: S2iLugarBien): Promise<S2iLugarBien> {
     return this.dataSource.getRepository(S2iLugarBien).save(lugar)

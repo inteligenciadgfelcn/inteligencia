@@ -39,7 +39,7 @@ export class OrganizacionRepository {
     await this.dataSource.getRepository(S2iEmpresa).delete(idEmpresa)
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(lugar: S2iLugarEmpresa): Promise<S2iLugarEmpresa> {
     return this.dataSource.getRepository(S2iLugarEmpresa).save(lugar)

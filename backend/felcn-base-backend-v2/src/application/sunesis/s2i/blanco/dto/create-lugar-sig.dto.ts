@@ -3,11 +3,11 @@ import { Type } from 'class-transformer'
 import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator'
 
 /**
- * DTO reutilizable para georeferenciación GIS
+ * DTO reutilizable para georeferenciación SIG
  * Usado en lugar_blanco, lugar_empresa y lugar_bien
- * Equivalente a InsertGis de los tres módulos legados
+ * Equivalente a InsertSig de los tres módulos legados
  */
-export class CreateLugarGisDto {
+export class CreateLugarSigDto {
   @ApiProperty({
     description: 'Descripción del lugar',
     example: 'DOMICILIO PRINCIPAL',

@@ -5,7 +5,7 @@ import { S2iItemBienCaracteristica } from '../entity/item-bien-caracteristica.en
 import { S2iLugarBien } from '../entity/lugar-bien.entity'
 import { S2iArchivoBien } from '../entity/archivo-bien.entity'
 import { CreateBienInvestigadoDto, CreateBienCaracteristicaDto } from '../dto'
-import { CreateLugarGisDto } from '../../blanco/dto/create-lugar-gis.dto'
+import { CreateLugarSigDto } from '../../blanco/dto/create-lugar-sig.dto'
 import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
 
 /**
@@ -13,7 +13,7 @@ import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
  * Replica la lógica de FRM_ING_ENT3 del sistema legado:
  *   - RegBienes.InsertBienes
  *   - RegBienes.InsertCaracteristicas
- *   - RegBienes.InsertGis
+ *   - RegBienes.InsertSig
  *   - Archivos (ArchivosBien)
  */
 @Injectable()
@@ -103,11 +103,12 @@ export class BienService {
     return this.repo.listarCaracteristicasDisponibles(idItemBienSecundario)
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(
     idItemBienSecundario: string,
-    dto: CreateLugarGisDto
+    dto: CreateLugarSigDto,
+    usuario: string
   ): Promise<S2iLugarBien> {
     const existe = await this.repo.buscarPorId(idItemBienSecundario)
     if (!existe)
@@ -119,6 +120,7 @@ export class BienService {
       coordenadasX: dto.coordenadasX,
       coordenadasY: dto.coordenadasY,
       contenido: dto.contenido.trim(),
+      usuario: usuario.trim(),
     })
     return this.repo.crearLugar(lugar)
   }
@@ -137,7 +139,8 @@ export class BienService {
     idItemBienSecundario: string,
     dto: CreateArchivoDto,
     nombreArchivo: string,
-    data: Buffer
+    data: Buffer,
+    usuario: string
   ): Promise<any> {
     const existe = await this.repo.buscarPorId(idItemBienSecundario)
     if (!existe)
@@ -150,6 +153,7 @@ export class BienService {
       nombre: dto.nombre.trim().toUpperCase(),
       nombreArchivo: nombreArchivo.trim(),
       data,
+      usuario: usuario.trim(),
     })
     const saved = await this.repo.crearArchivo(archivo)
     const { data: _data, ...resto } = saved

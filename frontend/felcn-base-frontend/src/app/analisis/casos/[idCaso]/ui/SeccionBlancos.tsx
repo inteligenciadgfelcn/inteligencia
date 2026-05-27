@@ -11,7 +11,7 @@ import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
 import { DropzoneFoto } from '@/app/analisis/ui/DropzoneFoto'
-import { GisPanel } from '@/app/analisis/ui/GisPanel'
+import { SIGPanel } from '@/app/analisis/ui/SigPanel'
 import { ArchivosPanel } from '@/app/analisis/ui/ArchivosPanel'
 import { BlancosService, S2iLookupsService } from '@/services/analisis'
 import type {
@@ -144,7 +144,7 @@ function PanelAntecedentes({ blanco, opcionesPaises, opcionesDelito }: { blanco:
         setIdTipoDelito(''); setIdPais(''); setLugarHecho(''); setNroCaso(''); setFechaHecho(''); setHecho('')
         setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Antecedente registrado', variant: 'success' })
+        Alerta({ mensaje: 'Antecedente reSIGtrado', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }
@@ -200,18 +200,18 @@ function PanelAntecedentes({ blanco, opcionesPaises, opcionesDelito }: { blanco:
       </div>
       {lista.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin antecedentes registrados</span>
+          <span className="text-xs text-gray-400">Sin antecedentes reSIGtrados</span>
         </div>
       ) : (
         <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
           {lista.map((a) => (
-            <li key={a.idAntecedenteBlanco} className="flex items-start justify-between gap-2 py-2">
+            <li key={a.idAntecedente} className="flex items-start justify-between gap-2 py-2">
               <div className="text-sm min-w-0">
                 <span className="font-medium">{a.descripcionTipoDelito}</span>
                 <span className="ml-2 text-xs text-gray-500">{a.descripcionPais} · {a.nroCaso}</span>
                 <p className="text-xs text-gray-400 mt-0.5 truncate">{a.hecho}</p>
               </div>
-              <Button variant="danger" size="sm" className="shrink-0" onClick={() => eliminar(a.idAntecedenteBlanco)}>
+              <Button variant="danger" size="sm" className="shrink-0" onClick={() => eliminar(a.idAntecedente)}>
                 <IconTrash className="h-4 w-4" />
               </Button>
             </li>
@@ -254,7 +254,7 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
       if (r?.finalizado) {
         setTipoRed(''); setDireccion(''); setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Red social registrada', variant: 'success' })
+        Alerta({ mensaje: 'Red social reSIGtrada', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }
@@ -309,7 +309,7 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
       </div>
       {lista.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin redes sociales registradas</span>
+          <span className="text-xs text-gray-400">Sin redes sociales reSIGtradas</span>
         </div>
       ) : (
         <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
@@ -331,7 +331,7 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
 }
 
 // ── Expansion row ─────────────────────────────────────────────────────────────
-const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'GIS', 'Archivos'] as const
+const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'SIG', 'Archivos'] as const
 type TabBlanco = typeof TABS_BLANCO[number]
 
 function BlancoExpansion({
@@ -347,7 +347,7 @@ function BlancoExpansion({
 }) {
   const [tab, setTab] = useState<TabBlanco>('Foto')
 
-  const gisService = {
+  const SIGService = {
     crearLugar: (id: string, p: Parameters<typeof BlancosService.crearLugar>[1]) => BlancosService.crearLugar(id, p),
     listarLugares: (id: string) => BlancosService.listarLugares(id),
     eliminarLugar: (id: string) => BlancosService.eliminarLugar(id),
@@ -383,7 +383,7 @@ function BlancoExpansion({
       {tab === 'Foto' && <PanelFoto blanco={blanco} />}
       {tab === 'Antecedentes' && <PanelAntecedentes blanco={blanco} opcionesPaises={opcionesPaises} opcionesDelito={opcionesDelito} />}
       {tab === 'Redes Sociales' && <PanelRedesSociales blanco={blanco} />}
-      {tab === 'GIS' && <GisPanel idEntidad={blanco.idBlanco} service={gisService} idField="idLugarBlanco" />}
+      {tab === 'SIG' && <SIGPanel idEntidad={blanco.idBlanco} service={SIGService} idField="idLugarBlanco" />}
       {tab === 'Archivos' && <ArchivosPanel idEntidad={blanco.idBlanco} service={archivosService} idField="idArchivo" opcionesContenido={opcionesContenido} />}
     </div>
   )
@@ -452,7 +452,7 @@ export function SeccionBlancos({ idCaso }: Props) {
         setDeNombres(''); setDePaterno(''); setDeMaterno(''); setDeEsposo(''); setAlias(''); setIdPais('')
         setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Blanco registrado', variant: 'success' })
+        Alerta({ mensaje: 'Blanco reSIGtrado', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }

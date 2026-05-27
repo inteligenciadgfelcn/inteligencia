@@ -1,15 +1,15 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
+  LugarSig,
   AntecedenteBlanco,
   ArchivoS2i,
   BlancoS2i,
   CreateAntecedentePayload,
   CreateArchivoPayload,
   CreateBlancoPayload,
-  CreateLugarGisPayload,
+  CreateLugarSigPayload,
   CreateRedSocialPayload,
-  LugarGis,
   RedSocial,
   RespuestaApi,
 } from './types'
@@ -108,24 +108,24 @@ export const BlancosService = {
     })
   },
 
-  // ── GIS ────────────────────────────────────────────────────────────────────
+  // ── SIG ────────────────────────────────────────────────────────────────────
 
-  crearLugar(idBlanco: string, payload: CreateLugarGisPayload): Promise<RespuestaApi<LugarGis>> {
+  crearLugar(idBlanco: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>> {
     return sesionPeticion({
-      url: `${BASE}/blancos/${idBlanco}/lugares-gis`,
+      url: `${BASE}/blancos/${idBlanco}/lugares-sig`,
       method: 'POST',
       body: payload,
       withCredentials: true,
     })
   },
 
-  listarLugares(idBlanco: string): Promise<RespuestaApi<LugarGis[]>> {
-    return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/lugares-gis`, withCredentials: true })
+  listarLugares(idBlanco: string): Promise<RespuestaApi<LugarSig[]>> {
+    return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/lugares-sig`, withCredentials: true })
   },
 
   eliminarLugar(idLugar: string): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
-      url: `${BASE}/lugares-gis-blanco/${idLugar}`,
+      url: `${BASE}/lugares-sig-blanco/${idLugar}`,
       method: 'DELETE',
       withCredentials: true,
     })

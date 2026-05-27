@@ -70,8 +70,8 @@ export class ReporteCasosService {
 
   /**
    * Obtiene todos los datos de un caso para el reporte detallado (RPT-MN-01):
-   * encabezado del caso, investigados con antecedentes/redes/GIS,
-   * organizaciones con ubicación GIS, y bienes con características.
+   * encabezado del caso, investigados con antecedentes/redes/SIG,
+   * organizaciones con ubicación SIG, y bienes con características.
    */
   async obtenerDetalleCaso(idCaso: string) {
     const caso = await this.casoService.buscarPorId(idCaso)
@@ -82,7 +82,7 @@ export class ReporteCasosService {
       this.bienService.listarPorCaso(idCaso),
     ])
 
-    // Para cada blanco obtenemos sus antecedentes, redes sociales y lugares GIS
+    // Para cada blanco obtenemos sus antecedentes, redes sociales y lugares SIG
     const blancosCompletos = await Promise.all(
       blancos.map(async (b) => {
         const [antecedentes, redesSociales, lugares] = await Promise.all([
@@ -94,7 +94,7 @@ export class ReporteCasosService {
       }),
     )
 
-    // Para cada organización obtenemos su ubicación GIS
+    // Para cada organización obtenemos su ubicación SIG
     const organizacionesCompletas = await Promise.all(
       organizaciones.map(async (o) => {
         const lugares = await this.organizacionService.listarLugares(o.idEmpresa)
@@ -131,10 +131,10 @@ export class ReporteCasosService {
   }
 
   /**
-   * Obtiene los datos de encabezado del caso y todos los marcadores GIS
+   * Obtiene los datos de encabezado del caso y todos los marcadores SIG
    * (blancos, organizaciones, bienes) para el reporte de mapa (RPT-MN-02).
    */
-  async obtenerGisCaso(idCaso: string) {
+  async obtenerSigCaso(idCaso: string) {
     const caso = await this.casoService.buscarPorId(idCaso)
 
     const [blancos, organizaciones, bienes] = await Promise.all([
