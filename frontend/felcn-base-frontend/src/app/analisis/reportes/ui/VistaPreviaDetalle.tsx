@@ -60,9 +60,9 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
       <div className="table-responsive mb-3 overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#5D7B9D] text-white">
+            <tr className="text-white">
               {['Tipo Delito', 'País', 'Lugar', 'Nro. Caso', 'Fecha', 'Hecho'].map((h) => (
-                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
               ))}
             </tr>
           </thead>
@@ -70,15 +70,15 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
             {b.antecedentes.length === 0
               ? vacio('antecedentes', 6)
               : b.antecedentes.map((a, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{a.descripcionTipoDelito ?? 'N/A'}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{a.descripcionPais ?? 'N/A'}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{a.lugarHecho}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{a.nroCaso}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{fmt(a.fechaHecho)}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{a.hecho}</td>
-                  </tr>
-                ))}
+                <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-transparent' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{a.descripcionTipoDelito ?? 'N/A'}</td>
+                  <td className="bord er border-[#e5e7eb] px-2 py-1">{a.descripcionPais ?? 'N/A'}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{a.lugarHecho}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{a.nroCaso}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{fmt(a.fechaHecho)}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{a.hecho}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -89,20 +89,20 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
       <div className="mb-3 overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#5D7B9D] text-white">
-              <th className="px-2 py-1 text-left">Red Social / Correo</th>
-              <th className="px-2 py-1 text-left">Dirección</th>
+            <tr className="text-white">
+              <th className="bg-[#5D7B9D] px-2 py-1 text-left">Red Social / Correo</th>
+              <th className="bg-[#5D7B9D] px-2 py-1 text-left">Dirección</th>
             </tr>
           </thead>
           <tbody>
             {b.redesSociales.length === 0
               ? vacio('redes sociales', 2)
               : b.redesSociales.map((r, i) => (
-                  <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{r.tipoRed}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{r.direccion}</td>
-                  </tr>
-                ))}
+                <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{r.tipoRed}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{r.direccion}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -113,9 +113,9 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#5D7B9D] text-white">
+            <tr className="text-white">
               {['Descripción', 'Latitud', 'Longitud', 'Motivo'].map((h) => (
-                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
               ))}
             </tr>
           </thead>
@@ -123,13 +123,13 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
             {b.lugares.length === 0
               ? vacio('lugares', 4)
               : b.lugares.map((l, i) => (
-                  <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
-                  </tr>
-                ))}
+                <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -164,9 +164,9 @@ function SeccionOrganizacion({ o }: { o: OrganizacionDetallePreview }) {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#5D7B9D] text-white">
+            <tr className="text-white">
               {['Descripción', 'Latitud', 'Longitud', 'Motivo'].map((h) => (
-                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
               ))}
             </tr>
           </thead>
@@ -174,13 +174,13 @@ function SeccionOrganizacion({ o }: { o: OrganizacionDetallePreview }) {
             {o.lugares.length === 0
               ? vacio('ubicaciones', 4)
               : o.lugares.map((l, i) => (
-                  <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
-                    <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
-                  </tr>
-                ))}
+                <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
@@ -196,9 +196,9 @@ function SeccionBienes({ bienes }: { bienes: BienDetallePreview[] }) {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-[#5D7B9D] text-white">
+          <tr className="text-white">
             {['Catálogo Bien', 'Clase', 'Tipo', 'Tipo Investigación', 'Características'].map((h) => (
-              <th key={h} className="px-2 py-1 text-left">{h}</th>
+              <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
             ))}
           </tr>
         </thead>
@@ -215,9 +215,9 @@ function SeccionBienes({ bienes }: { bienes: BienDetallePreview[] }) {
                 ) : (
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-[#8fafc8] text-white">
-                        <th className="px-1 py-0.5 text-left">Característica</th>
-                        <th className="px-1 py-0.5 text-left">Descripción</th>
+                      <tr className="text-white">
+                        <th className="bg-[#8fafc8] px-1 py-0.5 text-left">Característica</th>
+                        <th className="bg-[#8fafc8] px-1 py-0.5 text-left">Descripción</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -309,9 +309,9 @@ export function VistaPreviaDetalle({ open, onClose, data, onDescargarPdf, descar
                       <div className="mb-5 overflow-x-auto">
                         <table className="w-full text-xs">
                           <thead>
-                            <tr className="bg-[#5D7B9D] text-white">
+                            <tr className="text-white">
                               {['Registro Nro.', 'País de Investigación', 'Lugar', 'Estado', 'Etapa', 'Fecha Inicio'].map((h) => (
-                                <th key={h} className="px-2 py-1 text-left">{h}</th>
+                                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
                           </thead>

@@ -24,7 +24,7 @@ import { BaseController } from '@/common/base'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { OrganizacionService } from '../service/organizacion.service'
 import { CreateOrganizacionDto } from '../dto/create-organizacion.dto'
-import { CreateLugarGisDto } from '../../blanco/dto/create-lugar-gis.dto'
+import { CreateLugarSigDto } from '../../blanco/dto/create-lugar-sig.dto'
 import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
 
 @ApiBearerAuth()
@@ -73,32 +73,34 @@ export class OrganizacionController extends BaseController {
     return this.successDelete()
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   @ApiOperation({
-    summary: 'Agregar lugar GIS a una organización',
-    description: 'Replica RegOrganizacion.InsertGis de FRM_ING_ENT2.',
+    summary: 'Agregar lugar SIG a una organización',
+    description: 'Replica RegOrganizacion.InsertSig de FRM_ING_ENT2.',
   })
   @ApiParam({ name: 'idEmpresa', description: 'ID de la organización' })
-  @Post('organizaciones/:idEmpresa/lugares-gis')
+  @Post('organizaciones/:idEmpresa/lugares-sig')
   async crearLugar(
     @Param('idEmpresa') idEmpresa: string,
-    @Body() dto: CreateLugarGisDto
+    @Body() dto: CreateLugarSigDto,
+    @Req() req: Request
   ) {
-    const lugar = await this.service.crearLugar(idEmpresa, dto)
+    const { numeroPase = '' } = req.user as PassportUser
+    const lugar = await this.service.crearLugar(idEmpresa, dto, numeroPase)
     return this.successCreate(lugar)
   }
 
-  @ApiOperation({ summary: 'Listar lugares GIS de una organización' })
+  @ApiOperation({ summary: 'Listar lugares SIG de una organización' })
   @ApiParam({ name: 'idEmpresa', description: 'ID de la organización' })
-  @Get('organizaciones/:idEmpresa/lugares-gis')
+  @Get('organizaciones/:idEmpresa/lugares-sig')
   async listarLugares(@Param('idEmpresa') idEmpresa: string) {
     return this.successList(await this.service.listarLugares(idEmpresa))
   }
 
-  @ApiOperation({ summary: 'Eliminar lugar GIS de organización por ID' })
+  @ApiOperation({ summary: 'Eliminar lugar SIG de organización por ID' })
   @ApiParam({ name: 'idLugar', description: 'ID del lugar (bigint)' })
-  @Delete('lugares-gis-empresa/:idLugar')
+  @Delete('lugares-sig-empresa/:idLugar')
   async eliminarLugar(@Param('idLugar') idLugar: string) {
     await this.service.eliminarLugar(idLugar)
     return this.successDelete()
@@ -117,15 +119,18 @@ export class OrganizacionController extends BaseController {
   async subirArchivo(
     @Param('idEmpresa') idEmpresa: string,
     @Body() dto: CreateArchivoDto,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const data = file?.buffer || Buffer.alloc(0)
     const nombreArchivo = file?.originalname || dto.nombre
     const resultado = await this.service.subirArchivo(
       idEmpresa,
       dto,
       nombreArchivo,
-      data
+      data,
+      numeroPase
     )
     return this.successCreate(resultado)
   }

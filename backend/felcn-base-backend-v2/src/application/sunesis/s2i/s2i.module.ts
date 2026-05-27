@@ -37,12 +37,20 @@ import { S2iItemBienCaracteristica } from './bien/entity/item-bien-caracteristic
 import { S2iLugarBien } from './bien/entity/lugar-bien.entity'
 import { S2iArchivoBien } from './bien/entity/archivo-bien.entity'
 
+// ==================== TELEFONÍA ====================
+import { S2iTelefono } from './telefonia/entity/telefono.entity'
+
+// ==================== VEHÍCULO ====================
+import { S2iVehiculo } from './vehiculo/entity/vehiculo.entity'
+
 // ==================== CONTROLLERS ====================
 import { S2iLookupController } from './parametrica/controller/s2i-lookup.controller'
 import { CasoController } from './caso/controller/caso.controller'
 import { BlancoController } from './blanco/controller/blanco.controller'
 import { OrganizacionController } from './organizacion/controller/organizacion.controller'
 import { BienController } from './bien/controller/bien.controller'
+import { TelefoniaController } from './telefonia/controller/telefonia.controller'
+import { VehiculoController } from './vehiculo/controller/vehiculo.controller'
 
 // ==================== SERVICES ====================
 import { S2iLookupService } from './parametrica/service/s2i-lookup.service'
@@ -50,6 +58,8 @@ import { CasoService } from './caso/service/caso.service'
 import { BlancoService } from './blanco/service/blanco.service'
 import { OrganizacionService } from './organizacion/service/organizacion.service'
 import { BienService } from './bien/service/bien.service'
+import { TelefoniaService } from './telefonia/service/telefonia.service'
+import { VehiculoService } from './vehiculo/service/vehiculo.service'
 
 // ==================== REPOSITORIES ====================
 import { S2iLookupRepository } from './parametrica/repository/s2i-lookup.repository'
@@ -57,6 +67,8 @@ import { CasoRepository } from './caso/repository/caso.repository'
 import { BlancoRepository } from './blanco/repository/blanco.repository'
 import { OrganizacionRepository } from './organizacion/repository/organizacion.repository'
 import { BienRepository } from './bien/repository/bien.repository'
+import { TelefoniaRepository } from './telefonia/repository/telefonia.repository'
+import { VehiculoRepository } from './vehiculo/repository/vehiculo.repository'
 
 const entities = [
   // Paramétricas
@@ -89,6 +101,10 @@ const entities = [
   S2iItemBienCaracteristica,
   S2iLugarBien,
   S2iArchivoBien,
+  // Telefonía
+  S2iTelefono,
+  // Vehículo
+  S2iVehiculo,
 ]
 
 @Module({
@@ -99,6 +115,8 @@ const entities = [
     BlancoController,
     OrganizacionController,
     BienController,
+    TelefoniaController,
+    VehiculoController,
   ],
   providers: [
     S2iLookupService,
@@ -111,6 +129,10 @@ const entities = [
     OrganizacionRepository,
     BienService,
     BienRepository,
+    TelefoniaService,
+    TelefoniaRepository,
+    VehiculoService,
+    VehiculoRepository,
   ],
   exports: [
     S2iLookupService,
@@ -118,6 +140,8 @@ const entities = [
     BlancoService,
     OrganizacionService,
     BienService,
+    TelefoniaService,
+    VehiculoService,
   ],
 })
 export class S2iModule {}

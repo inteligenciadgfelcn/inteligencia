@@ -9,7 +9,7 @@ import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
-import { GisPanel } from '@/app/analisis/ui/GisPanel'
+import { SIGPanel } from '@/app/analisis/ui/SigPanel'
 import { ArchivosPanel } from '@/app/analisis/ui/ArchivosPanel'
 import { BienesS2iService, S2iLookupsService } from '@/services/analisis'
 import type { BienS2i, CaracteristicaBien, LookupSimple } from '@/services/analisis'
@@ -64,7 +64,7 @@ function PanelCaracteristicas({ bien }: { bien: BienS2i }) {
       if (r?.finalizado) {
         setIdCaracteristica(''); setDescripcion(''); setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Característica registrada', variant: 'success' })
+        Alerta({ mensaje: 'Característica reSIGtrada', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }
@@ -117,7 +117,7 @@ function PanelCaracteristicas({ bien }: { bien: BienS2i }) {
       </div>
       {lista.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin características registradas</span>
+          <span className="text-xs text-gray-400">Sin características reSIGtradas</span>
         </div>
       ) : (
         <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
@@ -139,13 +139,13 @@ function PanelCaracteristicas({ bien }: { bien: BienS2i }) {
 }
 
 // ── Expansion row ─────────────────────────────────────────────────────────────
-const TABS_BIEN = ['Características', 'GIS', 'Archivos'] as const
+const TABS_BIEN = ['Características', 'SIG', 'Archivos'] as const
 type TabBien = typeof TABS_BIEN[number]
 
 function BienExpansion({ bien, opcionesContenido }: { bien: BienS2i; opcionesContenido: LookupSimple[] }) {
   const [tab, setTab] = useState<TabBien>('Características')
 
-  const gisService = {
+  const SIGService = {
     crearLugar: (id: string, p: Parameters<typeof BienesS2iService.crearLugar>[1]) => BienesS2iService.crearLugar(id, p),
     listarLugares: (id: string) => BienesS2iService.listarLugares(id),
     eliminarLugar: (id: string) => BienesS2iService.eliminarLugar(id),
@@ -170,8 +170,8 @@ function BienExpansion({ bien, opcionesContenido }: { bien: BienS2i; opcionesCon
               type="button"
               onClick={() => setTab(t)}
               className={`-mb-px flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all border-b-2 ${activa
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-primary hover:border-gray-300'
                 }`}
             >
               {t}
@@ -180,7 +180,7 @@ function BienExpansion({ bien, opcionesContenido }: { bien: BienS2i; opcionesCon
         })}
       </div>
       {tab === 'Características' && <PanelCaracteristicas bien={bien} />}
-      {tab === 'GIS' && <GisPanel idEntidad={bien.idItemBienSecundario} service={gisService} idField="idLugarBien" />}
+      {tab === 'SIG' && <SIGPanel idEntidad={bien.idItemBienSecundario} service={SIGService} idField="idLugarBien" />}
       {tab === 'Archivos' && (
         <ArchivosPanel
           idEntidad={bien.idItemBienSecundario}
@@ -267,7 +267,7 @@ export function SeccionBienes({ idCaso }: Props) {
         setOpcionesClase([]); setOpcionesTipo([])
         setSubmitted(false)
         void cargar()
-        Alerta({ mensaje: 'Bien registrado', variant: 'success' })
+        Alerta({ mensaje: 'Bien reSIGtrado', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }
