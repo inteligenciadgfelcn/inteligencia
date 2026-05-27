@@ -276,7 +276,7 @@ export const ModalUsuarios = ({
                 >
                   Fecha de Nacimiento
                 </InputLabel>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                   <Controller
                     name="fechaNacimiento"
                     control={control}
