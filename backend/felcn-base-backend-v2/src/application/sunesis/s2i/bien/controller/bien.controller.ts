@@ -24,7 +24,7 @@ import { BaseController } from '@/common/base'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { BienService } from '../service/bien.service'
 import { CreateBienInvestigadoDto, CreateBienCaracteristicaDto } from '../dto'
-import { CreateLugarGisDto } from '../../blanco/dto/create-lugar-gis.dto'
+import { CreateLugarSigDto } from '../../blanco/dto/create-lugar-sig.dto'
 import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
 
 @ApiBearerAuth()
@@ -143,32 +143,34 @@ export class BienController extends BaseController {
     return this.successDelete()
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   @ApiOperation({
-    summary: 'Agregar lugar GIS a un bien investigado',
-    description: 'Replica RegBienes.InsertGis de FRM_ING_ENT3.',
+    summary: 'Agregar lugar SIG a un bien investigado',
+    description: 'Replica RegBienes.InsertSig de FRM_ING_ENT3.',
   })
   @ApiParam({ name: 'idItemBien', description: 'ID del bien investigado' })
-  @Post('bienes/:idItemBien/lugares-gis')
+  @Post('bienes/:idItemBien/lugares-sig')
   async crearLugar(
     @Param('idItemBien') idItemBien: string,
-    @Body() dto: CreateLugarGisDto
+    @Body() dto: CreateLugarSigDto,
+    @Req() req: Request
   ) {
-    const lugar = await this.service.crearLugar(idItemBien, dto)
+    const { numeroPase = '' } = req.user as PassportUser
+    const lugar = await this.service.crearLugar(idItemBien, dto, numeroPase)
     return this.successCreate(lugar)
   }
 
-  @ApiOperation({ summary: 'Listar lugares GIS de un bien investigado' })
+  @ApiOperation({ summary: 'Listar lugares SIG de un bien investigado' })
   @ApiParam({ name: 'idItemBien', description: 'ID del bien investigado' })
-  @Get('bienes/:idItemBien/lugares-gis')
+  @Get('bienes/:idItemBien/lugares-sig')
   async listarLugares(@Param('idItemBien') idItemBien: string) {
     return this.successList(await this.service.listarLugares(idItemBien))
   }
 
-  @ApiOperation({ summary: 'Eliminar lugar GIS de bien por ID' })
+  @ApiOperation({ summary: 'Eliminar lugar SIG de bien por ID' })
   @ApiParam({ name: 'idLugar', description: 'ID del lugar (bigint)' })
-  @Delete('lugares-gis-bien/:idLugar')
+  @Delete('lugares-sig-bien/:idLugar')
   async eliminarLugar(@Param('idLugar') idLugar: string) {
     await this.service.eliminarLugar(idLugar)
     return this.successDelete()
@@ -187,15 +189,18 @@ export class BienController extends BaseController {
   async subirArchivo(
     @Param('idItemBien') idItemBien: string,
     @Body() dto: CreateArchivoDto,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const data = file?.buffer || Buffer.alloc(0)
     const nombreArchivo = file?.originalname || dto.nombre
     const resultado = await this.service.subirArchivo(
       idItemBien,
       dto,
       nombreArchivo,
-      data
+      data,
+      numeroPase
     )
     return this.successCreate(resultado)
   }

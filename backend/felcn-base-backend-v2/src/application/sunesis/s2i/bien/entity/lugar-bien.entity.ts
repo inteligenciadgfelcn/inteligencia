@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  BeforeInsert,
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
@@ -10,7 +11,7 @@ import { S2iItemBienInvestigado } from './item-bien-investigado.entity'
 
 /**
  * Tabla: public.lugar_bien
- * Ubicaciones GIS del bien investigado
+ * Ubicaciones SIG del bien investigado
  * FK CASCADE a item_bien_investigado
  */
 @Entity({ name: 'lugar_bien', schema: SCHEMA_PUBLIC })
@@ -32,6 +33,17 @@ export class S2iLugarBien {
 
   @Column({ name: 'contenido', type: 'text' })
   contenido: string
+
+  @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
+  fechaHoraIngreso: Date
+
+  @Column({ name: 'usuario', type: 'varchar', length: 15 })
+  usuario: string
+
+  @BeforeInsert()
+  setFechaIngreso() {
+    if (!this.fechaHoraIngreso) this.fechaHoraIngreso = new Date()
+  }
 
   @ManyToOne(() => S2iItemBienInvestigado)
   @JoinColumn({ name: 'id_item_bien_secundario' })

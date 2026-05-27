@@ -28,7 +28,7 @@ import {
   CreateBlancoDto,
   CreateAntecedenteDto,
   CreateRedSocialDto,
-  CreateLugarGisDto,
+  CreateLugarSigDto,
   CreateArchivoDto,
 } from '../dto'
 
@@ -115,9 +115,11 @@ export class BlancoController extends BaseController {
   @Post('blancos/:idBlanco/antecedentes')
   async crearAntecedente(
     @Param('idBlanco') idBlanco: string,
-    @Body() dto: CreateAntecedenteDto
+    @Body() dto: CreateAntecedenteDto,
+    @Req() req: Request
   ) {
-    const antecedente = await this.service.crearAntecedente(idBlanco, dto)
+    const { numeroPase = '' } = req.user as PassportUser
+    const antecedente = await this.service.crearAntecedente(idBlanco, dto, numeroPase)
     return this.successCreate(antecedente)
   }
 
@@ -149,9 +151,11 @@ export class BlancoController extends BaseController {
   @Post('blancos/:idBlanco/redes-sociales')
   async crearRedSocial(
     @Param('idBlanco') idBlanco: string,
-    @Body() dto: CreateRedSocialDto
+    @Body() dto: CreateRedSocialDto,
+    @Req() req: Request
   ) {
-    const red = await this.service.crearRedSocial(idBlanco, dto)
+    const { numeroPase = '' } = req.user as PassportUser
+    const red = await this.service.crearRedSocial(idBlanco, dto, numeroPase)
     return this.successCreate(red)
   }
 
@@ -173,32 +177,34 @@ export class BlancoController extends BaseController {
     return this.successDelete()
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   @ApiOperation({
-    summary: 'Agregar lugar GIS al blanco',
-    description: 'Replica RegBlancos.InsertGis de FRM_ING_ENT1.',
+    summary: 'Agregar lugar SIG al blanco',
+    description: 'Replica RegBlancos.InsertSig de FRM_ING_ENT1.',
   })
   @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
-  @Post('blancos/:idBlanco/lugares-gis')
+  @Post('blancos/:idBlanco/lugares-sig')
   async crearLugar(
     @Param('idBlanco') idBlanco: string,
-    @Body() dto: CreateLugarGisDto
+    @Body() dto: CreateLugarSigDto,
+    @Req() req: Request
   ) {
-    const lugar = await this.service.crearLugar(idBlanco, dto)
+    const { numeroPase = '' } = req.user as PassportUser
+    const lugar = await this.service.crearLugar(idBlanco, dto, numeroPase)
     return this.successCreate(lugar)
   }
 
-  @ApiOperation({ summary: 'Listar lugares GIS de un blanco' })
+  @ApiOperation({ summary: 'Listar lugares SIG de un blanco' })
   @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
-  @Get('blancos/:idBlanco/lugares-gis')
+  @Get('blancos/:idBlanco/lugares-sig')
   async listarLugares(@Param('idBlanco') idBlanco: string) {
     return this.successList(await this.service.listarLugares(idBlanco))
   }
 
-  @ApiOperation({ summary: 'Eliminar lugar GIS de blanco por ID' })
+  @ApiOperation({ summary: 'Eliminar lugar SIG de blanco por ID' })
   @ApiParam({ name: 'idLugar', description: 'ID del lugar (bigint)' })
-  @Delete('lugares-gis-blanco/:idLugar')
+  @Delete('lugares-sig-blanco/:idLugar')
   async eliminarLugar(@Param('idLugar') idLugar: string) {
     await this.service.eliminarLugar(idLugar)
     return this.successDelete()
@@ -217,15 +223,18 @@ export class BlancoController extends BaseController {
   async subirArchivo(
     @Param('idBlanco') idBlanco: string,
     @Body() dto: CreateArchivoDto,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const data = file?.buffer || Buffer.alloc(0)
     const nombreArchivo = file?.originalname || dto.nombre
     const resultado = await this.service.subirArchivo(
       idBlanco,
       dto,
       nombreArchivo,
-      data
+      data,
+      numeroPase
     )
     return this.successCreate(resultado)
   }

@@ -4,19 +4,19 @@ import { S2iEmpresa } from '../entity/empresa.entity'
 import { S2iLugarEmpresa } from '../entity/lugar-empresa.entity'
 import { S2iArchivoOrganizacion } from '../entity/archivo-organizacion.entity'
 import { CreateOrganizacionDto } from '../dto/create-organizacion.dto'
-import { CreateLugarGisDto } from '../../blanco/dto/create-lugar-gis.dto'
+import { CreateLugarSigDto } from '../../blanco/dto/create-lugar-sig.dto'
 import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
 
 /**
  * Servicio de gestión de organizaciones investigadas
  * Replica la lógica de FRM_ING_ENT2 del sistema legado:
  *   - RegOrganizacion.InsertOrganizacion
- *   - RegOrganizacion.InsertGis
+ *   - RegOrganizacion.InsertSig
  *   - Archivos (ArchivosOrganizacion)
  */
 @Injectable()
 export class OrganizacionService {
-  constructor(private readonly repo: OrganizacionRepository) {}
+  constructor(private readonly repo: OrganizacionRepository) { }
 
   // ==================== ORGANIZACIONES ====================
 
@@ -54,11 +54,12 @@ export class OrganizacionService {
     await this.repo.eliminar(idEmpresa)
   }
 
-  // ==================== GIS ====================
+  // ==================== SIG ====================
 
   async crearLugar(
     idEmpresa: string,
-    dto: CreateLugarGisDto
+    dto: CreateLugarSigDto,
+    usuario: string
   ): Promise<S2iLugarEmpresa> {
     const existe = await this.repo.buscarPorId(idEmpresa)
     if (!existe)
@@ -70,6 +71,7 @@ export class OrganizacionService {
       coordenadasX: dto.coordenadasX,
       coordenadasY: dto.coordenadasY,
       contenido: dto.contenido.trim(),
+      usuario: usuario.trim(),
     })
     return this.repo.crearLugar(lugar)
   }
@@ -88,7 +90,8 @@ export class OrganizacionService {
     idEmpresa: string,
     dto: CreateArchivoDto,
     nombreArchivo: string,
-    data: Buffer
+    data: Buffer,
+    usuario: string
   ): Promise<any> {
     const existe = await this.repo.buscarPorId(idEmpresa)
     if (!existe)
@@ -101,6 +104,7 @@ export class OrganizacionService {
       nombre: dto.nombre.trim().toUpperCase(),
       nombreArchivo: nombreArchivo.trim(),
       data,
+      usuario: usuario.trim(),
     })
     const saved = await this.repo.crearArchivo(archivo)
     const { data: _data, ...resto } = saved

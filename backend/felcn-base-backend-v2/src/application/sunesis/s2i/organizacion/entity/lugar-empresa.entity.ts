@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  BeforeInsert,
   ManyToOne,
   JoinColumn,
 } from 'typeorm'
@@ -10,7 +11,7 @@ import { S2iEmpresa } from './empresa.entity'
 
 /**
  * Tabla: public.lugar_empresa
- * Ubicaciones GIS asociadas a una organización investigada
+ * Ubicaciones SIG asociadas a una organización investigada
  * FK CASCADE a empresa
  */
 @Entity({ name: 'lugar_empresa', schema: SCHEMA_PUBLIC })
@@ -32,6 +33,17 @@ export class S2iLugarEmpresa {
 
   @Column({ name: 'contenido', type: 'text' })
   contenido: string
+
+  @Column({ name: 'fecha_hora_ingreso', type: 'timestamp' })
+  fechaHoraIngreso: Date
+
+  @Column({ name: 'usuario', type: 'varchar', length: 15 })
+  usuario: string
+
+  @BeforeInsert()
+  setFechaIngreso() {
+    if (!this.fechaHoraIngreso) this.fechaHoraIngreso = new Date()
+  }
 
   @ManyToOne(() => S2iEmpresa)
   @JoinColumn({ name: 'id_empresa' })
