@@ -32,6 +32,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  UpdateCostoBienDto,
 } from '../dto'
 
 @Injectable()
@@ -362,6 +363,33 @@ export class OperativoService extends BaseService {
 
   async eliminarBien(idOperativo: string, idBien: string): Promise<void> {
     await this.operativoRepository.eliminarBien(idBien)
+  }
+
+  // ==================== PATRIMONIO BIENES ====================
+
+  // Corresponde a Button2_Click de ABM-ING-COSTO: actualiza CostoAprox y CostoCuant de un bien
+  async actualizarCostoBien(
+    idOperativo: string,
+    idBien: string,
+    dto: UpdateCostoBienDto
+  ): Promise<ItemBienSecuestrado> {
+    const bien = await this.operativoRepository.buscarBienPorId(idBien)
+    if (!bien || bien.idOperativo !== idOperativo) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado en el operativo ${idOperativo}`)
+    }
+    await this.operativoRepository.actualizarCostoBien(idBien, dto.costoAproximado, dto.costoCuantificado)
+    bien.costoAproximado = dto.costoAproximado
+    bien.costoCuantificado = dto.costoCuantificado
+    return bien
+  }
+
+  // Corresponde a calcula() de ABM-ING-COSTO: SUM(CostoCuant) en USD y en BOB
+  async calcularPatrimonioBienes(
+    idOperativo: string,
+    tipoCambio: number
+  ): Promise<{ totalDolares: number; totalBolivianos: number; cantidadBienes: number; tipoCambio: number }> {
+    const patrimonio = await this.operativoRepository.calcularPatrimonioBienes(idOperativo, tipoCambio)
+    return { ...patrimonio, tipoCambio }
   }
 
   // ==================== CARACTERÍSTICAS DE BIENES ====================

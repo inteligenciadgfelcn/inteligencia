@@ -34,6 +34,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  UpdateCostoBienDto,
 } from '../dto'
 
 @ApiBearerAuth()
@@ -138,71 +139,12 @@ export class OperativoController extends BaseController {
     return this.successPagedRows(resultado, paginacion)
   }
 
-  // ==================== SECCIONES GENÉRICAS (2, 6, 7, 10) ====================
-  // El frontend llama GET para cargar y POST para guardar cada sección.
-  // Las secciones de items (3-5) usan sus propios endpoints (sustancias, lab).
-  // Sección 2 = Drogas (los datos se manejan vía /drogas), aquí devuelve resumen.
-  // Secciones 6, 7, 10 están embebidas en el operativo principal.
-
-  // @ApiOperation({ summary: 'Obtener datos de sección 2 (drogas) del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Get(':idOperativo/pesaje-drogas')
-  // async getPesajeDrogas(@Param('idOperativo') idOperativo: string) {
-  //   const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
-  //   return this.successList({ idOperativo, pesaje })
-  // }
-
   @ApiOperation({ summary: 'Guardar datos de sección 2 (drogas) del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Post(':idOperativo/pesaje-drogas')
   async postPesajeDrogas(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
     return this.successUpdate({ idOperativo, ...body })
   }
-
-  // @ApiOperation({ summary: 'Obtener datos de sección 6 (personas) del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Get(':idOperativo/personas')
-  // async getPersonas(@Param('idOperativo') idOperativo: string) {
-  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
-  //   return this.successList(operativo)
-  // }
-
-  // @ApiOperation({ summary: 'Guardar datos de sección 6 (personas) del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Post(':idOperativo/personas')
-  // async postPersonas(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-  //   return this.successUpdate({ idOperativo, ...body })
-  // }
-
-  // @ApiOperation({ summary: 'Obtener datos de sección 7 (bienes) del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Get(':idOperativo/bienes')
-  // async getBienes(@Param('idOperativo') idOperativo: string) {
-  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
-  //   return this.successList(operativo)
-  // }
-
-  // @ApiOperation({ summary: 'Guardar datos de sección 7 (bienes) del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Post(':idOperativo/bienes')
-  // async postBienes(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-  //   return this.successUpdate({ idOperativo, ...body })
-  // }
-
-  // @ApiOperation({ summary: 'Obtener datos de sección 10 del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Get(':idOperativo/documentos')
-  // async getDocumentos(@Param('idOperativo') idOperativo: string) {
-  //   const operativo = await this.operativoService.buscarPorId(idOperativo)
-  //   return this.successList(operativo)
-  // }
-
-  // @ApiOperation({ summary: 'Guardar datos de sección 10 del operativo' })
-  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  // @Post(':idOperativo/documentos')
-  // async postDocumentos(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-  //   return this.successUpdate({ idOperativo, ...body })
-  // }
 
   // ==================== OPERATIVO POR ID ====================
 
@@ -464,6 +406,50 @@ export class OperativoController extends BaseController {
     const foto = file?.buffer || undefined
     const bien = await this.operativoService.agregarBien(idOperativo, data, numeroPase, foto)
     return this.successCreate(bien)
+  }
+
+  // ==================== PATRIMONIO BIENES ====================
+  // Definidas antes de rutas dinámicas /:idBien para evitar ambigüedad en NestJS
+
+  @ApiOperation({
+    summary: 'Calcular patrimonio total afectado del operativo',
+    description:
+      'Retorna SUM(costo_cuantificado) en dólares y su equivalente en bolivianos. ' +
+      'Equivale a calcula() de ABM-ING-COSTO. ' +
+      'El parámetro tipoCambio es opcional (default: 6.92).',
+  })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'tipoCambio', required: false, description: 'Tipo de cambio Bs/USD (default: 6.92)' })
+  @ApiResponse({
+    status: 200,
+    description: '{ totalDolares, totalBolivianos, cantidadBienes, tipoCambio }',
+  })
+  @Get(':idOperativo/bienes/patrimonio')
+  async calcularPatrimonio(
+    @Param('idOperativo') idOperativo: string,
+    @Query('tipoCambio') tipoCambio?: string
+  ) {
+    const cambio = tipoCambio ? parseFloat(tipoCambio) : 6.92
+    const resultado = await this.operativoService.calcularPatrimonioBienes(idOperativo, cambio)
+    return this.successList(resultado)
+  }
+
+  @ApiOperation({
+    summary: 'Actualizar costos de un bien secuestrado',
+    description:
+      'Actualiza costo_aproximado y costo_cuantificado de un bien. ' +
+      'Equivale a Button2_Click "Actualizar Costos" de ABM-ING-COSTO.',
+  })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Patch(':idOperativo/bienes/:idBien/costos')
+  async actualizarCostoBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string,
+    @Body() data: UpdateCostoBienDto
+  ) {
+    const bien = await this.operativoService.actualizarCostoBien(idOperativo, idBien, data)
+    return this.successUpdate(bien)
   }
 
   @ApiOperation({ summary: 'Obtener foto de bien secuestrado' })
