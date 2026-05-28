@@ -405,6 +405,35 @@ export class OperativoRepository {
     return this.bienRepo.findOne({ where: { id } })
   }
 
+  // Corresponde a Button2_Click de ABM-ING-COSTO: UPDATE SET CostoAprox, CostoCuant WHERE id
+  async actualizarCostoBien(
+    id: string,
+    costoAproximado: number,
+    costoCuantificado: number
+  ): Promise<void> {
+    await this.bienRepo.update(id, { costoAproximado, costoCuantificado })
+  }
+
+  // Corresponde a calcula() de ABM-ING-COSTO: SUM(CostoCuant) y SUM*tipoCambio
+  async calcularPatrimonioBienes(
+    idOperativo: string,
+    tipoCambio: number
+  ): Promise<{ totalDolares: number; totalBolivianos: number; cantidadBienes: number }> {
+    const result = await this.bienRepo
+      .createQueryBuilder('b')
+      .select('COALESCE(SUM(b.costo_cuantificado), 0)', 'totalDolares')
+      .addSelect('COUNT(b.id_item_bien_secuestrado)', 'cantidadBienes')
+      .where('b.id_operativo = :idOperativo', { idOperativo })
+      .getRawOne()
+
+    const totalDolares = parseFloat(result?.totalDolares ?? '0')
+    return {
+      totalDolares,
+      totalBolivianos: parseFloat((totalDolares * tipoCambio).toFixed(2)),
+      cantidadBienes: parseInt(result?.cantidadBienes ?? '0', 10),
+    }
+  }
+
   async buscarLogotipoPorId(id: string): Promise<Logotipo | null> {
     return this.logotipoRepo.findOne({ where: { id } })
   }
