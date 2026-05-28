@@ -369,3 +369,17 @@ export interface GaleriaResponse {
   fechaHoraIngreso?: string
   usuario?: string
 }
+
+// Corresponde al payload de PATCH /operativos/:id/bienes/:idBien/costos
+export interface UpdateCostoBienPayload {
+  costoAproximado: number
+  costoCuantificado: number
+}
+
+// Corresponde a la respuesta de GET /operativos/:id/bienes/patrimonio
+export interface PatrimonioResponse {
+  totalDolares: number
+  totalBolivianos: number
+  cantidadBienes: number
+  tipoCambio: number
+}
