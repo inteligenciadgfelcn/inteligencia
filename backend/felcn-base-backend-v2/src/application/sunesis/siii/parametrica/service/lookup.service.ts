@@ -208,4 +208,44 @@ export class LookupService extends BaseService {
   async listarGruposPorDistrital(idDistrital: number) {
     return this.lookupRepository.listarGruposPorDistrital(idDistrital)
   }
+
+  async listarContenidoCaso() {
+    return this.lookupRepository.listarContenidoCaso()
+  }
+
+  async listarEstadosPorEtapa(idEtapa: number) {
+    return this.lookupRepository.listarEstadosPorEtapa(idEtapa)
+  }
+
+  async listarSituacionesLegales() {
+    return this.lookupRepository.listarSituacionesLegales()
+  }
+
+  async listarContenidoBien() {
+    return this.lookupRepository.listarContenidoBien()
+  }
+
+  async listarEstadosDroga(idTipoDroga: number) {
+    return this.lookupRepository.listarEstadosDrogaPorTipo(idTipoDroga);
+  }
+
+  async listarFabricaModelos(idTipoFabrica: number) {
+    return this.lookupRepository.listarFabricaModelosPorTipo(idTipoFabrica);
+  }
+
+  async listarItemsOperativo(idCategoriaOperativo: number) {
+    return this.lookupRepository.listarItemsOperativoPorCategoria(idCategoriaOperativo);
+  }
+
+  async listarCatalogoClases(idBien: number) {
+    return this.lookupRepository.listarCatalogoClasesPorBien(idBien);
+  }
+
+  async listarCatalogoTipos(idCatalogoClase: number) {
+    return this.lookupRepository.listarCatalogoTiposPorClase(idCatalogoClase);
+  }
+
+  async listarCatalogoCaracteristicas(idCatalogoClase: number) {
+    return this.lookupRepository.listarCatalogoCaracteristicasPorClase(idCatalogoClase);
+  }
 }

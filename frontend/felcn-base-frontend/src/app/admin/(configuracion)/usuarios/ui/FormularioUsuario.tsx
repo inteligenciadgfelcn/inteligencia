@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { RolType } from '../types/usuariosCRUDTypes'
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -19,6 +20,7 @@ import {
   FormControl,
   FormControlLabel,
   Switch,
+  CircularProgress,
 } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import { useAlerts, useSession } from '@/hooks'
@@ -83,10 +85,19 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
+interface SnapshotVerificacion {
+  nroDocumento: string
+  fechaNacimiento: string
+}
+
 export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [idUnidad, setIdUnidad] = useState<number | null>(null)
   const [idDistrital, setIdDistrital] = useState<number | null>(null)
+  const [verificadoSegip, setVerificadoSegip] = useState<boolean>(false)
+  const [verificandoSegip, setVerificandoSegip] = useState<boolean>(false)
+  const [snapshotVerificado, setSnapshotVerificado] =
+    useState<SnapshotVerificacion | null>(null)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const router = useRouter()
@@ -214,10 +225,114 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       const distritalId = usuario.grupo?.distrital?.id ?? null
       setIdUnidad(unidadId)
       setIdDistrital(distritalId)
+      // Usuario con ciudadanía digital ya tenía datos verificados al crearlo
+      if (usuario.ciudadaniaDigital) {
+        setVerificadoSegip(true)
+        setSnapshotVerificado({
+          nroDocumento: usuario.persona.nroDocumento,
+          fechaNacimiento: usuario.persona.fechaNacimiento,
+        })
+      }
     }
   }, [usuario, reset])
 
+  // Datos que determinan si el snapshot de verificación sigue vigente
+  const nroDocumentoActual = watch('nroDocumento')
+  const fechaNacimientoActual = watch('fechaNacimiento')
+
+  const datosModificadosDesdeVerificacion =
+    verificadoSegip &&
+    snapshotVerificado !== null &&
+    (nroDocumentoActual !== snapshotVerificado.nroDocumento ||
+      fechaNacimientoActual !== snapshotVerificado.fechaNacimiento)
+
+  // Resetear verificación si el usuario edita los campos clave después de haber verificado
+  useEffect(() => {
+    if (datosModificadosDesdeVerificacion) {
+      setVerificadoSegip(false)
+      setSnapshotVerificado(null)
+    }
+  }, [nroDocumentoActual, fechaNacimientoActual, datosModificadosDesdeVerificacion])
+
+  const verificarConSegip = async () => {
+    const nroDocumento = watch('nroDocumento')
+    const fechaNacimiento = watch('fechaNacimiento')
+    const nombres = watch('nombres')
+    const primerApellido = watch('primerApellido')
+    const segundoApellido = watch('segundoApellido')
+
+    if (!nroDocumento || !fechaNacimiento) {
+      Alerta({
+        mensaje: 'Ingrese el número de documento y fecha de nacimiento antes de verificar.',
+        variant: 'warning',
+      })
+      return
+    }
+
+    // Convertir de YYYY-MM-DD a dd/MM/yyyy requerido por la API
+    const [year, month, day] = fechaNacimiento.split('-')
+    const fechaFormateada = `${day}/${month}/${year}`
+
+    try {
+      setVerificandoSegip(true)
+      const response = await fetch(
+        `${Constantes.consultaPersonaUrl}/v1/persona`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': Constantes.consultaPersonaApiKey,
+          },
+          body: JSON.stringify({
+            numero_documento: nroDocumento,
+            fecha_nacimiento: fechaFormateada,
+            nombre: nombres || undefined,
+            primer_apellido: primerApellido || undefined,
+            segundo_apellido: segundoApellido || undefined,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (data.success && data.objeto) {
+        setVerificadoSegip(true)
+        setSnapshotVerificado({ nroDocumento, fechaNacimiento })
+        Alerta({
+          mensaje: `Persona verificada: ${data.objeto.nombres} ${data.objeto.primer_apellido} ${data.objeto.segundo_apellido ?? ''}`.trim(),
+          variant: 'success',
+        })
+      } else {
+        setVerificadoSegip(false)
+        setSnapshotVerificado(null)
+        Alerta({
+          mensaje:
+            data.mensaje ??
+            'No se encontró la persona con los datos proporcionados.',
+          variant: 'error',
+        })
+      }
+    } catch (e) {
+      imprimir('Error verificando con SEGIP', e)
+      Alerta({
+        mensaje: 'Error al conectar con el servicio de verificación.',
+        variant: 'error',
+      })
+    } finally {
+      setVerificandoSegip(false)
+    }
+  }
+
   const onSubmit = async (values: FormValues) => {
+    if (values.ciudadaniaDigital && !verificadoSegip) {
+      Alerta({
+        mensaje:
+          'Para habilitar Ciudadanía Digital debe verificar los datos con el SEGIP.',
+        variant: 'error',
+      })
+      return
+    }
+
     try {
       setLoading(true)
       const respuesta = await sesionPeticion({
@@ -252,6 +367,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   const handleCancel = () => {
     router.push('/admin/usuarios')
   }
+
+  const ciudadaniaDigitalActiva = watch('ciudadaniaDigital')
 
   return (
     <Box>
@@ -352,7 +469,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   >
                     Fecha de Nacimiento *
                   </InputLabel>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
                     <Controller
                       name="fechaNacimiento"
                       control={control}
@@ -386,6 +503,46 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   </LocalizationProvider>
                 </Grid>
               </Grid>
+
+              {/* Verificación SEGIP */}
+              <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                <Button
+                  variant="outlined"
+                  color={verificadoSegip ? 'success' : 'primary'}
+                  onClick={verificarConSegip}
+                  disabled={loading || verificandoSegip}
+                  startIcon={
+                    verificandoSegip ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <Icono>
+                        {verificadoSegip ? 'verified_user' : 'fact_check'}
+                      </Icono>
+                    )
+                  }
+                >
+                  {verificandoSegip
+                    ? 'Verificando...'
+                    : verificadoSegip
+                      ? 'Datos verificados con el SEGIP'
+                      : 'Verificar datos con el SEGIP'}
+                </Button>
+
+                {verificadoSegip && (
+                  <Chip
+                    color="success"
+                    size="small"
+                    icon={<Icono>check_circle</Icono>}
+                    label="Verificado"
+                  />
+                )}
+
+                {!verificadoSegip && (
+                  <Typography variant="caption" color="text.secondary">
+                    Opcional — requerido para habilitar Ciudadanía Digital
+                  </Typography>
+                )}
+              </Box>
 
               <Typography variant="h6" fontWeight={'600'}>
                 Datos de contacto
@@ -496,6 +653,12 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                       />
                     )}
                   />
+                  {ciudadaniaDigitalActiva && !verificadoSegip && (
+                    <Alert severity="warning" sx={{ mt: 1 }}>
+                      La Ciudadanía Digital requiere datos oficiales del SEGIP.
+                      Debe verificar los datos personales antes de guardar.
+                    </Alert>
+                  )}
                 </Grid>
               </Grid>
 

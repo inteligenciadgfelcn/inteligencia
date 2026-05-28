@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 import {
-  AsigLookupsService,
   Continente,
   Departamento,
   EstructuraService,
@@ -72,6 +71,9 @@ export function useParametricas() {
   const [coloresOjos, setColoresOjos] = useState<LookupBasico[]>([])
   const [coloresCabello, setColoresCabello] = useState<LookupBasico[]>([])
   const [unidadesSiii, setUnidadesSiii] = useState<LookupBasico[]>([])
+  // const [grados, setGrados] = useState<LookupBasico[]>([])
+  const [contenidoCaso, setContenidoCaso] = useState<LookupBasico[]>([])
+  const [contenidoBien, setContenidoBien] = useState<LookupBasico[]>([])
 
   // ── asig-lookups ──────────────────────────────────────────────────────────
   const [unidadesAsig, setUnidadesAsig] = useState<UnidadAsig[]>([])
@@ -468,15 +470,15 @@ export function useParametricas() {
     }
   }, [])
 
-  const cargarUnidadesAsig = useCallback(async () => {
-    setCargando(true)
-    try {
-      const res = await AsigLookupsService.obtenerUnidades()
-      if (res.finalizado) setUnidadesAsig(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  // const cargarUnidadesAsig = useCallback(async () => {
+  //   setCargando(true)
+  //   try {
+  //     const res = await AsigLookupsService.obtenerUnidades()
+  //     if (res.finalizado) setUnidadesAsig(res.datos)
+  //   } finally {
+  //     setCargando(false)
+  //   }
+  // }, [])
 
   const cargarUnidadesEstructura = useCallback(async () => {
     setCargando(true)
@@ -507,6 +509,26 @@ export function useParametricas() {
       const res =
         await SiiiLookupsService.obtenerGruposPorDistrital(idDistrital)
       if (res.finalizado) setGrupos(res.datos)
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
+  const cargarContenidoCaso = useCallback(async () => {
+    setCargando(true)
+    try {
+      const res = await SiiiLookupsService.obtenerContenidoCaso()
+      if (res.finalizado) setContenidoCaso(res.datos as unknown as LookupBasico[])
+    } finally {
+      setCargando(false)
+    }
+  }, [])
+
+  const cargarContenidoBien = useCallback(async () => {
+    setCargando(true)
+    try {
+      const res = await SiiiLookupsService.obtenerContenidoBien()
+      if (res.finalizado) setContenidoBien(res.datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
@@ -585,9 +607,14 @@ export function useParametricas() {
     cargarColoresCabello,
     unidadesSiii,
     cargarUnidadesSiii,
+    // grados,
+    // cargarGrados,
+    contenidoCaso,
+    cargarContenidoCaso,
+    contenidoBien,
+    cargarContenidoBien,
     // asig-lookups
     unidadesAsig,
-    cargarUnidadesAsig,
     // estructura
     unidadesEstructura,
     distritales,

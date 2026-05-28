@@ -20,6 +20,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
   className?: string
   icon?: ReactNode
+  loading?: boolean
 }
 
 export const Button = ({
@@ -28,6 +29,8 @@ export const Button = ({
   className = '',
   children,
   icon,
+  loading = false,
+  disabled,
   ...props
 }: ButtonProps) => {
   const baseClasses = 'btn shadow-none'
@@ -58,11 +61,19 @@ export const Button = ({
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant] || 'btn-primary'} ${sizeClasses[size]} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant] || 'btn-primary'} ${sizeClasses[size]} ${className} ${loading ? 'relative text-transparent pointer-events-none' : ''}`}
+      disabled={disabled || loading}
       {...props}
     >
-      {icon && <span className="mr-2">{icon}</span>}
-      {children}
+      {loading && (
+        <span className="absolute inset-0 flex items-center justify-center text-white">
+          <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+        </span>
+      )}
+      <div className={`flex items-center justify-center ${loading ? 'invisible' : ''}`}>
+        {icon && <span className="mr-2">{icon}</span>}
+        {children}
+      </div>
     </button>
   )
 }

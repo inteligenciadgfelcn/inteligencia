@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="es-BO">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación en dos pasos — Identidad Digital</title>
+    <style>:root{--font-sans:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;--font-mono:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace;}</style>
+    <style>
+        /* ── Design tokens ── */
+        :root {
+            --bg:          oklch(0.18 0.005 270);
+            --surface:     oklch(0.235 0.006 270);
+            --surface-2:   oklch(0.275 0.007 270);
+            --border:      oklch(0.34 0.008 270);
+            --border-2:    oklch(0.42 0.012 270);
+            --fg:          oklch(0.97 0.005 270);
+            --fg-2:        oklch(0.82 0.008 270);
+            --fg-3:        oklch(0.66 0.010 270);
+            --fg-4:        oklch(0.52 0.012 270);
+            --ok:          oklch(0.78 0.13 155);
+            --warn:        oklch(0.82 0.13 80);
+            --err:         oklch(0.72 0.18 25);
+            --accent:      oklch(0.74 0.14 265);
+            --accent-fg:   oklch(0.34 0.14 265);
+            --accent-soft: oklch(0.30 0.06 265);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--fg);
+            background: var(--bg);
+            min-height: 100vh;
+        }
+
+        /* ── App shell ── */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background:
+                radial-gradient(ellipse 60% 40% at 20% 10%, oklch(0.30 0.06 265 / .18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 35% at 80% 85%, oklch(0.30 0.06 265 / .12) 0%, transparent 65%),
+                var(--bg);
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 28px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .topbar-brand { display: flex; align-items: center; gap: 10px; }
+        .topbar-brand img { display: block; }
+
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+        .icon-btn {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px;
+            border-radius: 8px; border: 1px solid var(--border-2);
+            background: transparent; color: var(--fg-3); cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+        .icon-btn:hover { background: var(--surface-2); color: var(--fg); }
+        .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        /* ── Stage ── */
+        .stage {
+            flex: 1;
+            display: grid;
+            place-items: center;
+            padding: 28px 28px 40px;
+        }
+
+        /* ── Card ── */
+        .card {
+            width: min(520px, 100%);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: linear-gradient(160deg, var(--surface) 0%, oklch(0.215 0.006 270) 100%);
+            box-shadow: 0 1px 0 oklch(1 0 0 / .04) inset, 0 24px 60px -20px oklch(0 0 0 / .55);
+            padding: 32px 36px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* ── Stepper ── */
+        .stepper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .step-pill {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--fg-4);
+            white-space: nowrap;
+        }
+
+        .step-pill.done {
+            color: var(--ok);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .step-pill.active {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            min-width: 16px;
+        }
+
+        /* ── Card header ── */
+        .v-head { margin-bottom: 20px; }
+
+        .v-head h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            color: var(--fg);
+            margin-bottom: 4px;
+        }
+
+        .v-head p { font-size: 13px; color: var(--fg-3); }
+
+        /* ── Channel banner ── */
+        .v-channel {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .v-channel-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .v-channel-label { font-size: 12px; color: var(--fg-3); margin-bottom: 2px; }
+
+        .v-channel-addr {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .v-channel-addr strong { font-size: 13.5px; color: var(--fg); font-weight: 600; }
+
+        .v-edit {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--accent);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            transition: filter .15s;
+        }
+        .v-edit:hover { filter: brightness(1.2); }
+        .v-edit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+        /* ── Anti-phishing info ── */
+        .v-request-info {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--fg-3);
+            padding: 8px 12px;
+            background: oklch(0.30 0.06 265 / .08);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .v-request-info svg { flex-shrink: 0; color: var(--accent); }
+
+        /* ── Server error ── */
+        .server-error {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            background: oklch(0.30 0.08 25 / .25);
+            border: 1px solid oklch(0.72 0.18 25 / .5);
+            border-left: 3px solid var(--err);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--fg-2);
+        }
+        .server-error svg { flex-shrink: 0; margin-top: 2px; color: var(--err); }
+        .server-error strong { display: block; color: var(--fg); font-weight: 600; }
+
+        /* ── OTP block ── */
+        .v-otp-block { margin-bottom: 12px; }
+
+        .v-otp-label {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--fg-2);
+            margin-bottom: 10px;
+        }
+
+        .v-otp-meta { font-size: 11.5px; color: var(--fg-4); font-weight: 400; }
+
+        .v-otp {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .otp-cell {
+            width: 52px;
+            height: 60px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--fg);
+            background: oklch(0.20 0.005 270);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s, background .15s;
+            caret-color: var(--accent);
+            -moz-appearance: textfield;
+        }
+        .otp-cell::-webkit-outer-spin-button,
+        .otp-cell::-webkit-inner-spin-button { -webkit-appearance: none; }
+        .otp-cell:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px oklch(0.74 0.14 265 / .18);
+            background: oklch(0.22 0.005 270);
+        }
+        .v-otp.has-error .otp-cell {
+            border-color: var(--err);
+            box-shadow: 0 0 0 3px oklch(0.72 0.18 25 / .15);
+        }
+        .v-otp.is-success .otp-cell {
+            border-color: var(--ok);
+            background: oklch(0.22 0.005 270);
+        }
+        .v-otp.is-busy .otp-cell { opacity: 0.6; }
+
+        /* ── OTP status line ── */
+        .v-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--fg-3);
+            min-height: 20px;
+            margin-bottom: 4px;
+        }
+        .v-status.err  { color: var(--err); }
+        .v-status.ok   { color: var(--ok); font-weight: 500; }
+        .v-status.muted { color: var(--fg-4); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.9s linear infinite; }
+
+        /* ── Resend ── */
+        .v-resend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: var(--fg-3);
+            padding: 14px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .v-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--accent);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            padding: 0;
+            transition: filter .15s;
+        }
+        .v-link:hover { filter: brightness(1.2); }
+        .v-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+        .v-resend-wait { color: var(--fg-2); font-size: 13px; }
+        .v-resend-wait strong { color: var(--accent); font-feature-settings: "tnum"; }
+
+        /* ── Trust device ── */
+        .v-trust {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--fg-2);
+            user-select: none;
+            margin-bottom: 20px;
+        }
+
+        .v-trust input[type="checkbox"] { display: none; }
+
+        .check-box {
+            width: 16px; height: 16px;
+            border-radius: 5px;
+            border: 1.5px solid var(--border-2);
+            background: oklch(0.20 0.005 270);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: background .15s, border-color .15s;
+        }
+        .v-trust input:checked ~ .check-box {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .chk-icon { display: none; }
+        .v-trust input:checked ~ .check-box .chk-icon { display: block; }
+
+        .v-trust-body { display: flex; flex-direction: column; gap: 2px; }
+        .v-trust-hint { font-size: 11.5px; color: var(--fg-4); display: block; font-style: normal; margin-top: 2px; }
+
+        /* ── Actions ── */
+        .actions { display: flex; gap: 10px; }
+
+        .btn {
+            height: 44px; padding: 0 22px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px; font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .1s, filter .15s;
+            border: none;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .btn-ghost {
+            flex: 0 0 auto;
+            background: transparent;
+            border: 1px solid var(--border-2);
+            color: var(--fg-2);
+            padding: 0 18px;
+        }
+        .btn-ghost:hover { background: var(--surface-2); color: var(--fg); }
+
+        .btn-primary {
+            flex: 1;
+            background: var(--accent);
+            color: oklch(0.22 0.06 265);
+            box-shadow: 0 1px 0 oklch(1 0 0 / .25) inset, 0 8px 24px -10px oklch(0.74 0.14 265 / .8);
+        }
+        .btn-primary:not(:disabled):hover { transform: translateY(-1px); filter: brightness(1.06); }
+        .btn-primary:disabled {
+            background: var(--surface-2); color: var(--fg-4);
+            box-shadow: none; cursor: not-allowed;
+        }
+
+        /* ── Help footer ── */
+        .v-help-foot {
+            display: flex;
+            align-items: flex-start;
+            gap: 7px;
+            font-size: 12px;
+            color: var(--fg-4);
+            margin-top: 16px;
+        }
+        .v-help-foot svg { flex-shrink: 0; margin-top: 1px; }
+        .v-help-foot a { color: var(--accent); text-decoration: none; }
+        .v-help-foot a:hover { filter: brightness(1.15); }
+
+        /* ── Footer ── */
+        .footer {
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .footer img { width: 40px; height: 40px; object-fit: contain; }
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--fg-4);
+        }
+
+        /* ── Loading overlay ── */
+        .load-overlay {
+            position: fixed;
+            inset: 0;
+            background: oklch(0 0 0 / .65);
+            backdrop-filter: blur(6px);
+            z-index: 9000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s;
+        }
+        .load-overlay.show { opacity: 1; pointer-events: all; }
+
+        .load-card {
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: 16px;
+            padding: 36px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 24px 60px -20px oklch(0 0 0 / .7);
+            min-width: 260px;
+            transform: scale(.95);
+            transition: transform .2s;
+        }
+        .load-overlay.show .load-card { transform: scale(1); }
+
+        .load-rings {
+            position: relative;
+            width: 52px; height: 52px;
+            margin-bottom: 4px;
+        }
+        .load-rings span {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+        .load-rings span:nth-child(1) { border-top-color: var(--accent); animation: spin 1.0s linear infinite; }
+        .load-rings span:nth-child(2) { inset: 6px; border-top-color: oklch(0.74 0.14 265 / .5); animation: spin 1.4s linear infinite reverse; }
+        .load-rings span:nth-child(3) { inset: 12px; border-top-color: oklch(0.74 0.14 265 / .3); animation: spin 1.8s linear infinite; }
+
+        .load-brand {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 14px; font-weight: 600; color: var(--fg);
+        }
+
+        .load-label {
+            font-size: 13px; color: var(--fg-3);
+            text-align: center;
+        }
+
+        .load-bar {
+            width: 100%; height: 3px;
+            border-radius: 999px;
+            background: var(--border);
+            overflow: hidden;
+        }
+        @keyframes indeterminate {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+        .load-bar i {
+            display: block;
+            width: 50%; height: 100%;
+            background: var(--accent);
+            border-radius: 999px;
+            animation: indeterminate 1.4s ease-in-out infinite;
+        }
+
+        /* ── DEMO badge ── */
+        .demo-badge {
+            position: fixed; bottom: 15px; right: -23px;
+            background: #b71c1c; color: #fff;
+            font-family: system-ui, sans-serif; font-weight: bold; font-size: 12px;
+            width: 100px; text-align: center; padding: 4px 0;
+            transform: rotate(-45deg); z-index: 9999; pointer-events: none;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 560px) {
+            .card { padding: 24px 20px; }
+            .otp-cell { width: 44px; height: 54px; font-size: 22px; }
+            .stage { padding: 16px 12px 32px; }
+            .topbar { padding: 14px 16px; }
+            .footer { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ── Topbar ── -->
+    <header class="topbar">
+        <div class="topbar-brand">
+            <img src="{{publicBase}}/public/img/logo-only-dark.svg" alt="" width="32" height="32">
+            <img src="{{publicBase}}/public/img/texto-logo-dark.svg" alt="Ciudadanía Digital" height="28" style="max-width:130px;object-fit:contain;">
+        </div>
+        <div class="topbar-actions">
+            <button class="icon-btn" id="helpBtn" aria-label="Ayuda">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Stage ── -->
+    <main class="stage">
+        <div class="card">
+
+            <!-- Stepper -->
+            <div class="stepper" aria-label="Progreso de autenticación">
+                <span class="step-pill done">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    1 · Credenciales
+                </span>
+                <span class="step-line" aria-hidden="true"></span>
+                <span class="step-pill active" aria-current="step">2 · Verificación</span>
+            </div>
+
+            <!-- Header -->
+            <div class="v-head">
+                <h1>Verificación en dos pasos</h1>
+                <p>Para proteger tu cuenta, confirma que esta solicitud es tuya.</p>
+            </div>
+
+            <!-- Canal -->
+            <div class="v-channel">
+                <div class="v-channel-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div>
+                    <div class="v-channel-label">Enviado por correo electrónico a</div>
+                    <div class="v-channel-addr">
+                        <strong>{{emailMasked}}</strong>
+                        <button type="button" class="v-edit" id="notMineBtn" aria-label="El correo no me pertenece, volver al inicio">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            No es mío
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anti-phishing info -->
+            <div class="v-request-info">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Solicitud desde <strong>este navegador</strong> · hace pocos segundos.</span>
+            </div>
+
+            <!-- Error servidor -->
+            {{#if error}}
+            <div class="server-error" role="alert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>
+                    <strong>Código incorrecto.</strong>
+                    {{error}}
+                </div>
+            </div>
+            {{/if}}
+
+            <!-- OTP inputs -->
+            <form id="otpForm" action="/interaction/{{uid}}/validate" method="POST" novalidate>
+                <input type="hidden" name="data" id="otpData">
+
+                <div class="v-otp-block">
+                    <div class="v-otp-label" id="otpLabel">
+                        <span>Ingresa el código de 6 dígitos</span>
+                        <span class="v-otp-meta">Puedes pegar el código completo</span>
+                    </div>
+                    <div class="v-otp" id="otpGroup" role="group" aria-labelledby="otpLabel">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="6" id="otp-0"
+                               autocomplete="one-time-code"
+                               aria-label="Dígito 1 de 6" aria-required="true"
+                               data-idx="0">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" id="otp-1"
+                               autocomplete="off"
+                               aria-label="Dígito 2 de 6" data-idx="1">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" id="otp-2"
+                               autocomplete="off"
+                               aria-label="Dígito 3 de 6" data-idx="2">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" id="otp-3"
+                               autocomplete="off"
+                               aria-label="Dígito 4 de 6" data-idx="3">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" id="otp-4"
+                               autocomplete="off"
+                               aria-label="Dígito 5 de 6" data-idx="4">
+                        <input class="otp-cell" type="text" inputmode="numeric" pattern="[0-9]*"
+                               maxlength="1" id="otp-5"
+                               autocomplete="off"
+                               aria-label="Dígito 6 de 6" data-idx="5">
+                    </div>
+                    <div class="v-status muted" id="otpStatus" aria-live="polite">
+                        <span>Se completará automáticamente al ingresar los 6 dígitos.</span>
+                    </div>
+                </div>
+
+                <!-- Resend -->
+                <div class="v-resend">
+                    <span>¿No te llegó?</span>
+                    <span class="v-resend-wait" id="resendWait">
+                        Podrás reenviarlo en <strong id="resendTimer">02:01</strong>
+                    </span>
+                    <button type="button" class="v-link" id="resendBtn" style="display:none;" aria-label="Reenviar el código">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                        Volver a enviar
+                    </button>
+                    <!-- Código expirado -->
+                    <span id="expiredMsg" style="display:none; color: oklch(0.72 0.18 25); font-size:13px;">
+                        Código expirado —
+                    </span>
+                </div>
+
+                <!-- Trust device -->
+                <label class="v-trust" for="trustDeviceOtp">
+                    <input type="checkbox" id="trustDeviceOtp" name="navegadorConocido" value="true">
+                    <span class="check-box">
+                        <svg class="chk-icon" width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1.5,6 4.5,9 10.5,3"/></svg>
+                    </span>
+                    <span class="v-trust-body">
+                        Confiar en este dispositivo por 30 días
+                        <em class="v-trust-hint">No se pedirá este código en próximos ingresos desde aquí.</em>
+                    </span>
+                </label>
+
+                <!-- Acciones -->
+                <div class="actions">
+                    <button type="button" class="btn btn-ghost" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled aria-busy="false">
+                        Continuar
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Ayuda adicional -->
+            <div class="v-help-foot">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                <span>
+                    ¿Sigues sin recibir el código?
+                    <a href="#">Usa la app autenticadora</a> o
+                    <a href="#">contacta soporte</a>.
+                </span>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+        <img src="{{publicBase}}/public/img/logo-estado.svg" alt="Estado Plurinacional de Bolivia" width="40" height="40">
+        <span class="footer-text">AGETIC {{year}}</span>
+    </footer>
+
+</div>
+
+<!-- Loading overlay -->
+<div class="load-overlay" id="loadOverlay" aria-hidden="true" role="dialog" aria-live="polite">
+    <div class="load-card">
+        <div class="load-rings" aria-hidden="true">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="load-brand">
+            <img src="{{publicBase}}/public/img/logo-only-dark.svg" alt="" width="20" height="20">
+            <strong>Identidad Digital</strong>
+        </div>
+        <div class="load-label" id="loadLabel">Verificando código…</div>
+        <div class="load-bar"><i></i></div>
+    </div>
+</div>
+
+<!-- DEMO badge -->
+<div class="demo-badge" aria-hidden="true">DEMO</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var LENGTH = 6;
+    var cells  = Array.from(document.querySelectorAll('.otp-cell'));
+    var otpData  = document.getElementById('otpData');
+    var otpGroup = document.getElementById('otpGroup');
+    var otpStatus = document.getElementById('otpStatus');
+    var submitBtn = document.getElementById('submitBtn');
+    var loadOverlay = document.getElementById('loadOverlay');
+
+    // ── OTP interactions ──
+    function getCode() {
+        // First cell may hold a full 6-char paste
+        var first = cells[0].value;
+        if (first.length === LENGTH) return first;
+        return cells.map(function(c) { return c.value; }).join('');
+    }
+
+    function syncCells(full) {
+        // Distribute a 6-char string across cells
+        var digits = full.replace(/\D/g, '').slice(0, LENGTH);
+        cells.forEach(function(c, i) { c.value = digits[i] || ''; });
+    }
+
+    function checkComplete() {
+        var code = getCode().replace(/\D/g, '');
+        otpData.value = code;
+        submitBtn.disabled = code.length !== LENGTH;
+        return code.length === LENGTH;
+    }
+
+    cells.forEach(function(cell, idx) {
+        cell.addEventListener('input', function() {
+            var val = cell.value.replace(/\D/g, '');
+
+            // Paste of full code into first cell
+            if (idx === 0 && val.length >= LENGTH) {
+                syncCells(val);
+                cells[LENGTH - 1].focus();
+                if (checkComplete()) autoSubmit();
+                return;
+            }
+
+            cell.value = val.slice(-1); // keep last digit
+            if (val && idx < LENGTH - 1) cells[idx + 1].focus();
+            checkComplete();
+        });
+
+        cell.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                if (!cell.value && idx > 0) {
+                    cells[idx - 1].value = '';
+                    cells[idx - 1].focus();
+                }
+                checkComplete();
+            }
+            if (e.key === 'ArrowLeft'  && idx > 0)          cells[idx - 1].focus();
+            if (e.key === 'ArrowRight' && idx < LENGTH - 1) cells[idx + 1].focus();
+        });
+
+        cell.addEventListener('focus', function() { cell.select(); });
+
+        // Paste anywhere
+        cell.addEventListener('paste', function(e) {
+            e.preventDefault();
+            var pasted = (e.clipboardData || window.clipboardData).getData('text');
+            syncCells(pasted);
+            var last = Math.min(pasted.replace(/\D/g, '').length, LENGTH) - 1;
+            if (last >= 0) cells[last].focus();
+            if (checkComplete()) autoSubmit();
+        });
+    });
+
+    function autoSubmit() {
+        otpStatus.className = 'v-status';
+        otpStatus.innerHTML = '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><span>Verificando código…</span>';
+        cells.forEach(function(c) { c.disabled = true; });
+        submitBtn.setAttribute('aria-busy', 'true');
+        // Small delay to allow visual feedback, then submit
+        setTimeout(function() {
+            showLoader('Verificando código…');
+            document.getElementById('otpForm').submit();
+        }, 300);
+    }
+
+    // ── Submit button ──
+    document.getElementById('otpForm').addEventListener('submit', function() {
+        submitBtn.setAttribute('aria-busy', 'true');
+        submitBtn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Verificando…';
+        submitBtn.disabled = true;
+        showLoader('Verificando código…');
+    });
+
+    // ── Loading overlay ──
+    function showLoader(label) {
+        document.getElementById('loadLabel').textContent = label;
+        loadOverlay.classList.add('show');
+        loadOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    // ── Countdown 150s ──
+    var OTP_TTL = 150;
+    var resendIn = OTP_TTL + 1; // +1 so first tick shows 2:30
+    var resendWait = document.getElementById('resendWait');
+    var resendTimer = document.getElementById('resendTimer');
+    var resendBtn  = document.getElementById('resendBtn');
+    var expiredMsg = document.getElementById('expiredMsg');
+    var otpExpired = false;
+
+    function pad(n) { return n < 10 ? '0' + n : String(n); }
+
+    var countdown = setInterval(function() {
+        resendIn--;
+        var m = Math.floor(resendIn / 60);
+        var s = resendIn % 60;
+        resendTimer.textContent = pad(m) + ':' + pad(s);
+
+        if (resendIn <= 0) {
+            clearInterval(countdown);
+            otpExpired = true;
+            resendWait.style.display = 'none';
+            expiredMsg.style.display = 'inline';
+            resendBtn.style.display  = 'inline-flex';
+            // Disable submit since code is expired
+            submitBtn.disabled = true;
+            otpData.value = '';
+            otpStatus.className = 'v-status err';
+            otpStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Este código expiró. Solicita uno nuevo.</span>';
+        }
+    }, 1000);
+
+    document.getElementById('resendBtn').addEventListener('click', function() {
+        // For fake: reload the OTP page (will not actually re-send; for real, POST to resend endpoint)
+        window.location.reload();
+    });
+
+    // ── Cancel / not mine ──
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+        history.back();
+    });
+    document.getElementById('notMineBtn').addEventListener('click', function() {
+        history.back();
+    });
+
+    // ── Topbar help ──
+    document.getElementById('helpBtn').addEventListener('click', function() {
+        alert('Ciudadanía Digital — Si no te llegó el código, revisa tu carpeta de spam o solicita uno nuevo.');
+    });
+
+    // ── Auto-focus first cell ──
+    cells[0].focus();
+    checkComplete();
+})();
+</script>
+
+</body>
+</html>

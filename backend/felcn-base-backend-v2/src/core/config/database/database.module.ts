@@ -11,6 +11,8 @@ export const DB_ASIG_CASOS = 'asig-casos' // felcn_asignacion_casos
 export const DB_SII = 'sii' // felcn_sii
 export const DB_SIII = 'siii' // felcn_siii
 export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
+export const DB_LGI = 'lgi' // felcn_lgi
+export const DB_S2I = 's2i' // f_s2i
 
 @Module({
   imports: [
@@ -44,9 +46,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           configService.get('DB_USE_SSL') === 'true'
             ? {
-              rejectUnauthorized:
-                configService.get('DB_VERIFY_SSL') === 'true',
-            }
+                rejectUnauthorized:
+                  configService.get('DB_VERIFY_SSL') === 'true',
+              }
             : false,
         subscribers:
           configService.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -59,7 +61,8 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
-          __dirname + '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
+          __dirname +
+            '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -77,26 +80,24 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
       useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         host:
-          config.get<string>('DB_AUTH_HOST') ||
-          config.get<string>('DB_HOST'),
-        port: Number(
-          config.get('DB_AUTH_PORT') || config.get('DB_PORT'),
-        ),
+          config.get<string>('DB_AUTH_HOST') || config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_AUTH_PORT') || config.get('DB_PORT')),
         username:
           config.get<string>('DB_AUTH_USERNAME') ||
           config.get<string>('DB_USERNAME'),
         password:
           config.get<string>('DB_AUTH_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_AUTH_DATABASE') || config.get<string>('DB_DATABASE'),
+        database:
+          config.get<string>('DB_AUTH_DATABASE') ||
+          config.get<string>('DB_DATABASE'),
         keepConnectionAlive: true,
         synchronize: false,
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-              rejectUnauthorized:
-                config.get('DB_VERIFY_SSL') === 'true',
-            }
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -107,11 +108,9 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
             error: true,
           },
         }),
-        entities: [
-        ],
+        entities: [],
       }),
     }),
-
 
     // =============================================
     // CONEXIÓN: ASIG-CASOS
@@ -127,10 +126,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         host:
           config.get<string>('DB_ASIG_CASOS_HOST') ||
           config.get<string>('DB_HOST'),
-        port: Number(
-          config.get('DB_ASIG_CASOS_PORT') ||
-          config.get('DB_PORT'),
-        ),
+        port: Number(config.get('DB_ASIG_CASOS_PORT') || config.get('DB_PORT')),
         username:
           config.get<string>('DB_ASIG_CASOS_USERNAME') ||
           config.get<string>('DB_USERNAME'),
@@ -143,9 +139,8 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-              rejectUnauthorized:
-                config.get('DB_VERIFY_SSL') === 'true',
-            }
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -158,7 +153,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-          '/../../../application/inteligencia/felcn_asignacion_caso/**/*.entity{.ts,.js}',
+            '/../../../application/inteligencia/felcn_asignacion_caso/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -175,11 +170,8 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
       useFactory: (config: ConfigService) => ({
         type: 'postgres' as const,
         host:
-          config.get<string>('DB_SII_HOST') ||
-          config.get<string>('DB_HOST'),
-        port: Number(
-          config.get('DB_SII_PORT') || config.get('DB_PORT'),
-        ),
+          config.get<string>('DB_SII_HOST') || config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_SII_PORT') || config.get('DB_PORT')),
         username:
           config.get<string>('DB_SII_USERNAME') ||
           config.get<string>('DB_USERNAME'),
@@ -192,9 +184,8 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-              rejectUnauthorized:
-                config.get('DB_VERIFY_SSL') === 'true',
-            }
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -207,7 +198,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-          '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
+            '/../../../application/inteligencia/felcn_sii/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -226,10 +217,7 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         host:
           config.get<string>('DB_SOSPECHOSO_HOST') ||
           config.get<string>('DB_HOST'),
-        port: Number(
-          config.get('DB_SOSPECHOSO_PORT') ||
-          config.get('DB_PORT'),
-        ),
+        port: Number(config.get('DB_SOSPECHOSO_PORT') || config.get('DB_PORT')),
         username:
           config.get<string>('DB_SOSPECHOSO_USERNAME') ||
           config.get<string>('DB_USERNAME'),
@@ -242,9 +230,8 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
-              rejectUnauthorized:
-                config.get('DB_VERIFY_SSL') === 'true',
-            }
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
             : false,
         subscribers:
           config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
@@ -257,10 +244,103 @@ export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
         }),
         entities: [
           __dirname +
-          '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
+            '/../../../application/inteligencia/felcn_sospechoso/**/*.entity{.ts,.js}',
+        ],
+      }),
+    }),
+
+    // =============================================
+    // CONEXIÓN: LGI
+    // Base de datos: felcn_lgi
+    // Schema: public
+    // Tablas: asignacion, operativo, investigador, departamentosc, distritales, localidad, provincias
+    // Origen: sistema legacy GIAEF migrado a PostgreSQL
+    // =============================================
+    TypeOrmModule.forRootAsync({
+      name: DB_LGI,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        host:
+          config.get<string>('DB_LGI_HOST') || config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_LGI_PORT') || config.get('DB_PORT')),
+        username:
+          config.get<string>('DB_LGI_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
+        password:
+          config.get<string>('DB_LGI_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_LGI_DATABASE'),
+        keepConnectionAlive: true,
+        synchronize: false,
+        ssl:
+          config.get('DB_USE_SSL') === 'true'
+            ? {
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
+            : false,
+        subscribers:
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+        logger: new SQLLogger({
+          logger: LoggerService.getInstance(),
+          level: {
+            query: config.get('LOG_SQL') === 'true',
+            error: true,
+          },
+        }),
+        entities: [
+          __dirname +
+            '/../../../application/sunesis/siii/investigacion/lgi/**/*.entity{.ts,.js}',
+        ],
+      }),
+    }),
+
+    // =============================================
+    // CONEXIÓN: S2I
+    // Base de datos: f_s2i
+    // Esquemas: parametricas, public
+    // Origen: f_s2i
+    // =============================================
+    TypeOrmModule.forRootAsync({
+      name: DB_S2I,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        host:
+          config.get<string>('DB_S2I_HOST') || config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_S2I_PORT') || config.get('DB_PORT')),
+        username:
+          config.get<string>('DB_S2I_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
+        password:
+          config.get<string>('DB_S2I_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_S2I_DATABASE'),
+        keepConnectionAlive: true,
+        synchronize: false,
+        ssl:
+          config.get('DB_USE_SSL') === 'true'
+            ? {
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
+            : false,
+        subscribers:
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+        logger: new SQLLogger({
+          logger: LoggerService.getInstance(),
+          level: {
+            query: config.get('LOG_SQL') === 'true',
+            error: true,
+          },
+        }),
+        entities: [
+          __dirname +
+            '/../../../application/sunesis/s2i/**/*.entity{.ts,.js}',
         ],
       }),
     }),
   ],
 })
-export class DataBaseModule { }
+export class DataBaseModule {}

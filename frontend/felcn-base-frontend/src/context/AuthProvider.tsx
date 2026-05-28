@@ -144,9 +144,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
       await delay(1000)
       const respuesta = await Servicios.post({
         url: `${Constantes.authUrl}/auth`,
-        // TODO: Change when use https
-        // body: { usuario, contrasena: encodeBase64(contrasena) },
-        body: { usuario, contrasena: contrasena },
+        body: { usuario, contrasena: encodeBase64(encodeURI(contrasena)) },
         headers: {},
       })
 
@@ -202,10 +200,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     guardarCookie('token', respuestaUsuario.datos?.access_token)
     imprimir(`Token ✅: ${respuestaUsuario.datos?.access_token}`)
 
-    setUser(respuestaUsuario.datos)
-    imprimir(
-      `rol definido en obtenerUsuarioRol 👨‍💻: ${respuestaUsuario.datos.idRol}`
-    )
+    await obtenerUsuarioRol()
   }
 
   const obtenerPermisos = async () => {
@@ -220,6 +215,10 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     const respuestaUsuario = await sesionPeticion({
       url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
     })
+
+    if (!respuestaUsuario || !respuestaUsuario.datos) {
+      throw new Error('Respuesta del perfil del usuario vacía o incorrecta')
+    }
 
     setUser(respuestaUsuario.datos)
     imprimir(

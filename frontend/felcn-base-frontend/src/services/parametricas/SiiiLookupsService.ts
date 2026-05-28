@@ -10,6 +10,7 @@ import type {
   Provincia,
   RespuestaAPI,
 } from './types'
+import { CatalogoCaracteristica, CatalogoClaseBien, CatalogoTipoBien, EstadoDroga, ItemCategoriaOperativo, RespuestaApi } from '../operativos'
 
 const BASE = `${Constantes.baseUrl}/siii-lookups`
 const BASE_OPERATIVO = `${Constantes.baseUrl}/operativos`
@@ -116,7 +117,16 @@ export const SiiiLookupsService = {
     idTipoFabrica: number
   ): Promise<RespuestaAPI<LookupGenerico>> {
     return sesionPeticion({
-      url: `${BASE_OPERATIVO}/catalogos/fabrica-modelos/${idTipoFabrica}`,
+      url: `${BASE}/fabrica-modelos/${idTipoFabrica}`,
+      withCredentials: true,
+    })
+  },
+
+  obtenerEstadosDroga(
+    idTipoDroga: number
+  ): Promise<RespuestaAPI<EstadoDroga>> {
+    return sesionPeticion({
+      url: `${BASE}/estados-droga/${idTipoDroga}`,
       withCredentials: true,
     })
   },
@@ -211,5 +221,65 @@ export const SiiiLookupsService = {
     idDistrital: number
   ): Promise<RespuestaAPI<LookupBasico>> {
     return sesionPeticion({ url: `${BASE}/grupos/distrital/${idDistrital}`, withCredentials: true })
+  },
+
+  /** Obtiene todos los grados policiales */
+  obtenerGrados(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/grados`, withCredentials: true })
+  },
+
+  /** Obtiene los tipos de contenido de caso (documentos) */
+  obtenerContenidoCaso(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/contenido-caso`, withCredentials: true })
+  },
+
+  /** Obtiene los tipos de contenido de bien (documentos adjuntos de bienes) */
+  obtenerContenidoBien(): Promise<RespuestaAPI<LookupGenerico>> {
+    return sesionPeticion({ url: `${BASE}/contenido-bien`, withCredentials: true })
+  },
+
+  obtenerItemsOperativo(
+    idItemOperativo: number
+  ): Promise<RespuestaApi<ItemCategoriaOperativo[]>> {
+    return sesionPeticion({
+      url: `${BASE}/items-operativo/${idItemOperativo}`,
+      withCredentials: true,
+    })
+  },
+
+  obtenerClasesBien(
+    idBien: number
+  ): Promise<RespuestaApi<CatalogoClaseBien[]>> {
+    return sesionPeticion({
+      url: `${BASE}/clases/${idBien}`,
+      withCredentials: true,
+    })
+  },
+
+  obtenerTiposBien(
+    idCatalogoClase: number
+  ): Promise<RespuestaApi<CatalogoTipoBien[]>> {
+    return sesionPeticion({
+      url: `${BASE}/tipos/${idCatalogoClase}`,
+      withCredentials: true,
+    })
+  },
+
+  obtenerCaracteristicasBien(
+    idCatalogoClase: number
+  ): Promise<RespuestaApi<CatalogoCaracteristica[]>> {
+    return sesionPeticion({
+      url: `${BASE}/caracteristicas/${idCatalogoClase}`,
+      withCredentials: true,
+    })
+  },
+
+  obtenerEstadosPorEtapaId(
+    idEtapa: number
+  ): Promise<RespuestaApi<LookupGenerico[]>> {
+    return sesionPeticion({
+      url: `${BASE}/estados/${idEtapa}`,
+      withCredentials: true,
+    })
   },
 }

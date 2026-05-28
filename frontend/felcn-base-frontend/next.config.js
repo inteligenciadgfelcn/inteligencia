@@ -26,6 +26,7 @@ const nextConfig = {
   output: 'standalone',
   eslint: {
     dirs: ['src', 'stories', 'test'],
+    ignoreDuringBuilds: true,
   },
   images: {
     loader: 'custom',

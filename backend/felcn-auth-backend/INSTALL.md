@@ -154,13 +154,17 @@ Las siguientes variables de entorno se encuentran en el archivo .env que fue cop
 | `REFRESH_TOKEN_PATH`       | `/`               |                                                                                         |
 | `REFRESH_TOKEN_REVISIONS`  | `*/5 * * * *`     |                                                                                         |
 
-**Configuración para el servicio de Mensajería Electrónica (Alertín), si se utiliza en el sistema**
+**Configuración SMTP para envío de correos electrónicos**
 
-| Variable                  | Valor por defecto | Descripción                                                       |
-| ------------------------- | ----------------- | ----------------------------------------------------------------- |
-| `MSJ_URL`                 |                   | URL de consumo al servicio de Mensajería Electrónico (Alertín).   |
-| `MSJ_TOKEN`               |                   | TOKEN de consumo al servicio de Mensajería Electrónico (Alertín). |
-| `MSJ_TIMEOUT_EN_SEGUNDOS` | `10`              | Tiempo máximo de espera para las consultas a mensajería           |
+| Variable       | Valor por defecto | Descripción                                                                                        |
+| -------------- | ----------------- | -------------------------------------------------------------------------------------------------- |
+| `SMTP_ENABLED` | `true`            | `false` imprime los correos en logs sin enviarlos (útil en desarrollo sin cuenta SMTP disponible). |
+| `SMTP_HOST`    | `smtp.gmail.com`  | Host del servidor SMTP.                                                                            |
+| `SMTP_PORT`    | `587`             | Puerto SMTP. Usar `465` con `SMTP_SECURE=true` para SSL directo.                                  |
+| `SMTP_SECURE`  | `false`           | `true` solo si el puerto es 465 (SSL directo). En puerto 587 usar `false` (STARTTLS).             |
+| `SMTP_USER`    |                   | Usuario / cuenta de correo del servidor SMTP.                                                      |
+| `SMTP_PASS`    |                   | Contraseña o App Password. Para Gmail: generar en myaccount.google.com/apppasswords.              |
+| `SMTP_FROM`    |                   | Dirección remitente, ej: `"FELCN Sistema <noreply@felcn.gob.bo>"`.                               |
 
 **Configuración para el servicio SEGIP de IOP, si corresponde**
 
