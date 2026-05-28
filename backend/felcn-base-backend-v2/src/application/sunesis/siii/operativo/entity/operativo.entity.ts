@@ -7,6 +7,9 @@ import { Departamento } from '../../parametrica/entity/geografia/departamento.en
 import { Provincia } from '../../parametrica/entity/geografia/provincia.entity'
 import { Localidad } from '../../parametrica/entity/geografia/localidad.entity'
 import { Distrital } from '../../parametrica/entity/estructura/distrital.entity'
+import { TipoDenuncia } from '../../parametrica/entity/tipo/tipo-denuncia.entity'
+import { TipoPenal } from '../../parametrica/entity/tipo/tipo-penal.entity'
+import { TipoRelevancia } from '../../parametrica/entity/tipo/tipo-relevancia.entity'
 
 /**
  * Entidad Operativo
@@ -178,6 +181,18 @@ export class Operativo extends BaseEntity {
   @ManyToOne(() => Distrital)
   @JoinColumn({ name: 'id_distrital' })
   distrital: Distrital;
+
+  @ManyToOne(() => TipoDenuncia)
+  @JoinColumn({ name: 'id_tipo_denuncia' })
+  tipoDenuncia?: TipoDenuncia;
+
+  @ManyToOne(() => TipoPenal)
+  @JoinColumn({ name: 'id_tipo_penal' })
+  tipoPenal?: TipoPenal;
+
+  @ManyToOne(() => TipoRelevancia)
+  @JoinColumn({ name: 'id_tipo_relevancia' })
+  tipoRelevancia?: TipoRelevancia;
 
   constructor(data?: Partial<Operativo>) {
     super()

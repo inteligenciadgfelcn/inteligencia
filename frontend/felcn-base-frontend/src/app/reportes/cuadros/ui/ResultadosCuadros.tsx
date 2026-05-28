@@ -1,0 +1,624 @@
+'use client'
+
+import { useState, useEffect, useMemo } from 'react'
+import type {
+  RespuestaCuadro,
+  FilaCuadro,
+  CoordenadaOp,
+} from '@/services/reportes/CuadrosService'
+import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
+import { Icono } from '@/components/Icono'
+import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
+import { MapaFullModal } from '../../components/MapaFullModal'
+import { PanelCoordenadas } from '../../components/PanelCoordenadas'
+import { PanelResumen } from '../../components/PanelResumen'
+
+// ─── Etiquetas de filtro ──────────────────────────────────────────────────────
+
+const ETIQUETAS_FILTRO: Record<string, string> = {
+  servicio: 'Por Código de Servicio',
+  fecha: 'Por Rango de Fechas',
+  'tipo-droga': 'Por Tipo de Droga',
+  'tipo-operativo': 'Por Tipo de Operativo',
+  relevancia: 'Por Tipo de Relevancia',
+}
+
+const OPCIONES_LIMITE = [10, 20, 30, 50] as const
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function parsearItems(campo: string): string[] {
+  if (!campo) return []
+  return campo.split(' | ').map(s => s.trim()).filter(Boolean)
+}
+
+// ─── Pills ────────────────────────────────────────────────────────────────────
+
+function CeldaPills({ valor, color }: { valor: string; color: string }) {
+  const items = parsearItems(valor)
+  if (items.length === 0)
+    return <span className="text-gray-300 dark:text-gray-700 text-xs">—</span>
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map((it, i) => (
+        <span
+          key={i}
+          title={it}
+          className={`inline-block text-xs font-semibold leading-relaxed px-2.5 py-0.5 rounded whitespace-pre-wrap text-left ${color}`}
+        >
+          {it}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// ─── Card de operativo ────────────────────────────────────────────────────────
+
+const CARD_SECCIONES = [
+  { label: 'Personas - Estado', key: 'personasImplicadas' as keyof FilaCuadro, color: 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800' },
+  { label: 'Droga', key: 'drogas' as keyof FilaCuadro, color: 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' },
+  { label: 'Sustancias Sólidas', key: 'sustanciasSolidas' as keyof FilaCuadro, color: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' },
+  { label: 'Sustancias Líquidas', key: 'sustanciasLiquidas' as keyof FilaCuadro, color: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' },
+  { label: 'Laboratorio y Fábricas', key: 'laboratoriosFabricas' as keyof FilaCuadro, color: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' },
+  { label: 'Bienes Secuestrados', key: 'bienesIncautados' as keyof FilaCuadro, color: 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' },
+]
+
+function CuadroCard({ row }: { row: FilaCuadro }) {
+  const seccionesConDatos = CARD_SECCIONES.filter(s => parsearItems(row[s.key] as string).length > 0)
+
+  return (
+    <div className="rounded-lg border border-[#e0e6ed] dark:border-[#1b2e4b] overflow-hidden text-xs">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#3e5f8a] to-[#5a7ba8] px-4 py-3 text-white">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="font-bold text-sm">{row.numeroCaso}</p>
+            <p className="opacity-80 text-xs mt-0.5">{row.fechaOperativo}</p>
+          </div>
+          <div className="text-right text-xs opacity-90">
+            {row.tipoOperativo && <p>{row.tipoOperativo}</p>}
+            {row.tipoRelevancia && <p className="opacity-75">{row.tipoRelevancia}</p>}
+          </div>
+        </div>
+        <div className="mt-2 space-y-1 text-[11px] opacity-85">
+          {row.ubicacionGeografica && (
+            <div className="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 mt-[2px] shrink-0 text-white opacity-80">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span className="whitespace-pre-line">{row.ubicacionGeografica}</span>
+            </div>
+          )}
+          {row.ubicacionInstitucional && (
+            <div className="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 mt-[2px] shrink-0 text-white opacity-80">
+                <rect width="16" height="20" x="4" y="2" rx="2" ry="2"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <path d="M8 6h.01"></path>
+                <path d="M16 6h.01"></path>
+                <path d="M12 6h.01"></path>
+                <path d="M12 10h.01"></path>
+                <path d="M12 14h.01"></path>
+                <path d="M16 10h.01"></path>
+                <path d="M16 14h.01"></path>
+                <path d="M8 10h.01"></path>
+                <path d="M8 14h.01"></path>
+              </svg>
+              <span className="line-clamp-1">{row.ubicacionInstitucional}</span>
+            </div>
+          )}
+        </div>
+        {row.asignadoFiscal && (
+          <div className="mt-1 flex items-start text-[11px] opacity-75">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 mt-[2px] shrink-0 text-white opacity-80">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>{row.asignadoFiscal}</span>
+          </div>
+        )}
+        {row.totalCosto && row.totalCosto !== '0.00' && (
+          <div className="mt-1 flex items-start text-[11px] font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 mt-[2px] shrink-0 text-white opacity-80">
+              <line x1="12" x2="12" y1="2" y2="22"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <span>Bs {row.totalCosto}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Secciones */}
+      {seccionesConDatos.length === 0 ? (
+        <div className="px-3 py-3 text-center text-[11px] text-gray-400">
+          Sin elementos registrados
+        </div>
+      ) : (
+        seccionesConDatos.map(sec => {
+          const items = parsearItems(row[sec.key] as string)
+          return (
+            <div key={sec.key} className="border-t border-[#e0e6ed] dark:border-[#1b2e4b] px-3 py-2">
+              <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">
+                {sec.label} ({items.length})
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {items.map((it, i) => (
+                  <span key={i} className={`inline-block rounded px-2.5 py-0.5 text-xs font-semibold whitespace-pre-wrap text-left leading-relaxed ${sec.color}`}>
+                    {it}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })
+      )}
+    </div>
+  )
+}
+
+// La grilla principal ahora se renderiza utilizando <VristoDataTable /> del design system base.
+
+// ─── Paginación ───────────────────────────────────────────────────────────────
+
+function generarPaginas(actual: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (actual <= 4) return [1, 2, 3, 4, 5, '...', total]
+  if (actual >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '...', actual - 1, actual, actual + 1, '...', total]
+}
+
+function PaginacionBar({ total, page, limit, onPage, onLimit }: {
+  total: number; page: number; limit: number
+  onPage: (p: number) => void; onLimit: (l: number) => void
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const desde = Math.min((page - 1) * limit + 1, total)
+  const hasta = Math.min(page * limit, total)
+  const paginas = generarPaginas(page, totalPages)
+
+  const btnBase = 'inline-flex items-center justify-center w-7 h-7 rounded text-xs font-medium transition-colors'
+  const btnNormal = 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1b2e4b]/60'
+  const btnActivo = 'bg-primary text-white shadow-sm pointer-events-none'
+  const btnDisabled = 'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 mt-1
+      border-t border-[#e0e6ed] dark:border-[#1b2e4b] text-xs">
+      <span className="text-gray-500 dark:text-gray-400">
+        Mostrando{' '}
+        <strong className="text-dark dark:text-white-light">{desde}</strong>–
+        <strong className="text-dark dark:text-white-light">{hasta}</strong>{' '}
+        de <strong className="text-dark dark:text-white-light">{total}</strong>{' '}
+        resultado{total !== 1 ? 's' : ''}
+      </span>
+      <div className="flex items-center gap-0.5">
+        <button type="button" onClick={() => onPage(1)} disabled={page === 1}
+          className={`${btnBase} ${page === 1 ? btnDisabled : btnNormal}`} title="Primera página">«</button>
+        <button type="button" onClick={() => onPage(page - 1)} disabled={page === 1}
+          className={`${btnBase} ${page === 1 ? btnDisabled : btnNormal}`} title="Página anterior">‹</button>
+        {paginas.map((p, i) =>
+          p === '...' ? (
+            <span key={`e-${i}`} className="w-7 text-center text-gray-400 select-none">…</span>
+          ) : (
+            <button key={p} type="button" onClick={() => onPage(p as number)}
+              className={`${btnBase} ${p === page ? btnActivo : btnNormal}`}>{p}</button>
+          )
+        )}
+        <button type="button" onClick={() => onPage(page + 1)} disabled={page === totalPages}
+          className={`${btnBase} ${page === totalPages ? btnDisabled : btnNormal}`} title="Página siguiente">›</button>
+        <button type="button" onClick={() => onPage(totalPages)} disabled={page === totalPages}
+          className={`${btnBase} ${page === totalPages ? btnDisabled : btnNormal}`} title="Última página">»</button>
+      </div>
+      <select
+        value={limit}
+        onChange={e => { onLimit(Number(e.target.value)); onPage(1) }}
+        className="form-select text-xs py-1 px-2 h-7 w-auto rounded border-[#e0e6ed] dark:border-[#1b2e4b]
+          bg-white dark:bg-[#1b2e4b] text-gray-700 dark:text-gray-300"
+      >
+        {OPCIONES_LIMITE.map(l => <option key={l} value={l}>{l} / pág.</option>)}
+      </select>
+    </div>
+  )
+}
+
+// ─── Skeletons ────────────────────────────────────────────────────────────────
+
+function CardSkeleton() {
+  return (
+    <div className="rounded-lg border border-[#e0e6ed] dark:border-[#1b2e4b] overflow-hidden animate-pulse">
+      <div className="h-24 bg-gray-100 dark:bg-[#1b2e4b]/60" />
+      {[1, 2, 3].map(i => (
+        <div key={i} className="border-t border-[#e0e6ed] dark:border-[#1b2e4b] h-8 bg-gray-50 dark:bg-[#1b2e4b]/30" />
+      ))}
+    </div>
+  )
+}
+
+function TablaSkeleton() {
+  return (
+    <div className="rounded-lg border border-[#e0e6ed] dark:border-[#1b2e4b] overflow-hidden animate-pulse">
+      <div className="h-9 bg-gray-100 dark:bg-[#1b2e4b]/60 border-b border-[#e0e6ed] dark:border-[#1b2e4b]" />
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="border-b border-[#e0e6ed] dark:border-[#1b2e4b] h-14 bg-white dark:bg-transparent" />
+      ))}
+    </div>
+  )
+}
+
+// ─── Componente principal ─────────────────────────────────────────────────────
+
+interface ResultadosCuadrosProps {
+  datos: RespuestaCuadro | null
+  cargando: boolean
+  filtroActivo: string | null
+}
+
+type Vista = 'tabla' | 'tarjetas'
+
+export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosCuadrosProps) {
+  const [vista, setVista] = useState<Vista>('tabla')
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [activeTab, setActiveTab] = useState<'resultados' | 'resumen' | 'ubicacion'>('resultados')
+  const [activeMapModal, setActiveMapModal] = useState<'mapa' | 'calor' | null>(null)
+
+  const filas = datos?.filas ?? []
+
+  useEffect(() => {
+    setPage(1)
+    setActiveTab('resultados')
+  }, [filas])
+  useEffect(() => { setPage(1) }, [vista])
+  useEffect(() => {
+    if (!activeMapModal) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setActiveMapModal(null) }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [activeMapModal])
+
+  const totalPages = Math.max(1, Math.ceil(filas.length / limit))
+  const safePage = Math.min(page, totalPages)
+  const pagedRows = filas.slice((safePage - 1) * limit, safePage * limit)
+
+  const columns: Column<FilaCuadro>[] = useMemo(() => [
+    {
+      accessor: 'fechaOperativo',
+      title: 'Fecha y Hora del Operativo',
+      render: (row) => <span className="text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{row.fechaOperativo || '—'}</span>
+    },
+    {
+      accessor: 'numeroCaso',
+      title: 'Número de Caso',
+      render: (row) => <span className="badge badge-outline-primary text-xs font-semibold">{row.numeroCaso || '—'}</span>
+    },
+    {
+      accessor: 'ubicacionInstitucional',
+      title: 'Unidad',
+      render: (row) => <span className="text-gray-600 dark:text-gray-300">{row.ubicacionInstitucional || '—'}</span>
+    },
+    {
+      accessor: 'ubicacionGeografica',
+      title: 'Lugar del Operativo',
+      render: (row) => <span className="text-gray-600 dark:text-gray-300">{row.ubicacionGeografica || '—'}</span>
+    },
+    {
+      accessor: 'asignadoFiscal',
+      title: 'Asignados al Caso',
+      render: (row) => <span className="text-gray-600 dark:text-gray-300">{row.asignadoFiscal || '—'}</span>
+    },
+    {
+      accessor: 'personasImplicadas',
+      title: 'Personas - Estado',
+      className: 'min-w-[280px]',
+      render: (row) => <CeldaPills valor={row.personasImplicadas} color="bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800" />
+    },
+    {
+      accessor: 'drogas',
+      title: 'Droga',
+      className: 'min-w-[320px]',
+      render: (row) => <CeldaPills valor={row.drogas} color="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800" />
+    },
+    {
+      accessor: 'sustanciasSolidas',
+      title: 'Sustancias Sólidas',
+      className: 'min-w-[200px]',
+      render: (row) => <CeldaPills valor={row.sustanciasSolidas} color="bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800" />
+    },
+    {
+      accessor: 'sustanciasLiquidas',
+      title: 'Sustancias Líquidas',
+      className: 'min-w-[200px]',
+      render: (row) => <CeldaPills valor={row.sustanciasLiquidas} color="bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" />
+    },
+    {
+      accessor: 'laboratoriosFabricas',
+      title: 'Laboratorio y Fábricas',
+      className: 'min-w-[180px]',
+      render: (row) => <CeldaPills valor={row.laboratoriosFabricas} color="bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800" />
+    },
+    {
+      accessor: 'bienesIncautados',
+      title: 'Bienes Secuestrados',
+      className: 'min-w-[180px]',
+      render: (row) => <CeldaPills valor={row.bienesIncautados} color="bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800" />
+    },
+    {
+      accessor: 'tipoOperativo',
+      title: 'Tipo del Operativo',
+      render: (row) => <span className="text-gray-600 dark:text-gray-300">{row.tipoOperativo || '—'}</span>
+    },
+    {
+      accessor: 'tipoRelevancia',
+      title: 'Relevancia',
+      render: (row) => (
+        row.tipoRelevancia ? (
+          <span className="badge badge-outline-secondary text-xs">{row.tipoRelevancia}</span>
+        ) : (
+          <span className="text-gray-400">—</span>
+        )
+      )
+    },
+    {
+      accessor: 'totalCosto',
+      title: 'Costos en Bs',
+      render: (row) => <span className="font-semibold text-gray-700 dark:text-gray-300">{row.totalCosto || '—'}</span>
+    }
+  ], [])
+
+  const hayResultados = !cargando && filas.length > 0
+
+  return (
+    <div className="space-y-4">
+
+      {/* ── Tabs Header (Estilo Vristo) ─────────────────────────────────── */}
+      {(hayResultados || cargando || filtroActivo) && (
+        <div className="flex overflow-x-auto border-b border-[#e0e6ed] dark:border-[#1b2e4b] mb-4">
+          <button
+            type="button"
+            className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'resultados'
+              ? 'border-primary text-primary bg-primary/5'
+              : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            onClick={() => setActiveTab('resultados')}
+          >
+            <Icono className={`w-4 h-4 ${activeTab === 'resultados' ? 'text-primary' : ''}`}>list_alt</Icono>
+            Cuadro de Resultados
+          </button>
+          {hayResultados && (
+            <>
+              <button
+                type="button"
+                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'resumen'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                onClick={() => setActiveTab('resumen')}
+              >
+                <Icono className={`w-4 h-4 ${activeTab === 'resumen' ? 'text-primary' : ''}`}>analytics</Icono>
+                Resumen Estadístico
+              </button>
+              <button
+                type="button"
+                className={`flex items-center gap-2 whitespace-nowrap px-6 py-4 text-sm font-semibold border-b-2 transition-all ${activeTab === 'ubicacion'
+                  ? 'border-primary text-primary bg-primary/5'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                onClick={() => setActiveTab('ubicacion')}
+              >
+                <Icono className={`w-4 h-4 ${activeTab === 'ubicacion' ? 'text-primary' : ''}`}>location_on</Icono>
+                Coordenadas (Lista)
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="pt-2">
+        {/* ── Cuadro de Resultados ─────────────────────────────────────────── */}
+        {activeTab === 'resultados' && (
+          <div className="panel space-y-3">
+            <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
+              <Icono className="w-4 h-4 text-gray-500">table_chart</Icono>
+              <h2 className="text-sm font-semibold text-dark dark:text-white-light">Resultados</h2>
+              {hayResultados && (
+                <span className="badge badge-outline-info text-xs ml-auto">
+                  {filas.length} registros
+                </span>
+              )}
+            </div>
+
+            {/* Barra: filtro activo + tabs de vista */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                {filtroActivo && (
+                  <>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Filtro:
+                      <span className="ml-1 font-semibold text-primary">
+                        {ETIQUETAS_FILTRO[filtroActivo] ?? filtroActivo}
+                      </span>
+                    </span>
+                    {!cargando && (
+                      <span className="badge badge-outline-info text-xs">
+                        {filas.length} registro{filas.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-[#1b2e4b]/60">
+                  <button
+                    type="button" onClick={() => setVista('tabla')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all
+                  ${vista === 'tabla'
+                        ? 'bg-white dark:bg-[#1a2941] text-primary shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" />
+                    </svg>
+                    Tabla
+                  </button>
+                  <button
+                    type="button" onClick={() => setVista('tarjetas')}
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all
+                  ${vista === 'tarjetas'
+                        ? 'bg-white dark:bg-[#1a2941] text-primary shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2 4a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V4zM2 11a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1v-5z" />
+                    </svg>
+                    Tarjetas
+                  </button>
+                </div>
+
+                {hayResultados && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMapModal('mapa')}
+                      className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                      title="Abrir mapa de distribución en ventana emergente (Popup)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                        <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon>
+                        <line x1="9" x2="9" y1="3" y2="18"></line>
+                        <line x1="15" x2="15" y1="6" y2="21"></line>
+                      </svg>
+                      Ver Mapa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveMapModal('calor')}
+                      className="px-3 py-1.5 bg-[#805dca]/10 hover:bg-[#805dca]/20 text-[#805dca] text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-sm"
+                      title="Abrir mapa de calor en ventana emergente (Popup)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                      </svg>
+                      Ver Calor
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Skeletons */}
+            {cargando && vista === 'tabla' && <TablaSkeleton />}
+            {cargando && vista === 'tarjetas' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}
+              </div>
+            )}
+
+            {/* Sin resultados */}
+            {!cargando && filtroActivo && filas.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-600">
+                <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-sm font-medium">Sin resultados para este criterio</p>
+                <p className="text-xs mt-1 opacity-70">Intente con otros parámetros de búsqueda</p>
+              </div>
+            )}
+
+            {/* Estado inicial */}
+            {!cargando && !filtroActivo && (
+              <div className="flex flex-col items-center justify-center py-14 text-gray-400 dark:text-gray-600">
+                <svg className="w-12 h-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p className="text-sm font-medium">Seleccione un filtro para iniciar la búsqueda</p>
+              </div>
+            )}
+
+            {/* Vista tabla */}
+            {hayResultados && vista === 'tabla' && (
+              <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
+                <VristoDataTable<FilaCuadro>
+                  rows={pagedRows}
+                  total={filas.length}
+                  page={safePage}
+                  limit={limit}
+                  onPageChange={setPage}
+                  onLimitChange={(l) => {
+                    setLimit(l)
+                    setPage(1)
+                  }}
+                  columns={columns}
+                  loading={cargando}
+                  onExportCSV={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToCSV(filas, headers, keys, 'cuadros')
+                  }}
+                  onExportExcel={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToExcel(filas, headers, keys, 'cuadros')
+                  }}
+                  onExportPrint={() => {
+                    const headers = columns.map(c => c.title)
+                    const keys = columns.map(c => c.accessor) as (keyof FilaCuadro)[]
+                    exportToPrint(filas, headers, keys, 'Resultados de Cuadros')
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Vista tarjetas */}
+            {hayResultados && vista === 'tarjetas' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {pagedRows.map(row => <CuadroCard key={row.idOperativo} row={row} />)}
+                </div>
+                <PaginacionBar total={filas.length} page={safePage} limit={limit} onPage={setPage} onLimit={setLimit} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Resumen Estadístico ──────────────────────────────────────────── */}
+        {activeTab === 'resumen' && hayResultados && datos?.resumen && (
+          <div className="panel">
+            <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
+              <Icono className="w-4 h-4 text-gray-500">analytics</Icono>
+              <h2 className="text-sm font-semibold text-dark dark:text-white">Resumen Estadístico (Total Secuestrado)</h2>
+            </div>
+            <PanelResumen resumen={datos.resumen} fabricas={datos.fabricas ?? []} />
+          </div>
+        )}
+
+        {/* ── Coordenadas GPS ──────────────────────────────────────────────── */}
+        {activeTab === 'ubicacion' && hayResultados && (
+          <div className="panel animate-fade-in-down">
+            <div className="mb-3 flex items-center gap-2 border-b border-[#e0e6ed] dark:border-[#1b2e4b] pb-2">
+              <Icono className="w-4 h-4 text-gray-500">location_on</Icono>
+              <h2 className="text-sm font-semibold text-dark dark:text-white-light">Ubicación (Lista de Coordenadas)</h2>
+              <span className="badge badge-outline-info text-xs ml-auto">
+                {datos?.coordenadas.length} puntos
+              </span>
+            </div>
+            <PanelCoordenadas coordenadas={datos?.coordenadas ?? []} />
+          </div>
+        )}
+
+      </div>
+
+      {/* ── Modal pantalla completa ──────────────────────────────────────── */}
+      {activeMapModal && (
+        <MapaFullModal
+          tipo={activeMapModal}
+          coordenadas={datos?.coordenadas ?? []}
+          onClose={() => setActiveMapModal(null)}
+        />
+      )}
+    </div>
+  )
+}

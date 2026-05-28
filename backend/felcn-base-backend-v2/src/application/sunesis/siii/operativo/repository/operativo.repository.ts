@@ -12,7 +12,7 @@ import { SustanciaLiquida } from '../entity/sustancia-liquida.entity'
 import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
-import { DetenidoAuxiliar } from '../entity/detenido-auxiliar.entity'
+import { PersonaAuxiliar } from '../entity/persona-auxiliar.entity'
 import { ArrestadoAuxiliar } from '../entity/arrestado-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
@@ -20,13 +20,6 @@ import { Coca } from '../entity/coca.entity'
 import { ServidorPolicial } from '../entity/servidor-policial.entity'
 import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
 
-// Catalogos
-import { EstadoDroga } from '../entity/estado-droga.entity'
-import { FabricaModelo } from '../entity/fabrica-modelo.entity'
-import { ItemOperativo } from '../entity/item-operativo.entity'
-import { CatalogoClase } from '../entity/catalogo-clase.entity'
-import { CatalogoTipo } from '../entity/catalogo-tipo.entity'
-import { CatalogoCaracteristica } from '../entity/catalogo-caracteristica.entity'
 
 @Injectable()
 export class OperativoRepository {
@@ -63,6 +56,7 @@ export class OperativoRepository {
   async buscarPorCaso(idCaso: string): Promise<Operativo[]> {
     return this.operativoRepo.find({
       where: { idCaso },
+      relations: ['unidad', 'planOperacion', 'tipoOperacion', 'tipoDenuncia', 'tipoPenal', 'tipoRelevancia'],
       order: { fechaOperativo: 'DESC' },
     })
   }
@@ -76,6 +70,9 @@ export class OperativoRepository {
       .leftJoinAndSelect('operativo.unidad', 'unidad')
       .leftJoinAndSelect('operativo.planOperacion', 'planOperacion')
       .leftJoinAndSelect('operativo.tipoOperacion', 'tipoOperacion')
+      .leftJoinAndSelect('operativo.tipoDenuncia', 'tipoDenuncia')
+      .leftJoinAndSelect('operativo.tipoPenal', 'tipoPenal')
+      .leftJoinAndSelect('operativo.tipoRelevancia', 'tipoRelevancia')
       .orderBy('operativo.fechaOperativo', 'DESC')
       .getOne()
   }
@@ -104,7 +101,15 @@ export class OperativoRepository {
   async listarDrogasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Droga[], number]> {
     return this.drogaRepo.findAndCount({
       where: { idOperativo },
-      relations: ['estadoDroga', 'estadoDroga.tipoDroga', 'formaTransporte', 'paisProcedencia', 'paisDestino'],
+      relations: [
+        'estadoDroga',
+        'estadoDroga.tipoDroga',
+        'formaTransporte',
+        'paisProcedencia',
+        'paisDestino',
+        'operativo',
+        'operativo.unidad',
+      ],
       order: { fechaHoraIngreso: 'DESC' },
       skip: paginacion.saltar,
       take: paginacion.limite,
@@ -263,39 +268,39 @@ export class OperativoRepository {
     await this.bienCaracteristicaRepo.delete(id)
   }
 
-  // ==================== DETENIDOS ====================
+  // ==================== perosnas aux ====================
 
-  private get detenidoRepo() {
-    return this.dataSource.getRepository(DetenidoAuxiliar)
+  private get personaAuxiliarRepo() {
+    return this.dataSource.getRepository(PersonaAuxiliar)
   }
 
-  async crearDetenido(detenido: DetenidoAuxiliar): Promise<DetenidoAuxiliar> {
-    return this.detenidoRepo.save(detenido)
+  async crearPersonaAuxiliar(persona: PersonaAuxiliar): Promise<PersonaAuxiliar> {
+    return this.personaAuxiliarRepo.save(persona)
   }
 
-  async listarDetenidosPorOperativo(
+  async listarPersonasAuxiliaresPorOperativo(
     idOperativo: string,
     paginacion: PaginacionQueryDto
-  ): Promise<[DetenidoAuxiliar[], number]> {
-    return this.detenidoRepo.findAndCount({
+  ): Promise<[PersonaAuxiliar[], number]> {
+    return this.personaAuxiliarRepo.findAndCount({
       where: { idOperativo },
-      relations: ['paisNacionalidad', 'tipoDocumento'],
+      relations: ['pais', 'tipoDocumento'],
       order: { fechaHoraIngreso: 'DESC' },
       skip: paginacion.saltar,
       take: paginacion.limite,
     })
   }
 
-  async eliminarDetenido(id: string): Promise<void> {
-    await this.detenidoRepo.delete(id)
+  async eliminarPersonaAuxiliar(id: string): Promise<void> {
+    await this.personaAuxiliarRepo.delete(id)
   }
 
-  async actualizarFotoDetenido(
+  async actualizarFotoPersonaAuxiliar(
     id: string,
     campo: 'foto_frente' | 'foto_documento' | 'foto_perfil_izquierdo',
     foto: Buffer
   ): Promise<void> {
-    await this.detenidoRepo.update(id, { [campo]: foto } as any)
+    await this.personaAuxiliarRepo.update(id, { [campo]: foto } as any)
   }
 
   // ==================== GALERÍA ====================
@@ -342,53 +347,9 @@ export class OperativoRepository {
     await this.logotipoRepo.delete(id)
   }
 
-  // ==================== CATÁLOGOS ====================
-
-  async listarEstadosDrogaPorTipo(idTipoDroga: number): Promise<EstadoDroga[]> {
-    return this.dataSource.getRepository(EstadoDroga).find({
-      where: { idTipoDroga },
-    })
-  }
-
-  async listarFabricaModelosPorTipo(
-    idTipoFabrica: number
-  ): Promise<FabricaModelo[]> {
-    return this.dataSource.getRepository(FabricaModelo).find({
-      where: { idTipoFabrica },
-    })
-  }
-
-  async listarItemsOperativoPorCategoria(
-    idCategoriaOperativo: number
-  ): Promise<ItemOperativo[]> {
-    return this.dataSource.getRepository(ItemOperativo).find({
-      where: { idCategoriaOperativo },
-    })
-  }
-
-  async listarCatalogoClasesPorBien(idBien: number): Promise<CatalogoClase[]> {
-    return this.dataSource.getRepository(CatalogoClase).find({
-      where: { idBien },
-    })
-  }
-
-  async listarCatalogoTiposPorClase(
-    idCatalogoClase: number
-  ): Promise<CatalogoTipo[]> {
-    return this.dataSource.getRepository(CatalogoTipo).find({
-      where: { idCatalogoClase },
-    })
-  }
-
-  async listarCatalogoCaracteristicasPorClase(
-    idCatalogoClase: number
-  ): Promise<CatalogoCaracteristica[]> {
-    return this.dataSource.getRepository(CatalogoCaracteristica).find({
-      where: { idCatalogoClase },
-    })
-  }
 
   // ==================== RESUMEN/PESAJE ====================
+
 
   async obtenerResumenDrogas(idOperativo: string): Promise<any> {
     const result = await this.drogaRepo
@@ -415,7 +376,7 @@ export class OperativoRepository {
       this.sustanciaLiquidaRepo.count({ where: { idOperativo } }),
       this.fabricaRepo.count({ where: { idOperativo } }),
       this.bienRepo.count({ where: { idOperativo } }),
-      this.detenidoRepo.count({ where: { idOperativo } }),
+      this.personaAuxiliarRepo.count({ where: { idOperativo } }),
       this.galeriaRepo.count({ where: { idOperativo } }),
     ])
 
@@ -436,12 +397,41 @@ export class OperativoRepository {
     return this.galeriaRepo.findOne({ where: { id } })
   }
 
-  async buscarDetenidoPorId(id: string): Promise<DetenidoAuxiliar | null> {
-    return this.detenidoRepo.findOne({ where: { id } })
+  async buscarPersonaAuxiliarPorId(id: string): Promise<PersonaAuxiliar | null> {
+    return this.personaAuxiliarRepo.findOne({ where: { id } })
   }
 
   async buscarBienPorId(id: string): Promise<ItemBienSecuestrado | null> {
     return this.bienRepo.findOne({ where: { id } })
+  }
+
+  // Corresponde a Button2_Click de ABM-ING-COSTO: UPDATE SET CostoAprox, CostoCuant WHERE id
+  async actualizarCostoBien(
+    id: string,
+    costoAproximado: number,
+    costoCuantificado: number
+  ): Promise<void> {
+    await this.bienRepo.update(id, { costoAproximado, costoCuantificado })
+  }
+
+  // Corresponde a calcula() de ABM-ING-COSTO: SUM(CostoCuant) y SUM*tipoCambio
+  async calcularPatrimonioBienes(
+    idOperativo: string,
+    tipoCambio: number
+  ): Promise<{ totalDolares: number; totalBolivianos: number; cantidadBienes: number }> {
+    const result = await this.bienRepo
+      .createQueryBuilder('b')
+      .select('COALESCE(SUM(b.costo_cuantificado), 0)', 'totalDolares')
+      .addSelect('COUNT(b.id_item_bien_secuestrado)', 'cantidadBienes')
+      .where('b.id_operativo = :idOperativo', { idOperativo })
+      .getRawOne()
+
+    const totalDolares = parseFloat(result?.totalDolares ?? '0')
+    return {
+      totalDolares,
+      totalBolivianos: parseFloat((totalDolares * tipoCambio).toFixed(2)),
+      cantidadBienes: parseInt(result?.cantidadBienes ?? '0', 10),
+    }
   }
 
   async buscarLogotipoPorId(id: string): Promise<Logotipo | null> {

@@ -45,22 +45,6 @@ const formSchema = z
       message: 'El ícono es requerido',
     }
   )
-  .refine(
-    (data) => {
-      if (!data.esSeccion) {
-        return (
-          data.moduloPadreId !== null &&
-          data.moduloPadreId !== undefined &&
-          data.moduloPadreId !== ''
-        )
-      }
-      return true
-    },
-    {
-      path: ['moduloPadreId'],
-      message: 'La sección es requerida',
-    }
-  )
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -124,7 +108,7 @@ export const ModalModulo = ({
       setLoading(true)
       console.log(values)
       const payload = {
-        idModulo: values.moduloPadreId,
+        idModulo: values.moduloPadreId || null,
         label: values.label,
         url: values.url,
         nombre: values.nombre,

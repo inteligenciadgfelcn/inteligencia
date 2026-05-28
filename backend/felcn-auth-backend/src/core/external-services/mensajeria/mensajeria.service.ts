@@ -1,122 +1,90 @@
 import { BaseService } from '@/common/base'
-import { Injectable, RequestTimeoutException } from '@nestjs/common'
-import { catchError, map, timeout } from 'rxjs/operators'
-import { ExternalServiceException } from '@/common/exceptions'
-import { HttpService } from '@nestjs/axios'
-import { firstValueFrom, throwError, TimeoutError } from 'rxjs'
-
-const TIEMPO_MAXIMO_ESPERA_EN_SEGUNDOS = Number(
-  process.env.MSJ_TIMEOUT_EN_SEGUNDOS || '10'
-)
+import { Injectable, OnModuleInit } from '@nestjs/common'
+import * as nodemailer from 'nodemailer'
+import { Transporter } from 'nodemailer'
 
 @Injectable()
-export class MensajeriaService extends BaseService {
-  constructor(private httpService: HttpService) {
-    super()
-  }
+export class MensajeriaService extends BaseService implements OnModuleInit {
+  private transporter: Transporter | null = null
 
-  /**
-   * Metodo para enviar sms
-   * @param cellphone Numero de celular
-   * @param content contenido
-   */
-  async sendSms(cellphone: string, content: string) {
-    try {
-      const smsBody = {
-        para: [cellphone],
-        contenido: content,
-      }
-      const response = this.httpService
-        .post('/sms', smsBody)
-        .pipe(map((res) => res.data))
-
-      return await firstValueFrom(response)
-    } catch (error) {
-      const mensaje = 'Ocurrió un error al enviar el mensaje por SMS'
-      throw new ExternalServiceException('MENSAJERÍA:SMS', error, mensaje)
+  onModuleInit() {
+    if (process.env.SMTP_ENABLED !== 'false') {
+      this.transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      })
     }
   }
 
   /**
-   * Metodo para enviar correo
-   * @param email Correo Electronico
-   * @param subject asunto
-   * @param content contenido
+   * Envía un correo electrónico via SMTP.
+   * @param email Dirección de destino
+   * @param subject Asunto del correo
+   * @param content Cuerpo HTML del correo
    */
-  async sendEmail(email: string, subject: string, content: string) {
-    try {
-      const emailBody = {
-        para: [email],
-        asunto: subject,
-        contenido: content,
-      }
-      const t1 = Date.now()
-      const response = this.httpService.post('/correo', emailBody).pipe(
-        timeout(TIEMPO_MAXIMO_ESPERA_EN_SEGUNDOS * 1000),
-        catchError((err) => {
-          if (err instanceof TimeoutError) {
-            const mensaje = `La solicitud está demorando demasiado`
-            return throwError(() => {
-              return new RequestTimeoutException(mensaje, {
-                cause: `Se superó el tiempo máximo de espera (${TIEMPO_MAXIMO_ESPERA_EN_SEGUNDOS} seg.)`,
-              })
-            })
-          }
-          return throwError(() => err)
-        }),
-        map((res) => {
-          const t2 = Date.now()
-          const statusCode = res.status
-          const elapsedTimeMs = t2 - t1
-          this.logger.audit('mensajeria', {
-            mensaje: 'E-MAIL enviado correctamente',
-            metadata: {
-              status: statusCode,
-              elapsedTimeMs,
-              asunto: emailBody.asunto,
-            },
-          })
-          return res.data
-        })
+  async sendEmail(email: string, subject: string, content: string): Promise<void> {
+    if (!this.transporter) {
+      this.logger.warn(
+        `[SMTP-DEV] Correo no enviado (SMTP_ENABLED=false)\n` +
+          `  Para    : ${email}\n` +
+          `  Asunto  : ${subject}`
       )
-      const result = await firstValueFrom(response)
-      return result
+      return
+    }
+    try {
+      const t1 = Date.now()
+      await this.transporter.sendMail({
+        from: process.env.SMTP_FROM || '"FELCN Sistema" <noreply@felcn.gob.bo>',
+        to: email,
+        subject,
+        html: content,
+        text: this.htmlToText(content),
+      })
+      this.logger.audit('mensajeria', {
+        mensaje: 'E-MAIL enviado correctamente',
+        metadata: {
+          asunto: subject,
+          para: email,
+          elapsedTimeMs: Date.now() - t1,
+        },
+      })
     } catch (error) {
-      const mensaje = 'Ocurrió un error al enviar el mensaje por E-MAIL'
-      throw new ExternalServiceException('MENSAJERÍA:CORREO', error, mensaje)
+      this.logger.error(error, 'Ocurrió un error al enviar el mensaje por E-MAIL')
+      throw error
     }
   }
 
   /**
-   * Metodo para obtener el estado de un sms enviado
-   * @param id Identificador de solicitud sms
+   * SMS no disponible via SMTP.
+   * Se registra en logs como advertencia. Cuando FELCN provea un gateway SMS
+   * se implementará aquí sin cambiar los callers.
    */
-  async getReportSms(id: string) {
-    try {
-      const response = this.httpService
-        .get(`/sms/reporte/${id}`)
-        .pipe(map((res) => res.data))
-
-      return await firstValueFrom(response)
-    } catch (error) {
-      const mensaje = 'Ocurrió un error al obtener el reporte del SMS'
-      throw new ExternalServiceException('MENSAJERÍA:SMS', error, mensaje)
-    }
+  async sendSms(cellphone: string, content: string): Promise<void> {
+    this.logger.warn(
+      `[SMS-NO-DISPONIBLE] Envío SMS pendiente de gateway.\n` +
+        `  Para    : ${cellphone}\n` +
+        `  Mensaje : ${content}`
+    )
   }
 
-  /**
-   * Metodo para obtener el estado de un correo enviado
-   * @param id Identificador de solicitud correo
-   */
-  async getReportEmail(id: string) {
-    try {
-      const response = this.httpService
-        .get(`/correo/reporte/${id}`)
-        .pipe(map((res) => res.data))
-      return await firstValueFrom(response)
-    } catch (error) {
-      const mensaje = 'Ocurrió un error al obtener el reporte del E-MAIL'
-      throw new ExternalServiceException('MENSAJERÍA:CORREO', error, mensaje)
-    }
+  /** Fallback de texto plano para clientes que no renderizan HTML. */
+  private htmlToText(html: string): string {
+    return html
+      .replace(/<a[^>]+href="([^"]+)"[^>]*>([^<]+)<\/a>/gi, '$2 ($1)')
+      .replace(/<li[^>]*>/gi, '• ')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/?(p|div|tr|td|th|h[1-6])[^>]*>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
   }
 }

@@ -26,7 +26,7 @@ import { OperativoService } from '../service/operativo.service'
 import {
   OperativoDto,
   CreateDrogaDto,
-  CreateDetenidoDto,
+  CreatePersonaAuxiliarDto,
   CreateBienSecuestradoDto,
   CreateBienCaracteristicaDto,
   CreateFabricaDto,
@@ -34,6 +34,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  UpdateCostoBienDto,
 } from '../dto'
 
 @ApiBearerAuth()
@@ -91,49 +92,7 @@ export class OperativoController extends BaseController {
     return this.successList(datos)
   }
 
-  // ==================== CATÁLOGOS ====================
 
-  @ApiOperation({ summary: 'Listar estados de droga por tipo' })
-  @Get('catalogos/estados-droga/:idTipoDroga')
-  async listarEstadosDroga(@Param('idTipoDroga') idTipoDroga: string) {
-    const estados = await this.operativoService.listarEstadosDroga(parseInt(idTipoDroga))
-    return this.successList(estados)
-  }
-
-  @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
-  @Get('catalogos/fabrica-modelos/:idTipoFabrica')
-  async listarFabricaModelos(@Param('idTipoFabrica') idTipoFabrica: string) {
-    const modelos = await this.operativoService.listarFabricaModelos(parseInt(idTipoFabrica))
-    return this.successList(modelos)
-  }
-
-  @ApiOperation({ summary: 'Listar items de operativo por categoría' })
-  @Get('catalogos/items-operativo/:idCategoriaOperativo')
-  async listarItemsOperativo(@Param('idCategoriaOperativo') idCategoriaOperativo: string) {
-    const items = await this.operativoService.listarItemsOperativo(parseInt(idCategoriaOperativo))
-    return this.successList(items)
-  }
-
-  @ApiOperation({ summary: 'Listar clases de catálogo por bien' })
-  @Get('catalogos/clases/:idBien')
-  async listarCatalogoClases(@Param('idBien') idBien: string) {
-    const clases = await this.operativoService.listarCatalogoClases(parseInt(idBien))
-    return this.successList(clases)
-  }
-
-  @ApiOperation({ summary: 'Listar tipos de catálogo por clase' })
-  @Get('catalogos/tipos/:idCatalogoClase')
-  async listarCatalogoTipos(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const tipos = await this.operativoService.listarCatalogoTipos(parseInt(idCatalogoClase))
-    return this.successList(tipos)
-  }
-
-  @ApiOperation({ summary: 'Listar características de catálogo por clase' })
-  @Get('catalogos/caracteristicas/:idCatalogoClase')
-  async listarCatalogoCaracteristicas(@Param('idCatalogoClase') idCatalogoClase: string) {
-    const caracteristicas = await this.operativoService.listarCatalogoCaracteristicas(parseInt(idCatalogoClase))
-    return this.successList(caracteristicas)
-  }
 
   // ==================== CASO (1:N) ====================
 
@@ -159,8 +118,13 @@ export class OperativoController extends BaseController {
   })
   @ApiParam({ name: 'idCaso', description: 'ID del caso (asignacion)' })
   @Post('caso/:idCaso')
-  async crear(@Param('idCaso') idCaso: string, @Body() data: OperativoDto) {
-    const operativo = await this.operativoService.crear(idCaso, data, 'SISTEMA')
+  async crear(
+    @Req() req: Request,
+    @Param('idCaso') idCaso: string,
+    @Body() data: OperativoDto
+  ) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const operativo = await this.operativoService.crear(idCaso, data, numeroPase)
     return this.successCreate(operativo)
   }
 
@@ -175,69 +139,10 @@ export class OperativoController extends BaseController {
     return this.successPagedRows(resultado, paginacion)
   }
 
-  // ==================== SECCIONES GENÉRICAS (2, 6, 7, 10) ====================
-  // El frontend llama GET para cargar y POST para guardar cada sección.
-  // Las secciones de items (3-5) usan sus propios endpoints (sustancias, lab).
-  // Sección 2 = Drogas (los datos se manejan vía /drogas), aquí devuelve resumen.
-  // Secciones 6, 7, 10 están embebidas en el operativo principal.
-
-  @ApiOperation({ summary: 'Obtener datos de sección 2 (drogas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion2')
-  async getSeccion2(@Param('idOperativo') idOperativo: string) {
-    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
-    return this.successList({ idOperativo, pesaje })
-  }
-
   @ApiOperation({ summary: 'Guardar datos de sección 2 (drogas) del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion2')
-  async postSeccion2(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
-
-  @ApiOperation({ summary: 'Obtener datos de sección 6 (personas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion6')
-  async getSeccion6(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
-
-  @ApiOperation({ summary: 'Guardar datos de sección 6 (personas) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion6')
-  async postSeccion6(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
-
-  @ApiOperation({ summary: 'Obtener datos de sección 7 (bienes) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion7')
-  async getSeccion7(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
-
-  @ApiOperation({ summary: 'Guardar datos de sección 7 (bienes) del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion7')
-  async postSeccion7(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
-    return this.successUpdate({ idOperativo, ...body })
-  }
-
-  @ApiOperation({ summary: 'Obtener datos de sección 10 del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/seccion10')
-  async getSeccion10(@Param('idOperativo') idOperativo: string) {
-    const operativo = await this.operativoService.buscarPorId(idOperativo)
-    return this.successList(operativo)
-  }
-
-  @ApiOperation({ summary: 'Guardar datos de sección 10 del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Post(':idOperativo/seccion10')
-  async postSeccion10(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
+  @Post(':idOperativo/pesaje-drogas')
+  async postPesajeDrogas(@Param('idOperativo') idOperativo: string, @Body() body: Record<string, unknown>) {
     return this.successUpdate({ idOperativo, ...body })
   }
 
@@ -254,20 +159,25 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Actualizar operativo por ID' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Patch(':idOperativo')
-  async actualizar(@Param('idOperativo') idOperativo: string, @Body() data: OperativoDto) {
-    const operativo = await this.operativoService.actualizar(idOperativo, data, 'SISTEMA')
+  async actualizar(
+    @Req() req: Request,
+    @Param('idOperativo') idOperativo: string,
+    @Body() data: OperativoDto
+  ) {
+    const { numeroPase = '' } = req.user as PassportUser
+    const operativo = await this.operativoService.actualizar(idOperativo, data, numeroPase)
     return this.successUpdate(operativo)
   }
 
   // ==================== DROGAS ====================
 
-  @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del operativo' })
-  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
-  @Get(':idOperativo/drogas/pesaje')
-  async obtenerPesaje(@Param('idOperativo') idOperativo: string) {
-    const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
-    return this.successList(pesaje)
-  }
+  // @ApiOperation({ summary: 'Obtener pesaje/resumen de drogas del operativo' })
+  // @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  // @Get(':idOperativo/drogas/pesaje')
+  // async obtenerPesaje(@Param('idOperativo') idOperativo: string) {
+  //   const pesaje = await this.operativoService.obtenerPesajeDrogas(idOperativo)
+  //   return this.successList(pesaje)
+  // }
 
   @ApiOperation({ summary: 'Listar drogas del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
@@ -296,6 +206,7 @@ export class OperativoController extends BaseController {
     ])
   )
   async agregarDroga(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateDrogaDto,
     @UploadedFiles()
@@ -304,9 +215,10 @@ export class OperativoController extends BaseController {
       pesaje?: Express.Multer.File[]
     }
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const pruebaCampo = files?.pruebaCampo?.[0]?.buffer || Buffer.alloc(0)
     const pesaje = files?.pesaje?.[0]?.buffer || Buffer.alloc(0)
-    const droga = await this.operativoService.agregarDroga(idOperativo, data, pruebaCampo, pesaje, 'SISTEMA')
+    const droga = await this.operativoService.agregarDroga(idOperativo, data, pruebaCampo, pesaje, numeroPase)
     return this.successCreate(droga)
   }
 
@@ -369,10 +281,12 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Post(':idOperativo/sustancias-solidas')
   async agregarSustanciaSolida(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateSustanciaSolidaDto
   ) {
-    const sustancia = await this.operativoService.agregarSustanciaSolida(idOperativo, data, 'SISTEMA')
+    const { numeroPase = '' } = req.user as PassportUser
+    const sustancia = await this.operativoService.agregarSustanciaSolida(idOperativo, data, numeroPase)
     return this.successCreate(sustancia)
   }
 
@@ -404,10 +318,12 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Post(':idOperativo/sustancias-liquidas')
   async agregarSustanciaLiquida(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateSustanciaLiquidaDto
   ) {
-    const sustancia = await this.operativoService.agregarSustanciaLiquida(idOperativo, data, 'SISTEMA')
+    const { numeroPase = '' } = req.user as PassportUser
+    const sustancia = await this.operativoService.agregarSustanciaLiquida(idOperativo, data, numeroPase)
     return this.successCreate(sustancia)
   }
 
@@ -439,10 +355,12 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Post(':idOperativo/fabricas')
   async agregarFabrica(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateFabricaDto
   ) {
-    const fabrica = await this.operativoService.agregarFabrica(idOperativo, data, 'SISTEMA')
+    const { numeroPase = '' } = req.user as PassportUser
+    const fabrica = await this.operativoService.agregarFabrica(idOperativo, data, numeroPase)
     return this.successCreate(fabrica)
   }
 
@@ -479,13 +397,59 @@ export class OperativoController extends BaseController {
   @Post(':idOperativo/bienes')
   @UseInterceptors(FileInterceptor('foto'))
   async agregarBien(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateBienSecuestradoDto,
     @UploadedFile() file: Express.Multer.File
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const foto = file?.buffer || undefined
-    const bien = await this.operativoService.agregarBien(idOperativo, data, 'SISTEMA', foto)
+    const bien = await this.operativoService.agregarBien(idOperativo, data, numeroPase, foto)
     return this.successCreate(bien)
+  }
+
+  // ==================== PATRIMONIO BIENES ====================
+  // Definidas antes de rutas dinámicas /:idBien para evitar ambigüedad en NestJS
+
+  @ApiOperation({
+    summary: 'Calcular patrimonio total afectado del operativo',
+    description:
+      'Retorna SUM(costo_cuantificado) en dólares y su equivalente en bolivianos. ' +
+      'Equivale a calcula() de ABM-ING-COSTO. ' +
+      'El parámetro tipoCambio es opcional (default: 6.92).',
+  })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiQuery({ name: 'tipoCambio', required: false, description: 'Tipo de cambio Bs/USD (default: 6.92)' })
+  @ApiResponse({
+    status: 200,
+    description: '{ totalDolares, totalBolivianos, cantidadBienes, tipoCambio }',
+  })
+  @Get(':idOperativo/bienes/patrimonio')
+  async calcularPatrimonio(
+    @Param('idOperativo') idOperativo: string,
+    @Query('tipoCambio') tipoCambio?: string
+  ) {
+    const cambio = tipoCambio ? parseFloat(tipoCambio) : 6.92
+    const resultado = await this.operativoService.calcularPatrimonioBienes(idOperativo, cambio)
+    return this.successList(resultado)
+  }
+
+  @ApiOperation({
+    summary: 'Actualizar costos de un bien secuestrado',
+    description:
+      'Actualiza costo_aproximado y costo_cuantificado de un bien. ' +
+      'Equivale a Button2_Click "Actualizar Costos" de ABM-ING-COSTO.',
+  })
+  @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
+  @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
+  @Patch(':idOperativo/bienes/:idBien/costos')
+  async actualizarCostoBien(
+    @Param('idOperativo') idOperativo: string,
+    @Param('idBien') idBien: string,
+    @Body() data: UpdateCostoBienDto
+  ) {
+    const bien = await this.operativoService.actualizarCostoBien(idOperativo, idBien, data)
+    return this.successUpdate(bien)
   }
 
   @ApiOperation({ summary: 'Obtener foto de bien secuestrado' })
@@ -524,11 +488,13 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idBien', description: 'ID del bien secuestrado' })
   @Post(':idOperativo/bienes/:idBien/caracteristicas')
   async agregarCaracteristicaBien(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Param('idBien') idBien: string,
     @Body() data: CreateBienCaracteristicaDto
   ) {
-    const caracteristica = await this.operativoService.agregarCaracteristicaBien(idOperativo, idBien, data, 'SISTEMA')
+    const { numeroPase = '' } = req.user as PassportUser
+    const caracteristica = await this.operativoService.agregarCaracteristicaBien(idOperativo, idBien, data, numeroPase)
     return this.successCreate(caracteristica)
   }
 
@@ -564,8 +530,8 @@ export class OperativoController extends BaseController {
   @ApiQuery({ name: 'pagina', required: false, description: 'Página (default: 1)' })
   @ApiQuery({ name: 'limite', required: false, description: 'Registros por página (10-50, default: 10)' })
   @Get(':idOperativo/personas')
-  async listarDetenidos(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
-    const resultado = await this.operativoService.listarDetenidos(idOperativo, paginacion)
+  async listarPersonasAuxiliares(@Param('idOperativo') idOperativo: string, @Query() paginacion: PaginacionQueryDto) {
+    const resultado = await this.operativoService.listarPersonasAuxiliares(idOperativo, paginacion)
     return this.successPagedRows(resultado, paginacion)
   }
 
@@ -584,8 +550,9 @@ export class OperativoController extends BaseController {
     ])
   )
   async agregarDetenido(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
-    @Body() data: CreateDetenidoDto,
+    @Body() data: CreatePersonaAuxiliarDto,
     @UploadedFiles()
     files: {
       fotoFrente?: Express.Multer.File[]
@@ -593,11 +560,12 @@ export class OperativoController extends BaseController {
       fotoPerfilIzquierdo?: Express.Multer.File[]
     }
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const fotoFrente = files?.fotoFrente?.[0]?.buffer
     const fotoDocumento = files?.fotoDocumento?.[0]?.buffer
     const fotoPerfilIzquierdo = files?.fotoPerfilIzquierdo?.[0]?.buffer
     const aprehendido = await this.operativoService.agregarDetenido(
-      idOperativo, data, 'SISTEMA', fotoFrente, fotoDocumento, fotoPerfilIzquierdo
+      idOperativo, data, numeroPase, fotoFrente, fotoDocumento, fotoPerfilIzquierdo
     )
     return this.successCreate(aprehendido)
   }
@@ -650,11 +618,11 @@ export class OperativoController extends BaseController {
   @ApiOperation({ summary: 'Eliminar aprehendido del operativo' })
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Delete(':idOperativo/personas/:id')
-  async eliminarDetenido(
+  async eliminarPersonaAuxiliar(
     @Param('idOperativo') idOperativo: string,
     @Param('id') id: string
   ) {
-    await this.operativoService.eliminarDetenido(idOperativo, id)
+    await this.operativoService.eliminarPersonaAuxiliar(idOperativo, id)
     return this.successDelete(null)
   }
 
@@ -676,12 +644,14 @@ export class OperativoController extends BaseController {
   @Post(':idOperativo/galeria')
   @UseInterceptors(FileInterceptor('foto'))
   async agregarFotoGaleria(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: CreateGaleriaDto,
     @UploadedFile() file: Express.Multer.File
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const foto = file?.buffer || Buffer.alloc(0)
-    const galeria = await this.operativoService.agregarFotoGaleria(idOperativo, data, foto, 'SISTEMA')
+    const galeria = await this.operativoService.agregarFotoGaleria(idOperativo, data, foto, numeroPase)
     return this.successCreate(galeria)
   }
 
@@ -762,13 +732,15 @@ export class OperativoController extends BaseController {
   @Post(':idOperativo/drogas/:idDroga/logotipos')
   @UseInterceptors(FileInterceptor('fotografia'))
   async agregarLogotipo(
+    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Param('idDroga') idDroga: string,
     @Body() data: CreateLogotipoDto,
     @UploadedFile() file: Express.Multer.File
   ) {
+    const { numeroPase = '' } = req.user as PassportUser
     const fotografia = file?.buffer || Buffer.alloc(0)
-    const logotipo = await this.operativoService.agregarLogotipo(idOperativo, idDroga, data, fotografia, 'SISTEMA')
+    const logotipo = await this.operativoService.agregarLogotipo(idOperativo, idDroga, data, fotografia, numeroPase)
     return this.successCreate(logotipo)
   }
 
