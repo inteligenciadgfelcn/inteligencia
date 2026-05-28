@@ -8,7 +8,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { Operativo } from './operativo.entity'
-import { EstadoDroga } from './estado-droga.entity'
+import { EstadoDroga } from '../../parametrica/entity/operativo/estado-droga.entity'
 import { FormaTransporte } from '../../parametrica/entity/operativo/forma-transporte.entity'
 import { Pais } from '../../parametrica/entity/geografia/pais.entity'
 

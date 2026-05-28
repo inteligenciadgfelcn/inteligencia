@@ -24,7 +24,7 @@ export const AppMenu = ({ orientation = 'vertical' }: Props) => {
         {
           id: 'temporal-asignaciones',
           label: 'Asignaciones',
-          url: '/operaciones/operativo/asignaciones',
+          url: '/operativos/asignaciones',
         },
       ],
     },

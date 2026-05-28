@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="es" xmlns:v="urn:schemas-microsoft-com:vml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="light only">
+  <meta name="supported-color-schemes" content="light only">
+
+  <!--
+    ===========================================================================
+    PLANTILLA: Correo de verificación (OTP)
+    ===========================================================================
+    Esta es la plantilla HTML que se envía al usuario. NO es una pantalla del
+    producto — es un correo electrónico transaccional.
+
+    INTEGRACIÓN
+    ───────────
+    Reemplaza los siguientes placeholders al renderizar la plantilla en el
+    servidor (Jinja, Mustache, Handlebars, lo que use tu stack):
+
+      {{USER_NAME}}        → nombre del usuario (ej. "Einstein Montero Churata")
+      {{USER_EMAIL}}       → correo del destinatario (ej. "einstein@gmail.com")
+      {{CODE}}             → código OTP de 6 dígitos (ej. "444290")
+      {{CODE_DIGITS}}      → mismos 6 dígitos, en spans (auto-generado, ver script de build)
+      {{TTL_HUMAN}}        → duración legible (ej. "2 minutos y 30 segundos")
+      {{EXPIRES_AT}}       → fecha/hora de expiración (ej. "15/05/2026 · 01:28:12 (UTC-4)")
+      {{REQUEST_TIME}}     → fecha/hora del intento (ej. "15/05/2026 · 01:25:42 (UTC-4)")
+      {{USER_AGENT}}       → "Chrome 142 · macOS 15.4"
+      {{IP_ADDRESS}}       → "200.105.241.184"
+      {{LOCATION}}         → "La Paz, Bolivia"
+      {{APP_NAME}}         → "Portal Ciudadano (Developer)"
+      {{BLOCK_URL}}        → URL única firmada para "No fui yo" (con expiración corta)
+      {{SUPPORT_EMAIL}}    → "soporte@identidad-digital.gob.bo"
+      {{SUPPORT_PHONE}}    → "800-10-1010"
+      {{PRIVACY_URL}}      → URL política de privacidad
+      {{TERMS_URL}}        → URL términos de uso
+      {{ABOUT_SIGNING_URL}}→ URL página explicando la firma del correo (DKIM/SPF/DMARC)
+
+    BUENAS PRÁCTICAS APLICADAS
+    ──────────────────────────
+    1. Ancho fijo 600px (estándar Outlook).
+    2. Layout con <table> y inline styles (compatible con clientes legacy).
+    3. Subject incluye el código → iOS / Gmail muestran auto-fill.
+    4. NO incluye enlaces de login (anti-phishing).
+    5. Detalles del intento visibles (anti-phishing).
+    6. CTA "No fui yo" prominente y rojo.
+    7. Disclaimer de seguridad: nunca compartir, no por teléfono, verificar dominio.
+    8. Sin tracking pixels.
+    9. Plain-text alternative debe enviarse en multipart (ver email-text-version.txt).
+
+    HEADERS RECOMENDADOS (configurar en tu envío SMTP/API)
+    ──────────────────────────────────────────────────────
+      From: Identidad Digital <noreply@identidad-digital.gob.bo>
+      Reply-To: soporte@identidad-digital.gob.bo
+      Subject: Tu código de verificación es {{CODE}}
+      List-Unsubscribe: <mailto:unsub@…>, <https://…/unsub?u={{ID}}>
+      List-Unsubscribe-Post: List-Unsubscribe=One-Click
+      X-Auto-Response-Suppress: All
+      Auto-Submitted: auto-generated
+      Precedence: bulk
+      X-Entity-Ref-ID: {{REQUEST_ID}}
+    ===========================================================================
+  -->
+
+  <title>Tu código de verificación</title>
+
+  <!-- PREHEADER: aparece en la lista del inbox junto al asunto.
+       Se oculta visualmente con el truco de display:none + max-height:0. -->
+  <style>
+    @media only screen and (max-width: 620px) {
+      .container { width: 100% !important; }
+      .px { padding-left: 18px !important; padding-right: 18px !important; }
+      .code-digit { width: 30px !important; height: 40px !important; font-size: 26px !important; }
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; background:#f3f4f7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:#1a2235;">
+
+  <!-- Preheader oculto: define lo que se ve en la lista del inbox -->
+  <div style="display:none; max-height:0; max-width:0; overflow:hidden; mso-hide:all; opacity:0; color:transparent;">
+    Código {{CODE}} · Expira en {{TTL_HUMAN}}. No lo compartas con nadie.
+  </div>
+
+  <!-- Wrapper exterior -->
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f4f7;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <!-- Contenedor 600px -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="container" style="width:600px; max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+
+          <!-- ========== Brand bar ========== -->
+          <tr>
+            <td class="px" style="padding:20px 28px; border-bottom:1px solid #e8eaf0; background:#fafbfc;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td valign="middle">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td valign="middle" style="padding-right:10px;">
+                          <!-- Logo (placeholder). Reemplazar con la imagen oficial: <img src="..." width="36" height="36" alt="Identidad Digital"> -->
+                          <table role="presentation" width="36" height="36" cellpadding="0" cellspacing="0" border="0" style="width:36px; height:36px; border-radius:8px; background:#e8e9ff;">
+                            <tr><td align="center" valign="middle" style="text-align:center; font:bold 14px/36px Arial,sans-serif; color:#4f3fde;">ID</td></tr>
+                          </table>
+                        </td>
+                        <td valign="middle" style="line-height:1.2;">
+                          <div style="font-size:14px; font-weight:600; color:#1a2235;">Identidad Digital</div>
+                          <div style="font-size:10.5px; color:#5a6478; text-transform:uppercase; letter-spacing:0.06em;">Plataforma del Estado</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td valign="middle" align="right">
+                    <!-- Etiqueta de ambiente. Quítala en producción (o cámbiala por "Producción" en gris). -->
+                    <span style="display:inline-block; font:600 11px/1.2 'Courier New',monospace; padding:4px 8px; border-radius:999px; background:#fff7d6; color:#8a5b00;">
+                      Ambiente: {{ENV_NAME}}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Saludo ========== -->
+          <tr>
+            <td class="px" style="padding:24px 28px 0;">
+              <h1 style="margin:0 0 6px; font-size:22px; font-weight:700; color:#1a2235; letter-spacing:-0.005em;">
+                Hola, {{USER_NAME_FIRST}}
+              </h1>
+              <p style="margin:0 0 18px; font-size:14px; line-height:1.55; color:#3a4258;">
+                Recibimos una solicitud para iniciar sesión en tu cuenta de
+                <strong>Identidad Digital</strong>. Usa este código para confirmar que fuiste tú:
+              </p>
+            </td>
+          </tr>
+
+          <!-- ========== Bloque del código ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 22px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f0f1ff; border:1px solid #d5d8ff; border-radius:10px;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <div style="font:700 11px/1.2 -apple-system,Helvetica,Arial,sans-serif; letter-spacing:0.08em; text-transform:uppercase; color:#4f3fde; margin-bottom:10px;">
+                      Código de verificación
+                    </div>
+                    <!-- Cajas de los 6 dígitos -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <!-- En tu servidor, expande el código en 6 celdas; aquí dejamos placeholders -->
+                        <td style="padding-right:6px;"><div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D1}}</div></td>
+                        <td style="padding-right:6px;"><div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D2}}</div></td>
+                        <td style="padding-right:6px;"><div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D3}}</div></td>
+                        <td style="padding-right:6px;"><div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D4}}</div></td>
+                        <td style="padding-right:6px;"><div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D5}}</div></td>
+                        <td>                          <div class="code-digit" style="width:38px; height:48px; background:#fff; border-radius:6px; box-shadow:0 1px 0 #c8c9eb; font:bold 30px/48px 'Courier New',monospace; text-align:center; color:#1a2235;">{{D6}}</div></td>
+                      </tr>
+                    </table>
+                    <!-- Vigencia -->
+                    <div style="margin-top:12px; font-size:12.5px; color:#5a6478;">
+                      ⏱ Expira en <strong style="color:#1a2235;">{{TTL_HUMAN}}</strong> ({{EXPIRES_AT}}).
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Detalles del intento ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 22px;">
+              <h2 style="margin:0 0 8px; font:600 12px/1.2 -apple-system,Helvetica,Arial,sans-serif; letter-spacing:0.04em; text-transform:uppercase; color:#4f3fde;">
+                🛡 Detalles de la solicitud
+              </h2>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size:13px; color:#1a2235;">
+                <tr><td style="padding:8px 0; border-bottom:1px solid #eef0f4; color:#5a6478; width:35%;">Fecha y hora</td><td style="padding:8px 0; border-bottom:1px solid #eef0f4; font-family:'Courier New',monospace; font-size:12.5px;">{{REQUEST_TIME}}</td></tr>
+                <tr><td style="padding:8px 0; border-bottom:1px solid #eef0f4; color:#5a6478;">Dispositivo</td><td style="padding:8px 0; border-bottom:1px solid #eef0f4; font-family:'Courier New',monospace; font-size:12.5px;">{{USER_AGENT}}</td></tr>
+                <tr><td style="padding:8px 0; border-bottom:1px solid #eef0f4; color:#5a6478;">Dirección IP</td><td style="padding:8px 0; border-bottom:1px solid #eef0f4; font-family:'Courier New',monospace; font-size:12.5px;">{{IP_ADDRESS}}</td></tr>
+                <tr><td style="padding:8px 0; border-bottom:1px solid #eef0f4; color:#5a6478;">Ubicación aprox.</td><td style="padding:8px 0; border-bottom:1px solid #eef0f4; font-family:'Courier New',monospace; font-size:12.5px;">{{LOCATION}}</td></tr>
+                <tr><td style="padding:8px 0; color:#5a6478;">Aplicación</td><td style="padding:8px 0; font-family:'Courier New',monospace; font-size:12.5px;">{{APP_NAME}}</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Alerta ¿No fuiste tú? ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 22px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#fef1ee; border:1px solid #f7c6bb; border-left:4px solid #d04527; border-radius:10px;">
+                <tr>
+                  <td style="padding:16px 18px;">
+                    <strong style="display:block; font-size:14px; font-weight:700; color:#8e2410; margin-bottom:4px;">
+                      ⚠ ¿No reconoces esta actividad?
+                    </strong>
+                    <p style="margin:0 0 12px; font-size:13px; line-height:1.55; color:#722010;">
+                      Si tú <u>no</u> intentaste iniciar sesión, <strong>no uses este código</strong>.
+                      Tu cuenta podría estar en riesgo. Repórtalo de inmediato:
+                    </p>
+                    <!-- CTA bot-friendly (table-based para Outlook) -->
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="background:#d04527; border-radius:8px;">
+                          <a href="{{BLOCK_URL}}" target="_blank" style="display:inline-block; padding:10px 16px; font:600 13.5px/1.2 -apple-system,Helvetica,Arial,sans-serif; color:#ffffff; text-decoration:none;">
+                            No fui yo — Bloquear mi cuenta
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin:8px 0 0; font-size:12px; color:#8a4030;">
+                      Esto cierra todas las sesiones activas y exige que cambies la contraseña
+                      antes de volver a entrar.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Tips de seguridad ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 22px;">
+              <h2 style="margin:0 0 10px; font:600 12px/1.2 -apple-system,Helvetica,Arial,sans-serif; letter-spacing:0.04em; text-transform:uppercase; color:#4f3fde;">
+                🔒 Importante para tu seguridad
+              </h2>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="font-size:13px; line-height:1.55; color:#2a3148;">
+                <tr><td style="padding:4px 0;">✓ &nbsp; Este código es <strong>personal e intransferible</strong>. Nunca lo compartas — ni con familiares, soporte técnico o personal del Estado.</td></tr>
+                <tr><td style="padding:4px 0;">✓ &nbsp; <strong>Nunca</strong> te pediremos este código por teléfono, WhatsApp, SMS ni redes sociales.</td></tr>
+                <tr><td style="padding:4px 0;">✓ &nbsp; Solo ingrésalo en <code style="font-family:'Courier New',monospace; background:#f0f1f4; padding:1px 5px; border-radius:3px;">https://identidad-digital.gob.bo</code>. Verifica el candado 🔒 y el dominio antes de teclearlo.</td></tr>
+                <tr><td style="padding:4px 0;">✓ &nbsp; Este correo es <strong>transaccional automático</strong>. No respondas a esta dirección.</td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Soporte ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 18px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f6fa; border-left:3px solid #4f3fde; border-radius:4px;">
+                <tr>
+                  <td style="padding:12px 14px;">
+                    <strong style="display:block; font-size:13px; margin-bottom:4px; color:#1a2235;">¿Necesitas ayuda?</strong>
+                    <p style="margin:0; font-size:12.5px; color:#3a4258;">
+                      Escríbenos a <a href="mailto:{{SUPPORT_EMAIL}}" style="color:#4f3fde; font-weight:500;">{{SUPPORT_EMAIL}}</a>
+                      o llama al <a href="tel:{{SUPPORT_PHONE}}" style="color:#4f3fde; font-weight:500;">{{SUPPORT_PHONE}}</a>
+                      (lunes a viernes, 8:00 – 18:00).
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ========== Despedida ========== -->
+          <tr>
+            <td class="px" style="padding:0 28px 28px; font-size:13px; color:#3a4258;">
+              Gracias por usar Identidad Digital.<br>
+              <strong>Equipo de Identidad Digital — AGETIC</strong>
+            </td>
+          </tr>
+
+          <!-- ========== Footer legal ========== -->
+          <tr>
+            <td class="px" style="padding:18px 28px; background:#f5f6fa; border-top:1px solid #e8eaf0; color:#5a6478; font-size:11.5px; line-height:1.55;">
+              <p style="margin:0 0 8px;">
+                Recibes este correo porque alguien intentó iniciar sesión con la cuenta
+                asociada a <strong>{{USER_EMAIL}}</strong>. Si crees que se trata de un error,
+                ignora este mensaje o repórtalo arriba.
+              </p>
+              <p style="margin:0 0 8px;">
+                <a href="{{PRIVACY_URL}}" style="color:#4f3fde; text-decoration:none;">Política de privacidad</a>
+                &nbsp;·&nbsp;
+                <a href="{{TERMS_URL}}" style="color:#4f3fde; text-decoration:none;">Términos de uso</a>
+                &nbsp;·&nbsp;
+                <a href="{{ABOUT_SIGNING_URL}}" style="color:#4f3fde; text-decoration:none;">Sobre la firma del correo</a>
+              </p>
+              <p style="margin:0; font-size:11px; color:#7a8298;">
+                AGETIC — Agencia de Gobierno Electrónico y Tecnologías de Información y Comunicación<br>
+                Av. Camacho 1485, La Paz — Bolivia · © 2026
+              </p>
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

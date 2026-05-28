@@ -181,6 +181,14 @@ export class LookupController extends BaseController {
     )
   }
 
+  @ApiOperation({ summary: 'Listar estados del proceso por etapa (cascade dropdown)' })
+  @Get('estados/:idEtapa')
+  async listarEstadosPorEtapa(@Param('idEtapa') idEtapa: string) {
+    return this.successList(
+      await this.lookupService.listarEstadosPorEtapa(parseInt(idEtapa))
+    )
+  }
+
   @ApiOperation({ summary: 'Listar recursos' })
   @Get('recursos')
   async listarRecursos() {
@@ -221,6 +229,12 @@ export class LookupController extends BaseController {
   @Get('coca-descripciones')
   async listarCocaDescripciones() {
     return this.successList(await this.lookupService.listarCocaDescripciones())
+  }
+
+  @ApiOperation({ summary: 'Listar situaciones legales (dropdown)' })
+  @Get('situaciones-legales')
+  async listarSituacionesLegales() {
+    return this.successList(await this.lookupService.listarSituacionesLegales())
   }
 
   // ==================== BIENES ====================
@@ -304,6 +318,66 @@ export class LookupController extends BaseController {
   async listarGruposPorDistrital(@Param('id') id: string) {
     return this.successList(
       await this.lookupService.listarGruposPorDistrital(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de caso (documentos)' })
+  @Get('contenido-caso')
+  async listarContenidoCaso() {
+    return this.successList(await this.lookupService.listarContenidoCaso())
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de contenido de bien (documentos adjuntos de bienes)' })
+  @Get('contenido-bien')
+  async listarContenidoBien() {
+    return this.successList(await this.lookupService.listarContenidoBien())
+  }
+
+  @ApiOperation({ summary: 'Listar items de operativo por categoría' })
+  @Get('items-operativo/:id')
+  async listarItemsOperativoPorCategoria(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarItemsOperativo(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar clases de bien por id de bien' })
+  @Get('clases/:id')
+  async listarCatalogoClases(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoClases(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar tipos de bien por id de clase de bien' })
+  @Get('tipos/:id')
+  async listarCatalogoTipos(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoTipos(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar características de bien por id de clase de bien' })
+  @Get('caracteristicas/:id')
+  async listarCatalogoCaracteristicas(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarCatalogoCaracteristicas(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar estados de droga por tipo' })
+  @Get('estados-droga/:id')
+  async listarEstadosDroga(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarEstadosDroga(parseInt(id))
+    )
+  }
+
+  @ApiOperation({ summary: 'Listar modelos de fábrica por tipo' })
+  @Get('fabrica-modelos/:id')
+  async listarFabricaModelos(@Param('id') id: string) {
+    return this.successList(
+      await this.lookupService.listarFabricaModelos(parseInt(id))
     )
   }
 }

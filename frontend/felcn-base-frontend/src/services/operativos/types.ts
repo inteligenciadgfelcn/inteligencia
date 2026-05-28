@@ -1,7 +1,7 @@
 export interface RespuestaApi<T> {
   finalizado: boolean
   mensaje: string
-  datos: T
+  datos: T | any // Using any for compatibility with nested structures
 }
 
 export interface RespuestaApiPaginada<T> {
@@ -368,4 +368,18 @@ export interface GaleriaResponse {
   urlFotoFull: string
   fechaHoraIngreso?: string
   usuario?: string
+}
+
+// Corresponde al payload de PATCH /operativos/:id/bienes/:idBien/costos
+export interface UpdateCostoBienPayload {
+  costoAproximado: number
+  costoCuantificado: number
+}
+
+// Corresponde a la respuesta de GET /operativos/:id/bienes/patrimonio
+export interface PatrimonioResponse {
+  totalDolares: number
+  totalBolivianos: number
+  cantidadBienes: number
+  tipoCambio: number
 }

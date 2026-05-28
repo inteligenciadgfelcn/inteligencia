@@ -86,4 +86,10 @@ export class UsuarioService {
       [abreviatura]
     )
   }
+
+  async listarGrados() {
+    return this.dataSource.query(
+      `SELECT id, descripcion, abreviatura FROM parametro.grado WHERE _estado = 'ACTIVO' ORDER BY id ASC`
+    )
+  }
 }

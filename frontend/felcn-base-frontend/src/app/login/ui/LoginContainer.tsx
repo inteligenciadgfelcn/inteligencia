@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 import IconMail from '@/components/Icon/IconMail'
@@ -27,6 +27,11 @@ export default function LoginContainer() {
   const router = useRouter()
   const { ingresar, progresoLogin } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const {
     register,
@@ -101,10 +106,10 @@ export default function LoginContainer() {
         {/* BOTON LOGIN */}
         <button
           type="submit"
-          disabled={progresoLogin}
+          disabled={mounted ? progresoLogin : false}
           className="btn btn-gradient w-full uppercase"
         >
-          {progresoLogin ? 'Ingresando...' : 'Iniciar sesión'}
+          {mounted && progresoLogin ? 'Ingresando...' : 'Iniciar sesión'}
         </button>
 
         {/* DIVIDER */}

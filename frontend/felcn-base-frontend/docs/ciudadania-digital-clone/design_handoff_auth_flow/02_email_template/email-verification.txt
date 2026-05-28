@@ -1,0 +1,79 @@
+================================================================
+IDENTIDAD DIGITAL — Código de verificación
+================================================================
+
+Hola, {{USER_NAME_FIRST}}.
+
+Recibimos una solicitud para iniciar sesión en tu cuenta de
+Identidad Digital. Usa este código para confirmar que fuiste tú:
+
+    ┌─────────────────────────────┐
+    │                             │
+    │      {{CODE}}                  │
+    │                             │
+    └─────────────────────────────┘
+
+Este código expira en {{TTL_HUMAN}} (a las {{EXPIRES_AT}}).
+
+
+--- DETALLES DE LA SOLICITUD --------------------------------------
+
+  Fecha y hora      : {{REQUEST_TIME}}
+  Dispositivo       : {{USER_AGENT}}
+  Dirección IP      : {{IP_ADDRESS}}
+  Ubicación aprox.  : {{LOCATION}}
+  Aplicación        : {{APP_NAME}}
+
+
+--- ¿NO RECONOCES ESTA ACTIVIDAD? ----------------------------------
+
+Si tú NO intentaste iniciar sesión, NO uses este código.
+Tu cuenta podría estar en riesgo. Reporta y bloquea tu cuenta:
+
+    {{BLOCK_URL}}
+
+Esto cierra todas las sesiones activas y exige que cambies la
+contraseña antes de volver a entrar.
+
+
+--- IMPORTANTE PARA TU SEGURIDAD ----------------------------------
+
+  ✓ Este código es personal e intransferible. Nunca lo compartas
+    — ni con familiares, soporte técnico o personal del Estado.
+
+  ✓ NUNCA te pediremos este código por teléfono, WhatsApp, SMS
+    ni redes sociales.
+
+  ✓ Solo ingrésalo en https://identidad-digital.gob.bo.
+    Verifica el candado y el dominio antes de teclearlo.
+
+  ✓ Este correo es transaccional automático. No respondas a
+    esta dirección.
+
+
+--- ¿NECESITAS AYUDA? ---------------------------------------------
+
+  Email     : {{SUPPORT_EMAIL}}
+  Teléfono  : {{SUPPORT_PHONE}}  (lun-vie, 8:00 — 18:00)
+
+
+-------------------------------------------------------------------
+
+Gracias por usar Identidad Digital.
+
+Equipo de Identidad Digital — AGETIC
+
+
+===================================================================
+Recibes este correo porque alguien intentó iniciar sesión con la
+cuenta asociada a {{USER_EMAIL}}. Si crees que se trata de un
+error, ignora este mensaje o reporta arriba.
+
+  Privacidad : {{PRIVACY_URL}}
+  Términos   : {{TERMS_URL}}
+  Sobre la firma del correo : {{ABOUT_SIGNING_URL}}
+
+AGETIC — Agencia de Gobierno Electrónico y Tecnologías de
+Información y Comunicación.
+Av. Camacho 1485, La Paz — Bolivia · © 2026
+===================================================================

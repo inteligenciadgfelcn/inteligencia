@@ -16,7 +16,7 @@ import { SustanciaLiquida } from '../entity/sustancia-liquida.entity'
 import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
-import { DetenidoAuxiliar } from '../entity/detenido-auxiliar.entity'
+import { PersonaAuxiliar } from '../entity/persona-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
 
@@ -24,7 +24,7 @@ import { Logotipo } from '../entity/logotipo.entity'
 import {
   OperativoDto,
   CreateDrogaDto,
-  CreateDetenidoDto,
+  CreatePersonaAuxiliarDto,
   CreateBienSecuestradoDto,
   CreateBienCaracteristicaDto,
   CreateFabricaDto,
@@ -32,6 +32,7 @@ import {
   CreateSustanciaLiquidaDto,
   CreateGaleriaDto,
   CreateLogotipoDto,
+  UpdateCostoBienDto,
 } from '../dto'
 
 @Injectable()
@@ -55,8 +56,13 @@ export class OperativoService extends BaseService {
       throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
     }
 
+    const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
+    const firstOperativo = operativos[0] ?? null
+
     const caso = {
       idCaso: asignacion.idCaso,
+      numeroCaso: asignacion.numeroCaso,
+      numeroCasoPerDom: asignacion.numeroCasoPerDom,
       numeroOperativo: asignacion.numeroOperativo,
       nombreCaso: asignacion.nombreCaso,
       fiscalSolicitud: asignacion.fiscalSolicitud,
@@ -65,9 +71,9 @@ export class OperativoService extends BaseService {
       telefonoAsignado: asignacion.telefonoAsignado,
       fiscalAsignadoCaso: asignacion.fiscalAsignadoCaso,
       telefonoFiscal: asignacion.telefonoFiscal,
+      ianus: asignacion.ianus,
+      relevanciaCaso: firstOperativo?.tipoRelevancia?.descripcion ?? 'N/A',
     }
-
-    const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
 
     return { caso, operativos }
   }
@@ -142,11 +148,17 @@ export class OperativoService extends BaseService {
     res.descripcionUnidad = operativo.unidad?.descripcion ?? null
     res.descripcionPlanOperaciones = operativo.planOperacion?.nombre ?? null
     res.descripcionTipoOperativo = operativo.tipoOperacion?.descripcion ?? null
+    res.descripcionTipoDenuncia = operativo.tipoDenuncia?.descripcion ?? null
+    res.descripcionTipoPenal = operativo.tipoPenal?.descripcion ?? null
+    res.relevanciaCaso = operativo.tipoRelevancia?.descripcion ?? null
 
     // Clean up relation objects if needed, but not strictly required
     delete res.unidad
     delete res.planOperacion
     delete res.tipoOperacion
+    delete res.tipoDenuncia
+    delete res.tipoPenal
+    delete res.tipoRelevancia
 
     return res
   }
@@ -222,9 +234,9 @@ export class OperativoService extends BaseService {
     await this.operativoRepository.eliminarDroga(idDroga)
   }
 
-  async obtenerPesajeDrogas(idOperativo: string): Promise<any> {
-    return this.operativoRepository.obtenerResumenDrogas(idOperativo)
-  }
+  // async obtenerPesajeDrogas(idOperativo: string): Promise<any> {
+  //   return this.operativoRepository.obtenerResumenDrogas(idOperativo)
+  // }
 
   async obtenerFotoDroga(
     idOperativo: string,
@@ -353,6 +365,33 @@ export class OperativoService extends BaseService {
     await this.operativoRepository.eliminarBien(idBien)
   }
 
+  // ==================== PATRIMONIO BIENES ====================
+
+  // Corresponde a Button2_Click de ABM-ING-COSTO: actualiza CostoAprox y CostoCuant de un bien
+  async actualizarCostoBien(
+    idOperativo: string,
+    idBien: string,
+    dto: UpdateCostoBienDto
+  ): Promise<ItemBienSecuestrado> {
+    const bien = await this.operativoRepository.buscarBienPorId(idBien)
+    if (!bien || bien.idOperativo !== idOperativo) {
+      throw new NotFoundException(`Bien con ID ${idBien} no encontrado en el operativo ${idOperativo}`)
+    }
+    await this.operativoRepository.actualizarCostoBien(idBien, dto.costoAproximado, dto.costoCuantificado)
+    bien.costoAproximado = dto.costoAproximado
+    bien.costoCuantificado = dto.costoCuantificado
+    return bien
+  }
+
+  // Corresponde a calcula() de ABM-ING-COSTO: SUM(CostoCuant) en USD y en BOB
+  async calcularPatrimonioBienes(
+    idOperativo: string,
+    tipoCambio: number
+  ): Promise<{ totalDolares: number; totalBolivianos: number; cantidadBienes: number; tipoCambio: number }> {
+    const patrimonio = await this.operativoRepository.calcularPatrimonioBienes(idOperativo, tipoCambio)
+    return { ...patrimonio, tipoCambio }
+  }
+
   // ==================== CARACTERÍSTICAS DE BIENES ====================
 
   async agregarCaracteristicaBien(
@@ -405,13 +444,13 @@ export class OperativoService extends BaseService {
 
   async agregarDetenido(
     idOperativo: string,
-    data: CreateDetenidoDto,
+    data: CreatePersonaAuxiliarDto,
     usuario: string,
     fotoFrente?: Buffer,
     fotoDocumento?: Buffer,
     fotoPerfilIzquierdo?: Buffer
-  ): Promise<DetenidoAuxiliar> {
-    const detenido = new DetenidoAuxiliar({
+  ): Promise<PersonaAuxiliar> {
+    const persona = new PersonaAuxiliar({
       idOperativo,
       idPais: data.idPais,
       idTipoDocumento: data.idTipoDocumento,
@@ -429,16 +468,16 @@ export class OperativoService extends BaseService {
       fotoPerfilIzquierdo: fotoPerfilIzquierdo?.length ? fotoPerfilIzquierdo : undefined,
       usuario,
     })
-    return this.operativoRepository.crearDetenido(detenido)
+    return this.operativoRepository.crearPersonaAuxiliar(persona)
   }
 
-  async listarDetenidos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
-    const [detenidos, total] = await this.operativoRepository.listarDetenidosPorOperativo(idOperativo, paginacion)
-    const filas = detenidos.map(({ fotoFrente, fotoDocumento, fotoPerfilIzquierdo, paisNacionalidad, tipoDocumento, operativo, ...d }) => ({
+  async listarPersonasAuxiliares(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+    const [personas, total] = await this.operativoRepository.listarPersonasAuxiliaresPorOperativo(idOperativo, paginacion)
+    const filas = personas.map(({ fotoFrente, fotoDocumento, fotoPerfilIzquierdo, pais, tipoDocumento, operativo, ...d }) => ({
       ...d,
-      descripcionPais: paisNacionalidad?.descripcion ?? null,
+      descripcionPais: pais?.descripcion ?? null,
       descripcionTipoDocumento: tipoDocumento?.descripcion ?? null,
-      genero: d.genero ? 'Masculino' : 'Femenino',
+      generoTexto: d.genero ? 'Masculino' : 'Femenino',
       urlFotoFrente: fotoFrente?.length
         ? `/api/operativos/${idOperativo}/personas/${d.id}/fotos/frente`
         : null,
@@ -452,8 +491,8 @@ export class OperativoService extends BaseService {
     return [filas, total]
   }
 
-  async eliminarDetenido(idOperativo: string, idDetenido: string): Promise<void> {
-    await this.operativoRepository.eliminarDetenido(idDetenido)
+  async eliminarPersonaAuxiliar(idOperativo: string, idDetenido: string): Promise<void> {
+    await this.operativoRepository.eliminarPersonaAuxiliar(idDetenido)
   }
 
   async actualizarFotoDetenido(
@@ -462,7 +501,7 @@ export class OperativoService extends BaseService {
     tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo',
     foto: Buffer
   ): Promise<void> {
-    const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
+    const detenido = await this.operativoRepository.buscarPersonaAuxiliarPorId(idDetenido)
     if (!detenido || detenido.idOperativo !== idOperativo) {
       throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
     }
@@ -471,7 +510,7 @@ export class OperativoService extends BaseService {
       'foto-documento': 'foto_documento',
       'perfil-izquierdo': 'foto_perfil_izquierdo',
     } as const
-    await this.operativoRepository.actualizarFotoDetenido(idDetenido, campoMap[tipo], foto)
+    await this.operativoRepository.actualizarFotoPersonaAuxiliar(idDetenido, campoMap[tipo], foto)
   }
 
   // ==================== GALERÍA ====================
@@ -578,31 +617,7 @@ export class OperativoService extends BaseService {
     await this.operativoRepository.eliminarLogotipo(idLogotipo)
   }
 
-  // ==================== CATÁLOGOS ====================
 
-  async listarEstadosDroga(idTipoDroga: number) {
-    return this.operativoRepository.listarEstadosDrogaPorTipo(idTipoDroga)
-  }
-
-  async listarFabricaModelos(idTipoFabrica: number) {
-    return this.operativoRepository.listarFabricaModelosPorTipo(idTipoFabrica)
-  }
-
-  async listarItemsOperativo(idCategoriaOperativo: number) {
-    return this.operativoRepository.listarItemsOperativoPorCategoria(idCategoriaOperativo)
-  }
-
-  async listarCatalogoClases(idBien: number) {
-    return this.operativoRepository.listarCatalogoClasesPorBien(idBien)
-  }
-
-  async listarCatalogoTipos(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoTiposPorClase(idCatalogoClase)
-  }
-
-  async listarCatalogoCaracteristicas(idCatalogoClase: number) {
-    return this.operativoRepository.listarCatalogoCaracteristicasPorClase(idCatalogoClase)
-  }
 
   // ==================== CASOS DE USUARIO ====================
 
@@ -637,14 +652,14 @@ export class OperativoService extends BaseService {
     idDetenido: string,
     tipo: 'frente' | 'foto-documento' | 'perfil-izquierdo'
   ): Promise<Buffer> {
-    const detenido = await this.operativoRepository.buscarDetenidoPorId(idDetenido)
-    if (!detenido || detenido.idOperativo !== idOperativo) {
-      throw new NotFoundException(`Detenido con ID ${idDetenido} no encontrado`)
+    const persona = await this.operativoRepository.buscarPersonaAuxiliarPorId(idDetenido)
+    if (!persona || persona.idOperativo !== idOperativo) {
+      throw new NotFoundException(`Persona con ID ${idDetenido} no encontrada`)
     }
     switch (tipo) {
-      case 'frente': return detenido.fotoFrente || Buffer.alloc(0)
-      case 'foto-documento': return detenido.fotoDocumento || Buffer.alloc(0)
-      case 'perfil-izquierdo': return detenido.fotoPerfilIzquierdo || Buffer.alloc(0)
+      case 'frente': return persona.fotoFrente || Buffer.alloc(0)
+      case 'foto-documento': return persona.fotoDocumento || Buffer.alloc(0)
+      case 'perfil-izquierdo': return persona.fotoPerfilIzquierdo || Buffer.alloc(0)
       default: throw new NotFoundException(`Tipo de foto "${tipo}" no válido`)
     }
   }

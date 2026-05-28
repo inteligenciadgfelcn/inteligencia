@@ -8,7 +8,7 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { ItemBienSecuestrado } from './item-bien-secuestrado.entity'
-import { CatalogoCaracteristica } from './catalogo-caracteristica.entity'
+import { CatalogoCaracteristica } from '../../parametrica/entity/operativo/catalogo-caracteristica.entity'
 
 /**
  * Entidad Item Bien Característica

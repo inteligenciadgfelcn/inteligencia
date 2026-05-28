@@ -3,7 +3,7 @@ import { Constantes } from '@/config/Constantes'
 export default function DebugBanner() {
   const entorno = Constantes.appEnv
 
-  let mensaje = undefined
+  let mensaje: string | undefined = undefined
   switch (entorno) {
     case 'development':
       mensaje = 'DEV'

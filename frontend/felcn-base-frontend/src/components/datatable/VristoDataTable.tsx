@@ -79,6 +79,7 @@ export function VristoDataTable<T>({
   onSortStatusChange,
   rowExpansion,
 }: Props<T>) {
+  const rowsArray = Array.isArray(rows) ? rows : []
   const totalPages = Math.ceil(total / limit)
 
   const toggleExpand = (id: string | number) => {
@@ -233,7 +234,7 @@ export function VristoDataTable<T>({
                 </tr>
               )}
 
-              {!loading && rows.length === 0 && (
+              {!loading && rowsArray.length === 0 && (
                 <tr>
                   <td colSpan={totalColumns} className="text-center">
                     Sin registros
@@ -242,16 +243,17 @@ export function VristoDataTable<T>({
               )}
 
               {!loading &&
-                rows.map((row, i) => {
+                rowsArray.map((row, i) => {
                   const rowId = getRowId(row)
                   const expanded = isExpanded(rowId)
 
                   return (
                     <React.Fragment key={i}>
                       <tr
-                        className={
-                          expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''
-                        }
+                        className={`
+                          ${expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''}
+                          ${rowClassName ? rowClassName(row) : ''}
+                        `}
                       >
                         {rowExpansion && (
                           <td className="w-10">

@@ -18,11 +18,12 @@ import { NavbarSearch } from '@/components/navbars/NavbarUser/NavbarSearch'
 import { useAuth } from '@/context/AuthProvider'
 import AppMenuHorizontal from './HorizontalMenu'
 import { BASE_PATH } from '@/imageLoader'
+import { RoleType } from '@/app/login/types/loginTypes'
 
 const Header = () => {
   const router = useRouter()
   const pathname = usePathname()
-  const { rolUsuario, usuario } = useAuth()
+  const { rolUsuario, usuario, setRolUsuario } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [autocompleteOpen, setAutocompleteOpen] = useState(false)
@@ -161,10 +162,9 @@ const Header = () => {
             <div>
               {themeConfig.theme === 'light' ? (
                 <button
-                  className={`${
-                    themeConfig.theme === 'light' &&
+                  className={`${themeConfig.theme === 'light' &&
                     'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                  }`}
+                    }`}
                   onClick={() => dispatch(toggleTheme('dark'))}
                 >
                   <IconSun />
@@ -174,10 +174,9 @@ const Header = () => {
               )}
               {themeConfig.theme === 'dark' && (
                 <button
-                  className={`${
-                    themeConfig.theme === 'dark' &&
+                  className={`${themeConfig.theme === 'dark' &&
                     'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                  }`}
+                    }`}
                   onClick={() => dispatch(toggleTheme('system'))}
                 >
                   <IconMoon />
@@ -185,10 +184,9 @@ const Header = () => {
               )}
               {themeConfig.theme === 'system' && (
                 <button
-                  className={`${
-                    themeConfig.theme === 'system' &&
+                  className={`${themeConfig.theme === 'system' &&
                     'flex items-center rounded-full bg-white-light/40 p-2 hover:bg-white-light/90 hover:text-primary dark:bg-dark/40 dark:hover:bg-dark/60'
-                  }`}
+                    }`}
                   onClick={() => dispatch(toggleTheme('light'))}
                 >
                   <IconLaptop />
@@ -225,7 +223,7 @@ const Header = () => {
 
                       <div className="truncate ltr:pl-4 rtl:pr-4">
                         <h4 className="text-base">
-                          {usuario?.persona?.nombres}
+                          {usuario?.persona?.nombres}  {usuario?.persona?.primerApellido}
                         </h4>
                         <button
                           type="button"
@@ -245,6 +243,26 @@ const Header = () => {
                       Perfil
                     </Link>
                   </li>
+                  {(usuario?.roles?.length ?? 0) > 1 && (
+                    <li className="border-t border-white-light dark:border-white-light/10 px-4 py-2">
+                      <p className="text-xs text-gray-400 mb-2">Cambiar rol</p>
+                      <div className="flex flex-col gap-1">
+                        {usuario?.roles.map((rol: RoleType) => (
+                          <button
+                            key={rol.idRol}
+                            onClick={() => setRolUsuario({ idRol: rol.idRol })}
+                            className={`w-full text-left px-3 py-1.5 text-xs rounded border transition-colors ${
+                              rolUsuario?.idRol === rol.idRol
+                                ? 'bg-primary text-white border-primary'
+                                : 'border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+                            }`}
+                          >
+                            {rol.nombre}
+                          </button>
+                        ))}
+                      </div>
+                    </li>
+                  )}
                   <li className="border-t border-white-light dark:border-white-light/10">
                     <button
                       onClick={handleLogout}

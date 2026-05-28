@@ -79,7 +79,7 @@ const Template: StoryFn = (args) => {
   const mapRef = createRef<Map>()
 
   const agregarPunto = (latlng: number[]) => {
-    const puntosActuales = []
+    const puntosActuales: string[][] = []
     puntosActuales.push([latlng[0].toString(), latlng[1].toString()])
     setPuntos([...puntosActuales])
   }
