@@ -11,7 +11,7 @@ import {
 import { Server, Socket } from 'socket.io'
 
 @WebSocketGateway({
-  path: 'https://desarrollo.felcn.gob.bo/socket.io',
+  path: '/socket.io',
 
   cors: {
     origin: '*',
@@ -116,27 +116,27 @@ export class ScannerGateway
   /*
    HEARTBEAT
   */
-  @SubscribeMessage('scanner-ping')
-  async handlePing(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload
+  // @SubscribeMessage('scanner-ping')
+  // async handlePing(client: Socket, payload: any) {
+  //   const data = Array.isArray(payload) ? payload[0] : payload
 
-    const { scannerId, conectado } = data
+  //   const { scannerId, conectado } = data
 
-    const scanner = this.scanners.get(scannerId)
+  //   const scanner = this.scanners.get(scannerId)
 
-    if (!scanner) return
+  //   if (!scanner) return
 
-    /*
-     RAM
-    */
-    scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO'
+  //   /*
+  //    RAM
+  //   */
+  //   scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO'
 
-    scanner.lastPing = Date.now()
+  //   scanner.lastPing = Date.now()
 
-    console.log(`💓 ${scannerId} → ${scanner.estado}`)
+  //   console.log(`💓 ${scannerId} → ${scanner.estado}`)
 
-    this.broadcastScanners()
-  }
+  //   this.broadcastScanners()
+  // }
 
   /*
    RESULTADO

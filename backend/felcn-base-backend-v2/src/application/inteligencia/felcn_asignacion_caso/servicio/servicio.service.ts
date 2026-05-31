@@ -51,25 +51,6 @@ export class ServicioService {
 
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
-    const servicioHoy = await buscarServicioPorFecha(
-      this.servicioRepository,
-      fechaIngreso
-    )
-
-    if (servicioHoy) {
-      return {
-        mensaje: 'Hoy ya existe un servicio registrado',
-        servicio: {
-          codigoServicio: servicioHoy.codigoServicio,
-          usuarioPrincipal: servicioHoy.usuarioPrincipal,
-          usuarioEmergencia: servicioHoy.usuarioEmergencia,
-          fechaIngreso: formatearFecha(servicioHoy.fechaIngreso),
-          fechaSalida: formatearFecha(servicioHoy.fechaSalida),
-          estado: servicioHoy.estado,
-        },
-      }
-    }
-
     await validarCruceServicios(
       this.servicioRepository,
       fechaIngreso,
@@ -82,30 +63,13 @@ export class ServicioService {
       ahora
     )
 
-    const existeCodigo = await this.servicioRepository.findOne({
-      where: { codigoServicio },
-    })
-
-    if (existeCodigo) {
-      return {
-        mensaje: 'El código de servicio ya existe',
-        servicio: {
-          codigoServicio: existeCodigo.codigoServicio,
-          usuarioPrincipal: existeCodigo.usuarioPrincipal,
-          usuarioEmergencia: existeCodigo.usuarioEmergencia,
-          fechaIngreso: formatearFecha(existeCodigo.fechaIngreso),
-          fechaSalida: formatearFecha(existeCodigo.fechaSalida),
-          estado: existeCodigo.estado,
-        },
-      }
-    }
-
     const servicio = this.servicioRepository.create({
       codigoServicio,
       usuarioPrincipal: dto.usuarioPrincipal,
       usuarioEmergencia: dto.usuarioEmergencia,
       fechaIngreso,
       fechaSalida,
+      estado: Estado.ACTIVO,
     })
 
     const servicioGuardado = await this.servicioRepository.save(servicio)
@@ -116,7 +80,7 @@ export class ServicioService {
       usuarioEmergencia: servicioGuardado.usuarioEmergencia,
       fechaIngreso: formatearFecha(servicioGuardado.fechaIngreso),
       fechaSalida: formatearFecha(servicioGuardado.fechaSalida),
-      estado: servicioGuardado.estado,
+      estado: Estado.ACTIVO,
     }
   }
 
