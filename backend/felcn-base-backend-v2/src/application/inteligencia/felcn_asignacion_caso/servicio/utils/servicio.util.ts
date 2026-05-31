@@ -1,9 +1,7 @@
 
-import { BadRequestException } from "@nestjs/common"
 import { Repository } from "typeorm"
 import { Servicio } from "../entities/servicio.entity"
 import { Estado } from "@/application/inteligencia/felcn_siii/estado.enum"
-import { formatearFecha } from "@/common/utils/date.util"
 
 
 export function generarCodigoServicio(
@@ -24,13 +22,16 @@ export async function cerrarServiciosVencidos(
   servicioRepository: Repository<Servicio>,
   ahora: Date
 ) {
-  await servicioRepository
+const resultado=   await servicioRepository
     .createQueryBuilder()
     .update()
     .set({ estado: Estado.INACTIVO })
     .where('fechaSalida < :ahora', { ahora })
     .andWhere('estado = :estado', { estado: Estado.ACTIVO })
     .execute()
+
+    console.log('Servicios cerrados:', resultado.affected)
+console.log('Registros:', resultado.raw)
 }
 
 
@@ -50,15 +51,6 @@ export async function validarCruceServicios(
     query.andWhere('s.codigoServicio != :codigoExcluir', { codigoExcluir })
   }
 
-  const existe = await query.getOne()
-
-  if (existe) {
-    throw new BadRequestException(
-      `Ya existe un servicio desde ${formatearFecha(
-        existe.fechaIngreso
-      )} hasta ${formatearFecha(existe.fechaSalida)}`
-    )
-  }
 }
 
 

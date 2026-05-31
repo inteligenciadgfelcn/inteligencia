@@ -30,7 +30,7 @@ export class CreateAsignacionDto {
   @ApiProperty({ example: 'Operativo Antinarcóticos' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(255)
+  @MaxLength(30)
   nombreCaso!: string;
 
   @ApiProperty({ example: '12-05-2025 16:00' })
