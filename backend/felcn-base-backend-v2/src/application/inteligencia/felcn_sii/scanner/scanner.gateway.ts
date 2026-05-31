@@ -48,7 +48,7 @@ export class ScannerGateway
    FRONTEND
   */
   handleConnection(client: Socket) {
-    console.log(`🟢 Cliente conectado: ${client.id}`)
+  //  console.log(`🟢 Cliente conectado: ${client.id}`)
 
     client.emit('scanner-list', {
       scanners: this.getScanners(),
@@ -67,7 +67,7 @@ export class ScannerGateway
 
     this.socketToScanner.delete(client.id)
 
-    console.log(`❌ Scanner desconectado: ${scannerId}`)
+  //  console.log(`❌ Scanner desconectado: ${scannerId}`)
 
     this.broadcastScanners()
   }
@@ -103,9 +103,9 @@ export class ScannerGateway
 
     const serial = data.serial ?? 'UNKNOWN'
 
-    console.log(`🆔 Scanner registrado: ${scannerId}`)
+   // console.log(`🆔 Scanner registrado: ${scannerId}`)
 
-    console.log(this.getScanners())
+   // console.log(this.getScanners())
 
     this.broadcastScanners()
   }
@@ -142,9 +142,9 @@ export class ScannerGateway
   async handleFingerprint(client: Socket, payload: any) {
     const data = Array.isArray(payload) ? payload[0] : payload
 
-    console.log('🟢 HUELLA RECIBIDA')
+  //  console.log('🟢 HUELLA RECIBIDA')
 
-    console.log(data)
+ //   console.log(data)
 
     /*
      FRONTEND
@@ -169,9 +169,9 @@ export class ScannerGateway
   handleFingerprintError(client: Socket, payload: any) {
     const data = Array.isArray(payload) ? payload[0] : payload
 
-    console.log('❌ ERROR HUELLA')
+ //   console.log('❌ ERROR HUELLA')
 
-    console.log(data)
+ //   console.log(data)
 
     this.server.emit('fingerprint-error', data)
   }
@@ -217,7 +217,7 @@ export class ScannerGateway
       throw new Error('Scanner no disponible')
     }
 
-    console.log(`📤 Enviando a ${scannerId}`)
+//    console.log(`📤 Enviando a ${scannerId}`)
 
     this.server.to(scanner.socketId).emit(event, data)
   }
