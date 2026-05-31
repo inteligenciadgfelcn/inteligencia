@@ -31,7 +31,7 @@ export class Servicio {
   usuarioEmergencia!: string
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     nullable: false,
     name: 'fecha_hora_ingreso',
     comment: 'Fecha de ingreso al servicio',
@@ -39,7 +39,7 @@ export class Servicio {
   fechaIngreso!: Date
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     nullable: false,
     name: 'fecha_hora_salida',
     comment: 'Fecha de salida del servicio',

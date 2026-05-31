@@ -10,18 +10,15 @@ import {
 
 import { Server, Socket } from 'socket.io'
 
-@WebSocketGateway({
-  path: 'https://desarrollo.felcn.gob.bo/socket.io',
 
+@WebSocketGateway({
+  namespace: '/',
+  path: '/socket.io',
   cors: {
     origin: '*',
     credentials: true,
   },
-
-  transports: ['websocket', 'polling'],
 })
-
-
 export class ScannerGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -51,7 +48,7 @@ export class ScannerGateway
    FRONTEND
   */
   handleConnection(client: Socket) {
-    console.log(`🟢 Cliente conectado: ${client.id}`)
+  //  console.log(`🟢 Cliente conectado: ${client.id}`)
 
     client.emit('scanner-list', {
       scanners: this.getScanners(),
@@ -70,7 +67,7 @@ export class ScannerGateway
 
     this.socketToScanner.delete(client.id)
 
-    console.log(`❌ Scanner desconectado: ${scannerId}`)
+  //  console.log(`❌ Scanner desconectado: ${scannerId}`)
 
     this.broadcastScanners()
   }
@@ -106,9 +103,9 @@ export class ScannerGateway
 
     const serial = data.serial ?? 'UNKNOWN'
 
-    console.log(`🆔 Scanner registrado: ${scannerId}`)
+   // console.log(`🆔 Scanner registrado: ${scannerId}`)
 
-    console.log(this.getScanners())
+   // console.log(this.getScanners())
 
     this.broadcastScanners()
   }
@@ -116,27 +113,27 @@ export class ScannerGateway
   /*
    HEARTBEAT
   */
-  @SubscribeMessage('scanner-ping')
-  async handlePing(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload
+  // @SubscribeMessage('scanner-ping')
+  // async handlePing(client: Socket, payload: any) {
+  //   const data = Array.isArray(payload) ? payload[0] : payload
 
-    const { scannerId, conectado } = data
+  //   const { scannerId, conectado } = data
 
-    const scanner = this.scanners.get(scannerId)
+  //   const scanner = this.scanners.get(scannerId)
 
-    if (!scanner) return
+  //   if (!scanner) return
 
-    /*
-     RAM
-    */
-    scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO'
+  //   /*
+  //    RAM
+  //   */
+  //   scanner.estado = conectado ? 'DISPONIBLE' : 'DESCONECTADO'
 
-    scanner.lastPing = Date.now()
+  //   scanner.lastPing = Date.now()
 
-    console.log(`💓 ${scannerId} → ${scanner.estado}`)
+  //   console.log(`💓 ${scannerId} → ${scanner.estado}`)
 
-    this.broadcastScanners()
-  }
+  //   this.broadcastScanners()
+  // }
 
   /*
    RESULTADO
@@ -145,9 +142,9 @@ export class ScannerGateway
   async handleFingerprint(client: Socket, payload: any) {
     const data = Array.isArray(payload) ? payload[0] : payload
 
-    console.log('🟢 HUELLA RECIBIDA')
+  //  console.log('🟢 HUELLA RECIBIDA')
 
-    console.log(data)
+ //   console.log(data)
 
     /*
      FRONTEND
@@ -172,9 +169,9 @@ export class ScannerGateway
   handleFingerprintError(client: Socket, payload: any) {
     const data = Array.isArray(payload) ? payload[0] : payload
 
-    console.log('❌ ERROR HUELLA')
+ //   console.log('❌ ERROR HUELLA')
 
-    console.log(data)
+ //   console.log(data)
 
     this.server.emit('fingerprint-error', data)
   }
@@ -220,7 +217,7 @@ export class ScannerGateway
       throw new Error('Scanner no disponible')
     }
 
-    console.log(`📤 Enviando a ${scannerId}`)
+//    console.log(`📤 Enviando a ${scannerId}`)
 
     this.server.to(scanner.socketId).emit(event, data)
   }
