@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser'
 import { INestApplication } from '@nestjs/common'
 import { CustomValidationPipe } from '@/common/pipes'
 import dotenv from 'dotenv'
+import { IoAdapter } from '@nestjs/platform-socket.io'
 
 import {
   SWAGGER_API_CURRENT_VERSION,
@@ -25,6 +26,7 @@ const bootstrap = async () => {
     logger: ['error', 'warn'],
   })
 
+  app.useWebSocketAdapter(new IoAdapter(app))
   await LoggerModule.initialize(app)
 
   const configService = app.get(ConfigService)
