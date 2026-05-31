@@ -6,14 +6,13 @@ export function validarRangoFechas(
   ahora: Date
 ) {
   const hoy = new Date(ahora)
-  hoy.setHours(0, 0, 0, 0)
+  hoy.setUTCHours(0, 0, 0, 0)
 
   const ingreso = new Date(fechaIngreso)
-  ingreso.setHours(0, 0, 0, 0)
+  ingreso.setUTCHours(0, 0, 0, 0)
 
   const salida = new Date(fechaSalida)
-  salida.setHours(0, 0, 0, 0)
-
+  salida.setUTCHours(0, 0, 0, 0)
   if (ingreso < hoy) {
     throw new BadRequestException(
       'La fecha de ingreso no puede ser de un día pasado'
@@ -26,4 +25,3 @@ export function validarRangoFechas(
     )
   }
 }
-
