@@ -10,7 +10,7 @@ import {
 
 import { Server, Socket } from 'socket.io'
 
-@WebSocketGateway({
+/*@WebSocketGateway({
   path: 'https://desarrollo.felcn.gob.bo/socket.io',
 
   cors: {
@@ -19,9 +19,16 @@ import { Server, Socket } from 'socket.io'
   },
 
   transports: ['websocket', 'polling'],
+})*/
+
+@WebSocketGateway({
+  namespace: '/',
+  path: '/socket.io',
+  cors: {
+    origin: '*',
+    credentials: true,
+  },
 })
-
-
 export class ScannerGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
