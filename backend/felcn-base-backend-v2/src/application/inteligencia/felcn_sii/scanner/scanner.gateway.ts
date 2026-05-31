@@ -10,18 +10,15 @@ import {
 
 import { Server, Socket } from 'socket.io'
 
-@WebSocketGateway({
-  path: '/socket.io',
 
+@WebSocketGateway({
+  namespace: '/',
+  path: '/socket.io',
   cors: {
     origin: '*',
     credentials: true,
   },
-
-  transports: ['websocket', 'polling'],
 })
-
-
 export class ScannerGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
