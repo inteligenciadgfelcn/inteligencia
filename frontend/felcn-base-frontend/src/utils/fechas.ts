@@ -121,6 +121,9 @@ export const dateToStringAmPm = (date: string | Date) => {
 export function formatDate2ToBackend(input: Date | string): string {
   let date: Date
 
+  console.log(`Input ${input}`)
+  console.log(`Input type ${typeof input}`)
+
   if (input instanceof Date) {
     date = input
   } else if (input.includes('/')) {
@@ -128,8 +131,11 @@ export function formatDate2ToBackend(input: Date | string): string {
     const [fecha, hora = '00:00:00'] = input.split(' ')
     const [dia, mes, anio] = fecha.split('/').map(Number)
     const [h = 0, m = 0, s = 0] = hora.split(':').map(Number)
+    console.log(fecha)
+    console.log(hora)
 
     date = new Date(anio, mes - 1, dia, h, m, s)
+    console.log(date)
   } else {
     // formato ISO o yyyy-MM-dd HH:mm:ss
     date = new Date(input.replace(' ', 'T'))
@@ -138,7 +144,7 @@ export function formatDate2ToBackend(input: Date | string): string {
   const pad = (n: number) => String(n).padStart(2, '0')
 
   return (
-    `${pad(date.getMonth())}-${pad(date.getDate() + 1)}-${pad(date.getFullYear())} ` +
+    `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${pad(date.getFullYear())} ` +
     `${pad(date.getHours())}:${pad(date.getMinutes())}`
   )
 }
