@@ -56,7 +56,7 @@ export class AsignacionASIG {
 
   @Column({
     name: 'fecha_operativo',
-    type: 'timestamptz',
+    type: 'timestamp',
     nullable: true,
     comment: 'Fecha del operativo',
   })
@@ -65,7 +65,7 @@ export class AsignacionASIG {
   @Column({
     name: 'nombre_caso',
     type: 'varchar',
-    length: 255,
+    length: 30,
     nullable: true,
     comment: 'Nombre descriptivo del caso',
   })
