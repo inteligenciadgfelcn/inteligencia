@@ -3,25 +3,31 @@ import { BadRequestException } from '@nestjs/common'
 export function validarRangoFechas(
   fechaIngreso: Date,
   fechaSalida: Date,
-  ahora: Date
+  ahora: Date,
 ) {
   const hoy = new Date(ahora)
-  hoy.setUTCHours(0, 0, 0, 0)
+  hoy.setHours(0, 0, 0, 0)
 
   const ingreso = new Date(fechaIngreso)
-  ingreso.setUTCHours(0, 0, 0, 0)
+  ingreso.setHours(0, 0, 0, 0)
 
   const salida = new Date(fechaSalida)
-  salida.setUTCHours(0, 0, 0, 0)
+  salida.setHours(0, 0, 0, 0)
+
+  // console.log('Fecha de ingreso:', ingreso.toISOString())
+  // console.log('Fecha de salida:', salida.toISOString())
+  // console.log('Fecha actual:', hoy.toISOString())
+
   if (ingreso < hoy) {
     throw new BadRequestException(
-      'La fecha de ingreso no puede ser de un día pasado'
+      'La fecha de ingreso no puede ser de un día pasado',
     )
   }
 
   if (salida < ingreso) {
     throw new BadRequestException(
-      'La fecha de salida debe ser mayor o igual a la fecha de ingreso'
+      'La fecha de salida debe ser mayor o igual a la fecha de ingreso',
     )
   }
+
 }

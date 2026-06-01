@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { DataSource, Repository } from 'typeorm'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { DB_ASIG_CASOS, DB_SIII } from '@/core/config/database/database.module'
+import { DB_ASIG_CASOS, DB_AUTH, DB_SIII } from '@/core/config/database/database.module'
 import { CreateAsignacionDto } from '../dto/create-asignacione.dto'
 import { AsignacionASIG } from '../entities/asignacionAsig.entity'
 import { Asignacion } from '@/application/inteligencia/felcn_siii/operaciones/asignacion/entities/asignacione.entity'
@@ -14,23 +14,29 @@ export class AsignacionesRepository {
     private readonly asignacionRepository: Repository<Asignacion>,
 
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
-    private readonly asignacionAsigRepository: Repository<AsignacionASIG>
+    private readonly asignacionAsigRepository: Repository<AsignacionASIG>,
+
+    @InjectDataSource(DB_AUTH)
+    private readonly authDataSource: DataSource
   ) { }
 
   async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
-    const grupoData = await this.asignacionRepository.manager
-      .createQueryBuilder()
-      .select([
-        'd.id as "idDistrital"',
-        'u.id as "idUnidad"',
-        'u.abreviatura as "abreviaturaUnidad"',
-      ])
-      .from('grupo', 'g')
-      .leftJoin('distrital', 'd', 'g.id_distrital = d.id')
-      .leftJoin('unidad', 'u', 'd.id_unidad = u.id')
-      .where('g.id = :idGrupo', { idGrupo: dto.idGrupo })
-      .getRawOne()
+    const [grupoData] = await this.authDataSource.query(
+  `
+  SELECT
+    d.id as "idDistrital",
+    u.id as "idUnidad",
+    u.abreviatura as "abreviaturaUnidad"
+  FROM parametro.grupo g
+  LEFT JOIN parametro.distrital d
+    ON g.id_distrital = d.id
+  LEFT JOIN parametro.unidad u
+    ON d.id_unidad = u.id
+  WHERE g.id = $1
+  `,
+  [dto.idGrupo],
+)
 
     if (!grupoData) {
       throw new Error('Grupo sin distrital/unidad')
@@ -53,9 +59,9 @@ export class AsignacionesRepository {
       telefonoFiscal: dto.telefonoFiscal,
       usuario: dto.numeroPaseSolicitud,
     })
-
+ console.log('Asignación SIII guardada con ID:', asignacion)
     const saved = await this.asignacionRepository.save(asignacion)
-
+    console.log('Asignación SIII guardada con ID:', saved)
     const asignacionS2I = this.asignacionAsigRepository.create({
       idDepartamento: dto.idDepartamento,
       idUnidad: grupoData.abreviaturaUnidad,
