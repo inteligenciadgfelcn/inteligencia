@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { DB_ASIG_CASOS, DB_AUTH, DB_SIII } from '@/core/config/database/database.module'
+import {
+  DB_ASIG_CASOS,
+  DB_AUTH,
+  DB_SIII,
+} from '@/core/config/database/database.module'
 import { CreateAsignacionDto } from '../dto/create-asignacione.dto'
 import { AsignacionASIG } from '../entities/asignacionAsig.entity'
 import { Asignacion } from '@/application/inteligencia/felcn_siii/operaciones/asignacion/entities/asignacione.entity'
@@ -18,12 +22,12 @@ export class AsignacionesRepository {
 
     @InjectDataSource(DB_AUTH)
     private readonly authDataSource: DataSource
-  ) { }
+  ) {}
 
   async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
     const [grupoData] = await this.authDataSource.query(
-  `
+      `
   SELECT
     d.id as "idDistrital",
     u.id as "idUnidad",
@@ -35,12 +39,19 @@ export class AsignacionesRepository {
     ON d.id_unidad = u.id
   WHERE g.id = $1
   `,
-  [dto.idGrupo],
-)
+      [dto.idGrupo]
+    )
 
     if (!grupoData) {
       throw new Error('Grupo sin distrital/unidad')
     }
+
+    const [fechaPart, horaPart] = dto.fechaSolicitud.split(' ')
+    const [dia, mes, anio] = fechaPart.split('-').map(Number)
+    const [hora, minuto] = horaPart.split(':').map(Number)
+
+    const fechaSolicitud = new Date(anio, mes - 1, dia, hora, minuto)
+    console.log('Fecha de solicitud parseada:', fechaSolicitud.toISOString());
 
     const asignacion = this.asignacionRepository.create({
       idDepartamento: dto.idDepartamento,
@@ -50,7 +61,7 @@ export class AsignacionesRepository {
       nroOperativo,
       codigoServicio: dto.codigoServicio,
       nombreCaso: dto.nombreCaso,
-      fechaSolicitud: dto.fechaSolicitud,
+      fechaSolicitud: fechaSolicitud,
       nombreSolicitud: dto.nombreSolicitud,
       telefonoSolicitud: dto.telefonoSolicitud,
       asignado: dto.asignado,
@@ -59,7 +70,7 @@ export class AsignacionesRepository {
       telefonoFiscal: dto.telefonoFiscal,
       usuario: dto.numeroPaseSolicitud,
     })
- console.log('Asignación SIII guardada con ID:', asignacion)
+    console.log('Asignación SIII guardada con ID:', asignacion)
     const saved = await this.asignacionRepository.save(asignacion)
     console.log('Asignación SIII guardada con ID:', saved)
     const asignacionS2I = this.asignacionAsigRepository.create({
@@ -69,7 +80,7 @@ export class AsignacionesRepository {
       codigoServicio: dto.codigoServicio,
       nombreCaso: dto.nombreCaso,
       nombreSolicitud: dto.nombreSolicitud,
-      fechaOperativo: dto.fechaSolicitud,
+      fechaOperativo: fechaSolicitud,
       fiscalAsignado: dto.fiscalAsignado,
       usuario: dto.usuario,
       idCasoSiii: saved.idAsignacion,

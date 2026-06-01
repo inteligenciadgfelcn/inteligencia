@@ -16,6 +16,7 @@ export interface AsignacionTable {
   etapaInvestigacion: null
   resultado: null
   fechaSolicitud: Date
+  fechaOperativo: Date | null
   usuario: null
   departamento?: Departamento
   grupo?: Grupo

@@ -145,7 +145,11 @@ export function RegistrosDataTable() {
     },
     { accessor: 'nroOperativo', title: 'Nro Registro' },
     { accessor: 'nroCaso', title: 'Nro Caso' },
-    { accessor: 'fechaSolicitud', title: 'Fecha y hora del Operativo' },
+    {
+      accessor: 'fechaOperativo',
+      title: 'Fecha y hora del Operativo',
+      render: (row: AsignacionTable) => new Date(row.fechaOperativo ?? '').toLocaleString(),
+    },
     { accessor: 'nombreCaso', title: 'Nombre del caso' },
     {
       accessor: 'asignadoA',
