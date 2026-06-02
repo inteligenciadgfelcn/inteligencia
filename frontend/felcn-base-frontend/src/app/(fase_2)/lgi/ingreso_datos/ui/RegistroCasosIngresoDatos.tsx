@@ -35,6 +35,8 @@ import {
   createDefaultRegistroCasosValues,
   formatFuncionarioLabel,
 } from '../utils/registro-casos.utils'
+import { RHFSelect } from '../../../../../components/form/RHFSelect'
+import { RHFDate } from '../../../../../components/form/RHFDate'
 
 const radioOptions = [
   { value: 'si', label: 'Si' },
@@ -284,10 +286,11 @@ export const RegistroCasosIngresoDatos = () => {
 
         <Card title="Datos generales del caso">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <AsyncSearchSelect<SimpleCatalogItem>
+            <RHFSelect<SimpleCatalogItem>
+              id="departamento"
               name="departamento"
               control={control}
-              prefix="El caso se registra en el departamento de"
+              label="El caso se registra en el departamento de"
               error={errors.departamento?.message as string | undefined}
               originalData={departamentos}
               mapOption={mapSimpleCatalogToOption}
@@ -310,10 +313,11 @@ export const RegistroCasosIngresoDatos = () => {
               )}
             </div>
 
-            <AsyncSearchSelect<SimpleCatalogItem>
+            <RHFSelect<SimpleCatalogItem>
+              id="tipoCaso"
               name="tipoCaso"
               control={control}
-              prefix="Tipo de caso"
+              label="Tipo de caso"
               error={errors.tipoCaso?.message as string | undefined}
               originalData={tiposCaso}
               mapOption={mapSimpleCatalogToOption}
@@ -353,10 +357,11 @@ export const RegistroCasosIngresoDatos = () => {
               )}
             </div>
 
-            <AsyncSearchSelect<SimpleCatalogItem>
+            <RHFSelect<SimpleCatalogItem>
+              id="tipoDelito"
               name="tipoDelito"
               control={control}
-              prefix="Tipo de delito"
+              label="Tipo de delito"
               error={errors.tipoDelito?.message as string | undefined}
               originalData={tiposDelito}
               mapOption={mapSimpleCatalogToOption}
@@ -439,7 +444,7 @@ export const RegistroCasosIngresoDatos = () => {
               )}
             </div>
 
-            <FormInputDate
+            <RHFDate
               id="fechaAsignacionCaso"
               name="fechaAsignacionCaso"
               control={control}
@@ -447,16 +452,17 @@ export const RegistroCasosIngresoDatos = () => {
               clearable
             />
 
-            <AsyncSearchSelect<SimpleCatalogItem>
+            <RHFSelect<SimpleCatalogItem>
+              id="inicioCasoLgi"
               name="inicioCasoLgi"
               control={control}
-              prefix="Inicio de Caso por LGI"
+              label="Inicio de Caso por LGI"
               error={errors.inicioCasoLgi?.message as string | undefined}
               originalData={inicioCasoLgi}
               mapOption={mapSimpleCatalogToOption}
             />
 
-            <FormInputDate
+            <RHFDate
               id="remitidoGiaefFecha"
               name="remitidoGiaefFecha"
               control={control}
