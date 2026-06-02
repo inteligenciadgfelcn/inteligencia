@@ -33,6 +33,7 @@ export const MultiSelect = ({
       <Select
         isMulti
         isSearchable
+        instanceId={label}
         isDisabled={isDisabled}
         placeholder={placeholder}
         options={options}
