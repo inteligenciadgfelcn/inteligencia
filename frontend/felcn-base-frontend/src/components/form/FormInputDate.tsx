@@ -76,8 +76,10 @@ export const FormInputDate = <
             adapterLocale={'es-mx'}
           >
             <DatePicker
-              onChange={field.onChange}
-              value={field.value ? dayjs(field.value) : dayjs()}
+              onChange={(value) => {
+                field.onChange(value ? dayjs(value).format('YYYY-MM-DD') : '')
+              }}
+              value={field.value ? dayjs(field.value) : null}
               ref={field.ref}
               minDate={minDate}
               maxDate={maxDate}
@@ -92,7 +94,7 @@ export const FormInputDate = <
                 },
                 field: {
                   clearable: clearable,
-                  onClear: () => field.onChange(true),
+                  onClear: () => field.onChange(''),
                   sx: { width: '100%', bgcolor: bgcolor },
                 },
               }}
