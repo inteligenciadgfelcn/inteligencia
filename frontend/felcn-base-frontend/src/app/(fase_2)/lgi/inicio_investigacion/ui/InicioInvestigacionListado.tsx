@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import dayjs from 'dayjs'
 
@@ -13,8 +14,6 @@ import type { Column } from '@/components/datatable/VristoDataTable'
 import IconEye from '@/components/Icon/IconEye'
 import IconSearch from '@/components/Icon/IconSearch'
 
-import { InicioInvestigacionApi } from '../api/inicio-investigacion.api'
-import { InvestigacionDetalleModal } from './InvestigacionDetalleModal'
 import type {
   InicioInvestigacionBusquedaCriterio,
   InicioInvestigacionFilters,
@@ -40,13 +39,12 @@ const topSearchOptions: SelectOption[] = [
 const pageSizeOptions = [10, 20, 30, 50]
 
 export function InicioInvestigacionListado() {
+  const router = useRouter()
   const [filters, setFilters] = useState<InicioInvestigacionFilters>(
     inicioInvestigacionInitialFilters
   )
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const [selected, setSelected] = useState<InicioInvestigacionItem | null>(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   const allRows = useMemo(() => mockInvestigaciones, [])
 
@@ -124,8 +122,7 @@ export function InicioInvestigacionListado() {
           type="button"
           className="inline-flex items-center justify-center rounded-md p-1 text-primary transition hover:bg-primary/10"
           onClick={() => {
-            setSelected(row)
-            setIsDetailOpen(true)
+            router.push(`/lgi/inicio_investigacion/${row.id}`)
           }}
           aria-label={`Ver detalle de ${row.nombreCaso}`}
           title="Ver detalle"
@@ -325,12 +322,6 @@ export function InicioInvestigacionListado() {
           columns={columns}
         />
       </div>
-
-      <InvestigacionDetalleModal
-        item={selected}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-      />
     </div>
   )
 }
