@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
 import {
-  IsDate,
   IsNotEmpty,
+  IsISO8601,
+  Matches,
   IsString,
   MaxLength,
 } from 'class-validator'
-import { Type } from 'class-transformer'
 
 export class CreateServicioDto {
 
@@ -19,7 +19,7 @@ export class CreateServicioDto {
   @MaxLength(15, {
     message: 'El numero de pase no puede tener más de 15 caracteres',
   })
-  usuarioPrincipal: string
+  usuarioPrincipal!: string
 
   @ApiProperty({
     example: 'G-AAF-0465',
@@ -31,15 +31,35 @@ export class CreateServicioDto {
   @MaxLength(15, {
     message: 'El numero de pase de emergencia no puede tener más de 15 caracteres',
   })
-  usuarioEmergencia: string
+  usuarioEmergencia!: string
 
-  @ApiProperty({ example: '2026-03-05 13:30:00' })
-  @Type(() => Date)
-  @IsDate({ message: 'La fecha de ingreso debe ser válida' })
-  fechaIngreso: Date
+  @ApiProperty({
+    example: '2026-06-03T14:50:16.451Z',
+    description: 'Fecha de ingreso en formato UTC ISO 8601 con sufijo Z',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'La fecha de ingreso es obligatoria' })
+  @IsISO8601(
+    { strict: true, strictSeparator: true },
+    { message: 'La fecha de ingreso debe estar en formato ISO 8601 válido' },
+  )
+  @Matches(/Z$/, {
+    message: 'La fecha de ingreso debe estar en UTC y terminar con Z',
+  })
+  fechaIngreso!: string
 
-  @ApiProperty({ example: '2026-03-05 18:00:00' })
-  @Type(() => Date)
-  @IsDate({ message: 'La fecha de salida debe ser válida' })
-  fechaSalida: Date
+  @ApiProperty({
+    example: '2026-06-03T18:00:00.000Z',
+    description: 'Fecha de salida en formato UTC ISO 8601 con sufijo Z',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'La fecha de salida es obligatoria' })
+  @IsISO8601(
+    { strict: true, strictSeparator: true },
+    { message: 'La fecha de salida debe estar en formato ISO 8601 válido' },
+  )
+  @Matches(/Z$/, {
+    message: 'La fecha de salida debe estar en UTC y terminar con Z',
+  })
+  fechaSalida!: string
 }
