@@ -43,11 +43,11 @@ export class ServicioService {
   }
 
   async create(dto: CreateServicioDto) {
-    const fechaIngreso = dto.fechaIngreso
-    const fechaSalida = dto.fechaSalida
+    const fechaIngreso = new Date(dto.fechaIngreso)
+    const fechaSalida = new Date(dto.fechaSalida)
     const ahora = new Date()
 
-    validarRangoFechas(fechaIngreso, fechaSalida, ahora)
+    validarRangoFechas(fechaIngreso, fechaSalida)
 
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
@@ -143,10 +143,10 @@ export class ServicioService {
       )
     }
 
-    const fechaIngreso = dto.fechaIngreso ?? servicio.fechaIngreso
-    const fechaSalida = dto.fechaSalida ?? servicio.fechaSalida
+    const fechaIngreso = dto.fechaIngreso ? new Date(dto.fechaIngreso) : servicio.fechaIngreso
+    const fechaSalida = dto.fechaSalida ?  new Date(dto.fechaSalida) : servicio.fechaSalida
 
-    validarRangoFechas(fechaIngreso, fechaSalida, ahora)
+    validarRangoFechas(fechaIngreso, fechaSalida)
 
     await validarCruceServicios(
       this.servicioRepository,
