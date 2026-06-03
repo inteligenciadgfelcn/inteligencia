@@ -90,17 +90,18 @@ export const ServicioForm = () => {
 
   /* ================= SUBMIT ================= */
   const onSubmit = async (values: FormValues) => {
-    console.log(`${loading}`)
     if (loading) return
-    console.log(`${loading}`)
 
     try {
       setLoading(true)
+      const strFechaHoraIngreso = formatDateToBackend(values.fechaHoraIngreso)
+      const strFechaHoraSalida = formatDateToBackend(values.fechaHoraSalida)
+
       const payload: CreateServiceBody = {
         usuarioPrincipal: values.entrantePase,
         usuarioEmergencia: values.emergenciaPase,
-        fechaIngreso: formatDateToBackend(values.fechaHoraIngreso),
-        fechaSalida: formatDateToBackend(values.fechaHoraSalida),
+        fechaIngreso: new Date(strFechaHoraIngreso).toISOString(),
+        fechaSalida: new Date(strFechaHoraSalida).toISOString(),
       }
 
       const resp = await postServicio(payload)
