@@ -1,0 +1,1845 @@
+# TÉRMINOS DE REFERENCIA
+
+
+# TÉRMINOS DE REFERENCIA
+
+Título del Proyecto:
+Apoyo a la Lucha contra la Corrupción en la DGFELCN –
+
+# BOLEU1
+
+Título del Proceso:
+Contratación de un/una consultor(a) por producto para el
+“Desarrollo e integración de la Fase 1 del Sistema Nacional de
+Inteligencia de la FELCN”
+Tipo de contrato:
+Individual Contract (IC)
+Sede de Funciones:
+La Paz
+Supervisor:
+Coordinador/a proyecto BOLEU1, UNODC y la Jefatura de la
+División Tecnológica y Telemática de la FELCN
+Duración del contrato:
+200 días calendario
+Fecha de inicio:
+septiembre de 2025
+1.
+Antecedentes
+La Oficina de las Naciones Unidas contra la Droga y el Delito (UNODC), a través del Proyecto de
+Apoyo a la Lucha contra la Corrupción en la Dirección General de la Fuerza Especial de Lucha contra
+el Narcotráfico (DG-FELCN), tiene como objetivo fortalecer la gobernanza institucional mediante la
+promoción de una cultura de integridad y transparencia en la Policía Boliviana. Este esfuerzo se
+enmarca en los compromisos asumidos por el Estado boliviano en virtud de la Convención de las
+Naciones Unidas contra la Corrupción (UNCAC) y contribuye directamente al cumplimiento
+del Objetivo de Desarrollo Sostenible (ODS) 16, orientado a la paz, justicia e instituciones sólidas.
+Como parte del Producto 1 del Proyecto, se busca implementar un Sistema Integral de Gestión de
+Riesgos en la FELCN. Para ello, se ha llevado a cabo un diagnóstico institucional y se ha elaborado
+un Plan de Acción que identifica medidas específicas para mitigar los riesgos de corrupción, con el
+acompañamiento técnico de la UNODC.
+Entre las acciones prioritarias identificadas en el Plan de Acción, se destaca la necesidad de fortalecer
+los controles tecnológicos y avanzar en el desarrollo de los sistemas de información institucionales.
+Estas mejoras son fundamentales para garantizar una gestión más eficiente, transparente y segura de
+los procesos dentro de la FELCN.
+En este contexto, la UNODC busca incorporar consultores especializados en Tecnologías de la
+Información para el apoyo a la División de Tecnología y Telemática de la FELCN en el desarrollo e
+implementación de sistemas tecnológicos.
+2.
+Objetivo general y específicos
+
+### 2.1. Objetivo general
+
+Desarrollar, implementar y documentar soluciones tecnológicas especializadas para la Fase 1 del
+Sistema Nacional de Inteligencia de la Fuerza Especial de Lucha contra el Narcotráfico (FELCN),
+con el fin de establecer mecanismos internos de control y monitoreo de información sensible, mejorar
+el seguimiento y la seguridad de los datos, así como la interoperabilidad con otras plataformas
+interinstitucionales.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+### 2.2. Objetivos específicos
+
+Los objetivos específicos de la consultoría son los siguientes:
+- 
+Desarrollar la arquitectura técnica de la Fase 1 del Sistema Nacional de Inteligencia,
+asegurando su alineación con los requerimientos funcionales, de seguridad, escalabilidad e
+interoperabilidad institucional.
+- 
+Integrar y migrar información relevante desde fuentes existentes, garantizando la consistencia,
+integridad y trazabilidad de los datos en los nuevos entornos tecnológicos.
+- 
+Realizar pruebas funcionales y técnicas de los sistemas desarrollados, documentando los
+resultados, corrigiendo errores (bugs) y asegurando su correcto funcionamiento antes de su
+puesta en marcha.
+- 
+Elaborar documentación técnica y funcional completa de los sistemas, incluyendo manuales de
+usuario, guías de administración y protocolos de mantenimiento.
+- 
+Capacitar al personal técnico designado por la FELCN, con el fin de asegurar la apropiación,
+sostenibilidad y continuidad operativa de las soluciones implementadas.
+
+## 3.  Alcance
+
+El alcance de la consultoría incluye referencialmente lo siguiente:
+- 
+Desarrollo del sistema, considerando criterios de escalabilidad, seguridad, interoperabilidad
+y sostenibilidad.
+- 
+Integración y migración de datos desde plataformas o fuentes existentes de Bases de Datos.
+- 
+Ejecución de pruebas funcionales, técnicas y de seguridad.
+- 
+Corrección de errores y ajustes derivados del proceso de validación.
+- 
+Elaboración de documentación técnica, funcional y de usuario.
+- 
+Presentar los Wireframes debidamente versionados del análisis desarrollado.
+- 
+Presentar los diagramas de flujo, secuencia y/u otros solicitados, estos deben de estar
+versionados.
+- 
+Presentar mockup debidamente versionados de los productos a elaborar.
+- 
+Presentar el diagramado de la base de datos debidamente versionada.
+- 
+Presentar las pruebas unitarias.
+- 
+Presentar las pruebas de integración.
+- 
+Presentar Backlog del producto (módulos y otras).
+- 
+Presentar Backlog del sprint (tareas, historias de usuario y otras).
+- 
+Presentar el cronograma de trabajo.
+- 
+Presentar el historial de tareas diarias realizadas.
+- 
+Elaborar actas para reuniones, presentaciones y otros.
+- 
+Presentar el incremento del script (Nota del QA (control de calidad) y del dueño del producto
+dando su conformidad).
+- 
+Configurar los proyectos para CI/CD (Integración Continua, entrega continua y despliegue
+continuo)
+- 
+Desarrollar el gestor de versiones, donde se debe de indicar en forma didáctica, los cambios
+realizados dentro de los Sistemas.
+- 
+Versionar el código con git y el producto en docker-hub (desarrollo/producción).
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+- 
+Desarrollar microservicios para la reutilización de código.
+- 
+Los README de los repositorios deben de estar debidamente descritos.
+- 
+Integración con Dispositivo Biométrico para el registro de Personas (Escáner ZF2 de huellas
+dactilares de DERMALOG).
+- 
+Integración Geográfica con Google Maps y Open Street Map.
+- 
+Documentar el código fuente.
+Conocimientos referenciales:
+
+# SISTEMA OPERATIVO
+
+- 
+Windows y Linux
+
+# LENGUAJES
+
+- 
+Java
+- 
+JavaScript
+- 
+TypeScript
+- 
+NodeJS
+
+# FRAMEWORK, SDK Y LIBRERÍAS
+
+- 
+Spring Boot
+- 
+NestJS
+- 
+FastAPI
+- 
+
+# VUE JS
+
+- 
+Flutter
+- 
+Fingerprint Scanner SDK
+
+# CONTROL DE VERSIONES Y PLATAFORMAS DE DESARROLLO COLECTIVO
+
+- 
+
+# GIT
+
+- 
+GitLab
+
+# OTROS CONOCIMIENTOS
+
+- 
+
+# HTML5
+
+- 
+
+# CSS3
+
+- 
+
+# POSTGRESQL
+
+- 
+Desarrollo de microservicios
+- 
+Desarrollo de Mockups
+- 
+UX/UI (Experiencia de Usuario e Interfaz del Usuario)
+- 
+CI/CD (Integración Continua, Entrega Continua y Despliegue Continuo)
+- 
+Pruebas unitarias
+- 
+Maquetación de reportes PDF, JSON, CSV, KML, KMZ, JPG y Excel
+- 
+Google Calendario
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+## 4. Productos
+
+## Producto 1.- 
+Informe técnico que describa
+el desarrollo de la fase 1, conforme al anexo
+A, del sistema tecnológico que permite
+gestionar de manera eficiente, segura y
+transparente la información generada por los
+casos a través de los operativos
+antinarcóticos, de los Grupos Especiales,
+Jefaturas Departamentales, UMOPAR de la
+FELCN. El sistema deberá centralizar y
+automatizar los procesos relacionados con el
+ingreso, proceso, análisis y envió de
+Información, garantizando la transparencia
+de las operaciones.
+La Forma de Inicio de sesión para el
+ingreso deberá utilizar los servicios de la
+AGETIC con Ciudadanía Digital, el nuevo
+sistema deberá integrar las tecnologías de
+Ciudadanía Digital del Estado
+Plurinacional de Bolivia para poder
+utilizar las bondades de la misma como:
+buzones de notificaciones y validación de
+documentos digitales y firma digital.
+(Nota: Ya se cuenta con el script para el
+login y firma digital que conecta con
+Ciudadanía Digital de la AGETIC)
+Esta fase incluye:
+Desarrollo de módulos clave:
+ Modulo Control y Seguimiento de Casos
+- Seguimiento de Casos Operativo
+ Formulario Único de Registro
+de Operativos Antinarcóticos
+- Datos Generales del
+operativo
+- Georreferenciación
+(Google maps, OpenStreet
+Map)
+- Sustancias Controladas
+(Lista ley 913)
+- Sustancias Solidas y
+A los 90 días
+calendario
+contabilizados a
+partir de la firma
+del contrato.
+A los 10 días
+hábiles a partir
+de la entrega del
+producto
+aprobado.
+40%
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Liquidas
+- Registro de Aprehendidos
+- Registro de Arrestados
+- Bienes Secuestrados
+- Logotipos
+ Notificación por WhatsApp y
+correo electrónico (PDF)
+- Control de Operativos y Casos
+ Revisión y Aprobación de
+Casos y Operativos
+ Interoperabilidad de ida y vuelta
+con el Ministerio Publico y la
+Policía Boliviana del
+Formulario Único de Denuncias
+(FUD), en base a los catálogos
+del Ministerio Publico
+(https://catalogos.mp.gob.bo/api
+).
+- Inicio de Investigación Financiera
+Paralela por LGI y Perdida de Dominio
+ Registro de Casos Paralelos
+ Respuesta de Casos Paralelos en
+análisis, desestimados,
+judicializados
+- Inicio de Investigación y Pérdida de
+Dominio
+ Lista de casos Asignados por
+GIAEF por Pérdida de Dominio
+ Seguimiento de Casos por LGI
+ Lista de casos Asignados por
+GIAEF por Legitimación de
+Ganancias Ilícitas
+- Generación de reportes Operativos y de
+casos
+- Cuadros Estadísticos
+ Variables por tiempo (Tipos
+de Drogas, Sustancias Solidad
+y Liquidas, Tipos de
+Operativos, Aprehendidos,
+Arrestados, Bienes
+Secuestrados, Etc)
+- Reportes
+ Variables Cruzadas (Tipos de
+Drogas, Sustancias Solidad y
+Liquidas, Tipos de Operativos,
+Aprehendidos, Arrestados,
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Bienes Secuestrados)
+- Mapas de Calor por variables por
+tiempo (Tipos de Drogas,
+Sustancias Solidad y Liquidas,
+Tipos de Operativos,
+Aprehendidos, Arrestados,
+Bienes Secuestrados).
+- Exportación de información en
+distintos formatos (PDF, MS
+Excel, JSON, CSV, KML),
+incluyendo reportes
+automáticos, cuadros
+estadísticos y mapas
+generados por el sistema
+- Seguimiento de Casos Jurídico
+- Datos Generales del Caso
+ Servidores(as) Policiales que
+Intervienen en el operativo (Grado,
+Nombre y Apellidos)
+ Jurisdicción del Caso (Fecha,
+Jurisdicción, Observación)
+ Control jurisdiccional (Fecha,
+Juzgado de instrucción en lo penal,
+Juzgado de partido en lo penal,
+Tribunal de Sentencia en lo penal,
+Juzgado de ejecución en lo penal
+actual)
+ Investigador (es) asignado (s) al caso
+(Grados, Nombre y Apellidos, Fecha
+de Asignación al caso)
+ Fiscal(es) Asignado(s) al caso
+(Nombre y Apellidos, Fecha de
+Asignación al caso)
+- Personas Implicadas – Etapa de Proceso
+ Datos Generales del Caso
+ Personas Implicadas (Situación
+Legal, Nro. de resolución, Lugar,
+Fecha, Autoridad, Fiscalía, Juzgado
+o Tribunal, Recursos, Fecha de
+resolución del recurso, Autoridad
+que resolvió el recurso, Fallo del
+recurso)
+ Situación Legal del Implicado (Etapa
+del proceso, Estado del Proceso,
+Nro. de Resolución, Lugar, Fecha,
+Autoridad, Fiscalía, Juzgado o
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Tribunal, Recursos, Fecha de
+Resolución del Recurso, Autoridad
+que resolvió el Recurso, Fallo del
+Recurso, Observaciones)
+- Situación de los Bienes Secuestrados
+ Bienes Secuestrados Descripción y
+Características (Catalogo Bien,
+Catalogo Clase, Tipo, Descripción,
+Cantidad)
+ ESTADO LEGAL DEL BIEN
+(Estado Legal, Resolución, Fecha,
+Autoridad que Emite, Calidad de la
+Entrega, Fecha de Entrega,
+responsable de la Entrega,
+responsable de la Recepción,
+Institución Responsable del Bien,
+Ubicación Física del Bien)
+- CASOS - CODIFICACION
+ Código Ministerio Publico y relación
+de casos anteriores
+ Datos del Proceso
+ Seguimiento Investigativo
+ Datos Documentales (Base de Datos
+Documental del caso)
+ Cuaderno de Investigación
+- Cálculo de Patrimonio
+ Introducción y manejo de Costos
+ Costos Aproximados de bienes
+ Costos Cuantificados de bienes
+(Real)
+- Interoperabilidad: Intercambio de
+Información
+ Ministerio Publico del Ámbito
+Jurídico y control y seguimiento de
+casos, envió y retorno de
+información de Fiscalía.
+ Órgano Judicial
+ DIRCABI, Seguimiento y Control de
+Bienes Secuestrados, confiscados,
+Secuestrados y Perdida de Dominio.
+ Policía Boliviana SINARAP y
+SIIPOL
+- Generación de reportes de casos.
+ Casos, situación jurídica de
+casos, etapas de procesos
+ Exportación de Datos en
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Formato (Pdf, MS Excel,
+Json, CSV)
+
+## Producto 2.- 
+Informe técnico que describa
+el desarrollo de los siguientes módulos,
+conforme lo descrito en el anexo A:
+ Módulo de Análisis de Información de
+Inteligencia
+- Registro de Investigaciones
+ Registro de Casos de Investigación
+ Ingreso de Personas Investigadas
+ Ingreso de Empresas Investigadas
+ Ingresos de Documentos (Bases de
+Datos Documental)
+ Ingreso de Archivos Multimedia
+ Ingreso de Flujos Telefónicos
+ Ingreso de Vehículos investigados
+ Ingreso de Bienes y Propiedades
+investigadas
+- Reporte de Investigaciones
+ Diagrama de Vinculo de Datos
+ Diagrama de Vinculo de
+Investigaciones
+ Georreferenciación de Variables de
+Investigación
+ Exportación de Datos en formato
+PDF, CSV, XML y EXCEL
+- Reportes de Análisis de Inteligencia
+ Tipo Drogas (Mapas temáticos, de
+calor, Geográficos, Valores)
+ Tipo de Sustancias Controladas
+(Mapas temáticos, Geográficos,
+Valores)
+ Parametrizaciones: Consumo de
+Drogas, Trafico, Pistas Clandestinas,
+Logotipos, etc (Mapas temáticos,
+Geográficos, Valores)
+ Mapas de Calor
+- Reportes de Antecedentes por
+Narcotráfico
+ Por Personas (Certificaciones,
+Requerimientos Fiscales, etc)
+ Por Hechos (parametrizaciones:
+lugares, nacionalidades, etc)
+ Por Rutas de Narcotráfico
+ Situación Jurídica
+ Exportación de Datos en Formato
+A los 150 días
+calendario
+contabilizados a
+partir de la firma
+del contrato.
+A los 10 días
+hábiles a partir
+de la entrega del
+producto
+aprobado.
+40%
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+(Pdf, MS Excel, Json, CSV)
+- Interoperabilidad con otras Instituciones
+(ya se cuenta con los scrits
+desarrollados, solo se realizará el
+consumo de la información)
+ SEGIP
+ INRA
+ SIN
+ ITV
+ AGETIC
+ Medidas de seguridad de carácter
+técnico:
+- Configuración e instalación en el
+Servidor de Aplicaciones y Bases de
+Datos.
+- Identificación y autenticación de
+usuarios (Ciudadanía Digital).
+- Verificación dinámica de credenciales
+de usuario antes de acceder a cada
+recurso del sistema.
+- Control de accesos.
+- Control de flujo en la información.
+- Confidencialidad.
+- Integridad.
+- Bitácoras (Registros de Ingresos,
+Consultas y Actividades en el
+software).
+ Autentificación JWT (JSON Web
+Token), para él envió y consumo de las
+plataformas de interoperabilidad.
+ Medidas de seguridad administrativas:
+- Autenticación (Ciudadanía Digital).
+- Roles de usuarios.
+- Control de acceso.
+ Entrega del código fuente y despliegue
+de una versión funcional del sistema en
+entorno de pruebas.
+Nota: Cualquier costo de librerías
+adicionales, debe correr por cuenta del
+oferente y no tener costos recurrentes
+adicionales. En caso de utilizar licencias
+adicionales deben ser transferidas a la
+contraparte.
+ Desarrollo de otros módulos adicionales,
+según los requerimientos identificados
+durante el proceso de levantamiento de
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+información.
+ Migración y configuración de la base de
+datos, incluyendo medidas de seguridad
+para la protección de la información
+sensible.
+ Implementación de funcionalidades para
+la generación de reportes automáticos y
+visualización de datos mediante tableros
+de indicadores (dashboards). La
+estructura de reportes debe ser
+desarrollada conforme el documento
+anexo A. 
+
+## Producto 3.- 
+Informe técnico que describa
+la implementación definitiva de la fase 1 del
+Sistema Nacional de Inteligencia en el
+entorno operativo de la FELCN, asegurando
+su integración con otras plataformas
+institucionales y validando su
+funcionamiento. Esta fase contempla:
+ Acompañamiento técnico durante la
+integración del sistema con otras
+plataformas tecnológicas existentes,
+garantizando su interoperabilidad y
+funcionamiento estable.
+ El sistema debe estar validado para su
+funcionamiento en los sistemas
+Windows y Linux.
+ Ejecución de pruebas finales que
+incluyan validaciones funcionales, de
+seguridad y de rendimiento en el entorno
+productivo.
+ Validación conjunta con usuarios
+clave para confirmar la operatividad del
+sistema y su alineación con los
+requerimientos institucionales.
+ Entrega del manual de usuario final,
+manual técnico de administración y
+demás guías necesarias para el uso,
+operación y mantenimiento del sistema
+
+--
+
+La presente consultoría se enfocará exclusivamente en el desarrollo técnico del Sistema
+Nacional de Inteligencia de la FELCN (Fase 1), conforme a los lineamientos y especificaciones
+previamente establecidos. El diseño conceptual, funcional y arquitectónico del sistema ya ha
+sido definido y se encuentra detallado en el Anexo A, el cual deberá ser tomado como referencia
+obligatoria para la implementación.
+
+## 5. Duración de la consultoría
+
+Periodo de la contratación, la consultoría tendrá una duración de 200 días calendario.
+
+## 6. Localización de los trabajos
+
+Lugar(es) de trabajo: El/la consultor/a desarrollará sus actividades en la ciudad de La Paz, en estrecha
+coordinación con la Unidad de Telemática de la Dirección General de la Fuerza Especial de Lucha
+contra el Narcotráfico (FELCN), bajo supervisión de la persona designada de la UNODC.
+La consultoría contempla honorarios, cargas sociales e impuestos de ley.
+
+## 7. Supervisión y Aprobación
+
+La consultoría será supervisada por el coordinador del proyecto BOL EU1 de la UNODC o la persona
+que designe.
+La aprobación estará a cargo de UNODC, previa conformidad con el punto focal de la Fuerza Especial
+de Lucha contra el Narcotráfico (FELCN). Los productos deberán ser entregados en los plazos
+establecidos en el punto 4: Productos. El/La consultor(a) deberá presentar su respectiva factura una
+vez aprobado cada producto por parte la UNODC.
+Debe considerarse que el pago de la factura correspondiente debe ser aprobado por la Sede de la
+UNODC en Viena; lo que requiere un tiempo aproximado de 30 días.
+
+# ANEXO A
+
+
+# MANUAL DE REQUERIMIENTOS
+
+
+# SISTEMA NACIONAL DE INTELIGENCIA
+
+Objetivo: Permitirá realizar el almacenamiento de la Información de Inteligencia en base a
+información pre y post operativa de los casos generados, así también de fuentes de información
+cerradas y abiertas.
+Requerimiento básico: El Sistema Nacional de Inteligencia es una aplicación web la cual es
+ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente Google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+Roles: El rol es la clasificación que tienen los usuarios dentro del sistema, de manera que así se
+controla el trabajo de cada usuario dando determinados privilegios a los mismos según el rol.
+-
+Administradores: Posee todos los privilegios dentro del sistema, generalmente son
+sus creadores y/o personas capaces de manejar toda su información como crear
+cuentas de usuarios, parametrizar las bases de datos, Auditar, administrar la
+información y en caso de que fuera necesario la modificación del mismo.
+-
+Encargado de Seguimiento de casos, Encargado de Registro de Antecedentes,
+Filiador, Analista, Investigador y Certificador: Lo poseen los usuarios encargados
+de consultar y administrar la información en las Diferentes Unidades para luego
+procesarla en algún procedimiento policial ya sea para registrar operativos y avances
+de los casos, filiar personas que hayan cometido un delito por narcotráfico, realizar
+un reporte de inteligencia, realizar análisis de situación, realizar reportes
+parametrizados, expedir una certificación relacionada al narcotráfico o simplemente
+para dar respuesta a un requerimiento fiscal.
+Acceso: El sistema de información será accesible desde cualquier unidad operativa a través del
+dominio institucional.
+Al acceder, el sistema desplegará una pantalla de autenticación que funcionará como punto de
+entrada seguro. Esta interfaz permitirá el ingreso únicamente a usuarios previamente registrados
+y autorizados, según los roles definidos en el sistema.
+Requerimientos funcionales:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+- 
+El sistema debe validar las credenciales del usuario mediante los campos:
+- 
+Ciudadanía Digital, Número de pase
+- 
+Contraseña
+- 
+El sistema debe permitir el acceso únicamente si las credenciales son correctas y el usuario
+tiene un rol activo asignado.
+- 
+El sistema debe redirigir al usuario a la interfaz correspondiente según su rol (por ejemplo:
+Encargado de Seguimiento de casos, Encargado de Registro de Antecedentes, Filiador,
+Analista, Investigador y Certificador).
+Requerimientos no funcionales:
+- 
+La autenticación debe realizarse mediante una conexión segura
+- 
+La interfaz de acceso debe ser compatible con navegadores modernos (Google Chrome,
+Mozilla Firefox).
+
+# CUADRO GENERAL DEL SISTEMA NACIONAL DE INTELIGENCIA
+
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# MÓDULO DE ANÁLISIS DE INFORMACIÓN DE INTELIGENCIA
+
+Objetivo: Permitirá realizar el almacenamiento de las Personas que cuentan con antecedentes por
+narcotráfico, así como el seguimiento de los casos donde no existen personas aprendidas (X) y
+Personas Buscadas por un mandamiento, con la finalidad de demostrar la transparencia del registro
+y de la información.
+Requerimiento básico: El Sistema Nacional de Información es una aplicación web la cual es
+ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+- Escáner ZF2 de huellas dactilares de DERMALOG
+Roles: El rol es la clasificación que tienen los usuarios dentro del sistema, de manera que así se
+controla el trabajo de cada usuario dando determinados privilegios a los mismos según el rol.
+-
+Administradores: Posee todos los privilegios dentro del sistema, generalmente son
+sus creadores y/o personas capaces de manejar toda su información como crear
+cuentas de usuarios, parametrizar las bases de datos, Auditar, administrar la
+información y en caso de que fuera necesario la modificación del mismo.
+-
+Encargado de Registro de Antecedentes, Filiador, Analista, Investigador y
+Certificador: Lo poseen los usuarios encargados de consultar y administrar la
+información en las Diferentes Unidades para luego procesarla en algún procedimiento
+policial ya sea para registrar operativos y avances de los casos, filiar personas que
+hayan cometido un delito por narcotráfico, realizar un reporte de inteligencia, realizar
+análisis de situación, realizar reportes parametrizados, expedir una certificación
+relacionada al narcotráfico o simplemente para dar respuesta a un requerimiento
+fiscal.
+Acceso: El sistema de información será accesible desde cualquier unidad operativa a través del
+dominio institucional.
+Al acceder, el sistema desplegará una pantalla de autenticación que funcionará como punto de
+entrada seguro. Esta interfaz permitirá el ingreso únicamente a usuarios previamente registrados
+y autorizados, según los roles definidos en el sistema.
+Requerimientos funcionales:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+- 
+El sistema debe validar las credenciales del usuario mediante los campos:
+- 
+Ciudadanía Digital, Número de pase
+- 
+Contraseña
+- 
+El sistema debe permitir el acceso únicamente si las credenciales son correctas y el usuario
+tiene un rol activo asignado.
+- 
+El sistema debe redirigir al usuario a la interfaz correspondiente según su rol (por ejemplo:
+Encargado de Registro de Antecedentes, Filiador, Analista, Investigador y Certificador).
+Requerimientos no funcionales:
+- 
+La autenticación debe realizarse mediante una conexión segura
+- 
+La interfaz de acceso debe ser compatible con navegadores modernos (Google Chrome,
+Mozilla Firefox).
+Creación y Asignación de Casos: Para la Asignación de Casos las Unidades Operativas deben
+llamar al departamento Nacional de Inteligencia para pedir un número de Caso con el cual se
+registrará la información del Operativo y las personas filiadas en las Jefaturas Departamentales
+relacionadas con el delito de narcotráfico.
+Para ello se pedirá la siguiente información:
+Descripción
+Datos
+Asignación de Numero de Registro Operativo
+Autogenerado por el Sistema
+Asignación de Nro. de Caso:
+Autogenerado por el Sistema
+Departamento donde se Originó el Caso
+La Unidad Operativa que Intervino en el Operativo
+La Inicial del Principal Sospechoso
+Nombre del Caso
+Si lo tuviere en caso de ser significativo
+Asignado al Caso
+El Asignado al Caso
+Fiscal Asignado
+El Fiscal Asignado al Caso
+Numero de Caso Fiscalía
+Interoperabilidad por fiscalía
+Gestión
+La Gestión (Automático del Sistema)
+Casos Ya Creados: Para la Asignación de Casos las Unidades Operativas envían informes con
+casos creados por la Jefatura Departamental y Fiscalía, las cuales son registradas en las mismas,
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+este formulario es para las personas filiadas en las Jefaturas Departamentales donde los números
+de casos son creados por ellas mismas.
+Para ello se pedirá la Siguiente información:
+Descripción
+Datos
+Asignación de Numero de Registro
+Operativo
+Autogenerado por el Sistema
+Asignación de Nro. de Caso:
+Enviado
+y
+Registrado
+por
+La
+Jefatura
+Departamental
+Departamento donde se Originó el Caso
+La Unidad Operativa que Intervino en el Operativo
+La Inicial del Principal Sospechoso
+Nombre del Caso
+Si lo tuviere en caso de ser significativo
+Asignado al Caso
+El Asignado al Caso
+Fiscal Asignado
+El Fiscal Asignado al Caso
+Lista de Casos:
+En la Lista de Casos a Nivel Nacional se encuentran los casos Generados por el Departamento
+Nacional de Inteligencia como los Casos Generados por las Jefaturas Departamentales.
+Consulta de Casos: Interacción con el Sistema de Control y Seguimiento de Casos: Se realiza
+la Consulta de Operativos Llenados en el Sistema de Control y Seguimiento de Casos cuyos
+informes están registrados en dicho sistema de información:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Ingreso de datos: La Filiación de una persona implica varios aspectos, que exista primero el
+número de caso para su registro, de que haya un informe del asignado al caso exista las tarjetas
+prontuario y las fotografías, etc, toda la información que requiera el sistema.
+Filiación de Persona: Para la filiación de una persona se necesitan los datos biográficos de la
+misma y las que contiene la tarjeta prontuario
+La información que contiene los datos biográficos son las siguientes:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# DESCRIPCIÓN
+
+
+# DATOS
+
+Nombre
+Nombre(s)
+Paterno
+Apellido Paterno
+Materno
+Apellido Materno
+Ap. Esposo
+Apellido del Esposo si lo tuviere
+País
+Nacionalidad de la Persona
+Genero
+Masculino
+Femenino
+Fecha de Nacimiento
+Está en el Formato día mes año ej. 05/06/1987
+Estado Civil
+Estado Civil del Aprehendido
+Serie
+Impresión dactilar de la Serie
+Sección
+Impresión dactilar de la Sección
+Foto Frente
+Ingreso de Fotografías en Formato JPG
+Foto Perfil Izq.
+Ingreso de Fotografías en Formato JPG
+Foto Perfil Der.
+Ingreso de Fotografías en Formato JPG
+Dirección
+Dirección del Aprehendido (Actual)
+Observación
+Algunos Otros datos que fueren Necesario
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# DESCRIPCIÓN
+
+
+# DATOS
+
+Tarjeta
+
+# SI
+
+
+# NO
+
+Si se le extendió La Tarjeta Prontuario
+Condición
+de
+la
+Persona
+Vivo
+Fallecido
+Si la Persona que esta aprehendida está viva o fallecida al momento
+de la filiación.
+Información Referencial de los datos Biográficos
+Hechos: El hecho detallado hace referencia al informe (preferentemente del Investigador asignado
+al caso), radiograma u otra información referente al caso donde hace relación con el aprehendido
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Radiograma
+Nro. de Radiograma o Informe donde se encuentra
+la información del hecho
+Caso
+Nro. de Caso Asignado por la Departamento Nal.
+de Inteligencia o Jefaturas Departamentales
+Fecha
+Fecha del Operativo
+Lugar
+Aprehensión
+Lugar de la Aprehensión donde se realizó el
+operativo
+Motivo
+Tipificación que da la Fiscal a
+Los Aprehendidos
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Sentencia
+La sentencia que emitió el Fiscal Asignado al Caso
+Hecho
+Hecho detallado del Caso Preferentemente
+Contenido del Informe
+Estado
+del
+Aprehendido
+Puede ser Aprehendido por un
+Caso Nacional o en el Exterior
+Estado: El lugar donde se encuentra la persona después de que se ha dado la sentencia.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Estado
+del
+Aprehendido
+Que información Dictamina: Condena, Detención Preventiva,
+Domiciliaria, Etc.
+Lugar
+de
+Remisión
+Remitido a: Centro Penitenciario ej. Cárcel de Mocovi
+Fecha
+de
+Remisión
+Fecha de Remisión del Aprehendido día/Mes/Año Ej: 01/02/1998
+Estado
+Vivo
+Fallecido
+Estado de la Persona en el Momento del Dictamen
+Juzgado
+El Juzgado donde se encuentra el Caso
+Guardar Datos
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Juez
+Juez que dictamino la remisión
+Motivo
+Motivo del Dictamen
+Documentos: La documentación encontrada o proporcionada de la persona aprehendida.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Tipo
+de
+Documento
+Ej. Cedula de Identidad, Pasaporte, Salvo Conducto, Etc.
+Numero
+de
+Documento
+El Número del Documento
+Expedido en
+Donde se Expidió El documento Nacional o
+Extranjero
+Alias: El seudónimo con que se le nombra al aprehendido.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Alias
+Apodo, pseudónimo o sobrenombre de una persona
+usada como alternativa a su nombre
+Nombres supuestos: El nombre y apellidos proporcionados por la persona al momento de la
+aprehensión la cual es falsa.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Nombres
+Nombre Falso que dio al Momento de su
+Aprehensión
+Apellido Paterno
+Apellido Paterno Falso que dio al Momento de su
+Aprehensión
+Apellido Materno
+Apellido Materno Falso que dio al Momento de su
+Aprehensión
+Apellido Esposo
+Apellido Materno si lo Tuviere Falso que dio al
+Momento de su Aprehensión
+Profesión: Profesión u ocupación de la Persona Aprehendida, la cual puede ser una o muchas.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Profesión
+Parentesco: Relaciones familiares con que cuenta la persona.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Parentesco
+Grado Consanguíneo de la Persona del
+Familiar del aprehendido
+Nombres
+Nombre(s) de Familiar
+Paterno
+Apellido Paterno del Familiar
+Materno
+Apellido Materno del Familiar
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Edad
+Edad del Familiar
+Dirección
+La Dirección del Familiar
+Teléfono
+Teléfono del Familiar Celular o Fijo
+Estado
+Fallecido
+Vivo
+Condición de la Persona
+Implicado
+
+# NO
+
+
+# SI
+
+Si está Implicado en el Caso
+Fenotipos: Los Datos fenotipos constituye los rasgos observables de un aprehendido, tales como
+la altura, el color de ojos, etc.
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Fecha
+Fecha del Ingreso de la Información del Fenotipo
+Estatura
+Estatura Actual de la Persona
+Peso
+El Peso Actual de la Persona
+Señas
+Señas Particulares como lunares, etc
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# INFORMACIÓN
+
+
+# DATOS DE INGRESO
+
+Tatuajes
+Descripción de algún tatuaje en el cuerpo
+Nariz
+Tipo de Nariz
+Constitución
+Tipo de Constitución
+Color Piel
+Color de Piel Actualmente
+Color Cabello
+Color de Cabello Actual
+Tipo Cabello
+Tipo de Cabello Actual
+Color Ojos
+Color de Ojos Naturales, no estéticos
+Tipo Ojos
+Tipo de Ojos
+Ingreso de tarjetas prontuario: Las tarjetas prontuario es el medio físico con que se registra un
+aprehendido en el momento de la filiación, consiste en 2 tarjetas de anverso y reverso que contiene
+información de la persona, que luego es escaneada para su inserción al sistema.
+Descripción
+Datos
+Nro. de CASO
+Fecha del CASO
+Tarjeta
+Prontuario
+1  Anverso
+Ingreso de Archivo en Formato JPG (recortado al tamaño
+original o escaneado al 100 ppp)
+Tarjeta Prontuario 1
+Reverso
+Ingreso de Archivo en Formato JPG (recortado al tamaño
+original o escaneado al 100 ppp)
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Descripción
+Datos
+Tarjeta Prontuario 2
+Anverso
+Ingreso de Archivo en Formato JPG (recortado al tamaño
+original o escaneado al 100 ppp)
+Tarjeta Prontuario 2
+Reverso
+Ingreso de Archivo en Formato JPG (recortado al tamaño
+original o escaneado al 100 ppp)
+Ingreso de fotografías: Las fotografías son tomadas en el momento de la filiación de manera
+digital son procesadas físicamente y subidas en formato JPG.
+Descripción
+Ingreso de Archivo de Fotos
+Foto Frente
+Ingreso de Archivo en Formato JPG
+Foto Perfil Izquierdo
+Ingreso de Archivo en Formato JPG
+Foto Perfil Derecho
+Ingreso de Archivo en Formato JPG
+Ingreso de Información Biométrica: Ingreso de valores biométricos de huellas dactilares e
+imágenes para su almacenamiento en formato de SDK de los dispositivos ZF2 de DERMALOG.
+Adiciona TPS
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Actualización de la información: Los administradores pueden realizar las actualizaciones previo
+protocolo.
+La actualización de la información contiene un campo MOTIVO DE LA ACTUALIZACION en
+la cual se describe el cambio del contenido de la información introducida.
+Ingresos de casos X: Los Casos X son aquellos casos donde no se cuenta con aprehendido, pero
+si con sustancias, así como por ejemplo él envió de encomiendas las cuales son registradas para
+su búsqueda o investigación de personas sospechosas.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información operativa relacionada al caso X: La Información Operativa es el principal dato que
+se tiene en relación del caso los cuales pueden ser utilizados para la investigación y la
+identificación de presuntos autores.
+Información
+Datos
+Numero Radiograma
+Numero de Radiograma o Informe
+Donde Se registró el Operativo
+Fecha, Hora del Operativo
+Fecha y hora exacta del operativo
+Departamento,
+Provincia,
+Municipio
+Localidad, Dirección
+Lugar del Operativo
+Operativo Realizado en
+Donde fue el operativo ej.: Aeropuertos, Viru Viru
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información
+Datos
+Unidad Operativa
+La Unidad que realizo el Operativo
+Al Mando de
+Al Mando de Quien Estaba el
+Operativo
+Hecho Detallado
+El Hecho detallado, de cómo se encontró la Sustancia
+Personas con fines investigativos o sospechosos: En este formulario se registra la(s) Persona(s)
+Sospechosas o Investigadas relacionadas al caso.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información
+Datos de Ingreso
+Nombres:
+Nombre de la persona que
+está siendo investigada o relacionada al
+caso
+Paterno:
+Apellido Paterno de la
+persona que está siendo investigada o
+relacionada al caso
+Materno:
+Apellido Materno de la
+persona que está siendo investigada o
+relacionada al caso
+Ap. Esposo:
+Apellido de Casada de la
+persona que está siendo investigada o
+relacionada al caso
+País:
+Nacionalidad
+Sexo:
+Masculino
+Femenino
+Dirección:
+Dirección aproximada o
+exacta
+Tipo de Documento
+Tipo
+de
+Documento Nacional o Extranjero
+Numero:
+El Número de Documento
+Estado
+Estado
+de
+la
+persona
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información
+Datos de Ingreso
+Mandamientos y capturas de personas: Los Mandamientos y capturas de personas son
+documentos que ingresan con algún pedido o requerimiento del fiscal para su aprehensión o
+captura.
+Información
+Datos de Ingreso
+
+# REGISTRO
+
+
+# DGFELCN
+
+Registro con que vino el documento
+
+# DISPOSICION
+
+
+# DGFELCN
+
+Que Disposición se le dio al Documento
+
+# FECHA
+
+Fecha del Mandamiento
+
+# GUARDAR
+
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información
+Datos de Ingreso
+
+# PROCEDENCIA
+
+Procedencia del documento
+
+# REFERENCIA
+
+Tipo de Mandamiento
+
+# DELITO
+
+Tipo del Delito de la Búsqueda
+
+# NUMERO
+
+
+# DE
+
+
+# CIRCULAR
+
+Número de la Circular del Documento
+
+# FECHA DE ENVIO
+
+Fecha del Envió del Documento
+
+# REMISION
+
+
+# DE
+
+
+# INFORME A LA DG
+
+
+# FELCN
+
+Fecha de Remisión de a la DGFELCN
+
+# OBSERVACIONES
+
+Alguna
+Observación
+referente
+al
+mandamiento
+
+# REGISTRO DE PERSONA(S)
+
+
+# NOMBRE(S)
+
+Nombre de la Persona con Mandamiento
+
+# APELLIDO
+
+
+# PATERNO
+
+Apellido Paterno de la Persona con Mandamiento
+
+# APELLIDO
+
+
+# MATERNO
+
+Apellido Materno de la Persona con Mandamiento
+Guardar Mandamiento
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información
+Datos de Ingreso
+
+# APELLIDO
+
+
+# DE
+
+
+# CASADA
+
+Apellido de Casada de la Persona con
+Mandamiento
+
+# TIPO
+
+
+# DE
+
+
+# DOCUMENTO
+
+El Tipo de Documento
+Nacional o Extranjero
+
+# NUMERO
+
+
+# DE
+
+
+# DOCUMENTO
+
+Numero de Documento
+
+# FECHA
+
+
+# DE
+
+
+# NACIMIENTO
+
+Fecha de Nacimiento de la Persona con
+Mandamiento
+
+# NACIONALIDAD
+
+País de Origen
+de la Persona Buscada
+
+# MOTIVO
+
+Motivo por el Cual se la Busca
+Personas capturadas por mandamientos: Las personas cuando son encontradas y se ejecutaron
+los mandamientos se las registra para no volverlas a buscar en la base de datos o dar alguna alerta.
+Seleccione un Dato
+Seleccione un Dato
+Guardar Datos
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Fecha
+y
+Hora
+de
+Aprehensión
+Fecha de Hora de la Aprehensión
+Lugar de Aprehensión
+El Lugar exacto donde fue aprehendida
+la persona
+Unidad
+Que Unidad Realizo la Aprehensión
+Grupo
+Que Grupo Operativo Realizo la
+Aprehensión
+Quien lo Aprehendió
+El Funcionario Policial que realizo la
+aprehensión
+Remitido A:
+Donde fue remitido
+24/ 02/ 2020 11:5
+Actualizar
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# MÓDULO DE CONTROL Y SEGUIMIENTO DE CASOS – INFORMACIÓN
+
+
+# OPERATIVA
+
+Objetivo: Realizar el almacenamiento, control y seguimiento los casos investigados, con la
+finalidad de demostrar la transparencia de las actuaciones investigativas, así como la información
+de bienes secuestrados, incautados o confiscados.
+Requerimiento básico: Para la utilización del Sistema de Información es una aplicación web la
+cual es ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+- Scanner (Subir información)
+Acceso a la aplicación: Para ingresar al sistema de información desde cualquiera de las unidades
+operativas se la realiza mediante el dominio institucional.
+Automáticamente se visualizará la ventana de inicio para autenticación y bienvenida. Solo puedan
+acceder los usuarios establecidos y asociado por roles. Si se es usuario del sistema, se deberá
+registrar en los campos mostrados en pantalla (Ciudadanía Digital, nro. de pase y contraseña),
+luego debe pulsar el botón Entrar ó simplemente presionar la tecla Enter del teclado, de esta forma
+se introducirá en el sistema, tanto el destino como los privilegios del rol que ocupe dentro de la
+aplicación.
+Roles definidos:
+- 
+Encargado de Seguimiento de Casos
+- 
+Acceso total al sistema.
+- 
+Puede crear, modificar y eliminar registros.
+- 
+Responsable de la administración general de los casos.
+- 
+Generalmente asignado a personal con funciones de supervisión o coordinación.
+- 
+Investigador
+- 
+Puede ingresar información relacionada con operativos y casos asignados.
+- 
+Registra datos provenientes de unidades operativas ubicadas en departamentos,
+provincias y municipios.
+- 
+Realiza la captación centralizada de información a nivel nacional.
+- 
+Calcula indicadores e índices operativos.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+- 
+Este rol suele ser ocupado por personal de la Oficina Central.
+Menú: El Sistema de Seguimiento de Casos tiene como menú los siguientes puntos:
+- Registro de Casos
+o Control de Operativos
+o Control de Casos
+o Información Georreferenciada
+o Cuadros Estadísticos
+- Información Operativa
+o Ingreso de datos del Operativo
+o Ingreso de Logotipos
+o Bases de Datos Documental
+- Seguimiento de Casos
+o Ingreso de Información Legal
+o Consulta de casos
+- Caso de Investigación Paralela
+o Registro de Casos para Investigación Financiera Paralela
+- Inicio de Investigación y Pérdida de Dominio
+o Lista de casos Asignados por GIAEF por Pérdida de Dominio
+- Seguimiento de Casos por LGI
+o Lista de casos Asignados por GIAEF por Legitimación de Ganancias Ilícitas
+- Salida del Sistema
+Operación del Sistema de Información de Control y Seguimiento de Casos
+Registro de Casos -> Control de Casos -> Crear Numero Operativo
+Información introducida por parámetros generales del dato del o los operativos(s) realizados por
+la Unidad
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+El Número de Operativo Asignado tendrá como objetivo tener un código clave para introducir la
+información operativa.
+Información Operativa -> Ingresos de datos Operativo -> Ingreso Inf. Operativos
+El Número de Operativo Asignado anteriormente es el que se introduce en el cuadro de texto y
+presionando el Botón Buscar se llenara la información General del Operativo (Contenido del
+Informe).
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Nota: Es necesario respetar los formatos de datos introducidos como por ejemplo fecha y hora de
+operativo y las coordenadas ya que los segundos son asignados por (,) en la parte decimal.
+Una vez introducido el informe deberá llenarse los resultados de los operativos de la siguiente
+manera:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Llenara la Información sobre la retención y/o secuestro de coca como personas y vehículos
+implicados en el operativo o son sujetos a investigación los cuales no están aprehendidos o
+secuestrados en caso de los bienes.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Los archivos de Fotografías pueden o no completarse, pero se sugiere que tenga esa información
+para la generación de nuevos casos.
+Introducción de Sustancias Controladas: Llenara la Información sobre secuestro de Sustancias
+Controladas como Droga, Sustancias Solidas y Liquidas, Fabricas, Pozas de Maceración de Coca
+y Laboratorios.
+La información en este acápite debe ser introducida con cuidado ya que los datos son numéricos
+y exactos.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Introducción de Información sobre Bienes Secuestrados: Se introduce todos los bienes con la
+información específica de cada característica del mismo
+Los bienes se encuentran en un catálogo ordenado con las características propias de cada bien,
+para adicionar algún elemento que no esté en el mismo es necesario comunicarse con el
+administrador del Sistema para la inserción del mismo justificando a qué tipo de Bien, la Clase y
+Tipo al que pertenece.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información Operativa -> Ingresos de datos Operativo -> Ing. Logotipos
+Esta Información es necesario tener la información de los Logotipos datos que son objeto de
+análisis para obtener la información de Clanes Familiares u Organizaciones criminales nacionales
+e internacionales que son parte de una investigación.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información Operativa -> Ingresos de datos Operativo -> Ing. Aprehendidos
+Esta Información es necesario tener la información del Número de Operativo como del Número
+de Caso ya que personas que serán filiadas estarán en esta base de datos
+La información introducida este acápite va a la base de datos de Inteligencia Nacional como
+antecedentes por Narcotráfico, la misma que es complementada por el administrador de la
+información, datos relacionados a la persona, fotografías y tarjetas prontuario relacionadas al caso.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información Operativa -> Ingresos de datos Operativo -> Ing. Arrestados
+Esta Información es necesario tener la información del Número de Operativo o del Número de
+Caso ya que estas personas serán introducidas a una base de datos especial por orden del Fiscal
+relacionadas al narcotráfico.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Información Operativa -> Ingresos de datos Operativo -> Consulta Operativos
+Antes de consolidar la información se deberá realizar la consulta respectiva de verificación de
+información introducida con el número de operativo de la siguiente manera:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Validar la Información de un operativo
+Registro de Casos -> Control de Casos -> Aprobar Operativos
+Para que la información se consolide y ya no sea modificada los Encargados de Control y
+Seguimiento de Casos deberán verificar la información introducida con el informe y este contenga
+toda la información requerida para luego aprobarla y sea parte de las estadísticas de la Unidad
+Operativa.
+Operaciones con la Información de un operativo
+Pueden realizarse varias operaciones dentro del sistema como:
+- Resúmenes Estadísticos por fechas, etc.
+- Información Georreferenciada de Operativos
+- Cuadros Estadísticos
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# MODULO DE CONTROL Y SEGUIMIENTO DE CASOS - INFORMACIÓN JURÍCA
+
+Objetivo: Realizar el almacenamiento, control y seguimiento los casos investigados, con la
+finalidad de demostrar la transparencia de las actuaciones investigativas y procesales.
+Requerimiento básico: Para la utilización del Sistema de Información es una aplicación web la
+cual es ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+- Scanner (Subir información)
+Acceso a la aplicación: Para ingresar al sistema de información desde cualquiera de las unidades
+operativas se la realiza mediante el dominio institucional.
+Automáticamente se visualizará la ventana de inicio para autenticación y bienvenida. Solo puedan
+acceder los usuarios establecidos y asociado por roles. Si se es usuario del sistema, se deberá
+registrar en los campos mostrados en pantalla (Ciudadanía Digital, nro. de pase y contraseña),
+luego debe pulsar el botón Entrar ó simplemente presionar la tecla Enter del teclado, de esta forma
+se introducirá en el sistema, tanto el destino como los privilegios del rol que ocupe dentro de la
+aplicación.
+Roles: El rol es la clasificación que tienen los usuarios dentro del sistema, de manera que así se
+controla el trabajo de cada usuario dando determinados privilegios a los mismos según el rol.
+- Encargado de seguimiento de casos: Posee todos los privilegios dentro del sistema,
+generalmente son sus creadores y/o personas capaces de manejar toda su información y en
+caso de que fuera necesario la modificación del mismo.
+- Investigador: Lo poseen los usuarios encargados de ingresar la información de los
+operativos, así como de los casos asignados por el Encargado de Seguimiento de Casos
+introducida por las Unidades Operativas que se encuentran en los Departamentos, Provincias
+y Municipios, realizan la captación centralizada a nivel nacional y los cálculos
+correspondientes para la elaboración de los índices. Generalmente este rol lo ocupa el
+personal de la Oficina Central.
+Seguimiento de casos
+- Datos generales del caso
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+o Servidores(as) Policiales que Intervienen en el operativo (Grado, Nombre y
+Apellidos)
+o Jurisdicción del Caso (Fecha, Jurisdicción, Observación)
+o Control jurisdiccional (Fecha, Juzgado de instrucción en lo penal, Juzgado de partido
+en lo penal, Tribunal de Sentencia en lo penal, Juzgado de ejecución en lo penal
+actual)
+o Investigador (es) asignado (s) al caso (Grados, Nombre y Apellidos, Fecha de
+Asignación al caso)
+o Fiscal(es) Asignado(s) al caso (Nombre y Apellidos, Fecha de Asignación al caso)
+- Personas Implicadas – Etapa de Proceso
+o DATOS GENERALES DEL CASO
+o PERSONAS IMPLICADAS (Situación Legal, Nro. de resolución, Lugar, Fecha,
+Autoridad, Fiscalía, Juzgado o Tribunal, Recursos, Fecha de resolución del recurso,
+Autoridad que resolvió el recurso, Fallo del recurso)
+o Situación Legal del Implicado (Etapa del proceso, Estado del Proceso, Nro. de
+Resolución, Lugar, Fecha, Autoridad, Fiscalía, Juzgado o Tribunal, Recursos, Fecha
+de Resolución del Recurso, Autoridad que resolvió el Recurso, Fallo del Recurso,
+Observaciones)
+- Situación de los Bienes Secuestrados
+o Bienes Secuestrados Descripción y Características (Catalogo Bien, Catalogo Clase,
+Tipo, Descripción, Cantidad)
+o ESTADO LEGAL DEL BIEN (Estado Legal, Resolución, Fecha, Autoridad que
+Emite, Calidad de la Entrega, Fecha de Entrega, Responsable de la Entrega,
+Responsable de la Recepción, Institución Responsable del Bien, Ubicación Física del
+Bien)
+- Casos - codificación
+o Código IANUS y relación de casos anteriores
+o Datos del Proceso
+o Seguimiento Investigativo
+o Datos Documentales (Base de Datos Documental del caso)
+- Documentación de los Bienes (Base de Datos Documental del Bien)
+o Actualización de Imágenes
+o Documentación
+- Cálculo de Patrimonio
+o Introducción y manejo de Costos
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+o Costos Aproximados de bienes
+o Costos Cuantificados de bienes (Real)
+- Sistema de Generación de reportes de casos.
+- Salida del Sistema
+Operación del sistema de información de control y seguimiento de casos
+Seguimiento de Casos → Casos → Ingreso de Información Legal
+Se Realiza la Búsqueda Por Nombre de caso, por el Numero o por el investigador para que nos
+salga una lista de los casos relacionados con la búsqueda y asignado a la Unidad Operativa.
+En esta lista puede ingresar presionando el Botón Seleccionar.
+A Continuación, para ingresar la información Legal deberá seleccionar el icono relacionado a la
+Descripción General del Caso, en el icono de texto e imagen para ingresar a la Información Legal
+del Caso.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Casos → Ingreso de Información Legal → Casos
+Se Ingresa la Información General del Caso relacionado a la Primera Intervención, como los
+Servidores Policiales, La Jurisdicción del Caso, El Control Jurisdiccional, El Asignado al Caso,
+así como el Fiscal.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Casos → Ingreso de Información Legal → Casos
+La Codificación de los Casos relacionados con fiscalía, así como los datos del proceso y el
+seguimiento investigativo están en esta sección las cuales son ingresadas con información
+generada en el cuaderno de investigaciones juntamente el fiscal Asignado el cual proveerán la
+información de todas las actuaciones generadas con el investigador asignado al caso.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+La Información Introducida también hace referencia a relacionar delitos anteriores con el caso
+actual o donde se originó al caso.
+Seguimiento de Casos → Casos → Ingreso de Información Legal → Personas Implicadas y
+la Etapa de Proceso
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+El Registro de la Situación Legal y las Etapas Procesales de las Personas Implicadas se encuentra
+en este módulo donde se registra su situación procesal y las medidas sustitutivas como también
+quien la emitió.
+También se podrá actualizar los recursos que las personas implicadas en el caso presentaron y así
+tener una base de datos Legal completa.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Casos → Ingreso de Información Legal → Situación Legal de los
+Bienes
+Los Bienes que son secuestrados en la etapa inicial donde se realizó el operativo tiene su propia
+formalización legal este está detallado en diversas conclusiones dependiendo de la autoridad Legal
+que la emitió esta puede ser: Secuestrado, Incautado, Confiscado o con pérdida de dominio.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Así también se procede al llenado de la información de entrega de bienes secuestrados en sus
+diferentes procesos:
+Esta Información es introducida desde su punto de vista legal, así como la documentación
+escaneada para el respaldo del mismo.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Ejemplo:
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Casos → Ingreso de Información Legal → Calculo de Patrimonio
+El cálculo de patrimonio se la realiza de dos maneras una por el investigador es cual ingresa valor
+aproximado y dos realizada por el perito que ingresa los valores reales y así saber en bienes el
+valor afectado al narcotráfico durante la investigación.
+Seguimiento de Casos → Casos → Reporte General del Caso
+La Información generada por la introducción de la información legal da como resultado que un
+Caso generado por el grupo operativo y asistido legalmente pueda tener como resultado reportes
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+consistentes y con información procesada de manera que si se asigna un nuevo investigador esta
+tenga toda la documentación en regla y no busque de manera física en juzgados.
+Seguimiento de Casos → Casos de Investigación Financiera Paralela
+Se realiza los procedimientos con Fiscalía especializada de Sustancias Controladas, Legitimación
+De Ganancias Ilícitas y la Unidad de Investigación Financiera para la apertura de casos de
+Investigación Financiera Paralela
+
+# CONTROL Y SEGUIMIENTO DE CASOS DE LEGITIMACIÓN DE GANACIAS
+
+
+# ILÍCITAS Y ACCIÓN DE PÉRDIDA DE DOMINIO
+
+Para el uso es necesario primero poder ser habilitado por telemática con los siguientes requisitos.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+- Ser destinado a la prestar servicios a la Fuerza especial de Lucha contra el
+narcotráfico
+- Ser destinado a prestar servicios al Departamento nacional del Grupo de
+Investigación y análisis económico Financiero.
+- Tener memorándum de designación como investigador en legitimación de ganancias
+ilícitas o Pérdida de Dominio.
+Para la solicitud de tener un acceso a la base de datos se debe de presentar los siguientes
+documentos:
+- Fotocopia de Carnet de Identidad
+- Fotocopia de Memorándum de designación como investigador
+- Lista de los funcionarios y enviado con nota formal al Departamento Nacional de
+Inteligencia - División de Tecnología y Telemática.
+Una vez presentado la documentación por el conducto regular que corresponde se le brindara un
+usuario y una contraseña.
+Para poder dase de baja de usuario proporcionado, se deberá de realizar un informe indicando que
+el funcionario que tiene acceso a la base de datos ya no brindará servicios en el GIAEF así la
+división de telemática dará de baja al usuario brindado.
+Requerimiento básico: Para la utilización del Sistema de Información es una aplicación web la
+cual es ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente Google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+- Scanner (Subir información)
+Acceso: Para ingresar al sistema de información desde cualquiera de las unidades operativas se la
+realiza mediante el dominio institucional.
+Acceso a la aplicación: Para ingresar al sistema de información desde cualquiera de las unidades
+operativas se la realiza mediante el dominio institucional.
+Automáticamente se visualizará la ventana de inicio para autenticación y bienvenida. Solo puedan
+acceder los usuarios establecidos y asociado por roles. Si se es usuario del sistema, se deberá
+registrar en los campos mostrados en pantalla (Ciudadanía Digital, nro. de pase y contraseña),
+luego debe pulsar el botón Entrar ó simplemente presionar la tecla Enter del teclado, de esta forma
+se introducirá en el sistema, tanto el destino como los privilegios del rol que ocupe dentro de la
+aplicación.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Roles: El rol es la clasificación que tienen los usuarios dentro del sistema, de manera que así se
+controla el trabajo de cada usuario dando determinados privilegios a los mismos según el rol.
+- Encargado de seguimiento de casos: Posee todos los privilegios dentro del sistema,
+generalmente son sus creadores y/o personas capaces de manejar toda su información
+y en caso de que fuera necesario la modificación del mismo.
+- Investigador: Lo poseen los usuarios encargados de ingresar la información de los
+casos de legitimación de ganancias ilícitas, así como de los casos de pérdida de
+dominio asignados por el Encargado de Seguimiento de Casos, realizan la captación
+centralizada a nivel nacional y los cálculos correspondientes para la elaboración de
+los índices. Generalmente este rol lo ocupa el personal de la Oficina Central.
+Operaciones del Módulo de seguimiento de casos: El Sistema de Seguimiento de Casos tiene
+como menú los siguientes puntos:
+- Registro de Casos
+o Ingreso Datos Generales del Caso
+o Ingreso de Casos Antiguos
+o Ingreso de Casos Investigación Financiara Paralela Unidades
+o Lista de Casos
+o Asignación de Tareas y Respuestas
+o Asignar Investigador a Caso
+o Reportes de Casos
+o Añadir Personal
+- Inicio de Investigación
+o Casos Precedentes
+o Personas Naturales
+o Bienes Secuestrados
+o Personas Jurídicas
+- Seguimiento de Casos
+o Tareas del Investigador
+o Información General del Caso
+o IANUS-Datos Proceso-Codificación
+o Situación Legal Personas
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+o Situación Legal Bienes
+o Documentación Bienes
+o Cálculo de Patrimonio
+- Consultas
+o Reportes
+- Estadísticas
+o Personas
+o Personas Jurídicas
+o Bienes
+o Casos Por Pérdida de Dominio
+o Casos Por Legitimación de Ganancias
+Seguimiento de Casos → Ingreso de Datos Generales del Caso
+Se realiza los procedimientos de registro de casos de la Unidad de Investigación para la apertura
+de casos de Investigación por legitimación de ganancias ilícitas y pérdida de dominio.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Inicio de Investigación
+Se realiza los procedimientos de parametrización de casos de personas investigadas, empresas,
+bienes en Investigación por legitimación de ganancias ilícitas y pérdida de dominio.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Seguimiento de Casos
+Se realiza los procedimientos de registro de las actualizaciones de los procedimientos policiales
+de allanamientos, registro del cuaderno de investigaciones digital, Seguimiento Jurídico del caso,
+actuaciones en fiscalía, situación jurídica de los casos, situación jurídica de los bienes, y cálculo
+de patrimonio de casos en investigación por legitimación de ganancias ilícitas y pérdida de
+dominio.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Consultas
+Se realiza los procedimientos de consultas parametrizadas de los procedimientos policiales de
+allanamientos, Seguimiento Jurídico del caso, actuaciones en fiscalía, situación jurídica de los
+casos, situación jurídica de los bienes, etc. Mediante las variables cruzadas en investigación por
+legitimación de ganancias ilícitas y pérdida de dominio.
+Seguimiento de Casos → Estadísticas
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Se realiza los procedimientos de cuadros estadísticos parametrizados de las variables cruzadas en
+investigación por legitimación de ganancias ilícitas y pérdida de dominio, de personas, bienes
+secuestrados, personas jurídicas, etc.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Seguimiento de Casos → Reportes
+Se realiza los procedimientos de reportes de variables cruzadas en investigación por legitimación
+de ganancias ilícitas y pérdida de dominio, de personas, bienes secuestrados, personas jurídicas.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+# MODULO MÓDULO DE ANÁLISIS DE INFORMACIÓN DE INTELIGENCIA
+
+Objetivo: Realizar el almacenamiento, de investigaciones pre y post operativas, así como la
+identificación de organizaciones criminales y clanes familiares, etc., con la finalidad de demostrar
+la transparencia de las actuaciones investigativas.
+Requerimiento básico: Para la utilización del Sistema de Información es una aplicación web la
+cual es ingresada a través de un navegador.
+- Un navegador cualquiera (preferiblemente google Chrome o Mozilla Firefox).
+- Sistema Operativo Windows o Linux
+- Scanner (Subir información)
+Acceso a la aplicación: Para ingresar al sistema de información desde cualquiera de las unidades
+operativas se la realiza mediante el dominio institucional.
+Automáticamente se visualizará la ventana de inicio para autenticación y bienvenida. Solo puedan
+acceder los usuarios establecidos y asociado por roles. Si se es usuario del sistema, se deberá
+registrar en los campos mostrados en pantalla (Ciudadanía Digital, nro. de pase y contraseña),
+luego debe pulsar el botón Entrar ó simplemente presionar la tecla Enter del teclado, de esta forma
+se introducirá en el sistema, tanto el destino como los privilegios del rol que ocupe dentro de la
+aplicación.
+Roles: El rol es la clasificación que tienen los usuarios dentro del sistema, de manera que así se
+controla el trabajo de cada usuario dando determinados privilegios a los mismos según el rol.
+- Administrador de Casos en Investigación: Posee todos los privilegios dentro del
+sistema en temas investigativos, generalmente son creadores y/o de casos en
+investigación personas capaces de manejar la información sensitiva y en caso de que
+fuera necesario la actualización de las investigaciones como asignación y
+reasignación de analistas.
+- Analistas: Lo poseen los usuarios encargados de ingresar la información de las
+investigaciones, seguimiento de los operativos y casos relacionados al narcotráfico y delitos
+conexos, identificación de blancos de alto valor, empresas, acciones policiales, actividades
+investigativas para generar productos de inteligencia como ser: Reporte de Investigaciones,
+Análisis de situación de Inteligencia, Interoperabilidad con otras Instituciones para la
+identificación y procesamiento de información relacionada a la investigación, Reportes de
+Análisis de Inteligencia, Análisis Georreferenciado, etc.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Análisis de Información de Inteligencia
+- Registro de Investigaciones
+ Registro de Casos de Investigación
+ Ingreso de Personas Investigadas
+ Ingreso de Empresas Investigadas
+ Ingresos de Documentos (Bases de Datos Documental)
+ Ingreso de Archivos Multimedia
+ Ingreso de Flujos Telefónicos
+ Ingreso de Vehículos investigados
+ Ingreso de Bienes y Propiedades investigadas
+- Reporte de Investigaciones
+ Diagrama de Vinculo de Datos
+ Diagrama de Vinculo de Investigaciones
+ Georreferenciación de Variables de Investigación
+ Exportación de Datos en formato PDF, CSV, XML y EXCEL
+- Reportes de Análisis de Inteligencia
+ Tipo Drogas (Mapas temáticos, de calor, Geográficos, Valores)
+ Tipo de Sustancias Controladas (Mapas temáticos, Geográficos,
+Valores)
+ Parametrizaciones: Consumo de Drogas, Trafico, Pistas Clandestinas,
+Logotipos, etc (Mapas temáticos, Geográficos, Valores)
+ Mapas de Calor
+- Reportes de Antecedentes por Narcotráfico
+ Por Personas (Certificaciones, Requerimientos Fiscales, etc)
+ Por Hechos (parametrizaciones: lugares, nacionalidades, etc)
+ Por Rutas de Narcotráfico
+ Situación Jurídica
+ Exportación de Datos en Formato (Pdf, MS Excel, Json, CSV)
+- Interoperabilidad con otras Instituciones (Consumo de Información)
+
+#  SEGIP
+
+
+#  SEPREC
+
+
+#  INRA
+
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+
+#  SIN
+
+
+#  ITV
+
+
+#  AGETIC
+
+ Etc.
+Análisis de Información de Inteligencia → Registro de Investigaciones
+Se realiza los procedimientos de registro de investigaciones de casos donde existe información
+sensitiva al cual se realizarán procesos de investigación, a la cual se empezará por el caso,
+personas, empresas, flujos telefónicos, objetos encontrados en investigación, etc., asimismo se
+procederá al análisis geográfico y de vínculos.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Análisis de Información de Inteligencia → Reporte de Investigaciones
+Se realiza los procedimientos de reporte de los procesos de investigación, el cual se tendrá reportes
+con variables cruzadas en análisis de datos, geográfico y de vínculos.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Análisis de Información de Inteligencia → Reportes de Análisis de Inteligencia
+Se realiza los procedimientos de reporte de los procesos de investigación, con variables cruzadas
+en mapas temáticos, geográficos, etc.
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Diagrama Modulo Registro de Antecedentes
+Diagrama Modulo de Seguimiento de casos Operativo - Jurídico
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Diagrama Modulo de Legitimación de Ganancias Ilícitas
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Diagrama Módulo de Análisis de Información de Inteligencia
+Aprobado
+___________________
+Docusign Envelope ID: 3C4500FD-2B1F-4B15-9DB2-A51C326465EC
+Coordinador de Proyecto
+21-ago.-2025
+
+# UNODC
