@@ -43,7 +43,10 @@ export class GradoRepository {
   }
 
   async actualizar(id: number, dto: ActualizarGradoDto, usuarioAuditoria: string) {
-    const datos = new Grado({ ...dto, usuarioModificacion: usuarioAuditoria })
-    return await this.dataSource.getRepository(Grado).update(id, datos)
+    const repo = this.dataSource.getRepository(Grado)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...dto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 }

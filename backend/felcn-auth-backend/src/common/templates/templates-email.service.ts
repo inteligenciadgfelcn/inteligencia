@@ -235,6 +235,93 @@ export class TemplateEmailService {
     `
     return buildLayout(content)
   }
+  // ─── Template 5: Código OTP / Verificación en dos pasos ──────────────────
+  // Uso: login con 2FA habilitado
+  static armarPlantillaOtp(codigo: string, expiracionMin: number): string {
+    const digitos = codigo.split('')
+    const bloqueDigitos = digitos
+      .map(
+        (d) =>
+          `<td style="padding:0 5px;">
+             <div style="width:44px;height:56px;line-height:56px;text-align:center;
+                         background:${C.primaryLight};border:2px solid ${C.primary};
+                         border-radius:8px;font-family:'Courier New',monospace;
+                         font-size:28px;font-weight:700;color:${C.primary};">
+               ${d}
+             </div>
+           </td>`
+      )
+      .join('')
+
+    const content = `
+      ${header('Código de verificación')}
+
+      <tr>
+        <td class="px" style="padding:0 28px 18px;">
+          <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Para completar el inicio de sesión en el
+            <strong style="color:${C.text};">Sistema FELCN</strong>,
+            introduce el siguiente código de verificación.
+          </p>
+
+          <!-- Bloque de código OTP -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                 style="margin-bottom:20px;">
+            <tr>
+              <td align="center">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>${bloqueDigitos}</tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Vigencia -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                 style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #f9a825;
+                        border-radius:10px;margin-bottom:20px;">
+            <tr>
+              <td style="padding:14px 16px;">
+                <strong style="display:block;font-size:13px;color:#6d4c00;margin-bottom:4px;">
+                  ⏱ Vigencia: ${expiracionMin} minutos
+                </strong>
+                <p style="margin:0;font-size:12.5px;line-height:1.55;color:#7a5500;">
+                  Este código expirará en ${expiracionMin} minutos. Si no lo solicitaste tú,
+                  ignora este mensaje — tu cuenta permanece segura.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Aviso de seguridad OTP -->
+      <tr>
+        <td class="px" style="padding:0 28px 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                 style="background:${C.dangerLight};border:1px solid ${C.dangerBorder};
+                        border-left:4px solid ${C.danger};border-radius:10px;">
+            <tr>
+              <td style="padding:14px 16px;">
+                <strong style="display:block;font-size:13px;color:#7b1e1e;margin-bottom:4px;">
+                  ¿No fuiste tú?
+                </strong>
+                <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8e2410;">
+                  Si no iniciaste sesión en el Sistema FELCN, alguien puede estar intentando
+                  acceder a tu cuenta. <strong>No compartas este código con nadie</strong>
+                  — el personal de soporte nunca te lo pedirá. Contacta al administrador
+                  de inmediato.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      ${securityTips()}
+    `
+    return buildLayout(content)
+  }
 }
 
 // ─── Helpers privados de construcción HTML ────────────────────────────────────

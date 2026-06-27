@@ -72,6 +72,20 @@ export class MensajeriaService extends BaseService implements OnModuleInit {
     )
   }
 
+  /**
+   * Envía un mensaje de WhatsApp con el código OTP.
+   * Pendiente de integración con proveedor autorizado (Meta WA Cloud API / Twilio).
+   * Cuando FELCN provea las credenciales del gateway, se implementa aquí
+   * sin modificar los callers.
+   */
+  async sendWhatsapp(telefono: string, content: string): Promise<void> {
+    this.logger.warn(
+      `[WHATSAPP-NO-DISPONIBLE] Envío WhatsApp pendiente de gateway.\n` +
+        `  Para    : ${telefono}\n` +
+        `  Mensaje : ${content}`
+    )
+  }
+
   /** Fallback de texto plano para clientes que no renderizan HTML. */
   private htmlToText(html: string): string {
     return html

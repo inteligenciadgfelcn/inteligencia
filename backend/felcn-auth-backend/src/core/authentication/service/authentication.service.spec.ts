@@ -102,7 +102,10 @@ describe('AuthenticationService', () => {
               .mockReturnValueOnce({
                 ...resBuscarUsuario,
                 estado: 'ACTIVO',
+                ciudadaniaDigital: true,
+                correoElectronico: '',
                 persona: resPersona,
+                usuarioRol: [{ estado: 'ACTIVO', rol: { id: '1', rol: 'USUARIO' } }],
               }),
             buscarUsuarioId: jest.fn(() => resPerfil),
             obtenerRolActual: jest.fn().mockReturnValueOnce({ idRol: 1 }),
@@ -206,14 +209,14 @@ describe('AuthenticationService', () => {
   it('[validarUsuarioOidc] Debería retornar null cuando no existe el usuario.', async () => {
     const persona = plainToClass(Persona, resPersona) as PersonaDto
 
-    const result = await service.validarUsuarioOidc(persona)
+    const result = await service.validarUsuarioOidc(persona, { correoElectronico: '' })
     expect(result).toBeFalsy()
   })
 
   it('[validarUsuarioOidc] Debería retornar excepcion si el usuario está INACTIVO.', async () => {
     try {
       const persona = plainToClass(Persona, resPersona) as PersonaDto
-      await service.validarUsuarioOidc(persona)
+      await service.validarUsuarioOidc(persona, { correoElectronico: '' })
     } catch (error) {
       expect(error).toBeInstanceOf(UnauthorizedException)
     }
@@ -221,7 +224,7 @@ describe('AuthenticationService', () => {
 
   it('[validarUsuarioOidc] Debería retornar el ID si el usuario está ACTIVO.', async () => {
     const persona = plainToClass(Persona, resPersona) as PersonaDto
-    const result = await service.validarUsuarioOidc(persona)
+    const result = await service.validarUsuarioOidc(persona, { correoElectronico: '' })
     expect(result).toBeDefined()
     expect(result).toHaveProperty('id')
   })

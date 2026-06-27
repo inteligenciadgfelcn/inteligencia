@@ -9,7 +9,7 @@ import { ApplicationModule } from './application/application.module'
 import { LoggerMiddleware } from '@/common/middlewares'
 import { LoggerModule } from '@/core/logger'
 import packageJson from '../package.json'
-import { AppInterceptor } from '@/common/interceptors'
+import { AppInterceptor, AuditoriaSesionInterceptor } from '@/common/interceptors'
 
 import dotenv from 'dotenv'
 import { AuthModule } from './core/config/authorization/auth.module'
@@ -63,6 +63,10 @@ const logToLokiEnabled = String(process.env.LOG_LOKI_ENABLED) === 'true'
     {
       provide: APP_INTERCEPTOR,
       useClass: AppInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditoriaSesionInterceptor,
     },
   ],
 })

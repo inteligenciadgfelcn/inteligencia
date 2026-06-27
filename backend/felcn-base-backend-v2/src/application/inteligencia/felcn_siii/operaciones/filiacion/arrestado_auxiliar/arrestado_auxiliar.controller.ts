@@ -1,8 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ArrestadoAuxiliarService } from './arrestado_auxiliar.service';
 import { CreateArrestadoAuxiliarDto } from './dto/create-arrestado_auxiliar.dto';
 import { UpdateArrestadoAuxiliarDto } from './dto/update-arrestado_auxiliar.dto';
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiTags('Arrestado Auxiliar (SIII)')
 @Controller('arrestado-auxiliar')
 export class ArrestadoAuxiliarController {
   constructor(private readonly arrestadoAuxiliarService: ArrestadoAuxiliarService) {}
