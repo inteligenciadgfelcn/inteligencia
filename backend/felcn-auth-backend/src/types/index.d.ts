@@ -3,6 +3,7 @@ import 'express-session'
 declare global {
   type PassportUser = {
     id: string // colocar el tipo según el modelo usuario.entity
+    usuario: string // nombre de usuario único (CI o login)
     roles: Array<string>
     idRol?: string // rol principal
     rol?: string // rol principal
@@ -16,6 +17,7 @@ declare global {
 
   type PayloadType = {
     id: string
+    usuario: string // nombre de usuario único (CI o login)
     roles: Array<string>
     idRol?: string // rol principal
     rol?: string // rol principal

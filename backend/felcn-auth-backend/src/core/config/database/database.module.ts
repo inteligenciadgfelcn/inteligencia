@@ -16,8 +16,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         entities: [__dirname + '../../../../**/*.entity{.ts,.js}'],
-        keepConnectionAlive: true,
+        keepConnectionAlive: configService.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           configService.get('DB_USE_SSL') === 'true'
             ? {

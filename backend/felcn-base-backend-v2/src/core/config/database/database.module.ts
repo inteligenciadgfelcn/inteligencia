@@ -41,8 +41,15 @@ export const DB_S2I = 's2i' // f_s2i
           configService.get<string>('DB_SIII_PASSWORD') ||
           configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_SIII_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: configService.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           configService.get('DB_USE_SSL') === 'true'
             ? {
@@ -91,8 +98,15 @@ export const DB_S2I = 's2i' // f_s2i
         database:
           config.get<string>('DB_AUTH_DATABASE') ||
           config.get<string>('DB_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
@@ -134,8 +148,15 @@ export const DB_S2I = 's2i' // f_s2i
           config.get<string>('DB_ASIG_CASOS_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_ASIG_CASOS_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
@@ -179,8 +200,15 @@ export const DB_S2I = 's2i' // f_s2i
           config.get<string>('DB_SII_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_SII_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
@@ -225,8 +253,15 @@ export const DB_S2I = 's2i' // f_s2i
           config.get<string>('DB_SOSPECHOSO_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_SOSPECHOSO_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
@@ -272,8 +307,15 @@ export const DB_S2I = 's2i' // f_s2i
           config.get<string>('DB_LGI_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_LGI_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {
@@ -318,8 +360,15 @@ export const DB_S2I = 's2i' // f_s2i
           config.get<string>('DB_S2I_PASSWORD') ||
           config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_S2I_DATABASE'),
-        keepConnectionAlive: true,
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
         synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
         ssl:
           config.get('DB_USE_SSL') === 'true'
             ? {

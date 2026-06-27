@@ -26,19 +26,13 @@ export class UsuarioRolRepository {
     usuarioAuditoria: string,
     transaction?: EntityManager
   ) {
-    return await (
-      transaction?.getRepository(UsuarioRol) ??
-      this.dataSource.getRepository(UsuarioRol)
-    )
-      .createQueryBuilder()
-      .update(UsuarioRol)
-      .set({
-        estado: UsuarioRolEstado.ACTIVE,
-        usuarioModificacion: usuarioAuditoria,
-      })
-      .where('id_usuario = :idUsuario', { idUsuario })
-      .andWhere('id_rol IN(:...ids)', { ids: roles })
-      .execute()
+    const repo = transaction?.getRepository(UsuarioRol) ?? this.dataSource.getRepository(UsuarioRol)
+    const entities = await repo.createQueryBuilder('ur')
+      .where('ur.id_usuario = :idUsuario', { idUsuario })
+      .andWhere('ur.id_rol IN (:...ids)', { ids: roles })
+      .getMany()
+    entities.forEach((e) => { e.estado = UsuarioRolEstado.ACTIVE; e.usuarioModificacion = usuarioAuditoria })
+    return await repo.save(entities)
   }
 
   async inactivar(
@@ -47,19 +41,13 @@ export class UsuarioRolRepository {
     usuarioAuditoria: string,
     transaction?: EntityManager
   ) {
-    return await (
-      transaction?.getRepository(UsuarioRol) ??
-      this.dataSource.getRepository(UsuarioRol)
-    )
-      .createQueryBuilder()
-      .update(UsuarioRol)
-      .set({
-        estado: UsuarioRolEstado.INACTIVE,
-        usuarioModificacion: usuarioAuditoria,
-      })
-      .where('id_usuario = :idUsuario', { idUsuario })
-      .andWhere('id_rol IN(:...ids)', { ids: roles })
-      .execute()
+    const repo = transaction?.getRepository(UsuarioRol) ?? this.dataSource.getRepository(UsuarioRol)
+    const entities = await repo.createQueryBuilder('ur')
+      .where('ur.id_usuario = :idUsuario', { idUsuario })
+      .andWhere('ur.id_rol IN (:...ids)', { ids: roles })
+      .getMany()
+    entities.forEach((e) => { e.estado = UsuarioRolEstado.INACTIVE; e.usuarioModificacion = usuarioAuditoria })
+    return await repo.save(entities)
   }
 
   async cambiarEstadoPorRoles(
@@ -68,18 +56,12 @@ export class UsuarioRolRepository {
     usuarioAuditoria: string,
     transaction?: EntityManager
   ) {
-    return await (
-      transaction?.getRepository(UsuarioRol) ??
-      this.dataSource.getRepository(UsuarioRol)
-    )
-      .createQueryBuilder()
-      .update(UsuarioRol)
-      .set({
-        estado: estado,
-        usuarioModificacion: usuarioAuditoria,
-      })
-      .andWhere('id_rol IN(:...ids)', { ids: roles })
-      .execute()
+    const repo = transaction?.getRepository(UsuarioRol) ?? this.dataSource.getRepository(UsuarioRol)
+    const entities = await repo.createQueryBuilder('ur')
+      .andWhere('ur.id_rol IN (:...ids)', { ids: roles })
+      .getMany()
+    entities.forEach((e) => { e.estado = estado; e.usuarioModificacion = usuarioAuditoria })
+    return await repo.save(entities)
   }
 
   async crear(

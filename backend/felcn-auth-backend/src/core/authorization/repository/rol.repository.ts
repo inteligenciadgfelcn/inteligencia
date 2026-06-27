@@ -99,10 +99,10 @@ export class RolRepository {
   }
 
   async actualizar(id: string, rolDto: CrearRolDto, usuarioAuditoria: string) {
-    const datosActualizar = new Rol({
-      ...rolDto,
-      usuarioModificacion: usuarioAuditoria,
-    })
-    return await this.dataSource.getRepository(Rol).update(id, datosActualizar)
+    const repo = this.dataSource.getRepository(Rol)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...rolDto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 }

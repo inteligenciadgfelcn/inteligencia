@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common'
-// import { AuthorizationConfigModule } from './authorization/authorization.module'
+import { AuthorizationConfigModule } from './authorization/authorization.module'
 import { DataBaseModule } from './database/database.module'
+import { SubscriberModule } from './subscriber/subscriber.module'
 
-// TODO: Reactivar para producción (requiere tabla casbin_rule)
 @Module({
-  imports: [DataBaseModule], // AuthorizationConfigModule desactivado
+  imports: [DataBaseModule, AuthorizationConfigModule, SubscriberModule],
 })
 export class ConfigCoreModule {}

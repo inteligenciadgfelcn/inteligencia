@@ -1,8 +1,8 @@
-import { Controller, Get, Query, Res } from '@nestjs/common'
+import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common'
 import type { Response } from 'express'
 import { ReportBaseService } from '../services/reporte-base.service'
 import { OperativoService } from '../../operativo/service/operativo.service'
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { OperativeReportTemplate } from './templates/form-operativo.template'
 import { CasoGralReportTemplate } from './templates/rep-caso-general.template'
@@ -10,7 +10,10 @@ import { CruzadasReportTemplate } from './templates/rep-cruzadas.template'
 import { SetRequestTimeout } from '@/common/interceptors'
 import { CruzadasService } from '../cruzados/cruzados.service'
 import { ConsultaAvanzadaQueryDto } from '../cruzados/interfaces/consulta-avanzada-filtro.interface'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @ApiTags('Reportes Operativos (SIII)')
 @Controller('reportes')
 export class OperativeReportController extends BaseController {

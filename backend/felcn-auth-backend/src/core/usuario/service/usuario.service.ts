@@ -784,8 +784,9 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
+    const contrasena = TextService.generateShortRandomText()
+
     const op = async (transaccion: EntityManager) => {
-      const contrasena = TextService.generateShortRandomText()
       await this.usuarioRepositorio.actualizar(
         idUsuario,
         {
@@ -804,27 +805,26 @@ export class UsuarioService extends BaseService {
         throw new NotFoundException(Messages.INVALID_USER)
       }
 
-      if (usuarioActualizado.correoElectronico) {
-        // sí está bien ≥ enviar el mail con la contraseña generada
-        const datosCorreo = {
-          correo: usuarioActualizado.correoElectronico,
-          asunto: Messages.SUBJECT_EMAIL_ACCOUNT_RESET,
-        }
-
-        await this.enviarCorreoContrasenia(
-          datosCorreo,
-          usuarioActualizado.usuario,
-          contrasena
-        ).catch((error) => {
-          const mensaje = `Ocurrió un error al enviar el correo electrónico para restaurar la contraseña`
-          this.logger.error(error, mensaje)
-        })
-      }
-
       return usuarioActualizado
     }
 
     const usuarioResult = await this.usuarioRepositorio.runTransaction(op)
+
+    if (usuarioResult.correoElectronico) {
+      const datosCorreo = {
+        correo: usuarioResult.correoElectronico,
+        asunto: Messages.SUBJECT_EMAIL_ACCOUNT_RESET,
+      }
+
+      await this.enviarCorreoContrasenia(
+        datosCorreo,
+        usuarioResult.usuario,
+        contrasena
+      ).catch((error) => {
+        const mensaje = `Ocurrió un error al enviar el correo electrónico para restaurar la contraseña`
+        this.logger.error(error, mensaje)
+      })
+    }
 
     return { id: usuarioResult.id, estado: usuarioResult.estado }
   }
@@ -837,40 +837,20 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
+    const codigo = TextService.generateUuid()
+    const urlActivacion = new URL(
+      this.configService.get('URL_FRONTEND') ?? ''
+    )
+    urlActivacion.pathname = 'activacion'
+    urlActivacion.searchParams.append('q', codigo)
+
     const op = async (transaction: EntityManager) => {
-      const codigo = TextService.generateUuid()
-      const urlActivacion = new URL(
-        this.configService.get('URL_FRONTEND') ?? ''
-      )
-      urlActivacion.pathname = 'activacion'
-      urlActivacion.searchParams.append('q', codigo)
-
-      // this.logger.info(`📩 urlActivacion nuevo: ${urlActivacion}`)
-
       await this.actualizarDatosActivacion(
         usuario.id,
         codigo,
         usuarioAuditoria,
         transaction
       )
-
-      const template =
-        TemplateEmailService.armarPlantillaActivacionCuentaManual(
-          urlActivacion.toString()
-        )
-
-      if (usuario.correoElectronico) {
-        await this.mensajeriaService
-          .sendEmail(
-            usuario.correoElectronico,
-            Messages.NEW_USER_ACCOUNT_VERIFY,
-            template
-          )
-          .catch((error) => {
-            const mensaje = `Ocurrió un error al enviar el correo electrónico de activación de cuenta`
-            this.logger.error(error, mensaje)
-          })
-      }
 
       const usuarioActualizado = await this.usuarioRepositorio.buscarPorId(
         idUsuario,
@@ -886,6 +866,23 @@ export class UsuarioService extends BaseService {
 
     const usuarioResult = await this.usuarioRepositorio.runTransaction(op)
 
+    if (usuario.correoElectronico) {
+      const template =
+        TemplateEmailService.armarPlantillaActivacionCuentaManual(
+          urlActivacion.toString()
+        )
+      await this.mensajeriaService
+        .sendEmail(
+          usuario.correoElectronico,
+          Messages.NEW_USER_ACCOUNT_VERIFY,
+          template
+        )
+        .catch((error) => {
+          const mensaje = `Ocurrió un error al enviar el correo electrónico de activación de cuenta`
+          this.logger.error(error, mensaje)
+        })
+    }
+
     return { id: idUsuario, estado: usuarioResult.estado }
   }
 
@@ -894,6 +891,25 @@ export class UsuarioService extends BaseService {
     usuarioDto: ActualizarUsuarioRolDto,
     usuarioAuditoria: string
   ) {
+    const { persona } = usuarioDto
+
+    // Contrastación SEGIP antes de abrir la transacción para no mantenerla abierta durante latencia HTTP externa
+    if (persona) {
+      const segipEnabled =
+        this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
+
+      if (segipEnabled) {
+        const contrastaSegip = await this.segipServices.contrastar(persona)
+        if (!contrastaSegip?.finalizado) {
+          throw new PreconditionFailedException(contrastaSegip?.mensaje)
+        }
+      } else {
+        this.logger.warn(
+          'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
+        )
+      }
+    }
+
     // 1. verificar que exista el usuario
     const op = async (transaction: EntityManager) => {
       const usuario =
@@ -906,24 +922,7 @@ export class UsuarioService extends BaseService {
         throw new NotFoundException(Messages.INVALID_USER)
       }
 
-      const { persona } = usuarioDto
-
       if (persona) {
-        //contrastación SEGIP
-        const segipEnabled =
-          this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
-
-        if (segipEnabled) {
-          const contrastaSegip = await this.segipServices.contrastar(persona)
-          if (!contrastaSegip?.finalizado) {
-            throw new PreconditionFailedException(contrastaSegip?.mensaje)
-          }
-        } else {
-          this.logger.warn(
-            'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
-          )
-        }
-
         // Verificar que el telefono no este registrado
         if (
           usuarioDto.persona?.telefono &&
@@ -948,7 +947,8 @@ export class UsuarioService extends BaseService {
         await this.usuarioRepositorio.ActualizarDatosPersonaId(
           personaResult.id,
           persona,
-          transaction
+          transaction,
+          usuarioAuditoria
         )
       }
 
@@ -997,7 +997,8 @@ export class UsuarioService extends BaseService {
           {
             ciudadaniaDigital: ciudadaniaDigital,
           },
-          usuarioAuditoria
+          usuarioAuditoria,
+          transaction
         )
       }
 

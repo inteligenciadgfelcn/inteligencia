@@ -3,6 +3,7 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { TextService } from '@/common/lib/text.service'
 import { RefreshTokensService } from './refreshTokens.service'
+import { OtpService } from './otp.service'
 import { USUARIO_NORMAL, USUARIO_SISTEMA } from '@/common/constants'
 import { Configurations } from '@/common/params'
 import { Messages } from '@/common/constants/response-messages'
@@ -27,6 +28,7 @@ export class AuthenticationService extends BaseService {
     private readonly jwtService: JwtService,
     private readonly refreshTokensService: RefreshTokensService,
     private readonly mensajeriaService: MensajeriaService,
+    private readonly otpService: OtpService,
     @Inject(ConfigService) private readonly configService: ConfigService
   ) {
     super()
@@ -138,6 +140,7 @@ export class AuthenticationService extends BaseService {
 
     const payload: PayloadType = {
       id: user.id,
+      usuario: usuario.usuario,
       roles: user.roles,
       idRol: rol.idRol,
       rol: rol.rol,
@@ -343,6 +346,19 @@ export class AuthenticationService extends BaseService {
     }
   }
 
+  /**
+   * Segundo paso del login con 2FA.
+   * Verifica el OTP y, si es correcto, emite el JWT y el refresh token.
+   */
+  async autenticarConOtp(otpSesionId: string, codigo: string) {
+    const idUsuario = await this.otpService.verificar(otpSesionId, codigo)
+
+    const usuarioDto = await this.usuarioService.buscarUsuarioId(idUsuario)
+    const roles = usuarioDto.roles.map((r) => r.rol)
+
+    return this.autenticar({ id: idUsuario, usuario: '', roles })
+  }
+
   async autenticarOidc(user: PassportUser) {
     const usuario = await this.usuarioService.buscarUsuarioId(user.id)
 
@@ -350,6 +366,7 @@ export class AuthenticationService extends BaseService {
 
     const payload: PayloadType = {
       id: user.id,
+      usuario: usuario.usuario,
       roles: user.roles,
       idRol: rol.idRol,
       rol: rol.rol,
