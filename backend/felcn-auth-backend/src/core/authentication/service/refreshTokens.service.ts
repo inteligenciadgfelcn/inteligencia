@@ -92,6 +92,7 @@ export class RefreshTokensService extends BaseService {
 
     const payload: PayloadType = {
       id: usuario.id,
+      usuario: usuario.usuario,
       roles,
       idRol: rol.idRol,
       rol: rol.rol,
@@ -134,7 +135,7 @@ export class RefreshTokensService extends BaseService {
     return this.refreshTokensRepository.eliminar(refreshToken.id)
   }
 
-  @Cron(process.env.REFRESH_TOKEN_REVISIONS || '0')
+  @Cron(process.env.REFRESH_TOKEN_REVISIONS || '0 3 * * *')
   eliminarCaducos() {
     return this.refreshTokensRepository.eliminarTokensCaducos()
   }

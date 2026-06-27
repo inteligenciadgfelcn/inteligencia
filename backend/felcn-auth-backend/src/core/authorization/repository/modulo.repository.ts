@@ -132,14 +132,11 @@ export class ModuloRepository {
     moduloDto: ActualizarModuloDto,
     usuarioAuditoria: string
   ) {
-    const datosActualizar = new Modulo({
-      ...moduloDto,
-      usuarioModificacion: usuarioAuditoria,
-    })
-
-    return await this.dataSource
-      .getRepository(Modulo)
-      .update(id, datosActualizar)
+    const repo = this.dataSource.getRepository(Modulo)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...moduloDto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 
   async eliminar(id: string) {

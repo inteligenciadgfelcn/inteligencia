@@ -527,3 +527,177 @@ describe('UsuarioService', () => {
     }
   })
 })
+
+// Pruebas de regresión para el bug de transacción en actualizarDatos
+// Verifican que todos los actualizar() dentro del callback reciben el EntityManager de la transacción
+describe('[actualizarDatos] Integridad de transacción', () => {
+  let serviceT: UsuarioService
+  let mockActualizar: jest.Mock
+  const mockTransaction = {} as import('typeorm').EntityManager
+  const usuarioEnBD = {
+    id: 'uid-1',
+    correoElectronico: 'correo@actual.com',
+    idPersona: 'pid-1',
+    persona: { telefono: '70000000' },
+  }
+
+  beforeAll(async () => {
+    mockActualizar = jest.fn().mockResolvedValue({})
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ConfigService,
+        UsuarioService,
+        {
+          provide: UsuarioRepository,
+          useValue: {
+            buscarDatosDeContactoDelUsuarioPorId: jest
+              .fn()
+              .mockResolvedValue(usuarioEnBD),
+            buscarUsuarioPorCorreo: jest.fn().mockResolvedValue(null),
+            actualizar: mockActualizar,
+            runTransaction: jest.fn((op) => op(mockTransaction)),
+          },
+        },
+        {
+          provide: UsuarioRolRepository,
+          useValue: {
+            obtenerRolesPorUsuario: jest.fn().mockResolvedValue([]),
+            activar: jest.fn(),
+            inactivar: jest.fn(),
+            crear: jest.fn(),
+          },
+        },
+        {
+          provide: MensajeriaService,
+          useValue: { sendEmail: jest.fn().mockResolvedValue(true) },
+        },
+        {
+          provide: SegipService,
+          useValue: {
+            contrastar: jest.fn().mockResolvedValue({ finalizado: true }),
+          },
+        },
+        {
+          provide: PersonaRepository,
+          useValue: {},
+        },
+        {
+          provide: AuthorizationService,
+          useValue: { obtenerPermisosPorRol: jest.fn() },
+        },
+        {
+          provide: RolRepository,
+          useValue: {},
+        },
+        {
+          provide: FileValidationService,
+          useValue: {},
+        },
+      ],
+    }).compile()
+
+    serviceT = module.get<UsuarioService>(UsuarioService)
+  })
+
+  beforeEach(() => {
+    mockActualizar.mockClear()
+  })
+
+  it('debe pasar transaction al actualizar ciudadaniaDigital', async () => {
+    const dto = new ActualizarUsuarioRolDto()
+    dto.roles = []
+    dto.ciudadaniaDigital = true
+
+    await serviceT.actualizarDatos('uid-1', dto, 'auditoria-id')
+
+    const llamadaCiudadania = mockActualizar.mock.calls.find(
+      ([, data]) => data && 'ciudadaniaDigital' in data
+    )
+    expect(llamadaCiudadania).toBeDefined()
+    // 4to argumento debe ser el EntityManager de la transacción (no undefined)
+    expect(llamadaCiudadania[3]).toBe(mockTransaction)
+  })
+
+  it('debe pasar transaction al actualizar correoElectronico', async () => {
+    const dto = new ActualizarUsuarioRolDto()
+    dto.roles = []
+    dto.correoElectronico = 'nuevo@correo.com'
+
+    await serviceT.actualizarDatos('uid-1', dto, 'auditoria-id')
+
+    const llamadaCorreo = mockActualizar.mock.calls.find(
+      ([, data]) => data && 'correoElectronico' in data
+    )
+    expect(llamadaCorreo).toBeDefined()
+    expect(llamadaCorreo[3]).toBe(mockTransaction)
+  })
+
+  it('restaurarContrasena: el correo se envía después de que la transacción commitea', async () => {
+    const callOrder: string[] = []
+    const mockRunTransaction = jest.fn((op) => {
+      const result = op(mockTransaction)
+      callOrder.push('transaction_committed')
+      return result
+    })
+    const mockSendEmail = jest.fn(() => {
+      callOrder.push('email_sent')
+      return Promise.resolve(true)
+    })
+
+    const module2: TestingModule = await Test.createTestingModule({
+      providers: [
+        ConfigService,
+        UsuarioService,
+        {
+          provide: UsuarioRepository,
+          useValue: {
+            buscarPorId: jest.fn().mockResolvedValue({
+              id: 'uid-1',
+              estado: 'ACTIVO',
+              correoElectronico: 'correo@test.com',
+              usuario: 'TESTER',
+            }),
+            actualizar: jest.fn().mockResolvedValue({}),
+            runTransaction: mockRunTransaction,
+          },
+        },
+        {
+          provide: UsuarioRolRepository,
+          useValue: { obtenerRolesPorUsuario: jest.fn().mockResolvedValue([]) },
+        },
+        {
+          provide: MensajeriaService,
+          useValue: { sendEmail: mockSendEmail },
+        },
+        {
+          provide: SegipService,
+          useValue: { contrastar: jest.fn() },
+        },
+        {
+          provide: PersonaRepository,
+          useValue: {},
+        },
+        {
+          provide: AuthorizationService,
+          useValue: { obtenerPermisosPorRol: jest.fn() },
+        },
+        {
+          provide: RolRepository,
+          useValue: {},
+        },
+        {
+          provide: FileValidationService,
+          useValue: {},
+        },
+      ],
+    }).compile()
+
+    const serviceR = module2.get<UsuarioService>(UsuarioService)
+    await serviceR.restaurarContrasena('uid-1', 'auditor-id')
+
+    expect(callOrder.indexOf('transaction_committed')).toBeLessThan(
+      callOrder.indexOf('email_sent')
+    )
+  })
+})

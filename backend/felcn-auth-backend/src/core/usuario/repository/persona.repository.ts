@@ -40,14 +40,16 @@ export class PersonaRepository {
     const repo =
       transaction?.getRepository(Persona) ??
       this.dataSource.getRepository(Persona)
-    await repo.update(id, {
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, {
       nombres: personaDto.nombres,
       primerApellido: personaDto.primerApellido,
       segundoApellido: personaDto.segundoApellido,
-      usuarioModificacion: usuarioAuditoria,
       telefono: personaDto.telefono,
+      usuarioModificacion: usuarioAuditoria,
     })
-    return await repo.findOne({ where: { id } })
+    return await repo.save(existing)
   }
 
   async buscarPersonaPorCI(persona: PersonaDto) {

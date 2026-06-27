@@ -18,10 +18,11 @@ import { LocalAuthGuard } from '../guards/local-auth.guard'
 import { OidcAuthGuard } from '../guards/oidc-auth.guard'
 import { AuthenticationService } from '../service/authentication.service'
 import { RefreshTokensService } from '../service/refreshTokens.service'
+import { OtpService } from '../service/otp.service'
 import { JwtAuthGuard } from '../guards/jwt-auth.guard'
 import { ConfigService } from '@nestjs/config'
-import { AuthDto, CambioRolDto } from '../dto/index.dto'
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { AuthDto, CambioRolDto, VerificarOtpDto } from '../dto/index.dto'
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 
 @Controller()
 @ApiTags('Autenticación')
@@ -29,13 +30,22 @@ export class AuthenticationController extends BaseController {
   constructor(
     private autenticacionService: AuthenticationService,
     private refreshTokensService: RefreshTokensService,
+    private otpService: OtpService,
     @Inject(ConfigService) private configService: ConfigService
   ) {
     super()
   }
 
-  @ApiOperation({ summary: 'API para autenticación con usuario y contraseña' })
+  @ApiOperation({ summary: 'Paso 1 — Autenticación con usuario y contraseña' })
   @ApiBody({ description: 'Autenticación de usuarios', type: AuthDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Login exitoso (sin 2FA) — devuelve access_token y datos del usuario',
+  })
+  @ApiResponse({
+    status: 202,
+    description: 'Credenciales correctas pero se requiere verificación OTP (2FA habilitado)',
+  })
   @UseGuards(LocalAuthGuard)
   @Post('auth')
   async login(@Req() req: Request, @Res() res: Response) {
@@ -44,9 +54,45 @@ export class AuthenticationController extends BaseController {
         `Es necesario que esté autenticado para consumir este recurso.`
       )
     }
-    const result = await this.autenticacionService.autenticar(req.user)
 
-    /* sendRefreshToken(res, result.refresh_token.id); */
+    // Verificar si el usuario tiene 2FA habilitado
+    const resultadoOtp = await this.otpService.iniciarOtp(req.user.id)
+
+    if (resultadoOtp.necesita) {
+      return res.status(202).json({
+        finalizado: true,
+        mensaje: 'Verificación en dos pasos requerida',
+        datos: {
+          requiereOtp: true,
+          otpSesionId: resultadoOtp.otpSesionId,
+          destinoOfuscado: resultadoOtp.destinoOfuscado,
+          canal: resultadoOtp.canal,
+        },
+      })
+    }
+
+    // Sin 2FA — flujo directo (comportamiento existente)
+    const result = await this.autenticacionService.autenticar(req.user)
+    const refreshToken = result.refresh_token.id
+    return res
+      .cookie(
+        this.configService.get('REFRESH_TOKEN_NAME') || '',
+        refreshToken,
+        CookieService.makeConfig(this.configService)
+      )
+      .status(200)
+      .send({ finalizado: true, mensaje: 'ok', datos: result.data })
+  }
+
+  @ApiOperation({ summary: 'Paso 2 — Verificación del código OTP (2FA)' })
+  @ApiBody({ description: 'ID de sesión OTP y código recibido', type: VerificarOtpDto })
+  @ApiResponse({ status: 200, description: 'OTP correcto — devuelve access_token y datos del usuario' })
+  @Post('auth/otp')
+  async verificarOtp(@Body() body: VerificarOtpDto, @Res() res: Response) {
+    const result = await this.autenticacionService.autenticarConOtp(
+      body.otpSesionId,
+      body.codigo
+    )
     const refreshToken = result.refresh_token.id
     return res
       .cookie(

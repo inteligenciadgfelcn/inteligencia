@@ -69,7 +69,10 @@ export class GrupoRepository {
   }
 
   async actualizar(id: number, dto: ActualizarGrupoDto, usuarioAuditoria: string) {
-    const datos = new Grupo({ ...dto, usuarioModificacion: usuarioAuditoria })
-    return await this.dataSource.getRepository(Grupo).update(id, datos)
+    const repo = this.dataSource.getRepository(Grupo)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...dto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 }

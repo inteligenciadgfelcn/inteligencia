@@ -353,44 +353,44 @@ export class UsuarioRepository {
     usuarioAuditoria: string,
     transaction?: EntityManager
   ) {
-    const repo = transaction
-      ? transaction.getRepository(Usuario)
-      : this.dataSource.getRepository(Usuario)
+    const manager = transaction ?? this.dataSource.manager
+    const repo = manager.getRepository(Usuario)
 
-    const datosActualizar = new Usuario({
-      estado: usuarioDto.estado || undefined,
-      correoElectronico: usuarioDto.correoElectronico || undefined,
-      contrasena: usuarioDto.contrasena || undefined,
-      intentos: usuarioDto.intentos || undefined,
-      fechaBloqueo: usuarioDto.fechaBloqueo
-        ? dayjs(usuarioDto.fechaBloqueo).toDate()
-        : undefined,
-      codigoDesbloqueo: usuarioDto.codigoDesbloqueo,
-      codigoRecuperacion: usuarioDto.codigoRecuperacion,
-      codigoTransaccion: usuarioDto.codigoTransaccion,
-      codigoActivacion: usuarioDto.codigoActivacion,
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+
+    Object.assign(existing, {
+      ...(usuarioDto.estado && { estado: usuarioDto.estado }),
+      ...(usuarioDto.correoElectronico && { correoElectronico: usuarioDto.correoElectronico }),
+      ...(usuarioDto.contrasena && { contrasena: usuarioDto.contrasena }),
+      ...(usuarioDto.intentos !== undefined && { intentos: usuarioDto.intentos }),
+      ...(usuarioDto.fechaBloqueo !== undefined && {
+        fechaBloqueo: usuarioDto.fechaBloqueo ? dayjs(usuarioDto.fechaBloqueo).toDate() : null,
+      }),
+      ...(usuarioDto.codigoDesbloqueo !== undefined && { codigoDesbloqueo: usuarioDto.codigoDesbloqueo }),
+      ...(usuarioDto.codigoRecuperacion !== undefined && { codigoRecuperacion: usuarioDto.codigoRecuperacion }),
+      ...(usuarioDto.codigoTransaccion !== undefined && { codigoTransaccion: usuarioDto.codigoTransaccion }),
+      ...(usuarioDto.codigoActivacion !== undefined && { codigoActivacion: usuarioDto.codigoActivacion }),
+      ...(usuarioDto.ciudadaniaDigital !== undefined && { ciudadaniaDigital: usuarioDto.ciudadaniaDigital }),
+      ...(usuarioDto.urlFoto !== undefined && { urlFoto: usuarioDto.urlFoto }),
+      ...(usuarioDto.nombreApp !== undefined && { nombreApp: usuarioDto.nombreApp }),
+      ...(usuarioDto.telefonoCelular !== undefined && { telefonoCelular: usuarioDto.telefonoCelular }),
+      ...(usuarioDto.telefonoCorporativo !== undefined && { telefonoCorporativo: usuarioDto.telefonoCorporativo }),
+      ...(usuarioDto.idGrado !== undefined && { idGrado: usuarioDto.idGrado }),
+      ...(usuarioDto.idGrupo !== undefined && { idGrupo: usuarioDto.idGrupo }),
+      ...(usuarioDto.numeroPase !== undefined && { numeroPase: usuarioDto.numeroPase }),
       usuarioModificacion: usuarioAuditoria,
-      ciudadaniaDigital: usuarioDto.ciudadaniaDigital || undefined,
-      urlFoto: usuarioDto.urlFoto,
-      nombreApp: usuarioDto.nombreApp,
-      telefonoCelular: usuarioDto.telefonoCelular,
-      telefonoCorporativo: usuarioDto.telefonoCorporativo,
-      idGrado: usuarioDto.idGrado,
-      idGrupo: usuarioDto.idGrupo,
-      numeroPase: usuarioDto.numeroPase,
     })
-    return await repo.update(idUsuario, datosActualizar)
+
+    return await repo.save(existing)
   }
 
   async actualizarContadorBloqueos(idUsuario: string, intento: number) {
-    return await this.dataSource
-      .createQueryBuilder()
-      .update(Usuario)
-      .set({
-        intentos: intento,
-      })
-      .where({ id: idUsuario })
-      .execute()
+    const repo = this.dataSource.getRepository(Usuario)
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+    existing.intentos = intento
+    return await repo.save(existing)
   }
 
   async actualizarDatosBloqueo(
@@ -398,28 +398,20 @@ export class UsuarioRepository {
     codigo: string | null,
     fechaBloqueo: Date | null
   ) {
-    const datosActualizar = new Usuario({
-      codigoDesbloqueo: codigo,
-      fechaBloqueo: fechaBloqueo,
-    })
-    return await this.dataSource
-      .createQueryBuilder()
-      .update(Usuario)
-      .set(datosActualizar)
-      .where({ id: idUsuario })
-      .execute()
+    const repo = this.dataSource.getRepository(Usuario)
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+    existing.codigoDesbloqueo = codigo
+    existing.fechaBloqueo = fechaBloqueo
+    return await repo.save(existing)
   }
 
   async actualizarDatosRecuperacion(idUsuario: string, codigo: string) {
-    const datosActualizar = new Usuario({
-      codigoRecuperacion: codigo,
-    })
-    return await this.dataSource
-      .createQueryBuilder()
-      .update(Usuario)
-      .set(datosActualizar)
-      .where({ id: idUsuario })
-      .execute()
+    const repo = this.dataSource.getRepository(Usuario)
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+    existing.codigoRecuperacion = codigo
+    return await repo.save(existing)
   }
 
   async actualizarDatosActivacion(
@@ -428,27 +420,20 @@ export class UsuarioRepository {
     usuarioAuditoria: string,
     transaction: EntityManager
   ) {
-    const datosActualizar = new Usuario({
-      codigoActivacion: codigo,
-      usuarioModificacion: usuarioAuditoria,
-    })
-    return await transaction
-      .createQueryBuilder()
-      .update(Usuario)
-      .set(datosActualizar)
-      .where({ id: idUsuario })
-      .execute()
+    const repo = transaction.getRepository(Usuario)
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+    existing.codigoActivacion = codigo
+    existing.usuarioModificacion = usuarioAuditoria
+    return await repo.save(existing)
   }
 
   async actualizarDatosTransaccion(idUsuario: string, codigo: string) {
-    return await this.dataSource
-      .createQueryBuilder()
-      .update(Usuario)
-      .set({
-        codigoTransaccion: codigo,
-      })
-      .where({ id: idUsuario })
-      .execute()
+    const repo = this.dataSource.getRepository(Usuario)
+    const existing = await repo.findOne({ where: { id: idUsuario as any } })
+    if (!existing) return null
+    existing.codigoTransaccion = codigo
+    return await repo.save(existing)
   }
 
   async buscarPorCodigoDesbloqueo(codigo: string) {
@@ -488,17 +473,11 @@ export class UsuarioRepository {
   }
 
   async actualizarDatosPersona(persona: PersonaDto) {
-    const datosActualizar = new Persona({
-      ...persona,
-    })
-    return await this.dataSource
-      .createQueryBuilder()
-      .update(Persona)
-      .set(datosActualizar)
-      .where('nroDocumento = :nroDocumento', {
-        nroDocumento: persona.nroDocumento,
-      })
-      .execute()
+    const repo = this.dataSource.getRepository(Persona)
+    const existing = await repo.findOne({ where: { nroDocumento: persona.nroDocumento } })
+    if (!existing) return null
+    Object.assign(existing, persona)
+    return await repo.save(existing)
   }
 
   runTransaction<T>(op: (entityManager: EntityManager) => Promise<T>) {
@@ -508,22 +487,19 @@ export class UsuarioRepository {
   async ActualizarDatosPersonaId(
     idPersona: string,
     persona: PersonaDto,
-    transaction?: EntityManager
+    transaction?: EntityManager,
+    usuarioAuditoria?: string
   ) {
-    const datosActualizar = new Persona({
-      ...persona,
-    })
-    return await (
-      transaction?.getRepository(Usuario) ??
-      this.dataSource.getRepository(Usuario)
-    )
-      .createQueryBuilder()
-      .update(Persona)
-      .set(datosActualizar)
-      .where('id = :id', {
-        id: idPersona,
-      })
-      .execute()
+    const manager = transaction ?? this.dataSource.manager
+    const repo = manager.getRepository(Persona)
+
+    const existing = await repo.findOne({ where: { id: idPersona as any } })
+    if (!existing) return null
+
+    Object.assign(existing, persona)
+    if (usuarioAuditoria) existing.usuarioModificacion = usuarioAuditoria
+
+    return await repo.save(existing)
   }
 
   async obtenerCodigoTest(idUsuario: string) {

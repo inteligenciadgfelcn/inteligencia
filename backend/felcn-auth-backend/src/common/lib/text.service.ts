@@ -58,6 +58,11 @@ export class TextService {
     return nanoid()
   }
 
+  static generateNumericOtp(length = 6): string {
+    const generate = customAlphabet('0123456789', length)
+    return generate()
+  }
+
   static validateLevelPassword(password: string) {
     const result = zxcvbn(password)
     return result.score >= Configurations.SCORE_PASSWORD

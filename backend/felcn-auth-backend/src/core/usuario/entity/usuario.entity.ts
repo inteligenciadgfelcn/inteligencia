@@ -183,6 +183,24 @@ export class Usuario extends AuditoriaEntity {
   })
   numeroPase?: string | null
 
+  @Column({
+    name: 'otp_habilitado',
+    type: 'boolean',
+    default: false,
+    comment: 'Indica si el usuario tiene habilitada la autenticación de dos factores (2FA/OTP)',
+  })
+  otpHabilitado: boolean
+
+  @Column({
+    name: 'otp_canal',
+    type: 'varchar',
+    length: 20,
+    nullable: true,
+    default: null,
+    comment: 'Canal de entrega del OTP: EMAIL | WHATSAPP | NULL (usa el canal por defecto del sistema)',
+  })
+  otpCanal?: string | null
+
   @OneToMany(() => UsuarioRol, (usuarioRol) => usuarioRol.usuario)
   usuarioRol: UsuarioRol[]
 

@@ -41,7 +41,10 @@ export class UnidadRepository {
   }
 
   async actualizar(id: number, dto: ActualizarUnidadDto, usuarioAuditoria: string) {
-    const datos = new Unidad({ ...dto, usuarioModificacion: usuarioAuditoria })
-    return await this.dataSource.getRepository(Unidad).update(id, datos)
+    const repo = this.dataSource.getRepository(Unidad)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...dto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 }

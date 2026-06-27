@@ -27,6 +27,14 @@ import { UsuarioRol } from '../authorization/entity/usuario-rol.entity'
 import { Rol } from '../authorization/entity/rol.entity'
 import { BaseClient } from 'openid-client'
 import { ClientOidcService } from './oidc.client'
+import { BitacoraLogin } from './entity/bitacora-login.entity'
+import { BitacoraLoginRepository } from './repository/bitacora-login.repository'
+import { OtpSesion } from './entity/otp-sesion.entity'
+import { OtpSesionRepository } from './repository/otp-sesion.repository'
+import { OtpService } from './service/otp.service'
+import { AuditoriaCambioSubscriber } from './subscriber/auditoria-cambio.subscriber'
+import { LocalAuthGuard } from './guards/local-auth.guard'
+import { OidcAuthGuard } from './guards/oidc-auth.guard'
 
 const OidcStrategyFactory = {
   provide: 'OidcStrategy',
@@ -57,6 +65,8 @@ const OidcStrategyFactory = {
       RefreshTokens,
       UsuarioRol,
       Rol,
+      BitacoraLogin,
+      OtpSesion,
     ]),
     MensajeriaModule,
   ],
@@ -65,6 +75,7 @@ const OidcStrategyFactory = {
     AuthenticationService,
     PersonaService,
     RefreshTokensService,
+    OtpService,
     LocalStrategy,
     JwtStrategy,
     OidcStrategyFactory,
@@ -74,6 +85,11 @@ const OidcStrategyFactory = {
     UsuarioRepository,
     RefreshTokensRepository,
     UsuarioRolRepository,
+    BitacoraLoginRepository,
+    OtpSesionRepository,
+    AuditoriaCambioSubscriber,
+    LocalAuthGuard,
+    OidcAuthGuard,
   ],
   exports: [AuthenticationService],
 })

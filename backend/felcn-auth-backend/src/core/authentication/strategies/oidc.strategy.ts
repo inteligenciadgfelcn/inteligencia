@@ -104,6 +104,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
 
       return {
         id: usuario.id,
+        usuario: '',
         roles: usuario.roles || [],
         idToken: tokenset.id_token,
         accessToken: tokenset.access_token,
@@ -117,6 +118,7 @@ export class OidcStrategy extends PassportStrategy(Strategy, 'oidc') {
         idToken: tokenset.id_token,
         error: err.message || Messages.EXCEPTION_UNAUTHORIZED,
         id: '',
+        usuario: '',
         roles: [],
       }
     }

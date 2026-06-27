@@ -64,7 +64,10 @@ export class DistritaRepository {
   }
 
   async actualizar(id: number, dto: ActualizarDistritaDto, usuarioAuditoria: string) {
-    const datos = new Distrital({ ...dto, usuarioModificacion: usuarioAuditoria })
-    return await this.dataSource.getRepository(Distrital).update(id, datos)
+    const repo = this.dataSource.getRepository(Distrital)
+    const existing = await repo.findOne({ where: { id } })
+    if (!existing) return null
+    Object.assign(existing, { ...dto, usuarioModificacion: usuarioAuditoria })
+    return await repo.save(existing)
   }
 }

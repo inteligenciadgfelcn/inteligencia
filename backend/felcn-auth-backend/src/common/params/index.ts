@@ -4,6 +4,12 @@ export const Configurations = {
   SALT_ROUNDS: 15, // NUMERO DE SALTOS PARA GENERACIÓN DE HASH
   WRONG_LOGIN_LIMIT: 3, // NUMERO MÁXIMO DE INTENTOS DE INICIO DE SESIÓN ERRONEOS
   MINUTES_LOGIN_LOCK: 15, // TIEMPO EN MINUTOS DE BLOQUEO DE CUENTA
+  // OTP / 2FA
+  OTP_LONGITUD: 6,            // Dígitos del código OTP
+  OTP_EXPIRACION_MIN: 5,      // Minutos de vigencia del OTP
+  OTP_MAX_INTENTOS: 3,        // Intentos fallidos antes de invalidar la sesión OTP
+  OTP_RATE_LIMIT_SEGUNDOS: 60, // Segundos de espera mínima entre solicitudes de OTP
+  OTP_CANAL_DEFAULT: 'EMAIL' as string, // Canal por defecto cuando el usuario no tiene uno configurado
   // LISTA DE DOMINIOS DE EMAIL NO PERMITIDOS
   BLACK_LIST_EMAILS: [
     '10minutemail.com',
