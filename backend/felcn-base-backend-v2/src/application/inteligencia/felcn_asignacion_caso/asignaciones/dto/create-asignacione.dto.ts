@@ -27,11 +27,13 @@ export class CreateAsignacionDto {
   @IsNotEmpty()
   idGrupo!: number;
 
-  @ApiProperty({ example: 'Operativo Antinarcóticos' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(30)
-  nombreCaso!: string;
+  @ApiProperty({ example: 'Operativo Antinarcóticos', maxLength: 30 })
+@IsString()
+@IsNotEmpty({ message: 'El nombre del operativo es obligatorio' })
+@MaxLength(30, {
+  message: 'El nombre del operativo no puede tener más de 30 caracteres',
+})
+nombreCaso!: string;
 
   @ApiProperty({ example: '12-05-2025 16:00' })
   @IsNotEmpty()

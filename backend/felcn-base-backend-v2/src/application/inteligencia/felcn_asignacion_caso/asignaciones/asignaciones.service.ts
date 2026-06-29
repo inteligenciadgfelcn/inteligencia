@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
-import { DataSource, Repository } from 'typeorm'
+import { Brackets, DataSource, Repository } from 'typeorm'
 import { CreateAsignacionDto } from './dto/create-asignacione.dto'
 import { UpdateAsignacionDto } from './dto/update-asignacione.dto'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -140,26 +140,38 @@ export class AsignacionesService {
   }
 
 
-  async findAllPaginado(pagination: PaginacionQueryDto) {
-    const { limite, saltar, filtro } = pagination
-    const query = this.asignacionAsig
-      .createQueryBuilder('a')
-      .leftJoinAndSelect('a.departamento', 'd')
-      .leftJoinAndSelect('a.unidad', 'u')
-      .where('a.estado = :estado', {
-        estado: Estado.ACTIVO,
-      })
-      .take(limite)
-      .skip(saltar)
+ async findAllPaginado(pagination: PaginacionQueryDto) {
+  const { limite, saltar, filtro } = pagination
 
-    if (filtro) {
-      query.andWhere('a.nombreCaso ILIKE :filtro', {
-        filtro: `%${filtro}%`,
-      })
-    }
+  const query = this.asignacionAsig
+    .createQueryBuilder('a')
+    .leftJoinAndSelect('a.departamento', 'd')
+    .leftJoinAndSelect('a.unidad', 'u')
+    .where('a.estado = :estado', {
+      estado: Estado.ACTIVO,
+    })
+    .orderBy('a.idAsignacion', 'DESC')
+    .take(limite)
+    .skip(saltar)
 
-    return await query.getManyAndCount()
+  if (filtro?.trim()) {
+    query.andWhere(
+      new Brackets((qb) => {
+        qb.where('a.nombreCaso ILIKE :filtro', {
+          filtro: `%${filtro.trim()}%`,
+        }).orWhere('a.nroOperativo ILIKE :filtro', {
+          filtro: `%${filtro.trim()}%`,
+        }).orWhere('a.nroCaso ILIKE :filtro', {
+          filtro: `%${filtro.trim()}%`,
+        }).orWhere('a.codigoServicio ILIKE :filtro', {
+          filtro: `%${filtro.trim()}%`,
+        })
+      }),
+    )
   }
+
+  return await query.getManyAndCount()
+}
 
   async findOperativos(
     codigo: string,

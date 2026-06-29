@@ -7,15 +7,15 @@ export function validarRangoFechas(
   
   const hoy = new Date()
 
-  console.log(dateIngreso);
-  console.log(dateSalida);
-  console.log(hoy);
+  // console.log(dateIngreso);
+  // console.log(dateSalida);
+  // console.log(hoy);
 
-  if (dateIngreso <= hoy) {
-    throw new BadRequestException(
-      'La fecha de ingreso no puede ser de un día pasado',
-    )
-  }
+  // if (dateIngreso <= hoy) {
+  //   throw new BadRequestException(
+  //     'La fecha de ingreso no puede ser de un día pasado',
+  //   )
+  // }
 
   if (dateSalida <= dateIngreso) {
     throw new BadRequestException(

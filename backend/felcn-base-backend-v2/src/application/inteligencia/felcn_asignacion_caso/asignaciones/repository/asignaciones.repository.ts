@@ -51,7 +51,7 @@ export class AsignacionesRepository {
     const [hora, minuto] = horaPart.split(':').map(Number)
 
     const fechaSolicitud = new Date(anio, mes - 1, dia, hora, minuto)
-    console.log('Fecha de solicitud parseada:', fechaSolicitud.toISOString());
+    // console.log('Fecha de solicitud parseada:', fechaSolicitud.toISOString());
 
     const asignacion = this.asignacionRepository.create({
       idDepartamento: dto.idDepartamento,
@@ -72,7 +72,7 @@ export class AsignacionesRepository {
     })
     console.log('Asignación SIII guardada con ID:', asignacion)
     const saved = await this.asignacionRepository.save(asignacion)
-    console.log('Asignación SIII guardada con ID:', saved)
+    //   console.log('Asignación SIII guardada con ID:', saved)
     const asignacionS2I = this.asignacionAsigRepository.create({
       idDepartamento: dto.idDepartamento,
       idUnidad: grupoData.abreviaturaUnidad,
