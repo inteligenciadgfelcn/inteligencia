@@ -33,7 +33,7 @@ export function createSwagger(app: INestApplication) {
 
   const fiscaliaDocument = SwaggerModule.createDocument(app, fiscaliaOptions, {
     include: [CatalogoFiscaliaModule],
-    deepScanRoutes: true,
+    deepScanRoutes: false,
   })
 
   SwaggerModule.setup('fiscalia/docs', app, fiscaliaDocument)
