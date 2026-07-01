@@ -18,6 +18,7 @@ import {
 } from './common/constants'
 import { LoggerModule, printInfo, printLogo, printRoutes } from '@/core/logger'
 import packageJson from '../package.json'
+import { CatalogoFiscaliaModule } from './application/catalogo-fiscalia/catalogo-fiscalia.module'
 
 dotenv.config()
 
@@ -75,6 +76,21 @@ function createSwagger(app: INestApplication) {
 
   const document = SwaggerModule.createDocument(app, options)
   SwaggerModule.setup(SWAGGER_API_ROOT, app, document)
+
+  
+   const fiscaliaOptions = new DocumentBuilder()
+    .setTitle('API Fiscalía')
+    .setDescription('Servicios expuestos para interoperabilidad con Fiscalía')
+    .setVersion('1.0')
+    .addServer(`http://localhost:${process.env.PORT}/api/`)
+    .addBearerAuth()
+    .build()
+
+  const fiscaliaDocument = SwaggerModule.createDocument(app, fiscaliaOptions, {
+    include: [CatalogoFiscaliaModule],
+  })
+
+  SwaggerModule.setup('fiscalia/docs', app, fiscaliaDocument)
 }
 
 void bootstrap()
