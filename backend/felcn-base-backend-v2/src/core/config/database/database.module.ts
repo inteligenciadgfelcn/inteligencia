@@ -334,6 +334,8 @@ export const DB_S2I = 's2i' // f_s2i
         entities: [
           __dirname +
             '/../../../application/sunesis/siii/investigacion/lgi/**/*.entity{.ts,.js}',
+           __dirname + 
+           '/../../../application/lgi/**/*.entity{.ts,.js}',
         ],
       }),
     }),
