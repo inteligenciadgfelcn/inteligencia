@@ -2,10 +2,15 @@ import { BaseService } from '@/common/base'
 import { Injectable, OnModuleInit } from '@nestjs/common'
 import * as nodemailer from 'nodemailer'
 import { Transporter } from 'nodemailer'
+import { WhatsAppChannel } from './whatsapp/whatsapp.channel'
 
 @Injectable()
 export class MensajeriaService extends BaseService implements OnModuleInit {
   private transporter: Transporter | null = null
+
+  constructor(private readonly whatsAppChannel: WhatsAppChannel) {
+    super()
+  }
 
   onModuleInit() {
     if (process.env.SMTP_ENABLED !== 'false') {
@@ -73,17 +78,24 @@ export class MensajeriaService extends BaseService implements OnModuleInit {
   }
 
   /**
-   * Envía un mensaje de WhatsApp con el código OTP.
-   * Pendiente de integración con proveedor autorizado (Meta WA Cloud API / Twilio).
-   * Cuando FELCN provea las credenciales del gateway, se implementa aquí
-   * sin modificar los callers.
+   * Envía el código OTP a través de WhatsApp Cloud API (Meta).
+   * Si las variables de entorno no están configuradas, registra un warning sin lanzar error.
+   * @param telefono Número de destino (se normaliza a E.164 internamente)
+   * @param codigo Código OTP de 6 dígitos (se usa como parámetro de plantilla)
+   * @param idUsuario ID del usuario destino para trazabilidad en otp_delivery
    */
-  async sendWhatsapp(telefono: string, content: string): Promise<void> {
-    this.logger.warn(
-      `[WHATSAPP-NO-DISPONIBLE] Envío WhatsApp pendiente de gateway.\n` +
-        `  Para    : ${telefono}\n` +
-        `  Mensaje : ${content}`
-    )
+  async sendWhatsapp(
+    telefono: string,
+    codigo: string,
+    idUsuario?: string
+  ): Promise<void> {
+    const resultado = await this.whatsAppChannel.enviar(telefono, codigo, idUsuario)
+    if (!resultado.exito) {
+      this.logger.warn(
+        `[WHATSAPP] Envío no completado: ${resultado.error}\n` +
+          `  Para: ${telefono}`
+      )
+    }
   }
 
   /** Fallback de texto plano para clientes que no renderizan HTML. */
