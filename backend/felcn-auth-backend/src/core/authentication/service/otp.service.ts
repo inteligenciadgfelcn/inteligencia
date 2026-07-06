@@ -136,7 +136,7 @@ export class OtpService extends BaseService {
       expiracion,
     })
 
-    await this.enviarCodigo(canal, destino, codigo)
+    await this.enviarCodigo(canal, destino, codigo, usuario.id)
 
     this.logger.audit('otp', {
       mensaje: 'OTP generado y enviado',
@@ -157,15 +157,11 @@ export class OtpService extends BaseService {
   private async enviarCodigo(
     canal: string,
     destino: string,
-    codigo: string
+    codigo: string,
+    idUsuario: string
   ): Promise<void> {
     if (canal === OtpCanal.WHATSAPP) {
-      await this.mensajeriaService.sendWhatsapp(
-        destino,
-        `Tu código de verificación FELCN es: *${codigo}*. ` +
-          `Válido por ${Configurations.OTP_EXPIRACION_MIN} minutos. ` +
-          `No lo compartas con nadie.`
-      )
+      await this.mensajeriaService.sendWhatsapp(destino, codigo, idUsuario)
     } else {
       const template = TemplateEmailService.armarPlantillaOtp(
         codigo,
