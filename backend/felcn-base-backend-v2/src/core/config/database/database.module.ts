@@ -70,6 +70,7 @@ export const DB_S2I = 's2i' // f_s2i
           __dirname + '/../../../application/sunesis/siii/**/*.entity{.ts,.js}',
           __dirname +
             '/../../../application/inteligencia/**/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/fiscalia/**/*.entity{.ts,.js}',
         ],
       }),
     }),

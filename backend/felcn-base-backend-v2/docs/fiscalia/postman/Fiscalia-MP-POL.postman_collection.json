@@ -1,0 +1,1672 @@
+{
+  "info": {
+    "_postman_id": "00c856bc-d8eb-47e3-9bf2-cedf0a07e6ff",
+    "name": "Fiscalía MP -> POL (felcn-base-backend-v2)",
+    "description": "Colección de pruebas para las 34 APIs de interoperabilidad Ministerio Público -> Policía.\n\nContrato: snake_case, REST anidado, 201 Created + Location en creaciones, 204 No Content en PATCH/PUT, 200 OK en GET, errores RFC 9457 (application/problem+json). Ver docs/fiscalia/PROPUESTA-APIS-FISCALIA.md.\n\nCómo usar:\n1. Selecciona el environment 'Fiscalía - Servidor de pruebas' (o crea uno con la variable base_url).\n2. Ejecuta las carpetas en orden (00 a 10) con el Collection Runner, o manualmente respetando el orden dentro de cada carpeta -- cada request guarda los ids devueltos (pol_caso_id, pol_caso_persona_id, etc.) en variables de colección que reutilizan los siguientes requests.\n3. Los endpoints no requieren autenticación (API abierta; la seguridad la aplica el hub de interoperabilidad).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00. Catálogos (16 GET)",
+      "item": [
+        {
+          "name": "GET catalogos/bienes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/bienes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "bienes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/calidades-bien",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/calidades-bien",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "calidades-bien"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/caracteristicas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/caracteristicas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "caracteristicas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/clases",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/clases",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "clases"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/contenidos-bien",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/contenidos-bien",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "contenidos-bien"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/contenidos-caso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/contenidos-caso",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "contenidos-caso"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/estados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/estados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "estados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/etapas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/etapas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "etapas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/grados",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/grados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "grados"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/juridicas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/juridicas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "juridicas"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/recursos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/recursos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "recursos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/situaciones-legales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/situaciones-legales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "situaciones-legales"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/tamanos-documento",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/tamanos-documento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "tamanos-documento"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/tipos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/tipos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "tipos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/tipos-persona",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/tipos-persona",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "tipos-persona"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET catalogos/unidades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogos/unidades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogos",
+                "unidades"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Catálogos de apoyo para llenar los ids de los payloads (delito_id, situacion_juridica_id, etc.). No requieren datos previos."
+    },
+    {
+      "name": "01. Casos",
+      "item": [
+        {
+          "name": "1. Crear caso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_id', Date.now() + Math.floor(Math.random() * 1000));",
+                  "pm.collectionVariables.set('cud', 'LP26' + pm.collectionVariables.get('mp_caso_id'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_caso_id', json.pol_caso_id);",
+                  "pm.test(\"Devuelve pol_caso_id\", function () { pm.expect(json.pol_caso_id).to.be.a(\"number\"); });",
+                  "pm.test(\"Header Location presente\", function () { pm.response.to.have.header(\"Location\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cud\": \"{{cud}}\",\n  \"mp_caso_id\": \"{{mp_caso_id}}\",\n  \"mp_caso_padre_id\": null,\n  \"tipo_denuncia_id\": 1,\n  \"creacion_fecha_hora\": \"2026-07-06T09:00:00Z\",\n  \"esta_reservado\": false,\n  \"oficina_comun_id\": 5,\n  \"hecho_municipio_id\": 20101,\n  \"hecho_zona\": \"Zona Central\",\n  \"hecho_direccion\": \"Av. Principal Nro. 100\",\n  \"hecho_relato\": \"Descripción de prueba del hecho\",\n  \"caso_estado_id\": 1,\n  \"caso_etapa_id\": 1,\n  \"denominacion_caso\": \"Caso de prueba Postman\",\n  \"tags\": [\n    \"prueba\",\n    \"postman\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Crear caso (idempotencia - reenvío)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Devuelve el mismo pol_caso_id\", function () { pm.expect(json.pol_caso_id).to.eql(parseInt(pm.collectionVariables.get(\"pol_caso_id\"))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cud\": \"{{cud}}\",\n  \"mp_caso_id\": \"{{mp_caso_id}}\",\n  \"tipo_denuncia_id\": 1,\n  \"creacion_fecha_hora\": \"2026-07-06T09:00:00Z\",\n  \"oficina_comun_id\": 5,\n  \"caso_estado_id\": 1,\n  \"caso_etapa_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Editar caso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_denuncia_id\": 2,\n  \"hecho_zona\": \"Zona Sur\",\n  \"hecho_relato\": \"Relato actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Asignar juzgado al caso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/juzgado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "juzgado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pol_caso_id\": {{pol_caso_id}},\n  \"juzgado_id\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.1 / 3.2 / 3.17 — alta, edición y asignación de juzgado del caso."
+    },
+    {
+      "name": "02. Delitos",
+      "item": [
+        {
+          "name": "1. Registrar delitos del caso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_delito_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_caso_delito_id', json.delitos[0].pol_caso_delito_id);",
+                  "pm.test(\"Devuelve mapeo mp->pol\", function () { pm.expect(json.delitos[0].pol_caso_delito_id).to.be.a(\"number\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/delitos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "delitos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"delitos\": [\n    {\n      \"mp_caso_delito_id\": \"{{mp_caso_delito_id}}\",\n      \"delito_id\": 10,\n      \"es_principal\": true,\n      \"es_tentativo\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Editar delito",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/delitos/{{pol_caso_delito_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delitos",
+                "{{pol_caso_delito_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"es_principal\": false,\n  \"es_tentativo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.3-3.6 — depende de 01. Casos (usa {{pol_caso_id}})."
+    },
+    {
+      "name": "03. Sujetos",
+      "item": [
+        {
+          "name": "1. Registrar sujeto (persona natural)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_persona_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_caso_persona_id', json.sujetos[0].pol_caso_persona_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/sujetos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "sujetos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sujetos\": [\n    {\n      \"mp_caso_persona_id\": \"{{mp_caso_persona_id}}\",\n      \"tipo_sujeto_id\": [\n        1\n      ],\n      \"persona_natural\": {\n        \"tipo_identidad_id\": 1,\n        \"tipo_documento_id\": 1,\n        \"numero_documento\": \"1234567\",\n        \"nombres\": \"Juan\",\n        \"primer_apellido\": \"Perez\",\n        \"segundo_apellido\": \"Mamani\",\n        \"fecha_nacimiento\": \"1990-05-15\",\n        \"sexo\": true,\n        \"email\": \"juan.perez@correo.bo\",\n        \"celular\": \"70000000\"\n      },\n      \"reserva_identidad\": false,\n      \"es_querellante\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Registrar sujeto (persona jurídica)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_persona_id_juridica', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/sujetos",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "sujetos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sujetos\": [\n    {\n      \"mp_caso_persona_id\": \"{{mp_caso_persona_id_juridica}}\",\n      \"tipo_sujeto_id\": [\n        2\n      ],\n      \"persona_juridica\": {\n        \"razon_social\": \"Empresa S.R.L.\",\n        \"nit\": \"1023456789\",\n        \"telefono\": \"22222222\",\n        \"email\": \"empresa@correo.bo\",\n        \"municipio_id\": 20101,\n        \"direccion\": \"Calle Comercio Nro. 100\"\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Editar sujeto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sujetos/{{pol_caso_persona_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sujetos",
+                "{{pol_caso_persona_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo_sujeto_id\": [\n    1,\n    2\n  ],\n  \"es_querellante\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Asignar juzgado a sujetos (bulk)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sujetos/juzgado",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sujetos",
+                "juzgado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pol_caso_persona_ids\": [\n    \"{{pol_caso_persona_id}}\"\n  ],\n  \"juzgado_id\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.7 / 3.8 / 3.18 — depende de 01. Casos."
+    },
+    {
+      "name": "04. Abogados",
+      "item": [
+        {
+          "name": "1. Registrar abogado del sujeto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_persona_abogado_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_caso_persona_abogado_id', json.abogados[0].pol_caso_persona_abogado_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sujetos/{{pol_caso_persona_id}}/abogados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sujetos",
+                "{{pol_caso_persona_id}}",
+                "abogados"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"abogados\": [\n    {\n      \"mp_caso_persona_abogado_id\": \"{{mp_caso_persona_abogado_id}}\",\n      \"codigo_rpa\": \"RPA-1234\",\n      \"ci\": \"1234567\",\n      \"nombres\": \"Carlos\",\n      \"primer_apellido\": \"Quispe\",\n      \"segundo_apellido\": \"Condori\",\n      \"fecha_nacimiento\": \"1985-03-20\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Dar de baja abogado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/abogados/{{pol_caso_persona_abogado_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "abogados",
+                "{{pol_caso_persona_abogado_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": 0,\n  \"motivo_baja\": \"Renuncia del abogado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.9 / 3.10 — depende de 03. Sujetos (usa {{pol_caso_persona_id}})."
+    },
+    {
+      "name": "05. Situaciones jurídicas",
+      "item": [
+        {
+          "name": "1. Registrar situación jurídica del sujeto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_situacion_juridica_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sujetos/{{pol_caso_persona_id}}/situaciones-juridicas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sujetos",
+                "{{pol_caso_persona_id}}",
+                "situaciones-juridicas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"situaciones_juridicas\": [\n    {\n      \"mp_caso_persona_situacion_juridica_id\": \"{{mp_situacion_juridica_id}}\",\n      \"situacion_juridica_id\": 1,\n      \"fecha_inicio\": \"2026-07-01T00:00:00Z\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.11 — depende de 03. Sujetos."
+    },
+    {
+      "name": "06. Domicilios",
+      "item": [
+        {
+          "name": "1. Registrar domicilio del sujeto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_domicilio_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/sujetos/{{pol_caso_persona_id}}/domicilios",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sujetos",
+                "{{pol_caso_persona_id}}",
+                "domicilios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mp_persona_domicilio_id\": \"{{mp_domicilio_id}}\",\n  \"pais_id\": 1,\n  \"municipio_id\": 20101,\n  \"direccion\": \"Av. Buenos Aires Nro. 100\",\n  \"latitud\": \"-16.500000\",\n  \"longitud\": \"-68.150000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.12 — depende de 03. Sujetos."
+    },
+    {
+      "name": "07. Fiscales",
+      "item": [
+        {
+          "name": "1. Registrar fiscal asignado al caso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_funcionario_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_caso_funcionario_id', json.fiscales[0].pol_caso_funcionario_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/fiscales",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "fiscales"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fiscales\": [\n    {\n      \"mp_caso_funcionario_id\": \"{{mp_caso_funcionario_id}}\",\n      \"tipo_responsable_id\": 1,\n      \"ci\": \"1234567\",\n      \"nombres\": \"Maria\",\n      \"primer_apellido\": \"Flores\",\n      \"segundo_apellido\": \"Gutierrez\",\n      \"fecha_nacimiento\": \"1980-01-10\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Dar de baja fiscal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/fiscales/{{pol_caso_funcionario_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fiscales",
+                "{{pol_caso_funcionario_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.13 / 3.14 — depende de 01. Casos."
+    },
+    {
+      "name": "08. Actividades",
+      "item": [
+        {
+          "name": "1. Registrar actividad / acto investigativo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('mp_caso_actividad_id', Date.now() + Math.floor(Math.random() * 1000));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/actividades",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "actividades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actividades\": [\n    {\n      \"mp_caso_actividad_id\": \"{{mp_caso_actividad_id}}\",\n      \"actividad_id\": 10,\n      \"referencia\": \"Requerimiento fiscal 123/2026\",\n      \"archivo_extension\": \"pdf\",\n      \"archivo_link\": \"https://mp.gob.bo/archivos/abc\",\n      \"archivo_tamano\": 204800,\n      \"archivo_paginas\": 12,\n      \"archivo_hash\": \"a1b2c3d4e5f6\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.15 — depende de 01. Casos."
+    },
+    {
+      "name": "09. Reservas",
+      "item": [
+        {
+          "name": "1. Reservar caso",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reservas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reservas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": 1,\n  \"tabla\": 1,\n  \"tabla_id\": \"{{pol_caso_id}}\",\n  \"fecha_fin_reserva\": \"2026-12-31T23:59:59Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.16 — depende de 01. Casos."
+    },
+    {
+      "name": "10. Agendas",
+      "item": [
+        {
+          "name": "1. Registrar audiencia (agenda)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+                  "const json = pm.response.json();",
+                  "pm.collectionVariables.set('pol_agenda_id', json.pol_agenda_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/casos/{{pol_caso_id}}/agendas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "casos",
+                "{{pol_caso_id}}",
+                "agendas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oj_audiencia_id\": 100,\n  \"oj_audiencia_detalle_id\": 200,\n  \"tipo_audiencia_id\": 1,\n  \"tipo_actividad_id\": 1,\n  \"juzgado_id\": 5,\n  \"sala_audiencia_id\": 1,\n  \"estado_audiencia_id\": 1,\n  \"modalidad\": 1,\n  \"fecha_hora_inicio\": \"2026-08-01T09:00:00Z\",\n  \"fecha_hora_fin\": \"2026-08-01T11:00:00Z\",\n  \"descripcion\": \"Audiencia de medidas cautelares\",\n  \"mp_caso_persona_ids\": [\n    \"{{pol_caso_persona_id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Editar / reprogramar audiencia",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/agendas/{{pol_agenda_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "agendas",
+                "{{pol_agenda_id}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_audiencia_id\": 2,\n  \"descripcion\": \"Audiencia reprogramada\",\n  \"observaciones\": \"Suspendida por inasistencia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "3.19 / 3.16b+3.20 — depende de 01. Casos y 03. Sujetos."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://172.16.76.20:3333/api/v1/external/fiscalia",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cud",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_caso_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_delito_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_caso_delito_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_persona_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_persona_id_juridica",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_caso_persona_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_persona_abogado_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_caso_persona_abogado_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_situacion_juridica_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_domicilio_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_funcionario_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_caso_funcionario_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mp_caso_actividad_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "pol_agenda_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
