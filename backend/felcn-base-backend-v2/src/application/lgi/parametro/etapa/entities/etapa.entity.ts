@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
-  name: 'recursos',
+  name: 'etapa',
   schema: 'public',
 })
 export class EtapaLgi {
