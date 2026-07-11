@@ -120,5 +120,5 @@ export const useSession = () => {
     }
   }
 
-  return { sesionPeticion, cerrarSesion, borrarCookiesSesion }
+  return { sesionPeticion, cerrarSesion, borrarCookiesSesion, actualizarSesion }
 }
