@@ -10,6 +10,7 @@ import MatomoTracker from '@/context/MatomoTracker'
 import ReactQueryProvider from '@/context/ReactQueryProvider'
 import { PublicEnvScript } from 'next-runtime-env'
 import AuthBootstrap from './AuthBoostrap'
+import SessionExpiryWatcher from './SessionExpiryWatcher'
 import { MantineProvider } from '@mantine/core'
 import '@mantine/core/styles.css'
 import 'mantine-datatable/styles.css'
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <DebugBanner />
                   <AuthProvider>
                     <AuthBootstrap />
+                    <SessionExpiryWatcher />
                     <Suspense
                       fallback={<FullScreenLoading mensaje={'Cargando...'} />}
                     >

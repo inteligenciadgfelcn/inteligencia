@@ -106,6 +106,24 @@ export const ModalUsuarioDetalle = ({
           </Grid>
 
           <Grid size={4}>
+            <Typography sx={{ fontWeight: '700' }}>Unidad:</Typography>
+          </Grid>
+          <Grid size={8}>
+            <Typography>
+              {usuario?.grupo?.distrital?.unidad?.abreviatura
+                ? `${usuario?.grupo?.distrital?.unidad?.abreviatura} - ${usuario?.grupo?.distrital?.unidad?.descripcion}`
+                : (usuario?.grupo?.distrital?.unidad?.descripcion ?? '-')}
+            </Typography>
+          </Grid>
+
+          <Grid size={4}>
+            <Typography sx={{ fontWeight: '700' }}>Distrital:</Typography>
+          </Grid>
+          <Grid size={8}>
+            <Typography>{usuario?.grupo?.distrital?.descripcion ?? '-'}</Typography>
+          </Grid>
+
+          <Grid size={4}>
             <Typography sx={{ fontWeight: '700' }}>Roles:</Typography>
           </Grid>
           <Grid

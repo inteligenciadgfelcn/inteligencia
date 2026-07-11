@@ -2,13 +2,25 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { imprimir } from '@/utils/imprimir'
 
+// Decodifica el payload sin verificar firma (Edge-compatible). La firma la valida el backend.
+const tokenVigente = (token: string | undefined): boolean => {
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return typeof payload.exp === 'number' && Date.now() < payload.exp * 1000
+  } catch {
+    return false
+  }
+}
+
 export const middleware = (req: NextRequest) => {
   const token = req.cookies.get('token')
-  imprimir(`token middleware 🔐️: ${token?.value}`, req.nextUrl.pathname)
+  const valido = tokenVigente(token?.value)
+  imprimir(`token middleware 🔐️: ${token?.value ? (valido ? 'vigente' : 'expirado') : 'ausente'}`, req.nextUrl.pathname)
 
   try {
     if (req.nextUrl.pathname == '/') {
-      if (token?.value) {
+      if (valido) {
         const url = req.nextUrl.clone()
         url.pathname = '/admin/home'
         return NextResponse.redirect(url)
@@ -20,7 +32,7 @@ export const middleware = (req: NextRequest) => {
     }
 
     if (req.nextUrl.pathname == '/login') {
-      if (token?.value) {
+      if (valido) {
         const url = req.nextUrl.clone()
         url.pathname = '/admin/home'
         return NextResponse.redirect(url)
@@ -30,7 +42,7 @@ export const middleware = (req: NextRequest) => {
     }
 
     if (req.nextUrl.pathname.startsWith('/admin')) {
-      if (token?.value) {
+      if (valido) {
         return NextResponse.next()
       } else {
         const url = req.nextUrl.clone()
