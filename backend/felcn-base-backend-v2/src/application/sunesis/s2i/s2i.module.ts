@@ -25,6 +25,8 @@ import { S2iAntecedenteBlanco } from './blanco/entity/antecedente-blanco.entity'
 import { S2iRedSocial } from './blanco/entity/red-social.entity'
 import { S2iLugarBlanco } from './blanco/entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from './blanco/entity/archivo-blanco.entity'
+import { S2iFlujoTelefonico } from './blanco/entity/flujo-telefonico.entity'
+import { S2iFlujoFiscalia } from './blanco/entity/flujo-fiscalia.entity'
 
 // ==================== ORGANIZACIÓN ====================
 import { S2iEmpresa } from './organizacion/entity/empresa.entity'
@@ -92,6 +94,8 @@ const entities = [
   S2iRedSocial,
   S2iLugarBlanco,
   S2iArchivoBlanco,
+  S2iFlujoTelefonico,
+  S2iFlujoFiscalia,
   // Organización
   S2iEmpresa,
   S2iLugarEmpresa,
