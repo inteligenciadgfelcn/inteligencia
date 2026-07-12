@@ -34,6 +34,19 @@ export interface UsuarioCRUDType {
   estado: string
   usuarioRol: UsuarioRolCRUDType[]
   persona: PersonaCRUDType
+  grupo?: {
+    id: number
+    descripcion: string
+    distrital?: {
+      id: number
+      descripcion: string
+      unidad?: {
+        id: number
+        abreviatura: string
+        descripcion: string
+      }
+    }
+  } | null
 }
 
 // Crear usuario

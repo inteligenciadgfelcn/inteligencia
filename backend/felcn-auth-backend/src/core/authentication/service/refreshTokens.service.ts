@@ -72,9 +72,10 @@ export class RefreshTokensService extends BaseService {
         secret: this.configService.get('JWT_SECRET'),
       })
     } catch (err) {
-      if (err.name === 'JsonWebTokenError') {
+      if (err.name === 'TokenExpiredError') {
+        // Token expirado es válido para refresh — continuar con decode
+      } else {
         this.logger.error(err)
-        // handle expired token
         throw new UnauthorizedException(Messages.EXCEPTION_UNAUTHORIZED)
       }
     }

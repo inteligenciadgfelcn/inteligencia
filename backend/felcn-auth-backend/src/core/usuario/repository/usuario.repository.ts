@@ -33,6 +33,8 @@ export class UsuarioRepository {
       .leftJoinAndSelect('usuario.persona', 'persona')
       .leftJoin('usuario.grado', 'grado')
       .leftJoin('usuario.grupo', 'grupo')
+      .leftJoin('grupo.distrital', 'distrital')
+      .leftJoin('distrital.unidad', 'unidad')
       .select([
         'usuario.id',
         'usuario.usuario',
@@ -59,6 +61,11 @@ export class UsuarioRepository {
         'grado.descripcion',
         'grupo.id',
         'grupo.descripcion',
+        'distrital.id',
+        'distrital.descripcion',
+        'unidad.id',
+        'unidad.abreviatura',
+        'unidad.descripcion',
       ])
       .take(limite)
       .skip(saltar)
