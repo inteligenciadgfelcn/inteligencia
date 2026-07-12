@@ -10,6 +10,8 @@ import { S2iLugarBlanco } from '../entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from '../entity/archivo-blanco.entity'
 import { S2iFlujoTelefonico } from '../entity/flujo-telefonico.entity'
 import { S2iFlujoFiscalia } from '../entity/flujo-fiscalia.entity'
+import { S2iActivoPatrimonial } from '../entity/activo-patrimonial.entity'
+import { S2iOvise } from '../entity/ovise.entity'
 
 @Injectable()
 export class BlancoRepository {
@@ -193,5 +195,59 @@ export class BlancoRepository {
     await this.dataSource
       .getRepository(S2iFlujoFiscalia)
       .delete(idFlujoFiscalia)
+  }
+
+  // ==================== ACTIVO PATRIMONIAL ====================
+
+  async crearActivoPatrimonial(
+    activo: S2iActivoPatrimonial
+  ): Promise<S2iActivoPatrimonial> {
+    return this.dataSource.getRepository(S2iActivoPatrimonial).save(activo)
+  }
+
+  async listarActivosPorBlanco(
+    idBlanco: string
+  ): Promise<S2iActivoPatrimonial[]> {
+    return this.dataSource.getRepository(S2iActivoPatrimonial).find({
+      select: [
+        'idActivoPatrimonial',
+        'idBlanco',
+        'idTipoActivo',
+        'gestion',
+        'contenido',
+      ],
+      where: { idBlanco },
+      relations: ['tipoActivo'],
+    })
+  }
+
+  async buscarActivoPorId(
+    idActivoPatrimonial: string
+  ): Promise<S2iActivoPatrimonial | null> {
+    return this.dataSource
+      .getRepository(S2iActivoPatrimonial)
+      .findOne({ where: { idActivoPatrimonial } })
+  }
+
+  async eliminarActivoPatrimonial(idActivoPatrimonial: string): Promise<void> {
+    await this.dataSource
+      .getRepository(S2iActivoPatrimonial)
+      .delete(idActivoPatrimonial)
+  }
+
+  // ==================== OVISE ====================
+
+  async crearOvise(ovise: S2iOvise): Promise<S2iOvise> {
+    return this.dataSource.getRepository(S2iOvise).save(ovise)
+  }
+
+  async listarOvisePorBlanco(idBlanco: string): Promise<S2iOvise[]> {
+    return this.dataSource
+      .getRepository(S2iOvise)
+      .find({ where: { idBlanco } })
+  }
+
+  async eliminarOvise(idOvise: string): Promise<void> {
+    await this.dataSource.getRepository(S2iOvise).delete(idOvise)
   }
 }
