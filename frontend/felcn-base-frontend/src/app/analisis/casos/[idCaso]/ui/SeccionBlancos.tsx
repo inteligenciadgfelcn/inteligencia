@@ -13,6 +13,7 @@ import { InterpreteMensajes } from '@/utils'
 import { DropzoneFoto } from '@/app/analisis/ui/DropzoneFoto'
 import { SIGPanel } from '@/app/analisis/ui/SigPanel'
 import { ArchivosPanel } from '@/app/analisis/ui/ArchivosPanel'
+import { FlujoTelefonicoPanel } from '@/app/analisis/ui/FlujoTelefonicoPanel'
 import { BlancosService, S2iLookupsService } from '@/services/analisis'
 import type {
   AntecedenteBlanco,
@@ -200,23 +201,43 @@ function PanelAntecedentes({ blanco, opcionesPaises, opcionesDelito }: { blanco:
       </div>
       {lista.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin antecedentes reSIGtrados</span>
+          <span className="text-xs text-gray-400">Sin antecedentes registrados</span>
         </div>
       ) : (
-        <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {lista.map((a) => (
-            <li key={a.idAntecedente} className="flex items-start justify-between gap-2 py-2">
-              <div className="text-sm min-w-0">
-                <span className="font-medium">{a.descripcionTipoDelito}</span>
-                <span className="ml-2 text-xs text-gray-500">{a.descripcionPais} · {a.nroCaso}</span>
-                <p className="text-xs text-gray-400 mt-0.5 truncate">{a.hecho}</p>
+            <div
+              key={a.idAntecedente}
+              className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2 border-b border-gray-100 pb-1.5 dark:border-gray-700/50">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                    {a.descripcionTipoDelito}
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={() => eliminar(a.idAntecedente)}
+                    title="Eliminar antecedente"
+                  >
+                    <IconTrash className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-400">
+                  <p><span className="font-medium text-gray-500">País:</span> {a.descripcionPais}</p>
+                  <p className="mt-0.5"><span className="font-medium text-gray-500">Nro. Caso:</span> {a.nroCaso}</p>
+                  {a.hecho && (
+                    <p className="mt-1.5 border-t border-gray-50 pt-1.5 dark:border-gray-700/30 text-gray-500 italic">
+                      {a.hecho}
+                    </p>
+                  )}
+                </div>
               </div>
-              <Button variant="danger" size="sm" className="shrink-0" onClick={() => eliminar(a.idAntecedente)}>
-                <IconTrash className="h-4 w-4" />
-              </Button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )
@@ -309,29 +330,44 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
       </div>
       {lista.length === 0 ? (
         <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
-          <span className="text-xs text-gray-400">Sin redes sociales reSIGtradas</span>
+          <span className="text-xs text-gray-400">Sin redes sociales registradas</span>
         </div>
       ) : (
-        <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {lista.map((r) => (
-            <li key={r.idRedSocial} className="flex items-center justify-between gap-2 py-2">
-              <div className="text-sm">
-                <span className="font-medium">{r.tipoRed}</span>
-                <span className="ml-2 text-xs text-gray-500">{r.direccion}</span>
+            <div
+              key={r.idRedSocial}
+              className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1.5 dark:border-gray-700/50">
+                  <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                    {r.tipoRed}
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={() => eliminar(r.idRedSocial)}
+                    title="Eliminar red social"
+                  >
+                    <IconTrash className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-400">
+                  <p className="truncate"><span className="font-medium text-gray-500">Dirección/Usuario:</span> {r.direccion}</p>
+                </div>
               </div>
-              <Button variant="danger" size="sm" className="shrink-0" onClick={() => eliminar(r.idRedSocial)}>
-                <IconTrash className="h-4 w-4" />
-              </Button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   )
 }
 
 // ── Expansion row ─────────────────────────────────────────────────────────────
-const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'SIG', 'Archivos'] as const
+const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'SIG', 'Archivos', 'Flujo Telefónico'] as const
 type TabBlanco = typeof TABS_BLANCO[number]
 
 function BlancoExpansion({
@@ -385,6 +421,7 @@ function BlancoExpansion({
       {tab === 'Redes Sociales' && <PanelRedesSociales blanco={blanco} />}
       {tab === 'SIG' && <SIGPanel idEntidad={blanco.idBlanco} service={SIGService} idField="idLugarBlanco" />}
       {tab === 'Archivos' && <ArchivosPanel idEntidad={blanco.idBlanco} service={archivosService} idField="idArchivo" opcionesContenido={opcionesContenido} />}
+      {tab === 'Flujo Telefónico' && <FlujoTelefonicoPanel blanco={blanco} />}
     </div>
   )
 }
