@@ -77,3 +77,12 @@ Desktop.ini
 
 # Cache de pnpm
 .pnpm-store/
+
+
+# Windows
+*:Zone.Identifier
+
+# Visual Studio
+.vs/
+*.user
+*.suo
