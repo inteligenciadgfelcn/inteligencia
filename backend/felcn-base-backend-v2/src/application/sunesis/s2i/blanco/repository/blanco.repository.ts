@@ -8,6 +8,8 @@ import { S2iAntecedenteBlanco } from '../entity/antecedente-blanco.entity'
 import { S2iRedSocial } from '../entity/red-social.entity'
 import { S2iLugarBlanco } from '../entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from '../entity/archivo-blanco.entity'
+import { S2iFlujoTelefonico } from '../entity/flujo-telefonico.entity'
+import { S2iFlujoFiscalia } from '../entity/flujo-fiscalia.entity'
 
 @Injectable()
 export class BlancoRepository {
@@ -141,5 +143,55 @@ export class BlancoRepository {
 
   async eliminarArchivo(idArchivo: string): Promise<void> {
     await this.dataSource.getRepository(S2iArchivoBlanco).delete(idArchivo)
+  }
+
+  // ==================== FLUJO TELEFÓNICO ====================
+
+  async crearFlujoTelefonico(
+    flujo: S2iFlujoTelefonico
+  ): Promise<S2iFlujoTelefonico> {
+    return this.dataSource.getRepository(S2iFlujoTelefonico).save(flujo)
+  }
+
+  async buscarFlujoPorId(
+    idFlujo: string
+  ): Promise<S2iFlujoTelefonico | null> {
+    return this.dataSource
+      .getRepository(S2iFlujoTelefonico)
+      .findOne({ where: { idFlujo } })
+  }
+
+  async listarFlujosPorBlanco(
+    idBlanco: string
+  ): Promise<S2iFlujoTelefonico[]> {
+    return this.dataSource
+      .getRepository(S2iFlujoTelefonico)
+      .find({ where: { idBlanco } })
+  }
+
+  async eliminarFlujoTelefonico(idFlujo: string): Promise<void> {
+    await this.dataSource.getRepository(S2iFlujoTelefonico).delete(idFlujo)
+  }
+
+  // ==================== FLUJO FISCALÍA ====================
+
+  async crearFlujoFiscalia(
+    flujoFiscalia: S2iFlujoFiscalia
+  ): Promise<S2iFlujoFiscalia> {
+    return this.dataSource.getRepository(S2iFlujoFiscalia).save(flujoFiscalia)
+  }
+
+  async listarFlujoFiscaliaPorFlujo(
+    idFlujo: string
+  ): Promise<S2iFlujoFiscalia[]> {
+    return this.dataSource
+      .getRepository(S2iFlujoFiscalia)
+      .find({ where: { idFlujo } })
+  }
+
+  async eliminarFlujoFiscalia(idFlujoFiscalia: string): Promise<void> {
+    await this.dataSource
+      .getRepository(S2iFlujoFiscalia)
+      .delete(idFlujoFiscalia)
   }
 }

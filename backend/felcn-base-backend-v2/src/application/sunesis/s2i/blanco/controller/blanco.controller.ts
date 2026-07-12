@@ -30,6 +30,8 @@ import {
   CreateRedSocialDto,
   CreateLugarSigDto,
   CreateArchivoDto,
+  CreateFlujoTelefonicoDto,
+  CreateFlujoFiscaliaDto,
 } from '../dto'
 
 @ApiBearerAuth()
@@ -265,6 +267,81 @@ export class BlancoController extends BaseController {
   @Delete('archivos-blanco/:idArchivo')
   async eliminarArchivo(@Param('idArchivo') idArchivo: string) {
     await this.service.eliminarArchivo(idArchivo)
+    return this.successDelete()
+  }
+
+  // ==================== FLUJO TELEFÓNICO ====================
+
+  @ApiOperation({ summary: 'Registrar flujo telefónico de un blanco' })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @Post('blancos/:idBlanco/flujos-telefonicos')
+  async crearFlujoTelefonico(
+    @Param('idBlanco') idBlanco: string,
+    @Body() dto: CreateFlujoTelefonicoDto,
+    @Req() req: Request
+  ) {
+    const { id: idUsuario = '' } = req.user as PassportUser
+    const flujo = await this.service.crearFlujoTelefonico(
+      idBlanco,
+      dto,
+      idUsuario
+    )
+    return this.successCreate(flujo)
+  }
+
+  @ApiOperation({ summary: 'Listar flujos telefónicos de un blanco' })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @Get('blancos/:idBlanco/flujos-telefonicos')
+  async listarFlujosTelefonicos(@Param('idBlanco') idBlanco: string) {
+    return this.successList(await this.service.listarFlujosTelefonicos(idBlanco))
+  }
+
+  @ApiOperation({ summary: 'Eliminar flujo telefónico por ID' })
+  @ApiParam({ name: 'idFlujo', description: 'ID del flujo telefónico (bigint)' })
+  @Delete('flujos-telefonicos/:idFlujo')
+  async eliminarFlujoTelefonico(@Param('idFlujo') idFlujo: string) {
+    await this.service.eliminarFlujoTelefonico(idFlujo)
+    return this.successDelete()
+  }
+
+  // ==================== FLUJO FISCALÍA ====================
+
+  @ApiOperation({
+    summary: 'Registrar detalle de llamada (fiscalía) de un flujo telefónico',
+  })
+  @ApiParam({ name: 'idFlujo', description: 'ID del flujo telefónico' })
+  @Post('flujos-telefonicos/:idFlujo/fiscalia')
+  async crearFlujoFiscalia(
+    @Param('idFlujo') idFlujo: string,
+    @Body() dto: CreateFlujoFiscaliaDto,
+    @Req() req: Request
+  ) {
+    const { id: idUsuario = '' } = req.user as PassportUser
+    const flujoFiscalia = await this.service.crearFlujoFiscalia(
+      idFlujo,
+      dto,
+      idUsuario
+    )
+    return this.successCreate(flujoFiscalia)
+  }
+
+  @ApiOperation({ summary: 'Listar detalle de fiscalía de un flujo telefónico' })
+  @ApiParam({ name: 'idFlujo', description: 'ID del flujo telefónico' })
+  @Get('flujos-telefonicos/:idFlujo/fiscalia')
+  async listarFlujoFiscalia(@Param('idFlujo') idFlujo: string) {
+    return this.successList(await this.service.listarFlujoFiscalia(idFlujo))
+  }
+
+  @ApiOperation({ summary: 'Eliminar detalle de fiscalía por ID' })
+  @ApiParam({
+    name: 'idFlujoFiscalia',
+    description: 'ID del detalle de fiscalía (bigint)',
+  })
+  @Delete('flujo-fiscalia/:idFlujoFiscalia')
+  async eliminarFlujoFiscalia(
+    @Param('idFlujoFiscalia') idFlujoFiscalia: string
+  ) {
+    await this.service.eliminarFlujoFiscalia(idFlujoFiscalia)
     return this.successDelete()
   }
 }
