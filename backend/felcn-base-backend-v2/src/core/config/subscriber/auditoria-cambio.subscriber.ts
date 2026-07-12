@@ -85,7 +85,7 @@ export class AuditoriaCambioSubscriber implements EntitySubscriberInterface {
     this.buffer.delete(event.queryRunner)
     if (entradas.length === 0) return
 
-    const schemaAudit = process.env.DB_SCHEMA_USUARIO ?? 'usuario'
+    const schemaAudit = process.env.DB_SCHEMA_USUARIOS ?? 'usuario'
     for (const e of entradas) {
       try {
         await this.dsAuth.manager.query(
