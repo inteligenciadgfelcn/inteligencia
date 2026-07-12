@@ -182,27 +182,56 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
           <span className="text-xs text-gray-400">Sin archivos registrados</span>
         </div>
       ) : (
-        <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {archivos.map((a, idx) => {
             const id = String(a[idField] ?? idx)
             return (
-              <li key={id} className="flex items-center justify-between gap-2 py-2">
-                <div className="text-sm min-w-0">
-                  <span className="font-medium truncate block">{a.nombre}</span>
-                  <span className="text-xs text-gray-500">{a.tipo}{a.descripcionContenido ? ` · ${a.descripcionContenido}` : ''}</span>
+              <div
+                key={id}
+                className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 border-b border-gray-100 pb-1.5 dark:border-gray-700/50">
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs truncate" title={a.nombre}>
+                      {a.nombre}
+                    </span>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        variant="info"
+                        size="sm"
+                        className="h-6 w-6 p-0 shrink-0"
+                        type="button"
+                        onClick={() => void descargar(a)}
+                        title="Descargar archivo"
+                      >
+                        <IconDownload className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        className="h-6 w-6 p-0 shrink-0"
+                        type="button"
+                        onClick={() => eliminar(a)}
+                        title="Eliminar archivo"
+                      >
+                        <IconTrash className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-400">
+                    <p><span className="font-medium text-gray-500">Tipo:</span> {a.tipo}</p>
+                    {a.descripcionContenido && (
+                      <p className="mt-1"><span className="font-medium text-gray-500">Contenido:</span> {a.descripcionContenido}</p>
+                    )}
+                    {a.nombreArchivo && (
+                      <p className="mt-1 font-mono text-[10px] text-gray-400 truncate"><span className="font-medium text-gray-500">Archivo:</span> {a.nombreArchivo}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button variant="info" size="sm" type="button" onClick={() => void descargar(a)}>
-                    <IconDownload className="h-4 w-4" />
-                  </Button>
-                  <Button variant="danger" size="sm" type="button" onClick={() => eliminar(a)}>
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              </li>
+              </div>
             )
           })}
-        </ul>
+        </div>
       )}
     </div>
   )

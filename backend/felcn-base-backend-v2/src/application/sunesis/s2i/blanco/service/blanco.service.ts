@@ -5,12 +5,16 @@ import { S2iAntecedenteBlanco } from '../entity/antecedente-blanco.entity'
 import { S2iRedSocial } from '../entity/red-social.entity'
 import { S2iLugarBlanco } from '../entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from '../entity/archivo-blanco.entity'
+import { S2iFlujoTelefonico } from '../entity/flujo-telefonico.entity'
+import { S2iFlujoFiscalia } from '../entity/flujo-fiscalia.entity'
 import {
   CreateBlancoDto,
   CreateAntecedenteDto,
   CreateRedSocialDto,
   CreateLugarSigDto,
   CreateArchivoDto,
+  CreateFlujoTelefonicoDto,
+  CreateFlujoFiscaliaDto,
 } from '../dto'
 
 /**
@@ -210,5 +214,82 @@ export class BlancoService {
 
   async eliminarArchivo(idArchivo: string): Promise<void> {
     await this.repo.eliminarArchivo(idArchivo)
+  }
+
+  // ==================== FLUJO TELEFÓNICO ====================
+
+  /**
+   * Crea un flujo telefónico para un blanco.
+   * usuarioCreacion/fechaCreacion son gestionados por el trigger de BD
+   * fn_auditoria_before_insert; solo se envía el ID numérico del usuario autenticado.
+   */
+  async crearFlujoTelefonico(
+    idBlanco: string,
+    dto: CreateFlujoTelefonicoDto,
+    idUsuario: string
+  ): Promise<S2iFlujoTelefonico> {
+    const existe = await this.repo.buscarPorId(idBlanco)
+    if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
+
+    const flujo = new S2iFlujoTelefonico({
+      idBlanco,
+      empresa: dto.empresa.trim(),
+      direccion: dto.direccion.trim(),
+      numero: dto.numero.trim(),
+      usuarioCreacion: idUsuario,
+    })
+    return this.repo.crearFlujoTelefonico(flujo)
+  }
+
+  async listarFlujosTelefonicos(
+    idBlanco: string
+  ): Promise<S2iFlujoTelefonico[]> {
+    return this.repo.listarFlujosPorBlanco(idBlanco)
+  }
+
+  async eliminarFlujoTelefonico(idFlujo: string): Promise<void> {
+    await this.repo.eliminarFlujoTelefonico(idFlujo)
+  }
+
+  // ==================== FLUJO FISCALÍA ====================
+
+  async crearFlujoFiscalia(
+    idFlujo: string,
+    dto: CreateFlujoFiscaliaDto,
+    idUsuario: string
+  ): Promise<S2iFlujoFiscalia> {
+    const existe = await this.repo.buscarFlujoPorId(idFlujo)
+    if (!existe) throw new NotFoundException(`Flujo telefónico ${idFlujo} no encontrado`)
+
+    const flujoFiscalia = new S2iFlujoFiscalia({
+      idFlujo,
+      servicio: dto.servicio.trim(),
+      registro: dto.registro.trim(),
+      numeroA: dto.numeroA.trim(),
+      imeiA: dto.imeiA.trim(),
+      rbsA: dto.rbsA.trim(),
+      celdaA: dto.celdaA.trim(),
+      latA: dto.latA,
+      lonA: dto.lonA,
+      numeroB: dto.numeroB.trim(),
+      titular: dto.titular.trim(),
+      imeiB: dto.imeiB.trim(),
+      rbsB: dto.rbsB.trim(),
+      celdaB: dto.celdaB.trim(),
+      latB: dto.latB,
+      lonB: dto.lonB,
+      fechaHora: new Date(dto.fechaHora),
+      duracion: dto.duracion.trim(),
+      usuarioCreacion: idUsuario,
+    })
+    return this.repo.crearFlujoFiscalia(flujoFiscalia)
+  }
+
+  async listarFlujoFiscalia(idFlujo: string): Promise<S2iFlujoFiscalia[]> {
+    return this.repo.listarFlujoFiscaliaPorFlujo(idFlujo)
+  }
+
+  async eliminarFlujoFiscalia(idFlujoFiscalia: string): Promise<void> {
+    await this.repo.eliminarFlujoFiscalia(idFlujoFiscalia)
   }
 }

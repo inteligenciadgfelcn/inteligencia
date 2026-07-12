@@ -1,0 +1,657 @@
+'use client'
+import { useCallback, useEffect, useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import IconTrash from '@/components/Icon/IconTrash'
+import IconDownload from '@/components/Icon/IconDownload'
+import IconCaretDown from '@/components/Icon/IconCaretDown'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { useConfirmDialog } from '@/hooks'
+import { useAlerts } from '@/hooks/useAlerts'
+import { InterpreteMensajes } from '@/utils'
+import { exportToCSV } from '@/utils/tableExport'
+import { BlancosService } from '@/services/analisis'
+import type { BlancoS2i, FlujoFiscalia, FlujoTelefonico } from '@/services/analisis'
+
+interface Props {
+  blanco: BlancoS2i
+}
+
+// Número boliviano: 8 dígitos. IMEI: 15 dígitos. Lat/Lon: numérico con exactamente 6 decimales.
+const RE_NUMERO = /^\d{8}$/
+const RE_IMEI = /^\d{15}$/
+const RE_LATLON = /^-?\d{1,3}\.\d{6}$/
+
+const MSG_NUMERO = 'Debe contener exactamente 8 dígitos numéricos'
+const MSG_IMEI = 'Debe contener exactamente 15 dígitos numéricos'
+const MSG_LATLON = 'Numérico con 6 decimales (ej. -16.500000)'
+
+const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max)
+const soloDecimal = (v: string) => v.replace(/[^0-9.-]/g, '')
+
+const formatLatLon = (v: string) => {
+  if (v === '' || v === '-' || v === '.') return v
+  let cleaned = v.replace(/[^0-9.-]/g, '')
+  const isNegative = cleaned.startsWith('-')
+  cleaned = cleaned.replace(/-/g, '')
+  if (isNegative) cleaned = '-' + cleaned
+  const parts = cleaned.split('.')
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('')
+  }
+  const finalParts = cleaned.split('.')
+  if (finalParts[1] !== undefined) {
+    return finalParts[0] + '.' + finalParts[1].slice(0, 6)
+  }
+  return cleaned
+}
+
+const formatDuration = (v: string) => {
+  const digits = v.replace(/\D/g, '').slice(0, 6)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 4) return `${digits.slice(0, 2)}:${digits.slice(2)}`
+  return `${digits.slice(0, 2)}:${digits.slice(2, 4)}:${digits.slice(4)}`
+}
+
+// ── Formulario de detalle de llamada (Fiscalía) ───────────────────────────────
+interface FlujoFiscaliaForm {
+  servicio: string
+  registro: string
+  numeroA: string
+  imeiA: string
+  rbsA: string
+  celdaA: string
+  latA: string
+  lonA: string
+  numeroB: string
+  titular: string
+  imeiB: string
+  rbsB: string
+  celdaB: string
+  latB: string
+  lonB: string
+  fechaHora: string
+  duracion: string
+}
+
+const FISCALIA_VACIO: FlujoFiscaliaForm = {
+  servicio: '',
+  registro: '',
+  numeroA: '',
+  imeiA: '',
+  rbsA: '',
+  celdaA: '',
+  latA: '',
+  lonA: '',
+  numeroB: '',
+  titular: '',
+  imeiB: '',
+  rbsB: '',
+  celdaB: '',
+  latB: '',
+  lonB: '',
+  fechaHora: '',
+  duracion: '',
+}
+
+// ── Sub-panel: llamadas de fiscalía de un flujo telefónico ───────────────────
+function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
+  const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
+  const [cargando, setCargando] = useState(false)
+  const [lista, setLista] = useState<FlujoFiscalia[]>([])
+  const [submitted, setSubmitted] = useState(false)
+  const [form, setForm] = useState<FlujoFiscaliaForm>(FISCALIA_VACIO)
+
+  const cargar = useCallback(async () => {
+    setCargando(true)
+    try {
+      const r = await BlancosService.listarFlujoFiscalia(idFlujo)
+      if (r?.finalizado) setLista(r.datos ?? [])
+    } finally { setCargando(false) }
+  }, [idFlujo])
+
+  useEffect(() => { void cargar() }, [cargar])
+
+  const setTexto = (campo: keyof FlujoFiscaliaForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [campo]: e.target.value.toUpperCase() }))
+  }
+
+  const setNumero = (campo: 'numeroA' | 'numeroB') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [campo]: soloDigitos(e.target.value, 8) }))
+  }
+
+  const setImei = (campo: 'imeiA' | 'imeiB') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [campo]: soloDigitos(e.target.value, 15) }))
+  }
+
+  const setLatLon = (campo: 'latA' | 'lonA' | 'latB' | 'lonB') => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, [campo]: formatLatLon(e.target.value) }))
+  }
+
+  const handleLatLonBlur = (campo: 'latA' | 'lonA' | 'latB' | 'lonB') => () => {
+    setForm((prev) => {
+      const v = prev[campo]
+      const num = parseFloat(v)
+      if (isNaN(num)) return prev
+      return { ...prev, [campo]: num.toFixed(6) }
+    })
+  }
+
+  const setDuracion = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, duracion: formatDuration(e.target.value) }))
+  }
+
+  const setFecha = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({ ...prev, fechaHora: e.target.value }))
+  }
+
+  const errores = {
+    servicio: !form.servicio.trim(),
+    registro: !form.registro.trim(),
+    numeroA: !RE_NUMERO.test(form.numeroA),
+    imeiA: !RE_IMEI.test(form.imeiA),
+    rbsA: !form.rbsA.trim(),
+    celdaA: !form.celdaA.trim(),
+    latA: !RE_LATLON.test(form.latA),
+    lonA: !RE_LATLON.test(form.lonA),
+    numeroB: !RE_NUMERO.test(form.numeroB),
+    titular: !form.titular.trim(),
+    imeiB: !RE_IMEI.test(form.imeiB),
+    rbsB: !form.rbsB.trim(),
+    celdaB: !form.celdaB.trim(),
+    latB: !RE_LATLON.test(form.latB),
+    lonB: !RE_LATLON.test(form.lonB),
+    fechaHora: !form.fechaHora,
+    duracion: !form.duracion.trim(),
+  }
+
+  const esValido = Object.values(errores).every((e) => !e)
+  const marcado = (campo: keyof typeof errores) => submitted && errores[campo]
+
+  const guardar = async () => {
+    setSubmitted(true)
+    if (!esValido) return
+    setCargando(true)
+    try {
+      const r = await BlancosService.crearFlujoFiscalia(idFlujo, {
+        servicio: form.servicio.trim(),
+        registro: form.registro.trim(),
+        numeroA: form.numeroA,
+        imeiA: form.imeiA,
+        rbsA: form.rbsA.trim(),
+        celdaA: form.celdaA.trim(),
+        latA: parseFloat(form.latA),
+        lonA: parseFloat(form.lonA),
+        numeroB: form.numeroB,
+        titular: form.titular.trim(),
+        imeiB: form.imeiB,
+        rbsB: form.rbsB.trim(),
+        celdaB: form.celdaB.trim(),
+        latB: parseFloat(form.latB),
+        lonB: parseFloat(form.lonB),
+        fechaHora: form.fechaHora,
+        duracion: form.duracion.trim(),
+      })
+      if (r?.finalizado) {
+        setForm(FISCALIA_VACIO)
+        setSubmitted(false)
+        void cargar()
+        Alerta({ mensaje: 'Llamada registrada', variant: 'success' })
+      }
+    } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
+    finally { setCargando(false) }
+  }
+
+  const eliminar = (idFlujoFiscalia: string) => {
+    confirm({
+      texto: '¿Eliminar este registro de llamada?',
+      onConfirm: async () => {
+        setCargando(true)
+        try { await BlancosService.eliminarFlujoFiscalia(idFlujoFiscalia); void cargar() }
+        finally { setCargando(false) }
+      },
+    })
+  }
+
+  return (
+    <div className="mt-3 space-y-3 rounded border border-[#e0e6ed] bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
+      <LoadingDialog show={cargando} />
+      <ConfirmDialog />
+      <p className="text-xs font-semibold text-gray-500">Detalle de llamadas (Fiscalía)</p>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label className="mb-1 block text-xs font-medium">Servicio <span className="text-danger">*</span></label>
+          <Input type="text" value={form.servicio} onChange={setTexto('servicio')} className={`w-full ${marcado('servicio') ? 'border-danger' : ''}`} />
+          {marcado('servicio') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Registro <span className="text-danger">*</span></label>
+          <Input type="text" value={form.registro} onChange={setTexto('registro')} className={`w-full ${marcado('registro') ? 'border-danger' : ''}`} />
+          {marcado('registro') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Fecha y Hora <span className="text-danger">*</span></label>
+          <Input type="datetime-local" value={form.fechaHora} onChange={setFecha} className={`w-full ${marcado('fechaHora') ? 'border-danger' : ''}`} />
+          {marcado('fechaHora') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Duración <span className="text-danger">*</span></label>
+          <Input type="text" placeholder="hh:mm:ss" maxLength={8} value={form.duracion} onChange={setDuracion} className={`w-full ${marcado('duracion') ? 'border-danger' : ''}`} />
+          {marcado('duracion') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
+        <p className="lg:col-span-6 mt-1 text-xs font-semibold text-gray-500">Extremo A</p>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Número A <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="numeric" maxLength={8} placeholder="8 dígitos" value={form.numeroA} onChange={setNumero('numeroA')} className={`w-full ${marcado('numeroA') ? 'border-danger' : ''}`} />
+          {marcado('numeroA') && <span className="mt-1 block text-xs italic text-danger">{MSG_NUMERO}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">IMEI A <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="numeric" maxLength={15} placeholder="15 dígitos" value={form.imeiA} onChange={setImei('imeiA')} className={`w-full ${marcado('imeiA') ? 'border-danger' : ''}`} />
+          {marcado('imeiA') && <span className="mt-1 block text-xs italic text-danger">{MSG_IMEI}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">RBS A <span className="text-danger">*</span></label>
+          <Input type="text" value={form.rbsA} onChange={setTexto('rbsA')} className={`w-full ${marcado('rbsA') ? 'border-danger' : ''}`} />
+          {marcado('rbsA') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Celda A <span className="text-danger">*</span></label>
+          <Input type="text" value={form.celdaA} onChange={setTexto('celdaA')} className={`w-full ${marcado('celdaA') ? 'border-danger' : ''}`} />
+          {marcado('celdaA') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Latitud A <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="decimal" placeholder="-16.500000" value={form.latA} onChange={setLatLon('latA')} onBlur={handleLatLonBlur('latA')} className={`w-full ${marcado('latA') ? 'border-danger' : ''}`} />
+          {marcado('latA') && <span className="mt-1 block text-xs italic text-danger">{MSG_LATLON}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Longitud A <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="decimal" placeholder="-68.150000" value={form.lonA} onChange={setLatLon('lonA')} onBlur={handleLatLonBlur('lonA')} className={`w-full ${marcado('lonA') ? 'border-danger' : ''}`} />
+          {marcado('lonA') && <span className="mt-1 block text-xs italic text-danger">{MSG_LATLON}</span>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-6">
+        <p className="lg:col-span-6 mt-1 text-xs font-semibold text-gray-500">Extremo B</p>
+        <div className="lg:col-span-6">
+          <label className="mb-1 block text-xs font-medium">Titular <span className="text-danger">*</span></label>
+          <Input type="text" value={form.titular} onChange={setTexto('titular')} className={`w-full ${marcado('titular') ? 'border-danger' : ''}`} />
+          {marcado('titular') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Número B <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="numeric" maxLength={8} placeholder="8 dígitos" value={form.numeroB} onChange={setNumero('numeroB')} className={`w-full ${marcado('numeroB') ? 'border-danger' : ''}`} />
+          {marcado('numeroB') && <span className="mt-1 block text-xs italic text-danger">{MSG_NUMERO}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">IMEI B <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="numeric" maxLength={15} placeholder="15 dígitos" value={form.imeiB} onChange={setImei('imeiB')} className={`w-full ${marcado('imeiB') ? 'border-danger' : ''}`} />
+          {marcado('imeiB') && <span className="mt-1 block text-xs italic text-danger">{MSG_IMEI}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">RBS B <span className="text-danger">*</span></label>
+          <Input type="text" value={form.rbsB} onChange={setTexto('rbsB')} className={`w-full ${marcado('rbsB') ? 'border-danger' : ''}`} />
+          {marcado('rbsB') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Celda B <span className="text-danger">*</span></label>
+          <Input type="text" value={form.celdaB} onChange={setTexto('celdaB')} className={`w-full ${marcado('celdaB') ? 'border-danger' : ''}`} />
+          {marcado('celdaB') && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Latitud B <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="decimal" placeholder="-16.510000" value={form.latB} onChange={setLatLon('latB')} onBlur={handleLatLonBlur('latB')} className={`w-full ${marcado('latB') ? 'border-danger' : ''}`} />
+          {marcado('latB') && <span className="mt-1 block text-xs italic text-danger">{MSG_LATLON}</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium">Longitud B <span className="text-danger">*</span></label>
+          <Input type="text" inputMode="decimal" placeholder="-68.160000" value={form.lonB} onChange={setLatLon('lonB')} onBlur={handleLatLonBlur('lonB')} className={`w-full ${marcado('lonB') ? 'border-danger' : ''}`} />
+          {marcado('lonB') && <span className="mt-1 block text-xs italic text-danger">{MSG_LATLON}</span>}
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Guardar Llamada</Button>
+      </div>
+
+      {lista.length === 0 ? (
+        <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-4 dark:border-gray-700">
+          <span className="text-xs text-gray-400">Sin llamadas registradas</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {lista.map((f) => (
+            <div
+              key={f.idFlujoFiscalia}
+              className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
+            >
+              <div>
+                {/* Header */}
+                <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 dark:border-gray-700/50">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                    </span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                      {f.numeroA}
+                    </span>
+                    <span className="text-gray-400">→</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                      {f.numeroB}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded bg-success/15 px-2 py-0.5 text-[10px] font-medium text-success">
+                      {f.duracion}
+                    </span>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0"
+                      onClick={() => eliminar(f.idFlujoFiscalia)}
+                      title="Eliminar llamada"
+                    >
+                      <IconTrash className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Grid */}
+                <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2 text-[11px]">
+                  {/* Extremo A */}
+                  <div className="rounded bg-gray-50/50 p-2 dark:bg-gray-900/30">
+                    <span className="font-semibold text-primary block mb-0.5 text-[9px] uppercase tracking-wider">Extremo A</span>
+                    <div className="space-y-0.5 text-gray-600 dark:text-gray-400">
+                      <p><span className="font-medium text-gray-500">IMEI:</span> {f.imeiA}</p>
+                      <p><span className="font-medium text-gray-500">RBS:</span> {f.rbsA} <span className="text-gray-300">·</span> <span className="font-medium text-gray-500">Celda:</span> {f.celdaA}</p>
+                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {f.latA}, {f.lonA}</p>
+                    </div>
+                  </div>
+
+                  {/* Extremo B */}
+                  <div className="rounded bg-gray-50/50 p-2 dark:bg-gray-900/30">
+                    <span className="font-semibold text-secondary block mb-0.5 text-[9px] uppercase tracking-wider">Extremo B</span>
+                    <div className="space-y-0.5 text-gray-600 dark:text-gray-400">
+                      <p><span className="font-medium text-gray-500">Titular:</span> <span className="font-medium text-gray-900 dark:text-gray-100">{f.titular}</span></p>
+                      <p><span className="font-medium text-gray-500">IMEI:</span> {f.imeiB}</p>
+                      <p><span className="font-medium text-gray-500">RBS:</span> {f.rbsB} <span className="text-gray-300">·</span> <span className="font-medium text-gray-500">Celda:</span> {f.celdaB}</p>
+                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {f.latB}, {f.lonB}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-2.5 flex items-center justify-between border-t border-gray-100 pt-2 text-[10px] text-gray-500 dark:border-gray-700/50 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {f.fechaHora}
+                </span>
+                <div className="flex gap-2">
+                  <span><span className="font-medium">Servicio:</span> {f.servicio}</span>
+                  <span className="text-gray-300">|</span>
+                  <span><span className="font-medium">Registro:</span> {f.registro}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Panel principal: Flujo Telefónico ─────────────────────────────────────────
+export function FlujoTelefonicoPanel({ blanco }: Props) {
+  const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { Alerta } = useAlerts()
+  const [cargando, setCargando] = useState(false)
+  const [lista, setLista] = useState<FlujoTelefonico[]>([])
+  const [submitted, setSubmitted] = useState(false)
+  const [empresa, setEmpresa] = useState('')
+  const [direccion, setDireccion] = useState('')
+  const [numero, setNumero] = useState('')
+  const [expandidoId, setExpandidoId] = useState<string | null>(null)
+
+  const cargar = useCallback(async () => {
+    setCargando(true)
+    try {
+      const r = await BlancosService.listarFlujosTelefonicos(blanco.idBlanco)
+      if (r?.finalizado) setLista(r.datos ?? [])
+    } finally { setCargando(false) }
+  }, [blanco.idBlanco])
+
+  useEffect(() => { void cargar() }, [cargar])
+
+  const errorEmpresa = !empresa.trim() && submitted
+  const errorDireccion = !direccion.trim() && submitted
+  const errorNumero = !numero.trim() && submitted
+
+  const guardar = async () => {
+    setSubmitted(true)
+    if (!empresa.trim() || !direccion.trim() || !numero.trim()) return
+    setCargando(true)
+    try {
+      const r = await BlancosService.crearFlujoTelefonico(blanco.idBlanco, {
+        empresa: empresa.trim(),
+        direccion: direccion.trim(),
+        numero,
+      })
+      if (r?.finalizado) {
+        setEmpresa(''); setDireccion(''); setNumero(''); setSubmitted(false)
+        void cargar()
+        Alerta({ mensaje: 'Flujo telefónico registrado', variant: 'success' })
+      }
+    } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
+    finally { setCargando(false) }
+  }
+
+  const eliminar = (idFlujo: string) => {
+    confirm({
+      texto: '¿Eliminar este flujo telefónico? También se eliminarán sus llamadas de fiscalía.',
+      onConfirm: async () => {
+        setCargando(true)
+        try {
+          await BlancosService.eliminarFlujoTelefonico(idFlujo)
+          if (expandidoId === idFlujo) setExpandidoId(null)
+          void cargar()
+        } finally { setCargando(false) }
+      },
+    })
+  }
+
+  const descargarCsv = async () => {
+    setCargando(true)
+    try {
+      const flujos = lista
+      const detalles = await Promise.all(
+        flujos.map((f) => BlancosService.listarFlujoFiscalia(f.idFlujo))
+      )
+
+      type FilaCsv = {
+        empresa: string
+        direccion: string
+        numero: string
+        servicio: string
+        registro: string
+        numeroA: string
+        imeiA: string
+        rbsA: string
+        celdaA: string
+        latA: number | string
+        lonA: number | string
+        numeroB: string
+        titular: string
+        imeiB: string
+        rbsB: string
+        celdaB: string
+        latB: number | string
+        lonB: number | string
+        fechaHora: string
+        duracion: string
+      }
+
+      const filas: FilaCsv[] = []
+      flujos.forEach((flujo, idx) => {
+        const llamadas = detalles[idx]?.datos ?? []
+        if (llamadas.length === 0) {
+          filas.push({
+            empresa: flujo.empresa,
+            direccion: flujo.direccion,
+            numero: flujo.numero,
+            servicio: '', registro: '', numeroA: '', imeiA: '', rbsA: '', celdaA: '',
+            latA: '', lonA: '', numeroB: '', titular: '', imeiB: '', rbsB: '', celdaB: '',
+            latB: '', lonB: '', fechaHora: '', duracion: '',
+          })
+          return
+        }
+        llamadas.forEach((l) => {
+          filas.push({
+            empresa: flujo.empresa,
+            direccion: flujo.direccion,
+            numero: flujo.numero,
+            servicio: l.servicio,
+            registro: l.registro,
+            numeroA: l.numeroA,
+            imeiA: l.imeiA,
+            rbsA: l.rbsA,
+            celdaA: l.celdaA,
+            latA: l.latA,
+            lonA: l.lonA,
+            numeroB: l.numeroB,
+            titular: l.titular,
+            imeiB: l.imeiB,
+            rbsB: l.rbsB,
+            celdaB: l.celdaB,
+            latB: l.latB,
+            lonB: l.lonB,
+            fechaHora: l.fechaHora,
+            duracion: l.duracion,
+          })
+        })
+      })
+
+      if (filas.length === 0) {
+        Alerta({ mensaje: 'No hay datos de flujo telefónico para exportar', variant: 'warning' })
+        return
+      }
+
+      exportToCSV<FilaCsv>(
+        filas,
+        [
+          'Empresa', 'Dirección', 'Número', 'Servicio', 'Registro',
+          'Número A', 'IMEI A', 'RBS A', 'Celda A', 'Latitud A', 'Longitud A',
+          'Número B', 'Titular', 'IMEI B', 'RBS B', 'Celda B', 'Latitud B', 'Longitud B',
+          'Fecha/Hora', 'Duración',
+        ],
+        [
+          'empresa', 'direccion', 'numero', 'servicio', 'registro',
+          'numeroA', 'imeiA', 'rbsA', 'celdaA', 'latA', 'lonA',
+          'numeroB', 'titular', 'imeiB', 'rbsB', 'celdaB', 'latB', 'lonB',
+          'fechaHora', 'duracion',
+        ],
+        `flujo-telefonico-${blanco.idBlanco}`
+      )
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setCargando(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <LoadingDialog show={cargando} />
+      <ConfirmDialog />
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <label className="mb-1 block text-sm font-medium">Empresa <span className="text-danger">*</span></label>
+          <Input
+            type="text"
+            value={empresa}
+            onChange={(e) => setEmpresa(e.target.value.toUpperCase())}
+            className={`w-full ${errorEmpresa ? 'border-danger' : ''}`}
+          />
+          {errorEmpresa && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div className="lg:col-span-2">
+          <label className="mb-1 block text-sm font-medium">Dirección <span className="text-danger">*</span></label>
+          <Input
+            type="text"
+            value={direccion}
+            onChange={(e) => setDireccion(e.target.value.toUpperCase())}
+            className={`w-full ${errorDireccion ? 'border-danger' : ''}`}
+          />
+          {errorDireccion && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Número <span className="text-danger">*</span></label>
+          <Input
+            type="text"
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            className={`w-full ${errorNumero ? 'border-danger' : ''}`}
+          />
+          {errorNumero && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Button variant="outline-primary" size="sm" onClick={() => void descargarCsv()} disabled={cargando || lista.length === 0}>
+          <IconDownload className="mr-1 h-4 w-4" />
+          Descargar CSV
+        </Button>
+        <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>
+          Guardar
+        </Button>
+      </div>
+
+      {lista.length === 0 ? (
+        <div className="flex items-center justify-center rounded border border-dashed border-[#e0e6ed] py-6 dark:border-gray-700">
+          <span className="text-xs text-gray-400">Sin flujos telefónicos registrados</span>
+        </div>
+      ) : (
+        <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
+          {lista.map((f) => {
+            const expandido = expandidoId === f.idFlujo
+            return (
+              <li key={f.idFlujo} className="py-2">
+                <div
+                  className="flex cursor-pointer items-start justify-between gap-2"
+                  onClick={() => setExpandidoId(expandido ? null : f.idFlujo)}
+                >
+                  <div className="flex items-start gap-2 text-sm">
+                    <IconCaretDown className={`mt-0.5 h-3 w-3 shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
+                    <div>
+                      <span className="font-medium">{f.empresa}</span>
+                      <span className="ml-2 text-xs text-gray-500">{f.numero} · {f.direccion}</span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={(e) => { e.stopPropagation(); eliminar(f.idFlujo) }}
+                  >
+                    <IconTrash className="h-4 w-4" />
+                  </Button>
+                </div>
+                {expandido && <PanelFlujoFiscalia idFlujo={f.idFlujo} />}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}

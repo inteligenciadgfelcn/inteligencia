@@ -147,6 +147,64 @@ export interface CreateArchivoPayload {
   nombre: string
 }
 
+// ─── Flujo Telefónico ─────────────────────────────────────────────────────────
+
+export interface FlujoTelefonico {
+  idFlujo: string
+  idBlanco: string
+  empresa: string
+  direccion: string
+  numero: string
+}
+
+export interface CreateFlujoTelefonicoPayload {
+  empresa: string
+  direccion: string
+  numero: string
+}
+
+export interface FlujoFiscalia {
+  idFlujoFiscalia: string
+  idFlujo: string
+  servicio: string
+  registro: string
+  numeroA: string
+  imeiA: string
+  rbsA: string
+  celdaA: string
+  latA: number
+  lonA: number
+  numeroB: string
+  titular: string
+  imeiB: string
+  rbsB: string
+  celdaB: string
+  latB: number
+  lonB: number
+  fechaHora: string
+  duracion: string
+}
+
+export interface CreateFlujoFiscaliaPayload {
+  servicio: string
+  registro: string
+  numeroA: string
+  imeiA: string
+  rbsA: string
+  celdaA: string
+  latA: number
+  lonA: number
+  numeroB: string
+  titular: string
+  imeiB: string
+  rbsB: string
+  celdaB: string
+  latB: number
+  lonB: number
+  fechaHora: string
+  duracion: string
+}
+
 // ─── Organizaciones ───────────────────────────────────────────────────────────
 
 export interface EmpresaS2i {
