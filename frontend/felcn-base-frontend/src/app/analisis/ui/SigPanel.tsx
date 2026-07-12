@@ -19,6 +19,23 @@ const MapaConMarcador = dynamic(
   }
 )
 
+const formatLatLon = (v: string) => {
+  if (v === '' || v === '-' || v === '.') return v
+  let cleaned = v.replace(/[^0-9.-]/g, '')
+  const isNegative = cleaned.startsWith('-')
+  cleaned = cleaned.replace(/-/g, '')
+  if (isNegative) cleaned = '-' + cleaned
+  const parts = cleaned.split('.')
+  if (parts.length > 2) {
+    cleaned = parts[0] + '.' + parts.slice(1).join('')
+  }
+  const finalParts = cleaned.split('.')
+  if (finalParts[1] !== undefined) {
+    return finalParts[0] + '.' + finalParts[1].slice(0, 6)
+  }
+  return cleaned
+}
+
 interface SigPanelService {
   crearLugar(idEntidad: string, payload: CreateLugarSigPayload): Promise<RespuestaApi<LugarSig>>
   listarLugares(idEntidad: string): Promise<RespuestaApi<LugarSig[]>>
@@ -40,8 +57,8 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
   const [lugares, setLugares] = useState<LugarSig[]>([])
 
   const [descripcion, setDescripcion] = useState('')
-  const [coordX, setCoordX] = useState<string>('-16.5')
-  const [coordY, setCoordY] = useState<string>('-68.15')
+  const [coordX, setCoordX] = useState<string>('-16.500000')
+  const [coordY, setCoordY] = useState<string>('-68.150000')
   const [contenido, setContenido] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -57,6 +74,14 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
   }, [idEntidad, service])
 
   useEffect(() => { void cargar() }, [cargar])
+
+  const handleLatLonBlur = (campo: 'coordX' | 'coordY') => () => {
+    const v = campo === 'coordX' ? coordX : coordY
+    const num = parseFloat(v)
+    if (isNaN(num)) return
+    if (campo === 'coordX') setCoordX(num.toFixed(6))
+    else setCoordY(num.toFixed(6))
+  }
 
   const guardar = async () => {
     setSubmitted(true)
@@ -99,8 +124,8 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
   }
 
   const handleMapClick = (center: [number, number]) => {
-    setCoordX(String(center[0]))
-    setCoordY(String(center[1]))
+    setCoordX(center[0].toFixed(6))
+    setCoordY(center[1].toFixed(6))
   }
 
   return (
@@ -125,20 +150,22 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
         <div>
           <label className="mb-1 block text-sm font-medium">Latitud (X) <span className="text-danger">*</span></label>
           <Input
-            type="number"
-            step="any"
+            type="text"
+            placeholder="-16.500000"
             value={coordX}
-            onChange={(e) => setCoordX(e.target.value)}
+            onChange={(e) => setCoordX(formatLatLon(e.target.value))}
+            onBlur={handleLatLonBlur('coordX')}
             className={`w-full ${!coordX && submitted ? 'border-danger' : ''}`}
           />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Longitud (Y) <span className="text-danger">*</span></label>
           <Input
-            type="number"
-            step="any"
+            type="text"
+            placeholder="-68.150000"
             value={coordY}
-            onChange={(e) => setCoordY(e.target.value)}
+            onChange={(e) => setCoordY(formatLatLon(e.target.value))}
+            onBlur={handleLatLonBlur('coordY')}
             className={`w-full ${!coordY && submitted ? 'border-danger' : ''}`}
           />
         </div>
@@ -180,23 +207,47 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
           <span className="text-xs text-gray-400">Sin lugares SIG registrados</span>
         </div>
       ) : (
-        <ul className="divide-y divide-[#e0e6ed] dark:divide-gray-700">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {lugares.map((l, idx) => {
             const id = String(l[idField] ?? idx)
             return (
-              <li key={id} className="flex items-start justify-between gap-2 py-2">
-                <div className="text-sm">
-                  <span className="font-medium">{l.descripcion}</span>
-                  <span className="ml-2 text-xs text-gray-500">({l.coordenadasX}, {l.coordenadasY})</span>
-                  {l.contenido && <p className="text-xs text-gray-400 mt-0.5">{l.contenido}</p>}
+              <div
+                key={id}
+                className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-1.5 dark:border-gray-700/50">
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+                      {l.descripcion}
+                    </span>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0"
+                      onClick={() => eliminar(id)}
+                      title="Eliminar lugar"
+                    >
+                      <IconTrash className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                  <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-400">
+                    <p className="flex items-center gap-1">
+                      <span className="font-medium text-gray-500">Coordenadas:</span> 
+                      <span className="font-mono bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded text-[10px]">
+                        {l.coordenadasX.toFixed(6)}, {l.coordenadasY.toFixed(6)}
+                      </span>
+                    </p>
+                    {l.contenido && (
+                      <p className="mt-1.5 border-t border-gray-50 pt-1.5 dark:border-gray-700/30 text-gray-500 italic">
+                        {l.contenido}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <Button variant="danger" size="sm" className="shrink-0" onClick={() => eliminar(id)}>
-                  <IconTrash className="h-4 w-4" />
-                </Button>
-              </li>
+              </div>
             )
           })}
-        </ul>
+        </div>
       )}
     </div>
   )
