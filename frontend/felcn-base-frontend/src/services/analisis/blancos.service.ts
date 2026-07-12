@@ -8,8 +8,12 @@ import type {
   CreateAntecedentePayload,
   CreateArchivoPayload,
   CreateBlancoPayload,
+  CreateFlujoFiscaliaPayload,
+  CreateFlujoTelefonicoPayload,
   CreateLugarSigPayload,
   CreateRedSocialPayload,
+  FlujoFiscalia,
+  FlujoTelefonico,
   RedSocial,
   RespuestaApi,
 } from './types'
@@ -163,6 +167,50 @@ export const BlancosService = {
   eliminarArchivo(idArchivo: string): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
       url: `${BASE}/archivos-blanco/${idArchivo}`,
+      method: 'DELETE',
+      withCredentials: true,
+    })
+  },
+
+  // ── Flujo Telefónico ──────────────────────────────────────────────────────
+
+  crearFlujoTelefonico(idBlanco: string, payload: CreateFlujoTelefonicoPayload): Promise<RespuestaApi<FlujoTelefonico>> {
+    return sesionPeticion({
+      url: `${BASE}/blancos/${idBlanco}/flujos-telefonicos`,
+      method: 'POST',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  listarFlujosTelefonicos(idBlanco: string): Promise<RespuestaApi<FlujoTelefonico[]>> {
+    return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/flujos-telefonicos`, withCredentials: true })
+  },
+
+  eliminarFlujoTelefonico(idFlujo: string): Promise<RespuestaApi<unknown>> {
+    return sesionPeticion({
+      url: `${BASE}/flujos-telefonicos/${idFlujo}`,
+      method: 'DELETE',
+      withCredentials: true,
+    })
+  },
+
+  crearFlujoFiscalia(idFlujo: string, payload: CreateFlujoFiscaliaPayload): Promise<RespuestaApi<FlujoFiscalia>> {
+    return sesionPeticion({
+      url: `${BASE}/flujos-telefonicos/${idFlujo}/fiscalia`,
+      method: 'POST',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  listarFlujoFiscalia(idFlujo: string): Promise<RespuestaApi<FlujoFiscalia[]>> {
+    return sesionPeticion({ url: `${BASE}/flujos-telefonicos/${idFlujo}/fiscalia`, withCredentials: true })
+  },
+
+  eliminarFlujoFiscalia(idFlujoFiscalia: string): Promise<RespuestaApi<unknown>> {
+    return sesionPeticion({
+      url: `${BASE}/flujo-fiscalia/${idFlujoFiscalia}`,
       method: 'DELETE',
       withCredentials: true,
     })
