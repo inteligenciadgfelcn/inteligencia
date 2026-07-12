@@ -73,6 +73,14 @@ export class S2iLookupController extends BaseController {
     return this.successList(await this.service.listarContenidoCaso())
   }
 
+  @ApiOperation({
+    summary: 'Listar tipos de activo (para activos patrimoniales de blancos)',
+  })
+  @Get('tipos-activo')
+  async listarTiposActivo() {
+    return this.successList(await this.service.listarTiposActivo())
+  }
+
   @ApiOperation({ summary: 'Listar categorías de bienes' })
   @Get('bienes')
   async listarBienes() {
