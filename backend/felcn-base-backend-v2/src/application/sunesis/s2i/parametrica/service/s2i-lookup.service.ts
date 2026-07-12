@@ -37,6 +37,10 @@ export class S2iLookupService {
     return this.repo.listarContenidoCaso()
   }
 
+  listarTiposActivo() {
+    return this.repo.listarTiposActivo()
+  }
+
   listarBienes() {
     return this.repo.listarBienes()
   }

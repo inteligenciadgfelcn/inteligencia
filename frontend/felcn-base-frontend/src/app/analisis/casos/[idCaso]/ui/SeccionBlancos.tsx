@@ -14,6 +14,8 @@ import { DropzoneFoto } from '@/app/analisis/ui/DropzoneFoto'
 import { SIGPanel } from '@/app/analisis/ui/SigPanel'
 import { ArchivosPanel } from '@/app/analisis/ui/ArchivosPanel'
 import { FlujoTelefonicoPanel } from '@/app/analisis/ui/FlujoTelefonicoPanel'
+import { ActivoPatrimonialPanel } from '@/app/analisis/ui/ActivoPatrimonialPanel'
+import { OvisePanel } from '@/app/analisis/ui/OvisePanel'
 import { BlancosService, S2iLookupsService } from '@/services/analisis'
 import type {
   AntecedenteBlanco,
@@ -367,7 +369,7 @@ function PanelRedesSociales({ blanco }: { blanco: BlancoS2i }) {
 }
 
 // ── Expansion row ─────────────────────────────────────────────────────────────
-const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'SIG', 'Archivos', 'Flujo Telefónico'] as const
+const TABS_BLANCO = ['Foto', 'Antecedentes', 'Redes Sociales', 'SIG', 'Archivos', 'Flujo Telefónico', 'Activo Patrimonial', 'OVISE'] as const
 type TabBlanco = typeof TABS_BLANCO[number]
 
 function BlancoExpansion({
@@ -422,6 +424,8 @@ function BlancoExpansion({
       {tab === 'SIG' && <SIGPanel idEntidad={blanco.idBlanco} service={SIGService} idField="idLugarBlanco" />}
       {tab === 'Archivos' && <ArchivosPanel idEntidad={blanco.idBlanco} service={archivosService} idField="idArchivo" opcionesContenido={opcionesContenido} />}
       {tab === 'Flujo Telefónico' && <FlujoTelefonicoPanel blanco={blanco} />}
+      {tab === 'Activo Patrimonial' && <ActivoPatrimonialPanel blanco={blanco} />}
+      {tab === 'OVISE' && <OvisePanel blanco={blanco} />}
     </div>
   )
 }
