@@ -2,18 +2,22 @@ import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
   LugarSig,
+  ActivoPatrimonial,
   AntecedenteBlanco,
   ArchivoS2i,
   BlancoS2i,
+  CreateActivoPatrimonialPayload,
   CreateAntecedentePayload,
   CreateArchivoPayload,
   CreateBlancoPayload,
   CreateFlujoFiscaliaPayload,
   CreateFlujoTelefonicoPayload,
   CreateLugarSigPayload,
+  CreateOvisePayload,
   CreateRedSocialPayload,
   FlujoFiscalia,
   FlujoTelefonico,
+  Ovise,
   RedSocial,
   RespuestaApi,
 } from './types'
@@ -211,6 +215,66 @@ export const BlancosService = {
   eliminarFlujoFiscalia(idFlujoFiscalia: string): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
       url: `${BASE}/flujo-fiscalia/${idFlujoFiscalia}`,
+      method: 'DELETE',
+      withCredentials: true,
+    })
+  },
+
+  // ── Activo Patrimonial ────────────────────────────────────────────────────
+
+  subirActivoPatrimonial(idBlanco: string, payload: CreateActivoPatrimonialPayload, archivo: File): Promise<RespuestaApi<ActivoPatrimonial>> {
+    const formData = new FormData()
+    formData.append('idTipoActivo', String(payload.idTipoActivo))
+    formData.append('gestion', payload.gestion)
+    formData.append('contenido', payload.contenido)
+    formData.append('archivo', archivo)
+    return sesionPeticion({
+      url: `${BASE}/blancos/${idBlanco}/activos-patrimoniales`,
+      method: 'POST',
+      body: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
+    })
+  },
+
+  listarActivosPatrimoniales(idBlanco: string): Promise<RespuestaApi<ActivoPatrimonial[]>> {
+    return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/activos-patrimoniales`, withCredentials: true })
+  },
+
+  descargarActivoPatrimonial(idActivo: string): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${BASE}/activos-patrimoniales/${idActivo}/descargar`,
+      responseType: 'blob',
+      withCredentials: true,
+    })
+  },
+
+  eliminarActivoPatrimonial(idActivo: string): Promise<RespuestaApi<unknown>> {
+    return sesionPeticion({
+      url: `${BASE}/activos-patrimoniales/${idActivo}`,
+      method: 'DELETE',
+      withCredentials: true,
+    })
+  },
+
+  // ── OVISE ──────────────────────────────────────────────────────────────────
+
+  crearOvise(idBlanco: string, payload: CreateOvisePayload): Promise<RespuestaApi<Ovise>> {
+    return sesionPeticion({
+      url: `${BASE}/blancos/${idBlanco}/ovise`,
+      method: 'POST',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  listarOvise(idBlanco: string): Promise<RespuestaApi<Ovise[]>> {
+    return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/ovise`, withCredentials: true })
+  },
+
+  eliminarOvise(idOvise: string): Promise<RespuestaApi<unknown>> {
+    return sesionPeticion({
+      url: `${BASE}/ovise/${idOvise}`,
       method: 'DELETE',
       withCredentials: true,
     })
