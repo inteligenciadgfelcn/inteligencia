@@ -15,6 +15,7 @@ import { S2iEtapaInvestigacion } from '../entity/etapa-investigacion.entity'
 import { S2iTipoDelito } from '../entity/tipo-delito.entity'
 import { S2iTipoInvestigacionBien } from '../entity/tipo-investigacion-bien.entity'
 import { S2iTipoOrganizacion } from '../entity/tipo-organizacion.entity'
+import { S2iTipoActivo } from '../entity/tipo-activo.entity'
 
 @Injectable()
 export class S2iLookupRepository {
@@ -68,6 +69,12 @@ export class S2iLookupRepository {
   async listarContenidoCaso(): Promise<S2iContenidoCaso[]> {
     return this.dataSource
       .getRepository(S2iContenidoCaso)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  async listarTiposActivo(): Promise<S2iTipoActivo[]> {
+    return this.dataSource
+      .getRepository(S2iTipoActivo)
       .find({ order: { descripcion: 'ASC' } })
   }
 

@@ -32,6 +32,8 @@ import {
   CreateArchivoDto,
   CreateFlujoTelefonicoDto,
   CreateFlujoFiscaliaDto,
+  CreateActivoPatrimonialDto,
+  CreateOviseDto,
 } from '../dto'
 
 @ApiBearerAuth()
@@ -342,6 +344,92 @@ export class BlancoController extends BaseController {
     @Param('idFlujoFiscalia') idFlujoFiscalia: string
   ) {
     await this.service.eliminarFlujoFiscalia(idFlujoFiscalia)
+    return this.successDelete()
+  }
+
+  // ==================== ACTIVO PATRIMONIAL ====================
+
+  @ApiOperation({
+    summary: 'Registrar activo patrimonial del blanco',
+    description: 'Enviar como multipart/form-data. Campo de archivo: archivo.',
+  })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @ApiConsumes('multipart/form-data')
+  @Post('blancos/:idBlanco/activos-patrimoniales')
+  @UseInterceptors(FileInterceptor('archivo'))
+  async subirActivoPatrimonial(
+    @Param('idBlanco') idBlanco: string,
+    @Body() dto: CreateActivoPatrimonialDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request
+  ) {
+    const { id: idUsuario = '' } = req.user as PassportUser
+    const archivo = file?.buffer || Buffer.alloc(0)
+    const resultado = await this.service.subirActivoPatrimonial(
+      idBlanco,
+      dto,
+      archivo,
+      idUsuario
+    )
+    return this.successCreate(resultado)
+  }
+
+  @ApiOperation({ summary: 'Listar activos patrimoniales de un blanco' })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @Get('blancos/:idBlanco/activos-patrimoniales')
+  async listarActivosPatrimoniales(@Param('idBlanco') idBlanco: string) {
+    return this.successList(
+      await this.service.listarActivosPatrimoniales(idBlanco)
+    )
+  }
+
+  @ApiOperation({ summary: 'Descargar archivo de un activo patrimonial' })
+  @ApiParam({ name: 'idActivo', description: 'ID del activo patrimonial (bigint)' })
+  @Get('activos-patrimoniales/:idActivo/descargar')
+  async descargarActivoPatrimonial(
+    @Param('idActivo') idActivo: string,
+    @Res() res: Response
+  ) {
+    const archivo = await this.service.descargarActivoPatrimonial(idActivo)
+    res.set('Content-Type', 'application/octet-stream')
+    res.send(archivo)
+  }
+
+  @ApiOperation({ summary: 'Eliminar activo patrimonial por ID' })
+  @ApiParam({ name: 'idActivo', description: 'ID del activo patrimonial (bigint)' })
+  @Delete('activos-patrimoniales/:idActivo')
+  async eliminarActivoPatrimonial(@Param('idActivo') idActivo: string) {
+    await this.service.eliminarActivoPatrimonial(idActivo)
+    return this.successDelete()
+  }
+
+  // ==================== OVISE ====================
+
+  @ApiOperation({ summary: 'Registrar reporte OVISE del blanco' })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @Post('blancos/:idBlanco/ovise')
+  async crearOvise(
+    @Param('idBlanco') idBlanco: string,
+    @Body() dto: CreateOviseDto,
+    @Req() req: Request
+  ) {
+    const { id: idUsuario = '' } = req.user as PassportUser
+    const ovise = await this.service.crearOvise(idBlanco, dto, idUsuario)
+    return this.successCreate(ovise)
+  }
+
+  @ApiOperation({ summary: 'Listar reportes OVISE de un blanco' })
+  @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @Get('blancos/:idBlanco/ovise')
+  async listarOvise(@Param('idBlanco') idBlanco: string) {
+    return this.successList(await this.service.listarOvise(idBlanco))
+  }
+
+  @ApiOperation({ summary: 'Eliminar reporte OVISE por ID' })
+  @ApiParam({ name: 'idOvise', description: 'ID del reporte OVISE (bigint)' })
+  @Delete('ovise/:idOvise')
+  async eliminarOvise(@Param('idOvise') idOvise: string) {
+    await this.service.eliminarOvise(idOvise)
     return this.successDelete()
   }
 }
