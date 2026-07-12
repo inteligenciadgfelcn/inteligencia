@@ -15,6 +15,7 @@ import { S2iBien } from './parametrica/entity/bien.entity'
 import { S2aCatalogoClase } from './parametrica/entity/catalogo-clase.entity'
 import { S2aCatalogoTipo } from './parametrica/entity/catalogo-tipo.entity'
 import { S2aCatalogoCaracteristica } from './parametrica/entity/catalogo-caracteristica.entity'
+import { S2iTipoActivo } from './parametrica/entity/tipo-activo.entity'
 
 // ==================== CASO ====================
 import { S2iAsignacion } from './caso/entity/asignacion.entity'
@@ -27,6 +28,8 @@ import { S2iLugarBlanco } from './blanco/entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from './blanco/entity/archivo-blanco.entity'
 import { S2iFlujoTelefonico } from './blanco/entity/flujo-telefonico.entity'
 import { S2iFlujoFiscalia } from './blanco/entity/flujo-fiscalia.entity'
+import { S2iActivoPatrimonial } from './blanco/entity/activo-patrimonial.entity'
+import { S2iOvise } from './blanco/entity/ovise.entity'
 
 // ==================== ORGANIZACIÓN ====================
 import { S2iEmpresa } from './organizacion/entity/empresa.entity'
@@ -86,6 +89,7 @@ const entities = [
   S2aCatalogoClase,
   S2aCatalogoTipo,
   S2aCatalogoCaracteristica,
+  S2iTipoActivo,
   // Caso
   S2iAsignacion,
   // Blanco
@@ -96,6 +100,8 @@ const entities = [
   S2iArchivoBlanco,
   S2iFlujoTelefonico,
   S2iFlujoFiscalia,
+  S2iActivoPatrimonial,
+  S2iOvise,
   // Organización
   S2iEmpresa,
   S2iLugarEmpresa,

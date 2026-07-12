@@ -53,4 +53,8 @@ export const S2iLookupsService = {
   listarTiposInvestigacionBien(): Promise<RespuestaApi<LookupSimple[]>> {
     return sesionPeticion({ url: `${BASE}/tipos-investigacion-bien`, withCredentials: true })
   },
+
+  listarTiposActivo(): Promise<RespuestaApi<LookupSimple[]>> {
+    return sesionPeticion({ url: `${BASE}/tipos-activo`, withCredentials: true })
+  },
 }

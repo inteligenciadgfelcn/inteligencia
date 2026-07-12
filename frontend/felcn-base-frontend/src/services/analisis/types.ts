@@ -205,6 +205,43 @@ export interface CreateFlujoFiscaliaPayload {
   duracion: string
 }
 
+// ─── Activo Patrimonial ───────────────────────────────────────────────────────
+
+export interface ActivoPatrimonial {
+  idActivoPatrimonial: string
+  idBlanco: string
+  idTipoActivo: number
+  gestion: string
+  contenido: string
+  descripcionTipoActivo?: string
+}
+
+export interface CreateActivoPatrimonialPayload {
+  idTipoActivo: number
+  gestion: string
+  contenido: string
+}
+
+// ─── OVISE ────────────────────────────────────────────────────────────────────
+
+export interface Ovise {
+  idOvise: string
+  idBlanco: string
+  lugar: string
+  latitud: number
+  longitud: number
+  reporte: string
+  accion: string
+}
+
+export interface CreateOvisePayload {
+  lugar: string
+  latitud: number
+  longitud: number
+  reporte: string
+  accion: string
+}
+
 // ─── Organizaciones ───────────────────────────────────────────────────────────
 
 export interface EmpresaS2i {

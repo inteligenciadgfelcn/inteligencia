@@ -7,6 +7,8 @@ import { S2iLugarBlanco } from '../entity/lugar-blanco.entity'
 import { S2iArchivoBlanco } from '../entity/archivo-blanco.entity'
 import { S2iFlujoTelefonico } from '../entity/flujo-telefonico.entity'
 import { S2iFlujoFiscalia } from '../entity/flujo-fiscalia.entity'
+import { S2iActivoPatrimonial } from '../entity/activo-patrimonial.entity'
+import { S2iOvise } from '../entity/ovise.entity'
 import {
   CreateBlancoDto,
   CreateAntecedenteDto,
@@ -15,6 +17,8 @@ import {
   CreateArchivoDto,
   CreateFlujoTelefonicoDto,
   CreateFlujoFiscaliaDto,
+  CreateActivoPatrimonialDto,
+  CreateOviseDto,
 } from '../dto'
 
 /**
@@ -291,5 +295,82 @@ export class BlancoService {
 
   async eliminarFlujoFiscalia(idFlujoFiscalia: string): Promise<void> {
     await this.repo.eliminarFlujoFiscalia(idFlujoFiscalia)
+  }
+
+  // ==================== ACTIVO PATRIMONIAL ====================
+
+  async subirActivoPatrimonial(
+    idBlanco: string,
+    dto: CreateActivoPatrimonialDto,
+    archivo: Buffer,
+    idUsuario: string
+  ): Promise<any> {
+    const existe = await this.repo.buscarPorId(idBlanco)
+    if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
+
+    const activo = new S2iActivoPatrimonial({
+      idBlanco,
+      idTipoActivo: dto.idTipoActivo,
+      gestion: dto.gestion.trim(),
+      contenido: dto.contenido.trim(),
+      archivo,
+      usuarioCreacion: idUsuario,
+    })
+    const saved = await this.repo.crearActivoPatrimonial(activo)
+    const { archivo: _archivo, ...resto } = saved
+    return resto
+  }
+
+  async listarActivosPatrimoniales(idBlanco: string): Promise<any[]> {
+    const activos = await this.repo.listarActivosPorBlanco(idBlanco)
+    return activos.map(({ tipoActivo, ...a }) => ({
+      ...a,
+      descripcionTipoActivo: tipoActivo?.descripcion ?? null,
+    }))
+  }
+
+  async descargarActivoPatrimonial(
+    idActivoPatrimonial: string
+  ): Promise<Buffer> {
+    const activo = await this.repo.buscarActivoPorId(idActivoPatrimonial)
+    if (!activo)
+      throw new NotFoundException(
+        `Activo patrimonial ${idActivoPatrimonial} no encontrado`
+      )
+    return activo.archivo
+  }
+
+  async eliminarActivoPatrimonial(idActivoPatrimonial: string): Promise<void> {
+    await this.repo.eliminarActivoPatrimonial(idActivoPatrimonial)
+  }
+
+  // ==================== OVISE ====================
+
+  async crearOvise(
+    idBlanco: string,
+    dto: CreateOviseDto,
+    idUsuario: string
+  ): Promise<S2iOvise> {
+    const existe = await this.repo.buscarPorId(idBlanco)
+    if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
+
+    const ovise = new S2iOvise({
+      idBlanco,
+      lugar: dto.lugar.trim().toUpperCase(),
+      latitud: dto.latitud,
+      longitud: dto.longitud,
+      reporte: dto.reporte.trim(),
+      accion: dto.accion.trim().toUpperCase(),
+      usuarioCreacion: idUsuario,
+    })
+    return this.repo.crearOvise(ovise)
+  }
+
+  async listarOvise(idBlanco: string): Promise<S2iOvise[]> {
+    return this.repo.listarOvisePorBlanco(idBlanco)
+  }
+
+  async eliminarOvise(idOvise: string): Promise<void> {
+    await this.repo.eliminarOvise(idOvise)
   }
 }
