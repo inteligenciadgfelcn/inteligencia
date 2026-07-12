@@ -20,12 +20,16 @@ export const useSession = () => {
     responseType,
     withCredentials,
   }: peticionFormatoMetodo): Promise<T> => {
-    try {
-      if (!verificarToken(leerCookie('token') ?? '')) {
-        imprimir(`Token caducado ⏳`)
-        await actualizarSesion()
+    if (!verificarToken(leerCookie('token') ?? '')) {
+      imprimir(`Token caducado ⏳`)
+      const renovado = await actualizarSesion()
+      if (!renovado) {
+        // actualizarSesion ya cerró la sesión y redirigió a /login: no continuar con la petición
+        throw new Error('Sesión finalizada: no se pudo renovar el token')
       }
+    }
 
+    try {
       const cabeceras = {
         accept: 'application/json',
         Authorization: `Bearer ${leerCookie('token') ?? ''}`,
@@ -57,7 +61,8 @@ export const useSession = () => {
         mostrarFullScreen()
         await cerrarSesion()
         ocultarFullScreen()
-        return {} as T
+        // No continuar como si la petición hubiera tenido éxito: la sesión ya se cerró
+        throw e.response?.data || new Error('Sesión finalizada')
       }
 
       throw e.response?.data || 'Ocurrió un error desconocido'
@@ -101,7 +106,8 @@ export const useSession = () => {
     }
   }
 
-  const actualizarSesion = async () => {
+  /** Intenta renovar el token. Devuelve false si falló (en cuyo caso ya cerró la sesión). */
+  const actualizarSesion = async (): Promise<boolean> => {
     imprimir(`Actualizando token 🚨`)
 
     try {
@@ -115,10 +121,12 @@ export const useSession = () => {
       guardarCookie('token', respuesta.datos?.access_token)
 
       await delay(500)
+      return true
     } catch (e) {
       await cerrarSesion()
+      return false
     }
   }
 
-  return { sesionPeticion, cerrarSesion, borrarCookiesSesion }
+  return { sesionPeticion, cerrarSesion, borrarCookiesSesion, actualizarSesion }
 }
