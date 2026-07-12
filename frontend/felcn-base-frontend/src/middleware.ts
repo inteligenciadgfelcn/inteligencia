@@ -16,10 +16,16 @@ const tokenVigente = (token: string | undefined): boolean => {
 export const middleware = (req: NextRequest) => {
   const token = req.cookies.get('token')
   const valido = tokenVigente(token?.value)
-  imprimir(`token middleware 🔐️: ${token?.value ? (valido ? 'vigente' : 'expirado') : 'ausente'}`, req.nextUrl.pathname)
+  // next.config.js usa trailingSlash: true, así que las rutas canónicas llegan como '/login/', '/admin/home/', etc.
+  // Se normaliza quitando la barra final para que las comparaciones exactas ('/login') sigan funcionando.
+  const pathname =
+    req.nextUrl.pathname.length > 1
+      ? req.nextUrl.pathname.replace(/\/$/, '')
+      : req.nextUrl.pathname
+  imprimir(`token middleware 🔐️: ${token?.value ? (valido ? 'vigente' : 'expirado') : 'ausente'}`, pathname)
 
   try {
-    if (req.nextUrl.pathname == '/') {
+    if (pathname == '/') {
       if (valido) {
         const url = req.nextUrl.clone()
         url.pathname = '/admin/home'
@@ -31,7 +37,7 @@ export const middleware = (req: NextRequest) => {
       }
     }
 
-    if (req.nextUrl.pathname == '/login') {
+    if (pathname == '/login') {
       if (valido) {
         const url = req.nextUrl.clone()
         url.pathname = '/admin/home'
@@ -41,7 +47,7 @@ export const middleware = (req: NextRequest) => {
       }
     }
 
-    if (req.nextUrl.pathname.startsWith('/admin')) {
+    if (pathname.startsWith('/admin')) {
       if (valido) {
         return NextResponse.next()
       } else {
@@ -60,7 +66,8 @@ export const middleware = (req: NextRequest) => {
   }
 }
 
-// Supports both a single string value or an array of matchers.
+// next.config.js usa trailingSlash: true, por lo que '/login' se sirve como '/login/'.
+// Se incluyen ambas formas para que el middleware se invoque también en la ruta canónica.
 export const config = {
-  matcher: ['/', '/login', '/admin/:path*'],
+  matcher: ['/', '/login', '/login/', '/admin/:path*'],
 }
