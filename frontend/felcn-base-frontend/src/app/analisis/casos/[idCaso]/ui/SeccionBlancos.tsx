@@ -451,6 +451,7 @@ export function SeccionBlancos({ idCaso }: Props) {
   const [deMaterno, setDeMaterno] = useState('')
   const [deEsposo, setDeEsposo] = useState('')
   const [alias, setAlias] = useState('')
+  const [numeroDocumento, setNumeroDocumento] = useState('')
   const [idPais, setIdPais] = useState('')
 
   useEffect(() => {
@@ -478,7 +479,7 @@ export function SeccionBlancos({ idCaso }: Props) {
 
   const guardar = async () => {
     setSubmitted(true)
-    if (!deNombres.trim() || !dePaterno.trim() || !idPais) return
+    if (!deNombres.trim() || !dePaterno.trim() || !numeroDocumento.trim() || !idPais) return
     setCargando(true)
     try {
       const r = await BlancosService.crear(idCaso, {
@@ -487,10 +488,11 @@ export function SeccionBlancos({ idCaso }: Props) {
         deMaterno: deMaterno.trim().toUpperCase() || undefined,
         deEsposo: deEsposo.trim().toUpperCase() || undefined,
         alias: alias.trim().toUpperCase() || undefined,
+        numeroDocumento: numeroDocumento.trim(),
         idPais: Number(idPais),
       })
       if (r?.finalizado) {
-        setDeNombres(''); setDePaterno(''); setDeMaterno(''); setDeEsposo(''); setAlias(''); setIdPais('')
+        setDeNombres(''); setDePaterno(''); setDeMaterno(''); setDeEsposo(''); setAlias(''); setNumeroDocumento(''); setIdPais('')
         setSubmitted(false)
         void cargar()
         Alerta({ mensaje: 'Blanco reSIGtrado', variant: 'success' })
@@ -517,6 +519,7 @@ export function SeccionBlancos({ idCaso }: Props) {
     { accessor: 'dePaterno', title: 'Paterno' },
     { accessor: 'deMaterno', title: 'Materno' },
     { accessor: 'alias', title: 'Alias' },
+    { accessor: 'numeroDocumento', title: 'N° Documento' },
     { accessor: 'descripcionPais', title: 'País' },
     {
       accessor: 'acciones',
@@ -557,6 +560,11 @@ export function SeccionBlancos({ idCaso }: Props) {
         <div>
           <label className="mb-1 block text-sm font-medium">Alias</label>
           <Input type="text" value={alias} onChange={(e) => setAlias(e.target.value.toUpperCase())} className="w-full" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">N° Documento <span className="text-danger">*</span></label>
+          <Input type="text" value={numeroDocumento} onChange={(e) => setNumeroDocumento(e.target.value)} className={`w-full ${req(numeroDocumento.trim()) ? 'border-danger' : ''}`} maxLength={20} />
+          {req(numeroDocumento.trim()) && <span className="mt-1 block text-xs italic text-danger">Obligatorio</span>}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">País <span className="text-danger">*</span></label>

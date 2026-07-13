@@ -56,6 +56,7 @@ export interface BlancoS2i {
   deMaterno: string
   deEsposo: string
   alias: string
+  numeroDocumento: string
   idPais: number
   usuario: string
   fechaHoraIngreso: string
@@ -68,6 +69,7 @@ export interface CreateBlancoPayload {
   deMaterno?: string
   deEsposo?: string
   alias?: string
+  numeroDocumento: string
   idPais: number
 }
 
