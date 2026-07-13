@@ -50,6 +50,7 @@ export class BlancoService {
       deEsposo: dto.deEsposo?.trim().toUpperCase() || '*',
       idPais: dto.idPais,
       alias: dto.alias?.trim().toUpperCase() || '*',
+      numeroDocumento: dto.numeroDocumento.trim(),
       usuario: usuario.trim(),
     })
     return this.repo.crear(blanco)

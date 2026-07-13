@@ -69,4 +69,14 @@ export class CreateBlancoDto {
   @IsString()
   @MaxLength(20)
   alias?: string
+
+  @ApiProperty({
+    description: 'Número de documento de identidad del investigado',
+    example: '1234567',
+    maxLength: 20,
+  })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(20)
+  numeroDocumento: string
 }
