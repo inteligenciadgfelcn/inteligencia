@@ -14,15 +14,24 @@ import { Asignacion } from '@/application/inteligencia/felcn_siii/operaciones/as
 @Injectable()
 export class AsignacionesRepository {
   constructor(
+    /**
+     * This connecto to felcn_siii
+     */
     @InjectRepository(Asignacion, DB_SIII)
     private readonly asignacionRepository: Repository<Asignacion>,
 
+    /**
+     * This connecto to a_felcn_asignacion_caso
+     */
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
     private readonly asignacionAsigRepository: Repository<AsignacionASIG>,
 
     @InjectDataSource(DB_AUTH)
-    private readonly authDataSource: DataSource
-  ) {}
+    private readonly authDataSource: DataSource,
+
+    @InjectDataSource(DB_SIII)
+    private readonly siiiDataSource: DataSource
+  ) { }
 
   async crearAsignacionDual(dto: CreateAsignacionDto, nroOperativo: string) {
     // SIII
@@ -41,6 +50,9 @@ export class AsignacionesRepository {
   `,
       [dto.idGrupo]
     )
+
+    console.log(grupoData);
+
 
     if (!grupoData) {
       throw new Error('Grupo sin distrital/unidad')
@@ -72,10 +84,12 @@ export class AsignacionesRepository {
     })
     console.log('Asignación SIII guardada con ID:', asignacion)
     const saved = await this.asignacionRepository.save(asignacion)
-    console.log('Asignación SIII guardada con ID:', saved)
+
+    const abreviaturaIcia = await this.codigoUnidad(grupoData.abreviaturaUnidad)
+
     const asignacionS2I = this.asignacionAsigRepository.create({
       idDepartamento: dto.idDepartamento,
-      idUnidad: grupoData.abreviaturaUnidad,
+      idUnidad: abreviaturaIcia as any,
       nroOperativo,
       codigoServicio: dto.codigoServicio,
       nombreCaso: dto.nombreCaso,
@@ -89,6 +103,19 @@ export class AsignacionesRepository {
     await this.asignacionAsigRepository.save(asignacionS2I)
 
     return saved
+  }
+
+  async codigoUnidad(codUnid: string): Promise<string> {
+    const result = await this.siiiDataSource.query(
+      `
+      SELECT u.abreviatura_icia
+      FROM unidad u
+      WHERE u.abreviatura = $1
+      `,
+      [codUnid.trim()],
+    );
+
+    return result.length > 0 ? result[0].abreviatura_icia : '';
   }
 
   async findOperativos(
