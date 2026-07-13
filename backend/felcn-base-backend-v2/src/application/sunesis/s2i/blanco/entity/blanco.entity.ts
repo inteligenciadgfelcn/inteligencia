@@ -40,6 +40,9 @@ export class S2iBlanco {
   @Column({ name: 'alias', type: 'varchar', length: 20 })
   alias: string
 
+  @Column({ name: 'numero_documento', type: 'varchar', length: 20 })
+  numeroDocumento: string
+
   /** Foto del blanco almacenada en bytea — se sirve vía GET /foto */
   @Column({ name: 'foto', type: 'bytea', nullable: true })
   foto?: Buffer
