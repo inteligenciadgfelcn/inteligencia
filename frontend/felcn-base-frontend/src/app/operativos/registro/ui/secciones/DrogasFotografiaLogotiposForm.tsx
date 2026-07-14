@@ -140,20 +140,22 @@ function FotoSlot({
 }) {
   return (
     <div>
-      <p className="mb-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
+      <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
         {label}
       </p>
       {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt={label}
-          className="h-40 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
-          onClick={() => onZoom(src)}
-        />
+        <div className="flex h-56 w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 shadow-md hover:scale-[1.01] transition-transform">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={label}
+            className="h-full max-w-full cursor-zoom-in object-contain"
+            onClick={() => onZoom(src)}
+          />
+        </div>
       ) : (
-        <div className="flex h-40 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
-          <span className="text-xs text-gray-400">Sin foto</span>
+        <div className="flex h-56 w-full items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 shadow-inner">
+          <span className="text-xs font-medium text-gray-400">Sin fotografía cargada</span>
         </div>
       )}
     </div>
@@ -209,24 +211,26 @@ function LogotiposPanel({
 
     if (cargandoFoto) {
       return (
-        <div className="h-14 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+        <div className="h-24 w-32 mx-auto animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
       )
     }
     if (!src) {
       return (
-        <div className="flex h-14 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
-          <span className="text-xs text-gray-400">Sin foto</span>
+        <div className="flex h-24 w-32 mx-auto items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+          <span className="text-[10px] font-medium text-gray-400">Sin foto</span>
         </div>
       )
     }
     // eslint-disable-next-line @next/next/no-img-element
     return (
-      <img
-        src={src}
-        alt="Logotipo"
-        className="h-14 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
-        onClick={() => onClick(src)}
-      />
+      <div className="flex h-24 w-32 mx-auto items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 shadow-md hover:scale-105 transition-transform">
+        <img
+          src={src}
+          alt="Logotipo"
+          className="h-full max-w-full cursor-zoom-in object-contain"
+          onClick={() => onClick(src)}
+        />
+      </div>
     )
   }
 
@@ -446,8 +450,8 @@ function LogotiposPanel({
                 return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
                   <FotoLogotipoThumb path={fotoUrl} onClick={onZoom} />
                 ) : (
-                  <div className="flex h-14 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
-                    <span className="text-xs text-gray-400">Sin foto</span>
+                  <div className="flex h-24 w-32 mx-auto items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                    <span className="text-[10px] font-medium text-gray-400">Sin foto</span>
                   </div>
                 )
               },
@@ -590,6 +594,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
     cargarFormasTransporte()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [idBoliviaDefault, setIdBoliviaDefault] = useState('')
+
   const [estadosDroga, setEstadosDroga] = useState<EstadoDroga[]>([])
 
   // ── Campos del formulario ─────────────────────────────────────────────────
@@ -611,6 +617,19 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [dropzoneToken, setDropzoneToken] = useState(0)
   const [pruebaCampo, setPruebaCampo] = useState<File | null>(null)
   const [pesaje, setPesaje] = useState<File | null>(null)
+
+  useEffect(() => {
+    if (!paises.length || idBoliviaDefault) return
+    const bolivia = paises.find(
+      (p) => String(p.descripcion).trim().toUpperCase() === 'BOLIVIA'
+    )
+    if (bolivia) {
+      const idBol = String(bolivia.id)
+      setIdBoliviaDefault(idBol)
+      setIdPaisProcedencia(idBol)
+      setIdPaisDestino(idBol)
+    }
+  }, [paises]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lista, paginación y estado general ────────────────────────────────────
   const [cargando, setCargando] = useState(false)
@@ -710,14 +729,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setCantidadMl('0')
     setCosto('0')
     setIdFormaTransporte('')
-    setIdPaisProcedencia('')
-    setIdPaisDestino('')
+    setIdPaisProcedencia(idBoliviaDefault)
+    setIdPaisDestino(idBoliviaDefault)
     setObservaciones('')
     setPruebaCampo(null)
     setPesaje(null)
     setDropzoneToken((t) => t + 1)
     setSubmitted(false)
-  }, [])
+  }, [idBoliviaDefault])
 
   // ── Guardar droga ─────────────────────────────────────────────────────────
   const guardarDroga = async () => {
@@ -1150,6 +1169,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'cantidadGramos',
                   title: 'Peso',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) =>
                     r.cantidadGramos != null
                       ? Number(r.cantidadGramos).toFixed(3)
@@ -1166,12 +1186,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'costo',
                   title: 'Precio en Bolivianos',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) =>
-                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')} Bs` : '—',
+                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')}` : '—',
                 },
                 {
                   accessor: 'cantidadUnidades',
                   title: 'Nro. de Pastillas o Capsulas',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) => r.cantidadUnidades ?? '0',
                 },
                 {
