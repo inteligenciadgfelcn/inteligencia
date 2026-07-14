@@ -264,11 +264,13 @@ export function SustanciasLiquidas({
                 {
                   accessor: 'cantidad',
                   title: 'Cantidad en litros',
+                  className: 'text-right [&>div]:justify-end',
                   render: (row: any) => Number(row.cantidad ?? 0).toFixed(3),
                 },
                 {
                   accessor: 'costo',
                   title: 'Costo (Bs)',
+                  className: 'text-right [&>div]:justify-end',
                   render: (row: any) => Number(row.costo ?? 0).toFixed(2),
                 },
                 {

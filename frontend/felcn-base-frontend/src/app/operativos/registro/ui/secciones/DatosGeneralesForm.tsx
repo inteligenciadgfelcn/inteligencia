@@ -617,7 +617,7 @@ export function DatosGeneralesForm({
           segY: toNumberOrZero(lngS),
           idPlanOperacion: toNumberOrZero(payload.idPlanOperacion),
           breveDetalle: payload.breveDetalle,
-          descripcion: payload.descripcion || payload.breveDetalle,
+          descripcion: payload.descripcion || payload.breveDetalle || '',
           idTipoOperacion: toNumberOrZero(payload.idTipoOperacion),
           organizacion: payload.organizacion,
           clanFamiliar: payload.clanFamiliar,

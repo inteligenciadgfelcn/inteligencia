@@ -331,11 +331,13 @@ export function SustanciasSolidas({
                   {
                     accessor: 'cantidad',
                     title: 'Cantidad en Kilos',
+                    className: 'text-right [&>div]:justify-end',
                     render: (row) => Number(row.cantidad ?? 0).toFixed(3),
                   },
                   {
                     accessor: 'costo',
                     title: 'Costo (Bs)',
+                    className: 'text-right [&>div]:justify-end',
                     render: (row) => Number(row.costo ?? 0).toFixed(2),
                   },
                   {

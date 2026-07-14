@@ -340,7 +340,11 @@ export function Galeria({ titulo, idoperativo }: Props) {
               search=""
               onSearchChange={() => { }}
               columns={[
-                { accessor: 'id', title: 'Cod. Id' },
+                {
+                  accessor: 'id',
+                  title: 'Cod. Id',
+                  className: 'text-right [&>div]:justify-end',
+                },
                 { accessor: 'descripcion', title: 'Descripción' },
                 {
                   accessor: 'fotografia',
