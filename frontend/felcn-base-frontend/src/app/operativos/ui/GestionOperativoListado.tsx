@@ -13,6 +13,7 @@ import IconSend from '@/components/Icon/IconSend'
 import { useAuth } from '@/context/AuthProvider'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
+import { sesionPeticion } from '@/utils/peticion'
 import type { GestionOperativoItem } from '../types'
 import { Constantes } from '@/config/Constantes'
 import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
@@ -38,6 +39,23 @@ export function GestionOperativoListado({
   const [modalOpen, setModalOpen] = useState(false)
   const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  const descargarPdfDirecto = async (numeroOperativo: string) => {
+    try {
+      const url = `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`
+      const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
+      const objectUrl = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = objectUrl
+      enlace.download = `formulario-operativo-${numeroOperativo}.pdf`
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    }
+  }
 
   const abrirPreview = async (numeroOperativo: string) => {
     setPreviewData(null)
@@ -214,15 +232,7 @@ export function GestionOperativoListado({
                   <button
                     type="button"
                     className="text-success hover:text-success/70 transition-colors"
-                    onClick={() => {
-                      const numeroOperativo = row.numeroOperativo
-                      if (numeroOperativo) {
-                        window.open(
-                          `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
-                          '_blank'
-                        )
-                      }
-                    }}
+                    onClick={() => row.numeroOperativo && void descargarPdfDirecto(row.numeroOperativo)}
                     title="Descargar PDF"
                   >
                     <IconPrinter className="h-5 w-5" />

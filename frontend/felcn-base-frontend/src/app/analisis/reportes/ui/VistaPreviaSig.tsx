@@ -3,7 +3,6 @@
 import { Fragment, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import dynamic from 'next/dynamic'
-import { CircleMarker, Tooltip } from 'react-leaflet'
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
 import type { SigCasoPreview, MarcadorSig } from '@/services/analisis'
@@ -41,6 +40,10 @@ const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
       Cargando mapa...
     </div>
   ),
+})
+
+const MarcadoresSig = dynamic(() => import('@/components/mapas/MarcadoresSig'), {
+  ssr: false,
 })
 
 interface Props {
@@ -212,27 +215,7 @@ export function VistaPreviaSig({ open, onClose, data, onDescargarPdf, descargand
                           scrollWheelZoom
                           tileUrl={TILES[tipoMapa].url}
                           tileUrlOverlay={TILES[tipoMapa].overlay}
-                          markers={
-                            <>
-                              {validos.map((m, i) => (
-                                <CircleMarker
-                                  key={i}
-                                  center={[m.lat, m.lon]}
-                                  radius={9}
-                                  pathOptions={{
-                                    color: COLOR[m.tipo],
-                                    fillColor: COLOR[m.tipo],
-                                    fillOpacity: 0.85,
-                                    weight: 2,
-                                  }}
-                                >
-                                  <Tooltip direction="top" offset={[0, -8]} permanent={false}>
-                                    <span className="text-xs">{m.descripcion}</span>
-                                  </Tooltip>
-                                </CircleMarker>
-                              ))}
-                            </>
-                          }
+                          markers={<MarcadoresSig marcadores={validos} color={COLOR} />}
                         />
                       </div>
 
