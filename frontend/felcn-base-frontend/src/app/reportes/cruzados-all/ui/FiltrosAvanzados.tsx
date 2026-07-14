@@ -279,35 +279,35 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div>
             <label className={fieldLabel}>Cód. Servicio</label>
-            <Input size="sm" value={codigoServicio} onChange={e => setCodigoServicio(e.target.value)} placeholder="Ej: SRV-001" />
+            <Input size="sm" uppercase value={codigoServicio} onChange={e => setCodigoServicio(e.target.value)} placeholder="Ej: SRV-001" />
           </div>
           <div>
             <label className={fieldLabel}>Número de Caso</label>
-            <Input size="sm" value={numeroCaso} onChange={e => setNumeroCaso(e.target.value)} placeholder="Ej: LP-A-1/25" />
+            <Input size="sm" uppercase value={numeroCaso} onChange={e => setNumeroCaso(e.target.value)} placeholder="Ej: LP-A-1/25" />
           </div>
           <div>
             <label className={fieldLabel}>Nombre del Caso</label>
-            <Input size="sm" value={nombreCaso} onChange={e => setNombreCaso(e.target.value)} placeholder="Ej: Operación Luz" />
+            <Input size="sm" uppercase value={nombreCaso} onChange={e => setNombreCaso(e.target.value)} placeholder="Ej: Operación Luz" />
           </div>
           <div>
             <label className={fieldLabel}>Número de Operativo</label>
-            <Input size="sm" value={numeroOperativo} onChange={e => setNumeroOperativo(e.target.value)} placeholder="Ej: OP-2025-001" />
+            <Input size="sm" uppercase value={numeroOperativo} onChange={e => setNumeroOperativo(e.target.value)} placeholder="Ej: OP-2025-001" />
           </div>
           <div>
             <label className={fieldLabel}>CUD</label>
-            <Input size="sm" value={ianus} onChange={e => setIanus(e.target.value)} placeholder="Ej: IAN-001" />
+            <Input size="sm" uppercase value={ianus} onChange={e => setIanus(e.target.value)} placeholder="Ej: IAN-001" />
           </div>
           <div>
             <label className={fieldLabel}>Fiscal Asignado</label>
-            <Input size="sm" value={fiscal} onChange={e => setFiscal(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={fiscal} onChange={e => setFiscal(e.target.value)} placeholder="Apellido o nombre" />
           </div>
           <div>
             <label className={fieldLabel}>Fiscal Solicitante</label>
-            <Input size="sm" value={fiscalSolicitud} onChange={e => setFiscalSolicitud(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={fiscalSolicitud} onChange={e => setFiscalSolicitud(e.target.value)} placeholder="Apellido o nombre" />
           </div>
           <div>
             <label className={fieldLabel}>Investigador Asignado</label>
-            <Input size="sm" value={asignadoCaso} onChange={e => setAsignadoCaso(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={asignadoCaso} onChange={e => setAsignadoCaso(e.target.value)} placeholder="Apellido o nombre" />
           </div>
         </div>
       </SeccionFiltro>
@@ -360,7 +360,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div className="sm:col-span-2">
             <label className={fieldLabel}>Organización (parcial)</label>
-            <Input size="sm" value={organizacion} onChange={e => setOrganizacion(e.target.value)} placeholder="Ej: Cartel..." />
+            <Input size="sm" uppercase value={organizacion} onChange={e => setOrganizacion(e.target.value)} placeholder="Ej: Cartel..." />
           </div>
         </div>
       </SeccionFiltro>
@@ -393,7 +393,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div>
             <label className={fieldLabel}>Lugar (parcial)</label>
-            <Input size="sm" value={lugar} onChange={e => setLugar(e.target.value)} placeholder="Ej: Av. Principal" />
+            <Input size="sm" uppercase value={lugar} onChange={e => setLugar(e.target.value)} placeholder="Ej: Av. Principal" />
           </div>
         </div>
       </SeccionFiltro>
@@ -447,19 +447,19 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           <div>
             <label className={fieldLabel}>Nombres</label>
-            <Input size="sm" value={nombresPersona} onChange={e => setNombresPersona(e.target.value)} placeholder="Nombres" />
+            <Input size="sm" uppercase value={nombresPersona} onChange={e => setNombresPersona(e.target.value)} placeholder="Nombres" />
           </div>
           <div>
             <label className={fieldLabel}>Ap. Paterno</label>
-            <Input size="sm" value={apellidoPaterno} onChange={e => setApellidoPaterno(e.target.value)} placeholder="Ap. Paterno" />
+            <Input size="sm" uppercase value={apellidoPaterno} onChange={e => setApellidoPaterno(e.target.value)} placeholder="Ap. Paterno" />
           </div>
           <div>
             <label className={fieldLabel}>Ap. Materno</label>
-            <Input size="sm" value={apellidoMaterno} onChange={e => setApellidoMaterno(e.target.value)} placeholder="Ap. Materno" />
+            <Input size="sm" uppercase value={apellidoMaterno} onChange={e => setApellidoMaterno(e.target.value)} placeholder="Ap. Materno" />
           </div>
           <div>
             <label className={fieldLabel}>Nro. Documento</label>
-            <Input size="sm" value={nroDocumento} onChange={e => setNroDocumento(e.target.value)} placeholder="CI / Pasaporte" />
+            <Input size="sm" uppercase value={nroDocumento} onChange={e => setNroDocumento(e.target.value)} placeholder="CI / Pasaporte" />
           </div>
           <div>
             <label className={fieldLabel}>Nacionalidad</label>

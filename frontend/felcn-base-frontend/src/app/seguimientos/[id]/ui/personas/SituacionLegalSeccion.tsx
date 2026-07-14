@@ -115,6 +115,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input
                 id="nroResolucion"
                 type="text"
+                uppercase
                 className="w-full"
                 {...register('nroResolucion')}
               />
@@ -126,6 +127,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input
                 id="lugar"
                 type="text"
+                uppercase
                 className={`w-full ${errors.lugar ? 'border-danger' : ''}`}
                 {...register('lugar', reglaObligatorio)}
               />
@@ -142,6 +144,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input
                 id="autoridad"
                 type="text"
+                uppercase
                 className={`w-full ${errors.autoridad ? 'border-danger' : ''}`}
                 {...register('autoridad', reglaObligatorio)}
               />
@@ -158,6 +161,7 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
               <Input
                 id="fjt"
                 type="text"
+                uppercase
                 className={`w-full ${errors.fjt ? 'border-danger' : ''}`}
                 {...register('fjt', reglaObligatorio)}
               />

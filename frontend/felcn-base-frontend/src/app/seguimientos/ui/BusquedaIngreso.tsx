@@ -40,6 +40,7 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
           <Input
             value={nroCaso}
             onChange={(e) => setNroCaso(e.target.value)}
+            uppercase
             placeholder="Ej: LP-A-1/25"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && nroCaso.trim()) {
@@ -66,6 +67,7 @@ export function BusquedaIngreso({ onBuscar, cargando }: BusquedaIngresoProps) {
           <Input
             value={nombreCaso}
             onChange={(e) => setNombreCaso(e.target.value)}
+            uppercase
             placeholder="Nombre del operativo"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && nombreCaso.trim()) {

@@ -97,7 +97,7 @@ export function ArchivosSeccion({ idCaso, datos, onGuardar }: ArchivosSeccionPro
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nombre de Documento</label>
-              <Input {...register('nombre', { required: true })} placeholder="Ej: Acta de Incautación" error={!!errors.nombre} />
+              <Input uppercase {...register('nombre', { required: true })} placeholder="Ej: Acta de Incautación" error={!!errors.nombre} />
               {errors.nombre && <div className="mt-1 text-xs text-danger">Campo requerido</div>}
             </div>
             <div>
