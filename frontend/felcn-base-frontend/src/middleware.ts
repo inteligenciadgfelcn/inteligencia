@@ -13,6 +13,9 @@ const tokenVigente = (token: string | undefined): boolean => {
   }
 }
 
+// Rutas accesibles sin sesión iniciada. Todo lo demás requiere token vigente.
+const RUTAS_PUBLICAS = ['/login', '/login/ciudadania', '/registro', '/recuperacion']
+
 export const middleware = (req: NextRequest) => {
   const token = req.cookies.get('token')
   const valido = tokenVigente(token?.value)
@@ -26,15 +29,9 @@ export const middleware = (req: NextRequest) => {
 
   try {
     if (pathname == '/') {
-      if (valido) {
-        const url = req.nextUrl.clone()
-        url.pathname = '/admin/home'
-        return NextResponse.redirect(url)
-      } else {
-        const url = req.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
-      }
+      const url = req.nextUrl.clone()
+      url.pathname = valido ? '/admin/home' : '/login'
+      return NextResponse.redirect(url)
     }
 
     if (pathname == '/login') {
@@ -42,22 +39,25 @@ export const middleware = (req: NextRequest) => {
         const url = req.nextUrl.clone()
         url.pathname = '/admin/home'
         return NextResponse.redirect(url)
-      } else {
-        return NextResponse.next()
       }
+      return NextResponse.next()
     }
 
-    if (pathname.startsWith('/admin')) {
-      if (valido) {
-        return NextResponse.next()
-      } else {
-        const url = req.nextUrl.clone()
-        url.pathname = '/login'
-        return NextResponse.redirect(url)
-      }
+    if (RUTAS_PUBLICAS.includes(pathname)) {
+      return NextResponse.next()
     }
 
-    return NextResponse.next()
+    // Cualquier otra ruta de la aplicación (admin, operativos, seguimientos,
+    // reportes, análisis, patrimonio, investigaciones, lgi, etc.) requiere
+    // sesión vigente — antes solo se protegía /admin/:path*, dejando el
+    // resto de la app servida del lado del servidor sin verificar sesión.
+    if (valido) {
+      return NextResponse.next()
+    }
+
+    const url = req.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   } catch (e) {
     imprimir(`Error verificando token en middleware`, e)
     const url = req.nextUrl.clone()
@@ -66,8 +66,9 @@ export const middleware = (req: NextRequest) => {
   }
 }
 
-// next.config.js usa trailingSlash: true, por lo que '/login' se sirve como '/login/'.
-// Se incluyen ambas formas para que el middleware se invoque también en la ruta canónica.
+// Se protege TODA la aplicación por defecto — se excluyen solo los assets
+// estáticos internos de Next.js (las rutas públicas de negocio se filtran
+// arriba, en RUTAS_PUBLICAS, para que queden auditables en un solo lugar).
 export const config = {
-  matcher: ['/', '/login', '/login/', '/admin/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }

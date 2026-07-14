@@ -1,13 +1,12 @@
 'use client'
 
-import { Fragment, useRef } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import dynamic from 'next/dynamic'
-import { Marker } from 'react-leaflet'
-import { icon } from 'leaflet'
 import { Button } from '@/components/ui/Button'
 import IconPrinter from '@/components/Icon/IconPrinter'
-import { BASE_PATH } from '@/imageLoader'
+import { sesionPeticion } from '@/utils/peticion'
+import { imprimir } from '@/utils/imprimir'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
 
 const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
@@ -19,6 +18,10 @@ const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
   ),
 })
 
+const MarcadorOperativo = dynamic(() => import('@/components/mapas/MarcadorOperativo'), {
+  ssr: false,
+})
+
 interface Props {
   open: boolean
   onClose: () => void
@@ -26,12 +29,6 @@ interface Props {
   tipo: 'operativo' | 'general'
   urlPdf: string | null
 }
-
-const ICON = icon({
-  iconUrl: `${BASE_PATH}/leaflet/marker-icon.png`,
-  shadowUrl: `${BASE_PATH}/leaflet/marker-shadow.png`,
-  iconAnchor: [12.5, 41],
-})
 
 const fmt = (n: any) =>
   (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -91,6 +88,28 @@ function TablaSimple({
 
 export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Props) {
   const mapRef = useRef<any>(null)
+  const [descargando, setDescargando] = useState(false)
+
+  const descargarPdf = async () => {
+    if (!urlPdf) return
+    try {
+      setDescargando(true)
+      const blob = await sesionPeticion<Blob>({ url: urlPdf, responseType: 'blob' })
+      const objectUrl = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = objectUrl
+      enlace.download = `reporte-${tipo}.pdf`
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      imprimir('Error al descargar el PDF 🚨', e)
+      window.alert('No se pudo descargar el PDF. Intenta nuevamente.')
+    } finally {
+      setDescargando(false)
+    }
+  }
 
   const titulo =
     tipo === 'operativo'
@@ -216,7 +235,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                             zoom={14}
                             height={300}
                             scrollWheelZoom
-                            markers={<Marker position={centro} icon={ICON} />}
+                            markers={<MarcadorOperativo position={centro} />}
                           />
                         </div>
                       ) : (
@@ -360,8 +379,9 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                     <Button
                       variant="primary"
                       size="sm"
-                      disabled={!data}
-                      onClick={() => window.open(urlPdf, '_blank')}
+                      loading={descargando}
+                      disabled={!data || descargando}
+                      onClick={() => void descargarPdf()}
                     >
                       <IconPrinter className="mr-1 h-4 w-4" />
                       Descargar PDF
