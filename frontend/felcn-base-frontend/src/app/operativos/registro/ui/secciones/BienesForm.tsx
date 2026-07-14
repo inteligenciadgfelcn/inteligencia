@@ -338,6 +338,7 @@ function CaracteristicasPanel({
               type="text"
               value={descripcionCaracteristica}
               onChange={(e) => setDescripcionCaracteristica(e.target.value)}
+              uppercase
               className={`w-full ${!descripcionCaracteristica && submittedLocal ? 'border-danger' : ''}`}
             />
             {!descripcionCaracteristica && submittedLocal && (

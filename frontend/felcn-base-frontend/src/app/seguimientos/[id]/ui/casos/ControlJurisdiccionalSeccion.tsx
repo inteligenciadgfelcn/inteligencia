@@ -53,22 +53,22 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado <span className="text-danger">*</span></label>
-              <Input {...register('juzgadoInstruccion', { required: 'Campo requerido' })} error={!!errors.juzgadoInstruccion} />
+              <Input uppercase {...register('juzgadoInstruccion', { required: 'Campo requerido' })} error={!!errors.juzgadoInstruccion} />
               {errors.juzgadoInstruccion && <div className="mt-1 text-xs text-danger">{errors.juzgadoInstruccion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado Mixto</label>
-              <Input {...register('juzgadoPartido')} error={!!errors.juzgadoPartido} />
+              <Input uppercase {...register('juzgadoPartido')} error={!!errors.juzgadoPartido} />
               {errors.juzgadoPartido && <div className="mt-1 text-xs text-danger">{errors.juzgadoPartido.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Juzgado de Ejecución Penal</label>
-              <Input {...register('juzgadoEjecucion')} error={!!errors.juzgadoEjecucion} />
+              <Input uppercase {...register('juzgadoEjecucion')} error={!!errors.juzgadoEjecucion} />
               {errors.juzgadoEjecucion && <div className="mt-1 text-xs text-danger">{errors.juzgadoEjecucion.message}</div>}
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Tribunal de Sentencia en lo Penal</label>
-              <Input {...register('tribunalSentencia')} error={!!errors.tribunalSentencia} />
+              <Input uppercase {...register('tribunalSentencia')} error={!!errors.tribunalSentencia} />
               {errors.tribunalSentencia && <div className="mt-1 text-xs text-danger">{errors.tribunalSentencia.message}</div>}
             </div>
           </div>

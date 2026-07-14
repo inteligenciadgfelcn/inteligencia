@@ -195,7 +195,7 @@ function PanelAntecedentes({ blanco, opcionesPaises, opcionesDelito }: { blanco:
         </div>
         <div className="lg:col-span-3">
           <label className="mb-1 block text-sm font-medium">Descripción del Hecho <span className="text-danger">*</span></label>
-          <Textarea rows={2} value={hecho} onChange={(e) => setHecho(e.target.value)} error={req(hecho.trim())} className="w-full" />
+          <Textarea rows={2} value={hecho} onChange={(e) => setHecho(e.target.value)} uppercase error={req(hecho.trim())} className="w-full" />
         </div>
         <div className="lg:col-span-4 flex justify-end">
           <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Guardar</Button>
@@ -563,7 +563,7 @@ export function SeccionBlancos({ idCaso }: Props) {
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">N° Documento <span className="text-danger">*</span></label>
-          <Input type="text" value={numeroDocumento} onChange={(e) => setNumeroDocumento(e.target.value)} className={`w-full ${req(numeroDocumento.trim()) ? 'border-danger' : ''}`} maxLength={20} />
+          <Input type="text" value={numeroDocumento} onChange={(e) => setNumeroDocumento(e.target.value)} uppercase className={`w-full ${req(numeroDocumento.trim()) ? 'border-danger' : ''}`} maxLength={20} />
           {req(numeroDocumento.trim()) && <span className="mt-1 block text-xs italic text-danger">Obligatorio</span>}
         </div>
         <div>

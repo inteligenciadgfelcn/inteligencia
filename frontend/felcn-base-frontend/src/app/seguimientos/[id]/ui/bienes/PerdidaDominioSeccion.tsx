@@ -61,7 +61,7 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">Fiscalía <span className="text-danger">*</span></label>
-              <Input {...register('fiscalia', { required: 'Campo requerido' })} error={!!errors.fiscalia} />
+              <Input uppercase {...register('fiscalia', { required: 'Campo requerido' })} error={!!errors.fiscalia} />
               {errors.fiscalia && <div className="mt-1 text-xs text-danger">{errors.fiscalia.message}</div>}
             </div>
             <div>
@@ -71,7 +71,7 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">A Requerimiento del Fiscal <span className="text-danger">*</span></label>
-              <Input {...register('autoridad', { required: 'Campo requerido' })} error={!!errors.autoridad} />
+              <Input uppercase {...register('autoridad', { required: 'Campo requerido' })} error={!!errors.autoridad} />
               {errors.autoridad && <div className="mt-1 text-xs text-danger">{errors.autoridad.message}</div>}
             </div>
           </div>

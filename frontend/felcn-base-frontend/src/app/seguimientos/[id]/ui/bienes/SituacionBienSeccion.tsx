@@ -87,7 +87,7 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
               <label className="block text-sm font-medium mb-1">
                 Fiscal del Requerimiento <span className="text-danger">*</span>
               </label>
-              <Input {...register('fiscalRequerimiento', { required: 'Campo requerido' })} error={!!errors.fiscalRequerimiento} />
+              <Input uppercase {...register('fiscalRequerimiento', { required: 'Campo requerido' })} error={!!errors.fiscalRequerimiento} />
               {errors.fiscalRequerimiento && <div className="mt-1 text-xs text-danger">{errors.fiscalRequerimiento.message}</div>}
             </div>
             <div>
@@ -111,28 +111,28 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
               <label className="block text-sm font-medium mb-1">
                 Responsable de la Entrega <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableEntrega', { required: 'Campo requerido' })} error={!!errors.responsableEntrega} />
+              <Input uppercase {...register('responsableEntrega', { required: 'Campo requerido' })} error={!!errors.responsableEntrega} />
               {errors.responsableEntrega && <div className="mt-1 text-xs text-danger">{errors.responsableEntrega.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Responsable de la Recepción <span className="text-danger">*</span>
               </label>
-              <Input {...register('responsableRecepcion', { required: 'Campo requerido' })} error={!!errors.responsableRecepcion} />
+              <Input uppercase {...register('responsableRecepcion', { required: 'Campo requerido' })} error={!!errors.responsableRecepcion} />
               {errors.responsableRecepcion && <div className="mt-1 text-xs text-danger">{errors.responsableRecepcion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Institución Responsable <span className="text-danger">*</span>
               </label>
-              <Input {...register('institucion', { required: 'Campo requerido' })} error={!!errors.institucion} />
+              <Input uppercase {...register('institucion', { required: 'Campo requerido' })} error={!!errors.institucion} />
               {errors.institucion && <div className="mt-1 text-xs text-danger">{errors.institucion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Ubicación Física del Bien <span className="text-danger">*</span>
               </label>
-              <Input {...register('ubicacion', { required: 'Campo requerido' })} error={!!errors.ubicacion} />
+              <Input uppercase {...register('ubicacion', { required: 'Campo requerido' })} error={!!errors.ubicacion} />
               {errors.ubicacion && <div className="mt-1 text-xs text-danger">{errors.ubicacion.message}</div>}
             </div>
           </div>

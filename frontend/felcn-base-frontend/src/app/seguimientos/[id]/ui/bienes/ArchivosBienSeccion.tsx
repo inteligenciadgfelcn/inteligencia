@@ -106,6 +106,7 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
             <Input
               {...register('nombre', { required: true })}
               placeholder="Ej: Resolución 123/2024"
+              uppercase
               error={!!errors.nombre}
             />
             {errors.nombre && <div className="mt-1 text-xs text-danger">Campo requerido</div>}

@@ -47,12 +47,12 @@ export function JurisdiccionSeccion({ idCaso, datos, onGuardar }: JurisdiccionSe
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Jurisdicción <span className="text-danger">*</span></label>
-              <Input {...register('jurisdiccion', { required: 'Campo requerido' })} error={!!errors.jurisdiccion} />
+              <Input uppercase {...register('jurisdiccion', { required: 'Campo requerido' })} error={!!errors.jurisdiccion} />
               {errors.jurisdiccion && <div className="mt-1 text-xs text-danger">{errors.jurisdiccion.message}</div>}
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Observación</label>
-              <Input {...register('observacion')} error={!!errors.observacion} />
+              <Input uppercase {...register('observacion')} error={!!errors.observacion} />
               {errors.observacion && <div className="mt-1 text-xs text-danger">{errors.observacion.message}</div>}
             </div>
           </div>
