@@ -594,6 +594,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
     cargarFormasTransporte()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const [idBoliviaDefault, setIdBoliviaDefault] = useState('')
+
   const [estadosDroga, setEstadosDroga] = useState<EstadoDroga[]>([])
 
   // ── Campos del formulario ─────────────────────────────────────────────────
@@ -615,6 +617,19 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [dropzoneToken, setDropzoneToken] = useState(0)
   const [pruebaCampo, setPruebaCampo] = useState<File | null>(null)
   const [pesaje, setPesaje] = useState<File | null>(null)
+
+  useEffect(() => {
+    if (!paises.length || idBoliviaDefault) return
+    const bolivia = paises.find(
+      (p) => String(p.descripcion).trim().toUpperCase() === 'BOLIVIA'
+    )
+    if (bolivia) {
+      const idBol = String(bolivia.id)
+      setIdBoliviaDefault(idBol)
+      setIdPaisProcedencia(idBol)
+      setIdPaisDestino(idBol)
+    }
+  }, [paises]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Lista, paginación y estado general ────────────────────────────────────
   const [cargando, setCargando] = useState(false)
@@ -714,14 +729,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setCantidadMl('0')
     setCosto('0')
     setIdFormaTransporte('')
-    setIdPaisProcedencia('')
-    setIdPaisDestino('')
+    setIdPaisProcedencia(idBoliviaDefault)
+    setIdPaisDestino(idBoliviaDefault)
     setObservaciones('')
     setPruebaCampo(null)
     setPesaje(null)
     setDropzoneToken((t) => t + 1)
     setSubmitted(false)
-  }, [])
+  }, [idBoliviaDefault])
 
   // ── Guardar droga ─────────────────────────────────────────────────────────
   const guardarDroga = async () => {
@@ -1154,6 +1169,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'cantidadGramos',
                   title: 'Peso',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) =>
                     r.cantidadGramos != null
                       ? Number(r.cantidadGramos).toFixed(3)
@@ -1170,12 +1186,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'costo',
                   title: 'Precio en Bolivianos',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) =>
-                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')} Bs` : '—',
+                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')}` : '—',
                 },
                 {
                   accessor: 'cantidadUnidades',
                   title: 'Nro. de Pastillas o Capsulas',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r) => r.cantidadUnidades ?? '0',
                 },
                 {
