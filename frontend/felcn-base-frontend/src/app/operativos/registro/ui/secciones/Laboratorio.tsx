@@ -248,6 +248,7 @@ export function Laboratorio({
                   {
                     accessor: 'cantidad',
                     title: 'Cantidad',
+                    className: 'text-right [&>div]:justify-end',
                     render: (row: any) => row.cantidad,
                   },
                   {

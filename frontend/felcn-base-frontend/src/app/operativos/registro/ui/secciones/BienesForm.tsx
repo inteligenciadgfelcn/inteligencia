@@ -814,21 +814,27 @@ export function SeccionBienesForm({
                 { accessor: 'descripcionBien', title: 'Bien' },
                 { accessor: 'descripcionCatalogoClase', title: 'Clase' },
                 { accessor: 'descripcionCatalogoTipo', title: 'Tipo' },
-                { accessor: 'cantidadBien', title: 'Cantidad' },
+                {
+                  accessor: 'cantidadBien',
+                  title: 'Cantidad',
+                  className: 'text-right [&>div]:justify-end',
+                },
                 {
                   accessor: 'costoAproximado',
                   title: 'Costo Aprox. (Bs.)',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r: BienResponse) =>
                     r.costoAproximado != null
-                      ? `Bs. ${r.costoAproximado}`
+                      ? Number(r.costoAproximado).toFixed(2)
                       : '—',
                 },
                 {
                   accessor: 'costoCuantificado',
                   title: 'Costo Cuant. (Bs.)',
+                  className: 'text-right [&>div]:justify-end',
                   render: (r: BienResponse) =>
                     r.costoCuantificado != null
-                      ? `Bs. ${r.costoCuantificado}`
+                      ? Number(r.costoCuantificado).toFixed(2)
                       : '—',
                 },
                 {
