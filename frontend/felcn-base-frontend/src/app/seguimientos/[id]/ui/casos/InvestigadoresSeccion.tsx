@@ -78,17 +78,17 @@ export function InvestigadoresSeccion({ idCaso, datos, onGuardar }: Investigador
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
-              <Input {...register('nombreApp', { required: 'Campo requerido' })} error={!!errors.nombreApp} />
+              <Input uppercase {...register('nombreApp', { required: 'Campo requerido' })} error={!!errors.nombreApp} />
               {errors.nombreApp && <div className="mt-1 text-xs text-danger">{(errors.nombreApp as any).message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Teléfono Celular</label>
-              <Input {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
+              <Input uppercase {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
               {errors.telefonoCelular && <div className="mt-1 text-xs text-danger">{(errors.telefonoCelular as any).message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Teléfono Fijo Unidad</label>
-              <Input {...register('telefonoFijo')} error={!!errors.telefonoFijo} />
+              <Input uppercase {...register('telefonoFijo')} error={!!errors.telefonoFijo} />
               {errors.telefonoFijo && <div className="mt-1 text-xs text-danger">{(errors.telefonoFijo as any).message}</div>}
             </div>
           </div>

@@ -197,6 +197,7 @@ export function FiltrosCruzadas({ onBuscar, onLimpiar, cargando }: FiltrosCruzad
                 size="sm"
                 value={numeroCaso}
                 onChange={(e) => setNumeroCaso(e.target.value)}
+                uppercase
                 placeholder="Ej: LP-A-1/25"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && numeroCaso.trim())
@@ -346,6 +347,7 @@ export function FiltrosCruzadas({ onBuscar, onLimpiar, cargando }: FiltrosCruzad
               size="sm"
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
+              uppercase
               placeholder="Nombres"
             />
           </div>
@@ -355,6 +357,7 @@ export function FiltrosCruzadas({ onBuscar, onLimpiar, cargando }: FiltrosCruzad
               size="sm"
               value={apellidoPaterno}
               onChange={(e) => setApellidoPaterno(e.target.value)}
+              uppercase
               placeholder="Apellido paterno"
             />
           </div>
@@ -364,6 +367,7 @@ export function FiltrosCruzadas({ onBuscar, onLimpiar, cargando }: FiltrosCruzad
               size="sm"
               value={apellidoMaterno}
               onChange={(e) => setApellidoMaterno(e.target.value)}
+              uppercase
               placeholder="Apellido materno"
             />
           </div>
@@ -373,6 +377,7 @@ export function FiltrosCruzadas({ onBuscar, onLimpiar, cargando }: FiltrosCruzad
               size="sm"
               value={apellidoEsposo}
               onChange={(e) => setApellidoEsposo(e.target.value)}
+              uppercase
               placeholder="Apellido esposo"
             />
           </div>

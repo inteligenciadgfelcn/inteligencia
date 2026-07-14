@@ -89,7 +89,7 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
           </div>
           <div className="lg:col-span-2">
             <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
-            <Input {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
+            <Input uppercase {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
             {errors.nombreApellidos && <div className="mt-1 text-xs text-danger">{errors.nombreApellidos.message}</div>}
           </div>
           <div className="flex justify-end lg:col-span-1">

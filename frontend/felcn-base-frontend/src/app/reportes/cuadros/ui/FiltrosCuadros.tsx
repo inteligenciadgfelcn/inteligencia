@@ -144,6 +144,7 @@ export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadros
                 size="sm"
                 value={codServicio}
                 onChange={(e) => setCodServicio(e.target.value)}
+                uppercase
                 placeholder="Ej: SRV-2024-001"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && codServicio.trim())
@@ -262,6 +263,7 @@ export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadros
               size="sm"
               value={nombres}
               onChange={(e) => setNombres(e.target.value)}
+              uppercase
               placeholder="Nombres"
             />
           </div>
@@ -271,6 +273,7 @@ export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadros
               size="sm"
               value={apellidoPaterno}
               onChange={(e) => setApellidoPaterno(e.target.value)}
+              uppercase
               placeholder="Apellido paterno"
             />
           </div>
@@ -280,6 +283,7 @@ export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadros
               size="sm"
               value={apellidoMaterno}
               onChange={(e) => setApellidoMaterno(e.target.value)}
+              uppercase
               placeholder="Apellido materno"
             />
           </div>
@@ -289,6 +293,7 @@ export function FiltrosCuadros({ onBuscar, onLimpiar, cargando }: FiltrosCuadros
               size="sm"
               value={apellidoEsposo}
               onChange={(e) => setApellidoEsposo(e.target.value)}
+              uppercase
               placeholder="Apellido esposo"
             />
           </div>
