@@ -12,13 +12,14 @@ import IconSearch from '@/components/Icon/IconSearch'
 import IconGoogle from '@/components/Icon/IconGoogle'
 import { Constantes } from '@/config/Constantes'
 import { CustomDialog } from '@/components/modales/CustomDialog'
+import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
   {
     ssr: false,
     loading: () => (
-      <div className="h-[400px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+      <div className="h-[800px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
     ),
   }
 )
@@ -174,6 +175,7 @@ export function DatosGeneralesForm({
   const searchParams = useSearchParams()
   const { Alerta } = useAlerts()
   const [parametricasBaseListas, setParametricasBaseListas] = useState(false)
+  const [guardando, setGuardando] = useState(false)
 
   const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>(
     []
@@ -587,6 +589,7 @@ export function DatosGeneralesForm({
     const idCaso = Number(searchParams.get('id') ?? 0)
 
     try {
+      setGuardando(true)
       if (idCaso > 0) {
         const payloadOperativo: OperativoPayload = {
           numeroInforme: payload.numeroInforme,
@@ -660,6 +663,8 @@ export function DatosGeneralesForm({
       Alerta({ mensaje: 'Datos guardados correctamente', variant: 'success' })
     } catch (e) {
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setGuardando(false)
     }
   }
 
@@ -1567,7 +1572,7 @@ export function DatosGeneralesForm({
                 Number(coordY) || -63.1761788,
               ]}
               zoom={15.63}
-              height={400}
+              height={800}
               onClick={handleMapClick}
               coordenadas={
                 coordX && coordY ? [Number(coordX), Number(coordY)] : null
@@ -1605,7 +1610,8 @@ export function DatosGeneralesForm({
               variant="success"
               size="sm"
               onClick={() => void handleGuardar()}
-              disabled={cargando}
+              disabled={cargando || guardando}
+              loading={cargando || guardando}
             >
               {tieneOperativo ? 'Actualizar' : 'Guardar'}
             </Button>
@@ -1631,6 +1637,7 @@ export function DatosGeneralesForm({
           />
         </div>
       </CustomDialog>
+      <LoadingDialog show={cargando || guardando} />
     </div>
   )
 }

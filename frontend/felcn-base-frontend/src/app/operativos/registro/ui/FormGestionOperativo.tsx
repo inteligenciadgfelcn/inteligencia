@@ -81,26 +81,18 @@ export function FormGestionOperativo({
     [setSeccionActiva]
   )
 
-  const verificarOperativo = useCallback(async () => {
-    if (id <= 0) return
-    try {
-      const resp =
-        await DatosGeneralesService.obtenerPorUsuario(id)
-      const operativoExiste =
-        resp?.datos?.operativos && resp.datos.operativos.length > 0
-      setTieneOperativo(operativoExiste)
-      setIdOperativo(operativoExiste ? resp.datos.operativos[0].id : 0)
-    } catch {
-      setTieneOperativo(false)
-      setIdOperativo(0)
-    }
-  }, [id])
+  const seccion1 = useSeccion1(id, seccionesVisitadas.has('seccion-1'))
 
   useEffect(() => {
-    void verificarOperativo()
-  }, [verificarOperativo])
+    if (seccion1.query.data) {
+      const resp = seccion1.query.data
+      const operativoExiste =
+        resp?.datos?.operativos && resp.datos.operativos.length > 0
+      setTieneOperativo(!!operativoExiste)
+      setIdOperativo(operativoExiste ? resp.datos.operativos[0].id : 0)
+    }
+  }, [seccion1.query.data])
 
-  const seccion1 = useSeccion1(id, seccionesVisitadas.has('seccion-1'))
   const seccion2 = useSeccion2(idOperativo, seccionesVisitadas.has('seccion-2'))
 
   const [pageS3, setPageS3] = useState(1)
@@ -136,8 +128,7 @@ export function FormGestionOperativo({
         <DatosGeneralesForm
           titulo="DATOS GENERALES"
           onGuardar={seccion1.mutation.mutateAsync}
-          onOperativoGuardado={async () => {
-            await verificarOperativo()
+          onOperativoGuardado={() => {
             void seccion1.query.refetch()
           }}
           cargando={seccion1.mutation.isPending || seccion1.query.isFetching}
