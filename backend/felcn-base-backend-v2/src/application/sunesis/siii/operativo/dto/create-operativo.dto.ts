@@ -149,11 +149,11 @@ export class CreateOperativoDto {
   @IsNumber()
   idTipoOperacion: number
 
-  @ApiProperty({ description: 'Organización', example: 'NARCOTRAFICANTES' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: 'Organización', example: 'NARCOTRAFICANTES' })
+  @IsOptional()
   @IsString()
   @MaxLength(50)
-  organizacion: string
+  organizacion?: string
 
   @ApiPropertyOptional({ description: 'Clan familiar' })
   @IsOptional()

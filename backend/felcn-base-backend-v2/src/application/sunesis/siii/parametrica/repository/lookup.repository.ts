@@ -321,7 +321,10 @@ export class LookupRepository {
   async listarUnidades(): Promise<Unidad[]> {
     return this.dataSource
       .getRepository(Unidad)
-      .find({ order: { descripcion: 'ASC' } })
+      .find({
+        where: { esOperativaAdmin: true },
+        order: { descripcion: 'ASC' },
+      })
   }
 
   async listarDistritalesPorUnidad(idUnidad: number): Promise<Distrital[]> {
