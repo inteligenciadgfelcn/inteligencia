@@ -21,6 +21,11 @@ import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { OperativoService } from '../service/operativo.service'
+import { optimizarImagen } from '../utils/optimizar-imagen.util'
+
+// Límite duro de entrada antes de procesar con sharp (evita que una subida
+// absurdamente grande tumbe el proceso por memoria).
+const LIMITE_ARCHIVO_BYTES = 15 * 1024 * 1024
 
 // DTOs
 import {
@@ -200,10 +205,13 @@ export class OperativoController extends BaseController {
   @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/drogas')
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'pruebaCampo', maxCount: 1 },
-      { name: 'pesaje', maxCount: 1 },
-    ])
+    FileFieldsInterceptor(
+      [
+        { name: 'pruebaCampo', maxCount: 1 },
+        { name: 'pesaje', maxCount: 1 },
+      ],
+      { limits: { fileSize: LIMITE_ARCHIVO_BYTES } }
+    )
   )
   async agregarDroga(
     @Req() req: Request,
@@ -216,8 +224,8 @@ export class OperativoController extends BaseController {
     }
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const pruebaCampo = files?.pruebaCampo?.[0]?.buffer || Buffer.alloc(0)
-    const pesaje = files?.pesaje?.[0]?.buffer || Buffer.alloc(0)
+    const pruebaCampo = await optimizarImagen(files?.pruebaCampo?.[0]?.buffer || Buffer.alloc(0))
+    const pesaje = await optimizarImagen(files?.pesaje?.[0]?.buffer || Buffer.alloc(0))
     const droga = await this.operativoService.agregarDroga(idOperativo, data, pruebaCampo, pesaje, numeroPase)
     return this.successCreate(droga)
   }
@@ -395,7 +403,7 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/bienes')
-  @UseInterceptors(FileInterceptor('foto'))
+  @UseInterceptors(FileInterceptor('foto', { limits: { fileSize: LIMITE_ARCHIVO_BYTES } }))
   async agregarBien(
     @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
@@ -403,7 +411,7 @@ export class OperativoController extends BaseController {
     @UploadedFile() file: Express.Multer.File
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const foto = file?.buffer || undefined
+    const foto = file?.buffer ? await optimizarImagen(file.buffer) : undefined
     const bien = await this.operativoService.agregarBien(idOperativo, data, numeroPase, foto)
     return this.successCreate(bien)
   }
@@ -543,11 +551,14 @@ export class OperativoController extends BaseController {
   @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/personas')
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'fotoFrente', maxCount: 1 },
-      { name: 'fotoDocumento', maxCount: 1 },
-      { name: 'fotoPerfilIzquierdo', maxCount: 1 },
-    ])
+    FileFieldsInterceptor(
+      [
+        { name: 'fotoFrente', maxCount: 1 },
+        { name: 'fotoDocumento', maxCount: 1 },
+        { name: 'fotoPerfilIzquierdo', maxCount: 1 },
+      ],
+      { limits: { fileSize: LIMITE_ARCHIVO_BYTES } }
+    )
   )
   async agregarDetenido(
     @Req() req: Request,
@@ -562,8 +573,14 @@ export class OperativoController extends BaseController {
   ) {
     const { numeroPase = '' } = req.user as PassportUser
     const fotoFrente = files?.fotoFrente?.[0]?.buffer
+      ? await optimizarImagen(files.fotoFrente[0].buffer)
+      : undefined
     const fotoDocumento = files?.fotoDocumento?.[0]?.buffer
+      ? await optimizarImagen(files.fotoDocumento[0].buffer)
+      : undefined
     const fotoPerfilIzquierdo = files?.fotoPerfilIzquierdo?.[0]?.buffer
+      ? await optimizarImagen(files.fotoPerfilIzquierdo[0].buffer)
+      : undefined
     const aprehendido = await this.operativoService.agregarDetenido(
       idOperativo, data, numeroPase, fotoFrente, fotoDocumento, fotoPerfilIzquierdo
     )
@@ -642,7 +659,7 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/galeria')
-  @UseInterceptors(FileInterceptor('foto'))
+  @UseInterceptors(FileInterceptor('foto', { limits: { fileSize: LIMITE_ARCHIVO_BYTES } }))
   async agregarFotoGaleria(
     @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
@@ -650,7 +667,7 @@ export class OperativoController extends BaseController {
     @UploadedFile() file: Express.Multer.File
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const foto = file?.buffer || Buffer.alloc(0)
+    const foto = await optimizarImagen(file?.buffer || Buffer.alloc(0))
     const galeria = await this.operativoService.agregarFotoGaleria(idOperativo, data, foto, numeroPase)
     return this.successCreate(galeria)
   }
@@ -730,7 +747,7 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idDroga', description: 'ID de la droga' })
   @ApiConsumes('multipart/form-data')
   @Post(':idOperativo/drogas/:idDroga/logotipos')
-  @UseInterceptors(FileInterceptor('fotografia'))
+  @UseInterceptors(FileInterceptor('fotografia', { limits: { fileSize: LIMITE_ARCHIVO_BYTES } }))
   async agregarLogotipo(
     @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
@@ -739,7 +756,7 @@ export class OperativoController extends BaseController {
     @UploadedFile() file: Express.Multer.File
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const fotografia = file?.buffer || Buffer.alloc(0)
+    const fotografia = await optimizarImagen(file?.buffer || Buffer.alloc(0))
     const logotipo = await this.operativoService.agregarLogotipo(idOperativo, idDroga, data, fotografia, numeroPase)
     return this.successCreate(logotipo)
   }
