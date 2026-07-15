@@ -9,6 +9,8 @@ import { Icono } from '@/components/Icono'
 import { SiiiLookupsService } from '@/services/parametricas/SiiiLookupsService'
 import type { FiltrosAvanzadosParams } from '@/services/reportes/CruzadosAllService'
 import { Constantes } from '@/config/Constantes'
+import { sesionPeticion } from '@/utils/peticion'
+import { imprimir } from '@/utils/imprimir'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -238,12 +240,31 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
   const buscar = () => { onBuscar(filtrosActuales()) }
 
   // ── Abrir PDF con filtros actuales ───────────────────────────────────────────
-  const abrirPDF = () => {
+  const [descargandoPdf, setDescargandoPdf] = useState(false)
+
+  const abrirPDF = async () => {
     const params = new URLSearchParams()
     Object.entries(filtrosActuales()).forEach(([k, v]) => {
       if (v != null && v !== '') params.set(k, String(v))
     })
-    window.open(`${Constantes.baseUrl}/reportes/cruzadas-avanzado/pdf?${params.toString()}`, '_blank')
+    try {
+      setDescargandoPdf(true)
+      const url = `${Constantes.baseUrl}/reportes/cruzadas-avanzado/pdf?${params.toString()}`
+      const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
+      const objectUrl = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = objectUrl
+      enlace.download = 'reporte-cruzadas-avanzado.pdf'
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      imprimir('Error al descargar el PDF 🚨', e)
+      window.alert('No se pudo generar el PDF. Intenta nuevamente.')
+    } finally {
+      setDescargandoPdf(false)
+    }
   }
 
   const fieldLabel = 'mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400'
@@ -521,19 +542,23 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
       <div className="flex items-center justify-end gap-2 pt-1">
         <button
           type="button"
-          onClick={abrirPDF}
-          disabled={cargando}
+          onClick={() => void abrirPDF()}
+          disabled={cargando || descargandoPdf}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold
             bg-danger/10 hover:bg-danger/20 text-danger border border-danger/20
             transition-all disabled:opacity-50 disabled:pointer-events-none"
           title="Generar reporte PDF con los filtros actuales"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 6 2 18 2 18 9" />
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-            <rect width="12" height="8" x="6" y="14" />
-          </svg>
-          Reporte PDF
+          {descargandoPdf ? (
+            <Icono className="w-4 h-4 shrink-0 animate-spin">refresh</Icono>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9" />
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <rect width="12" height="8" x="6" y="14" />
+            </svg>
+          )}
+          {descargandoPdf ? 'Generando PDF...' : 'Reporte PDF'}
         </button>
         <Button variant="primary" size="md" onClick={buscar} disabled={cargando}>
           {cargando

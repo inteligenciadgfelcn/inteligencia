@@ -98,8 +98,8 @@ const DEFAULT_VALUES: OperativoPayload = {
   descripcion: '',
   idTipoOperacion: 0,
   organizacion: '',
-  coordX: -17.78507,
-  coordY: -63.1761788,
+  coordX: -17.3895, // Cochabamba (ciudad)
+  coordY: -66.1568,
   clanFamiliar: '',
 }
 
@@ -1574,8 +1574,8 @@ export function DatosGeneralesForm({
               id="mapa-operativo-seccion-1"
               mapRef={mapRef}
               centro={[
-                Number(coordX) || -17.78507,
-                Number(coordY) || -63.1761788,
+                Number(coordX) || -17.3895,
+                Number(coordY) || -66.1568,
               ]}
               zoom={15.63}
               height={800}
