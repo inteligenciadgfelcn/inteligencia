@@ -31,8 +31,8 @@ const Dropdown = (props: any, forwardedRef: any) => {
 
   const handleDocumentClick = (event: any) => {
     if (
-      referenceRef.current.contains(event.target) ||
-      popperRef.current.contains(event.target)
+      referenceRef.current?.contains(event.target) ||
+      popperRef.current?.contains(event.target)
     ) {
       return
     }
