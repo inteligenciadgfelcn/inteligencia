@@ -11,6 +11,7 @@ import {
   CreateBienConfiscadoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -42,7 +43,8 @@ export function BienConfiscadoSeccion({ idItemBien }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idItemBien])
 
-  const onSubmit = async (payload: CreateBienConfiscadoPayload) => {
+  const onSubmit = async (datos: CreateBienConfiscadoPayload) => {
+    const payload = trimPayload(datos)
     try {
       await BienesServiceInstance.registrarConfiscado(idItemBien, payload)
       Alerta({ mensaje: 'Confiscación registrada correctamente', variant: 'success' })

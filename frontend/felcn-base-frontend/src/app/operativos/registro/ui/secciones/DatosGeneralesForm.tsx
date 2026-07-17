@@ -25,6 +25,7 @@ const MapaConMarcador = dynamic(
 )
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
+import { trimPayload } from '@/utils/trimPayload'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import {
   DatosGeneralesService,
@@ -585,7 +586,7 @@ export function DatosGeneralesForm({
       return
     }
 
-    const payload = getValues()
+    const payload = trimPayload(getValues(), ['breveDetalle', 'descripcion'])
     const idCaso = Number(searchParams.get('id') ?? 0)
 
     try {

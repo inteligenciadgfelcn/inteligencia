@@ -17,6 +17,7 @@ import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import dayjs from 'dayjs'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { trimPayload } from '@/utils/trimPayload'
 
 const schema = z.object({
   delitoPrecedente: z.string().min(1, 'El delito precedente es requerido'),
@@ -85,7 +86,8 @@ export const FormInvestigacionParalela = ({
   if (!caso) return null
   if (loadingDetalle) return <LoadingDialog show />
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (formData: FormData) => {
+    const data = trimPayload(formData)
     try {
       setLoading(true)
       if (investigacionIdInterno) {

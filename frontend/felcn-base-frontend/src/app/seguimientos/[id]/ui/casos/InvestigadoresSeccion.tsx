@@ -8,6 +8,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
 import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { useEffect, useState, useCallback } from 'react'
 
@@ -46,7 +47,8 @@ export function InvestigadoresSeccion({ idCaso, datos, onGuardar }: Investigador
     void cargarGradosLocales()
   }, [cargarGradosLocales])
 
-  const onSubmit = async (payload: any) => {
+  const onSubmit = async (datos: any) => {
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.agregarInvestigador(idCaso, payload)
       Alerta({ mensaje: 'Investigador asignado correctamente', variant: 'success' })

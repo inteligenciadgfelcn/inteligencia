@@ -10,6 +10,7 @@ import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { PersonasServiceInstance, CreateEtapaProcesoPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import { SiiiLookupsService } from '@/services/parametricas/SiiiLookupsService'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -68,7 +69,8 @@ export function EtapaProcesoSeccion({ idDetenido }: Props) {
     } catch { setEstados([]) }
   }
 
-  const onSubmit = async (payload: CreateEtapaProcesoPayload) => {
+  const onSubmit = async (datos: CreateEtapaProcesoPayload) => {
+    const payload = trimPayload(datos)
     try {
       await PersonasServiceInstance.registrarEtapaProceso(idDetenido, {
         ...payload,

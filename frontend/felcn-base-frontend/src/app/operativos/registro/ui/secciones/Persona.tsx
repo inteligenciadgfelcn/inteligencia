@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { useAlerts } from '@/hooks/useAlerts'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { trimPayload } from '@/utils/trimPayload'
 
 // ─── Tipos internos ───────────────────────────────────────────────────────────
 type Opcion = { id: string; label: string }
@@ -424,7 +425,7 @@ export function Persona({ titulo, idoperativo }: Props) {
 
     setCargando(true)
     try {
-      const res = await PersonasService.crear(idoperativo, {
+      const res = await PersonasService.crear(idoperativo, trimPayload({
         nombres,
         apellidoPaterno: primerApellido,
         apellidoMaterno: segundoApellido,
@@ -439,7 +440,7 @@ export function Persona({ titulo, idoperativo }: Props) {
         fotoFrente: fotoFrente ?? undefined,
         fotoPerfilIzquierdo: fotoPerfil ?? undefined,
         fotoDocumento: fotoDocumento ?? undefined,
-      })
+      }))
       if (res?.finalizado) {
         await cargarPersonas(1)
         setPagina(1)
