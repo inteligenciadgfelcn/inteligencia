@@ -10,6 +10,7 @@ import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
 import { exportToCSV } from '@/utils/tableExport'
+import { formatDecimal } from '@/utils/formatDecimal'
 import { BlancosService } from '@/services/analisis'
 import type { BlancoS2i, FlujoFiscalia, FlujoTelefonico } from '@/services/analisis'
 
@@ -487,15 +488,15 @@ export function FlujoTelefonicoPanel({ blanco }: Props) {
         imeiA: string
         rbsA: string
         celdaA: string
-        latA: number | string
-        lonA: number | string
+        latA: string
+        lonA: string
         numeroB: string
         titular: string
         imeiB: string
         rbsB: string
         celdaB: string
-        latB: number | string
-        lonB: number | string
+        latB: string
+        lonB: string
         fechaHora: string
         duracion: string
       }
@@ -525,15 +526,15 @@ export function FlujoTelefonicoPanel({ blanco }: Props) {
             imeiA: l.imeiA,
             rbsA: l.rbsA,
             celdaA: l.celdaA,
-            latA: l.latA,
-            lonA: l.lonA,
+            latA: formatDecimal(l.latA, 6),
+            lonA: formatDecimal(l.lonA, 6),
             numeroB: l.numeroB,
             titular: l.titular,
             imeiB: l.imeiB,
             rbsB: l.rbsB,
             celdaB: l.celdaB,
-            latB: l.latB,
-            lonB: l.lonB,
+            latB: formatDecimal(l.latB, 6),
+            lonB: formatDecimal(l.lonB, 6),
             fechaHora: l.fechaHora,
             duracion: l.duracion,
           })
