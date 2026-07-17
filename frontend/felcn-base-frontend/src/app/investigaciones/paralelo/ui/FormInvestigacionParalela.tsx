@@ -308,6 +308,7 @@ export const FormInvestigacionParalela = ({
                   {...register('detalleDelitoPrecedente')}
                   placeholder="Detalle del delito precedente..."
                   rows={4}
+                  uppercase
                   error={!!errors.detalleDelitoPrecedente}
                 />
                 {errors.detalleDelitoPrecedente && (
@@ -325,6 +326,7 @@ export const FormInvestigacionParalela = ({
                   {...register('informeInteligencia')}
                   placeholder="Informe de inteligencia financiera..."
                   rows={4}
+                  uppercase
                   error={!!errors.informeInteligencia}
                 />
                 {errors.informeInteligencia && (

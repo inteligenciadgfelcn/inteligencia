@@ -98,8 +98,8 @@ const DEFAULT_VALUES: OperativoPayload = {
   descripcion: '',
   idTipoOperacion: 0,
   organizacion: '',
-  coordX: -17.78507,
-  coordY: -63.1761788,
+  coordX: -17.3895, // Cochabamba (ciudad)
+  coordY: -66.1568,
   clanFamiliar: '',
 }
 
@@ -796,6 +796,7 @@ export function DatosGeneralesForm({
             <Input
               id="numeroInforme"
               type="text"
+              uppercase
               className={`w-full ${errors.numeroInforme ? 'border-danger' : ''}`}
               {...register('numeroInforme', reglaObligatorio)}
             />
@@ -1167,6 +1168,7 @@ export function DatosGeneralesForm({
             <Input
               id="mando"
               type="text"
+              uppercase
               className={`w-full ${errors.mando ? 'border-danger' : ''}`}
               {...register('mando', reglaObligatorio)}
             />
@@ -1186,6 +1188,7 @@ export function DatosGeneralesForm({
             <Input
               id="clanFamiliar"
               type="text"
+              uppercase
               className="w-full"
               {...register('clanFamiliar')}
             />
@@ -1200,6 +1203,7 @@ export function DatosGeneralesForm({
             <Input
               id="organizacion"
               type="text"
+              uppercase
               className="w-full"
               {...register('organizacion')}
             />
@@ -1298,6 +1302,7 @@ export function DatosGeneralesForm({
               <Input
                 id="lugar"
                 type="text"
+                uppercase
                 className={`w-full ${errors.lugar ? 'border-danger' : ''}`}
                 {...register('lugar', reglaObligatorio)}
               />
@@ -1520,6 +1525,7 @@ export function DatosGeneralesForm({
                 className="flex-1"
                 placeholder="Buscar dirección, zona o calle..."
                 value={searchQuery}
+                uppercase
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -1568,8 +1574,8 @@ export function DatosGeneralesForm({
               id="mapa-operativo-seccion-1"
               mapRef={mapRef}
               centro={[
-                Number(coordX) || -17.78507,
-                Number(coordY) || -63.1761788,
+                Number(coordX) || -17.3895,
+                Number(coordY) || -66.1568,
               ]}
               zoom={15.63}
               height={800}

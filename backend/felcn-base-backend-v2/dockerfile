@@ -22,12 +22,14 @@ FROM node:22-slim AS app
 WORKDIR /home/node/app
 
 # Chromium para Puppeteer (Debian slim usa glibc — compatible con Chrome)
-# Version fijada: chromium 150.x (bookworm-security) crashea con SIGILL en
-# este host al iniciar; 147.x funciona. apt-mark hold evita que un rebuild
-# futuro vuelva a traer una version rota via bookworm-security.
+# Version fijada: 147.0.7727.137 (antes usada aquí) ya no existe en los
+# mirrors de Debian — solo quedan 150.x. La 150.x más vieja crasheaba con
+# SIGILL en este host; se probó 150.0.7871.114 directamente (chromium
+# --headless --dump-dom) y arranca sin problema. apt-mark hold evita que un
+# rebuild futuro vuelva a traer una versión sin probar via bookworm-security.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium=147.0.7727.137-1~deb12u1 \
-    chromium-common=147.0.7727.137-1~deb12u1 \
+    chromium=150.0.7871.114-1~deb12u1 \
+    chromium-common=150.0.7871.114-1~deb12u1 \
     fonts-noto \
     fonts-freefont-ttf \
     ca-certificates \

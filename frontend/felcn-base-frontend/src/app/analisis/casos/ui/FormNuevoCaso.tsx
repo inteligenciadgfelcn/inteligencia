@@ -212,6 +212,7 @@ export function FormNuevoCaso() {
             rows={4}
             value={antecedentes}
             onChange={(e) => setAntecedentes(e.target.value)}
+            uppercase
             error={!antecedentes.trim() && submitted}
             className="w-full"
           />

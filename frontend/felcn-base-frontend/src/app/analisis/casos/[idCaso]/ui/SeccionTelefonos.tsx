@@ -170,6 +170,7 @@ export function SeccionTelefonos({ idCaso }: Props) {
               value={mensaje}
               onChange={(e) => setMensaje(e.target.value)}
               rows={3}
+              uppercase
               className={`w-full ${req(mensaje) ? 'border-danger' : ''}`}
             />
             {req(mensaje) && <span className="mt-1 block text-xs italic text-danger">Obligatorio</span>}

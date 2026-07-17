@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { BASE_PATH } from '@/imageLoader'
 
 interface Props {
@@ -29,14 +28,11 @@ const LoginCoverVristo = ({ children }: Props) => {
           {/* PANEL IZQUIERDO */}
           <div className="relative hidden w-full items-center justify-center p-10 lg:flex lg:w-1/2">
             <div>
-              {/* <Link href="/" className="block w-56">
-                <img src={`${base}/assets/felcnlogo.png`} alt="logo" />
-              </Link> */}
-
               <img
                 src={`${base}/assets/felcnlogo.png`}
                 alt="login"
                 className="mt-20 max-w-md"
+                loading="lazy"
               />
             </div>
           </div>

@@ -66,9 +66,13 @@ export const middleware = (req: NextRequest) => {
   }
 }
 
-// Se protege TODA la aplicación por defecto — se excluyen solo los assets
-// estáticos internos de Next.js (las rutas públicas de negocio se filtran
-// arriba, en RUTAS_PUBLICAS, para que queden auditables en un solo lugar).
+// Se protege TODA la aplicación por defecto — se excluyen los internals de
+// Next.js y cualquier archivo estático servido desde /public (imágenes,
+// íconos de Leaflet, locales, fuentes, etc. — necesarios incluso en /login,
+// que no tiene sesión). Las rutas públicas de negocio se filtran arriba, en
+// RUTAS_PUBLICAS, para que queden auditables en un solo lugar.
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|json)$).*)',
+  ],
 }

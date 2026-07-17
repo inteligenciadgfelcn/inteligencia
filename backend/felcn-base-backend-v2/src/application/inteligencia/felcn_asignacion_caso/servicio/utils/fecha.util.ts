@@ -4,14 +4,21 @@ export function validarRangoFechas(
   dateIngreso: Date,
   dateSalida: Date,
 ) {
-  
   const hoy = new Date()
+  // Comparar por día calendario (no por instante exacto): "no puede ser de
+  // un día pasado" debía rechazar días anteriores a hoy, pero al comparar
+  // timestamps completos (dateIngreso <= hoy) también rechazaba fechas de
+  // HOY MISMO o de mañana si se registraban entrada la noche, ya que la
+  // hora fija que arma el datepicker terminaba siendo anterior al instante
+  // exacto de la petición.
+  const inicioHoy = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+  const inicioIngreso = new Date(
+    dateIngreso.getFullYear(),
+    dateIngreso.getMonth(),
+    dateIngreso.getDate()
+  )
 
-  console.log(dateIngreso);
-  console.log(dateSalida);
-  console.log(hoy);
-
-  if (dateIngreso <= hoy) {
+  if (inicioIngreso < inicioHoy) {
     throw new BadRequestException(
       'La fecha de ingreso no puede ser de un día pasado',
     )
