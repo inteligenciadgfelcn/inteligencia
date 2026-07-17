@@ -577,7 +577,7 @@ export function SeccionBienesForm({
       return
     }
 
-    if (parseFloat(costoAproximado || '0') <= 0 || parseFloat(costoCuantificado || '0') <= 0) {
+    if (parseFloat(costoAproximado || '0') <= 0) {
       return
     }
 
@@ -742,23 +742,6 @@ export function SeccionBienesForm({
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Costo Cuantificado (Bs.) <span className="text-danger">*</span>
-            </label>
-            <Input
-              type="number"
-              placeholder="0"
-              min="0"
-              step="0.01"
-              className={`w-full ${parseFloat(costoCuantificado || '0') <= 0 && submitted ? 'border-danger' : ''}`}
-              value={costoCuantificado}
-              onChange={(e) => setCostoCuantificado(e.target.value)}
-            />
-            {parseFloat(costoCuantificado || '0') <= 0 && submitted && (
-              <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
               ¿En Investigación? <span className="text-danger">*</span>
             </label>
             <Select
@@ -827,15 +810,6 @@ export function SeccionBienesForm({
                   render: (r: BienResponse) =>
                     r.costoAproximado != null
                       ? Number(r.costoAproximado).toFixed(2)
-                      : '—',
-                },
-                {
-                  accessor: 'costoCuantificado',
-                  title: 'Costo Cuant. (Bs.)',
-                  className: 'text-right [&>div]:justify-end',
-                  render: (r: BienResponse) =>
-                    r.costoCuantificado != null
-                      ? Number(r.costoCuantificado).toFixed(2)
                       : '—',
                 },
                 {
