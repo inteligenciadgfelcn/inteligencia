@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { AuditoriaEntity } from '@/common/entity'
 import { S2iBlanco } from './blanco.entity'
@@ -30,6 +36,10 @@ export class S2iOvise extends AuditoriaEntity {
 
   @Column({ name: 'accion', type: 'varchar', length: 20 })
   accion: string
+
+  /** Archivo adjunto almacenado en bytea (opcional) — se sirve vía GET .../descargar */
+  @Column({ name: 'archivo', type: 'bytea', nullable: true })
+  archivo?: Buffer
 
   @ManyToOne(() => S2iBlanco)
   @JoinColumn({ name: 'id_blanco' })
