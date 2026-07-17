@@ -22,14 +22,35 @@ FROM node:22-slim AS app
 WORKDIR /home/node/app
 
 # Chromium para Puppeteer (Debian slim usa glibc — compatible con Chrome)
-# Version fijada: 147.0.7727.137 (antes usada aquí) ya no existe en los
-# mirrors de Debian — solo quedan 150.x. La 150.x más vieja crasheaba con
-# SIGILL en este host; se probó 150.0.7871.114 directamente (chromium
-# --headless --dump-dom) y arranca sin problema. apt-mark hold evita que un
-# rebuild futuro vuelva a traer una versión sin probar via bookworm-security.
+#
+# NOTA PARA EL DEVELOPER — si el build falla acá con
+# "E: Version 'X.X.X.X' for 'chromium' was not found":
+# bookworm-security rota los paquetes viejos en cuestión de días
+# (147.0.7727.137 y luego 150.0.7871.114 ya dejaron de existir ahí, cada
+# uno rompió el build al día siguiente de fijarlo). Por eso NO se fija
+# versión exacta a propósito — se instala siempre la última disponible.
+#
+# Si algún día vuelve a fallar (o el PDF/Puppeteer empieza a crashear con
+# SIGILL, que ya pasó una vez con una 150.x vieja), diagnosticar así:
+#   1. Ver qué versiones hay disponibles ahora mismo:
+#        docker run --rm node:22-slim sh -c \
+#          "apt-get update -qq && apt-cache madison chromium"
+#   2. Probar una versión de forma aislada ANTES de fijarla en este archivo:
+#        docker run --rm node:22-slim sh -c \
+#          "apt-get update -qq && apt-get install -y chromium=<version> \
+#           chromium-common=<version> ca-certificates -qq && \
+#           chromium --headless --no-sandbox --disable-gpu \
+#           --dump-dom about:blank"
+#      Si crashea o no imprime "<html>...", esa versión está rota — probar
+#      otra de la lista del paso 1.
+#   3. Recién ahí, si hace falta fijar una versión buena, agregar
+#      "=<version>" a chromium y chromium-common abajo.
+#
+# apt-mark hold congela lo instalado dentro de la imagen ya construida
+# (no evita que el próximo build pida una versión que ya rotó).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium=150.0.7871.114-1~deb12u1 \
-    chromium-common=150.0.7871.114-1~deb12u1 \
+    chromium \
+    chromium-common \
     fonts-noto \
     fonts-freefont-ttf \
     ca-certificates \
