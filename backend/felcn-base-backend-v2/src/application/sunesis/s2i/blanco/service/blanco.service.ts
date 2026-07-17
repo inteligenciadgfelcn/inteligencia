@@ -264,7 +264,8 @@ export class BlancoService {
     idUsuario: string
   ): Promise<S2iFlujoFiscalia> {
     const existe = await this.repo.buscarFlujoPorId(idFlujo)
-    if (!existe) throw new NotFoundException(`Flujo telefónico ${idFlujo} no encontrado`)
+    if (!existe)
+      throw new NotFoundException(`Flujo telefónico ${idFlujo} no encontrado`)
 
     const flujoFiscalia = new S2iFlujoFiscalia({
       idFlujo,
@@ -350,8 +351,9 @@ export class BlancoService {
   async crearOvise(
     idBlanco: string,
     dto: CreateOviseDto,
-    idUsuario: string
-  ): Promise<S2iOvise> {
+    idUsuario: string,
+    archivo?: Buffer
+  ): Promise<any> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
 
@@ -362,13 +364,31 @@ export class BlancoService {
       longitud: dto.longitud,
       reporte: dto.reporte.trim(),
       accion: dto.accion.trim().toUpperCase(),
+      archivo: archivo && archivo.length > 0 ? archivo : undefined,
       usuarioCreacion: idUsuario,
     })
-    return this.repo.crearOvise(ovise)
+    const saved = await this.repo.crearOvise(ovise)
+    const { archivo: savedArchivo, ...resto } = saved
+    return { ...resto, tieneArchivo: !!savedArchivo }
   }
 
-  async listarOvise(idBlanco: string): Promise<S2iOvise[]> {
-    return this.repo.listarOvisePorBlanco(idBlanco)
+  async listarOvise(idBlanco: string): Promise<any[]> {
+    const registros = await this.repo.listarOvisePorBlanco(idBlanco)
+    return registros.map(({ archivo, ...resto }) => ({
+      ...resto,
+      tieneArchivo: !!archivo,
+    }))
+  }
+
+  async descargarOvise(idOvise: string): Promise<Buffer> {
+    const ovise = await this.repo.buscarOvisePorId(idOvise)
+    if (!ovise)
+      throw new NotFoundException(`Reporte OVISE ${idOvise} no encontrado`)
+    if (!ovise.archivo)
+      throw new NotFoundException(
+        `El reporte OVISE ${idOvise} no tiene archivo adjunto`
+      )
+    return ovise.archivo
   }
 
   async eliminarOvise(idOvise: string): Promise<void> {

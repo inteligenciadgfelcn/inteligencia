@@ -260,16 +260,32 @@ export const BlancosService = {
   // ── OVISE ──────────────────────────────────────────────────────────────────
 
   crearOvise(idBlanco: string, payload: CreateOvisePayload): Promise<RespuestaApi<Ovise>> {
+    const formData = new FormData()
+    formData.append('lugar', payload.lugar)
+    formData.append('latitud', String(payload.latitud))
+    formData.append('longitud', String(payload.longitud))
+    formData.append('reporte', payload.reporte)
+    formData.append('accion', payload.accion)
+    if (payload.archivo) formData.append('archivo', payload.archivo)
     return sesionPeticion({
       url: `${BASE}/blancos/${idBlanco}/ovise`,
       method: 'POST',
-      body: payload,
+      body: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
       withCredentials: true,
     })
   },
 
   listarOvise(idBlanco: string): Promise<RespuestaApi<Ovise[]>> {
     return sesionPeticion({ url: `${BASE}/blancos/${idBlanco}/ovise`, withCredentials: true })
+  },
+
+  descargarOvise(idOvise: string): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${BASE}/ovise/${idOvise}/descargar`,
+      responseType: 'blob',
+      withCredentials: true,
+    })
   },
 
   eliminarOvise(idOvise: string): Promise<RespuestaApi<unknown>> {
