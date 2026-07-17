@@ -321,6 +321,7 @@ function LogotiposPanel({
           <label className="mb-1 block text-sm font-medium">Imagen <span className="text-danger">*</span></label>
           <Input
             type="text"
+            uppercase
             className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
             value={imagen}
             onChange={(e) => setImagen(e.target.value)}
@@ -337,6 +338,7 @@ function LogotiposPanel({
           </label>
           <Input
             type="text"
+            uppercase
             className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
             value={descripcionLogo}
             onChange={(e) => setDescripcionLogo(e.target.value)}
@@ -353,6 +355,7 @@ function LogotiposPanel({
           </label>
           <Input
             type="text"
+            uppercase
             className={`w-full ${!organizacion && submitted ? 'border-danger' : ''}`}
             value={organizacion}
             onChange={(e) => setOrganizacion(e.target.value)}
@@ -370,6 +373,7 @@ function LogotiposPanel({
           <Input
             value={blanco}
             onChange={(e) => setBlanco(e.target.value)}
+            uppercase
             className="w-full"
           />
         </div>
@@ -379,6 +383,7 @@ function LogotiposPanel({
             value={observacion}
             onChange={(e) => setObservacion(e.target.value)}
             rows={2}
+            uppercase
             className={`w-full ${!observacion && submitted ? 'border-danger' : ''}`}
           />
           {!observacion && submitted && (
@@ -1104,6 +1109,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
               rows={3}
+              uppercase
               className="w-full"
             />
           </div>

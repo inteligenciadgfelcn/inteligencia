@@ -105,6 +105,7 @@ export function BusquedaCasos({ onSearch }: BusquedaCasosProps) {
           <Input
             value={valorFiltro}
             onChange={(e) => setValorFiltro(e.target.value)}
+            uppercase
             placeholder="Ingrese el valor..."
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSearch()

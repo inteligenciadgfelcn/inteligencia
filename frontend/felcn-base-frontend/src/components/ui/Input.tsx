@@ -5,10 +5,21 @@ export interface InputProps
   size?: 'sm' | 'md' | 'lg'
   className?: string
   error?: boolean
+  uppercase?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ size = 'md', className = '', error = false, ...props }, ref) => {
+  (
+    {
+      size = 'md',
+      className = '',
+      error = false,
+      uppercase = false,
+      onChange,
+      ...props
+    },
+    ref
+  ) => {
     const baseClasses = 'form-input'
 
     const sizeClasses = {
@@ -21,10 +32,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       ? '!border-danger text-danger placeholder-danger/70 focus:!border-danger'
       : ''
 
+    const handleChange = uppercase
+      ? (e: React.ChangeEvent<HTMLInputElement>) => {
+          e.target.value = e.target.value.toUpperCase()
+          onChange?.(e)
+        }
+      : onChange
+
     return (
       <input
         ref={ref}
         className={`${baseClasses} ${sizeClasses[size]} ${errorClasses} ${className}`}
+        onChange={handleChange}
         {...props}
       />
     )

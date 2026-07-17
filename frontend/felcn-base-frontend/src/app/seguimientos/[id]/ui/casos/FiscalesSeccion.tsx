@@ -48,17 +48,17 @@ export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionPro
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
-              <Input {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
+              <Input uppercase {...register('nombreApellidos', { required: 'Campo requerido' })} error={!!errors.nombreApellidos} />
               {errors.nombreApellidos && <div className="mt-1 text-xs text-danger">{errors.nombreApellidos.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Celular</label>
-              <Input {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
+              <Input uppercase {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
               {errors.telefonoCelular && <div className="mt-1 text-xs text-danger">{errors.telefonoCelular.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Teléfono</label>
-              <Input {...register('telefonoFijo')} error={!!errors.telefonoFijo} />
+              <Input uppercase {...register('telefonoFijo')} error={!!errors.telefonoFijo} />
               {errors.telefonoFijo && <div className="mt-1 text-xs text-danger">{errors.telefonoFijo.message}</div>}
             </div>
           </div>

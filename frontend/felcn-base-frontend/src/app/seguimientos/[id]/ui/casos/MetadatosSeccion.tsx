@@ -97,6 +97,7 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
             <Input
               {...register('ianus')}
               placeholder="Ingrese el CUD"
+              uppercase
               error={!!errors.ianus}
             />
             {errors.ianus && <div className="mt-1 text-xs text-danger">{errors.ianus.message}</div>}
@@ -106,6 +107,7 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
             <Input
               {...register('numeroCasoPerDom')}
               placeholder="Ingrese número de caso"
+              uppercase
               error={!!errors.numeroCasoPerDom}
             />
             {errors.numeroCasoPerDom && <div className="mt-1 text-xs text-danger">{errors.numeroCasoPerDom.message}</div>}

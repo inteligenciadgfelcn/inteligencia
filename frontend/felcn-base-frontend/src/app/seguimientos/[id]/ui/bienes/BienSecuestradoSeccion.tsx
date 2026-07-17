@@ -61,7 +61,7 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">Fiscal <span className="text-danger">*</span></label>
-              <Input {...register('fiscal', { required: 'Campo requerido' })} error={!!errors.fiscal} />
+              <Input uppercase {...register('fiscal', { required: 'Campo requerido' })} error={!!errors.fiscal} />
               {errors.fiscal && <div className="mt-1 text-xs text-danger">{errors.fiscal.message}</div>}
             </div>
             <div>
@@ -71,7 +71,7 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium mb-1">Investigador que Secuestró el Bien <span className="text-danger">*</span></label>
-              <Input {...register('investigador', { required: 'Campo requerido' })} error={!!errors.investigador} />
+              <Input uppercase {...register('investigador', { required: 'Campo requerido' })} error={!!errors.investigador} />
               {errors.investigador && <div className="mt-1 text-xs text-danger">{errors.investigador.message}</div>}
             </div>
           </div>

@@ -175,6 +175,7 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
             rows={2}
             value={contenido}
             onChange={(e) => setContenido(e.target.value)}
+            uppercase
             error={!contenido.trim() && submitted}
             className="w-full"
           />

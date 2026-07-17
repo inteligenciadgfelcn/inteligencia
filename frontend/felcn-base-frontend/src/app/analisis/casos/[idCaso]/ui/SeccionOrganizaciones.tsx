@@ -198,7 +198,7 @@ export function SeccionOrganizaciones({ idCaso }: Props) {
         </div>
         <div className="lg:col-span-4">
           <label className="mb-1 block text-sm font-medium">Observaciones</label>
-          <Textarea rows={2} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} className="w-full" />
+          <Textarea rows={2} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} uppercase className="w-full" />
         </div>
         <div className="lg:col-span-4 flex justify-end mt-2">
           <Button variant="success" size="sm" onClick={() => void guardar()} disabled={cargando}>Guardar</Button>

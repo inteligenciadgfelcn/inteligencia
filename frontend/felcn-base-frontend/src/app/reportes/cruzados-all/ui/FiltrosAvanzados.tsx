@@ -9,6 +9,8 @@ import { Icono } from '@/components/Icono'
 import { SiiiLookupsService } from '@/services/parametricas/SiiiLookupsService'
 import type { FiltrosAvanzadosParams } from '@/services/reportes/CruzadosAllService'
 import { Constantes } from '@/config/Constantes'
+import { sesionPeticion } from '@/utils/peticion'
+import { imprimir } from '@/utils/imprimir'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -238,12 +240,31 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
   const buscar = () => { onBuscar(filtrosActuales()) }
 
   // ── Abrir PDF con filtros actuales ───────────────────────────────────────────
-  const abrirPDF = () => {
+  const [descargandoPdf, setDescargandoPdf] = useState(false)
+
+  const abrirPDF = async () => {
     const params = new URLSearchParams()
     Object.entries(filtrosActuales()).forEach(([k, v]) => {
       if (v != null && v !== '') params.set(k, String(v))
     })
-    window.open(`${Constantes.baseUrl}/reportes/cruzadas-avanzado/pdf?${params.toString()}`, '_blank')
+    try {
+      setDescargandoPdf(true)
+      const url = `${Constantes.baseUrl}/reportes/cruzadas-avanzado/pdf?${params.toString()}`
+      const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
+      const objectUrl = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = objectUrl
+      enlace.download = 'reporte-cruzadas-avanzado.pdf'
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      imprimir('Error al descargar el PDF 🚨', e)
+      window.alert('No se pudo generar el PDF. Intenta nuevamente.')
+    } finally {
+      setDescargandoPdf(false)
+    }
   }
 
   const fieldLabel = 'mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400'
@@ -279,35 +300,35 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div>
             <label className={fieldLabel}>Cód. Servicio</label>
-            <Input size="sm" value={codigoServicio} onChange={e => setCodigoServicio(e.target.value)} placeholder="Ej: SRV-001" />
+            <Input size="sm" uppercase value={codigoServicio} onChange={e => setCodigoServicio(e.target.value)} placeholder="Ej: SRV-001" />
           </div>
           <div>
             <label className={fieldLabel}>Número de Caso</label>
-            <Input size="sm" value={numeroCaso} onChange={e => setNumeroCaso(e.target.value)} placeholder="Ej: LP-A-1/25" />
+            <Input size="sm" uppercase value={numeroCaso} onChange={e => setNumeroCaso(e.target.value)} placeholder="Ej: LP-A-1/25" />
           </div>
           <div>
             <label className={fieldLabel}>Nombre del Caso</label>
-            <Input size="sm" value={nombreCaso} onChange={e => setNombreCaso(e.target.value)} placeholder="Ej: Operación Luz" />
+            <Input size="sm" uppercase value={nombreCaso} onChange={e => setNombreCaso(e.target.value)} placeholder="Ej: Operación Luz" />
           </div>
           <div>
             <label className={fieldLabel}>Número de Operativo</label>
-            <Input size="sm" value={numeroOperativo} onChange={e => setNumeroOperativo(e.target.value)} placeholder="Ej: OP-2025-001" />
+            <Input size="sm" uppercase value={numeroOperativo} onChange={e => setNumeroOperativo(e.target.value)} placeholder="Ej: OP-2025-001" />
           </div>
           <div>
             <label className={fieldLabel}>CUD</label>
-            <Input size="sm" value={ianus} onChange={e => setIanus(e.target.value)} placeholder="Ej: IAN-001" />
+            <Input size="sm" uppercase value={ianus} onChange={e => setIanus(e.target.value)} placeholder="Ej: IAN-001" />
           </div>
           <div>
             <label className={fieldLabel}>Fiscal Asignado</label>
-            <Input size="sm" value={fiscal} onChange={e => setFiscal(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={fiscal} onChange={e => setFiscal(e.target.value)} placeholder="Apellido o nombre" />
           </div>
           <div>
             <label className={fieldLabel}>Fiscal Solicitante</label>
-            <Input size="sm" value={fiscalSolicitud} onChange={e => setFiscalSolicitud(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={fiscalSolicitud} onChange={e => setFiscalSolicitud(e.target.value)} placeholder="Apellido o nombre" />
           </div>
           <div>
             <label className={fieldLabel}>Investigador Asignado</label>
-            <Input size="sm" value={asignadoCaso} onChange={e => setAsignadoCaso(e.target.value)} placeholder="Apellido o nombre" />
+            <Input size="sm" uppercase value={asignadoCaso} onChange={e => setAsignadoCaso(e.target.value)} placeholder="Apellido o nombre" />
           </div>
         </div>
       </SeccionFiltro>
@@ -360,7 +381,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div className="sm:col-span-2">
             <label className={fieldLabel}>Organización (parcial)</label>
-            <Input size="sm" value={organizacion} onChange={e => setOrganizacion(e.target.value)} placeholder="Ej: Cartel..." />
+            <Input size="sm" uppercase value={organizacion} onChange={e => setOrganizacion(e.target.value)} placeholder="Ej: Cartel..." />
           </div>
         </div>
       </SeccionFiltro>
@@ -393,7 +414,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
           </div>
           <div>
             <label className={fieldLabel}>Lugar (parcial)</label>
-            <Input size="sm" value={lugar} onChange={e => setLugar(e.target.value)} placeholder="Ej: Av. Principal" />
+            <Input size="sm" uppercase value={lugar} onChange={e => setLugar(e.target.value)} placeholder="Ej: Av. Principal" />
           </div>
         </div>
       </SeccionFiltro>
@@ -447,19 +468,19 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           <div>
             <label className={fieldLabel}>Nombres</label>
-            <Input size="sm" value={nombresPersona} onChange={e => setNombresPersona(e.target.value)} placeholder="Nombres" />
+            <Input size="sm" uppercase value={nombresPersona} onChange={e => setNombresPersona(e.target.value)} placeholder="Nombres" />
           </div>
           <div>
             <label className={fieldLabel}>Ap. Paterno</label>
-            <Input size="sm" value={apellidoPaterno} onChange={e => setApellidoPaterno(e.target.value)} placeholder="Ap. Paterno" />
+            <Input size="sm" uppercase value={apellidoPaterno} onChange={e => setApellidoPaterno(e.target.value)} placeholder="Ap. Paterno" />
           </div>
           <div>
             <label className={fieldLabel}>Ap. Materno</label>
-            <Input size="sm" value={apellidoMaterno} onChange={e => setApellidoMaterno(e.target.value)} placeholder="Ap. Materno" />
+            <Input size="sm" uppercase value={apellidoMaterno} onChange={e => setApellidoMaterno(e.target.value)} placeholder="Ap. Materno" />
           </div>
           <div>
             <label className={fieldLabel}>Nro. Documento</label>
-            <Input size="sm" value={nroDocumento} onChange={e => setNroDocumento(e.target.value)} placeholder="CI / Pasaporte" />
+            <Input size="sm" uppercase value={nroDocumento} onChange={e => setNroDocumento(e.target.value)} placeholder="CI / Pasaporte" />
           </div>
           <div>
             <label className={fieldLabel}>Nacionalidad</label>
@@ -521,19 +542,23 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
       <div className="flex items-center justify-end gap-2 pt-1">
         <button
           type="button"
-          onClick={abrirPDF}
-          disabled={cargando}
+          onClick={() => void abrirPDF()}
+          disabled={cargando || descargandoPdf}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold
             bg-danger/10 hover:bg-danger/20 text-danger border border-danger/20
             transition-all disabled:opacity-50 disabled:pointer-events-none"
           title="Generar reporte PDF con los filtros actuales"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="6 9 6 2 18 2 18 9" />
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-            <rect width="12" height="8" x="6" y="14" />
-          </svg>
-          Reporte PDF
+          {descargandoPdf ? (
+            <Icono className="w-4 h-4 shrink-0 animate-spin">refresh</Icono>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9" />
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+              <rect width="12" height="8" x="6" y="14" />
+            </svg>
+          )}
+          {descargandoPdf ? 'Generando PDF...' : 'Reporte PDF'}
         </button>
         <Button variant="primary" size="md" onClick={buscar} disabled={cargando}>
           {cargando
