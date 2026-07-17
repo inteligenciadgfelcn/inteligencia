@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSession } from '@/hooks/useSession'
 import { useAuth } from '@/context/AuthProvider'
 
-// PRUEBA TEMPORAL (2026-07-14): 60s en vez de 15 min — revertir después de probar.
-// Tiempo de inactividad antes de cerrar la sesión (15 minutos en producción)
-const INACTIVIDAD_MS = 60 * 1000
-// Aviso anticipado antes del cierre (15 segundos en prueba; 60s en producción)
-const AVISO_ANTICIPADO_MS = 15_000
+// PRUEBA TEMPORAL (2026-07-15): 2 min en vez de 15 min — revertir después de probar.
+// Tiempo de inactividad antes de cerrar la sesión
+const INACTIVIDAD_MS = 2 * 60 * 1000
+// Aviso anticipado antes del cierre (20 segundos)
+const AVISO_ANTICIPADO_MS = 20_000
 // Evitar recrear timers en cada evento del mouse (throttle de 5 s)
 const THROTTLE_MS = 5_000
 
