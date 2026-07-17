@@ -6,9 +6,11 @@ import IconTrash from '@/components/Icon/IconTrash'
 import IconEye from '@/components/Icon/IconEye'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { InputDecimal } from '@/components/ui/InputDecimal'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Switch } from '@/components/ui/Switch'
+import { formatDecimal } from '@/utils/formatDecimal'
 import {
   DrogasService,
   LogotiposService,
@@ -650,7 +652,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [esLiquido, setEsLiquido] = useState(false)
   const [cantidadLts, setCantidadLts] = useState('0')
   const [cantidadMl, setCantidadMl] = useState('0')
-  const [costo, setCosto] = useState('0')
+  const [costo, setCosto] = useState<number | null>(0)
   const [idFormaTransporte, setIdFormaTransporte] = useState('')
   const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
   const [idPaisDestino, setIdPaisDestino] = useState('')
@@ -768,7 +770,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setEsLiquido(false)
     setCantidadLts('0')
     setCantidadMl('0')
-    setCosto('0')
+    setCosto(0)
     setIdFormaTransporte('')
     setIdPaisProcedencia(idBoliviaDefault)
     setIdPaisDestino(idBoliviaDefault)
@@ -799,7 +801,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
       return
     }
 
-    if (parseNumber(costo) <= 0 || !pruebaCampo || !pesaje) {
+    if ((costo ?? 0) <= 0 || !pruebaCampo || !pesaje) {
       return
     }
 
@@ -814,7 +816,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
         idFormaTransporte: Number(idFormaTransporte),
         idPaisProcedencia: Number(idPaisProcedencia),
         idPaisDestino: Number(idPaisDestino),
-        costo: costo ? parseNumber(costo) : undefined,
+        costo: costo ?? undefined,
         observaciones: observaciones || undefined,
         pruebaCampo: pruebaCampo ?? undefined,
         pesaje: pesaje ?? undefined,
@@ -924,20 +926,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
             <label className="mb-1 block text-sm font-medium">
               Costo (Bs.) <span className="text-danger">*</span>
             </label>
-            <Input
+            <InputDecimal
               id="costo"
-              type="text"
               placeholder="0"
-              className={`w-full ${parseNumber(costo) <= 0 && submitted ? 'border-danger' : ''}`}
+              className={`w-full ${(costo ?? 0) <= 0 && submitted ? 'border-danger' : ''}`}
               value={costo}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
-                  setCosto(val)
-                }
-              }}
+              onValueChange={setCosto}
             />
-            {parseNumber(costo) <= 0 && submitted && (
+            {(costo ?? 0) <= 0 && submitted && (
               <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
             )}
           </div>
@@ -1214,8 +1210,8 @@ export function SeccionDrogasFotografiaLogotiposForm({
                   className: 'text-right [&>div]:justify-end',
                   render: (r) =>
                     r.cantidadGramos != null
-                      ? Number(r.cantidadGramos).toFixed(3)
-                      : '0.000',
+                      ? formatDecimal(Number(r.cantidadGramos), 3)
+                      : formatDecimal(0, 3),
                 },
                 {
                   accessor: 'unidadMedida',
@@ -1230,7 +1226,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                   title: 'Precio en Bolivianos',
                   className: 'text-right [&>div]:justify-end',
                   render: (r) =>
-                    r.costo != null ? `${Number(r.costo).toLocaleString('es-BO')}` : '—',
+                    r.costo != null ? formatDecimal(Number(r.costo), 2) : '—',
                 },
                 {
                   accessor: 'cantidadUnidades',

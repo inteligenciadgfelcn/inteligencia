@@ -7,6 +7,7 @@ import IconTrash from '@/components/Icon/IconTrash'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { InputDecimal } from '@/components/ui/InputDecimal'
 import { Select } from '@/components/ui/Select'
 import {
   BienCaracteristicaResponse,
@@ -19,6 +20,7 @@ import { LookupBasico, SiiiLookupsService } from '@/services/parametricas'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { formatDecimal } from '@/utils/formatDecimal'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 type FotosBienCache = { foto: string | null }
@@ -457,7 +459,7 @@ export function SeccionBienesForm({
   const [idCatalogoClase, setIdCatalogoClase] = useState('')
   const [idCatalogoTipo, setIdCatalogoTipo] = useState('')
   const [cantidadBien, setCantidadBien] = useState('1')
-  const [costoAproximado, setCostoAproximado] = useState('0')
+  const [costoAproximado, setCostoAproximado] = useState<number | null>(0)
   const [costoCuantificado, setCostoCuantificado] = useState('0')
   const [enInvestigacion, setEnInvestigacion] = useState('')
   const [dropzoneToken, setDropzoneToken] = useState(0)
@@ -558,7 +560,7 @@ export function SeccionBienesForm({
     setIdCatalogoClase('')
     setIdCatalogoTipo('')
     setCantidadBien('1')
-    setCostoAproximado('0')
+    setCostoAproximado(0)
     setCostoCuantificado('0')
     setEnInvestigacion('')
     setFoto(null)
@@ -577,7 +579,7 @@ export function SeccionBienesForm({
       return
     }
 
-    if (parseFloat(costoAproximado || '0') <= 0) {
+    if ((costoAproximado ?? 0) <= 0) {
       return
     }
 
@@ -586,7 +588,7 @@ export function SeccionBienesForm({
       const res = await BienesService.crear(idoperativo, {
         idCatalogoTipo: Number(idCatalogoTipo),
         cantidadBien: Number(cantidadBien),
-        costoAproximado: Number(costoAproximado),
+        costoAproximado: costoAproximado ?? 0,
         costoCuantificado: Number(costoCuantificado),
         enInvestigacion: enInvestigacion === 'true',
         foto: foto ?? undefined,
@@ -727,16 +729,13 @@ export function SeccionBienesForm({
             <label className="mb-1 block text-sm font-medium">
               Costo Aproximado (Bs.) <span className="text-danger">*</span>
             </label>
-            <Input
-              type="number"
+            <InputDecimal
               placeholder="0"
-              min="0"
-              step="0.01"
-              className={`w-full ${parseFloat(costoAproximado || '0') <= 0 && submitted ? 'border-danger' : ''}`}
+              className={`w-full ${(costoAproximado ?? 0) <= 0 && submitted ? 'border-danger' : ''}`}
               value={costoAproximado}
-              onChange={(e) => setCostoAproximado(e.target.value)}
+              onValueChange={setCostoAproximado}
             />
-            {parseFloat(costoAproximado || '0') <= 0 && submitted && (
+            {(costoAproximado ?? 0) <= 0 && submitted && (
               <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
             )}
           </div>
@@ -809,7 +808,7 @@ export function SeccionBienesForm({
                   className: 'text-right [&>div]:justify-end',
                   render: (r: BienResponse) =>
                     r.costoAproximado != null
-                      ? Number(r.costoAproximado).toFixed(2)
+                      ? formatDecimal(Number(r.costoAproximado), 2)
                       : '—',
                 },
                 {
