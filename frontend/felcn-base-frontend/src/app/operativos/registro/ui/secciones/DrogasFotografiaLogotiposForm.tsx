@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
+import IconEye from '@/components/Icon/IconEye'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -238,6 +239,7 @@ function LogotiposPanel({
     []
   )
   const [cargando, setCargando] = useState(false)
+  const [observacionDetalle, setObservacionDetalle] = useState<string | null>(null)
 
   const cargar = async () => {
     setCargando(true)
@@ -442,11 +444,6 @@ function LogotiposPanel({
               render: (row) => String(row.blanco ?? ''),
             },
             {
-              accessor: 'observacion',
-              title: 'Observación',
-              render: (row) => String(row.observacion ?? ''),
-            },
-            {
               accessor: 'urlFotografia',
               title: 'Foto',
               render: (row) => {
@@ -465,20 +462,59 @@ function LogotiposPanel({
               accessor: 'actions',
               title: '',
               render: (row) => (
-                <button
-                  type="button"
-                  className="text-danger hover:text-danger/80"
-                  title="Eliminar"
-                  disabled={cargando}
-                  onClick={() => void eliminar(row.id)}
-                >
-                  <IconTrash className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="text-primary hover:text-primary/80"
+                    title="Ver observación"
+                    onClick={() => setObservacionDetalle(row.observacion ?? '')}
+                  >
+                    <IconEye className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    className="text-danger hover:text-danger/80"
+                    title="Eliminar"
+                    disabled={cargando}
+                    onClick={() => void eliminar(row.id)}
+                  >
+                    <IconTrash className="h-4 w-4" />
+                  </button>
+                </div>
               ),
             },
           ]}
         />
       </div>
+
+      {/* ── Modal de detalle de observación ── */}
+      {observacionDetalle !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setObservacionDetalle(null)}
+        >
+          <div
+            className="relative w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl dark:bg-[#0e1726]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-primary">
+              Observación
+            </p>
+            <p className="whitespace-pre-wrap text-sm">
+              {observacionDetalle || 'Sin observación registrada'}
+            </p>
+            <Button
+              type="button"
+              variant="dark"
+              size="sm"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setObservacionDetalle(null)}
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
