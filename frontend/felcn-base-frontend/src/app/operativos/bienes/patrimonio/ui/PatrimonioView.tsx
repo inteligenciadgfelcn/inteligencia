@@ -283,14 +283,6 @@ export function PatrimonioView({ idOperativo }: PatrimonioViewProps) {
                     : '—',
               },
               {
-                accessor: 'costoCuantificado',
-                title: 'Costo Cuant. ($us)',
-                render: (r: BienResponse) =>
-                  r.costoCuantificado != null
-                    ? r.costoCuantificado.toLocaleString('es-BO', { minimumFractionDigits: 2 })
-                    : '—',
-              },
-              {
                 accessor: 'acciones',
                 title: 'Seleccionar',
                 render: (r: BienResponse) => (
@@ -340,20 +332,6 @@ export function PatrimonioView({ idOperativo }: PatrimonioViewProps) {
                   step="0.01"
                   value={costoAproximado}
                   onChange={(e) => setCostoAproximado(e.target.value)}
-                  className="w-full"
-                  disabled={cargandoCostos}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Costo Cuantificado ($us)
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={costoCuantificado}
-                  onChange={(e) => setCostoCuantificado(e.target.value)}
                   className="w-full"
                   disabled={cargandoCostos}
                 />
