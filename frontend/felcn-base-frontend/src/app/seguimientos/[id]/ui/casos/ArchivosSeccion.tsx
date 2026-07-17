@@ -10,6 +10,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
 import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface ArchivosSeccionProps {
@@ -42,7 +43,8 @@ export function ArchivosSeccion({ idCaso, datos, onGuardar }: ArchivosSeccionPro
     void cargarContenidoCaso()
   }, [cargarContenidoCaso])
 
-  const onSubmit = async (payload: any) => {
+  const onSubmit = async (datos: any) => {
+    const payload = trimPayload(datos)
     if (!file) {
       Alerta({ mensaje: 'Debe seleccionar un archivo', variant: 'warning' })
       return

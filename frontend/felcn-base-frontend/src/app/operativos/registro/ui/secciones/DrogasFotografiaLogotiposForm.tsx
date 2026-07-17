@@ -288,11 +288,11 @@ function LogotiposPanel({
         idDroga,
         {
           id: 0,
-          imagen,
-          descripcionLogo,
-          organizacion,
-          blanco: blanco || undefined,
-          observacion: observacion || undefined,
+          imagen: imagen.trim(),
+          descripcionLogo: descripcionLogo.trim(),
+          organizacion: organizacion.trim(),
+          blanco: blanco.trim() || undefined,
+          observacion: observacion.trim() || undefined,
           fotografia: fotografia ?? undefined,
         }
       )
@@ -817,7 +817,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
         idPaisProcedencia: Number(idPaisProcedencia),
         idPaisDestino: Number(idPaisDestino),
         costo: costo ?? undefined,
-        observaciones: observaciones || undefined,
+        observaciones: observaciones.trim() || undefined,
         pruebaCampo: pruebaCampo ?? undefined,
         pesaje: pesaje ?? undefined,
       })

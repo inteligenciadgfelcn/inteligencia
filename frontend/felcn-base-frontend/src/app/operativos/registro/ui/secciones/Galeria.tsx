@@ -217,7 +217,7 @@ export function Galeria({ titulo, idoperativo }: Props) {
     setCargando(true)
     try {
       const res = await GaleriaService.crear(idoperativo, {
-        descripcion,
+        descripcion: descripcion.trim(),
         idTipoTamano: Number(idTipoTamano),
         foto: archivo || undefined,
       })

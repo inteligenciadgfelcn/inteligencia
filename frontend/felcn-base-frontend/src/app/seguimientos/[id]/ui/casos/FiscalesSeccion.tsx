@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SeguimientoServiceInstance, FiscalPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface FiscalesSeccionProps {
@@ -25,7 +26,8 @@ export function FiscalesSeccion({ idCaso, datos, onGuardar }: FiscalesSeccionPro
     }
   })
 
-  const onSubmit = async (payload: FiscalPayload) => {
+  const onSubmit = async (datos: FiscalPayload) => {
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.agregarFiscal(idCaso, payload)
       Alerta({ mensaje: 'Fiscal agregado correctamente', variant: 'success' })
