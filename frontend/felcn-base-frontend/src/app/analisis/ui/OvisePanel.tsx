@@ -166,7 +166,7 @@ export function OvisePanel({ blanco }: Props) {
         </div>
         <div className="lg:col-span-3">
           <label className="mb-1 block text-sm font-medium">Reporte <span className="text-danger">*</span></label>
-          <Textarea rows={2} value={reporte} onChange={(e) => setReporte(e.target.value)} uppercase error={errorReporte} className="w-full" />
+          <Textarea rows={2} value={reporte} onChange={(e) => setReporte(e.target.value)} error={errorReporte} className="w-full" />
           {errorReporte && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
         </div>
       </div>

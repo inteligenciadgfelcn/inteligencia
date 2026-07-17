@@ -66,6 +66,7 @@ export function FiltrosMisCasos({ onSearch }: FiltrosMisCasosProps) {
             {labelActual}
           </label>
           <Input
+            uppercase
             value={valorFiltro}
             onChange={(e) => setValorFiltro(e.target.value)}
             placeholder="Ingrese el valor..."
