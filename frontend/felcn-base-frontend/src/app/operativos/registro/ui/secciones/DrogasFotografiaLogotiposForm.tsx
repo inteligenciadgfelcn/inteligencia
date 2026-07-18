@@ -656,7 +656,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [idFormaTransporte, setIdFormaTransporte] = useState('')
   const [idPaisProcedencia, setIdPaisProcedencia] = useState('')
   const [idPaisDestino, setIdPaisDestino] = useState('')
-  const [observaciones, setObservaciones] = useState('')
   const [dropzoneToken, setDropzoneToken] = useState(0)
   const [pruebaCampo, setPruebaCampo] = useState<File | null>(null)
   const [pesaje, setPesaje] = useState<File | null>(null)
@@ -774,7 +773,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setIdFormaTransporte('')
     setIdPaisProcedencia(idBoliviaDefault)
     setIdPaisDestino(idBoliviaDefault)
-    setObservaciones('')
     setPruebaCampo(null)
     setPesaje(null)
     setDropzoneToken((t) => t + 1)
@@ -797,10 +795,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
       parseNumber(cantidadG) +
       parseNumber(cantidadMg) / 1000
 
-    if (totalGramos < 0.001) {
-      return
-    }
-
     if ((costo ?? 0) <= 0 || !pruebaCampo || !pesaje) {
       return
     }
@@ -811,13 +805,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
         id: 0,
         idTipoDroga: Number(idTipoDroga),
         idEstadoDroga: Number(idEstadoDroga),
-        cantidadUnidades: parseNumber(cantidadUnidades) || 1,
+        cantidadUnidades: parseNumber(cantidadUnidades),
         cantidadGramos: totalGramos,
         idFormaTransporte: Number(idFormaTransporte),
         idPaisProcedencia: Number(idPaisProcedencia),
         idPaisDestino: Number(idPaisDestino),
         costo: costo ?? undefined,
-        observaciones: observaciones.trim() || undefined,
         pruebaCampo: pruebaCampo ?? undefined,
         pesaje: pesaje ?? undefined,
       })
@@ -963,7 +956,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadTn"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadTn}
                     onChange={(e) => {
                       const val = e.target.value
@@ -980,7 +973,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadKg"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadKg}
                     onChange={(e) => {
                       const val = e.target.value
@@ -1000,7 +993,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadG"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadG}
                     onChange={(e) => {
                       const val = e.target.value
@@ -1020,7 +1013,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadMg"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadTn) * 1000000 + parseNumber(cantidadKg) * 1000 + parseNumber(cantidadG) + parseNumber(cantidadMg) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadMg}
                     onChange={(e) => {
                       const val = e.target.value
@@ -1046,7 +1039,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadLts"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadLts) + parseNumber(cantidadMl) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadLts}
                     onChange={(e) => {
                       const val = e.target.value
@@ -1063,7 +1056,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                     id="cantidadMl"
                     type="text"
                     placeholder="0"
-                    className={`w-full ${(parseNumber(cantidadLts) + parseNumber(cantidadMl) / 1000) < 0.001 && submitted ? 'border-danger' : ''}`}
+                    className="w-full"
                     value={cantidadMl}
                     onChange={(e) => {
                       const val = e.target.value
@@ -1131,19 +1124,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
             {!idPaisDestino && submitted && (
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
-          </div>
-
-          <div className="col-span-1 md:col-span-2 lg:col-span-4">
-            <label className="mb-1 block text-sm font-medium">
-              Observaciones
-            </label>
-            <Textarea
-              value={observaciones}
-              onChange={(e) => setObservaciones(e.target.value)}
-              rows={3}
-              uppercase
-              className="w-full"
-            />
           </div>
 
           {/* Fotos — DropzoneFoto */}
