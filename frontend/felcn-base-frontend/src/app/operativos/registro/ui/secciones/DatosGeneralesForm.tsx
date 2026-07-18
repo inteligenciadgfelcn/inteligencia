@@ -61,6 +61,7 @@ interface DatosLectura {
   celularAsignado: string
   fiscal: string
   celularFiscal: string
+  fechaOperativo: string
 }
 
 interface optionType {
@@ -75,6 +76,15 @@ const toDatetimeLocal = (value: unknown): string => {
   if (Number.isNaN(date.getTime())) return ''
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/** Formatea una fecha para el campo de solo lectura "Fecha y Hora del Operativo" */
+const formatFechaOperativoLectura = (value: unknown): string => {
+  if (!value) return ''
+  const date = value instanceof Date ? value : new Date(String(value))
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 const DEFAULT_VALUES: OperativoPayload = {
@@ -196,6 +206,7 @@ export function DatosGeneralesForm({
     celularAsignado: '',
     fiscal: '',
     celularFiscal: '',
+    fechaOperativo: '',
   })
   const {
     departamentos,
@@ -596,7 +607,7 @@ export function DatosGeneralesForm({
           idTipoRelevancia: toNumberOrZero(payload.idTipoRelevancia),
           idTipoDenuncia: toNumberOrZero(payload.idTipoDenuncia),
           idTipoPenal: toNumberOrZero(payload.idTipoPenal),
-          fechaOperativo: toIsoDate(payload.fechaOperativo),
+          fechaOperativo: toIsoDate(datosCaso?.caso?.fechaOperativo),
           idDepartamento: toNumberOrZero(payload.idDepartamento),
           idProvincia: toNumberOrZero(payload.idProvincia),
           idLocalidad: toNumberOrZero(payload.idLocalidad),
@@ -651,6 +662,7 @@ export function DatosGeneralesForm({
 
       await onGuardar({
         ...payload,
+        fechaOperativo: toIsoDate(datosCaso?.caso?.fechaOperativo),
         coordX: toNumberOrZero(payload.coordX),
         coordY: toNumberOrZero(payload.coordY),
         gradosX: toNumberOrZero(latD),
@@ -688,6 +700,7 @@ export function DatosGeneralesForm({
       celularAsignado: caso?.telefonoAsignado ?? '',
       fiscal: caso?.fiscalAsignadoCaso ?? '',
       celularFiscal: caso?.telefonoFiscal ?? '',
+      fechaOperativo: formatFechaOperativoLectura(caso?.fechaOperativo),
     })
 
     void (async () => {
@@ -912,23 +925,15 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label
-              htmlFor="fechaOperativo"
-              className="mb-1 block text-sm font-medium"
-            >
-              Fecha y Hora del Operativo <span className="text-danger">*</span>
+            <label className="mb-1 block text-sm font-medium">
+              Fecha y Hora del Operativo
             </label>
             <Input
-              id="fechaOperativo"
-              type="datetime-local"
-              className={`w-full ${errors.fechaOperativo ? 'border-danger' : ''}`}
-              {...register('fechaOperativo', reglaObligatorio)}
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.fechaOperativo}
+              disabled
+              readOnly
             />
-            {errors.fechaOperativo && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.fechaOperativo.message}
-              </div>
-            )}
           </div>
 
           {/* Fila 3: Asignado y Celular + Categoria e Item */}
