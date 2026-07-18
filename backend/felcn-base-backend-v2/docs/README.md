@@ -210,7 +210,6 @@ T=Usuario llega a SEC7 → Galería carga on-demand
 
 **Equipo de Desarrollo FELCN Backend**
 - Documentación generada: 2026-02-28
-- Análisis realizado por: Claude Code
 - Archivos fuente analizados:
   - `docs/form/FRM-OP.aspx` + `.aspx.cs`
   - `docs/form/FRM-OP-ING.aspx` + `.aspx.cs`

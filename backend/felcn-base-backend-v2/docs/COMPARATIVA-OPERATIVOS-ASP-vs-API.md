@@ -663,7 +663,6 @@ Este documento es parte de un conjunto de análisis y propuestas:
 **Fecha de creación:** 2026-02-28
 **Última actualización:** 2026-02-28
 **Estado:** ✅ **97% COMPLETO** (84/87 endpoints)
-**Analizado por:** Claude Code
 **Archivos fuente:**
 - docs/form/FRM-OP-ING.aspx + FRM-OP-ING.aspx.cs
 - docs/form/FRM-OP.aspx + FRM-OP.aspx.cs
