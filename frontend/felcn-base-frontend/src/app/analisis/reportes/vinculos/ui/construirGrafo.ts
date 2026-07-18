@@ -1,17 +1,20 @@
 import type {
   BienDetallePreview,
   BlancoDetallePreview,
+  CasoExternoVinculado,
   DetalleCasoPreview,
   OrganizacionDetallePreview,
+  VinculosCruzadosCaso,
 } from '@/services/analisis'
 
-export type GrupoNodoVinculo = 'caso' | 'blanco' | 'empresa' | 'bien'
+export type GrupoNodoVinculo = 'caso' | 'blanco' | 'empresa' | 'bien' | 'caso-externo'
 
 export type DetalleNodoVinculo =
   | { tipo: 'caso'; data: DetalleCasoPreview['caso'] }
   | { tipo: 'blanco'; data: BlancoDetallePreview }
   | { tipo: 'empresa'; data: OrganizacionDetallePreview }
   | { tipo: 'bien'; data: BienDetallePreview }
+  | { tipo: 'caso-externo'; data: CasoExternoVinculado }
 
 export interface NodoVinculo {
   id: string
@@ -27,7 +30,10 @@ export interface AristaVinculo {
   to: string
   label?: string
   dashes?: boolean
+  /** Vínculo heurístico (coincidencia de nombre con representante legal): verificar antes de usarlo como evidencia. */
   inferido?: boolean
+  /** Vínculo de deconfliction: mismo documento/NIT encontrado en OTRO caso, dato exacto (no heurística). */
+  cruzado?: boolean
 }
 
 export interface GrafoVinculosData {
@@ -39,6 +45,7 @@ const idCasoNodo = (idCaso: string) => `caso-${idCaso}`
 const idBlancoNodo = (idBlanco: string) => `blanco-${idBlanco}`
 const idEmpresaNodo = (idEmpresa: string) => `empresa-${idEmpresa}`
 const idBienNodo = (idItemBienSecundario: string) => `bien-${idItemBienSecundario}`
+const idCasoExternoNodo = (idCaso: string) => `caso-externo-${idCaso}`
 
 const nombreCompletoBlanco = (b: BlancoDetallePreview) =>
   [b.deNombres, b.dePaterno, b.deMaterno].filter(Boolean).join(' ').trim()
@@ -160,6 +167,67 @@ export function construirGrafo(detalle: DetalleCasoPreview): GrafoVinculosData {
       to: nodoBien,
       label: 'Bien Investigado',
     })
+  }
+
+  return { nodes, edges }
+}
+
+/**
+ * Fusiona el cruce de deconfliction (Fase 2) sobre un grafo ya construido:
+ * agrega un nodo por cada caso externo donde aparece el mismo documento/NIT
+ * y una arista desde el blanco/empresa de origen. Los nodos de caso externo
+ * se deduplican porque el mismo caso puede repetirse en varias coincidencias.
+ */
+export function fusionarVinculosCruzados(
+  grafo: GrafoVinculosData,
+  vinculos: VinculosCruzadosCaso,
+): GrafoVinculosData {
+  const nodes = [...grafo.nodes]
+  const edges = [...grafo.edges]
+  const nodosCasoExterno = new Set(
+    nodes.filter((n) => n.group === 'caso-externo').map((n) => n.id),
+  )
+
+  const agregarNodoCasoExterno = (caso: CasoExternoVinculado) => {
+    const id = idCasoExternoNodo(caso.idCaso)
+    if (nodosCasoExterno.has(id)) return id
+    nodosCasoExterno.add(id)
+    nodes.push({
+      id,
+      label: caso.nombreCaso,
+      group: 'caso-externo',
+      title: `Caso externo: ${caso.nombreCaso}\nNro. CER: ${caso.nroCasoCer ?? 'N/A'}\nAnalista: ${caso.analista}`,
+      entidad: { tipo: 'caso-externo', data: caso },
+    })
+    return id
+  }
+
+  for (const b of vinculos.blancos) {
+    const nodoBlanco = idBlancoNodo(b.idBlanco)
+    for (const caso of b.casos) {
+      const nodoCasoExterno = agregarNodoCasoExterno(caso)
+      edges.push({
+        id: `${nodoBlanco}<=>${nodoCasoExterno}`,
+        from: nodoBlanco,
+        to: nodoCasoExterno,
+        label: 'Mismo Documento',
+        cruzado: true,
+      })
+    }
+  }
+
+  for (const e of vinculos.empresas) {
+    const nodoEmpresa = idEmpresaNodo(e.idEmpresa)
+    for (const caso of e.casos) {
+      const nodoCasoExterno = agregarNodoCasoExterno(caso)
+      edges.push({
+        id: `${nodoEmpresa}<=>${nodoCasoExterno}`,
+        from: nodoEmpresa,
+        to: nodoCasoExterno,
+        label: 'Mismo NIT',
+        cruzado: true,
+      })
+    }
   }
 
   return { nodes, edges }

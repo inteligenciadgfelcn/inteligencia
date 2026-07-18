@@ -45,6 +45,37 @@ export class BlancoRepository {
     await this.dataSource.getRepository(S2iBlanco).delete(idBlanco)
   }
 
+  /**
+   * Busca blancos con el mismo número de documento en OTROS casos.
+   * Base del cruce de deconfliction: la misma persona investigada en más
+   * de una carpeta, aunque haya sido registrada por otro analista.
+   */
+  async buscarOtrosCasosPorDocumento(
+    numeroDocumento: string,
+    excludeIdCaso: string
+  ): Promise<S2iBlanco[]> {
+    return (
+      this.dataSource
+        .getRepository(S2iBlanco)
+        .createQueryBuilder('b')
+        // Se excluye explícitamente "foto" (bytea): no se necesita para el
+        // cruce y evita traer binarios pesados por cada coincidencia.
+        .select([
+          'b.idBlanco',
+          'b.idCaso',
+          'b.deNombres',
+          'b.dePaterno',
+          'b.deMaterno',
+          'b.numeroDocumento',
+        ])
+        .where('UPPER(b.numeroDocumento) = UPPER(:numeroDocumento)', {
+          numeroDocumento,
+        })
+        .andWhere('b.idCaso != :excludeIdCaso', { excludeIdCaso })
+        .getMany()
+    )
+  }
+
   /** Actualiza sólo la columna foto (bytea) del blanco */
   async actualizarFoto(idBlanco: string, foto: Buffer): Promise<void> {
     await this.dataSource.getRepository(S2iBlanco).update(idBlanco, { foto })

@@ -39,6 +39,23 @@ export class OrganizacionRepository {
     await this.dataSource.getRepository(S2iEmpresa).delete(idEmpresa)
   }
 
+  /**
+   * Busca empresas con el mismo NIT en OTROS casos.
+   * Análogo a buscarOtrosCasosPorDocumento en BlancoRepository, pero para
+   * organizaciones (deconfliction por identificador tributario).
+   */
+  async buscarOtrosCasosPorNit(
+    nit: string,
+    excludeIdCaso: string
+  ): Promise<S2iEmpresa[]> {
+    return this.dataSource
+      .getRepository(S2iEmpresa)
+      .createQueryBuilder('e')
+      .where('UPPER(e.nit) = UPPER(:nit)', { nit })
+      .andWhere('e.idCaso != :excludeIdCaso', { excludeIdCaso })
+      .getMany()
+  }
+
   // ==================== SIG ====================
 
   async crearLugar(lugar: S2iLugarEmpresa): Promise<S2iLugarEmpresa> {

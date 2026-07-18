@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { DataSource, In } from 'typeorm'
 import { DB_S2I } from '../../../shared/constants'
 import { S2iAsignacion } from '../entity/asignacion.entity'
 
@@ -9,7 +9,7 @@ export class CasoRepository {
   constructor(
     @InjectDataSource(DB_S2I)
     private dataSource: DataSource
-  ) { }
+  ) {}
 
   private get repo() {
     return this.dataSource.getRepository(S2iAsignacion)
@@ -22,6 +22,15 @@ export class CasoRepository {
   async buscarPorId(idCaso: string): Promise<S2iAsignacion | null> {
     return this.repo.findOne({
       where: { idCaso },
+      relations: ['pais', 'estadoCaso', 'etapaInvestigacion'],
+    })
+  }
+
+  /** Trae varios casos por id en una sola consulta (deconfliction: casos cruzados). */
+  async buscarPorIds(idsCaso: string[]): Promise<S2iAsignacion[]> {
+    if (idsCaso.length === 0) return []
+    return this.repo.find({
+      where: { idCaso: In(idsCaso) },
       relations: ['pais', 'estadoCaso', 'etapaInvestigacion'],
     })
   }

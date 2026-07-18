@@ -1,17 +1,22 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import IconArrowBackward from '@/components/Icon/IconArrowBackward'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
 import { ReportesS2iService } from '@/services/analisis'
-import type { CasoReporteS2i, DetalleCasoPreview } from '@/services/analisis'
+import type {
+  CasoReporteS2i,
+  DetalleCasoPreview,
+  VinculosCruzadosCaso,
+} from '@/services/analisis'
 import { BuscadorCasoVinculos } from './ui/BuscadorCasoVinculos'
 import { PanelDetalleNodo } from './ui/PanelDetalleNodo'
-import { construirGrafo, type NodoVinculo } from './ui/construirGrafo'
+import { construirGrafo, fusionarVinculosCruzados, type NodoVinculo } from './ui/construirGrafo'
 
 const GrafoVinculos = dynamic(() => import('./ui/GrafoVinculos'), {
   ssr: false,
@@ -20,11 +25,26 @@ const GrafoVinculos = dynamic(() => import('./ui/GrafoVinculos'), {
   ),
 })
 
+const casoMinimo = (idCaso: string): CasoReporteS2i => ({
+  idCaso,
+  nroCasoCer: null,
+  pais: null,
+  lugar: '',
+  nombreCaso: '',
+  estadoCaso: null,
+  etapaInvestigacion: null,
+  fechaInicio: '',
+  antecedentes: null,
+})
+
 export default function VinculosPage() {
   const { Alerta } = useAlerts()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [casoSeleccionado, setCasoSeleccionado] = useState<CasoReporteS2i | null>(null)
   const [detalle, setDetalle] = useState<DetalleCasoPreview | null>(null)
+  const [vinculosCruzados, setVinculosCruzados] = useState<VinculosCruzadosCaso | null>(null)
   const [cargando, setCargando] = useState(false)
   const [nodoSeleccionado, setNodoSeleccionado] = useState<NodoVinculo | null>(null)
 
@@ -32,11 +52,16 @@ export default function VinculosPage() {
     async (caso: CasoReporteS2i) => {
       setCasoSeleccionado(caso)
       setDetalle(null)
+      setVinculosCruzados(null)
       setNodoSeleccionado(null)
       setCargando(true)
       try {
-        const res = await ReportesS2iService.verDetalle(caso.idCaso)
-        if (res?.finalizado) setDetalle(res.datos)
+        const [resDetalle, resCruzados] = await Promise.all([
+          ReportesS2iService.verDetalle(caso.idCaso),
+          ReportesS2iService.verVinculosCruzados(caso.idCaso),
+        ])
+        if (resDetalle?.finalizado) setDetalle(resDetalle.datos)
+        if (resCruzados?.finalizado) setVinculosCruzados(resCruzados.datos)
       } catch (e) {
         Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
       } finally {
@@ -46,7 +71,23 @@ export default function VinculosPage() {
     [Alerta],
   )
 
-  const grafo = useMemo(() => (detalle ? construirGrafo(detalle) : null), [detalle])
+  // Permite llegar directo a un caso desde el nodo "caso externo" de otro diagrama.
+  // El query param se limpia apenas se consume para no re-disparar la carga ni
+  // pisar una búsqueda manual posterior del usuario.
+  useEffect(() => {
+    const idCasoUrl = searchParams.get('caso')
+    if (idCasoUrl) {
+      void seleccionarCaso(casoMinimo(idCasoUrl))
+      router.replace('/analisis/reportes/vinculos')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
+  const grafo = useMemo(() => {
+    if (!detalle) return null
+    const base = construirGrafo(detalle)
+    return vinculosCruzados ? fusionarVinculosCruzados(base, vinculosCruzados) : base
+  }, [detalle, vinculosCruzados])
 
   const onSeleccionarNodo = useCallback((nodo: NodoVinculo | null) => {
     setNodoSeleccionado(nodo)
@@ -93,8 +134,9 @@ export default function VinculosPage() {
           <div className="lg:col-span-3">
             <GrafoVinculos datos={grafo} onSeleccionarNodo={onSeleccionarNodo} />
             <p className="mt-2 text-xs text-gray-400">
-              Las líneas punteadas indican un vínculo inferido por coincidencia de nombre con el
-              representante legal de una organización; verifíquelo antes de usarlo como evidencia.
+              Punteado ámbar: vínculo inferido por coincidencia de nombre con el representante
+              legal de una organización — verifíquelo antes de usarlo como evidencia. Morado
+              punteado: mismo documento/NIT encontrado en otro caso (dato exacto).
             </p>
           </div>
           <div className="lg:col-span-1">
