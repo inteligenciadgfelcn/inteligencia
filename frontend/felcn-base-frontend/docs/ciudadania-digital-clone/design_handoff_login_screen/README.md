@@ -1,6 +1,6 @@
 # Handoff: Pantalla de Inicio de Sesión — Identidad Digital
 
-> **Audiencia**: desarrolladores que implementarán esta pantalla en el proyecto real (Claude Code, IDE, equipo de frontend).
+> **Audiencia**: desarrolladores que implementarán esta pantalla en el proyecto real (equipo de frontend).
 > **Idioma**: el producto final es en español de Bolivia (`es-BO`), con soporte previsto para Aymara y Quechua.
 
 ---
