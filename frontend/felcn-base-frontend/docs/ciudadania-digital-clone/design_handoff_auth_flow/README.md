@@ -1,6 +1,6 @@
 # Handoff: Flujo de Autenticación — Identidad Digital
 
-> **Audiencia**: desarrolladores (Claude Code u otros) que implementarán este flujo en el codebase real.
+> **Audiencia**: desarrolladores que implementarán este flujo en el codebase real.
 > **Idioma del producto**: español de Bolivia (`es-BO`), con soporte previsto para Aymara y Quechua.
 > **Marca**: el prototipo usa el nombre genérico "Identidad Digital". Reemplaza el logo `BrandMark` y los strings de marca por los oficiales del proyecto.
 
@@ -60,7 +60,7 @@ Tres pantallas + un componente compartido, parte de la **app web** de Identidad 
 
 ---
 
-## 🧭 Guía rápida para Claude Code (o cualquier dev)
+## 🧭 Guía rápida para implementar
 
 **Si estás aquí para implementar la app web (UI):**
 1. Lee `01_ui_screens/README.md`.
