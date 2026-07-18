@@ -121,4 +121,10 @@ export class S2iLookupController extends BaseController {
   async listarTiposInvestigacionBien() {
     return this.successList(await this.service.listarTiposInvestigacionBien())
   }
+
+  @ApiOperation({ summary: 'Listar colores (para flujo_transporte)' })
+  @Get('colores')
+  async listarColores() {
+    return this.successList(await this.service.listarColores())
+  }
 }

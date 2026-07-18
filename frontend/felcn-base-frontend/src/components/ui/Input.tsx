@@ -6,6 +6,8 @@ export interface InputProps
   className?: string
   error?: boolean
   uppercase?: boolean
+  /** Al perder el foco, recorta espacios al inicio/fin y notifica el valor recortado vía onChange. */
+  trimOnBlur?: boolean
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
@@ -15,7 +17,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       className = '',
       error = false,
       uppercase = false,
+      trimOnBlur = false,
       onChange,
+      onBlur,
       ...props
     },
     ref
@@ -39,11 +43,23 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         }
       : onChange
 
+    const handleBlur = trimOnBlur
+      ? (e: React.FocusEvent<HTMLInputElement>) => {
+          const trimmed = e.target.value.trim()
+          if (trimmed !== e.target.value) {
+            e.target.value = trimmed
+            onChange?.(e as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+          onBlur?.(e)
+        }
+      : onBlur
+
     return (
       <input
         ref={ref}
         className={`${baseClasses} ${sizeClasses[size]} ${errorClasses} ${className}`}
         onChange={handleChange}
+        onBlur={handleBlur}
         {...props}
       />
     )

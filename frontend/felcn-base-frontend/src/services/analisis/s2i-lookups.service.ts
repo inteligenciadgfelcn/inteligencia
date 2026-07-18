@@ -1,6 +1,6 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
-import type { LookupSimple, RespuestaApi } from './types'
+import type { ColorS2i, LookupSimple, RespuestaApi } from './types'
 
 const BASE = `${Constantes.baseUrl}/s2i/lookups`
 
@@ -56,5 +56,9 @@ export const S2iLookupsService = {
 
   listarTiposActivo(): Promise<RespuestaApi<LookupSimple[]>> {
     return sesionPeticion({ url: `${BASE}/tipos-activo`, withCredentials: true })
+  },
+
+  listarColores(): Promise<RespuestaApi<ColorS2i[]>> {
+    return sesionPeticion({ url: `${BASE}/colores`, withCredentials: true })
   },
 }

@@ -13,6 +13,8 @@ export const DB_SIII = 'siii' // felcn_siii
 export const DB_SOSPECHOSO = 'sospechoso' // felcn_sospechoso
 export const DB_LGI = 'lgi' // felcn_lgi
 export const DB_S2I = 's2i' // f_s2i
+export const DB_PERSONAS = 'personas' // felcn_personas
+export const DB_VLS = 'vls' // felcn_vls
 
 @Module({
   imports: [
@@ -335,8 +337,7 @@ export const DB_S2I = 's2i' // f_s2i
         entities: [
           __dirname +
             '/../../../application/sunesis/siii/investigacion/lgi/**/*.entity{.ts,.js}',
-           __dirname + 
-           '/../../../application/lgi/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/lgi/**/*.entity{.ts,.js}',
         ],
       }),
     }),
@@ -388,8 +389,113 @@ export const DB_S2I = 's2i' // f_s2i
           },
         }),
         entities: [
+          __dirname + '/../../../application/sunesis/s2i/**/*.entity{.ts,.js}',
+        ],
+      }),
+    }),
+
+    // =============================================
+    // CONEXIÓN: PERSONAS
+    // Base de datos: felcn_personas
+    // Schema: public
+    // Tablas: personas (fuente de datos civiles por documento de identidad)
+    // =============================================
+    TypeOrmModule.forRootAsync({
+      name: DB_PERSONAS,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        host:
+          config.get<string>('DB_PERSONAS_HOST') ||
+          config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_PERSONAS_PORT') || config.get('DB_PORT')),
+        username:
+          config.get<string>('DB_PERSONAS_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
+        password:
+          config.get<string>('DB_PERSONAS_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_PERSONAS_DATABASE'),
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
+        synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
+        ssl:
+          config.get('DB_USE_SSL') === 'true'
+            ? {
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
+            : false,
+        subscribers:
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+        logger: new SQLLogger({
+          logger: LoggerService.getInstance(),
+          level: {
+            query: config.get('LOG_SQL') === 'true',
+            error: true,
+          },
+        }),
+        entities: [
           __dirname +
-            '/../../../application/sunesis/s2i/**/*.entity{.ts,.js}',
+            '/../../../application/sunesis/personas/**/*.entity{.ts,.js}',
+        ],
+      }),
+    }),
+
+    // =============================================
+    // CONEXIÓN: VLS
+    // Base de datos: felcn_vls
+    // Schema: public
+    // Tablas: vehiculo, marca, modelo, clase, color (registro vehicular)
+    // =============================================
+    TypeOrmModule.forRootAsync({
+      name: DB_VLS,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        host:
+          config.get<string>('DB_VLS_HOST') || config.get<string>('DB_HOST'),
+        port: Number(config.get('DB_VLS_PORT') || config.get('DB_PORT')),
+        username:
+          config.get<string>('DB_VLS_USERNAME') ||
+          config.get<string>('DB_USERNAME'),
+        password:
+          config.get<string>('DB_VLS_PASSWORD') ||
+          config.get<string>('DB_PASSWORD'),
+        database: config.get<string>('DB_VLS_DATABASE'),
+        keepConnectionAlive: config.get('NODE_ENV') !== 'production',
+        synchronize: false,
+        extra: {
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 5000,
+          options:
+            '-c idle_in_transaction_session_timeout=30000 -c lock_timeout=10000 -c statement_timeout=60000',
+        },
+        ssl:
+          config.get('DB_USE_SSL') === 'true'
+            ? {
+                rejectUnauthorized: config.get('DB_VERIFY_SSL') === 'true',
+              }
+            : false,
+        subscribers:
+          config.get('LOG_SQL') === 'true' ? [QueryExecutionTime] : [],
+        logger: new SQLLogger({
+          logger: LoggerService.getInstance(),
+          level: {
+            query: config.get('LOG_SQL') === 'true',
+            error: true,
+          },
+        }),
+        entities: [
+          __dirname + '/../../../application/sunesis/vls/**/*.entity{.ts,.js}',
         ],
       }),
     }),

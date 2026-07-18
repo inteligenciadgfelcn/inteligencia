@@ -48,6 +48,7 @@ interface Props<T> {
   columns: Column<T>[]
   loading?: boolean
   rowClassName?: (row: T) => string
+  rowStyle?: (row: T) => React.CSSProperties | undefined
 
   sortStatus?: DataTableSortStatus
   onSortStatusChange?: (v: DataTableSortStatus) => void
@@ -75,6 +76,7 @@ export function VristoDataTable<T>({
   loading,
   extraButtons,
   rowClassName,
+  rowStyle,
   sortStatus,
   onSortStatusChange,
   rowExpansion,
@@ -254,6 +256,7 @@ export function VristoDataTable<T>({
                           ${expanded ? 'bg-gray-50 dark:bg-gray-800/50' : ''}
                           ${rowClassName ? rowClassName(row) : ''}
                         `}
+                        style={rowStyle ? rowStyle(row) : undefined}
                       >
                         {rowExpansion && (
                           <td className="w-10">

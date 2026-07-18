@@ -11,9 +11,14 @@ export default function AnalisisPage() {
         <h2 className="text-xl font-bold text-dark dark:text-white-light">
           Casos Investigados
         </h2>
-        <Link href="/analisis/casos/nuevo">
-          <Button variant="success" size="sm">+ Nuevo</Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/analisis/transporte">
+            <Button variant="outline-primary" size="sm">Flujo de Transporte</Button>
+          </Link>
+          <Link href="/analisis/casos/nuevo">
+            <Button variant="success" size="sm">+ Nuevo</Button>
+          </Link>
+        </div>
       </div>
 
       <GestionAnalisisTabs />

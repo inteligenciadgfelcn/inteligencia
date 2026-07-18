@@ -1,0 +1,118 @@
+Prompt para generar TRANSPORTE
+
+
+Proceso
+Inicio
+1. Ingreso de información
+
+El usuario ingresa un código de transporte, que puede ser:
+
+número de placa
+código Charly Papa
+
+Este valor será utilizado para realizar las búsquedas posteriores.
+
+2. Buscar vehículo existente
+
+Realizar una búsqueda en la base de datos:
+
+Base de datos: felcn_vls
+Tabla: public.vehiculos
+Campo de búsqueda: placa
+
+Evaluar el resultado.
+
+2.1 Vehículo encontrado
+
+Si existe un vehículo con la placa ingresada, obtener la siguiente información:
+
+placa
+tipo_vehiculo
+marca (public.marca.nombre)
+modelo (public.modelo.nombre)
+clase (public.clase.nombre)
+color (public.color.nombre)
+motor
+chasis
+
+Una vez obtenida esta información, continuar con la validación del transporte en S2I.
+
+2.1.1 Buscar transporte existente en S2I
+
+Realizar una búsqueda en:
+
+Base de datos: felcn_s2i
+Tabla: public.transporte
+Campo de búsqueda:
+codigo_transporte
+Valor: placa obtenida del paso anterior.
+
+Evaluar el resultado.
+
+2.1.1.1 Transporte encontrado
+
+Si existe un registro:
+
+Retornar el registro completo del transporte.
+Finalizar el proceso.
+2.1.1.2 Transporte no encontrado
+
+Si no existe un registro:
+
+Permitir registrar un nuevo transporte utilizando la información obtenida desde felcn_vls.
+
+Mapeo de datos:
+
+Campo transporte	Valor origen
+codigo_transporte	placa
+tipo	tipo_vehiculo
+marca	public.marca.nombre
+modelo	public.modelo.nombre
+clase	public.clase.nombre
+tipo_transporte	"VEHICULO"
+color	public.color.nombre
+chasis	chasis
+motor	motor
+
+Después del registro:
+
+Retornar el transporte creado.
+Finalizar el proceso.
+2.2 Vehículo no encontrado
+
+Si el vehículo no existe en:
+
+Base de datos: felcn_vls
+Tabla: public.vehiculos
+
+Permitir registrar un nuevo transporte ingresando manualmente toda la información requerida.
+
+Datos mínimos requeridos:
+
+placa
+tipo_vehiculo
+marca
+modelo
+clase
+color
+motor
+chasis
+
+Después del registro manual, continuar con el flujo:
+
+2.1.1 Buscar transporte existente en S2I
+
+Es decir:
+
+Buscar en felcn_s2i
+Tabla public.transporte
+Campo codigo_transporte
+Utilizando la placa registrada.
+Reglas del flujo
+La primera fuente de información siempre es felcn_vls.public.vehiculos.
+Si el vehículo existe, reutilizar su información.
+Si no existe, permitir su registro manual.
+La validación del transporte en S2I siempre debe realizarse después de obtener o registrar la información del vehículo.
+Si el transporte no existe en S2I, permitir crearlo utilizando los datos obtenidos de felcn_vls.
+El campo tipo_transporte siempre debe registrarse con el valor "VEHICULO".
+Fin del proceso

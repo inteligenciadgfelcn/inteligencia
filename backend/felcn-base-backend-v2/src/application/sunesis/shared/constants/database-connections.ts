@@ -30,6 +30,18 @@ export const DB_LGI = 'lgi'
 export const DB_S2I = 's2i'
 
 /**
+ * Conexión a la base de datos PERSONAS (felcn_personas)
+ * Schema 'public': personas (datos civiles por documento de identidad)
+ */
+export const DB_PERSONAS = 'personas'
+
+/**
+ * Conexión a la base de datos VLS (felcn_vls)
+ * Schema 'public': vehiculo, marca, modelo, clase, color (registro vehicular)
+ */
+export const DB_VLS = 'vls'
+
+/**
  * Esquemas de la base de datos SIII
  */
 export const SCHEMA_PARAMETRICAS = 'parametricas'

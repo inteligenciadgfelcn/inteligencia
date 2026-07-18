@@ -16,6 +16,7 @@ import { S2iTipoDelito } from '../entity/tipo-delito.entity'
 import { S2iTipoInvestigacionBien } from '../entity/tipo-investigacion-bien.entity'
 import { S2iTipoOrganizacion } from '../entity/tipo-organizacion.entity'
 import { S2iTipoActivo } from '../entity/tipo-activo.entity'
+import { S2iColor } from '../entity/color.entity'
 
 @Injectable()
 export class S2iLookupRepository {
@@ -125,6 +126,14 @@ export class S2iLookupRepository {
   async listarTiposInvestigacionBien(): Promise<S2iTipoInvestigacionBien[]> {
     return this.dataSource
       .getRepository(S2iTipoInvestigacionBien)
+      .find({ order: { descripcion: 'ASC' } })
+  }
+
+  // ==================== FLUJO DE TRANSPORTE ====================
+
+  async listarColores(): Promise<S2iColor[]> {
+    return this.dataSource
+      .getRepository(S2iColor)
       .find({ order: { descripcion: 'ASC' } })
   }
 }
