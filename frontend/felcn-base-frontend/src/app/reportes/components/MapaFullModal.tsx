@@ -141,7 +141,7 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[], origin: str
               <div class="custom-popup" style="font-size: 12px; line-height: 1.4;">
                 <strong style="color: #38bdf8; font-size: 13px;">Caso: \${m.caso}</strong><br/>
                 <span style="color: #cbd5e1;">Operativo: \${m.operativo}</span><br/>
-                <span style="color: #94a3b8; font-family: monospace; font-size: 10px;">Coordenadas: \${m.lat}, \${m.lng}</span>
+                <span style="color: #94a3b8; font-family: monospace; font-size: 10px;">Coordenadas: \${String(m.lat).replace('.', ',')}, \${String(m.lng).replace('.', ',')}</span>
               </div>
             \`);
             bounds.push([m.lat, m.lng]);

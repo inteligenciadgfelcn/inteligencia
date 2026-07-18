@@ -9,6 +9,7 @@ import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
+import { formatDecimal } from '@/utils/formatDecimal'
 import type { CreateLugarSigPayload, LugarSig, RespuestaApi } from '@/services/analisis'
 
 const MapaConMarcador = dynamic(
@@ -235,7 +236,7 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
                     <p className="flex items-center gap-1">
                       <span className="font-medium text-gray-500">Coordenadas:</span> 
                       <span className="font-mono bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded text-[10px]">
-                        {l.coordenadasX.toFixed(6)}, {l.coordenadasY.toFixed(6)}
+                        {formatDecimal(l.coordenadasX, 6)}, {formatDecimal(l.coordenadasY, 6)}
                       </span>
                     </p>
                     {l.contenido && (

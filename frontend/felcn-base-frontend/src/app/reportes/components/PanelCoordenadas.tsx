@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
+import { formatDecimal } from '@/utils/formatDecimal'
 import { CoordenadaBase } from './MapaFullModal'
 
 export function PanelCoordenadas({ coordenadas }: { coordenadas: CoordenadaBase[] }) {
@@ -29,7 +30,7 @@ export function PanelCoordenadas({ coordenadas }: { coordenadas: CoordenadaBase[
     {
       accessor: 'coordenadas',
       title: 'Coordenadas (Lat, Lng)',
-      render: (row) => <span className="font-mono text-xs text-gray-600 dark:text-gray-400">{row.coordX}, {row.coordY}</span>
+      render: (row) => <span className="font-mono text-xs text-gray-600 dark:text-gray-400">{formatDecimal(row.coordX, 6)}, {formatDecimal(row.coordY, 6)}</span>
     },
     {
       accessor: 'ver',
