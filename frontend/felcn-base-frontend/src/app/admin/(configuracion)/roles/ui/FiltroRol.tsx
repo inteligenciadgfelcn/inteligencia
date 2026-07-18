@@ -47,7 +47,11 @@ export const FiltroRol: React.FC<FiltroRolProps> = ({
           <TextField
             id="filtroRol"
             fullWidth
-            {...register('rol')}
+            {...register('rol', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase()
+              },
+            })}
             sx={{
               bgcolor: 'background.paper',
             }}

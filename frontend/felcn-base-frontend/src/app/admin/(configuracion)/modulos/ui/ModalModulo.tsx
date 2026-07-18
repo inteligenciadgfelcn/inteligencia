@@ -15,6 +15,7 @@ import { useAlerts, useSession } from '@/hooks'
 import { Constantes } from '@/config/Constantes'
 import { InterpreteMensajes } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
+import { trimPayload } from '@/utils/trimPayload'
 import { menuIconMap } from '@/components/sidebar/menuIconMap'
 import FormTextarea from '@/components/form/FormTextarea'
 
@@ -106,21 +107,21 @@ export const ModalModulo = ({
     if (loading) return
     try {
       setLoading(true)
-      console.log(values)
+      const datos = trimPayload(values)
       const payload = {
-        idModulo: values.moduloPadreId || null,
-        label: values.label,
-        url: values.url,
-        nombre: values.nombre,
+        idModulo: datos.moduloPadreId || null,
+        label: datos.label,
+        url: datos.url,
+        nombre: datos.nombre,
         propiedades: {
-          orden: values.orden,
-          descripcion: values.descripcion,
-          icono: values.esSeccion ? undefined : values.icono,
+          orden: datos.orden,
+          descripcion: datos.descripcion,
+          icono: datos.esSeccion ? undefined : datos.icono,
         },
-        modulo: values.esSeccion
+        modulo: datos.esSeccion
           ? null
-          : values.moduloPadreId
-            ? { id: values.moduloPadreId }
+          : datos.moduloPadreId
+            ? { id: datos.moduloPadreId }
             : null,
       }
 
@@ -198,6 +199,7 @@ export const ModalModulo = ({
               register={register}
               error={errors.nombre?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormInput
@@ -206,6 +208,7 @@ export const ModalModulo = ({
               register={register}
               error={errors.label?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormInput
@@ -243,6 +246,7 @@ export const ModalModulo = ({
               placeholder="Ingrese descripción"
               register={register}
               error={errors.descripcion?.message}
+              uppercase
             />
           </div>
 

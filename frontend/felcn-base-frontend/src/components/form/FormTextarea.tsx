@@ -10,6 +10,7 @@ interface FormTextareaProps
   register?: any
   error?: string
   fullWidth?: boolean
+  uppercase?: boolean
 }
 
 const FormTextarea = ({
@@ -20,6 +21,7 @@ const FormTextarea = ({
   className,
   disabled,
   fullWidth = true,
+  uppercase = false,
   ...props
 }: FormTextareaProps) => {
   return (
@@ -32,7 +34,17 @@ const FormTextarea = ({
 
       <textarea
         id={name}
-        {...(register && register(name))}
+        {...(register &&
+          register(
+            name,
+            uppercase
+              ? {
+                  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    e.target.value = e.target.value.toUpperCase()
+                  },
+                }
+              : undefined
+          ))}
         {...props}
         disabled={disabled}
         className={clsx('form-textarea w-full', className)}

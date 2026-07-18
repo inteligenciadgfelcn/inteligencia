@@ -4,6 +4,7 @@ import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
+import { formatDecimal } from '@/utils/formatDecimal'
 import type {
   DetalleCasoPreview,
   BlancoDetallePreview,
@@ -125,8 +126,8 @@ function SeccionBlanco({ b }: { b: BlancoDetallePreview }) {
               : b.lugares.map((l, i) => (
                 <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
                   <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
-                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
-                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{formatDecimal(l.coordenadasX, 6)}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{formatDecimal(l.coordenadasY, 6)}</td>
                   <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
                 </tr>
               ))}
@@ -176,8 +177,8 @@ function SeccionOrganizacion({ o }: { o: OrganizacionDetallePreview }) {
               : o.lugares.map((l, i) => (
                 <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
                   <td className="border border-[#e5e7eb] px-2 py-1">{l.descripcion}</td>
-                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasX}</td>
-                  <td className="border border-[#e5e7eb] px-2 py-1">{l.coordenadasY}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{formatDecimal(l.coordenadasX, 6)}</td>
+                  <td className="border border-[#e5e7eb] px-2 py-1">{formatDecimal(l.coordenadasY, 6)}</td>
                   <td className="border border-[#e5e7eb] px-2 py-1">{l.contenido}</td>
                 </tr>
               ))}

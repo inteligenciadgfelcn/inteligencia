@@ -140,6 +140,15 @@ export const SeguimientoServiceInstance = {
     })
   },
 
+  async obtenerArchivoBlob(idArchivo: string): Promise<Blob> {
+    return sesionPeticion({
+      url: `${BASE}/archivo/descargar/${idArchivo}`,
+      method: 'get',
+      responseType: 'blob',
+      withCredentials: true,
+    })
+  },
+
   async descargarArchivo(idArchivo: string, nombreArchivo: string) {
     const res = await sesionPeticion({
       url: `${BASE}/archivo/descargar/${idArchivo}`,
