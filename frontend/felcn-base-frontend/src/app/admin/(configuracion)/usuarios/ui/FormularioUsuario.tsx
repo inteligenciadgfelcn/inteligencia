@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { RolType } from '../types/usuariosCRUDTypes'
 import { useAlerts, useSession, useConfirmDialog } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
+import { trimPayload } from '@/utils/trimPayload'
 import { Constantes } from '@/config/Constantes'
 import { validarFechaFormato } from '@/utils/fechas'
 import { imprimir } from '@/utils/imprimir'
@@ -343,21 +344,23 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       return
     }
 
+    const datos = trimPayload(values)
+
     try {
       setLoading(true)
       const respuesta = await sesionPeticion({
         url: `${Constantes.authUrl}/usuarios${usuarioId ? `/${usuarioId}` : ''}`,
         method: usuarioId ? 'patch' : 'post',
         body: {
-          ...values,
-          numeroPase: values.numeroPase === '' ? null : values.numeroPase,
+          ...datos,
+          numeroPase: datos.numeroPase === '' ? null : datos.numeroPase,
           persona: {
-            nombres: values.nombres,
-            primerApellido: values.primerApellido,
-            segundoApellido: values.segundoApellido,
-            nroDocumento: values.nroDocumento,
-            fechaNacimiento: values.fechaNacimiento,
-            telefono: values.telefono === '' ? null : values.telefono,
+            nombres: datos.nombres,
+            primerApellido: datos.primerApellido,
+            segundoApellido: datos.segundoApellido,
+            nroDocumento: datos.nroDocumento,
+            fechaNacimiento: datos.fechaNacimiento,
+            telefono: datos.telefono === '' ? null : datos.telefono,
           },
         },
       })
@@ -805,6 +808,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   id="numeroPase"
                   type="text"
                   maxLength={20}
+                  uppercase
                   className="w-full"
                   error={!!errors.numeroPase}
                   disabled={loading}

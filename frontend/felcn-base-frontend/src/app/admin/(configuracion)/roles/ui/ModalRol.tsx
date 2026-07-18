@@ -10,6 +10,7 @@ import { useAlerts, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
+import { trimPayload } from '@/utils/trimPayload'
 
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import IconX from '@/components/Icon/IconX'
@@ -68,7 +69,7 @@ export const ModalRol = ({ isOpen, onClose, rol, onSuccess }: Props) => {
           rol ? `/${rol.id}` : ''
         }`,
         method: rol ? 'patch' : 'post',
-        body: values,
+        body: trimPayload(values),
       })
 
       Alerta({
@@ -121,6 +122,7 @@ export const ModalRol = ({ isOpen, onClose, rol, onSuccess }: Props) => {
               register={register}
               error={errors.rol?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormInput
@@ -129,6 +131,7 @@ export const ModalRol = ({ isOpen, onClose, rol, onSuccess }: Props) => {
               register={register}
               error={errors.nombre?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormTextarea
@@ -139,6 +142,7 @@ export const ModalRol = ({ isOpen, onClose, rol, onSuccess }: Props) => {
               register={register}
               error={errors.descripcion?.message}
               disabled={loading}
+              uppercase
             />
           </div>
 
