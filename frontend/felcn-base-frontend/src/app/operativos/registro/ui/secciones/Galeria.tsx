@@ -351,12 +351,14 @@ export function Galeria({ titulo, idoperativo }: Props) {
                   title: 'Fotografía',
                   render: (r) => (
                     <div className="flex justify-center">
-                      <ImagenAutenticada
-                        path={r.urlFotoThumbnail}
-                        alt={r.descripcion}
-                        className="h-20 w-32 rounded object-cover shadow-sm"
-                        onClick={() => setImagenAmpliada(r.urlFotoFull)}
-                      />
+                      <div className="flex h-20 w-32 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                        <ImagenAutenticada
+                          path={r.urlFotoThumbnail}
+                          alt={r.descripcion}
+                          className="h-full max-w-full object-contain"
+                          onClick={() => setImagenAmpliada(r.urlFotoFull)}
+                        />
+                      </div>
                     </div>
                   ),
                 },

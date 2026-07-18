@@ -74,13 +74,15 @@ function PanelFoto({ blanco }: { blanco: BlancoS2i }) {
         <div>
           <p className="mb-1 text-xs font-medium text-gray-500">Foto Actual</p>
           {fotoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={fotoUrl}
-              alt="Foto del blanco"
-              className="h-40 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
-              onClick={() => setImagenAmpliada(true)}
-            />
+            <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={fotoUrl}
+                alt="Foto del blanco"
+                className="h-full max-w-full cursor-zoom-in object-contain hover:opacity-90"
+                onClick={() => setImagenAmpliada(true)}
+              />
+            </div>
           ) : (
             <div className="flex h-40 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
               <span className="text-xs text-gray-400">Sin foto</span>
@@ -98,8 +100,19 @@ function PanelFoto({ blanco }: { blanco: BlancoS2i }) {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
           onClick={() => setImagenAmpliada(false)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={fotoUrl} alt="Vista ampliada" className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" />
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={fotoUrl} alt="Vista ampliada" className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl" />
+            <Button
+              type="button"
+              variant="dark"
+              size="sm"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setImagenAmpliada(false)}
+            >
+              ✕
+            </Button>
+          </div>
         </div>
       )}
     </div>
