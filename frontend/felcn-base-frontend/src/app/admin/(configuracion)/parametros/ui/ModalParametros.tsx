@@ -10,6 +10,7 @@ import { useAlerts, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
+import { trimPayload } from '@/utils/trimPayload'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import IconX from '@/components/Icon/IconX'
 import FormInput from '@/components/form/FormInput'
@@ -74,7 +75,7 @@ export const ModalParametros = ({
           parametro ? `/${parametro.id}` : ''
         }`,
         method: parametro ? 'patch' : 'post',
-        body: values,
+        body: trimPayload(values),
       })
 
       Alerta({
@@ -124,6 +125,7 @@ export const ModalParametros = ({
               register={register}
               error={errors.codigo?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormInput
@@ -132,6 +134,7 @@ export const ModalParametros = ({
               register={register}
               error={errors.nombre?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormInput
@@ -140,6 +143,7 @@ export const ModalParametros = ({
               register={register}
               error={errors.grupo?.message}
               disabled={loading}
+              uppercase
             />
 
             <FormTextarea
@@ -150,6 +154,7 @@ export const ModalParametros = ({
               register={register}
               error={errors.descripcion?.message}
               disabled={loading}
+              uppercase
             />
           </div>
 

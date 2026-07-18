@@ -72,8 +72,8 @@ export const CambioPassModal = ({ isOpen, onClose }: CambioPassModalProps) => {
         url: `${Constantes.authUrl}/usuarios/cuenta/contrasena`,
         method: 'patch',
         body: {
-          contrasenaActual: encodeBase64(encodeURI(data.oldPassword)),
-          contrasenaNueva: encodeBase64(encodeURI(data.newPassword)),
+          contrasenaActual: encodeBase64(encodeURI(data.oldPassword.trim())),
+          contrasenaNueva: encodeBase64(encodeURI(data.newPassword.trim())),
         },
       })
 

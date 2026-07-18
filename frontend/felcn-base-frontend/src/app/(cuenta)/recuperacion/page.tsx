@@ -67,7 +67,7 @@ export default function RecuperacionPage() {
 
       const respuesta = await Servicios.post({
         url: `${Constantes.authUrl}/usuarios/recuperar`,
-        body: { correoElectronico },
+        body: { correoElectronico: correoElectronico.trim() },
       })
 
       setMensaje(InterpreteMensajes(respuesta))

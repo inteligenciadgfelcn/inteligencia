@@ -6,6 +6,7 @@ import * as z from 'zod'
 import { useAlerts, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import { Constantes } from '@/config/Constantes'
+import { trimPayload } from '@/utils/trimPayload'
 import { UsuarioType } from '@/app/login/types/loginTypes'
 import { useAuth } from '@/context/AuthProvider'
 
@@ -66,7 +67,7 @@ export const EditarPerfilModal = ({
       await sesionPeticion({
         url: `${Constantes.authUrl}/usuarios/cuenta/perfil`,
         method: 'patch',
-        body: values,
+        body: trimPayload(values),
       })
 
       await actualizarPerfilCompleto()
@@ -116,7 +117,11 @@ export const EditarPerfilModal = ({
                 <div className="relative">
                   <IconUser className="absolute start-4 top-1/2 -translate-y-1/2 text-white-dark" />
                   <input
-                    {...register('nombres')}
+                    {...register('nombres', {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.toUpperCase()
+                      },
+                    })}
                     disabled={isSubmitting}
                     className="form-input ps-10"
                   />
@@ -133,7 +138,11 @@ export const EditarPerfilModal = ({
                   </label>
 
                   <input
-                    {...register('primerApellido')}
+                    {...register('primerApellido', {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.toUpperCase()
+                      },
+                    })}
                     disabled={isSubmitting}
                     className="form-input"
                   />
@@ -149,7 +158,11 @@ export const EditarPerfilModal = ({
                   </label>
 
                   <input
-                    {...register('segundoApellido')}
+                    {...register('segundoApellido', {
+                      onChange: (e) => {
+                        e.target.value = e.target.value.toUpperCase()
+                      },
+                    })}
                     disabled={isSubmitting}
                     className="form-input"
                   />
