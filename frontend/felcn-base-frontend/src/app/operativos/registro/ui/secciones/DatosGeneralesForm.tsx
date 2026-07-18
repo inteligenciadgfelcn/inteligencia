@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import IconSearch from '@/components/Icon/IconSearch'
 import IconGoogle from '@/components/Icon/IconGoogle'
 import { Constantes } from '@/config/Constantes'
 import { CustomDialog } from '@/components/modales/CustomDialog'
@@ -1520,30 +1519,7 @@ export function DatosGeneralesForm({
           </div>
 
           <div className="col-span-1 lg:col-span-4 mt-4">
-            <div className="flex gap-2 mb-2 relative">
-              <Input
-                type="text"
-                className="flex-1"
-                placeholder="Buscar dirección, zona o calle..."
-                value={searchQuery}
-                uppercase
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    void buscarDireccion()
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="text-primary hover:text-primary/80 flex items-center justify-center p-2"
-                onClick={() => void buscarDireccion()}
-                disabled={isSearching}
-                title="Buscar dirección"
-              >
-                <IconSearch className="h-5 w-5" />
-              </button>
+            <div className="flex gap-2 mb-2 relative justify-end">
               <button
                 type="button"
                 className="text-danger hover:text-danger/80 flex items-center justify-center p-2"
@@ -1584,7 +1560,6 @@ export function DatosGeneralesForm({
               coordenadas={
                 coordX && coordY ? [Number(coordX), Number(coordY)] : null
               }
-              tileUrl="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             />
           </div>
 
@@ -1641,7 +1616,7 @@ export function DatosGeneralesForm({
             style={{ border: 0 }}
             loading="lazy"
             allowFullScreen
-            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&output=embed`}
+            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&t=k&output=embed`}
           />
         </div>
       </CustomDialog>
