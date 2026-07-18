@@ -16,7 +16,7 @@ import { CreateArchivoDto } from '../../blanco/dto/create-archivo.dto'
  */
 @Injectable()
 export class OrganizacionService {
-  constructor(private readonly repo: OrganizacionRepository) { }
+  constructor(private readonly repo: OrganizacionRepository) {}
 
   // ==================== ORGANIZACIONES ====================
 
@@ -52,6 +52,14 @@ export class OrganizacionService {
     if (!existe)
       throw new NotFoundException(`Organización ${idEmpresa} no encontrada`)
     await this.repo.eliminar(idEmpresa)
+  }
+
+  /** Otras organizaciones (de cualquier caso) con el mismo NIT. */
+  async buscarOtrosCasosPorNit(
+    nit: string,
+    excludeIdCaso: string
+  ): Promise<S2iEmpresa[]> {
+    return this.repo.buscarOtrosCasosPorNit(nit, excludeIdCaso)
   }
 
   // ==================== SIG ====================

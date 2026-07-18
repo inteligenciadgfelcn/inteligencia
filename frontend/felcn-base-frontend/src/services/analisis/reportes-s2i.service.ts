@@ -49,6 +49,7 @@ export interface LugarSigPreview {
 
 export interface BlancoDetallePreview {
   idBlanco: string
+  numeroDocumento: string
   deNombres: string
   dePaterno: string
   deMaterno: string
@@ -118,6 +119,35 @@ export interface SigCasoPreview {
   marcadores: MarcadorSig[]
 }
 
+// ─── Vínculos cruzados (Fase 2 del Diagrama de Vínculos) ───────────────────────
+
+export interface CasoExternoVinculado {
+  idCaso: string
+  nroCasoCer: string | null
+  nombreCaso: string
+  /** Analista (numeroPase) que registró el caso externo. */
+  analista: string
+}
+
+export interface BlancoVinculoCruzado {
+  idBlanco: string
+  numeroDocumento: string
+  nombreCompleto: string
+  casos: (CasoExternoVinculado & { idBlanco: string; nombreCompleto: string })[]
+}
+
+export interface EmpresaVinculoCruzado {
+  idEmpresa: string
+  nit: string
+  nombre: string
+  casos: (CasoExternoVinculado & { idEmpresa: string; nombre: string })[]
+}
+
+export interface VinculosCruzadosCaso {
+  blancos: BlancoVinculoCruzado[]
+  empresas: EmpresaVinculoCruzado[]
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 /**
@@ -175,6 +205,18 @@ export const ReportesS2iService = {
   verSig(idCaso: string) {
     return sesionPeticion<{ finalizado: boolean; datos: SigCasoPreview }>({
       url: `${BASE}/${idCaso}/sig`,
+      withCredentials: true,
+    })
+  },
+
+  /**
+   * Cruce de deconfliction (Fase 2 del Diagrama de Vínculos): coincidencias
+   * de número de documento (blanco) o NIT (empresa) en OTROS casos, sin
+   * filtrar por analista responsable.
+   */
+  verVinculosCruzados(idCaso: string) {
+    return sesionPeticion<{ finalizado: boolean; datos: VinculosCruzadosCaso }>({
+      url: `${BASE}/${idCaso}/vinculos-cruzados`,
       withCredentials: true,
     })
   },

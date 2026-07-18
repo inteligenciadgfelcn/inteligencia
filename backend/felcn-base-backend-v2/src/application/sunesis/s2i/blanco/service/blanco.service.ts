@@ -70,6 +70,17 @@ export class BlancoService {
     await this.repo.eliminar(idBlanco)
   }
 
+  /** Otros casos (de cualquier analista) donde aparece el mismo número de documento. */
+  async buscarOtrosCasosPorDocumento(
+    numeroDocumento: string,
+    excludeIdCaso: string
+  ): Promise<S2iBlanco[]> {
+    return this.repo.buscarOtrosCasosPorDocumento(
+      numeroDocumento,
+      excludeIdCaso
+    )
+  }
+
   async actualizarFoto(idBlanco: string, foto: Buffer): Promise<void> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)

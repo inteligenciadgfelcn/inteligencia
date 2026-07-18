@@ -21,13 +21,23 @@ const ICONO_BLANCO = svgDataUri(
 )
 
 // Edificio (silueta simple con ventanas, sin equivalente en @/components/Icon)
+// const ICONO_EMPRESA = svgDataUri(
+//   '<path d="M4 21V5C4 3.9 4.9 3 6 3H13C14.1 3 15 3.9 15 5V21H4Z"/>' +
+//   '<path d="M15 10H18C19.1 10 20 10.9 20 12V21H15V10Z"/>' +
+//   '<rect x="6.5" y="6" width="2" height="2"/><rect x="10.5" y="6" width="2" height="2"/>' +
+//   '<rect x="6.5" y="10" width="2" height="2"/><rect x="10.5" y="10" width="2" height="2"/>' +
+//   '<rect x="6.5" y="14" width="2" height="2"/><rect x="10.5" y="14" width="2" height="2"/>' +
+//   '<rect x="16.5" y="13.5" width="2" height="2"/>',
+// )
 const ICONO_EMPRESA = svgDataUri(
-  '<path d="M4 21V5C4 3.9 4.9 3 6 3H13C14.1 3 15 3.9 15 5V21H4Z"/>' +
-  '<path d="M15 10H18C19.1 10 20 10.9 20 12V21H15V10Z"/>' +
-  '<rect x="6.5" y="6" width="2" height="2"/><rect x="10.5" y="6" width="2" height="2"/>' +
-  '<rect x="6.5" y="10" width="2" height="2"/><rect x="10.5" y="10" width="2" height="2"/>' +
-  '<rect x="6.5" y="14" width="2" height="2"/><rect x="10.5" y="14" width="2" height="2"/>' +
-  '<rect x="16.5" y="13.5" width="2" height="2"/>',
+  '<path d="M5 3H19V21H5Z"/>' +
+  '<path d="M8 6H10V8H8Z"/>' +
+  '<path d="M14 6H16V8H14Z"/>' +
+  '<path d="M8 10H10V12H8Z"/>' +
+  '<path d="M14 10H16V12H14Z"/>' +
+  '<path d="M8 14H10V16H8Z"/>' +
+  '<path d="M14 14H16V16H14Z"/>' +
+  '<path d="M10 21V17H14V21Z"/>'
 )
 
 // Caja (adaptado de IconBox fill)
@@ -43,4 +53,6 @@ export const ICONOS_GRUPO: Record<GrupoNodoVinculo, string> = {
   blanco: ICONO_BLANCO,
   empresa: ICONO_EMPRESA,
   bien: ICONO_BIEN,
+  // Mismo glifo de carpeta que "caso": se distingue por color/borde punteado en GrafoVinculos.
+  'caso-externo': ICONO_CASO,
 }

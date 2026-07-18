@@ -11,6 +11,33 @@ export interface FiltroCasosDto {
 }
 
 /**
+ * Identificadores demasiado cortos o genéricos ("SD", "0", "NINGUNO", etc.)
+ * no sirven para cruzar personas/empresas entre casos y sólo generarían
+ * falsos positivos masivos, así que se excluyen del cruce de deconfliction.
+ */
+const PLACEHOLDERS_IDENTIFICADOR = new Set([
+  'SD',
+  'S/D',
+  'S/N',
+  'N/A',
+  'NA',
+  'NINGUNO',
+  'NINGUNA',
+  'DESCONOCIDO',
+  '*',
+])
+
+const esIdentificadorValido = (
+  valor: string | null | undefined
+): valor is string => {
+  const v = valor?.trim().toUpperCase() ?? ''
+  if (v.length < 5) return false
+  if (PLACEHOLDERS_IDENTIFICADOR.has(v)) return false
+  if (/^0+$/.test(v)) return false
+  return true
+}
+
+/**
  * Servicio de agregación de datos para los reportes del módulo S2I.
  * Orquesta las llamadas a los servicios existentes (Caso, Blanco, Organizacion, Bien)
  * para construir los datos necesarios para cada tipo de reporte.
@@ -22,8 +49,8 @@ export class ReporteCasosService {
     private readonly casoService: CasoService,
     private readonly blancoService: BlancoService,
     private readonly organizacionService: OrganizacionService,
-    private readonly bienService: BienService,
-  ) { }
+    private readonly bienService: BienService
+  ) {}
 
   /**
    * Lista los casos del usuario autenticado aplicando filtros opcionales.
@@ -91,25 +118,27 @@ export class ReporteCasosService {
           this.blancoService.listarLugares(b.idBlanco),
         ])
         return { ...b, antecedentes, redesSociales, lugares }
-      }),
+      })
     )
 
     // Para cada organización obtenemos su ubicación SIG
     const organizacionesCompletas = await Promise.all(
       organizaciones.map(async (o) => {
-        const lugares = await this.organizacionService.listarLugares(o.idEmpresa)
+        const lugares = await this.organizacionService.listarLugares(
+          o.idEmpresa
+        )
         return { ...o, lugares }
-      }),
+      })
     )
 
     // Para cada bien obtenemos sus características
     const bienesCompletos = await Promise.all(
       bienes.map(async (b) => {
         const caracteristicas = await this.bienService.listarCaracteristicas(
-          b.idItemBienSecundario,
+          b.idItemBienSecundario
         )
         return { ...b, caracteristicas }
-      }),
+      })
     )
 
     return {
@@ -154,7 +183,7 @@ export class ReporteCasosService {
             descripcion: `${b.deNombres} ${b.dePaterno} ${b.deMaterno} — ${l.descripcion}`,
             tipo: 'blanco' as const,
           }))
-        }),
+        })
       )
     ).flat()
 
@@ -162,14 +191,16 @@ export class ReporteCasosService {
     const marcadoresOrganizaciones = (
       await Promise.all(
         organizaciones.map(async (o) => {
-          const lugares = await this.organizacionService.listarLugares(o.idEmpresa)
+          const lugares = await this.organizacionService.listarLugares(
+            o.idEmpresa
+          )
           return lugares.map((l) => ({
             lat: Number(l.coordenadasX),
             lon: Number(l.coordenadasY),
             descripcion: `${o.descripcionTipoOrganizacion ?? 'Organización'}: ${o.nombre} — ${l.descripcion}`,
             tipo: 'organizacion' as const,
           }))
-        }),
+        })
       )
     ).flat()
 
@@ -178,7 +209,7 @@ export class ReporteCasosService {
       await Promise.all(
         bienes.map(async (b) => {
           const lugares = await this.bienService.listarLugares(
-            b.idItemBienSecundario,
+            b.idItemBienSecundario
           )
           return lugares.map((l) => ({
             lat: Number(l.coordenadasX),
@@ -186,7 +217,7 @@ export class ReporteCasosService {
             descripcion: `${b.descripcionBien ?? 'Bien'} — ${b.descripcionTipo ?? ''}`,
             tipo: 'bien' as const,
           }))
-        }),
+        })
       )
     ).flat()
 
@@ -206,6 +237,103 @@ export class ReporteCasosService {
         ...marcadoresOrganizaciones,
         ...marcadoresBienes,
       ],
+    }
+  }
+
+  /**
+   * Cruce de deconfliction: para cada blanco/empresa del caso, busca si el
+   * mismo número de documento (blanco) o NIT (empresa) aparece en OTROS
+   * casos, sin importar qué analista los haya registrado. Es la base del
+   * "vínculo cruzado" del diagrama de vínculos (Fase 2).
+   */
+  async obtenerVinculosCruzados(idCaso: string) {
+    const [blancos, organizaciones] = await Promise.all([
+      this.blancoService.listarPorCaso(idCaso),
+      this.organizacionService.listarPorCaso(idCaso),
+    ])
+
+    const blancosConCoincidencias = (
+      await Promise.all(
+        blancos
+          .filter((b) => esIdentificadorValido(b.numeroDocumento))
+          .map(async (b) => {
+            const otros = await this.blancoService.buscarOtrosCasosPorDocumento(
+              b.numeroDocumento.trim(),
+              idCaso
+            )
+            return { blanco: b, otros }
+          })
+      )
+    ).filter((r) => r.otros.length > 0)
+
+    const empresasConCoincidencias = (
+      await Promise.all(
+        organizaciones
+          .filter((e) => esIdentificadorValido(e.nit))
+          .map(async (e) => {
+            const otros = await this.organizacionService.buscarOtrosCasosPorNit(
+              e.nit.trim(),
+              idCaso
+            )
+            return { empresa: e, otros }
+          })
+      )
+    ).filter((r) => r.otros.length > 0)
+
+    const idsCasosExternos = new Set<string>()
+    for (const { otros } of blancosConCoincidencias) {
+      for (const o of otros) idsCasosExternos.add(o.idCaso)
+    }
+    for (const { otros } of empresasConCoincidencias) {
+      for (const o of otros) idsCasosExternos.add(o.idCaso)
+    }
+
+    const casosExternos = await this.casoService.buscarPorIds([
+      ...idsCasosExternos,
+    ])
+    const casoPorId = new Map(casosExternos.map((c) => [c.idCaso, c]))
+
+    return {
+      blancos: blancosConCoincidencias.map(({ blanco, otros }) => ({
+        idBlanco: blanco.idBlanco,
+        numeroDocumento: blanco.numeroDocumento,
+        nombreCompleto:
+          `${blanco.deNombres} ${blanco.dePaterno} ${blanco.deMaterno}`.trim(),
+        casos: otros
+          .map((o) => {
+            const c = casoPorId.get(o.idCaso)
+            if (!c) return null
+            return {
+              idCaso: c.idCaso,
+              nroCasoCer: c.nroCasoCer,
+              nombreCaso: c.nombreCaso,
+              analista: c.usuario,
+              idBlanco: o.idBlanco,
+              nombreCompleto:
+                `${o.deNombres} ${o.dePaterno} ${o.deMaterno}`.trim(),
+            }
+          })
+          .filter((c): c is NonNullable<typeof c> => c !== null),
+      })),
+      empresas: empresasConCoincidencias.map(({ empresa, otros }) => ({
+        idEmpresa: empresa.idEmpresa,
+        nit: empresa.nit,
+        nombre: empresa.nombre,
+        casos: otros
+          .map((o) => {
+            const c = casoPorId.get(o.idCaso)
+            if (!c) return null
+            return {
+              idCaso: c.idCaso,
+              nroCasoCer: c.nroCasoCer,
+              nombreCaso: c.nombreCaso,
+              analista: c.usuario,
+              idEmpresa: o.idEmpresa,
+              nombre: o.nombre,
+            }
+          })
+          .filter((c): c is NonNullable<typeof c> => c !== null),
+      })),
     }
   }
 }

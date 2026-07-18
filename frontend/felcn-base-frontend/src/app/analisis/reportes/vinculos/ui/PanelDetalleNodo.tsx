@@ -1,9 +1,12 @@
 'use client'
 
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
 import IconFolder from '@/components/Icon/IconFolder'
 import IconUser from '@/components/Icon/IconUser'
 import IconUsersGroup from '@/components/Icon/IconUsersGroup'
 import IconBox from '@/components/Icon/IconBox'
+import IconLink from '@/components/Icon/IconLink'
 import IconX from '@/components/Icon/IconX'
 import type { NodoVinculo } from './construirGrafo'
 
@@ -30,6 +33,7 @@ const ICONO_POR_TIPO = {
   blanco: IconUser,
   empresa: IconUsersGroup,
   bien: IconBox,
+  'caso-externo': IconLink,
 }
 
 const TITULO_POR_TIPO = {
@@ -37,6 +41,7 @@ const TITULO_POR_TIPO = {
   blanco: 'Investigado',
   empresa: 'Organización',
   bien: 'Bien Investigado',
+  'caso-externo': 'Caso Externo (Vínculo Cruzado)',
 }
 
 export function PanelDetalleNodo({ nodo, onCerrar }: Props) {
@@ -88,6 +93,7 @@ export function PanelDetalleNodo({ nodo, onCerrar }: Props) {
           <>
             <table className="mb-3 w-full text-sm">
               <tbody>
+                <Fila label="Nro. Documento" valor={nodo.entidad.data.numeroDocumento} />
                 <Fila label="Nombre(s)" valor={nodo.entidad.data.deNombres} />
                 <Fila label="Ap. Paterno" valor={nodo.entidad.data.dePaterno} />
                 <Fila label="Ap. Materno" valor={nodo.entidad.data.deMaterno} />
@@ -136,6 +142,27 @@ export function PanelDetalleNodo({ nodo, onCerrar }: Props) {
               <Fila label="Observaciones" valor={nodo.entidad.data.observaciones} />
             </tbody>
           </table>
+        )}
+
+        {nodo.entidad.tipo === 'caso-externo' && (
+          <>
+            <p className="mb-3 text-xs text-gray-500">
+              Se encontró el mismo documento de identidad o NIT en este otro caso, registrado por
+              otro analista. Verifique antes de compartir información entre investigaciones.
+            </p>
+            <table className="mb-3 w-full text-sm">
+              <tbody>
+                <Fila label="Nombre" valor={nodo.entidad.data.nombreCaso} />
+                <Fila label="Nro. CER" valor={nodo.entidad.data.nroCasoCer} />
+                <Fila label="Analista" valor={nodo.entidad.data.analista} />
+              </tbody>
+            </table>
+            <Link href={`/analisis/reportes/vinculos?caso=${nodo.entidad.data.idCaso}`}>
+              <Button variant="outline-primary" size="sm">
+                Ver el diagrama de este caso
+              </Button>
+            </Link>
+          </>
         )}
 
         {nodo.entidad.tipo === 'bien' && (

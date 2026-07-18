@@ -13,12 +13,13 @@ interface Props {
   onSeleccionarNodo: (nodo: NodoVinculo | null) => void
 }
 
-/** Mismos colores semánticos (danger/info/success) que usa el resto de vistas de reportes S2I. */
+/** Mismos colores semánticos (danger/info/success/secondary) que usa el resto de vistas de reportes S2I. */
 const COLOR_GRUPO: Record<GrupoNodoVinculo, string> = {
   caso: '#3e5f8a',
   blanco: '#e7515a',
   empresa: '#2196f3',
   bien: '#00ab55',
+  'caso-externo': '#805dca',
 }
 
 const TAMANO_GRUPO: Record<GrupoNodoVinculo, number> = {
@@ -26,6 +27,7 @@ const TAMANO_GRUPO: Record<GrupoNodoVinculo, number> = {
   blanco: 24,
   empresa: 24,
   bien: 24,
+  'caso-externo': 30,
 }
 
 export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
@@ -44,16 +46,21 @@ export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
       })),
     )
     const edges = new DataSet(
-      datos.edges.map((e) => ({
-        id: e.id,
-        from: e.from,
-        to: e.to,
-        label: e.label,
-        dashes: e.dashes,
-        color: e.inferido
+      datos.edges.map((e) => {
+        const color = e.inferido
           ? { color: '#e2a03f', highlight: '#e2a03f' }
-          : undefined,
-      })),
+          : e.cruzado
+            ? { color: '#805dca', highlight: '#805dca' }
+            : null
+        return {
+          id: e.id,
+          from: e.from,
+          to: e.to,
+          label: e.label,
+          dashes: e.dashes,
+          ...(color ? { color } : {}),
+        }
+      }),
     )
 
     const grupos = (Object.keys(COLOR_GRUPO) as GrupoNodoVinculo[]).reduce(
@@ -63,6 +70,13 @@ export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
           image: ICONOS_GRUPO[grupo],
           size: TAMANO_GRUPO[grupo],
           color: { background: COLOR_GRUPO[grupo], border: COLOR_GRUPO[grupo] },
+          // El caso externo se distingue por borde punteado: no es el caso que se está analizando.
+          // Ojo: no asignar `shapeProperties: undefined` para los demás grupos — vis-network
+          // mezcla esa clave con sus defaults y, si queda `undefined` en vez de ausente,
+          // sobreescribe el objeto interno y luego revienta leyendo `.borderDashes`.
+          ...(grupo === 'caso-externo'
+            ? { shapeProperties: { borderDashes: [4, 4] } }
+            : {}),
         }
         return acc
       },
