@@ -60,4 +60,8 @@ export class S2iLookupService {
   listarTiposInvestigacionBien() {
     return this.repo.listarTiposInvestigacionBien()
   }
+
+  listarColores() {
+    return this.repo.listarColores()
+  }
 }

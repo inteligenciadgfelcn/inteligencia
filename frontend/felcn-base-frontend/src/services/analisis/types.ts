@@ -341,3 +341,112 @@ export interface CreateVehiculoPayload {
   color: string
   marca: string
 }
+
+// ─── Flujo de Transporte — Conductor ─────────────────────────────────────────
+
+export interface ConductorS2i {
+  numeroDocumento: string
+  nombres: string
+  paterno: string
+  materno: string
+  esposo: string
+  idPais: number
+  sexo: string
+  ocupacion: string
+  direccion: string
+}
+
+export interface CreateConductorPayload {
+  documento: string
+  nombres: string
+  paterno: string
+  materno: string
+  esposo: string
+  sexo: string
+  ocupacion: string
+  dir1: string
+  dir2: string
+  nomdep: string
+  nomprov: string
+  nommun: string
+  fechanac: string
+}
+
+// ─── Flujo de Transporte — Transporte ────────────────────────────────────────
+
+export interface TransporteS2i {
+  codigoTransporte: string
+  tipo: string
+  marca: string
+  modelo: string
+  clase: string
+  tipoTransporte: string
+  color: string
+  chasis: string
+  motor: string
+}
+
+export interface CreateTransportePayload {
+  placa: string
+  tipoVehiculo: string
+  marca: string
+  modelo: string
+  clase: string
+  color: string
+  motor: string
+  chasis: string
+}
+
+// ─── Flujo de Transporte — Lugar ─────────────────────────────────────────────
+
+export interface LugarS2i {
+  idLugar: number
+  descripcion: string
+}
+
+export interface CreateLugarPayload {
+  descripcion: string
+}
+
+// ─── Flujo de Transporte — Color ─────────────────────────────────────────────
+
+export interface ColorS2i {
+  id: number
+  descripcion: string
+  color: string
+  hexadecimal: string
+}
+
+// ─── Flujo de Transporte — registro final ────────────────────────────────────
+
+export interface FlujoTransporteS2i {
+  idFlujoTransporte: string
+  codigoTransporte: string
+  numeroDocumento: string
+  idLugar: number
+  origen: string
+  destino: string
+  carga: string
+  fechaHora: string
+  idColor: number
+  latitud: number
+  longitud: number
+}
+
+export interface CreateFlujoTransportePayload {
+  codigoTransporte: string
+  numeroDocumento: string
+  idLugar: number
+  idColor: number
+  origen: string
+  destino: string
+  carga: string
+  fechaHora: string
+  latitud: number
+  longitud: number
+}
+
+export interface ColorSugeridoS2i {
+  idColor: number | null
+  origen: 'PERSONA' | 'VEHICULO' | null
+}

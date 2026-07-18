@@ -16,6 +16,8 @@ import { S2aCatalogoClase } from './parametrica/entity/catalogo-clase.entity'
 import { S2aCatalogoTipo } from './parametrica/entity/catalogo-tipo.entity'
 import { S2aCatalogoCaracteristica } from './parametrica/entity/catalogo-caracteristica.entity'
 import { S2iTipoActivo } from './parametrica/entity/tipo-activo.entity'
+import { S2iColor } from './parametrica/entity/color.entity'
+import { S2iReglaColor } from './parametrica/entity/regla-color.entity'
 
 // ==================== CASO ====================
 import { S2iAsignacion } from './caso/entity/asignacion.entity'
@@ -48,6 +50,18 @@ import { S2iTelefono } from './telefonia/entity/telefono.entity'
 // ==================== VEHÍCULO ====================
 import { S2iVehiculo } from './vehiculo/entity/vehiculo.entity'
 
+// ==================== CONDUCTOR (Flujo de Transporte) ====================
+import { S2iConductor } from './conductor/entity/conductor.entity'
+
+// ==================== TRANSPORTE (Flujo de Transporte) ====================
+import { S2iTransporte } from './transporte/entity/transporte.entity'
+
+// ==================== LUGAR (Flujo de Transporte) ====================
+import { S2iLugar } from './lugar/entity/lugar.entity'
+
+// ==================== FLUJO DE TRANSPORTE (registro final) ====================
+import { S2iFlujoTransporte } from './flujo-transporte/entity/flujo-transporte.entity'
+
 // ==================== CONTROLLERS ====================
 import { S2iLookupController } from './parametrica/controller/s2i-lookup.controller'
 import { CasoController } from './caso/controller/caso.controller'
@@ -56,24 +70,42 @@ import { OrganizacionController } from './organizacion/controller/organizacion.c
 import { BienController } from './bien/controller/bien.controller'
 import { TelefoniaController } from './telefonia/controller/telefonia.controller'
 import { VehiculoController } from './vehiculo/controller/vehiculo.controller'
+import { ConductorController } from './conductor/controller/conductor.controller'
+import { TransporteController } from './transporte/controller/transporte.controller'
+import { LugarController } from './lugar/controller/lugar.controller'
+import { FlujoTransporteController } from './flujo-transporte/controller/flujo-transporte.controller'
 
 // ==================== SERVICES ====================
 import { S2iLookupService } from './parametrica/service/s2i-lookup.service'
+import { ReglaColorService } from './parametrica/service/regla-color.service'
 import { CasoService } from './caso/service/caso.service'
 import { BlancoService } from './blanco/service/blanco.service'
 import { OrganizacionService } from './organizacion/service/organizacion.service'
 import { BienService } from './bien/service/bien.service'
 import { TelefoniaService } from './telefonia/service/telefonia.service'
 import { VehiculoService } from './vehiculo/service/vehiculo.service'
+import { ConductorService } from './conductor/service/conductor.service'
+import { TransporteService } from './transporte/service/transporte.service'
+import { LugarService } from './lugar/service/lugar.service'
+import { FlujoTransporteService } from './flujo-transporte/service/flujo-transporte.service'
 
 // ==================== REPOSITORIES ====================
 import { S2iLookupRepository } from './parametrica/repository/s2i-lookup.repository'
+import { ReglaColorRepository } from './parametrica/repository/regla-color.repository'
 import { CasoRepository } from './caso/repository/caso.repository'
 import { BlancoRepository } from './blanco/repository/blanco.repository'
 import { OrganizacionRepository } from './organizacion/repository/organizacion.repository'
 import { BienRepository } from './bien/repository/bien.repository'
 import { TelefoniaRepository } from './telefonia/repository/telefonia.repository'
 import { VehiculoRepository } from './vehiculo/repository/vehiculo.repository'
+import { ConductorRepository } from './conductor/repository/conductor.repository'
+import { TransporteRepository } from './transporte/repository/transporte.repository'
+import { LugarRepository } from './lugar/repository/lugar.repository'
+import { FlujoTransporteRepository } from './flujo-transporte/repository/flujo-transporte.repository'
+
+// ==================== FUENTES EXTERNAS (Flujo de Transporte) ====================
+import { PersonaRepository } from '../personas/repository/persona.repository'
+import { VlsVehiculoRepository } from '../vls/repository/vehiculo.repository'
 
 const entities = [
   // Paramétricas
@@ -90,6 +122,8 @@ const entities = [
   S2aCatalogoTipo,
   S2aCatalogoCaracteristica,
   S2iTipoActivo,
+  S2iColor,
+  S2iReglaColor,
   // Caso
   S2iAsignacion,
   // Blanco
@@ -115,6 +149,14 @@ const entities = [
   S2iTelefono,
   // Vehículo
   S2iVehiculo,
+  // Conductor (Flujo de Transporte)
+  S2iConductor,
+  // Transporte (Flujo de Transporte)
+  S2iTransporte,
+  // Lugar (Flujo de Transporte)
+  S2iLugar,
+  // Flujo de Transporte (registro final)
+  S2iFlujoTransporte,
 ]
 
 @Module({
@@ -127,10 +169,16 @@ const entities = [
     BienController,
     TelefoniaController,
     VehiculoController,
+    ConductorController,
+    TransporteController,
+    LugarController,
+    FlujoTransporteController,
   ],
   providers: [
     S2iLookupService,
     S2iLookupRepository,
+    ReglaColorService,
+    ReglaColorRepository,
     CasoService,
     CasoRepository,
     BlancoService,
@@ -143,15 +191,30 @@ const entities = [
     TelefoniaRepository,
     VehiculoService,
     VehiculoRepository,
+    ConductorService,
+    ConductorRepository,
+    TransporteService,
+    TransporteRepository,
+    PersonaRepository,
+    VlsVehiculoRepository,
+    LugarService,
+    LugarRepository,
+    FlujoTransporteService,
+    FlujoTransporteRepository,
   ],
   exports: [
     S2iLookupService,
+    ReglaColorService,
     CasoService,
     BlancoService,
     OrganizacionService,
     BienService,
     TelefoniaService,
     VehiculoService,
+    ConductorService,
+    TransporteService,
+    LugarService,
+    FlujoTransporteService,
   ],
 })
 export class S2iModule {}
