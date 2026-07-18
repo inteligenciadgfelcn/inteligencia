@@ -372,7 +372,7 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
                     <div className="space-y-0.5 text-gray-600 dark:text-gray-400">
                       <p><span className="font-medium text-gray-500">IMEI:</span> {f.imeiA}</p>
                       <p><span className="font-medium text-gray-500">RBS:</span> {f.rbsA} <span className="text-gray-300">·</span> <span className="font-medium text-gray-500">Celda:</span> {f.celdaA}</p>
-                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {f.latA}, {f.lonA}</p>
+                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {formatDecimal(f.latA, 6)}, {formatDecimal(f.lonA, 6)}</p>
                     </div>
                   </div>
 
@@ -383,7 +383,7 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
                       <p><span className="font-medium text-gray-500">Titular:</span> <span className="font-medium text-gray-900 dark:text-gray-100">{f.titular}</span></p>
                       <p><span className="font-medium text-gray-500">IMEI:</span> {f.imeiB}</p>
                       <p><span className="font-medium text-gray-500">RBS:</span> {f.rbsB} <span className="text-gray-300">·</span> <span className="font-medium text-gray-500">Celda:</span> {f.celdaB}</p>
-                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {f.latB}, {f.lonB}</p>
+                      <p><span className="font-medium text-gray-500">Coordenadas:</span> {formatDecimal(f.latB, 6)}, {formatDecimal(f.lonB, 6)}</p>
                     </div>
                   </div>
                 </div>
