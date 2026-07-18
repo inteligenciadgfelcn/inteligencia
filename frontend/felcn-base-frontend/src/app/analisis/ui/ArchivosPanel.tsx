@@ -19,6 +19,52 @@ interface ArchivosPanelService {
   eliminarArchivo(idArchivo: string): Promise<RespuestaApi<unknown>>
 }
 
+const esImagen = (nombreArchivo?: string | null) =>
+  !!nombreArchivo && /\.(jpe?g|png|webp|gif|bmp)$/i.test(nombreArchivo)
+
+function FotoArchivoThumb({
+  id,
+  descargarArchivo,
+  onClick,
+}: {
+  id: string
+  descargarArchivo: (id: string) => Promise<Blob>
+  onClick: (src: string) => void
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+  const [cargandoFoto, setCargandoFoto] = useState(true)
+
+  useEffect(() => {
+    let objectUrl: string
+    descargarArchivo(id)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob)
+        setSrc(objectUrl)
+      })
+      .catch(() => setSrc(null))
+      .finally(() => setCargandoFoto(false))
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [id, descargarArchivo])
+
+  if (cargandoFoto) {
+    return <div className="h-24 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+  }
+  if (!src) return null
+  return (
+    <div className="mb-2 flex h-24 w-full items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={id}
+        className="h-full max-w-full cursor-zoom-in object-contain"
+        onClick={() => onClick(src)}
+      />
+    </div>
+  )
+}
+
 interface ArchivosPanelProps {
   idEntidad: string
   service: ArchivosPanelService
@@ -33,6 +79,7 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
 
   const [cargando, setCargando] = useState(false)
   const [archivos, setArchivos] = useState<ArchivoS2i[]>([])
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
 
   const [idContenidoCaso, setIdContenidoCaso] = useState('')
   const [tipo, setTipo] = useState('')
@@ -191,6 +238,13 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
                 className="relative rounded-lg border border-[#e0e6ed] bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 flex flex-col justify-between"
               >
                 <div>
+                  {esImagen(a.nombreArchivo) && (
+                    <FotoArchivoThumb
+                      id={id}
+                      descargarArchivo={service.descargarArchivo}
+                      onClick={setImagenAmpliada}
+                    />
+                  )}
                   <div className="flex items-start justify-between gap-2 border-b border-gray-100 pb-1.5 dark:border-gray-700/50">
                     <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs truncate" title={a.nombre}>
                       {a.nombre}
@@ -231,6 +285,31 @@ export function ArchivosPanel({ idEntidad, service, idField, opcionesContenido }
               </div>
             )
           })}
+        </div>
+      )}
+
+      {imagenAmpliada && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setImagenAmpliada(null)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imagenAmpliada}
+              alt="Vista ampliada"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            <Button
+              type="button"
+              variant="dark"
+              size="sm"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setImagenAmpliada(null)}
+            >
+              ✕
+            </Button>
+          </div>
         </div>
       )}
     </div>

@@ -13,6 +13,53 @@ import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesS
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
 import { trimPayload } from '@/utils/trimPayload'
 
+function FotoArchivoThumb({
+  idArchivo,
+  onClick,
+}: {
+  idArchivo: string
+  onClick: (src: string) => void
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+  const [cargandoFoto, setCargandoFoto] = useState(true)
+
+  useEffect(() => {
+    let objectUrl: string
+    BienesServiceInstance.obtenerArchivoBlob(idArchivo)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob)
+        setSrc(objectUrl)
+      })
+      .catch(() => setSrc(null))
+      .finally(() => setCargandoFoto(false))
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [idArchivo])
+
+  if (cargandoFoto) {
+    return <div className="h-16 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+  }
+  if (!src) {
+    return (
+      <div className="flex h-16 w-24 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+        <span className="text-[10px] text-gray-400">Sin foto</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt="Miniatura"
+        className="h-full max-w-full cursor-zoom-in object-contain"
+        onClick={() => onClick(src)}
+      />
+    </div>
+  )
+}
+
 interface Props {
   idCaso: string
 }
@@ -28,6 +75,7 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
   const [file, setFile] = useState<File | null>(null)
   const [registros, setRegistros] = useState<any[]>([])
   const [cargando, setCargando] = useState(false)
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
 
   const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm({
     defaultValues: { nombre: '', tipo: 'DOCUMENTO', idContenidoBien: '' },
@@ -154,6 +202,16 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
             { accessor: 'nombre', title: 'Nombre del Documento' },
             { accessor: 'nombreArchivo', title: 'Nombre de Archivo' },
             {
+              accessor: 'miniatura',
+              title: 'Vista Previa',
+              render: (row: any) =>
+                row.tipo === 'IMAGEN' ? (
+                  <FotoArchivoThumb idArchivo={row.id} onClick={setImagenAmpliada} />
+                ) : (
+                  <span className="text-xs text-gray-400">—</span>
+                ),
+            },
+            {
               accessor: 'acciones',
               title: '',
               className: 'text-center',
@@ -181,6 +239,31 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
           ]}
         />
       </div>
+
+      {imagenAmpliada && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
+          onClick={() => setImagenAmpliada(null)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imagenAmpliada}
+              alt="Vista ampliada"
+              className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            <Button
+              type="button"
+              variant="dark"
+              size="sm"
+              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+              onClick={() => setImagenAmpliada(null)}
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
