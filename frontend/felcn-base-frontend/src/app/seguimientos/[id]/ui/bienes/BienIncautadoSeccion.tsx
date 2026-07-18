@@ -11,6 +11,7 @@ import {
   CreateBienIncautadoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -42,7 +43,8 @@ export function BienIncautadoSeccion({ idItemBien }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idItemBien])
 
-  const onSubmit = async (payload: CreateBienIncautadoPayload) => {
+  const onSubmit = async (datos: CreateBienIncautadoPayload) => {
+    const payload = trimPayload(datos)
     try {
       await BienesServiceInstance.registrarIncautado(idItemBien, payload)
       Alerta({ mensaje: 'Incautación registrada correctamente', variant: 'success' })

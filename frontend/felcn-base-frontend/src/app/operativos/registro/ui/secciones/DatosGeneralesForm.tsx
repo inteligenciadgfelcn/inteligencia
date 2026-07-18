@@ -25,6 +25,7 @@ const MapaConMarcador = dynamic(
 )
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
+import { trimPayload } from '@/utils/trimPayload'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
 import {
   DatosGeneralesService,
@@ -585,7 +586,7 @@ export function DatosGeneralesForm({
       return
     }
 
-    const payload = getValues()
+    const payload = trimPayload(getValues(), ['breveDetalle', 'descripcion'])
     const idCaso = Number(searchParams.get('id') ?? 0)
 
     try {
@@ -1583,6 +1584,7 @@ export function DatosGeneralesForm({
               coordenadas={
                 coordX && coordY ? [Number(coordX), Number(coordY)] : null
               }
+              tileUrl="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             />
           </div>
 

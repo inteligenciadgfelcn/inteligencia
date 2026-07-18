@@ -37,6 +37,7 @@ export function FiltrosCasos({ onBuscar, cargando }: FiltrosCasosProps) {
           <label className="mb-1 block text-sm font-medium">Nombre del Caso</label>
           <Input
             type="text"
+            uppercase
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             placeholder="Buscar por nombre..."
@@ -46,6 +47,7 @@ export function FiltrosCasos({ onBuscar, cargando }: FiltrosCasosProps) {
           <label className="mb-1 block text-sm font-medium">Estado</label>
           <Input
             type="text"
+            uppercase
             value={estado}
             onChange={(e) => setEstado(e.target.value)}
             placeholder="Buscar por estado..."
@@ -55,6 +57,7 @@ export function FiltrosCasos({ onBuscar, cargando }: FiltrosCasosProps) {
           <label className="mb-1 block text-sm font-medium">Antecedente</label>
           <Input
             type="text"
+            uppercase
             value={antecedente}
             onChange={(e) => setAntecedente(e.target.value)}
             placeholder="Buscar por antecedente..."

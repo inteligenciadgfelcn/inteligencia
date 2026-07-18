@@ -26,6 +26,10 @@ export interface MapaConMarcadorProps {
   height?: number | string
   zoom?: number
   scrollWheelZoom?: boolean
+  /** URL del tile principal. Por defecto usa OpenStreetMap. */
+  tileUrl?: string
+  /** URL de un segundo tile que se superpone (usado para modo híbrido). */
+  tileUrlOverlay?: string
 }
 
 export default function MapaConMarcador({

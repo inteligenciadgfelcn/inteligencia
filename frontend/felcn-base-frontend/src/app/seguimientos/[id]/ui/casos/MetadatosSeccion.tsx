@@ -11,6 +11,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { Icono } from '@/components/Icono'
 import { SeguimientoServiceInstance, UpdateMetadatosPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 
 interface MetadatosSeccionProps {
   idCaso: string
@@ -49,11 +50,12 @@ export function MetadatosSeccion({ idCaso, idOperativo, cabecera, operativo, onG
     }
   }, [cabecera, operativo, reset, etapasInvestigacion])
 
-  const onSubmit = async (payload: UpdateMetadatosPayload) => {
+  const onSubmit = async (datos: UpdateMetadatosPayload) => {
     if (!idOperativo) {
       Alerta({ mensaje: 'No se encontró el ID del operativo asociado', variant: 'warning' })
       return
     }
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.actualizarMetadatos(idCaso, idOperativo, payload)
       Alerta({ mensaje: 'Metadatos actualizados correctamente', variant: 'success' })

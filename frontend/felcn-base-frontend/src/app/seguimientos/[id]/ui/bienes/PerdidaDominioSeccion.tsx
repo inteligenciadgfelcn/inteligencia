@@ -11,6 +11,7 @@ import {
   CreatePerdidaDominioPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -42,7 +43,8 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idItemBien])
 
-  const onSubmit = async (payload: CreatePerdidaDominioPayload) => {
+  const onSubmit = async (datos: CreatePerdidaDominioPayload) => {
+    const payload = trimPayload(datos)
     try {
       await BienesServiceInstance.registrarPerdidaDominio(idItemBien, payload)
       Alerta({ mensaje: 'Pérdida de dominio registrada correctamente', variant: 'success' })

@@ -13,6 +13,7 @@ import {
   CreateSituacionBienPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -56,7 +57,8 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idItemBien])
 
-  const onSubmit = async (payload: CreateSituacionBienPayload) => {
+  const onSubmit = async (datos: CreateSituacionBienPayload) => {
+    const payload = trimPayload(datos)
     try {
       await BienesServiceInstance.registrarSituacion(idItemBien, {
         ...payload,

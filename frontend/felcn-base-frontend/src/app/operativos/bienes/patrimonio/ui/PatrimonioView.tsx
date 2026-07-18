@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { InputDecimal } from '@/components/ui/InputDecimal'
 import { BackButton } from '@/components/ui/BackButton'
+import { formatDecimal } from '@/utils/formatDecimal'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -279,15 +281,7 @@ export function PatrimonioView({ idOperativo }: PatrimonioViewProps) {
                 title: 'Costo Aprox. ($us)',
                 render: (r: BienResponse) =>
                   r.costoAproximado != null
-                    ? r.costoAproximado.toLocaleString('es-BO', { minimumFractionDigits: 2 })
-                    : '—',
-              },
-              {
-                accessor: 'costoCuantificado',
-                title: 'Costo Cuant. ($us)',
-                render: (r: BienResponse) =>
-                  r.costoCuantificado != null
-                    ? r.costoCuantificado.toLocaleString('es-BO', { minimumFractionDigits: 2 })
+                    ? formatDecimal(r.costoAproximado, 2)
                     : '—',
               },
               {
@@ -334,26 +328,9 @@ export function PatrimonioView({ idOperativo }: PatrimonioViewProps) {
                 <label className="mb-1 block text-sm font-medium">
                   Costo Aproximado ($us)
                 </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={costoAproximado}
-                  onChange={(e) => setCostoAproximado(e.target.value)}
-                  className="w-full"
-                  disabled={cargandoCostos}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Costo Cuantificado ($us)
-                </label>
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={costoCuantificado}
-                  onChange={(e) => setCostoCuantificado(e.target.value)}
+                <InputDecimal
+                  value={costoAproximado === '' ? null : Number(costoAproximado)}
+                  onValueChange={(v) => setCostoAproximado(v === null ? '' : String(v))}
                   className="w-full"
                   disabled={cargandoCostos}
                 />

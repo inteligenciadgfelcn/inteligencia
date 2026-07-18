@@ -9,6 +9,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { PersonasServiceInstance, CreateSituacionPayload } from '@/services/seguimiento/SeguimientoPersonasService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -53,7 +54,8 @@ export function SituacionLegalSeccion({ idDetenido }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idDetenido])
 
-  const onSubmit = async (payload: CreateSituacionPayload) => {
+  const onSubmit = async (datos: CreateSituacionPayload) => {
+    const payload = trimPayload(datos)
     try {
       await PersonasServiceInstance.registrarSituacion(idDetenido, {
         ...payload,

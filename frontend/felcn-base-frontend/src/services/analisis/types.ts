@@ -234,6 +234,7 @@ export interface Ovise {
   longitud: number
   reporte: string
   accion: string
+  tieneArchivo?: boolean
 }
 
 export interface CreateOvisePayload {
@@ -242,6 +243,7 @@ export interface CreateOvisePayload {
   longitud: number
   reporte: string
   accion: string
+  archivo?: File
 }
 
 // ─── Organizaciones ───────────────────────────────────────────────────────────

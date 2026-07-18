@@ -10,9 +10,11 @@ import {
 import { useConfirmDialog } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { InputDecimal } from '@/components/ui/InputDecimal'
 import { Select } from '@/components/ui/Select'
 import { useAlerts } from '@/hooks/useAlerts'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { formatDecimal } from '@/utils/formatDecimal'
 
 interface SeccionFormProps {
   titulo: string
@@ -46,7 +48,7 @@ export function SustanciasSolidas({
   const [kilos, setKilos] = useState('0')
   const [gramos, setGramos] = useState('0')
   const [miligramos, setMiligramos] = useState('0')
-  const [costo, setCosto] = useState('0')
+  const [costo, setCosto] = useState<number | null>(0)
   const [opciones, setOpciones] = useState<
     { id: string; label: string; value: string }[]
   >([])
@@ -95,14 +97,14 @@ export function SustanciasSolidas({
       return
     }
 
-    if (parseFloat(costo || '0') <= 0) {
+    if ((costo ?? 0) <= 0) {
       return
     }
 
     const nuevaSustancia = {
       idSustanciaSolidaDescripcion: parseInt(tipoSustancia),
       cantidad: totalKilos,
-      costo: parseFloat(costo || '0'),
+      costo: costo ?? 0,
     }
 
     await onGuardar(nuevaSustancia)
@@ -112,7 +114,7 @@ export function SustanciasSolidas({
     setKilos('0')
     setGramos('0')
     setMiligramos('0')
-    setCosto('0')
+    setCosto(0)
     setSubmitted(false)
   }
 
@@ -170,22 +172,14 @@ export function SustanciasSolidas({
             >
               Costo (Bs)
             </label>
-            <Input
+            <InputDecimal
               id="sustanciaSolidaCosto"
-              type="number"
               value={costo}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d*\.?\d{0,2}$/.test(val)) {
-                  setCosto(val)
-                }
-              }}
+              onValueChange={setCosto}
               placeholder="0"
-              min="0"
-              step="0.01"
-              className={`w-full ${parseFloat(costo || '0') <= 0 && submitted ? 'border-danger' : ''}`}
+              className={`w-full ${(costo ?? 0) <= 0 && submitted ? 'border-danger' : ''}`}
             />
-            {parseFloat(costo || '0') <= 0 && submitted && (
+            {(costo ?? 0) <= 0 && submitted && (
               <span className="text-danger text-xs mt-1">El costo debe ser mayor a 0</span>
             )}
           </div>
@@ -332,13 +326,13 @@ export function SustanciasSolidas({
                     accessor: 'cantidad',
                     title: 'Cantidad en Kilos',
                     className: 'text-right [&>div]:justify-end',
-                    render: (row) => Number(row.cantidad ?? 0).toFixed(3),
+                    render: (row) => formatDecimal(Number(row.cantidad ?? 0), 3),
                   },
                   {
                     accessor: 'costo',
                     title: 'Costo (Bs)',
                     className: 'text-right [&>div]:justify-end',
-                    render: (row) => Number(row.costo ?? 0).toFixed(2),
+                    render: (row) => formatDecimal(Number(row.costo ?? 0), 2),
                   },
                   {
                     accessor: 'actions',
