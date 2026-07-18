@@ -81,7 +81,11 @@ export const FiltroUsuarios: React.FC<FiltroModalUsuarioType> = ({
           <TextField
             id="nombre"
             fullWidth
-            {...register('usuario')}
+            {...register('usuario', {
+              onChange: (e) => {
+                e.target.value = e.target.value.toUpperCase()
+              },
+            })}
             sx={{
               bgcolor: 'background.paper',
             }}

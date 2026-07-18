@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import IconSearch from '@/components/Icon/IconSearch'
 import IconGoogle from '@/components/Icon/IconGoogle'
 import { Constantes } from '@/config/Constantes'
 import { CustomDialog } from '@/components/modales/CustomDialog'
@@ -62,6 +61,7 @@ interface DatosLectura {
   celularAsignado: string
   fiscal: string
   celularFiscal: string
+  fechaOperativo: string
 }
 
 interface optionType {
@@ -76,6 +76,15 @@ const toDatetimeLocal = (value: unknown): string => {
   if (Number.isNaN(date.getTime())) return ''
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/** Formatea una fecha para el campo de solo lectura "Fecha y Hora del Operativo" */
+const formatFechaOperativoLectura = (value: unknown): string => {
+  if (!value) return ''
+  const date = value instanceof Date ? value : new Date(String(value))
+  if (Number.isNaN(date.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
 const DEFAULT_VALUES: OperativoPayload = {
@@ -197,6 +206,7 @@ export function DatosGeneralesForm({
     celularAsignado: '',
     fiscal: '',
     celularFiscal: '',
+    fechaOperativo: '',
   })
   const {
     departamentos,
@@ -597,7 +607,7 @@ export function DatosGeneralesForm({
           idTipoRelevancia: toNumberOrZero(payload.idTipoRelevancia),
           idTipoDenuncia: toNumberOrZero(payload.idTipoDenuncia),
           idTipoPenal: toNumberOrZero(payload.idTipoPenal),
-          fechaOperativo: toIsoDate(payload.fechaOperativo),
+          fechaOperativo: toIsoDate(datosCaso?.caso?.fechaOperativo),
           idDepartamento: toNumberOrZero(payload.idDepartamento),
           idProvincia: toNumberOrZero(payload.idProvincia),
           idLocalidad: toNumberOrZero(payload.idLocalidad),
@@ -652,6 +662,7 @@ export function DatosGeneralesForm({
 
       await onGuardar({
         ...payload,
+        fechaOperativo: toIsoDate(datosCaso?.caso?.fechaOperativo),
         coordX: toNumberOrZero(payload.coordX),
         coordY: toNumberOrZero(payload.coordY),
         gradosX: toNumberOrZero(latD),
@@ -689,6 +700,7 @@ export function DatosGeneralesForm({
       celularAsignado: caso?.telefonoAsignado ?? '',
       fiscal: caso?.fiscalAsignadoCaso ?? '',
       celularFiscal: caso?.telefonoFiscal ?? '',
+      fechaOperativo: formatFechaOperativoLectura(caso?.fechaOperativo),
     })
 
     void (async () => {
@@ -913,23 +925,15 @@ export function DatosGeneralesForm({
             )}
           </div>
           <div>
-            <label
-              htmlFor="fechaOperativo"
-              className="mb-1 block text-sm font-medium"
-            >
-              Fecha y Hora del Operativo <span className="text-danger">*</span>
+            <label className="mb-1 block text-sm font-medium">
+              Fecha y Hora del Operativo
             </label>
             <Input
-              id="fechaOperativo"
-              type="datetime-local"
-              className={`w-full ${errors.fechaOperativo ? 'border-danger' : ''}`}
-              {...register('fechaOperativo', reglaObligatorio)}
+              className="w-full bg-[#eee] dark:bg-[#1b2e4b] cursor-not-allowed text-gray-500"
+              value={datosLectura.fechaOperativo}
+              disabled
+              readOnly
             />
-            {errors.fechaOperativo && (
-              <div className="mt-1 text-xs text-danger">
-                {errors.fechaOperativo.message}
-              </div>
-            )}
           </div>
 
           {/* Fila 3: Asignado y Celular + Categoria e Item */}
@@ -1520,30 +1524,7 @@ export function DatosGeneralesForm({
           </div>
 
           <div className="col-span-1 lg:col-span-4 mt-4">
-            <div className="flex gap-2 mb-2 relative">
-              <Input
-                type="text"
-                className="flex-1"
-                placeholder="Buscar dirección, zona o calle..."
-                value={searchQuery}
-                uppercase
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    void buscarDireccion()
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="text-primary hover:text-primary/80 flex items-center justify-center p-2"
-                onClick={() => void buscarDireccion()}
-                disabled={isSearching}
-                title="Buscar dirección"
-              >
-                <IconSearch className="h-5 w-5" />
-              </button>
+            <div className="flex gap-2 mb-2 relative justify-end">
               <button
                 type="button"
                 className="text-danger hover:text-danger/80 flex items-center justify-center p-2"
@@ -1584,7 +1565,6 @@ export function DatosGeneralesForm({
               coordenadas={
                 coordX && coordY ? [Number(coordX), Number(coordY)] : null
               }
-              tileUrl="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             />
           </div>
 
@@ -1641,7 +1621,7 @@ export function DatosGeneralesForm({
             style={{ border: 0 }}
             loading="lazy"
             allowFullScreen
-            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&output=embed`}
+            src={`https://maps.google.com/maps?q=${Number(coordX)},${Number(coordY)}&z=15&t=k&output=embed`}
           />
         </div>
       </CustomDialog>

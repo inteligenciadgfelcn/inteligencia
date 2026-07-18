@@ -58,6 +58,8 @@ export class OperativoService extends BaseService {
 
     const operativos = await this.operativoRepository.buscarPorCaso(idCaso)
     const firstOperativo = operativos[0] ?? null
+    const fechaOperativo =
+      await this.operativoRepository.buscarFechaOperativoPorIdCasoSiii(idCaso)
 
     const caso = {
       idCaso: asignacion.idCaso,
@@ -73,6 +75,7 @@ export class OperativoService extends BaseService {
       telefonoFiscal: asignacion.telefonoFiscal,
       ianus: asignacion.ianus,
       relevanciaCaso: firstOperativo?.tipoRelevancia?.descripcion ?? 'N/A',
+      fechaOperativo,
     }
 
     return { caso, operativos }

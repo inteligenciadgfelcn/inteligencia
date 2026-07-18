@@ -361,12 +361,14 @@ function FotoSlot({
         {label}
       </p>
       {src ? (
-        <img
-          src={src}
-          alt={label}
-          className="h-40 w-full cursor-zoom-in rounded object-cover shadow-sm hover:opacity-90"
-          onClick={() => onZoom(src)}
-        />
+        <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <img
+            src={src}
+            alt={label}
+            className="h-full max-w-full cursor-zoom-in object-contain hover:opacity-90"
+            onClick={() => onZoom(src)}
+          />
+        </div>
       ) : (
         <div className="flex h-40 w-full items-center justify-center rounded bg-gray-100 dark:bg-gray-800">
           <span className="text-xs text-gray-400">Sin foto</span>

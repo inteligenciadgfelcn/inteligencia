@@ -11,6 +11,7 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string
   icon?: string
   fullWidth?: boolean
+  uppercase?: boolean
 }
 
 const FormInput = ({
@@ -22,6 +23,7 @@ const FormInput = ({
   className,
   disabled,
   fullWidth = true,
+  uppercase = false,
   ...props
 }: FormInputProps) => {
   return (
@@ -50,7 +52,17 @@ const FormInput = ({
         {/* Input */}
         <input
           id={name}
-          {...(register && register(name))}
+          {...(register &&
+            register(
+              name,
+              uppercase
+                ? {
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                      e.target.value = e.target.value.toUpperCase()
+                    },
+                  }
+                : undefined
+            ))}
           {...props}
           disabled={disabled}
           className={clsx(

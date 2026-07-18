@@ -1,13 +1,61 @@
 'use client'
 
-import { Fragment, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
 import IconPrinter from '@/components/Icon/IconPrinter'
 import { sesionPeticion } from '@/utils/peticion'
 import { imprimir } from '@/utils/imprimir'
+import { GaleriaService } from '@/services/operativos'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
+
+function FotoGaleriaThumb({
+  path,
+  onClick,
+}: {
+  path: string
+  onClick: (src: string) => void
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+  const [cargandoFoto, setCargandoFoto] = useState(true)
+
+  useEffect(() => {
+    let objectUrl: string
+    GaleriaService.obtenerFoto(path)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob)
+        setSrc(objectUrl)
+      })
+      .catch(() => setSrc(null))
+      .finally(() => setCargandoFoto(false))
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [path])
+
+  if (cargandoFoto) {
+    return <div className="h-16 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+  }
+  if (!src) {
+    return (
+      <div className="flex h-16 w-24 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+        <span className="text-[10px] text-gray-400">Sin foto</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt="Miniatura de galería"
+        className="h-full max-w-full cursor-zoom-in object-contain"
+        onClick={() => onClick(src)}
+      />
+    </div>
+  )
+}
 
 const Mapa = dynamic(() => import('@/components/mapas/Mapa'), {
   ssr: false,
@@ -89,6 +137,7 @@ function TablaSimple({
 export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Props) {
   const mapRef = useRef<any>(null)
   const [descargando, setDescargando] = useState(false)
+  const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
 
   const descargarPdf = async () => {
     if (!urlPdf) return
@@ -144,6 +193,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
     mapaCoords ? [mapaCoords.lat, mapaCoords.lon] : [-16.5, -68.1]
 
   return (
+    <>
     <Transition appear show={open} as={Fragment}>
       <Dialog as="div" className="relative z-[200]" onClose={onClose}>
         <Transition.Child
@@ -357,11 +407,13 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       {galerias.length === 0 ? (
                         <p className="text-xs italic text-gray-400">Sin fotos de galería registradas.</p>
                       ) : (
-                        <ul className="mb-2 space-y-1 text-xs">
+                        <ul className="mb-2 flex flex-wrap gap-3 text-xs">
                           {galerias.map((g, i) => (
-                            <li key={i} className="flex items-center gap-2">
-                              <span className="font-semibold text-[#3e5f8a]">#{i + 1}</span>
-                              <span className="text-gray-600 dark:text-gray-300">{g.descripcion || 'Sin descripción'}</span>
+                            <li key={i} className="flex flex-col items-center gap-1">
+                              <FotoGaleriaThumb path={g.urlFotoThumbnail} onClick={setImagenAmpliada} />
+                              <span className="text-center text-gray-600 dark:text-gray-300">
+                                #{i + 1} {g.descripcion || 'Sin descripción'}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -394,5 +446,30 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
         </div>
       </Dialog>
     </Transition>
+    {imagenAmpliada && (
+      <div
+        className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-sm"
+        onClick={() => setImagenAmpliada(null)}
+      >
+        <div className="relative" onClick={(e) => e.stopPropagation()}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imagenAmpliada}
+            alt="Vista ampliada"
+            className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+          />
+          <Button
+            type="button"
+            variant="dark"
+            size="sm"
+            className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+            onClick={() => setImagenAmpliada(null)}
+          >
+            ✕
+          </Button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }

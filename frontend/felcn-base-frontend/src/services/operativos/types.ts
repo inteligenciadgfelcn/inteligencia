@@ -49,6 +49,7 @@ export interface CasoResumen {
   telefonoAsignado: string
   fiscalAsignadoCaso: string
   telefonoFiscal: string
+  fechaOperativo?: string | null
 }
 export interface OperativoPayload {
   numeroInforme: string

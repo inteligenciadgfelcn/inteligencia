@@ -10,6 +10,7 @@ import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
+import { formatDecimal } from '@/utils/formatDecimal'
 import { DropzoneFoto } from './DropzoneFoto'
 import { BlancosService } from '@/services/analisis'
 import type { BlancoS2i, Ovise } from '@/services/analisis'
@@ -261,7 +262,7 @@ export function OvisePanel({ blanco }: Props) {
                   <p className="mt-0.5 flex items-center gap-1">
                     <span className="font-medium text-gray-500">Coordenadas:</span> 
                     <span className="font-mono bg-gray-50 dark:bg-gray-900/50 px-1 py-0.5 rounded text-[10px]">
-                      {o.latitud.toFixed(6)}, {o.longitud.toFixed(6)}
+                      {formatDecimal(o.latitud, 6)}, {formatDecimal(o.longitud, 6)}
                     </span>
                   </p>
                   {o.reporte && (

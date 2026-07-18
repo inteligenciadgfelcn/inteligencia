@@ -155,6 +155,15 @@ export const BienesServiceInstance = {
     })
   },
 
+  async obtenerArchivoBlob(idArchivo: string): Promise<Blob> {
+    return sesionPeticion({
+      url: `${BASE}/archivo/${idArchivo}/descargar`,
+      method: 'get',
+      responseType: 'blob',
+      withCredentials: true,
+    })
+  },
+
   async descargarArchivo(idArchivo: string, nombreArchivo: string) {
     const res = await sesionPeticion({
       url: `${BASE}/archivo/${idArchivo}/descargar`,
