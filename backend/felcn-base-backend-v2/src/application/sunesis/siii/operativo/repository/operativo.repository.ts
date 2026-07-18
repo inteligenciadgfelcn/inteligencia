@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
+import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
 import { PaginacionQueryDto } from '@/common/dto'
+import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 
 // Entities
 import { Operativo } from '../entity/operativo.entity'
@@ -25,10 +27,25 @@ import { AsignacionSiii } from '../../asignacion/entity/asignacion-siii.entity'
 export class OperativoRepository {
   constructor(
     @InjectDataSource(DB_SIII)
-    private dataSource: DataSource
+    private dataSource: DataSource,
+    @InjectDataSource(DB_ASIG_CASOS)
+    private asigCasosDataSource: DataSource
   ) { }
 
   // ==================== OPERATIVO ====================
+
+  /**
+   * Busca la fecha del operativo en a_felcn_asignacion_caso.asignacion,
+   * vinculada al caso de SIII mediante id_caso_siii.
+   */
+  async buscarFechaOperativoPorIdCasoSiii(
+    idCasoSiii: string
+  ): Promise<Date | null> {
+    const asignacion = await this.asigCasosDataSource
+      .getRepository(AsignacionASIG)
+      .findOne({ where: { idCasoSiii: Number(idCasoSiii) } })
+    return asignacion?.fechaOperativo ?? null
+  }
 
   private get operativoRepo() {
     return this.dataSource.getRepository(Operativo)

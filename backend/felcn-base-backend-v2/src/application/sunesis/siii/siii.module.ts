@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { DB_SIII, DB_LGI } from '../shared/constants'
+import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
+import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 
 
 // Geografía
@@ -253,6 +255,7 @@ const entitiesOperativas = [
       [...entitiesParametricas, ...entitiesOperativas],
       DB_SIII
     ),
+    TypeOrmModule.forFeature([AsignacionASIG], DB_ASIG_CASOS),
   ],
   controllers: [
     LookupController,
