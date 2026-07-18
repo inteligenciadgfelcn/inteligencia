@@ -11,6 +11,7 @@ import {
   CreateBienSecuestradoPayload,
 } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import dayjs from 'dayjs'
 
 interface Props {
@@ -42,7 +43,8 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idItemBien])
 
-  const onSubmit = async (payload: CreateBienSecuestradoPayload) => {
+  const onSubmit = async (datos: CreateBienSecuestradoPayload) => {
+    const payload = trimPayload(datos)
     try {
       await BienesServiceInstance.registrarSecuestrado(idItemBien, payload)
       Alerta({ mensaje: 'Secuestro registrado correctamente', variant: 'success' })

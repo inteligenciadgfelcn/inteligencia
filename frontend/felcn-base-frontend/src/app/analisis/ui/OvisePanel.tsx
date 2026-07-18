@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import IconTrash from '@/components/Icon/IconTrash'
+import IconDownload from '@/components/Icon/IconDownload'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
+import { DropzoneFoto } from './DropzoneFoto'
 import { BlancosService } from '@/services/analisis'
 import type { BlancoS2i, Ovise } from '@/services/analisis'
 
@@ -45,6 +47,7 @@ export function OvisePanel({ blanco }: Props) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const { Alerta } = useAlerts()
   const mapRef = useRef<any>(null)
+  const descargandoRef = useRef(false)
 
   const [cargando, setCargando] = useState(false)
   const [lista, setLista] = useState<Ovise[]>([])
@@ -54,6 +57,7 @@ export function OvisePanel({ blanco }: Props) {
   const [longitud, setLongitud] = useState<string>('-68.150000')
   const [reporte, setReporte] = useState('')
   const [accion, setAccion] = useState('')
+  const [archivo, setArchivo] = useState<File | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
   const cargar = useCallback(async () => {
@@ -89,14 +93,33 @@ export function OvisePanel({ blanco }: Props) {
         longitud: parseFloat(longitud),
         reporte: reporte.trim(),
         accion: accion.trim().toUpperCase(),
+        archivo: archivo ?? undefined,
       })
       if (r?.finalizado) {
-        setLugar(''); setReporte(''); setAccion(''); setSubmitted(false)
+        setLugar(''); setReporte(''); setAccion(''); setArchivo(null); setSubmitted(false)
         void cargar()
         Alerta({ mensaje: 'Reporte OVISE registrado', variant: 'success' })
       }
     } catch (e) { Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' }) }
     finally { setCargando(false) }
+  }
+
+  const descargar = async (o: Ovise) => {
+    if (descargandoRef.current) return
+    descargandoRef.current = true
+    try {
+      const blob = await BlancosService.descargarOvise(o.idOvise)
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ovise-${o.idOvise}`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      descargandoRef.current = false
+    }
   }
 
   const eliminar = (idOvise: string) => {
@@ -166,8 +189,17 @@ export function OvisePanel({ blanco }: Props) {
         </div>
         <div className="lg:col-span-3">
           <label className="mb-1 block text-sm font-medium">Reporte <span className="text-danger">*</span></label>
-          <Textarea rows={2} value={reporte} onChange={(e) => setReporte(e.target.value)} uppercase error={errorReporte} className="w-full" />
+          <Textarea rows={2} value={reporte} onChange={(e) => setReporte(e.target.value)} error={errorReporte} className="w-full" />
           {errorReporte && <span className="mt-1 block text-xs italic text-danger">Este campo es obligatorio</span>}
+        </div>
+        <div className="lg:col-span-4">
+          <DropzoneFoto
+            label="Archivo adjunto (opcional)"
+            archivo={archivo}
+            onChange={setArchivo}
+            accept="*/*"
+            descripcionTipo="PDF, DOC, JPG, PNG, etc."
+          />
         </div>
       </div>
 
@@ -201,15 +233,28 @@ export function OvisePanel({ blanco }: Props) {
                   <span className="font-semibold text-gray-800 dark:text-gray-200 text-xs">
                     {o.lugar}
                   </span>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    className="h-6 w-6 p-0 shrink-0"
-                    onClick={() => eliminar(o.idOvise)}
-                    title="Eliminar reporte OVISE"
-                  >
-                    <IconTrash className="h-3.5 w-3.5" />
-                  </Button>
+                  <div className="flex shrink-0 gap-1">
+                    {o.tieneArchivo && (
+                      <Button
+                        variant="info"
+                        size="sm"
+                        className="h-6 w-6 p-0 shrink-0"
+                        onClick={() => void descargar(o)}
+                        title="Descargar archivo"
+                      >
+                        <IconDownload className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="h-6 w-6 p-0 shrink-0"
+                      onClick={() => eliminar(o.idOvise)}
+                      title="Eliminar reporte OVISE"
+                    >
+                      <IconTrash className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="mt-2 text-[11px] text-gray-600 dark:text-gray-400">
                   <p><span className="font-medium text-gray-500">Acción:</span> {o.accion}</p>

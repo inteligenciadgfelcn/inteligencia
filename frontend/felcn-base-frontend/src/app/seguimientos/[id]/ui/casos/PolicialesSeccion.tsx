@@ -9,6 +9,7 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { useParametricas } from '@/hooks/useParametricas'
 import { SeguimientoServiceInstance, ServidorPolicialPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface PolicialesSeccionProps {
@@ -58,11 +59,12 @@ export function PolicialesSeccion({ idOperativo, onGuardar }: PolicialesSeccionP
     void cargarServidores()
   }, [cargarGradosLocales, cargarServidores])
 
-  const onSubmit = async (payload: ServidorPolicialPayload) => {
+  const onSubmit = async (datos: ServidorPolicialPayload) => {
     if (!idOperativo) {
       Alerta({ mensaje: 'No se encontró el ID del operativo', variant: 'warning' })
       return
     }
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.agregarServidor(idOperativo, payload)
       Alerta({ mensaje: 'Servidor policial agregado', variant: 'success' })

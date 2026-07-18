@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SeguimientoServiceInstance, ControlJurisdiccionalPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface ControlJurisdiccionalSeccionProps {
@@ -30,7 +31,8 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
   // In G:\FELCN\Source2\inteligencia\backend\felcn-base-backend-v2\src\application\sunesis\siii\seguimiento\dto\seguimiento.dto.ts
   // Let me check it.
 
-  const onSubmit = async (payload: ControlJurisdiccionalPayload) => {
+  const onSubmit = async (datos: ControlJurisdiccionalPayload) => {
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.agregarControlJurisdiccional(idCaso, payload)
       Alerta({ mensaje: 'Control Jurisdiccional registrado correctamente', variant: 'success' })

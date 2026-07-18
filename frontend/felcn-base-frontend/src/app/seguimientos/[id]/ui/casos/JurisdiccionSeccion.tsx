@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { useAlerts } from '@/hooks/useAlerts'
 import { SeguimientoServiceInstance, JurisdiccionPayload } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 
 interface JurisdiccionSeccionProps {
@@ -24,7 +25,8 @@ export function JurisdiccionSeccion({ idCaso, datos, onGuardar }: JurisdiccionSe
     }
   })
 
-  const onSubmit = async (payload: JurisdiccionPayload) => {
+  const onSubmit = async (datos: JurisdiccionPayload) => {
+    const payload = trimPayload(datos)
     try {
       await SeguimientoServiceInstance.agregarJurisdiccion(idCaso, payload)
       Alerta({ mensaje: 'Jurisdicción registrada correctamente', variant: 'success' })

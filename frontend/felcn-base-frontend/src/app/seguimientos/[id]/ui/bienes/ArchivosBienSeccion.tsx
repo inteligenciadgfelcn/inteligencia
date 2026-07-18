@@ -11,6 +11,7 @@ import { useParametricas } from '@/hooks/useParametricas'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
+import { trimPayload } from '@/utils/trimPayload'
 
 interface Props {
   idCaso: string
@@ -49,7 +50,8 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
 
   useEffect(() => { void cargarRegistros() }, [idCaso])
 
-  const onSubmit = async (payload: any) => {
+  const onSubmit = async (datos: any) => {
+    const payload = trimPayload(datos)
     if (!file) {
       Alerta({ mensaje: 'Debe seleccionar un archivo', variant: 'warning' })
       return

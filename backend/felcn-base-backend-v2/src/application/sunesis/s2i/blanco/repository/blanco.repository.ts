@@ -155,17 +155,13 @@ export class BlancoRepository {
     return this.dataSource.getRepository(S2iFlujoTelefonico).save(flujo)
   }
 
-  async buscarFlujoPorId(
-    idFlujo: string
-  ): Promise<S2iFlujoTelefonico | null> {
+  async buscarFlujoPorId(idFlujo: string): Promise<S2iFlujoTelefonico | null> {
     return this.dataSource
       .getRepository(S2iFlujoTelefonico)
       .findOne({ where: { idFlujo } })
   }
 
-  async listarFlujosPorBlanco(
-    idBlanco: string
-  ): Promise<S2iFlujoTelefonico[]> {
+  async listarFlujosPorBlanco(idBlanco: string): Promise<S2iFlujoTelefonico[]> {
     return this.dataSource
       .getRepository(S2iFlujoTelefonico)
       .find({ where: { idBlanco } })
@@ -242,9 +238,25 @@ export class BlancoRepository {
   }
 
   async listarOvisePorBlanco(idBlanco: string): Promise<S2iOvise[]> {
+    return this.dataSource.getRepository(S2iOvise).find({
+      select: [
+        'idOvise',
+        'idBlanco',
+        'lugar',
+        'latitud',
+        'longitud',
+        'reporte',
+        'accion',
+        'archivo',
+      ],
+      where: { idBlanco },
+    })
+  }
+
+  async buscarOvisePorId(idOvise: string): Promise<S2iOvise | null> {
     return this.dataSource
       .getRepository(S2iOvise)
-      .find({ where: { idBlanco } })
+      .findOne({ where: { idOvise } })
   }
 
   async eliminarOvise(idOvise: string): Promise<void> {

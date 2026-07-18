@@ -123,7 +123,11 @@ export class BlancoController extends BaseController {
     @Req() req: Request
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const antecedente = await this.service.crearAntecedente(idBlanco, dto, numeroPase)
+    const antecedente = await this.service.crearAntecedente(
+      idBlanco,
+      dto,
+      numeroPase
+    )
     return this.successCreate(antecedente)
   }
 
@@ -295,11 +299,16 @@ export class BlancoController extends BaseController {
   @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
   @Get('blancos/:idBlanco/flujos-telefonicos')
   async listarFlujosTelefonicos(@Param('idBlanco') idBlanco: string) {
-    return this.successList(await this.service.listarFlujosTelefonicos(idBlanco))
+    return this.successList(
+      await this.service.listarFlujosTelefonicos(idBlanco)
+    )
   }
 
   @ApiOperation({ summary: 'Eliminar flujo telefónico por ID' })
-  @ApiParam({ name: 'idFlujo', description: 'ID del flujo telefónico (bigint)' })
+  @ApiParam({
+    name: 'idFlujo',
+    description: 'ID del flujo telefónico (bigint)',
+  })
   @Delete('flujos-telefonicos/:idFlujo')
   async eliminarFlujoTelefonico(@Param('idFlujo') idFlujo: string) {
     await this.service.eliminarFlujoTelefonico(idFlujo)
@@ -327,7 +336,9 @@ export class BlancoController extends BaseController {
     return this.successCreate(flujoFiscalia)
   }
 
-  @ApiOperation({ summary: 'Listar detalle de fiscalía de un flujo telefónico' })
+  @ApiOperation({
+    summary: 'Listar detalle de fiscalía de un flujo telefónico',
+  })
   @ApiParam({ name: 'idFlujo', description: 'ID del flujo telefónico' })
   @Get('flujos-telefonicos/:idFlujo/fiscalia')
   async listarFlujoFiscalia(@Param('idFlujo') idFlujo: string) {
@@ -384,7 +395,10 @@ export class BlancoController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Descargar archivo de un activo patrimonial' })
-  @ApiParam({ name: 'idActivo', description: 'ID del activo patrimonial (bigint)' })
+  @ApiParam({
+    name: 'idActivo',
+    description: 'ID del activo patrimonial (bigint)',
+  })
   @Get('activos-patrimoniales/:idActivo/descargar')
   async descargarActivoPatrimonial(
     @Param('idActivo') idActivo: string,
@@ -396,7 +410,10 @@ export class BlancoController extends BaseController {
   }
 
   @ApiOperation({ summary: 'Eliminar activo patrimonial por ID' })
-  @ApiParam({ name: 'idActivo', description: 'ID del activo patrimonial (bigint)' })
+  @ApiParam({
+    name: 'idActivo',
+    description: 'ID del activo patrimonial (bigint)',
+  })
   @Delete('activos-patrimoniales/:idActivo')
   async eliminarActivoPatrimonial(@Param('idActivo') idActivo: string) {
     await this.service.eliminarActivoPatrimonial(idActivo)
@@ -405,16 +422,28 @@ export class BlancoController extends BaseController {
 
   // ==================== OVISE ====================
 
-  @ApiOperation({ summary: 'Registrar reporte OVISE del blanco' })
+  @ApiOperation({
+    summary: 'Registrar reporte OVISE del blanco',
+    description:
+      'Enviar como multipart/form-data. Campo de archivo opcional: archivo.',
+  })
   @ApiParam({ name: 'idBlanco', description: 'ID del blanco' })
+  @ApiConsumes('multipart/form-data')
   @Post('blancos/:idBlanco/ovise')
+  @UseInterceptors(FileInterceptor('archivo'))
   async crearOvise(
     @Param('idBlanco') idBlanco: string,
     @Body() dto: CreateOviseDto,
+    @UploadedFile() file: Express.Multer.File,
     @Req() req: Request
   ) {
     const { id: idUsuario = '' } = req.user as PassportUser
-    const ovise = await this.service.crearOvise(idBlanco, dto, idUsuario)
+    const ovise = await this.service.crearOvise(
+      idBlanco,
+      dto,
+      idUsuario,
+      file?.buffer
+    )
     return this.successCreate(ovise)
   }
 
@@ -423,6 +452,18 @@ export class BlancoController extends BaseController {
   @Get('blancos/:idBlanco/ovise')
   async listarOvise(@Param('idBlanco') idBlanco: string) {
     return this.successList(await this.service.listarOvise(idBlanco))
+  }
+
+  @ApiOperation({ summary: 'Descargar archivo de un reporte OVISE' })
+  @ApiParam({ name: 'idOvise', description: 'ID del reporte OVISE (bigint)' })
+  @Get('ovise/:idOvise/descargar')
+  async descargarOvise(
+    @Param('idOvise') idOvise: string,
+    @Res() res: Response
+  ) {
+    const archivo = await this.service.descargarOvise(idOvise)
+    res.set('Content-Type', 'application/octet-stream')
+    res.send(archivo)
   }
 
   @ApiOperation({ summary: 'Eliminar reporte OVISE por ID' })
