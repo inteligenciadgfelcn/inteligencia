@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { DataSource, EntityManager } from 'typeorm'
 import { DB_SIII } from '../../../shared/constants'
 import { DB_ASIG_CASOS } from '@/core/config/database/database.module'
 import { PaginacionQueryDto } from '@/common/dto'
+import { auditoriaContexto } from '@/common/context/auditoria-contexto'
 import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 
 // Entities
@@ -32,6 +33,28 @@ export class OperativoRepository {
     private asigCasosDataSource: DataSource
   ) { }
 
+  /**
+   * Ejecuta `fn` dentro de una transaccion que fija `app.usuario_nombre`
+   * (SET LOCAL, valido solo para esta transaccion/conexion) antes de operar,
+   * para que los triggers de auditoria de BD (_usuario_creacion/_usuario_modificacion)
+   * usen el usuario real del JWT en vez de caer al usuario tecnico de conexion.
+   * Reemplaza la dependencia del interceptor global (best-effort, conexion no garantizada)
+   * por un mecanismo confiable dentro del modulo de operativos.
+   */
+  private async conAuditoria<T>(
+    fn: (manager: EntityManager) => Promise<T>
+  ): Promise<T> {
+    const usuarioNombre = auditoriaContexto.getStore()?.userName
+    return this.dataSource.transaction(async (manager) => {
+      if (usuarioNombre) {
+        await manager.query('SET LOCAL app.usuario_nombre = $1', [
+          usuarioNombre,
+        ])
+      }
+      return fn(manager)
+    })
+  }
+
   // ==================== OPERATIVO ====================
 
   /**
@@ -52,7 +75,9 @@ export class OperativoRepository {
   }
 
   async crearOperativo(operativo: Operativo): Promise<Operativo> {
-    return this.operativoRepo.save(operativo)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Operativo).save(operativo)
+    )
   }
 
   async listar(paginacion: PaginacionQueryDto): Promise<[Operativo[], number]> {
@@ -102,7 +127,9 @@ export class OperativoRepository {
   }
 
   async actualizarOperativo(operativo: Operativo): Promise<Operativo> {
-    return this.operativoRepo.save(operativo)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Operativo).save(operativo)
+    )
   }
 
   // ==================== DROGAS ====================
@@ -112,7 +139,9 @@ export class OperativoRepository {
   }
 
   async crearDroga(droga: Droga): Promise<Droga> {
-    return this.drogaRepo.save(droga)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Droga).save(droga)
+    )
   }
 
   async listarDrogasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Droga[], number]> {
@@ -150,7 +179,9 @@ export class OperativoRepository {
   async crearSustanciaSolida(
     sustancia: SustanciaSolida
   ): Promise<SustanciaSolida> {
-    return this.sustanciaSolidaRepo.save(sustancia)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(SustanciaSolida).save(sustancia)
+    )
   }
 
   async listarSustanciasSolidasPorOperativo(
@@ -179,7 +210,9 @@ export class OperativoRepository {
   async crearSustanciaLiquida(
     sustancia: SustanciaLiquida
   ): Promise<SustanciaLiquida> {
-    return this.sustanciaLiquidaRepo.save(sustancia)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(SustanciaLiquida).save(sustancia)
+    )
   }
 
   async listarSustanciasLiquidasPorOperativo(
@@ -206,7 +239,9 @@ export class OperativoRepository {
   }
 
   async crearFabrica(fabrica: Fabrica): Promise<Fabrica> {
-    return this.fabricaRepo.save(fabrica)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Fabrica).save(fabrica)
+    )
   }
 
   async listarFabricasPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Fabrica[], number]> {
@@ -230,7 +265,9 @@ export class OperativoRepository {
   }
 
   async crearBien(bien: ItemBienSecuestrado): Promise<ItemBienSecuestrado> {
-    return this.bienRepo.save(bien)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(ItemBienSecuestrado).save(bien)
+    )
   }
 
   async listarBienesPorOperativo(
@@ -259,7 +296,9 @@ export class OperativoRepository {
   async crearBienCaracteristica(
     caracteristica: ItemBienCaracteristica
   ): Promise<ItemBienCaracteristica> {
-    return this.bienCaracteristicaRepo.save(caracteristica)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(ItemBienCaracteristica).save(caracteristica)
+    )
   }
 
   async listarCaracteristicasPorBien(
@@ -292,7 +331,9 @@ export class OperativoRepository {
   }
 
   async crearPersonaAuxiliar(persona: PersonaAuxiliar): Promise<PersonaAuxiliar> {
-    return this.personaAuxiliarRepo.save(persona)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(PersonaAuxiliar).save(persona)
+    )
   }
 
   async listarPersonasAuxiliaresPorOperativo(
@@ -317,7 +358,11 @@ export class OperativoRepository {
     campo: 'foto_frente' | 'foto_documento' | 'foto_perfil_izquierdo',
     foto: Buffer
   ): Promise<void> {
-    await this.personaAuxiliarRepo.update(id, { [campo]: foto } as any)
+    await this.conAuditoria((manager) =>
+      manager.getRepository(PersonaAuxiliar).update(id, {
+        [campo]: foto,
+      } as any)
+    )
   }
 
   // ==================== GALERÍA ====================
@@ -327,7 +372,9 @@ export class OperativoRepository {
   }
 
   async crearGaleria(galeria: Galeria): Promise<Galeria> {
-    return this.galeriaRepo.save(galeria)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Galeria).save(galeria)
+    )
   }
 
   async listarGaleriaPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Galeria[], number]> {
@@ -349,7 +396,9 @@ export class OperativoRepository {
   }
 
   async crearLogotipo(logotipo: Logotipo): Promise<Logotipo> {
-    return this.logotipoRepo.save(logotipo)
+    return this.conAuditoria((manager) =>
+      manager.getRepository(Logotipo).save(logotipo)
+    )
   }
 
   async listarLogotiposPorDroga(idDroga: string, paginacion: PaginacionQueryDto): Promise<[Logotipo[], number]> {
@@ -428,7 +477,11 @@ export class OperativoRepository {
     costoAproximado: number,
     costoCuantificado: number
   ): Promise<void> {
-    await this.bienRepo.update(id, { costoAproximado, costoCuantificado })
+    await this.conAuditoria((manager) =>
+      manager
+        .getRepository(ItemBienSecuestrado)
+        .update(id, { costoAproximado, costoCuantificado })
+    )
   }
 
   // Corresponde a calcula() de ABM-ING-COSTO: SUM(CostoCuant) y SUM*tipoCambio

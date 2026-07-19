@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AuditoriaEntity } from '@/common/entity'
 import { Operativo } from './operativo.entity'
 import { EstadoDroga } from '../../parametrica/entity/operativo/estado-droga.entity'
 import { FormaTransporte } from '../../parametrica/entity/operativo/forma-transporte.entity'
@@ -19,7 +20,7 @@ import { Pais } from '../../parametrica/entity/geografia/pais.entity'
  * Tabla: droga
  */
 @Entity({ name: 'droga', schema: SCHEMA_PUBLIC })
-export class Droga {
+export class Droga extends AuditoriaEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_droga' })
   id: string
 
@@ -87,6 +88,7 @@ export class Droga {
   }
 
   constructor(data?: Partial<Droga>) {
+    super(data)
     if (data) Object.assign(this, data)
   }
 }

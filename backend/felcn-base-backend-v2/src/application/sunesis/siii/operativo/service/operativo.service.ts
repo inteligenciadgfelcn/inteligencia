@@ -104,13 +104,12 @@ export class OperativoService extends BaseService {
   /**
    * PATCH /:idOperativo — actualiza el operativo por su ID.
    */
-  async actualizar(
-    idOperativo: string,
-    dto: OperativoDto,
-    usuario: string
-  ): Promise<Operativo> {
+  async actualizar(idOperativo: string, dto: OperativoDto): Promise<Operativo> {
     const operativo = await this.buscarPorId(idOperativo)
-    Object.assign(operativo, { ...dto, fechaOperativo: new Date(dto.fechaOperativo) })
+    Object.assign(operativo, {
+      ...dto,
+      fechaOperativo: new Date(dto.fechaOperativo),
+    })
     return this.operativoRepository.actualizarOperativo(operativo)
   }
 

@@ -26,10 +26,11 @@ export abstract class AuditoriaEntity extends BaseEntity {
   })
   transaccion: string
 
-  @Column('bigint', {
+  @Column('varchar', {
     name: '_usuario_creacion',
+    length: 50,
     nullable: false,
-    comment: 'Id de usuario que creó el registro',
+    comment: 'Usuario (login/CI) que creó el registro',
   })
   usuarioCreacion: string
 
@@ -42,10 +43,11 @@ export abstract class AuditoriaEntity extends BaseEntity {
   })
   fechaCreacion: Date
 
-  @Column('bigint', {
+  @Column('varchar', {
     name: '_usuario_modificacion',
+    length: 50,
     nullable: true,
-    comment: 'Id de usuario que realizo una modificación',
+    comment: 'Usuario (login/CI) que realizó una modificación',
   })
   usuarioModificacion?: string | null
 

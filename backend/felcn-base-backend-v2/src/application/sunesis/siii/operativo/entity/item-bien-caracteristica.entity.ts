@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AuditoriaEntity } from '@/common/entity'
 import { ItemBienSecuestrado } from './item-bien-secuestrado.entity'
 import { CatalogoCaracteristica } from '../../parametrica/entity/operativo/catalogo-caracteristica.entity'
 
@@ -17,7 +18,7 @@ import { CatalogoCaracteristica } from '../../parametrica/entity/operativo/catal
  * Tabla: item_bien_caracteristica
  */
 @Entity({ name: 'item_bien_caracteristica', schema: SCHEMA_PUBLIC })
-export class ItemBienCaracteristica {
+export class ItemBienCaracteristica extends AuditoriaEntity {
   @PrimaryGeneratedColumn({
     type: 'integer',
     name: 'id_item_bien_caracteristica',
@@ -55,6 +56,7 @@ export class ItemBienCaracteristica {
   }
 
   constructor(data?: Partial<ItemBienCaracteristica>) {
+    super(data)
     if (data) Object.assign(this, data)
   }
 }
