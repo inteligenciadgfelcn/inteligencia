@@ -8,6 +8,7 @@ import {
   OneToMany,
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AuditoriaEntity } from '@/common/entity'
 import { Operativo } from './operativo.entity'
 import { CatalogoTipo } from '../../parametrica/entity/operativo/catalogo-tipo.entity'
 
@@ -18,7 +19,7 @@ import { CatalogoTipo } from '../../parametrica/entity/operativo/catalogo-tipo.e
  * Tabla: item_bien_secuestrado
  */
 @Entity({ name: 'item_bien_secuestrado', schema: SCHEMA_PUBLIC })
-export class ItemBienSecuestrado {
+export class ItemBienSecuestrado extends AuditoriaEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_item_bien_secuestrado' })
   id: string
 
@@ -65,6 +66,7 @@ export class ItemBienSecuestrado {
   }
 
   constructor(data?: Partial<ItemBienSecuestrado>) {
+    super(data)
     if (data) Object.assign(this, data)
   }
 }

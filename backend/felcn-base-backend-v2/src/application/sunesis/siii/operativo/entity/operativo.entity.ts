@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, BaseEntity, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert, ManyToOne, JoinColumn } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AuditoriaEntity } from '@/common/entity'
 import { TipoOperacion } from '../../parametrica/entity/tipo/tipo-operacion.entity'
 import { Unidad } from '../../parametrica/entity/estructura/unidad.entity'
 import { PlanOperaciones } from '../../parametrica/entity/operativo/plan-operaciones.entity'
@@ -18,7 +19,7 @@ import { TipoRelevancia } from '../../parametrica/entity/tipo/tipo-relevancia.en
  * Tabla: operativo
  */
 @Entity({ name: 'operativo', schema: SCHEMA_PUBLIC })
-export class Operativo extends BaseEntity {
+export class Operativo extends AuditoriaEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_operativo' })
   id: string
 
@@ -195,7 +196,7 @@ export class Operativo extends BaseEntity {
   tipoRelevancia?: TipoRelevancia;
 
   constructor(data?: Partial<Operativo>) {
-    super()
+    super(data)
     if (data) Object.assign(this, data)
   }
 }

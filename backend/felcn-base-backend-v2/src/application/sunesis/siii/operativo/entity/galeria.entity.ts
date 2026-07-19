@@ -6,6 +6,7 @@ import {
   JoinColumn,
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
+import { AuditoriaEntity } from '@/common/entity'
 import { Operativo } from './operativo.entity'
 
 /**
@@ -16,7 +17,7 @@ import { Operativo } from './operativo.entity'
  * Tabla: galeria
  */
 @Entity({ name: 'galeria', schema: SCHEMA_PUBLIC })
-export class Galeria {
+export class Galeria extends AuditoriaEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_galeria' })
   id: string
 
@@ -34,6 +35,7 @@ export class Galeria {
   operativo?: Operativo
 
   constructor(data?: Partial<Galeria>) {
+    super(data)
     if (data) Object.assign(this, data)
   }
 }

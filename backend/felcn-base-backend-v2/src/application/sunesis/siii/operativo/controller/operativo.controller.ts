@@ -165,12 +165,10 @@ export class OperativoController extends BaseController {
   @ApiParam({ name: 'idOperativo', description: 'ID del operativo' })
   @Patch(':idOperativo')
   async actualizar(
-    @Req() req: Request,
     @Param('idOperativo') idOperativo: string,
     @Body() data: OperativoDto
   ) {
-    const { numeroPase = '' } = req.user as PassportUser
-    const operativo = await this.operativoService.actualizar(idOperativo, data, numeroPase)
+    const operativo = await this.operativoService.actualizar(idOperativo, data)
     return this.successUpdate(operativo)
   }
 
