@@ -244,7 +244,7 @@ export class ReporteCasosService {
    * Cruce de deconfliction: para cada blanco/empresa del caso, busca si el
    * mismo número de documento (blanco) o NIT (empresa) aparece en OTROS
    * casos, sin importar qué analista los haya registrado. Es la base del
-   * "vínculo cruzado" del diagrama de vínculos (Fase 2).
+   * "vínculo cruzado" del diagrama de vínculos (Complemento).
    */
   async obtenerVinculosCruzados(idCaso: string) {
     const [blancos, organizaciones] = await Promise.all([

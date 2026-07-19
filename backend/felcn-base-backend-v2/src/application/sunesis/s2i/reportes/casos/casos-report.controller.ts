@@ -102,7 +102,7 @@ export class CasosReportController extends BaseController {
 
   @ApiOperation({
     summary:
-      'Cruce de deconfliction entre casos (Fase 2 del diagrama de vínculos)',
+      'Cruce de deconfliction entre casos (Complemento del diagrama de vínculos)',
     description:
       'Para cada blanco/empresa del caso, busca coincidencias de número de ' +
       'documento (blanco) o NIT (empresa) en OTROS casos, sin filtrar por ' +
