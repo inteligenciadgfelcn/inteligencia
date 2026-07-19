@@ -58,6 +58,7 @@ export function BuscadorCasoVinculos({ onCasoSeleccionado, cargando }: Props) {
             value={termino}
             onChange={(e) => setTermino(e.target.value)}
             placeholder="Ej. OPERACIÓN CONDOR o CER-2025-001"
+            uppercase
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault()
