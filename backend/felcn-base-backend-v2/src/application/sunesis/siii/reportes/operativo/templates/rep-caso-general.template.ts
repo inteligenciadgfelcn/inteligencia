@@ -2,6 +2,7 @@ import { ReportTemplate } from '../../interfaces/reporte-template.interface'
 import { PDFOptions } from 'puppeteer'
 import { OperativoService } from '../../../operativo/service/operativo.service'
 import { PaginacionQueryDto } from '@/common/dto'
+import { formatearFechaVisualizacion } from '@/common/utils/date.util'
 import { getLogoBase64 } from '../../report-logo.util'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const sharp = require('sharp')
@@ -416,7 +417,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Fecha de Nacimiento</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${persona.fechaNacimiento ? new Date(persona.fechaNacimiento).toLocaleDateString() : 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${formatearFechaVisualizacion(persona.fechaNacimiento)}</div>
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Estado Civil</strong>
                         </div>
@@ -556,7 +557,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                        <div class="timeline-title">Numero de Operativo: ${caso.numeroOperativo || 'N/A'}</div>
                         <div class="timeline-title">Asignado al Caso: ${caso.asignadoCaso || 'N/A'}</div>
                         <div class="timeline-title">Fiscal Asignado: ${caso.fiscalAsignadoCaso || 'N/A'}</div>
-                        <div class="timeline-title">Fecha y hora del Operativo: ${operativo.fechaOperativo ? new Date(operativo.fechaOperativo).toLocaleString('es-BO') : 'N/A'}</div>
+                        <div class="timeline-title">Fecha y hora del Operativo: ${formatearFechaVisualizacion(operativo.fechaOperativo, true)}</div>
                         <div class="timeline-title">Lugar del Opeartivo: ${operativo.lugar || 'N/A'}</div>
                         <div class="timeline-title">Unidad Operativa: ${operativo.descripcionUnidad || 'N/A'}</div>
                         <div class="timeline-title">Al mando del Operativo: ${operativo.mando || 'N/A'}</div>
@@ -660,7 +661,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
         const { caso, operativo } = data
         const header =
             'Nombre del Caso,Numero de Caso,Numero de Operativo,Asignado,Fiscal,Fecha,Lugar,Unidad,Plan,Tipo,Resumen\n'
-        const row = `"${caso.nombreCaso || 'N/A'}","${caso.numeroOperativo || 'N/A'}","${operativo.numeroOperativo || 'N/A'}","${caso.asignadoCaso || 'N/A'
+        const row = `"${caso.nombreCaso || 'N/A'}","${caso.numeroCaso || 'N/A'}","${operativo.numeroOperativo || 'N/A'}","${caso.asignadoCaso || 'N/A'
             }","${caso.fiscalAsignadoCaso || 'N/A'}","${operativo.fechaOperativo || 'N/A'}","${operativo.lugar || 'N/A'}","${operativo.idUnidad || 'N/A'
             }","${operativo.idPlanOperacion || 'N/A'}","${operativo.idTipoOperacion || 'N/A'}","${(
                 operativo.breveDetalle ||
