@@ -1,4 +1,11 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common'
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'
+import {
+  Controller,
+  Get,
+  Param,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { LookupService } from '../service/lookup.service'
@@ -6,6 +13,11 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
+// Catálogos fijos, comunes a cualquier operativo: se cachean por 1h
+// (CacheModule registrado en SiiiModule) para evitar recalcular en cada
+// request el mismo listado que no cambia entre operativos.
+@UseInterceptors(CacheInterceptor)
+@CacheTTL(60 * 60 * 1000)
 @ApiTags('Lookups SIII (Paramétricas)')
 @Controller('siii-lookups')
 export class LookupController extends BaseController {
