@@ -35,9 +35,10 @@ export class OperativoRepository {
 
   /**
    * Ejecuta `fn` dentro de una transaccion que fija `app.usuario_nombre`
-   * (SET LOCAL, valido solo para esta transaccion/conexion) antes de operar,
-   * para que los triggers de auditoria de BD (_usuario_creacion/_usuario_modificacion)
-   * usen el usuario real del JWT en vez de caer al usuario tecnico de conexion.
+   * (set_config con is_local=true, valido solo para esta transaccion/conexion)
+   * antes de operar, para que los triggers de auditoria de BD
+   * (_usuario_creacion/_usuario_modificacion) usen el usuario real del JWT
+   * en vez de caer al usuario tecnico de conexion.
    * Reemplaza la dependencia del interceptor global (best-effort, conexion no garantizada)
    * por un mecanismo confiable dentro del modulo de operativos.
    */
@@ -47,9 +48,11 @@ export class OperativoRepository {
     const usuarioNombre = auditoriaContexto.getStore()?.userName
     return this.dataSource.transaction(async (manager) => {
       if (usuarioNombre) {
-        await manager.query('SET LOCAL app.usuario_nombre = $1', [
-          usuarioNombre,
-        ])
+        // SET LOCAL no admite parametros bindeados ($1); set_config() si.
+        await manager.query(
+          "SELECT set_config('app.usuario_nombre', $1, true)",
+          [usuarioNombre]
+        )
       }
       return fn(manager)
     })
