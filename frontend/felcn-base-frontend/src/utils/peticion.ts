@@ -8,7 +8,7 @@ const estadosSinPermiso = [401]
 
 const cerrarSesionDirecto = () => {
   eliminarCookie('token')
-  window.location.href = '/login'
+  window.location.href = Constantes.loginPath
 }
 
 const actualizarTokenDirecto = async (): Promise<boolean> => {

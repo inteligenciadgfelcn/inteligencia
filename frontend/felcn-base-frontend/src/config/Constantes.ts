@@ -1,7 +1,12 @@
 import { env } from 'next-runtime-env'
 
+const sitePath = env('NEXT_PUBLIC_PATH') ?? ''
+
 export const Constantes = {
   baseUrl: env('NEXT_PUBLIC_BASE_URL') ?? '',
+  // Ruta absoluta al login respetando el basePath del entorno (dev/staging/raíz).
+  // Usar en window.location.href — router.push/replace de Next ya la agrega solo.
+  loginPath: (sitePath ? `/${sitePath}` : '') + '/login',
   authUrl: env('NEXT_PUBLIC_AUTH_URL') ?? '',
   baseApiUrl: env('NEXT_PUBLIC_BASE_API_URL') ?? '',
   socketUrl: env('NEXT_PUBLIC_SOCKET_URL') ?? '',
