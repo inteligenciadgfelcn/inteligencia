@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common'
-import type { Response } from 'express'
+import { Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common'
+import type { Request, Response } from 'express'
 import { ReportBaseService } from '../services/reporte-base.service'
 import { OperativoService } from '../../operativo/service/operativo.service'
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
@@ -121,9 +121,14 @@ export class OperativeReportController extends BaseController {
   @ApiQuery({ name: 'numero', description: 'Número de operativo (puede contener "/", se envía URL-encoded)', example: 'OP%2F2024%2F001' })
   @SetRequestTimeout(120)
   @Get('/operativo/pdf')
-  async generateOperativePdf(@Query('numero') numeroOperativo: string, @Res() res: Response) {
+  async generateOperativePdf(
+    @Query('numero') numeroOperativo: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
-      const template = new OperativeReportTemplate()
+      const { usuario } = req.user as PassportUser
+      const template = new OperativeReportTemplate(usuario)
       const data = await OperativeReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
       const pdfBuffer = await this.reportService.generatePdf(template, data)
@@ -148,9 +153,14 @@ export class OperativeReportController extends BaseController {
   @ApiQuery({ name: 'numero', description: 'Número de operativo (puede contener "/", se envía URL-encoded)', example: 'OP%2F2024%2F001' })
   @SetRequestTimeout(120)
   @Get('/general/pdf')
-  async generateReporteGEenralPDF(@Query('numero') numeroOperativo: string, @Res() res: Response) {
+  async generateReporteGEenralPDF(
+    @Query('numero') numeroOperativo: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
-      const template = new CasoGralReportTemplate()
+      const { usuario } = req.user as PassportUser
+      const template = new CasoGralReportTemplate(usuario)
       const data = await CasoGralReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
       const pdfBuffer = await this.reportService.generatePdf(template, data)
@@ -177,10 +187,15 @@ export class OperativeReportController extends BaseController {
   })
   @SetRequestTimeout(120)
   @Get('/cruzadas-avanzado/pdf')
-  async generateCruzadasPdf(@Query() filtro: ConsultaAvanzadaQueryDto, @Res() res: Response) {
+  async generateCruzadasPdf(
+    @Query() filtro: ConsultaAvanzadaQueryDto,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
+      const { usuario } = req.user as PassportUser
       const { filas } = await this.cruzadasService.buscarAvanzado(filtro)
-      const template = new CruzadasReportTemplate()
+      const template = new CruzadasReportTemplate(usuario)
       const pdfBuffer = await this.reportService.generatePdf(template, filas)
 
       res.set({

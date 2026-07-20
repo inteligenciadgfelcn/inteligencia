@@ -8,22 +8,27 @@ import { getLogoBase64 } from '../../report-logo.util'
 const sharp = require('sharp')
 
 export class OperativeReportTemplate implements ReportTemplate<any> {
-    pdfOptions: PDFOptions = {
-        format: 'letter',
-        margin: {
-            top: '40px',
-            right: '40px',
-            bottom: '60px',
-            left: '40px',
-        },
-        displayHeaderFooter: true,
-        headerTemplate: '<div></div>',
-        footerTemplate: `
-            <div style="font-size: 10px; width: 100%; display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid #e5e7eb; padding: 10px 40px 0 0; color: #3e5f8a; font-family: 'Calibri', 'Arial', sans-serif;">
-                <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span class="date"></span>
-                <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-            </div>
-        `,
+    pdfOptions: PDFOptions
+
+    constructor(usuarioGenerador?: string) {
+        this.pdfOptions = {
+            format: 'letter',
+            margin: {
+                top: '40px',
+                right: '40px',
+                bottom: '60px',
+                left: '40px',
+            },
+            displayHeaderFooter: true,
+            headerTemplate: '<div></div>',
+            footerTemplate: `
+                <div style="font-size: 10px; width: 100%; display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid #e5e7eb; padding: 10px 40px 0 0; color: #3e5f8a; font-family: 'Calibri', 'Arial', sans-serif;">
+                    <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span>${formatearFechaVisualizacion(new Date(), true)}</span>
+                    ${usuarioGenerador ? `<span style="margin-left: 20px;"><span style="font-weight: bold;">Generado por:</span>&nbsp;${usuarioGenerador}</span>` : ''}
+                    <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+                </div>
+            `,
+        }
     }
 
     static async fetchData(
