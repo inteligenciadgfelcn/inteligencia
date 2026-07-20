@@ -61,6 +61,15 @@ function FilaDato({ label, valor }: { label: string; valor?: string | number | n
   )
 }
 
+/** Formatea a `dd/MM/yyyy HH:mm` (español, Bolivia), igual que el resto del módulo. */
+function formatFechaOperativo(value?: string | Date | null): string | null {
+  if (!value) return null
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
 // ─── Props ────────────────────────────────────────────────────────────────────
 interface PatrimonioViewProps {
   idOperativo?: string
@@ -235,11 +244,7 @@ export function PatrimonioView({ idOperativo }: PatrimonioViewProps) {
             <FilaDato label="Nro. Radiograma / Informe" valor={operativo?.numeroInforme} />
             <FilaDato
               label="Fecha y Hora del Operativo"
-              valor={
-                operativo?.fechaOperativo
-                  ? new Date(operativo.fechaOperativo).toLocaleString('es-BO')
-                  : null
-              }
+              valor={formatFechaOperativo(operativo?.fechaOperativo)}
             />
             <FilaDato label="Lugar de Operativo" valor={operativo?.lugar} />
           </div>
