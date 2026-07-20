@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { CacheModule } from '@nestjs/cache-manager'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { DB_SIII, DB_LGI } from '../shared/constants'
@@ -251,6 +252,13 @@ const entitiesOperativas = [
 @Module({
   imports: [
     ConfigModule,
+    // Cachea en memoria las respuestas de los lookups fijos (siii-lookups):
+    // catálogos de referencia comunes a cualquier operativo, cambian con
+    // muy poca frecuencia. 1 hora de TTL, ver LookupController.
+    CacheModule.register({
+      ttl: 60 * 60 * 1000,
+      max: 500,
+    }),
     TypeOrmModule.forFeature(
       [...entitiesParametricas, ...entitiesOperativas],
       DB_SIII
