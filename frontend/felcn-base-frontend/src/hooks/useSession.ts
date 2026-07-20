@@ -95,11 +95,11 @@ export const useSession = () => {
       if (respuesta?.url) {
         window.location.href = respuesta?.url
       } else {
-        window.location.href = '/login';
+        window.location.href = Constantes.loginPath
       }
     } catch (e) {
       imprimir(`Error al cerrar sesión: `, e)
-      window.location.href = '/login'
+      window.location.href = Constantes.loginPath
     } finally {
       sesionCerrando = false
       ocultarFullScreen()
