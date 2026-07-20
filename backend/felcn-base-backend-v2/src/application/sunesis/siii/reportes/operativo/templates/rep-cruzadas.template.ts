@@ -1,29 +1,37 @@
 import { ReportTemplate } from '../../interfaces/reporte-template.interface'
 import { PDFOptions } from 'puppeteer'
 import { ResultadoConsultaAvanzada } from '../../cruzados/interfaces/consulta-avanzada-filtro.interface'
+import { formatearFechaVisualizacion } from '@/common/utils/date.util'
 import { getLogoBase64 } from '../../report-logo.util'
 
 export class CruzadasReportTemplate implements ReportTemplate<ResultadoConsultaAvanzada[]> {
-  pdfOptions: PDFOptions = {
-    format: 'Legal',
-    landscape: true,
-    margin: {
-      top: '50px',
-      right: '30px',
-      bottom: '60px',
-      left: '30px',
-    },
-    displayHeaderFooter: true,
-    headerTemplate: '<div></div>',
-    footerTemplate: `
-      <div style="font-size: 9px; width: 100%; display: flex; justify-content: space-between; align-items: center;
-                  border-top: 1px solid #e5e7eb; padding: 8px 30px 0; color: #3e5f8a;
-                  font-family: 'Calibri', 'Arial', sans-serif; box-sizing: border-box;">
-        <span>FELCN — Departamento de Inteligencia</span>
-        <span><strong>Fecha de impresión:</strong>&nbsp;<span class="date"></span></span>
-        <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-      </div>
-    `,
+  pdfOptions: PDFOptions
+
+  constructor(usuarioGenerador?: string) {
+    this.pdfOptions = {
+      format: 'Legal',
+      landscape: true,
+      margin: {
+        top: '50px',
+        right: '30px',
+        bottom: '60px',
+        left: '30px',
+      },
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate: `
+        <div style="font-size: 9px; width: 100%; display: flex; justify-content: space-between; align-items: center;
+                    border-top: 1px solid #e5e7eb; padding: 8px 30px 0; color: #3e5f8a;
+                    font-family: 'Calibri', 'Arial', sans-serif; box-sizing: border-box;">
+          <span>FELCN — Departamento de Inteligencia</span>
+          <span>
+            <strong>Fecha de impresión:</strong>&nbsp;<span>${formatearFechaVisualizacion(new Date(), true)}</span>
+            ${usuarioGenerador ? `&nbsp;&nbsp;<strong>Generado por:</strong>&nbsp;${usuarioGenerador}` : ''}
+          </span>
+          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+        </div>
+      `,
+    }
   }
 
   generateHtml(data: ResultadoConsultaAvanzada[]): string {
