@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Continente,
   Departamento,
@@ -12,9 +13,17 @@ import {
   UnidadAsig,
   UnidadEstructura,
 } from '@/services/parametricas'
+import { obtenerCatalogoConCache } from './parametricasCache'
 
 /**
  * Hook central para consultar los datos paramétricos (lookups).
+ *
+ * Los catálogos fijos (sin parámetros) se sirven desde la caché
+ * compartida de React Query (`staleTime: Infinity`), por lo que solo
+ * se piden a la API una vez por sesión sin importar cuántos tabs o
+ * componentes los usen. Los catálogos dependientes de un parámetro
+ * (provincias por departamento, localidades por provincia, etc.) se
+ * cachean también, con clave por parámetro.
  *
  * Uso básico:
  * ```tsx
@@ -24,7 +33,16 @@ import {
  * ```
  */
 export function useParametricas() {
+  const queryClient = useQueryClient()
   const [cargando, setCargando] = useState(false)
+
+  const obtenerConCache = useCallback(
+    <T,>(
+      key: unknown[],
+      fetchFn: () => Promise<{ finalizado: boolean; datos: T }>
+    ) => obtenerCatalogoConCache(queryClient, key, fetchFn),
+    [queryClient]
+  )
 
   // ── siii-lookups ──────────────────────────────────────────────────────────
   const [continentes, setContinentes] = useState<Continente[]>([])
@@ -90,385 +108,459 @@ export function useParametricas() {
   const cargarContinentes = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerContinentes()
-      if (res.finalizado) setContinentes(res.datos)
+      const datos = await obtenerConCache(['continentes'], () =>
+        SiiiLookupsService.obtenerContinentes()
+      )
+      setContinentes(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarPaises = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerPaises()
-      if (res.finalizado) setPaises(res.datos)
+      const datos = await obtenerConCache(['paises'], () =>
+        SiiiLookupsService.obtenerPaises()
+      )
+      setPaises(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarPaisesPorContinente = useCallback(
     async (idContinente: number) => {
       setCargando(true)
       setPaises([])
       try {
-        const res =
-          await SiiiLookupsService.obtenerPaisesPorContinente(idContinente)
-        if (res.finalizado) setPaises(res.datos)
+        const datos = await obtenerConCache(
+          ['paises', 'continente', idContinente],
+          () => SiiiLookupsService.obtenerPaisesPorContinente(idContinente)
+        )
+        setPaises(datos)
       } finally {
         setCargando(false)
       }
     },
-    []
+    [obtenerConCache]
   )
 
   const cargarPaisesDestino = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerPaisesDestino()
-      if (res.finalizado) setPaisesDestino(res.datos)
+      const datos = await obtenerConCache(['paises-destino'], () =>
+        SiiiLookupsService.obtenerPaisesDestino()
+      )
+      setPaisesDestino(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarDepartamentos = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerDepartamentos()
-      if (res.finalizado) setDepartamentos(res.datos)
+      const datos = await obtenerConCache(['departamentos'], () =>
+        SiiiLookupsService.obtenerDepartamentos()
+      )
+      setDepartamentos(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
-  const cargarDepartamentosPorPais = useCallback(async (idPais: number) => {
-    setCargando(true)
-    setDepartamentos([])
-    try {
-      const res = await SiiiLookupsService.obtenerDepartamentosPorPais(idPais)
-      if (res.finalizado) setDepartamentos(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  const cargarDepartamentosPorPais = useCallback(
+    async (idPais: number) => {
+      setCargando(true)
+      setDepartamentos([])
+      try {
+        const datos = await obtenerConCache(
+          ['departamentos', 'pais', idPais],
+          () => SiiiLookupsService.obtenerDepartamentosPorPais(idPais)
+        )
+        setDepartamentos(datos)
+      } finally {
+        setCargando(false)
+      }
+    },
+    [obtenerConCache]
+  )
 
-  const cargarProvincias = useCallback(async (idDepartamento: number) => {
-    setCargando(true)
-    setProvincias([])
-    setLocalidades([])
-    try {
-      const res = await SiiiLookupsService.obtenerProvincias(idDepartamento)
-      if (res.finalizado) setProvincias(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  const cargarProvincias = useCallback(
+    async (idDepartamento: number) => {
+      setCargando(true)
+      setProvincias([])
+      setLocalidades([])
+      try {
+        const datos = await obtenerConCache(
+          ['provincias', 'departamento', idDepartamento],
+          () => SiiiLookupsService.obtenerProvincias(idDepartamento)
+        )
+        setProvincias(datos)
+      } finally {
+        setCargando(false)
+      }
+    },
+    [obtenerConCache]
+  )
 
-  const cargarLocalidades = useCallback(async (idProvincia: number) => {
-    setCargando(true)
-    setLocalidades([])
-    try {
-      const res = await SiiiLookupsService.obtenerLocalidades(idProvincia)
-      if (res.finalizado) setLocalidades(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  const cargarLocalidades = useCallback(
+    async (idProvincia: number) => {
+      setCargando(true)
+      setLocalidades([])
+      try {
+        const datos = await obtenerConCache(
+          ['localidades', 'provincia', idProvincia],
+          () => SiiiLookupsService.obtenerLocalidades(idProvincia)
+        )
+        setLocalidades(datos)
+      } finally {
+        setCargando(false)
+      }
+    },
+    [obtenerConCache]
+  )
 
   const cargarTiposRelevancia = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposRelevancia()
-      if (res.finalizado) setTiposRelevancia(res.datos)
+      const datos = await obtenerConCache(['tipos-relevancia'], () =>
+        SiiiLookupsService.obtenerTiposRelevancia()
+      )
+      setTiposRelevancia(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposDenuncia = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposDenuncia()
-      if (res.finalizado) setTiposDenuncia(res.datos)
+      const datos = await obtenerConCache(['tipos-denuncia'], () =>
+        SiiiLookupsService.obtenerTiposDenuncia()
+      )
+      setTiposDenuncia(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposPenal = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposPenal()
-      if (res.finalizado) setTiposPenal(res.datos)
+      const datos = await obtenerConCache(['tipos-penal'], () =>
+        SiiiLookupsService.obtenerTiposPenal()
+      )
+      setTiposPenal(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposOperacion = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposOperacion()
-      if (res.finalizado) setTiposOperacion(res.datos)
+      const datos = await obtenerConCache(['tipos-operacion'], () =>
+        SiiiLookupsService.obtenerTiposOperacion()
+      )
+      setTiposOperacion(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarPlanesOperaciones = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerPlanesOperaciones()
-      if (res.finalizado) setPlanesOperaciones(res.datos)
+      const datos = await obtenerConCache(['planes-operaciones'], () =>
+        SiiiLookupsService.obtenerPlanesOperaciones()
+      )
+      setPlanesOperaciones(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarUnidadesSiii = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerUnidades()
-      if (res.finalizado) setUnidadesSiii(res.datos)
+      const datos = await obtenerConCache(['unidades'], () =>
+        SiiiLookupsService.obtenerUnidades()
+      )
+      setUnidadesSiii(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposDroga = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposDroga()
-      if (res.finalizado) setTiposDroga(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-droga'], () =>
+        SiiiLookupsService.obtenerTiposDroga()
+      )
+      setTiposDroga(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposPersona = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposPersona()
-      if (res.finalizado)
-        setTiposPersona(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-persona'], () =>
+        SiiiLookupsService.obtenerTiposPersona()
+      )
+      setTiposPersona(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarEstadosCiviles = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerEstadosCiviles()
-      if (res.finalizado)
-        setEstadosCiviles(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['estados-civiles'], () =>
+        SiiiLookupsService.obtenerEstadosCiviles()
+      )
+      setEstadosCiviles(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarCategoriasOperativo = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerCategoriasOperativo()
-      if (res.finalizado)
-        setCategoriasOperativo(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(
+        ['categorias-operativo'],
+        () => SiiiLookupsService.obtenerCategoriasOperativo()
+      )
+      setCategoriasOperativo(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposFabrica = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposFabrica()
-      if (res.finalizado)
-        setTiposFabrica(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-fabrica'], () =>
+        SiiiLookupsService.obtenerTiposFabrica()
+      )
+      setTiposFabrica(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposDocumento = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposDocumento()
-      if (res.finalizado)
-        setTiposDocumento(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-documento'], () =>
+        SiiiLookupsService.obtenerTiposDocumento()
+      )
+      setTiposDocumento(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposImplicado = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposImplicado()
-      if (res.finalizado)
-        setTiposImplicado(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-implicado'], () =>
+        SiiiLookupsService.obtenerTiposImplicado()
+      )
+      setTiposImplicado(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarFormasTransporte = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerFormasTransporte()
-      if (res.finalizado) setFormasTransporte(res.datos)
+      const datos = await obtenerConCache(['formas-transporte'], () =>
+        SiiiLookupsService.obtenerFormasTransporte()
+      )
+      setFormasTransporte(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarEtapas = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerEtapas()
-      if (res.finalizado) setEtapas(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['etapas'], () =>
+        SiiiLookupsService.obtenerEtapas()
+      )
+      setEtapas(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarEtapasInvestigacion = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerEtapasInvestigacion()
-      if (res.finalizado)
-        setEtapasInvestigacion(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(
+        ['etapas-investigacion'],
+        () => SiiiLookupsService.obtenerEtapasInvestigacion()
+      )
+      setEtapasInvestigacion(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarRecursos = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerRecursos()
-      if (res.finalizado) setRecursos(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['recursos'], () =>
+        SiiiLookupsService.obtenerRecursos()
+      )
+      setRecursos(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarSustanciasSolidasDesc = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerSustanciasSolidasDesc()
-      if (res.finalizado)
-        setSustanciasSolidasDesc(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(
+        ['sustancias-solidas-desc'],
+        () => SiiiLookupsService.obtenerSustanciasSolidasDesc()
+      )
+      setSustanciasSolidasDesc(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarSustanciasLiquidasDesc = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerSustanciasLiquidasDesc()
-      if (res.finalizado)
-        setSustanciasLiquidasDesc(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(
+        ['sustancias-liquidas-desc'],
+        () => SiiiLookupsService.obtenerSustanciasLiquidasDesc()
+      )
+      setSustanciasLiquidasDesc(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarCocaProcedencias = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerCocaProcedencias()
-      if (res.finalizado)
-        setCocaProcedencias(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['coca-procedencias'], () =>
+        SiiiLookupsService.obtenerCocaProcedencias()
+      )
+      setCocaProcedencias(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarCocaEstados = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerCocaEstados()
-      if (res.finalizado) setCocaEstados(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['coca-estados'], () =>
+        SiiiLookupsService.obtenerCocaEstados()
+      )
+      setCocaEstados(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarCocaDescripciones = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerCocaDescripciones()
-      if (res.finalizado)
-        setCocaDescripciones(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['coca-descripciones'], () =>
+        SiiiLookupsService.obtenerCocaDescripciones()
+      )
+      setCocaDescripciones(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarBienes = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerBienes()
-      if (res.finalizado) setBienes(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['bienes'], () =>
+        SiiiLookupsService.obtenerBienes()
+      )
+      setBienes(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarCalidadesBien = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerCalidadesBien()
-      if (res.finalizado)
-        setCalidadesBien(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['calidades-bien'], () =>
+        SiiiLookupsService.obtenerCalidadesBien()
+      )
+      setCalidadesBien(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarColoresPiel = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerColoresPiel()
-      if (res.finalizado) setColoresPiel(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['colores-piel'], () =>
+        SiiiLookupsService.obtenerColoresPiel()
+      )
+      setColoresPiel(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarColoresOjos = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerColoresOjos()
-      if (res.finalizado) setColoresOjos(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['colores-ojos'], () =>
+        SiiiLookupsService.obtenerColoresOjos()
+      )
+      setColoresOjos(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarColoresCabello = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerColoresCabello()
-      if (res.finalizado)
-        setColoresCabello(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['colores-cabello'], () =>
+        SiiiLookupsService.obtenerColoresCabello()
+      )
+      setColoresCabello(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarTiposCabello = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerTiposCabello()
-      if (res.finalizado)
-        setTiposCabello(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['tipos-cabello'], () =>
+        SiiiLookupsService.obtenerTiposCabello()
+      )
+      setTiposCabello(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   // const cargarUnidadesAsig = useCallback(async () => {
   //   setCargando(true)
@@ -483,56 +575,73 @@ export function useParametricas() {
   const cargarUnidadesEstructura = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await EstructuraService.obtenerUnidades()
-      if (res.finalizado) setUnidadesEstructura(res.datos)
+      const datos = await obtenerConCache(['unidades-estructura'], () =>
+        EstructuraService.obtenerUnidades()
+      )
+      setUnidadesEstructura(datos)
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
-  const cargarDistritales = useCallback(async (idUnidad: number) => {
-    setCargando(true)
-    setDistritales([])
-    setGrupos([])
-    try {
-      const res = await SiiiLookupsService.obtenerDistritalesPorUnidad(idUnidad)
-      if (res.finalizado) setDistritales(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  const cargarDistritales = useCallback(
+    async (idUnidad: number) => {
+      setCargando(true)
+      setDistritales([])
+      setGrupos([])
+      try {
+        const datos = await obtenerConCache(
+          ['distritales', 'unidad', idUnidad],
+          () => SiiiLookupsService.obtenerDistritalesPorUnidad(idUnidad)
+        )
+        setDistritales(datos)
+      } finally {
+        setCargando(false)
+      }
+    },
+    [obtenerConCache]
+  )
 
-  const cargarGrupos = useCallback(async (idDistrital: number) => {
-    setCargando(true)
-    setGrupos([])
-    try {
-      const res =
-        await SiiiLookupsService.obtenerGruposPorDistrital(idDistrital)
-      if (res.finalizado) setGrupos(res.datos)
-    } finally {
-      setCargando(false)
-    }
-  }, [])
+  const cargarGrupos = useCallback(
+    async (idDistrital: number) => {
+      setCargando(true)
+      setGrupos([])
+      try {
+        const datos = await obtenerConCache(
+          ['grupos', 'distrital', idDistrital],
+          () => SiiiLookupsService.obtenerGruposPorDistrital(idDistrital)
+        )
+        setGrupos(datos)
+      } finally {
+        setCargando(false)
+      }
+    },
+    [obtenerConCache]
+  )
 
   const cargarContenidoCaso = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerContenidoCaso()
-      if (res.finalizado) setContenidoCaso(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['contenido-caso'], () =>
+        SiiiLookupsService.obtenerContenidoCaso()
+      )
+      setContenidoCaso(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   const cargarContenidoBien = useCallback(async () => {
     setCargando(true)
     try {
-      const res = await SiiiLookupsService.obtenerContenidoBien()
-      if (res.finalizado) setContenidoBien(res.datos as unknown as LookupBasico[])
+      const datos = await obtenerConCache<unknown>(['contenido-bien'], () =>
+        SiiiLookupsService.obtenerContenidoBien()
+      )
+      setContenidoBien(datos as unknown as LookupBasico[])
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [obtenerConCache])
 
   return {
     cargando,
