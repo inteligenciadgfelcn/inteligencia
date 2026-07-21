@@ -196,11 +196,11 @@ export function FormNuevoCaso() {
               type="text"
               value={nroCasoCer}
               onChange={(e) => setNroCasoCer(e.target.value.toUpperCase())}
-              placeholder="ALA-XX-N/GG"
+              placeholder="INV-XX-N/GG"
               className="w-full"
             />
             <Button type="button" variant="info" size="sm" onClick={() => void calcularNumero()} disabled={cargando}>
-              Calcular
+              CREAR CÓDIGO DE INVESTIGACIÓN
             </Button>
           </div>
         </div>

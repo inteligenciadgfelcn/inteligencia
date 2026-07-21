@@ -41,7 +41,7 @@ export function PanelConductor({ onResuelto }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState(FORM_INICIAL)
   const [colores, setColores] = useState<ColorS2i[]>([])
-  const [colorSugerido, setColorSugerido] = useState<number | null>(null)
+  const [coloresSugeridos, setColoresSugeridos] = useState<number[]>([])
 
   useEffect(() => {
     onResuelto?.(resultado)
@@ -57,12 +57,12 @@ export function PanelConductor({ onResuelto }: Props) {
   // Solo informa — la selección final del color queda a criterio del usuario.
   useEffect(() => {
     if (!resultado?.numeroDocumento) {
-      setColorSugerido(null)
+      setColoresSugeridos([])
       return
     }
     FlujoTransporteS2iService.colorSugerido(resultado.numeroDocumento)
-      .then((r) => setColorSugerido(r?.finalizado ? (r.datos?.idColor ?? null) : null))
-      .catch(() => setColorSugerido(null))
+      .then((r) => setColoresSugeridos(r?.finalizado ? (r.datos?.colores.map((c) => c.idColor) ?? []) : []))
+      .catch(() => setColoresSugeridos([]))
   }, [resultado?.numeroDocumento])
 
   const setCampo = (campo: keyof typeof FORM_INICIAL) => (
@@ -176,7 +176,7 @@ export function PanelConductor({ onResuelto }: Props) {
           <div className="mb-2 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-primary">Conductor</span>
-              <BadgeColorSugerido idColor={colorSugerido} colores={colores} />
+              <BadgeColorSugerido idColores={coloresSugeridos} colores={colores} />
             </div>
             <button type="button" className="text-xs text-primary hover:underline" onClick={reiniciar}>Buscar otro</button>
           </div>

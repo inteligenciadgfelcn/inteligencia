@@ -31,8 +31,9 @@ export class FlujoTransporteController extends BaseController {
 
   @ApiOperation({
     summary:
-      'Sugiere un id_color evaluando parametricas.regla_color contra el documento del ' +
-      'conductor y/o la placa del transporte. No falla si ninguna regla aplica: retorna idColor null.',
+      'Sugiere los id_color evaluando parametricas.regla_color contra el documento del ' +
+      'conductor y/o la placa del transporte. Acumula los colores de todas las reglas activas ' +
+      'que apliquen (sin cortar en la primera). Retorna colores: [] si ninguna regla aplica.',
   })
   @ApiQuery({ name: 'documento', required: false })
   @ApiQuery({ name: 'placa', required: false })
