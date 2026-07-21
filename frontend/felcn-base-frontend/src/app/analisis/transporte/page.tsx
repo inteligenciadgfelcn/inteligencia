@@ -34,9 +34,9 @@ export default function FlujoTransportePage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/analisis/transporte/reportes">
+            {/* <Link href="/analisis/transporte/reportes">
               <Button variant="outline-primary" size="sm">Reporte de Flujo de Transporte</Button>
-            </Link>
+            </Link> */}
             <Button variant="outline-secondary" size="sm" onClick={() => router.back()}>
               ← Volver
             </Button>

@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common'
 import { ReglaColorRepository } from '../repository/regla-color.repository'
 
+export interface ColorSugeridoItem {
+  idColor: number
+  origen: 'PERSONA' | 'VEHICULO'
+}
+
 export interface ColorSugerido {
-  idColor: number | null
-  origen: 'PERSONA' | 'VEHICULO' | null
+  colores: ColorSugeridoItem[]
 }
 
 @Injectable()
@@ -11,16 +15,26 @@ export class ReglaColorService {
   constructor(private readonly repo: ReglaColorRepository) {}
 
   /**
-   * Resuelve el id_color sugerido para precargar el formulario de Flujo de Transporte,
-   * evaluando parametricas.regla_color. Precedencia: si una regla de persona (documento)
-   * matchea, gana sobre cualquier regla de vehículo (placa); dentro de cada categoría
-   * gana la de menor id_regla_color. No sugiere nada (null) si ninguna regla activa aplica.
+   * Resuelve los id_color sugeridos para precargar el formulario de Flujo de Transporte,
+   * evaluando parametricas.regla_color. Se evalúan TODAS las reglas activas de persona
+   * (documento) y de vehículo (placa) — no se corta en la primera que matchee — y se
+   * acumulan sus id_color, deduplicados, en el orden en que las reglas fueron evaluadas
+   * (persona por id_regla_color ASC, luego vehículo). `colores` queda vacío si ninguna
+   * regla activa aplica.
    */
   async resolverColorSugerido(
     documento?: string,
     placa?: string
   ): Promise<ColorSugerido> {
     const reglas = await this.repo.listarActivasConPersonaFuncion()
+    const colores: ColorSugeridoItem[] = []
+    const idsAgregados = new Set<number>()
+
+    const agregar = (idColor: number, origen: ColorSugeridoItem['origen']) => {
+      if (idsAgregados.has(idColor)) return
+      idsAgregados.add(idColor)
+      colores.push({ idColor, origen })
+    }
 
     if (documento?.trim()) {
       for (const regla of reglas) {
@@ -30,7 +44,7 @@ export class ReglaColorService {
           regla.personaFuncion,
           documento.trim()
         )
-        if (aplica) return { idColor: regla.idColor, origen: 'PERSONA' }
+        if (aplica) agregar(regla.idColor, 'PERSONA')
       }
     }
 
@@ -42,10 +56,10 @@ export class ReglaColorService {
           regla.vehiculoFuncion,
           placa.trim()
         )
-        if (aplica) return { idColor: regla.idColor, origen: 'VEHICULO' }
+        if (aplica) agregar(regla.idColor, 'VEHICULO')
       }
     }
 
-    return { idColor: null, origen: null }
+    return { colores }
   }
 }

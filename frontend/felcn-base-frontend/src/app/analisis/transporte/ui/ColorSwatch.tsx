@@ -9,7 +9,7 @@ export function ColorSwatch({ color }: Props) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span
-        className="h-2.5 w-2.5 shrink-0 rounded-full border border-black/10"
+        className="h-6 w-6 shrink-0 rounded-full border-2 border-black/20 shadow-sm dark:border-white/30"
         style={{ backgroundColor: color.hexadecimal }}
       />
       {color.color}

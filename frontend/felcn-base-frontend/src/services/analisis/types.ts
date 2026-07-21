@@ -446,7 +446,11 @@ export interface CreateFlujoTransportePayload {
   longitud: number
 }
 
+export interface ColorSugeridoItemS2i {
+  idColor: number
+  origen: 'PERSONA' | 'VEHICULO'
+}
+
 export interface ColorSugeridoS2i {
-  idColor: number | null
-  origen: 'PERSONA' | 'VEHICULO' | null
+  colores: ColorSugeridoItemS2i[]
 }

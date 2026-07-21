@@ -9,7 +9,7 @@ import { CreateCasoDto } from '../dto/create-caso.dto'
  */
 @Injectable()
 export class CasoService {
-  constructor(private readonly repo: CasoRepository) {}
+  constructor(private readonly repo: CasoRepository) { }
 
   /**
    * Cálculo del número de caso correlativo por país y gestión:
@@ -23,7 +23,7 @@ export class CasoService {
     const count = await this.repo.contarCasosPorPaisYGestion(idPais, gestion)
     const siguiente = count + 1
     const gg = String(gestion).slice(2)
-    return `ALA-${idPais}-${siguiente}/${gg}`
+    return `INV-ALA-${idPais}-${siguiente}/${gg}`
   }
 
   async crear(dto: CreateCasoDto, usuario: string): Promise<S2iAsignacion> {

@@ -22,7 +22,8 @@ export const FlujoTransporteS2iService = {
         })
     },
 
-    // Sugiere un id_color evaluando parametricas.regla_color contra documento y/o placa.
+    // Sugiere los id_color evaluando parametricas.regla_color contra documento y/o placa
+    // (acumula los colores de todas las reglas activas que apliquen).
     colorSugerido(
         documento?: string,
         placa?: string
