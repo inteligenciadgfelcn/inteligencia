@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { DataSource, SelectQueryBuilder } from 'typeorm'
+import { PaginacionQueryDto } from '@/common/dto'
 import { DB_S2I } from '../../../shared/constants'
 import { S2iFlujoTransporte } from '../entity/flujo-transporte.entity'
 import { S2iConductor } from '../../conductor/entity/conductor.entity'
@@ -15,6 +16,7 @@ export interface FiltroFlujoTransporte {
   fechaDesde?: string
   /** Fecha ISO (YYYY-MM-DD), límite superior inclusivo sobre fecha_hora */
   fechaHasta?: string
+  idColor?: number
 }
 
 export interface FlujoTransporteReporteRow {
@@ -49,11 +51,14 @@ export class FlujoTransporteRepository {
   }
 
   /**
-   * Lista los registros de flujo_transporte para el reporte, con conductor,
-   * transporte, lugar y color resueltos por left join. Filtrable por documento,
-   * placa y/o rango de fechas sobre fecha_hora.
+   * Query base de flujo_transporte para el reporte, con conductor, transporte,
+   * lugar y color resueltos por left join. Filtrable por documento, placa,
+   * rango de fechas sobre fecha_hora y/o color. Sin orden ni paginación:
+   * cada método público decide cómo ordenar/limitar antes de ejecutarla.
    */
-  async listar(filtro: FiltroFlujoTransporte): Promise<FlujoTransporteReporteRow[]> {
+  private construirQuery(
+    filtro: FiltroFlujoTransporte
+  ): SelectQueryBuilder<S2iFlujoTransporte> {
     const qb = this.dataSource
       .createQueryBuilder()
       .select('ft.idFlujoTransporte', 'idFlujoTransporte')
@@ -80,7 +85,6 @@ export class FlujoTransporteRepository {
       .leftJoin(S2iConductor, 'c', 'c.numeroDocumento = ft.numeroDocumento')
       .leftJoin(S2iTransporte, 't', 't.codigoTransporte = ft.codigoTransporte')
       .leftJoin(S2iLugar, 'l', 'l.idLugar = ft.idLugar')
-      .orderBy('ft.fechaHora', 'DESC')
 
     if (filtro.documento)
       qb.andWhere('ft.numeroDocumento = :documento', {
@@ -96,10 +100,14 @@ export class FlujoTransporteRepository {
       qb.andWhere('ft.fechaHora <= :fechaHasta', {
         fechaHasta: `${filtro.fechaHasta} 23:59:59`,
       })
+    if (filtro.idColor)
+      qb.andWhere('ft.idColor = :idColor', { idColor: filtro.idColor })
 
-    const filas = await qb.getRawMany()
+    return qb
+  }
 
-    return filas.map((f) => ({
+  private mapearFila(f: any): FlujoTransporteReporteRow {
+    return {
       idFlujoTransporte: f.idFlujoTransporte,
       codigoTransporte: f.codigoTransporte,
       numeroDocumento: f.numeroDocumento,
@@ -120,6 +128,48 @@ export class FlujoTransporteRepository {
       colorHex: f.colorHex ?? null,
       latitud: Number(f.latitud),
       longitud: Number(f.longitud),
-    }))
+    }
+  }
+
+  /**
+   * Lista paginada (server-side) para la grilla del reporte, usada por los
+   * tabs "Búsqueda" y por color. Devuelve también el total de filas que
+   * cumplen el filtro (sin paginar) para calcular el número de páginas.
+   */
+  async listar(
+    filtro: FiltroFlujoTransporte,
+    paginacion: PaginacionQueryDto
+  ): Promise<[FlujoTransporteReporteRow[], number]> {
+    const qb = this.construirQuery(filtro)
+    const total = await qb.clone().getCount()
+
+    const filas = await qb
+      .orderBy('ft.fechaHora', 'DESC')
+      .skip(paginacion.saltar)
+      .take(paginacion.limite)
+      .getRawMany()
+
+    return [filas.map((f) => this.mapearFila(f)), total]
+  }
+
+  /** Lista sin paginar, usada para la exportación a PDF. */
+  async listarTodos(
+    filtro: FiltroFlujoTransporte
+  ): Promise<FlujoTransporteReporteRow[]> {
+    const filas = await this.construirQuery(filtro)
+      .orderBy('ft.fechaHora', 'DESC')
+      .getRawMany()
+
+    return filas.map((f) => this.mapearFila(f))
+  }
+
+  /** Últimos N registros ingresados, para el tab "Recientes" con auto-refresh. */
+  async listarRecientes(limite: number): Promise<FlujoTransporteReporteRow[]> {
+    const filas = await this.construirQuery({})
+      .orderBy('ft.fechaHora', 'DESC')
+      .take(limite)
+      .getRawMany()
+
+    return filas.map((f) => this.mapearFila(f))
   }
 }
