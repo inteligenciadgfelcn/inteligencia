@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { PaginacionQueryDto } from '@/common/dto'
 import { FlujoTransporteService } from '../../flujo-transporte/service/flujo-transporte.service'
 import type {
   FiltroFlujoTransporte,
@@ -12,11 +13,24 @@ import type {
  */
 @Injectable()
 export class ReporteFlujoTransporteService {
-  constructor(private readonly flujoTransporteService: FlujoTransporteService) {}
+  constructor(
+    private readonly flujoTransporteService: FlujoTransporteService
+  ) {}
 
   async listar(
+    filtro: FiltroFlujoTransporte,
+    paginacion: PaginacionQueryDto
+  ): Promise<[FlujoTransporteReporteRow[], number]> {
+    return this.flujoTransporteService.listar(filtro, paginacion)
+  }
+
+  async listarTodos(
     filtro: FiltroFlujoTransporte
   ): Promise<FlujoTransporteReporteRow[]> {
-    return this.flujoTransporteService.listar(filtro)
+    return this.flujoTransporteService.listarTodos(filtro)
+  }
+
+  async listarRecientes(limite: number): Promise<FlujoTransporteReporteRow[]> {
+    return this.flujoTransporteService.listarRecientes(limite)
   }
 }

@@ -19,4 +19,6 @@ export const Constantes = {
   consultaPersonaUrl: env('NEXT_PUBLIC_CONSULTA_PERSONA_URL') ?? '',
   consultaPersonaApiKey: env('NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY') ?? '',
   apiOpenStreetMap: 'https://nominatim.openstreetmap.org',
+  // Intervalo (ms) de auto-refresh del tab "Recientes" del reporte de Flujo de Transporte.
+  flujoTransporteRefreshMs: Number(env('NEXT_PUBLIC_FLUJO_TRANSPORTE_REFRESH_MS')) || 6000,
 }

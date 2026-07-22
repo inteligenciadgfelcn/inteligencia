@@ -14,7 +14,9 @@
       "Bash(curl:*)",
       "Bash(taskkill:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Skill(run)",
+      "Bash(bash -lc 'command -v chromium-cli; ls /c/Users/eit_a/.claude/skills 2>/dev/null; ls ~/.claude/skills 2>/dev/null; find / -maxdepth 6 -iname \"chromium-cli*\" 2>/dev/null | head -20')"
     ]
   }
 }

@@ -2,40 +2,33 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import { Button } from '@/components/ui/Button'
-import IconDownload from '@/components/Icon/IconDownload'
 import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
 import { ReportesFlujoTransporteService } from '@/services/analisis'
-import type {
-  FiltroFlujoTransporteReporte,
-  FlujoTransporteReporteFila,
-} from '@/services/analisis'
+import type { FlujoTransporteReporteFila } from '@/services/analisis'
 import { columnasFlujoTransporte, fondoFilaFlujoTransporte } from './columnasFlujoTransporte'
 
 interface Props {
-  filtro: FiltroFlujoTransporteReporte
-  onCargandoChange?: (cargando: boolean) => void
+  idColor: number
 }
 
 const LIMITE_DEFAULT = 10
 
-export function ReporteFlujoTransporteListado({ filtro, onCargandoChange }: Props) {
+/** Tab por color de parametricas.color: misma grilla, filtrada y paginada por idColor. */
+export function ReporteFlujoTransportePorColor({ idColor }: Props) {
   const { Alerta } = useAlerts()
 
   const [filas, setFilas] = useState<FlujoTransporteReporteFila[]>([])
   const [total, setTotal] = useState(0)
   const [pagina, setPagina] = useState(1)
   const [limite, setLimite] = useState(LIMITE_DEFAULT)
-  const [cargando, setCargando] = useState(false)
-  const [descargando, setDescargando] = useState(false)
+  const [cargando, setCargando] = useState(true)
 
   const cargar = useCallback(
     async (pag: number, lim: number) => {
       setCargando(true)
-      onCargandoChange?.(true)
       try {
-        const res = await ReportesFlujoTransporteService.listar(filtro, pag, lim)
+        const res = await ReportesFlujoTransporteService.listar({ idColor }, pag, lim)
         if (res?.finalizado) {
           setFilas(res.datos?.filas ?? [])
           setTotal(res.datos?.page?.totalElements ?? 0)
@@ -44,17 +37,16 @@ export function ReporteFlujoTransporteListado({ filtro, onCargandoChange }: Prop
         Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
       } finally {
         setCargando(false)
-        onCargandoChange?.(false)
       }
     },
-    [filtro, Alerta, onCargandoChange],
+    [idColor, Alerta],
   )
 
   useEffect(() => {
     setPagina(1)
     void cargar(1, limite)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtro])
+  }, [idColor])
 
   const handleCambioPagina = (p: number) => {
     setPagina(p)
@@ -67,39 +59,8 @@ export function ReporteFlujoTransporteListado({ filtro, onCargandoChange }: Prop
     void cargar(1, l)
   }
 
-  const descargarPdf = async () => {
-    if (descargando) return
-    setDescargando(true)
-    try {
-      const blob = await ReportesFlujoTransporteService.descargarPdf(filtro)
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = 'reporte-flujo-transporte.pdf'
-      link.click()
-      URL.revokeObjectURL(url)
-    } catch (e) {
-      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
-    } finally {
-      setDescargando(false)
-    }
-  }
-
   return (
     <div className="panel p-0">
-      <div className="flex items-center justify-end gap-2 border-b border-white-light p-3 dark:border-[#191e3a]">
-        <Button
-          variant="outline-primary"
-          size="sm"
-          type="button"
-          onClick={() => void descargarPdf()}
-          loading={descargando}
-          disabled={descargando}
-        >
-          <IconDownload className="h-4 w-4" />
-          <span className="ml-1">Descargar PDF</span>
-        </Button>
-      </div>
       <VristoDataTable<FlujoTransporteReporteFila>
         rows={filas}
         total={total}
