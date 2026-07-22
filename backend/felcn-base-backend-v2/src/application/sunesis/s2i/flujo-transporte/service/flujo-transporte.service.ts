@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
+import { PaginacionQueryDto } from '@/common/dto'
 import {
   FlujoTransporteRepository,
   FiltroFlujoTransporte,
@@ -59,8 +60,19 @@ export class FlujoTransporteService {
   }
 
   async listar(
+    filtro: FiltroFlujoTransporte,
+    paginacion: PaginacionQueryDto
+  ): Promise<[FlujoTransporteReporteRow[], number]> {
+    return this.repo.listar(filtro, paginacion)
+  }
+
+  async listarTodos(
     filtro: FiltroFlujoTransporte
   ): Promise<FlujoTransporteReporteRow[]> {
-    return this.repo.listar(filtro)
+    return this.repo.listarTodos(filtro)
+  }
+
+  async listarRecientes(limite: number): Promise<FlujoTransporteReporteRow[]> {
+    return this.repo.listarRecientes(limite)
   }
 }

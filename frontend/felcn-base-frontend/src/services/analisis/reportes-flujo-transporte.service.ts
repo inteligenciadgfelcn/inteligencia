@@ -11,6 +11,17 @@ export interface FiltroFlujoTransporteReporte {
   fechaDesde?: string
   /** Fecha ISO (YYYY-MM-DD) */
   fechaHasta?: string
+  idColor?: number
+}
+
+export interface PaginaFlujoTransporte {
+  filas: FlujoTransporteReporteFila[]
+  page: {
+    size: number
+    number: number
+    totalElements: number
+    totalPages: number
+  }
 }
 
 export interface FlujoTransporteReporteFila {
@@ -39,20 +50,32 @@ const armarParams = (filtro: FiltroFlujoTransporteReporte) => {
   if (filtro.placa?.trim()) params.placa = filtro.placa.trim()
   if (filtro.fechaDesde) params.fechaDesde = filtro.fechaDesde
   if (filtro.fechaHasta) params.fechaHasta = filtro.fechaHasta
+  if (filtro.idColor) params.idColor = String(filtro.idColor)
   return params
 }
 
 /**
- * Servicio de reporte de Flujo de Transporte: listado JSON filtrable por
- * documento, placa y rango de fechas, y descarga del mismo listado en PDF.
+ * Servicio de reporte de Flujo de Transporte: listado paginado filtrable por
+ * documento, placa, rango de fechas y/o color; últimos N registros para el
+ * tab con auto-refresh; y descarga del listado (sin paginar) en PDF.
  */
 export const ReportesFlujoTransporteService = {
   listar(
-    filtro: FiltroFlujoTransporteReporte = {}
-  ): Promise<RespuestaApi<FlujoTransporteReporteFila[]>> {
+    filtro: FiltroFlujoTransporteReporte = {},
+    pagina: number = 1,
+    limite: number = 10
+  ): Promise<RespuestaApi<PaginaFlujoTransporte>> {
     return sesionPeticion({
       url: BASE,
-      params: armarParams(filtro),
+      params: { ...armarParams(filtro), pagina: String(pagina), limite: String(limite) },
+      withCredentials: true,
+    })
+  },
+
+  listarRecientes(limite: number = 10): Promise<RespuestaApi<FlujoTransporteReporteFila[]>> {
+    return sesionPeticion({
+      url: `${BASE}/recientes`,
+      params: { limite: String(limite) },
       withCredentials: true,
     })
   },
