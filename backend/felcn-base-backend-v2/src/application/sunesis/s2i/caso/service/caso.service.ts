@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CasoRepository } from '../repository/caso.repository'
 import { S2iAsignacion } from '../entity/asignacion.entity'
 import { CreateCasoDto } from '../dto/create-caso.dto'
@@ -68,5 +72,15 @@ export class CasoService {
   /** Trae varios casos por id, sin filtrar por analista (deconfliction entre analistas). */
   async buscarPorIds(idsCaso: string[]): Promise<S2iAsignacion[]> {
     return this.repo.buscarPorIds(idsCaso)
+  }
+
+  /** Elimina un caso, solo si pertenece al analista que hace la petición. */
+  async eliminar(idCaso: string, numeroPase: string): Promise<void> {
+    const caso = await this.repo.buscarPorId(idCaso)
+    if (!caso) throw new NotFoundException(`Caso ${idCaso} no encontrado`)
+    if (caso.usuario !== numeroPase) {
+      throw new ForbiddenException('No tiene permiso para eliminar este caso')
+    }
+    await this.repo.eliminar(idCaso)
   }
 }

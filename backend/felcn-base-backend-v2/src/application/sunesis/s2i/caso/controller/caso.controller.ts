@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -89,5 +90,18 @@ export class CasoController extends BaseController {
   async buscarPorId(@Param('idCaso') idCaso: string) {
     const caso = await this.service.buscarPorId(idCaso)
     return this.successList(caso)
+  }
+
+  @ApiOperation({
+    summary: 'Eliminar un caso por ID',
+    description:
+      'Solo el analista dueño del caso puede eliminarlo. Elimina en cascada blancos, empresas, teléfonos, vehículos y bienes asociados.',
+  })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso (bigint)' })
+  @Delete(':idCaso')
+  async eliminar(@Param('idCaso') idCaso: string, @Req() req: Request) {
+    const { numeroPase = '' } = req.user as PassportUser
+    await this.service.eliminar(idCaso, numeroPase)
+    return this.successDelete()
   }
 }

@@ -61,8 +61,9 @@ export function GestionAnalisisListado({ idEtapa }: GestionAnalisisListadoProps)
       texto: `¿Eliminar el caso "${c.nombreCaso}"?`,
       onConfirm: async () => {
         try {
-          // El backend no expone DELETE caso en esta versión — placeholder
-          Alerta({ mensaje: 'Operación no disponible', variant: 'warning' })
+          await CasosS2iService.eliminar(c.idCaso)
+          Alerta({ mensaje: 'Caso eliminado correctamente', variant: 'success' })
+          void refetch()
         } catch (e) {
           Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
         }

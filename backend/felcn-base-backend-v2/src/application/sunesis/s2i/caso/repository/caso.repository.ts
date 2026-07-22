@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, In } from 'typeorm'
 import { DB_S2I } from '../../../shared/constants'
 import { S2iAsignacion } from '../entity/asignacion.entity'
+import { S2iItemBienInvestigado } from '../../bien/entity/item-bien-investigado.entity'
 
 @Injectable()
 export class CasoRepository {
@@ -66,5 +67,18 @@ export class CasoRepository {
       .andWhere('EXTRACT(YEAR FROM a.fechaInicio) = :gestion', { gestion })
       .getCount()
     return result
+  }
+
+  /**
+   * Elimina el caso y su cascada de datos relacionados.
+   * blanco/empresa/telefono/vehiculo cascadean solos a nivel de BD (ON DELETE CASCADE),
+   * pero item_bien_investigado -> asignacion es ON DELETE NO ACTION, así que sus filas
+   * se borran explícitamente primero (sus propias tablas hijas sí cascadean desde ahí).
+   */
+  async eliminar(idCaso: string): Promise<void> {
+    await this.dataSource.transaction(async (manager) => {
+      await manager.delete(S2iItemBienInvestigado, { idCaso })
+      await manager.delete(S2iAsignacion, idCaso)
+    })
   }
 }
