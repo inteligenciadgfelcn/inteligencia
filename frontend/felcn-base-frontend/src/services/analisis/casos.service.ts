@@ -29,4 +29,12 @@ export const CasosS2iService = {
   buscarPorId(idCaso: string): Promise<RespuestaApi<CasoS2i>> {
     return sesionPeticion({ url: `${BASE}/${idCaso}`, withCredentials: true })
   },
+
+  eliminar(idCaso: string): Promise<RespuestaApi<unknown>> {
+    return sesionPeticion({
+      url: `${BASE}/${idCaso}`,
+      method: 'DELETE',
+      withCredentials: true,
+    })
+  },
 }
