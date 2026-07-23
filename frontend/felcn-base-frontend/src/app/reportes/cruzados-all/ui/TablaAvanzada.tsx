@@ -22,13 +22,13 @@ function parsearItems(campo: string | null | undefined): string[] {
   return campo.split(' | ').map(s => s.trim()).filter(Boolean)
 }
 
-function CeldaPills({ campo, colorClase }: { campo: string | null | undefined; colorClase: string }) {
+function CeldaPills({ campo }: { campo: string | null | undefined }) {
   const items = parsearItems(campo)
   if (!items.length) return <span className="text-gray-300 dark:text-gray-700 select-none text-xs">—</span>
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-col gap-1">
       {items.map((item, i) => (
-        <span key={i} className={`inline-block text-xs font-semibold leading-relaxed px-2.5 py-0.5 rounded whitespace-pre-wrap text-left ${colorClase}`}>
+        <span key={i} className="text-xs leading-relaxed whitespace-pre-wrap text-left text-gray-700 dark:text-gray-300">
           {item}
         </span>
       ))}
@@ -182,17 +182,9 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
           )}
 
           {/* Tipo / Relevancia */}
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {row.tipoOperativo && (
-              <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
-                {row.tipoOperativo}
-              </span>
-            )}
-            {row.tipoRelevancia && (
-              <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
-                {row.tipoRelevancia}
-              </span>
-            )}
+          <div className="flex flex-wrap gap-2 pt-0.5 text-[9px] text-gray-500 dark:text-gray-400">
+            {row.tipoOperativo && <span>{row.tipoOperativo}</span>}
+            {row.tipoRelevancia && <span>{row.tipoRelevancia}</span>}
           </div>
 
           {/* Indicadores booleanos */}
@@ -214,7 +206,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.personasImplicadas}
-          colorClase="bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800"
         />
       )
     },
@@ -225,7 +216,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.drogas}
-          colorClase="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
         />
       )
     },
@@ -236,7 +226,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.sustanciasSolidas}
-          colorClase="bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800"
         />
       )
     },
@@ -247,7 +236,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.sustanciasLiquidas}
-          colorClase="bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
         />
       )
     },
@@ -258,7 +246,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.laboratoriosFabricas}
-          colorClase="bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
         />
       )
     },
@@ -269,7 +256,6 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       render: (row) => (
         <CeldaPills
           campo={row.bienesIncautados}
-          colorClase="bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800"
         />
       )
     },

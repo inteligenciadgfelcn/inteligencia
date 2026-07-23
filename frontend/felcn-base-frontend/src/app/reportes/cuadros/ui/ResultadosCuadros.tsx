@@ -34,17 +34,17 @@ function parsearItems(campo: string): string[] {
 
 // ─── Pills ────────────────────────────────────────────────────────────────────
 
-function CeldaPills({ valor, color }: { valor: string; color: string }) {
+function CeldaPills({ valor }: { valor: string }) {
   const items = parsearItems(valor)
   if (items.length === 0)
     return <span className="text-gray-300 dark:text-gray-700 text-xs">—</span>
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-col gap-1">
       {items.map((it, i) => (
         <span
           key={i}
           title={it}
-          className={`inline-block text-xs font-semibold leading-relaxed px-2.5 py-0.5 rounded whitespace-pre-wrap text-left ${color}`}
+          className="text-xs leading-relaxed whitespace-pre-wrap text-left text-gray-700 dark:text-gray-300"
         >
           {it}
         </span>
@@ -56,12 +56,12 @@ function CeldaPills({ valor, color }: { valor: string; color: string }) {
 // ─── Card de operativo ────────────────────────────────────────────────────────
 
 const CARD_SECCIONES = [
-  { label: 'Personas - Estado', key: 'personasImplicadas' as keyof FilaCuadro, color: 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800' },
-  { label: 'Droga', key: 'drogas' as keyof FilaCuadro, color: 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' },
-  { label: 'Sustancias Sólidas', key: 'sustanciasSolidas' as keyof FilaCuadro, color: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800' },
-  { label: 'Sustancias Líquidas', key: 'sustanciasLiquidas' as keyof FilaCuadro, color: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' },
-  { label: 'Laboratorio y Fábricas', key: 'laboratoriosFabricas' as keyof FilaCuadro, color: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800' },
-  { label: 'Bienes Secuestrados', key: 'bienesIncautados' as keyof FilaCuadro, color: 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800' },
+  { label: 'Personas - Estado', key: 'personasImplicadas' as keyof FilaCuadro },
+  { label: 'Droga', key: 'drogas' as keyof FilaCuadro },
+  { label: 'Sustancias Sólidas', key: 'sustanciasSolidas' as keyof FilaCuadro },
+  { label: 'Sustancias Líquidas', key: 'sustanciasLiquidas' as keyof FilaCuadro },
+  { label: 'Laboratorio y Fábricas', key: 'laboratoriosFabricas' as keyof FilaCuadro },
+  { label: 'Bienes Secuestrados', key: 'bienesIncautados' as keyof FilaCuadro },
 ]
 
 function CuadroCard({ row }: { row: FilaCuadro }) {
@@ -143,9 +143,9 @@ function CuadroCard({ row }: { row: FilaCuadro }) {
               <p className="text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">
                 {sec.label} ({items.length})
               </p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-col gap-1">
                 {items.map((it, i) => (
-                  <span key={i} className={`inline-block rounded px-2.5 py-0.5 text-xs font-semibold whitespace-pre-wrap text-left leading-relaxed ${sec.color}`}>
+                  <span key={i} className="text-xs whitespace-pre-wrap text-left leading-relaxed text-gray-700 dark:text-gray-300">
                     {it}
                   </span>
                 ))}
@@ -312,37 +312,37 @@ export function ResultadosCuadros({ datos, cargando, filtroActivo }: ResultadosC
       accessor: 'personasImplicadas',
       title: 'Personas - Estado',
       className: 'min-w-[280px]',
-      render: (row) => <CeldaPills valor={row.personasImplicadas} color="bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800" />
+      render: (row) => <CeldaPills valor={row.personasImplicadas} />
     },
     {
       accessor: 'drogas',
       title: 'Droga',
       className: 'min-w-[320px]',
-      render: (row) => <CeldaPills valor={row.drogas} color="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800" />
+      render: (row) => <CeldaPills valor={row.drogas} />
     },
     {
       accessor: 'sustanciasSolidas',
       title: 'Sustancias Sólidas',
       className: 'min-w-[200px]',
-      render: (row) => <CeldaPills valor={row.sustanciasSolidas} color="bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800" />
+      render: (row) => <CeldaPills valor={row.sustanciasSolidas} />
     },
     {
       accessor: 'sustanciasLiquidas',
       title: 'Sustancias Líquidas',
       className: 'min-w-[200px]',
-      render: (row) => <CeldaPills valor={row.sustanciasLiquidas} color="bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800" />
+      render: (row) => <CeldaPills valor={row.sustanciasLiquidas} />
     },
     {
       accessor: 'laboratoriosFabricas',
       title: 'Laboratorio y Fábricas',
       className: 'min-w-[180px]',
-      render: (row) => <CeldaPills valor={row.laboratoriosFabricas} color="bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800" />
+      render: (row) => <CeldaPills valor={row.laboratoriosFabricas} />
     },
     {
       accessor: 'bienesIncautados',
       title: 'Bienes Secuestrados',
       className: 'min-w-[180px]',
-      render: (row) => <CeldaPills valor={row.bienesIncautados} color="bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800" />
+      render: (row) => <CeldaPills valor={row.bienesIncautados} />
     },
     {
       accessor: 'tipoOperativo',

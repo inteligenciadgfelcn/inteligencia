@@ -326,7 +326,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   }
 
   const onSubmit = async (values: FormValues) => {
-    if (!usuarioId && !verificadoSegip) {
+    if (Constantes.segipVerificacionEnabled && !usuarioId && !verificadoSegip) {
       Alerta({
         mensaje:
           'Debe verificar los datos personales con el SEGIP antes de registrar un nuevo usuario.',
@@ -335,7 +335,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       return
     }
 
-    if (values.ciudadaniaDigital && !verificadoSegip) {
+    if (Constantes.segipVerificacionEnabled && values.ciudadaniaDigital && !verificadoSegip) {
       Alerta({
         mensaje:
           'Para habilitar Ciudadanía Digital debe verificar los datos con el SEGIP.',
@@ -389,7 +389,8 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   }
 
   const ciudadaniaDigitalActiva = watch('ciudadaniaDigital')
-  const deshabilitarDatosPersonales = !usuarioId && verificadoSegip
+  const deshabilitarDatosPersonales =
+    Constantes.segipVerificacionEnabled && !usuarioId && verificadoSegip
 
   return (
     <div className="w-full px-4 py-6">
@@ -542,37 +543,39 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
               </div>
 
               {/* Botón de verificación SEGIP / Limpiar datos */}
-              <div className="col-span-1 flex flex-col justify-end pb-1">
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant={verificadoSegip ? 'success' : 'primary'}
-                    onClick={verificarConSegip}
-                    disabled={loading || verificandoSegip || deshabilitarDatosPersonales}
-                    className="w-full"
-                    icon={<Icono>{verificadoSegip ? 'verified_user' : 'check'}</Icono>}
-                  >
-                    {verificandoSegip
-                      ? 'Verificando...'
-                      : verificadoSegip
-                        ? 'Verificado'
-                        : 'Verificar con SEGIP'}
-                  </Button>
-
-                  {deshabilitarDatosPersonales && (
+              {Constantes.segipVerificacionEnabled && (
+                <div className="col-span-1 flex flex-col justify-end pb-1">
+                  <div className="flex items-center gap-2">
                     <Button
                       type="button"
-                      variant="outline-danger"
-                      onClick={limpiarDatosPersonales}
-                      disabled={loading}
-                      title="Limpiar datos"
-                      icon={<Icono>delete</Icono>}
+                      variant={verificadoSegip ? 'success' : 'primary'}
+                      onClick={verificarConSegip}
+                      disabled={loading || verificandoSegip || deshabilitarDatosPersonales}
+                      className="w-full"
+                      icon={<Icono>{verificadoSegip ? 'verified_user' : 'check'}</Icono>}
                     >
-                      Limpiar
+                      {verificandoSegip
+                        ? 'Verificando...'
+                        : verificadoSegip
+                          ? 'Verificado'
+                          : 'Verificar con SEGIP'}
                     </Button>
-                  )}
+
+                    {deshabilitarDatosPersonales && (
+                      <Button
+                        type="button"
+                        variant="outline-danger"
+                        onClick={limpiarDatosPersonales}
+                        disabled={loading}
+                        title="Limpiar datos"
+                        icon={<Icono>delete</Icono>}
+                      >
+                        Limpiar
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -670,7 +673,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                 />
               </div>
               
-              {ciudadaniaDigitalActiva && !verificadoSegip && (
+              {Constantes.segipVerificacionEnabled && ciudadaniaDigitalActiva && !verificadoSegip && (
                 <div className="col-span-1 md:col-span-3 mt-2">
                   <div className="alert alert-warning bg-warning/10 text-warning border-warning/20 p-3 rounded-lg text-sm flex items-center gap-2">
                     <Icono>settings</Icono>

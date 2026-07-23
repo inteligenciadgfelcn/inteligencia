@@ -21,11 +21,9 @@ function parsearItems(campo: string | null | undefined): string[] {
 interface SeccionProps {
   titulo: string
   items: string[]
-  colorBadge: string
-  colorTitulo: string
 }
 
-function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
+function Seccion({ titulo, items }: SeccionProps) {
   const [abierta, setAbierta] = useState(items.length > 0)
   const tieneItems = items.length > 0
 
@@ -41,10 +39,10 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
             : 'cursor-default opacity-40'
           }`}
       >
-        <span className={colorTitulo}>{titulo}</span>
+        <span className="text-gray-700 dark:text-gray-300">{titulo}</span>
         <div className="flex items-center gap-1.5">
-          <span className={`inline-flex items-center justify-center text-xs font-bold w-5 h-5 rounded-full
-            ${tieneItems ? colorBadge : 'bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600'}`}>
+          <span className="inline-flex items-center justify-center text-xs font-bold w-5 h-5 rounded-full
+            bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
             {items.length}
           </span>
           {tieneItems && (
@@ -60,11 +58,11 @@ function Seccion({ titulo, items, colorBadge, colorTitulo }: SeccionProps) {
       </button>
 
       {abierta && tieneItems && (
-        <div className="px-3 pb-2.5 flex flex-wrap gap-1.5">
+        <div className="px-3 pb-2.5 flex flex-col gap-1">
           {items.map((item, i) => (
             <span
               key={i}
-              className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-md leading-relaxed whitespace-pre-wrap text-left w-full ${colorBadge}`}
+              className="text-xs leading-relaxed whitespace-pre-wrap text-left text-gray-700 dark:text-gray-300"
             >
               {item}
             </span>
@@ -218,8 +216,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
         {/* Hoja de Coca (cantidad total en kg) */}
         {row.totalHojaCoca && (
           <div className="mt-1.5">
-            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded
-              bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+            <span className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
               🌿 Hoja de Coca: {row.totalHojaCoca} kg
             </span>
           </div>
@@ -232,56 +229,42 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
       <Seccion
         titulo="Drogas Decomisadas"
         items={drogas}
-        colorBadge="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
-        colorTitulo="text-amber-700 dark:text-amber-400"
       />
 
       {/* op11: Sustancia sólida · Cantidad (grs) */}
       <Seccion
         titulo="Sustancias Precursoras Sólidas"
         items={sustSolidas}
-        colorBadge="bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800"
-        colorTitulo="text-purple-700 dark:text-purple-400"
       />
 
       {/* op12: Sustancia líquida · Cantidad (grs) */}
       <Seccion
         titulo="Sustancias Precursoras Líquidas"
         items={sustLiquidas}
-        colorBadge="bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
-        colorTitulo="text-blue-700 dark:text-blue-400"
       />
 
       {/* op13: Tipo Fábrica · Cantidad */}
       <Seccion
         titulo="Laboratorios y Fábricas"
         items={laboratorios}
-        colorBadge="bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
-        colorTitulo="text-red-700 dark:text-red-400"
       />
 
       {/* op14: arrestado_auxiliar — Nombre completo · Nacionalidad */}
       <Seccion
         titulo="Arrestados"
         items={arrestados}
-        colorBadge="bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800"
-        colorTitulo="text-rose-700 dark:text-rose-400"
       />
 
       {/* op15: persona_auxiliar (DETENIDOSAUX) — Nombre completo · País */}
       <Seccion
         titulo="Personas Implicadas"
         items={personasImpl}
-        colorBadge="bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800"
-        colorTitulo="text-indigo-700 dark:text-indigo-400"
       />
 
       {/* op16: item_bien_secuestrado — Tipo de bien */}
       <Seccion
         titulo="Bienes Incautados"
         items={bienesIncautados}
-        colorBadge="bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800"
-        colorTitulo="text-teal-700 dark:text-teal-400"
       />
     </div>
     </>

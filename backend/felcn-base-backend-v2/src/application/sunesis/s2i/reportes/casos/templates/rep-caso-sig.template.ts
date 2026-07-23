@@ -2,6 +2,7 @@ import { ReportTemplate } from '../../../../siii/reportes/interfaces/reporte-tem
 import { PDFOptions } from 'puppeteer'
 import { ReporteCasosService } from '../../services/reporte-casos.service'
 import { getLogoBase64 } from '../../../../siii/reportes/report-logo.util'
+import { formatearFechaVisualizacion } from '@/common/utils/date.util'
 
 /**
  * Template del Reporte SIG de Caso (RPT-MN-02).
@@ -12,19 +13,24 @@ import { getLogoBase64 } from '../../../../siii/reportes/report-logo.util'
  * Requiere acceso a internet desde Puppeteer para cargar los tiles de OpenStreetMap.
  */
 export class RepCasoSigTemplate implements ReportTemplate<any> {
-  pdfOptions: PDFOptions = {
-    format: 'letter',
-    landscape: true,
-    margin: { top: '40px', right: '40px', bottom: '60px', left: '40px' },
-    displayHeaderFooter: true,
-    headerTemplate: '<div></div>',
-    footerTemplate: `
+  pdfOptions: PDFOptions
+
+  constructor(usuarioGenerador?: string) {
+    this.pdfOptions = {
+      format: 'letter',
+      landscape: true,
+      margin: { top: '40px', right: '40px', bottom: '60px', left: '40px' },
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate: `
       <div style="font-size: 10px; width: 100%; display: flex; justify-content: flex-end;
                   align-items: center; border-top: 1px solid #e5e7eb; padding: 10px 40px 0 0;
                   color: #3e5f8a; font-family: 'Calibri', 'Arial', sans-serif;">
-        <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span class="date"></span>
+        <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span>${formatearFechaVisualizacion(new Date(), true)}</span>
+        ${usuarioGenerador ? `<span style="margin-left: 20px;"><span style="font-weight: bold;">Generado por:</span>&nbsp;${usuarioGenerador}</span>` : ''}
         <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
       </div>`,
+    }
   }
 
   static async fetchData(
@@ -37,8 +43,7 @@ export class RepCasoSigTemplate implements ReportTemplate<any> {
   generateHtml(data: any): string {
     const { caso, marcadores } = data
 
-    const formatFecha = (f: any) =>
-      f ? new Date(f).toLocaleDateString('es-BO') : 'N/A'
+    const formatFecha = (f: any) => formatearFechaVisualizacion(f)
 
     // Centro del mapa: promedio de coordenadas o Bolivia por defecto
     const marcadoresValidos = marcadores.filter(

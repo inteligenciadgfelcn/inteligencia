@@ -81,7 +81,7 @@ export class AsignacionesService {
 
     const correlativo = Number(countResult[0].total) + 1
 
-    return `${departamento[0].abreviatura}-${grupo[0].abreviaturaUnidad}-${correlativo}/${yearShort}`
+    return `${departamento[0].abreviatura}-${grupo[0].abreviaturaUnidad.trim()}-${correlativo}/${yearShort}`
   }
 
   async create(dto: CreateAsignacionDto) {
@@ -182,7 +182,7 @@ export class AsignacionesService {
       year
     )
 
-    return `${dpto}-${letra}-${max + 1}/${year}`
+    return `${dpto}-${letra.trim()}-${max + 1}/${year}`
   }
 
   async asignarNumeroCaso(
