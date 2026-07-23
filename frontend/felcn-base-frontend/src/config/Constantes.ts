@@ -18,6 +18,10 @@ export const Constantes = {
   firmadorUrl: env('NEXT_PUBLIC_FIRMADOR_URL') ?? '',
   consultaPersonaUrl: env('NEXT_PUBLIC_CONSULTA_PERSONA_URL') ?? '',
   consultaPersonaApiKey: env('NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY') ?? '',
+  // Verificación de datos del ciudadano con el SEGIP en el alta/edición de usuario.
+  // Activada por defecto; poner NEXT_PUBLIC_SEGIP_VERIFICACION_ENABLED=false para
+  // desactivarla de forma transparente (sin tocar código, solo el .env del frontend).
+  segipVerificacionEnabled: env('NEXT_PUBLIC_SEGIP_VERIFICACION_ENABLED') !== 'false',
   apiOpenStreetMap: 'https://nominatim.openstreetmap.org',
   // Intervalo (ms) de auto-refresh del tab "Recientes" del reporte de Flujo de Transporte.
   flujoTransporteRefreshMs: Number(env('NEXT_PUBLIC_FLUJO_TRANSPORTE_REFRESH_MS')) || 6000,

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { HttpModule } from '@nestjs/axios'
 import { S2iModule } from '../s2i.module'
 import { ReportBaseService } from '../../siii/reportes/services/reporte-base.service'
 import { ReporteCasosService } from './services/reporte-casos.service'
@@ -19,7 +20,7 @@ import { FlujoTransporteReportController } from './flujo-transporte/flujo-transp
  *   GET /s2i/reportes/flujo-transporte/pdf      → PDF con los mismos filtros
  */
 @Module({
-  imports: [S2iModule],
+  imports: [S2iModule, HttpModule],
   controllers: [CasosReportController, FlujoTransporteReportController],
   providers: [
     ReportBaseService,   // servicio Puppeteer compartido con SIII

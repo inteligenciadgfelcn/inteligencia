@@ -127,8 +127,9 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario } = req.user as PassportUser
-      const template = new OperativeReportTemplate(usuario)
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const template = new OperativeReportTemplate(usuarioGenerador)
       const data = await OperativeReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
       const pdfBuffer = await this.reportService.generatePdf(template, data)
@@ -159,8 +160,9 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario } = req.user as PassportUser
-      const template = new CasoGralReportTemplate(usuario)
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const template = new CasoGralReportTemplate(usuarioGenerador)
       const data = await CasoGralReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
       const pdfBuffer = await this.reportService.generatePdf(template, data)
@@ -193,9 +195,10 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario } = req.user as PassportUser
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
       const { filas } = await this.cruzadasService.buscarAvanzado(filtro)
-      const template = new CruzadasReportTemplate(usuario)
+      const template = new CruzadasReportTemplate(usuarioGenerador)
       const pdfBuffer = await this.reportService.generatePdf(template, filas)
 
       res.set({

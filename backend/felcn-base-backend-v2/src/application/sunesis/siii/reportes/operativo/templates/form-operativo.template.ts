@@ -422,11 +422,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Fecha de Nacimiento</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px; margin-bottom: 15px;">${formatearFechaVisualizacion(persona.fechaNacimiento)}</div>
-                        <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
-                            <strong>Estado Civil</strong>
-                        </div>
-                        <div class="info-value-cell" style="font-size: 13px;">${persona.descripcionEstadoCivil || 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px;">${formatearFechaVisualizacion(persona.fechaNacimiento)}</div>
                     </td>
                     <td class="info-value-cell" style="padding: 20px; text-align: center;">
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">

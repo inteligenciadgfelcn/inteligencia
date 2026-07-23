@@ -20,20 +20,19 @@ function parsearItems(campo: string | null | undefined): string[] {
 
 interface CeldaPillsProps {
   campo: string | null | undefined
-  colorClase: string
 }
 
-function CeldaPills({ campo, colorClase }: CeldaPillsProps) {
+function CeldaPills({ campo }: CeldaPillsProps) {
   const items = parsearItems(campo)
   if (items.length === 0) {
     return <span className="text-gray-300 dark:text-gray-700 select-none text-xs">—</span>
   }
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-col gap-1">
       {items.map((item, i) => (
         <span
           key={i}
-          className={`inline-block text-xs font-semibold leading-relaxed px-2.5 py-0.5 rounded whitespace-pre-wrap text-left ${colorClase}`}
+          className="text-xs leading-relaxed whitespace-pre-wrap text-left text-gray-700 dark:text-gray-300"
         >
           {item}
         </span>
@@ -157,9 +156,7 @@ export function TablaPlana({
             </div>
           )}
           {row.totalHojaCoca && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] px-2 py-0.5 rounded-full
-              bg-green-100 text-green-700 border border-green-200
-              dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+            <span className="inline-flex items-center gap-0.5 text-[10px] text-gray-600 dark:text-gray-400">
               🌿 {row.totalHojaCoca} kg
             </span>
           )}
@@ -173,7 +170,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.totalHojaCoca}
-          colorClase="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
         />
       )
     },
@@ -184,7 +180,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.drogasDecomisadas}
-          colorClase="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
         />
       )
     },
@@ -195,7 +190,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.sustanciasSolidas}
-          colorClase="bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800"
         />
       )
     },
@@ -206,7 +200,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.sustanciasLiquidas}
-          colorClase="bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
         />
       )
     },
@@ -217,7 +210,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.laboratoriosFabricas}
-          colorClase="bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
         />
       )
     },
@@ -228,7 +220,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.arrestados}
-          colorClase="bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800"
         />
       )
     },
@@ -239,7 +230,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.personasImplicadas}
-          colorClase="bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800"
         />
       )
     },
@@ -250,7 +240,6 @@ export function TablaPlana({
       render: (row) => (
         <CeldaPills
           campo={row.bienesIncautados}
-          colorClase="bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/20 dark:text-teal-400 dark:border-teal-800"
         />
       )
     }

@@ -143,9 +143,15 @@ export class CasosReportController extends BaseController {
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
   @SetRequestTimeout(120)
   @Get(':id/pdf')
-  async generarDetallePdf(@Param('id') idCaso: string, @Res() res: Response) {
+  async generarDetallePdf(
+    @Param('id') idCaso: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
-      const template = new RepCasoDetalleTemplate()
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(accessToken, usuario)
+      const template = new RepCasoDetalleTemplate(usuarioGenerador)
       const data = await RepCasoDetalleTemplate.fetchData(
         this.reporteCasosService,
         idCaso
@@ -179,9 +185,15 @@ export class CasosReportController extends BaseController {
   @ApiParam({ name: 'id', description: 'ID del caso (idCaso)' })
   @SetRequestTimeout(120)
   @Get(':id/sig/pdf')
-  async generarSigPdf(@Param('id') idCaso: string, @Res() res: Response) {
+  async generarSigPdf(
+    @Param('id') idCaso: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     try {
-      const template = new RepCasoSigTemplate()
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(accessToken, usuario)
+      const template = new RepCasoSigTemplate(usuarioGenerador)
       const data = await RepCasoSigTemplate.fetchData(
         this.reporteCasosService,
         idCaso

@@ -1,10 +1,48 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import * as puppeteer from 'puppeteer';
 import { ReportTemplate } from '../interfaces/reporte-template.interface';
 
 @Injectable()
 export class ReportBaseService implements OnModuleDestroy {
   private browser: puppeteer.Browser | null = null;
+  private readonly logger = new Logger(ReportBaseService.name);
+  private readonly authBackendUrl = process.env.AUTH_BACKEND_INTERNAL_URL || '';
+
+  constructor(private readonly httpService: HttpService) {}
+
+  /**
+   * Arma "GRADO: Nombre Completo" para el pie de los reportes, consultando el
+   * perfil del usuario en felcn-auth-backend (grado y persona no viajan en el
+   * JWT). Si la consulta falla o el perfil no trae grado/persona, cae de
+   * vuelta al login/CI para no romper la generación del PDF.
+   */
+  async obtenerUsuarioGenerador(accessToken: string | undefined, fallback: string): Promise<string> {
+    if (!accessToken || !this.authBackendUrl) return fallback
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.authBackendUrl.replace(/\/$/, '')}/api/usuarios/cuenta/perfil`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }),
+      )
+
+      const perfil = response.data?.datos
+      const abreviatura = perfil?.grado?.abreviatura
+      const nombreCompleto = [perfil?.persona?.nombres, perfil?.persona?.primerApellido, perfil?.persona?.segundoApellido]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
+
+      if (abreviatura && nombreCompleto) return `${abreviatura}: ${nombreCompleto}`
+      if (perfil?.nombreApp) return perfil.nombreApp
+      return fallback
+    } catch (error) {
+      this.logger.warn(`No se pudo obtener el perfil del usuario para el pie del reporte: ${error.message}`)
+      return fallback
+    }
+  }
 
   private async getBrowser(): Promise<puppeteer.Browser> {
     if (!this.browser) {
