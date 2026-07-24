@@ -1,10 +1,11 @@
 'use client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import IconTrash from '@/components/Icon/IconTrash'
 import IconDownload from '@/components/Icon/IconDownload'
 import IconCaretDown from '@/components/Icon/IconCaretDown'
+import IconPaperclip from '@/components/Icon/IconPaperclip'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { useConfirmDialog } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
@@ -95,14 +96,109 @@ const FISCALIA_VACIO: FlujoFiscaliaForm = {
   duracion: '',
 }
 
+// ── Importación de CSV de detalle de llamadas (formato "DETALLE DE TRÁFICO" de fiscalía) ──
+const normalizarEncabezado = (s: string) =>
+  s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase()
+
+/** Mapea encabezados normalizados del CSV a los campos del formulario de fiscalía. */
+const MAPA_COLUMNAS_FISCALIA: Record<string, keyof FlujoFiscaliaForm | 'fecha' | 'hora'> = {
+  'TIPO SERVICIO': 'servicio',
+  'SERVICIO': 'servicio',
+  'TIPO REGISTRO': 'registro',
+  'REGISTRO': 'registro',
+  'NUMERO A': 'numeroA',
+  'IMEI A': 'imeiA',
+  'RBS UTILIZADA A': 'rbsA',
+  'RBS A': 'rbsA',
+  'CELDA A': 'celdaA',
+  'LATITUD CELDA A': 'latA',
+  'LATITUD A': 'latA',
+  'LONGITUD CELDA A': 'lonA',
+  'LONGITUD A': 'lonA',
+  'NUMERO B': 'numeroB',
+  'TITULAR': 'titular',
+  'IMEI B': 'imeiB',
+  'RBS UTILIZADA B': 'rbsB',
+  'RBS B': 'rbsB',
+  'CELDA B': 'celdaB',
+  'LATITUD CELDA B': 'latB',
+  'LATITUD B': 'latB',
+  'LONGITUD CELDA B': 'lonB',
+  'LONGITUD B': 'lonB',
+  'FECHA Y HORA': 'fechaHora',
+  'FECHA': 'fecha',
+  'Y HORA': 'hora',
+  'HORA': 'hora',
+  'DURACION': 'duracion',
+}
+
+const detectarDelimitadorCsv = (linea: string) => {
+  const comas = (linea.match(/,/g) ?? []).length
+  const puntoYComa = (linea.match(/;/g) ?? []).length
+  return puntoYComa > comas ? ';' : ','
+}
+
+const parseLineaCsv = (linea: string, delimitador: string): string[] => {
+  const resultado: string[] = []
+  let actual = ''
+  let entreComillas = false
+  for (let i = 0; i < linea.length; i++) {
+    const c = linea[i]
+    if (entreComillas) {
+      if (c === '"') {
+        if (linea[i + 1] === '"') { actual += '"'; i++ } else { entreComillas = false }
+      } else {
+        actual += c
+      }
+    } else if (c === '"') {
+      entreComillas = true
+    } else if (c === delimitador) {
+      resultado.push(actual)
+      actual = ''
+    } else {
+      actual += c
+    }
+  }
+  resultado.push(actual)
+  return resultado
+}
+
+/** Convierte fechas tipo "17-06-2026 14:30:00", "17/06/2026 14:30" o ISO a "YYYY-MM-DDTHH:mm:ss". */
+const parseFechaHoraCsv = (raw: string): string | null => {
+  const v = raw.trim()
+  if (!v) return null
+
+  const iso = v.match(/^(\d{4})-(\d{2})-(\d{2})[T ]?(\d{2}):(\d{2})(:(\d{2}))?$/)
+  if (iso) {
+    const [, y, mo, d, h, mi, , s] = iso
+    return `${y}-${mo}-${d}T${h}:${mi}:${s ?? '00'}`
+  }
+
+  const dmy = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})[T ]?(\d{1,2}):(\d{2})(:(\d{2}))?$/)
+  if (dmy) {
+    const [, d, mo, y, h, mi, , s] = dmy
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}T${h.padStart(2, '0')}:${mi}:${s ?? '00'}`
+  }
+
+  const soloFecha = v.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/)
+  if (soloFecha) {
+    const [, d, mo, y] = soloFecha
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}T00:00:00`
+  }
+
+  return null
+}
+
 // ── Sub-panel: llamadas de fiscalía de un flujo telefónico ───────────────────
 function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const { Alerta } = useAlerts()
   const [cargando, setCargando] = useState(false)
+  const [importando, setImportando] = useState(false)
   const [lista, setLista] = useState<FlujoFiscalia[]>([])
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState<FlujoFiscaliaForm>(FISCALIA_VACIO)
+  const inputCsvRef = useRef<HTMLInputElement>(null)
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -113,6 +209,106 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
   }, [idFlujo])
 
   useEffect(() => { void cargar() }, [cargar])
+
+  const importarCsv = async (file: File) => {
+    setImportando(true)
+    try {
+      const texto = await file.text()
+      const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== '')
+      if (lineas.length < 2) {
+        Alerta({ mensaje: 'El archivo CSV no contiene datos', variant: 'warning' })
+        return
+      }
+      const delimitador = detectarDelimitadorCsv(lineas[0])
+
+      let idxEncabezado = -1
+      let mejorConteo = 0
+      for (let i = 0; i < Math.min(lineas.length, 10); i++) {
+        const conteo = parseLineaCsv(lineas[i], delimitador)
+          .map(normalizarEncabezado)
+          .filter((c) => MAPA_COLUMNAS_FISCALIA[c]).length
+        if (conteo > mejorConteo) { mejorConteo = conteo; idxEncabezado = i }
+      }
+      if (idxEncabezado === -1 || mejorConteo < 4) {
+        Alerta({ mensaje: 'No se reconocieron las columnas del CSV de flujo fiscalía', variant: 'error' })
+        return
+      }
+
+      const encabezados = parseLineaCsv(lineas[idxEncabezado], delimitador).map(normalizarEncabezado)
+
+      let importados = 0
+      let omitidos = 0
+      for (let i = idxEncabezado + 1; i < lineas.length; i++) {
+        const celdas = parseLineaCsv(lineas[i], delimitador)
+        const fila: Partial<Record<keyof FlujoFiscaliaForm | 'fecha' | 'hora', string>> = {}
+        encabezados.forEach((h, idx) => {
+          const campo = MAPA_COLUMNAS_FISCALIA[h]
+          if (campo) fila[campo] = (celdas[idx] ?? '').trim()
+        })
+
+        const fechaHora = fila.fechaHora
+          ? parseFechaHoraCsv(fila.fechaHora)
+          : fila.fecha
+            ? parseFechaHoraCsv(`${fila.fecha} ${fila.hora ?? ''}`.trim())
+            : null
+
+        const latA = parseFloat((fila.latA ?? '').replace(',', '.'))
+        const lonA = parseFloat((fila.lonA ?? '').replace(',', '.'))
+        const latB = parseFloat((fila.latB ?? '').replace(',', '.'))
+        const lonB = parseFloat((fila.lonB ?? '').replace(',', '.'))
+
+        const requeridos = [
+          fila.servicio, fila.registro, fila.numeroA, fila.imeiA, fila.rbsA, fila.celdaA,
+          fila.numeroB, fila.titular, fila.imeiB, fila.rbsB, fila.celdaB, fila.duracion,
+        ]
+
+        if (
+          requeridos.some((v) => !v) ||
+          !fechaHora ||
+          isNaN(latA) || isNaN(lonA) || isNaN(latB) || isNaN(lonB)
+        ) {
+          omitidos++
+          continue
+        }
+
+        try {
+          const r = await BlancosService.crearFlujoFiscalia(idFlujo, {
+            servicio: fila.servicio!.slice(0, 15),
+            registro: fila.registro!.slice(0, 50),
+            numeroA: fila.numeroA!.slice(0, 15),
+            imeiA: fila.imeiA!.slice(0, 50),
+            rbsA: fila.rbsA!.slice(0, 25),
+            celdaA: fila.celdaA!.slice(0, 10),
+            latA,
+            lonA,
+            numeroB: fila.numeroB!.slice(0, 15),
+            titular: fila.titular!.slice(0, 80),
+            imeiB: fila.imeiB!.slice(0, 50),
+            rbsB: fila.rbsB!.slice(0, 25),
+            celdaB: fila.celdaB!.slice(0, 10),
+            latB,
+            lonB,
+            fechaHora,
+            duracion: fila.duracion!.slice(0, 15),
+          })
+          if (r?.finalizado) importados++
+          else omitidos++
+        } catch {
+          omitidos++
+        }
+      }
+
+      void cargar()
+      Alerta({
+        mensaje: `Importación completada: ${importados} registro(s) importado(s)${omitidos ? `, ${omitidos} fila(s) omitida(s) por datos incompletos o inválidos` : ''}`,
+        variant: importados === 0 ? 'error' : omitidos ? 'warning' : 'success',
+      })
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setImportando(false)
+    }
+  }
 
   const setTexto = (campo: keyof FlujoFiscaliaForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [campo]: e.target.value.toUpperCase() }))
@@ -217,9 +413,35 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
 
   return (
     <div className="mt-3 space-y-3 rounded border border-[#e0e6ed] bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/40">
-      <LoadingDialog show={cargando} />
+      <LoadingDialog show={cargando || importando} />
       <ConfirmDialog />
-      <p className="text-xs font-semibold text-gray-500">Detalle de llamadas (Fiscalía)</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-gray-500">Detalle de llamadas (Fiscalía)</p>
+        <div>
+          <input
+            ref={inputCsvRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void importarCsv(file)
+              e.target.value = ''
+            }}
+          />
+          <Button
+            variant="outline-primary"
+            size="sm"
+            type="button"
+            disabled={importando}
+            onClick={() => inputCsvRef.current?.click()}
+            title='Importar CSV con columnas: Tipo servicio, Tipo registro, Numero A, Imei A, RBS utilizada A, Celda A, Latitud Celda A, Longitud celda A, Numero B, Titular, Imei B, RBS utilizada B, Celda B, Latitud celda B, Longitud celda B, Fecha y Hora, Duracion'
+          >
+            <IconPaperclip className="mr-1 h-4 w-4" />
+            Importar CSV
+          </Button>
+        </div>
+      </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="mb-1 block text-xs font-medium">Servicio <span className="text-danger">*</span></label>

@@ -1,5 +1,5 @@
-import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common'
-import type { Response } from 'express'
+import { Controller, Get, Query, Req, Res, UseGuards } from '@nestjs/common'
+import type { Request, Response } from 'express'
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto'
@@ -101,6 +101,7 @@ export class FlujoTransporteReportController extends BaseController {
   @SetRequestTimeout(60)
   @Get('pdf')
   async generarPdf(
+    @Req() req: Request,
     @Res() res: Response,
     @Query('documento') documento?: string,
     @Query('placa') placa?: string,
@@ -116,7 +117,14 @@ export class FlujoTransporteReportController extends BaseController {
       )
       const filas = await this.reporteService.listarTodos(filtro)
 
-      const template = new RepFlujoTransporteTemplate()
+      const { usuario, accessToken } = req.user as PassportUser
+      const usuarioGenerador =
+        await this.reportBaseService.obtenerUsuarioGenerador(
+          accessToken,
+          usuario
+        )
+
+      const template = new RepFlujoTransporteTemplate(usuarioGenerador)
       const pdfBuffer = await this.reportBaseService.generatePdf(template, {
         filas,
         filtro,

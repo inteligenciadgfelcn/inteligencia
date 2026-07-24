@@ -1,13 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import IconArrowBackward from '@/components/Icon/IconArrowBackward'
+import IconDownload from '@/components/Icon/IconDownload'
 import { useAlerts } from '@/hooks/useAlerts'
+import { useAuth } from '@/context/AuthProvider'
 import { InterpreteMensajes } from '@/utils'
+import { generarPdfConImagen, obtenerNombreGenerador } from '@/utils/pdfExport'
 import { ReportesS2iService } from '@/services/analisis'
 import type {
   CasoReporteS2i,
@@ -17,6 +20,7 @@ import type {
 import { BuscadorCasoVinculos } from './ui/BuscadorCasoVinculos'
 import { PanelDetalleNodo } from './ui/PanelDetalleNodo'
 import { construirGrafo, fusionarVinculosCruzados, type NodoVinculo } from './ui/construirGrafo'
+import type { GrafoVinculosHandle } from './ui/GrafoVinculos'
 
 const GrafoVinculos = dynamic(() => import('./ui/GrafoVinculos'), {
   ssr: false,
@@ -24,6 +28,11 @@ const GrafoVinculos = dynamic(() => import('./ui/GrafoVinculos'), {
     <div className="h-[650px] animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
   ),
 })
+
+const TEXTO_LEYENDA =
+  'Punteado ámbar: vínculo inferido por coincidencia de nombre con el representante legal ' +
+  'de una organización — verifíquelo antes de usarlo como evidencia. Morado punteado: mismo ' +
+  'documento/NIT encontrado en otro caso (dato exacto).'
 
 const casoMinimo = (idCaso: string): CasoReporteS2i => ({
   idCaso,
@@ -39,6 +48,7 @@ const casoMinimo = (idCaso: string): CasoReporteS2i => ({
 
 export default function VinculosPage() {
   const { Alerta } = useAlerts()
+  const { usuario } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -47,6 +57,8 @@ export default function VinculosPage() {
   const [vinculosCruzados, setVinculosCruzados] = useState<VinculosCruzadosCaso | null>(null)
   const [cargando, setCargando] = useState(false)
   const [nodoSeleccionado, setNodoSeleccionado] = useState<NodoVinculo | null>(null)
+  const [generandoPdf, setGenerandoPdf] = useState(false)
+  const grafoRef = useRef<GrafoVinculosHandle>(null)
 
   const seleccionarCaso = useCallback(
     async (caso: CasoReporteS2i) => {
@@ -93,6 +105,30 @@ export default function VinculosPage() {
     setNodoSeleccionado(nodo)
   }, [])
 
+  const handleDescargarPdf = useCallback(async () => {
+    const imagen = grafoRef.current?.obtenerImagenPNG()
+    if (!imagen) return
+
+    setGenerandoPdf(true)
+    try {
+      await generarPdfConImagen({
+        titulo: 'Diagrama de Vínculos',
+        subtitulo: casoSeleccionado ? `CASO: ${casoSeleccionado.nombreCaso}` : undefined,
+        imagenDataUrl: imagen.dataUrl,
+        anchoPx: imagen.ancho,
+        altoPx: imagen.alto,
+        orientacion: 'landscape',
+        generadoPor: obtenerNombreGenerador(usuario),
+        nombreArchivo: `vinculos_${casoSeleccionado?.idCaso ?? 'caso'}_${new Date().toISOString().slice(0, 10)}.pdf`,
+        textoPie: [TEXTO_LEYENDA],
+      })
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setGenerandoPdf(false)
+    }
+  }, [Alerta, casoSeleccionado, usuario])
+
   return (
     <div className="space-y-6">
       <div className="panel flex flex-wrap items-center justify-between gap-2 px-5 py-4">
@@ -104,11 +140,16 @@ export default function VinculosPage() {
             Visualice las relaciones entre investigados, organizaciones y bienes de un caso.
           </p>
         </div>
-        <Link href="/analisis/reportes">
-          <Button variant="outline-secondary" size="sm">
-            <IconArrowBackward className="mr-1 h-4 w-4" /> Volver a Reportes
+        <div className="flex flex-wrap gap-2">
+          <Button variant="success" size="sm" disabled={!grafo || generandoPdf} onClick={handleDescargarPdf}>
+            <IconDownload className="mr-1 h-4 w-4" /> {generandoPdf ? 'Generando PDF...' : 'Descargar PDF'}
           </Button>
-        </Link>
+          <Link href="/analisis/reportes">
+            <Button variant="outline-secondary" size="sm">
+              <IconArrowBackward className="mr-1 h-4 w-4" /> Volver a Reportes
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <BuscadorCasoVinculos onCasoSeleccionado={seleccionarCaso} cargando={cargando} />
@@ -132,12 +173,8 @@ export default function VinculosPage() {
       {casoSeleccionado && !cargando && grafo && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
           <div className="lg:col-span-3">
-            <GrafoVinculos datos={grafo} onSeleccionarNodo={onSeleccionarNodo} />
-            <p className="mt-2 text-xs text-gray-400">
-              Punteado ámbar: vínculo inferido por coincidencia de nombre con el representante
-              legal de una organización — verifíquelo antes de usarlo como evidencia. Morado
-              punteado: mismo documento/NIT encontrado en otro caso (dato exacto).
-            </p>
+            <GrafoVinculos ref={grafoRef} datos={grafo} onSeleccionarNodo={onSeleccionarNodo} />
+            <p className="mt-2 text-xs text-gray-400">{TEXTO_LEYENDA}</p>
           </div>
           <div className="lg:col-span-1">
             <PanelDetalleNodo nodo={nodoSeleccionado} onCerrar={() => setNodoSeleccionado(null)} />

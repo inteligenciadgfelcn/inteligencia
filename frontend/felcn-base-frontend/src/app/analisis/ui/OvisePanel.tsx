@@ -14,12 +14,13 @@ import { formatDecimal } from '@/utils/formatDecimal'
 import { DropzoneFoto } from './DropzoneFoto'
 import { BlancosService } from '@/services/analisis'
 import type { BlancoS2i, Ovise } from '@/services/analisis'
+import { TILES_MAPA, BOTONES_TIPO_MAPA, type TipoMapa } from '@/components/mapas/tiposMapa'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
   {
     ssr: false,
-    loading: () => <div className="h-[300px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />,
+    loading: () => <div className="h-[900px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />,
   }
 )
 
@@ -60,6 +61,7 @@ export function OvisePanel({ blanco }: Props) {
   const [accion, setAccion] = useState('')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [tipoMapa, setTipoMapa] = useState<TipoMapa>('normal')
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -204,14 +206,28 @@ export function OvisePanel({ blanco }: Props) {
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {BOTONES_TIPO_MAPA.map((b) => (
+          <button
+            key={b.tipo}
+            type="button"
+            onClick={() => setTipoMapa(b.tipo)}
+            className={`btn btn-sm ${b.variant} ${tipoMapa === b.tipo ? 'opacity-100 ring-2 ring-offset-1 ring-current' : 'opacity-70 hover:opacity-100'}`}
+          >
+            {b.label}
+          </button>
+        ))}
+      </div>
       <MapaConMarcador
         id={`mapa-ovise-${blanco.idBlanco}`}
         mapRef={mapRef}
         centro={[parseFloat(latitud) || -16.5, parseFloat(longitud) || -68.15]}
         zoom={13}
-        height={300}
+        height={900}
         onClick={handleMapClick}
         coordenadas={latitud && longitud ? [parseFloat(latitud), parseFloat(longitud)] : null}
+        tileUrl={TILES_MAPA[tipoMapa].url}
+        tileUrlOverlay={TILES_MAPA[tipoMapa].overlay}
       />
 
       <div className="flex justify-end">

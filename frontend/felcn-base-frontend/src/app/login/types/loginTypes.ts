@@ -72,6 +72,12 @@ export interface GrupoType {
   distrital: DistritalType
 }
 
+export interface GradoType {
+  id: number
+  abreviatura: string
+  descripcion: string
+}
+
 export interface UsuarioType {
   access_token: string
   id: string
@@ -86,6 +92,10 @@ export interface UsuarioType {
   urlFoto?: string | null
   idGrupo?: number | null
   grupo?: GrupoType | null
+  /** Grado militar/policial (ej. "Sgto."), usado como "Generado por" en los reportes PDF. */
+  grado?: GradoType | null
+  /** Nombre para mostrar precomputado en backend (ej. "grado + nombre completo"), fallback si no hay grado/persona. */
+  nombreApp?: string | null
 }
 
 export interface PoliticaType {

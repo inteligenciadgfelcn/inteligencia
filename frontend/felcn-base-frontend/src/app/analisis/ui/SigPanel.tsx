@@ -11,12 +11,13 @@ import { useAlerts } from '@/hooks/useAlerts'
 import { InterpreteMensajes } from '@/utils'
 import { formatDecimal } from '@/utils/formatDecimal'
 import type { CreateLugarSigPayload, LugarSig, RespuestaApi } from '@/services/analisis'
+import { TILES_MAPA, BOTONES_TIPO_MAPA, type TipoMapa } from '@/components/mapas/tiposMapa'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
   {
     ssr: false,
-    loading: () => <div className="h-[300px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />,
+    loading: () => <div className="h-[900px] animate-pulse rounded bg-gray-200 dark:bg-gray-700" />,
   }
 )
 
@@ -62,6 +63,7 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
   const [coordY, setCoordY] = useState<string>('-68.150000')
   const [contenido, setContenido] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [tipoMapa, setTipoMapa] = useState<TipoMapa>('normal')
 
   const cargar = useCallback(async () => {
     if (!idEntidad) return
@@ -187,14 +189,28 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
       </div>
 
       {/* ── Mapa ── */}
+      <div className="flex flex-wrap gap-2">
+        {BOTONES_TIPO_MAPA.map((b) => (
+          <button
+            key={b.tipo}
+            type="button"
+            onClick={() => setTipoMapa(b.tipo)}
+            className={`btn btn-sm ${b.variant} ${tipoMapa === b.tipo ? 'opacity-100 ring-2 ring-offset-1 ring-current' : 'opacity-70 hover:opacity-100'}`}
+          >
+            {b.label}
+          </button>
+        ))}
+      </div>
       <MapaConMarcador
         id={`mapa-gis-${idEntidad}`}
         mapRef={mapRef}
         centro={[parseFloat(coordX) || -16.5, parseFloat(coordY) || -68.15]}
         zoom={13}
-        height={300}
+        height={900}
         onClick={handleMapClick}
         coordenadas={coordX && coordY ? [parseFloat(coordX), parseFloat(coordY)] : null}
+        tileUrl={TILES_MAPA[tipoMapa].url}
+        tileUrlOverlay={TILES_MAPA[tipoMapa].overlay}
       />
 
       <div className="flex justify-end">

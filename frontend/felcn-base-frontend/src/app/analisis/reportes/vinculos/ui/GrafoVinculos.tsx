@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { DataSet } from 'vis-data'
 import { Network, type Options } from 'vis-network'
@@ -11,6 +11,11 @@ import type { GrafoVinculosData, GrupoNodoVinculo, NodoVinculo } from './constru
 interface Props {
   datos: GrafoVinculosData
   onSeleccionarNodo: (nodo: NodoVinculo | null) => void
+}
+
+export interface GrafoVinculosHandle {
+  /** Congela la simulación física y devuelve el canvas del diagrama como PNG, para exportar a PDF. */
+  obtenerImagenPNG: () => { dataUrl: string; ancho: number; alto: number } | null
 }
 
 /** Mismos colores semánticos (danger/info/success/secondary) que usa el resto de vistas de reportes S2I. */
@@ -30,9 +35,28 @@ const TAMANO_GRUPO: Record<GrupoNodoVinculo, number> = {
   'caso-externo': 30,
 }
 
-export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
+const GrafoVinculos = forwardRef<GrafoVinculosHandle, Props>(function GrafoVinculos(
+  { datos, onSeleccionarNodo },
+  ref,
+) {
   const contenedorRef = useRef<HTMLDivElement>(null)
+  const networkRef = useRef<Network | null>(null)
   const isDarkMode = useSelector((state: IRootState) => state.themeConfig.isDarkMode)
+
+  useImperativeHandle(ref, () => ({
+    obtenerImagenPNG: () => {
+      const canvas = contenedorRef.current?.querySelector('canvas')
+      if (!canvas) return null
+      // Congela el layout físico en su posición actual antes de leer el canvas,
+      // por si el usuario exporta antes de que termine la estabilización.
+      networkRef.current?.stopSimulation()
+      return {
+        dataUrl: canvas.toDataURL('image/png'),
+        ancho: canvas.width,
+        alto: canvas.height,
+      }
+    },
+  }), [])
 
   useEffect(() => {
     if (!contenedorRef.current) return
@@ -112,6 +136,7 @@ export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
       { nodes, edges },
       options,
     )
+    networkRef.current = network
 
     network.on('click', (params: { nodes: string[] }) => {
       if (params.nodes.length === 0) {
@@ -124,6 +149,7 @@ export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
 
     return () => {
       network.destroy()
+      networkRef.current = null
     }
   }, [datos, isDarkMode, onSeleccionarNodo])
 
@@ -133,4 +159,6 @@ export default function GrafoVinculos({ datos, onSeleccionarNodo }: Props) {
       className="h-[650px] w-full rounded-md border border-[#e0e6ed] bg-white dark:border-[#1b2e4b] dark:bg-[#0e1726]"
     />
   )
-}
+})
+
+export default GrafoVinculos
