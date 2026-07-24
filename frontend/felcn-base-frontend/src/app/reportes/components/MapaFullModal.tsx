@@ -1,6 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useState } from 'react'
+import html2canvas from 'html2canvas'
+import { useAlerts } from '@/hooks/useAlerts'
+import { useAuth } from '@/context/AuthProvider'
+import { InterpreteMensajes } from '@/utils'
+import { generarPdfConImagen, obtenerNombreGenerador } from '@/utils/pdfExport'
+
+/** Bounding box aproximado de Bolivia [[sur, oeste], [norte, este]] — vista por defecto de los mapas de operativos. */
+const BOLIVIA_BOUNDS = '[[-22.9, -69.7], [-9.5, -57.5]]'
 
 export interface CoordenadaBase {
   idOperativo: string
@@ -107,20 +115,45 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[], origin: str
         .leaflet-tooltip-own::before {
           border-top-color: #3b82f6 !important;
         }
+        .capturando-pdf .leaflet-control-zoom,
+        .capturando-pdf .leaflet-control-attribution { display: none !important; }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
         const markersData = ${markersJson};
-        const map = L.map('map').setView([0, 0], 2);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        const boliviaBounds = ${BOLIVIA_BOUNDS};
+        const boundsMarcadores = markersData.map(m => [m.lat, m.lng]);
+        const map = L.map('map').fitBounds(boliviaBounds);
+
+        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          crossOrigin: true
         }).addTo(map);
 
+        // Encuadra los operativos reales (no toda Bolivia) y espera a que las tiles del
+        // nuevo zoom terminen de cargar antes de resolver, para que la captura no salga en blanco.
+        window.prepararMapaParaCaptura = function () {
+          return new Promise(function (resolve) {
+            let resuelto = false;
+            const finalizar = function () {
+              if (resuelto) return;
+              resuelto = true;
+              resolve();
+            };
+            document.body.classList.add('capturando-pdf');
+            tileLayer.once('load', finalizar);
+            setTimeout(finalizar, 2500);
+            if (boundsMarcadores.length > 0) {
+              map.fitBounds(boundsMarcadores, { padding: [40, 40] });
+            } else {
+              map.fitBounds(boliviaBounds);
+            }
+          });
+        };
+
         if (markersData.length > 0) {
-          const bounds = [];
           markersData.forEach(m => {
             const marker = L.marker([m.lat, m.lng]).addTo(map);
             
@@ -144,9 +177,8 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[], origin: str
                 <span style="color: #94a3b8; font-family: monospace; font-size: 10px;">Coordenadas: \${String(m.lat).replace('.', ',')}, \${String(m.lng).replace('.', ',')}</span>
               </div>
             \`);
-            bounds.push([m.lat, m.lng]);
           });
-          map.fitBounds(bounds, { padding: [50, 50] });
+          map.fitBounds(boundsMarcadores, { padding: [50, 50] });
         }
       </script>
     </body>
@@ -169,17 +201,43 @@ function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[], origin: string) 
       <script src="${origin}/leaflet/leaflet-heat.js"></script>
       <style>
         html, body, #map { height: 100%; margin: 0; padding: 0; }
+        .capturando-pdf .leaflet-control-zoom,
+        .capturando-pdf .leaflet-control-attribution { display: none !important; }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
         const pointsData = ${pointsJson};
-        const map = L.map('map').setView([0, 0], 2);
-        
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        const boliviaBounds = ${BOLIVIA_BOUNDS};
+        const boundsPuntos = pointsData.map(p => [p[0], p[1]]);
+        const map = L.map('map').fitBounds(boliviaBounds);
+
+        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          crossOrigin: true
         }).addTo(map);
+
+        // Encuadra los puntos reales (no toda Bolivia) y espera a que las tiles del
+        // nuevo zoom terminen de cargar antes de resolver, para que la captura no salga en blanco.
+        window.prepararMapaParaCaptura = function () {
+          return new Promise(function (resolve) {
+            let resuelto = false;
+            const finalizar = function () {
+              if (resuelto) return;
+              resuelto = true;
+              resolve();
+            };
+            document.body.classList.add('capturando-pdf');
+            tileLayer.once('load', finalizar);
+            setTimeout(finalizar, 2500);
+            if (boundsPuntos.length > 0) {
+              map.fitBounds(boundsPuntos, { padding: [40, 40] });
+            } else {
+              map.fitBounds(boliviaBounds);
+            }
+          });
+        };
 
         if (pointsData.length > 0) {
           const heat = L.heatLayer(pointsData, {
@@ -195,9 +253,8 @@ function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[], origin: string) 
               1.0: 'red'
             }
           }).addTo(map);
-          
-          const bounds = pointsData.map(p => [p[0], p[1]]);
-          map.fitBounds(bounds, { padding: [50, 50] });
+
+          map.fitBounds(boundsPuntos, { padding: [50, 50] });
         }
       </script>
     </body>
@@ -215,7 +272,54 @@ export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps
   const basePath = process.env.NEXT_PUBLIC_PATH ? `/${process.env.NEXT_PUBLIC_PATH}` : ''
   const origin = typeof window !== 'undefined' ? `${window.location.origin}${basePath}` : ''
   const validas = coordenadas.filter(c => c.coordX != null && c.coordY != null && !isNaN(parseFloat(String(c.coordX))) && !isNaN(parseFloat(String(c.coordY))))
-  
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [generandoPdf, setGenerandoPdf] = useState(false)
+  const { Alerta } = useAlerts()
+  const { usuario } = useAuth()
+
+  const descargarPdf = async () => {
+    const iframe = iframeRef.current
+    const iframeDoc = iframe?.contentDocument
+    const win = iframe?.contentWindow as (Window & { prepararMapaParaCaptura?: () => Promise<void> }) | null | undefined
+    const mapaEl = iframeDoc?.getElementById('map')
+    if (!win || !iframeDoc || !mapaEl) return
+
+    setGenerandoPdf(true)
+    try {
+      await win.prepararMapaParaCaptura?.()
+      // Pequeño margen adicional para que el navegador termine de pintar tras el evento 'load' de las tiles.
+      await new Promise(resolve => setTimeout(resolve, 200))
+
+      const canvas = await html2canvas(mapaEl as HTMLElement, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: '#ffffff',
+      })
+      iframeDoc.body.classList.remove('capturando-pdf')
+
+      const titulo = tipo === 'mapa'
+        ? 'Mapa de Distribución Geográfica de Operativos'
+        : 'Mapa de Calor y Densidad de Operativos'
+      const nombreBase = tipo === 'mapa' ? 'mapa-operativos' : 'mapa-calor'
+
+      await generarPdfConImagen({
+        titulo,
+        subtitulo: 'FORMULARIO UNICO DE REGISTRO DE OPERATIVOS ANTINARCOTICOS',
+        // JPEG: las tiles del mapa son fotográficas (mucho detalle), PNG produce archivos enormes.
+        imagenDataUrl: canvas.toDataURL('image/jpeg', 0.9),
+        anchoPx: canvas.width,
+        altoPx: canvas.height,
+        orientacion: 'landscape',
+        generadoPor: obtenerNombreGenerador(usuario),
+        nombreArchivo: `${nombreBase}_felcn_${new Date().toISOString().slice(0, 10)}.pdf`,
+      })
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setGenerandoPdf(false)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-[99999] bg-white dark:bg-[#0e1726] flex flex-col overflow-hidden">
       {/* Header */}
@@ -243,6 +347,23 @@ export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <span className="hidden sm:inline text-xs text-gray-400 dark:text-gray-600">ESC para cerrar</span>
+          <button
+            type="button"
+            onClick={descargarPdf}
+            disabled={generandoPdf}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold
+              text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200
+              hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-300 dark:border-red-700
+              transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Descargar mapa en PDF"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" x2="12" y1="15" y2="3"></line>
+            </svg>
+            {generandoPdf ? 'Generando PDF...' : 'Descargar PDF'}
+          </button>
           {validas.length > 0 && (
             <>
               <button
@@ -298,6 +419,7 @@ export function MapaFullModal({ tipo, coordenadas, onClose }: MapaFullModalProps
       {/* Mapa de borde a borde */}
       <div className="flex-1 min-h-0">
         <iframe
+          ref={iframeRef}
           srcDoc={tipo === 'mapa'
             ? generateMapaOperativosSrcDoc(coordenadas, origin)
             : generateMapaCalorSrcDoc(coordenadas, origin)}

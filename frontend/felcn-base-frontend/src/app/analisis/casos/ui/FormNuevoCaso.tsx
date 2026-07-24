@@ -39,7 +39,7 @@ export function FormNuevoCaso() {
 
   const cargarLookups = useCallback(async () => {
     const [rPaises, rEstados, rEtapas] = await Promise.all([
-      S2iLookupsService.listarPaises(4),
+      S2iLookupsService.listarPaises(),
       S2iLookupsService.listarEstadosCaso(),
       S2iLookupsService.listarEtapasInvestigacion(),
     ])

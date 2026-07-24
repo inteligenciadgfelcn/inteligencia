@@ -1,6 +1,7 @@
 import { PDFOptions } from 'puppeteer'
 import { ReportTemplate } from '../../../../siii/reportes/interfaces/reporte-template.interface'
 import { getLogoBase64 } from '../../../../siii/reportes/report-logo.util'
+import { formatearFechaVisualizacion } from '@/common/utils/date.util'
 import type {
   FiltroFlujoTransporte,
   FlujoTransporteReporteRow,
@@ -22,19 +23,24 @@ const fondoFila = (hex: string | null) => (hex ? `${hex}40` : 'transparent')
 export class RepFlujoTransporteTemplate
   implements ReportTemplate<DatosReporteFlujoTransporte>
 {
-  pdfOptions: PDFOptions = {
-    format: 'letter',
-    landscape: true,
-    margin: { top: '40px', right: '30px', bottom: '60px', left: '30px' },
-    displayHeaderFooter: true,
-    headerTemplate: '<div></div>',
-    footerTemplate: `
-      <div style="font-size: 10px; width: 100%; display: flex; justify-content: flex-end;
-                  align-items: center; border-top: 1px solid #e5e7eb; padding: 10px 30px 0 0;
-                  color: #3e5f8a; font-family: 'Calibri', 'Arial', sans-serif;">
-        <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span class="date"></span>
-        <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
-      </div>`,
+  pdfOptions: PDFOptions
+
+  constructor(usuarioGenerador?: string) {
+    this.pdfOptions = {
+      format: 'letter',
+      landscape: true,
+      margin: { top: '40px', right: '30px', bottom: '60px', left: '30px' },
+      displayHeaderFooter: true,
+      headerTemplate: '<div></div>',
+      footerTemplate: `
+        <div style="font-size: 10px; width: 100%; display: flex; justify-content: flex-end;
+                    align-items: center; border-top: 1px solid #e5e7eb; padding: 10px 30px 0 0;
+                    color: #3e5f8a; font-family: 'Calibri', 'Arial', sans-serif;">
+          <span style="font-weight: bold;">Fecha de impresión:</span>&nbsp;<span>${formatearFechaVisualizacion(new Date(), true)}</span>
+          ${usuarioGenerador ? `<span style="margin-left: 20px;"><span style="font-weight: bold;">Generado por:</span>&nbsp;${usuarioGenerador}</span>` : ''}
+          <span style="margin-left: 20px;"><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+        </div>`,
+    }
   }
 
   generateHtml(data: DatosReporteFlujoTransporte): string {
@@ -62,7 +68,8 @@ export class RepFlujoTransporteTemplate
         <td>${f.origen}</td>
         <td>${f.destino}</td>
         <td>${f.carga}</td>
-      </tr>`,
+        <td>${f.latitud}, ${f.longitud}</td>
+      </tr>`
       )
       .join('')
 
@@ -128,10 +135,11 @@ export class RepFlujoTransporteTemplate
             <th>Origen</th>
             <th>Destino</th>
             <th>Carga</th>
+            <th>Coordenadas</th>
           </tr>
         </thead>
         <tbody>
-          ${filasHtml || '<tr><td colspan="7">Sin registros para los filtros seleccionados.</td></tr>'}
+          ${filasHtml || '<tr><td colspan="8">Sin registros para los filtros seleccionados.</td></tr>'}
         </tbody>
       </table>
     </div>

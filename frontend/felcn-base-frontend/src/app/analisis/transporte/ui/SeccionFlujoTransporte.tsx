@@ -81,7 +81,14 @@ export function SeccionFlujoTransporte({ conductor, transporte, onRegistrado }: 
 
   useEffect(() => {
     S2iLookupsService.listarColores()
-      .then((r) => { if (r?.finalizado) setColores(r.datos ?? []) })
+      .then((r) => {
+        if (r?.finalizado) {
+          const datos = r.datos ?? []
+          setColores(datos)
+          const blanco = datos.find((c) => c.color?.trim().toUpperCase() === 'BLANCO')
+          if (blanco) setIdColor(String(blanco.id))
+        }
+      })
       .catch(() => { })
   }, [])
 
