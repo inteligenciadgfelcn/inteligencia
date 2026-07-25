@@ -16,7 +16,10 @@ const LOGO_TAMANO_PT = 36
 const ALTO_LINEA_PIE_TEXTO_PT = 12
 const ESPACIO_ANTES_PIE_TEXTO_PT = 16
 
-const LOGO_URL = '/assets/felcnlogo.png'
+// Mismo archivo que usa el backend (Puppeteer) para el logo institucional en sus PDFs —
+// ver src/application/sunesis/siii/reportes/assets/logo.png en felcn-base-backend-v2 — para
+// que la cabecera se vea idéntica sin importar dónde se generó el reporte.
+const LOGO_URL = '/assets/reporte-logo.png'
 
 interface OpcionesPdfConImagen {
   /** Título principal, escrito en blanco sobre la franja de cabecera azul. */
@@ -42,32 +45,26 @@ interface UsuarioGenerador {
   usuario?: string | null
   nombreApp?: string | null
   grado?: { abreviatura?: string | null } | null
-  persona?: {
-    nombres?: string | null
-    primerApellido?: string | null
-    segundoApellido?: string | null
-  } | null
 }
 
 /**
  * Arma el "Generado por" para el pie de los reportes, con la misma prioridad que usa el
- * backend (`ReportBaseService.obtenerUsuarioGenerador`): abreviatura de grado + nombre
- * completo si están disponibles, si no el nombre para mostrar precomputado, si no el login.
+ * backend (`ReportBaseService.obtenerUsuarioGenerador`): abreviatura de grado + nombre a
+ * mostrar (`nombreApp`, que en algunos usuarios ya viene precargado como "grado + nombre
+ * completo" — de ahí la verificación para no duplicar el grado), si no el login.
  */
 export function obtenerNombreGenerador(usuario: UsuarioGenerador | null | undefined): string {
   if (!usuario) return ''
-  const abreviatura = usuario.grado?.abreviatura
-  const nombreCompleto = [
-    usuario.persona?.nombres,
-    usuario.persona?.primerApellido,
-    usuario.persona?.segundoApellido,
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .trim()
+  const abreviatura = usuario.grado?.abreviatura?.trim() || undefined
+  const nombreMostrar = usuario.nombreApp?.trim() || undefined
 
-  if (abreviatura && nombreCompleto) return `${abreviatura}: ${nombreCompleto}`
-  if (usuario.nombreApp) return usuario.nombreApp
+  if (abreviatura && nombreMostrar) {
+    return nombreMostrar.toLowerCase().startsWith(abreviatura.toLowerCase())
+      ? nombreMostrar
+      : `${abreviatura}: ${nombreMostrar}`
+  }
+  if (nombreMostrar) return nombreMostrar
+  if (abreviatura) return `${abreviatura}: ${usuario.usuario ?? ''}`
   return usuario.usuario ?? ''
 }
 
@@ -80,9 +77,8 @@ function formatearFecha(fecha: Date): string {
 let logoDataUrlPromise: Promise<string | null> | null = null
 
 /**
- * Carga una sola vez el logo institucional (public/assets/felcnlogo.png) y lo reescala a
- * un tamaño chico antes de cachearlo: el archivo fuente pesa ~500KB y en el PDF solo se
- * dibuja a 36pt, así que embeberlo tal cual infla el PDF sin ninguna ganancia visual.
+ * Carga una sola vez el logo institucional (public/assets/reporte-logo.png) y lo reescala
+ * antes de cachearlo, ya que en el PDF solo se dibuja a 36pt.
  */
 function cargarLogoDataUrl(): Promise<string | null> {
   if (typeof window === 'undefined') return Promise.resolve(null)

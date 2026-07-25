@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { CustomDialog } from '@/components/modales/CustomDialog'
 import { OperativoService } from '@/services/operativos'
 import IconPencil from '@/components/Icon/IconPencil'
 import IconPrinter from '@/components/Icon/IconPrinter'
@@ -39,6 +41,42 @@ export function GestionOperativoListado({
   const [modalOpen, setModalOpen] = useState(false)
   const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // ── Modal "Enviar a Fiscalía" (registrar CUD / ianus) ──────────────────────
+  const [fiscaliaModalOpen, setFiscaliaModalOpen] = useState(false)
+  const [casoFiscalia, setCasoFiscalia] = useState<GestionOperativoItem | null>(null)
+  const [cudInput, setCudInput] = useState('')
+  const [enviandoFiscalia, setEnviandoFiscalia] = useState(false)
+
+  const abrirModalFiscalia = (row: GestionOperativoItem) => {
+    setCasoFiscalia(row)
+    setCudInput(row.ianus ?? '')
+    setFiscaliaModalOpen(true)
+  }
+
+  const cerrarModalFiscalia = () => {
+    if (enviandoFiscalia) return
+    setFiscaliaModalOpen(false)
+    setCasoFiscalia(null)
+    setCudInput('')
+  }
+
+  const confirmarEnvioFiscalia = async () => {
+    if (!casoFiscalia?.idCaso || !cudInput.trim()) return
+    setEnviandoFiscalia(true)
+    try {
+      await OperativoService.actualizarIanus(String(casoFiscalia.idCaso), cudInput.trim())
+      Alerta({ mensaje: 'CUD registrado correctamente', variant: 'success' })
+      setFiscaliaModalOpen(false)
+      setCasoFiscalia(null)
+      setCudInput('')
+      void refetch()
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    } finally {
+      setEnviandoFiscalia(false)
+    }
+  }
 
   const descargarPdfDirecto = async (numeroOperativo: string) => {
     try {
@@ -82,7 +120,11 @@ export function GestionOperativoListado({
     enabled: !!usuario,
   })
 
-  const filas: GestionOperativoItem[] = useMemo(() => data?.datos ?? [], [data])
+  const filas: GestionOperativoItem[] = useMemo(() => {
+    const datos = data?.datos ?? []
+    if (tipo === 'envio-fiscalia') return datos.filter((f) => !f.ianus?.trim())
+    return datos
+  }, [data, tipo])
 
   const filasFiltradas = useMemo(() => {
     if (!search.trim()) return filas
@@ -126,15 +168,17 @@ export function GestionOperativoListado({
       },
     ]
 
-    if (tipo === 'con-cud') {
+    if (tipo === 'con-cud' || tipo === 'envio-fiscalia') {
       cols.push({
         accessor: 'ianus',
-        title: 'IANUS',
+        title: 'CUD',
         sortable: true,
         render: (row) => (
-          <span className="text-sm font-semibold text-primary">
-            {row.ianus || '-'}
-          </span>
+          row.ianus ? (
+            <span className="text-sm font-semibold text-primary">{row.ianus}</span>
+          ) : (
+            <span className="badge badge-outline-warning text-xs">Sin registrar</span>
+          )
         ),
       })
     }
@@ -243,7 +287,7 @@ export function GestionOperativoListado({
               <button
                 type="button"
                 className="text-info hover:text-info/70 transition-colors"
-                onClick={() => alert('Enviando a Fiscalía...')}
+                onClick={() => abrirModalFiscalia(row)}
                 title="Enviar a Fiscalía"
               >
                 <IconSend className="h-5 w-5" />
@@ -266,6 +310,53 @@ export function GestionOperativoListado({
         tipo="operativo"
         urlPdf={previewUrl}
       />
+      <CustomDialog
+        isOpen={fiscaliaModalOpen}
+        handleClose={cerrarModalFiscalia}
+        title="Enviar a Fiscalía"
+        maxWidth="sm"
+      >
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Registre el CUD asignado por Fiscalía para el caso{' '}
+            <span className="font-semibold">{casoFiscalia?.numeroCaso || casoFiscalia?.nombreCaso}</span>.
+          </p>
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+              CUD
+            </label>
+            <Input
+              autoFocus
+              value={cudInput}
+              onChange={(e) => setCudInput(e.target.value)}
+              maxLength={15}
+              placeholder="Ingrese el CUD"
+              disabled={enviandoFiscalia}
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline-secondary"
+              size="sm"
+              onClick={cerrarModalFiscalia}
+              disabled={enviandoFiscalia}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="info"
+              size="sm"
+              onClick={() => void confirmarEnvioFiscalia()}
+              disabled={enviandoFiscalia || !cudInput.trim()}
+              loading={enviandoFiscalia}
+            >
+              Enviar a Fiscalía
+            </Button>
+          </div>
+        </div>
+      </CustomDialog>
       <div className="panel p-0">
         <VristoDataTable<GestionOperativoItem>
           rows={filasPagina}

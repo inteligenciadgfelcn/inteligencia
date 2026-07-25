@@ -79,7 +79,8 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        a.ianus AS "ianus"
       FROM public.asignacion a
       LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
@@ -149,6 +150,14 @@ export class AsignacionSiiiRepository {
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
     )
+  }
+
+  /**
+   * Registra el CUD que Fiscalía asignó al caso ("Enviar a Fiscalía" en el frontend).
+   * Al quedar `ianus` no vacío, el caso pasa a aparecer en buscarCasosConCudPorUsuario().
+   */
+  async actualizarIanus(idCaso: string, ianus: string): Promise<void> {
+    await this.repository.update(idCaso, { ianus })
   }
 
   /**

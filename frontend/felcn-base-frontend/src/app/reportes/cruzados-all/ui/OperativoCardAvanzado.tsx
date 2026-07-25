@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ResultadoCruzada } from '@/services/reportes/CruzadosService'
+import type { ResultadoAvanzado } from '@/services/reportes/CruzadosAllService'
 import { Constantes } from '@/config/Constantes'
 import IconPrinter from '@/components/Icon/IconPrinter'
 import IconEye from '@/components/Icon/IconEye'
@@ -74,9 +74,20 @@ function Seccion({ titulo, items }: SeccionProps) {
   )
 }
 
+function BadgeBool({ valor, etiqueta }: { valor: boolean; etiqueta: string }) {
+  if (!valor) return null
+  return (
+    <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-full
+      bg-green-100 text-green-700 border border-green-200
+      dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
+      {etiqueta}
+    </span>
+  )
+}
+
 // ─── Card principal ───────────────────────────────────────────────────────────
 
-export function OperativoCard({ row }: { row: ResultadoCruzada }) {
+export function OperativoCardAvanzado({ row }: { row: ResultadoAvanzado }) {
   const { Alerta } = useAlerts()
   const [modalOpen, setModalOpen] = useState(false)
   const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(null)
@@ -94,15 +105,14 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
     }
   }
 
-  const drogas = parsearItems(row.drogasDecomisadas)
+  const personasImpl = parsearItems(row.personasImplicadas)
+  const drogas = parsearItems(row.drogas)
   const sustSolidas = parsearItems(row.sustanciasSolidas)
   const sustLiquidas = parsearItems(row.sustanciasLiquidas)
   const laboratorios = parsearItems(row.laboratoriosFabricas)
-  const arrestados = parsearItems(row.arrestados)
-  const personasImpl = parsearItems(row.personasImplicadas)
   const bienesIncautados = parsearItems(row.bienesIncautados)
 
-  // ubicacionInstitucional puede llegar como null o como '--' cuando los tres LEFT JOINs no retornan filas
+  // ubicacionInstitucional puede llegar como null o como '--' cuando los LEFT JOINs no retornan filas
   const unidadValida = row.ubicacionInstitucional?.replace(/-/g, '').trim()
 
   const urlPdf = row.numeroOperativo
@@ -143,6 +153,11 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
               <span className="text-xs font-bold text-dark dark:text-white-light truncate">
                 {row.numeroCaso}
               </span>
+              {row.ianus && (
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-secondary/10 text-secondary border border-secondary/20 shrink-0">
+                  IANUS: {row.ianus}
+                </span>
+              )}
             </div>
 
             {/* Nombre del caso */}
@@ -152,15 +167,20 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
               </p>
             )}
 
-            {/* Asignado al caso */}
-            {row.asignadoCaso && (
-              <p className="text-[11px] text-gray-500 dark:text-gray-500 mt-0.5 truncate" title={row.asignadoCaso}>
-                Asig.: {row.asignadoCaso}
+            {/* Asignados */}
+            {row.asignado && (
+              <p className="text-[11px] text-gray-500 dark:text-gray-500 mt-0.5 truncate" title={row.asignado}>
+                Inv.: {row.asignado}
+              </p>
+            )}
+            {row.asignadoFiscal && (
+              <p className="text-[11px] text-gray-500 dark:text-gray-500 truncate" title={row.asignadoFiscal}>
+                Fisc.: {row.asignadoFiscal}
               </p>
             )}
           </div>
 
-          {/* Fecha del operativo */}
+          {/* Acciones + fecha */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
@@ -184,7 +204,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
           </div>
         </div>
 
-        {/* Departamento · Provincia · Localidad · Lugar */}
+        {/* Ubicación geográfica */}
         <div className="mt-1.5 space-y-0.5">
           {row.ubicacionGeografica && (
             <div className="flex items-start text-[11px] text-gray-500 dark:text-gray-400">
@@ -196,7 +216,7 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
             </div>
           )}
 
-          {/* Unidad · Distrital · Grupo */}
+          {/* Unidad institucional */}
           {unidadValida && (
             <div className="flex items-start text-[11px] text-gray-500 dark:text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1 mt-[3px] shrink-0 text-gray-400">
@@ -217,59 +237,42 @@ export function OperativoCard({ row }: { row: ResultadoCruzada }) {
           )}
         </div>
 
-        {/* Hoja de Coca (cantidad total en kg) */}
-        {row.totalHojaCoca && (
+        {/* Tipo / Relevancia */}
+        {(row.tipoOperativo || row.tipoRelevancia || row.categoriaOperativo) && (
+          <div className="flex flex-wrap gap-2 mt-1.5 text-[10px] text-gray-500 dark:text-gray-400">
+            {row.tipoOperativo && <span className="badge badge-outline-secondary text-[10px]">{row.tipoOperativo}</span>}
+            {row.tipoRelevancia && <span className="badge badge-outline-secondary text-[10px]">{row.tipoRelevancia}</span>}
+            {row.categoriaOperativo && <span className="badge badge-outline-secondary text-[10px]">{row.categoriaOperativo}</span>}
+          </div>
+        )}
+
+        {/* Indicadores booleanos */}
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          <BadgeBool valor={!!row.esPositivo} etiqueta="Positivo" />
+          <BadgeBool valor={!!row.esAprehendido} etiqueta="Aprehendido" />
+          <BadgeBool valor={!!row.esArrestado} etiqueta="Arrestado" />
+          <BadgeBool valor={!!row.esIcia} etiqueta="ICIA" />
+          <BadgeBool valor={!!row.esParteDiario} etiqueta="P.Diario" />
+          <BadgeBool valor={!!row.esRevisado} etiqueta="Revisado" />
+        </div>
+
+        {/* Costo total */}
+        {row.totalCosto && row.totalCosto !== '0' && (
           <div className="mt-1.5">
-            <span className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
-              🌿 Hoja de Coca: {row.totalHojaCoca} kg
+            <span className="text-xs font-semibold text-green-700 dark:text-green-400">
+              Costo Total: Bs {row.totalCosto}
             </span>
           </div>
         )}
       </div>
 
       {/* ── Secciones de detalle ──────────────────────────────────────────── */}
-
-      {/* op10: Tipo Droga · Estado Droga · Cantidad (grs) · Forma de Transporte */}
-      <Seccion
-        titulo="Drogas Decomisadas"
-        items={drogas}
-      />
-
-      {/* op11: Sustancia sólida · Cantidad (grs) */}
-      <Seccion
-        titulo="Sustancias Precursoras Sólidas"
-        items={sustSolidas}
-      />
-
-      {/* op12: Sustancia líquida · Cantidad (grs) */}
-      <Seccion
-        titulo="Sustancias Precursoras Líquidas"
-        items={sustLiquidas}
-      />
-
-      {/* op13: Tipo Fábrica · Cantidad */}
-      <Seccion
-        titulo="Laboratorios y Fábricas"
-        items={laboratorios}
-      />
-
-      {/* op14: arrestado_auxiliar — Nombre completo · Nacionalidad */}
-      <Seccion
-        titulo="Arrestados"
-        items={arrestados}
-      />
-
-      {/* op15: persona_auxiliar (DETENIDOSAUX) — Nombre completo · País */}
-      <Seccion
-        titulo="Personas Implicadas"
-        items={personasImpl}
-      />
-
-      {/* op16: item_bien_secuestrado — Tipo de bien */}
-      <Seccion
-        titulo="Bienes Incautados"
-        items={bienesIncautados}
-      />
+      <Seccion titulo="Personas Implicadas" items={personasImpl} />
+      <Seccion titulo="Drogas Decomisadas" items={drogas} />
+      <Seccion titulo="Sustancias Precursoras Sólidas" items={sustSolidas} />
+      <Seccion titulo="Sustancias Precursoras Líquidas" items={sustLiquidas} />
+      <Seccion titulo="Laboratorios y Fábricas" items={laboratorios} />
+      <Seccion titulo="Bienes Incautados" items={bienesIncautados} />
     </div>
     </>
   )

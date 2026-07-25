@@ -13,10 +13,13 @@ export class ReportBaseService implements OnModuleDestroy {
   constructor(private readonly httpService: HttpService) {}
 
   /**
-   * Arma "GRADO: Nombre Completo" para el pie de los reportes, consultando el
-   * perfil del usuario en felcn-auth-backend (grado y persona no viajan en el
-   * JWT). Si la consulta falla o el perfil no trae grado/persona, cae de
-   * vuelta al login/CI para no romper la generación del PDF.
+   * Arma "GRADO: Nombre" para el pie de los reportes, consultando el perfil del
+   * usuario en felcn-auth-backend (el grado no viaja en el JWT). El endpoint
+   * `/usuarios/cuenta/perfil` no expone una relación `persona` con nombres/apellidos
+   * separados, así que el nombre a mostrar sale de `nombreApp` (que en algunos
+   * usuarios ya viene precargado como "grado + nombre completo" — de ahí la
+   * verificación para no duplicar el grado). Si la consulta falla o el perfil no
+   * trae grado/nombreApp, cae de vuelta al login/CI para no romper el PDF.
    */
   async obtenerUsuarioGenerador(accessToken: string | undefined, fallback: string): Promise<string> {
     if (!accessToken || !this.authBackendUrl) return fallback
@@ -29,14 +32,16 @@ export class ReportBaseService implements OnModuleDestroy {
       )
 
       const perfil = response.data?.datos
-      const abreviatura = perfil?.grado?.abreviatura
-      const nombreCompleto = [perfil?.persona?.nombres, perfil?.persona?.primerApellido, perfil?.persona?.segundoApellido]
-        .filter(Boolean)
-        .join(' ')
-        .trim()
+      const abreviatura: string | undefined = perfil?.grado?.abreviatura?.trim() || undefined
+      const nombreMostrar: string | undefined = perfil?.nombreApp?.trim() || undefined
 
-      if (abreviatura && nombreCompleto) return `${abreviatura}: ${nombreCompleto}`
-      if (perfil?.nombreApp) return perfil.nombreApp
+      if (abreviatura && nombreMostrar) {
+        return nombreMostrar.toLowerCase().startsWith(abreviatura.toLowerCase())
+          ? nombreMostrar
+          : `${abreviatura}: ${nombreMostrar}`
+      }
+      if (nombreMostrar) return nombreMostrar
+      if (abreviatura) return `${abreviatura}: ${fallback}`
       return fallback
     } catch (error) {
       this.logger.warn(`No se pudo obtener el perfil del usuario para el pie del reporte: ${error.message}`)

@@ -81,3 +81,20 @@ export const sesionPeticion = async <T = any>({
     throw e.response?.data || 'Ocurrió un error desconocido'
   }
 }
+
+/**
+ * Descarga un archivo protegido por sesión (ej. PDF de reporte) y dispara la descarga en el
+ * navegador. A diferencia de `window.open(url)`, esta petición sí adjunta el header
+ * `Authorization`, necesario porque los endpoints de reportes están detrás de `JwtAuthGuard`.
+ */
+export const descargarArchivoAutenticado = async (url: string, nombreArchivo: string): Promise<void> => {
+  const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
+  const objectUrl = URL.createObjectURL(blob)
+  const enlace = document.createElement('a')
+  enlace.href = objectUrl
+  enlace.download = nombreArchivo
+  document.body.appendChild(enlace)
+  enlace.click()
+  enlace.remove()
+  URL.revokeObjectURL(objectUrl)
+}
