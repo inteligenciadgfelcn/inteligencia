@@ -5,6 +5,11 @@ import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { Button } from '@/components/ui/Button'
 import { Icono } from '@/components/Icono'
 import type { AsignacionIngresoItem } from '@/services/seguimiento/AsignacionesIngresoService'
+import { ReportesSeguimientoService } from '@/services/reportes/ReportesSeguimientoService'
+import { sesionPeticion } from '@/utils/peticion'
+import { InterpreteMensajes } from '@/utils'
+import { useAlerts } from '@/hooks/useAlerts'
+import IconPrinter from '@/components/Icon/IconPrinter'
 
 interface TablaRegistradosProps {
   rows: AsignacionIngresoItem[]
@@ -26,6 +31,24 @@ export function TablaRegistrados({
   onLimitChange,
 }: TablaRegistradosProps) {
   const router = useRouter()
+  const { Alerta } = useAlerts()
+
+  const descargarPdfSeguimiento = async (idCaso: string) => {
+    try {
+      const url = ReportesSeguimientoService.urlPdf(idCaso)
+      const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
+      const objectUrl = URL.createObjectURL(blob)
+      const enlace = document.createElement('a')
+      enlace.href = objectUrl
+      enlace.download = `seguimiento-caso-${idCaso}.pdf`
+      document.body.appendChild(enlace)
+      enlace.click()
+      enlace.remove()
+      URL.revokeObjectURL(objectUrl)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    }
+  }
 
   return (
     <VristoDataTable<AsignacionIngresoItem>
@@ -50,14 +73,22 @@ export function TablaRegistrados({
           accessor: 'idCaso',
           title: 'Acciones',
           render: (row) => (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 className="text-primary hover:text-primary/70 transition-colors"
                 onClick={() => router.push(`/seguimientos/${row.idCaso}`)}
                 title="Ingresar al Seguimiento"
               >
-                <Icono className="w-5 h-5">login</Icono>
+                <Icono className="w-5 h-5">edit</Icono>
+              </button>
+              <button
+                type="button"
+                className="text-success hover:text-success/70 transition-colors"
+                onClick={() => void descargarPdfSeguimiento(row.idCaso)}
+                title="Descargar PDF de Seguimiento"
+              >
+                <IconPrinter className="h-5 w-5" />
               </button>
             </div>
           ),

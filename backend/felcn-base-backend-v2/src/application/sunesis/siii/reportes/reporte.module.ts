@@ -9,10 +9,11 @@ import { CruzadasRepository } from './cruzados/cruzados.repository';
 import { CuadrosController } from './cuadros/cuadros.controller';
 import { CuadrosService } from './cuadros/cuadros.service';
 import { CuadrosRepository } from './cuadros/cuadros.repository';
+import { SeguimientoReportController } from './seguimiento/seguimiento-report.controller';
 
 @Module({
     imports: [SiiiModule, HttpModule],
-    controllers: [OperativeReportController, CruzadasController, CuadrosController],
+    controllers: [OperativeReportController, CruzadasController, CuadrosController, SeguimientoReportController],
     providers: [ReportBaseService, CruzadasService, CruzadasRepository, CuadrosService, CuadrosRepository],
     exports: [ReportBaseService],
 })
