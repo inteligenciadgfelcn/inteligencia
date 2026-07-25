@@ -12,6 +12,7 @@ import { InterpreteMensajes } from '@/utils'
 import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
 import { VistaPreviaOperativo } from '../../../reportes/components/VistaPreviaOperativo'
+import { descargarArchivoAutenticado } from '@/utils/peticion'
 
 function parsearItems(campo: string | null | undefined): string[] {
   if (!campo?.trim()) return []
@@ -78,6 +79,17 @@ export function TablaPlana({
     }
   }
 
+  const descargarPdfGeneral = async (numeroOperativo: string) => {
+    try {
+      await descargarArchivoAutenticado(
+        `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
+        `reporte-general-${numeroOperativo}.pdf`,
+      )
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    }
+  }
+
   const columns: Column<ResultadoCruzada>[] = useMemo(() => [
     {
       accessor: 'numeroOperativo',
@@ -103,15 +115,7 @@ export function TablaPlana({
             <button
               type="button"
               className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
-              onClick={() => {
-                const num = row.numeroOperativo
-                if (num) {
-                  window.open(
-                    `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(num)}`,
-                    '_blank'
-                  )
-                }
-              }}
+              onClick={() => row.numeroOperativo && void descargarPdfGeneral(row.numeroOperativo)}
               title="Descargar PDF Reporte General"
             >
               <IconPrinter className="h-4 w-4" />

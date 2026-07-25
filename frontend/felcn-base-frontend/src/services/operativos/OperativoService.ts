@@ -32,4 +32,13 @@ export const OperativoService = {
       withCredentials: true,
     })
   },
+
+  actualizarIanus(idCaso: string, ianus: string): Promise<{ datos: { idCaso: string; ianus: string } }> {
+    return sesionPeticion({
+      url: `${BASE_OPERATIVOS}/casos/${idCaso}/ianus`,
+      method: 'patch',
+      body: { ianus },
+      withCredentials: true,
+    })
+  },
 }

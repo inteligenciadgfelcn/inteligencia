@@ -40,6 +40,7 @@ import {
   CreateGaleriaDto,
   CreateLogotipoDto,
   UpdateCostoBienDto,
+  UpdateIanusDto,
 } from '../dto'
 
 @ApiBearerAuth()
@@ -97,7 +98,23 @@ export class OperativoController extends BaseController {
     return this.successList(datos)
   }
 
-
+  @ApiOperation({
+    summary: 'Registrar el CUD (IANUS) de un caso enviado a Fiscalía',
+    description:
+      'Actualiza asignacion.ianus con el CUD que Fiscalía asignó al caso. ' +
+      'Solo el usuario dueño del caso (asignacion.usuario) puede actualizarlo.',
+  })
+  @ApiParam({ name: 'idCaso', description: 'ID del caso (asignacion)' })
+  @Patch('casos/:idCaso/ianus')
+  async actualizarIanus(
+    @Req() req: Request,
+    @Param('idCaso') idCaso: string,
+    @Body() data: UpdateIanusDto
+  ) {
+    const { numeroPase = '' } = req.user as PassportUser
+    await this.operativoService.actualizarIanus(idCaso, data.ianus, numeroPase)
+    return this.successUpdate({ idCaso, ianus: data.ianus })
+  }
 
   // ==================== CASO (1:N) ====================
 

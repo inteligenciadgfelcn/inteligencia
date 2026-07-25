@@ -6,6 +6,7 @@ import { VristoDataTable, Column } from '@/components/datatable/VristoDataTable'
 import { Constantes } from '@/config/Constantes'
 import IconPrinter from '@/components/Icon/IconPrinter'
 import IconEye from '@/components/Icon/IconEye'
+import IconFile from '@/components/Icon/IconFile'
 import { exportToCSV, exportToExcel, exportToPrint } from '@/utils/tableExport'
 import { MapaFullModal } from '../../components/MapaFullModal'
 import type { CoordenadaOp } from '@/services/reportes/CuadrosService'
@@ -14,6 +15,8 @@ import { InterpreteMensajes } from '@/utils'
 import { ReportesOperativoService } from '@/services/reportes/ReportesOperativoService'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
 import { VistaPreviaOperativo } from '../../components/VistaPreviaOperativo'
+import { descargarArchivoAutenticado } from '@/utils/peticion'
+import { OperativoCardAvanzado } from './OperativoCardAvanzado'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,7 +50,124 @@ function BadgeBool({ valor, etiqueta }: { valor: boolean; etiqueta: string }) {
   )
 }
 
+// ─── Paginación (vista de tarjetas) ──────────────────────────────────────────
+
+function generarPaginas(actual: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  if (actual <= 4) return [1, 2, 3, 4, 5, '...', total]
+  if (actual >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total]
+  return [1, '...', actual - 1, actual, actual + 1, '...', total]
+}
+
+interface PaginacionBarProps {
+  total: number
+  page: number
+  limit: number
+  onPage: (p: number) => void
+  onLimit: (l: number) => void
+}
+
+function PaginacionBar({ total, page, limit, onPage, onLimit }: PaginacionBarProps) {
+  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const desde = Math.min((page - 1) * limit + 1, total)
+  const hasta = Math.min(page * limit, total)
+  const paginas = generarPaginas(page, totalPages)
+
+  const btnBase =
+    'inline-flex items-center justify-center w-7 h-7 rounded text-xs font-medium transition-colors'
+  const btnNormal =
+    'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1b2e4b]/60'
+  const btnActivo =
+    'bg-primary text-white shadow-sm pointer-events-none'
+  const btnDisabled =
+    'text-gray-300 dark:text-gray-700 cursor-not-allowed'
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 mt-1
+      border-t border-[#e0e6ed] dark:border-[#1b2e4b] text-xs">
+      <span className="text-gray-500 dark:text-gray-400">
+        Mostrando{' '}
+        <strong className="text-dark dark:text-white-light">{desde}</strong>–
+        <strong className="text-dark dark:text-white-light">{hasta}</strong>{' '}
+        de{' '}
+        <strong className="text-dark dark:text-white-light">{total}</strong>{' '}
+        resultado{total !== 1 ? 's' : ''}
+      </span>
+
+      <div className="flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={() => onPage(1)}
+          disabled={page === 1}
+          className={`${btnBase} ${page === 1 ? btnDisabled : btnNormal}`}
+          title="Primera página"
+        >
+          «
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(page - 1)}
+          disabled={page === 1}
+          className={`${btnBase} ${page === 1 ? btnDisabled : btnNormal}`}
+          title="Página anterior"
+        >
+          ‹
+        </button>
+
+        {paginas.map((p, i) =>
+          p === '...' ? (
+            <span key={`e-${i}`} className="w-7 text-center text-gray-400 select-none">
+              …
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              onClick={() => onPage(p as number)}
+              className={`${btnBase} ${p === page ? btnActivo : btnNormal}`}
+            >
+              {p}
+            </button>
+          )
+        )}
+
+        <button
+          type="button"
+          onClick={() => onPage(page + 1)}
+          disabled={page === totalPages}
+          className={`${btnBase} ${page === totalPages ? btnDisabled : btnNormal}`}
+          title="Página siguiente"
+        >
+          ›
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(totalPages)}
+          disabled={page === totalPages}
+          className={`${btnBase} ${page === totalPages ? btnDisabled : btnNormal}`}
+          title="Última página"
+        >
+          »
+        </button>
+      </div>
+
+      <select
+        value={limit}
+        onChange={e => { onLimit(Number(e.target.value)); onPage(1) }}
+        className="form-select text-xs py-1 px-2 h-7 w-auto rounded border-[#e0e6ed] dark:border-[#1b2e4b]
+          bg-white dark:bg-[#1b2e4b] text-gray-700 dark:text-gray-300"
+      >
+        {[10, 20, 30, 50].map(l => (
+          <option key={l} value={l}>{l} / pág.</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 // ─── Componente principal exportado ──────────────────────────────────────────
+
+type Vista = 'tabla' | 'tarjetas'
 
 interface TablaAvanzadaProps {
   rows: ResultadoAvanzado[]
@@ -68,6 +188,7 @@ const EXPORT_KEYS: (keyof ResultadoAvanzado)[] = [
 
 export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
   const { Alerta } = useAlerts()
+  const [vista, setVista] = useState<Vista>('tabla')
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [activeMapModal, setActiveMapModal] = useState<'mapa' | 'calor' | null>(null)
@@ -88,6 +209,17 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
     }
   }
 
+  const descargarPdfGeneral = async (numeroOperativo: string) => {
+    try {
+      await descargarArchivoAutenticado(
+        `${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(numeroOperativo)}`,
+        `reporte-general-${numeroOperativo}.pdf`,
+      )
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+    }
+  }
+
   const coordenadas: CoordenadaOp[] = useMemo(() => {
     return rows
       .filter(r => r.coordX != null && r.coordY != null)
@@ -100,10 +232,13 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
       }))
   }, [rows])
 
-  // Reset page when new rows arrive
+  // Reset page when new rows arrive or view changes
   useEffect(() => {
     setPage(1)
   }, [rows])
+  useEffect(() => {
+    setPage(1)
+  }, [vista])
 
   const totalPages = Math.max(1, Math.ceil(rows.length / limit))
   const safePage = Math.min(page, totalPages)
@@ -139,7 +274,7 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
             <button
               type="button"
               className="text-success hover:text-success/75 transition-colors p-0.5 rounded hover:bg-success/5"
-              onClick={() => row.numeroOperativo && window.open(`${Constantes.baseUrl}/reportes/general/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`, '_blank')}
+              onClick={() => row.numeroOperativo && void descargarPdfGeneral(row.numeroOperativo)}
               title="Descargar PDF Reporte General"
             >
               <IconPrinter className="h-4 w-4" />
@@ -304,11 +439,75 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
         </div>
       )}
 
-      {/* Tabla paginada y Botones de Mapa */}
+      {/* Tabla/Tarjetas paginada y Botones de Mapa */}
       {hayResultados && (
         <>
-          <div className="flex items-center justify-end mb-3">
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            {/* Botones de exportación (vista de tarjetas) */}
+            <div className="flex items-center gap-1">
+              {vista === 'tarjetas' && (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm flex items-center gap-1"
+                    onClick={() => exportToCSV(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+                  >
+                    <IconFile className="w-4 h-4" />
+                    CSV
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm flex items-center gap-1"
+                    onClick={() => exportToExcel(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+                  >
+                    <IconFile className="w-4 h-4" />
+                    EXCEL
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm flex items-center gap-1"
+                    onClick={() => exportToPrint(rows, EXPORT_HEADERS, EXPORT_KEYS, 'Búsqueda Avanzada de Operativos')}
+                  >
+                    <IconPrinter className="w-4 h-4" />
+                    PRINT
+                  </button>
+                </>
+              )}
+            </div>
+
             <div className="flex items-center gap-2">
+              {/* Selector de vista (tabla / tarjetas) */}
+              <div className="flex gap-0.5 p-0.5 rounded-lg bg-gray-100 dark:bg-[#1b2e4b]/60">
+                <button
+                  type="button"
+                  onClick={() => setVista('tabla')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all
+                    ${vista === 'tabla'
+                      ? 'bg-white dark:bg-[#1a2941] text-primary shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" />
+                  </svg>
+                  Tabla
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVista('tarjetas')}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all
+                    ${vista === 'tarjetas'
+                      ? 'bg-white dark:bg-[#1a2941] text-primary shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 4a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1V4zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V4zM2 11a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm9 0a1 1 0 011-1h5a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1v-5z" />
+                  </svg>
+                  Tarjetas
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setActiveMapModal('mapa')}
@@ -336,24 +535,43 @@ export function TablaAvanzada({ rows, loading, buscado }: TablaAvanzadaProps) {
             </div>
           </div>
 
-          <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
-            <VristoDataTable<ResultadoAvanzado>
-              rows={pagedRows}
-              total={rows.length}
-              page={safePage}
-              limit={limit}
-              onPageChange={setPage}
-              onLimitChange={(l) => {
-                setLimit(l)
-                setPage(1)
-              }}
-              columns={columns}
-              loading={loading}
-              onExportCSV={() => exportToCSV(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
-              onExportExcel={() => exportToExcel(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
-            // onExportPrint={() => exportToPrint(rows, EXPORT_HEADERS, EXPORT_KEYS, 'Búsqueda Avanzada de Operativos')}
-            />
-          </div>
+          {vista === 'tabla' && (
+            <div className="panel p-0 overflow-hidden border border-[#e0e6ed] dark:border-[#1b2e4b]">
+              <VristoDataTable<ResultadoAvanzado>
+                rows={pagedRows}
+                total={rows.length}
+                page={safePage}
+                limit={limit}
+                onPageChange={setPage}
+                onLimitChange={(l) => {
+                  setLimit(l)
+                  setPage(1)
+                }}
+                columns={columns}
+                loading={loading}
+                onExportCSV={() => exportToCSV(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+                onExportExcel={() => exportToExcel(rows, EXPORT_HEADERS, EXPORT_KEYS, 'operativos-avanzado')}
+              // onExportPrint={() => exportToPrint(rows, EXPORT_HEADERS, EXPORT_KEYS, 'Búsqueda Avanzada de Operativos')}
+              />
+            </div>
+          )}
+
+          {vista === 'tarjetas' && (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {pagedRows.map((row, idx) => (
+                  <OperativoCardAvanzado key={`${row.idOperativo}-${idx}`} row={row} />
+                ))}
+              </div>
+              <PaginacionBar
+                total={rows.length}
+                page={safePage}
+                limit={limit}
+                onPage={setPage}
+                onLimit={setLimit}
+              />
+            </>
+          )}
         </>
       )}
 

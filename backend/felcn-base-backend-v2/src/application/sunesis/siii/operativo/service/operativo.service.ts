@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -637,6 +638,17 @@ export class OperativoService extends BaseService {
 
   async listarCasosConCud(usuario: string): Promise<any[]> {
     return this.asignacionSiiiRepository.buscarCasosConCudPorUsuario(usuario)
+  }
+
+  async actualizarIanus(idCaso: string, ianus: string, numeroPase: string): Promise<void> {
+    const asignacion = await this.asignacionSiiiRepository.buscarPorId(idCaso)
+    if (!asignacion) {
+      throw new NotFoundException(`Caso con ID ${idCaso} no encontrado`)
+    }
+    if (asignacion.usuario !== numeroPase) {
+      throw new ForbiddenException('No tiene permiso para modificar este caso')
+    }
+    await this.asignacionSiiiRepository.actualizarIanus(idCaso, ianus)
   }
 
   // ==================== IMÁGENES (LAZY LOADING) ====================
