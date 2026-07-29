@@ -55,17 +55,13 @@ Todo lo que empieza con `NEXT_PUBLIC_` termina embebido en el bundle de JavaScri
 | `FAKE_ISSUER` | Debe ser accesible tanto desde el backend como desde el navegador del usuario |
 | `KEY_DATA_DIR` | Claves RSA autogeneradas — si se borran, invalida tokens ya firmados |
 
-## 6. 🚨 Hallazgo de seguridad: clave de API real commiteada en `.env.sample`
+## 6. Hallazgo de seguridad: clave de API real commiteada en `.env.sample` — parcialmente resuelto
 
-`frontend/felcn-base-frontend/.env.sample` (archivo **versionado en git**, historial hasta al menos el commit `e7f811e0`) trae:
+`frontend/felcn-base-frontend/.env.sample` traía, hasta el commit `e7f811e0`, el valor real de `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` en texto plano — el mismo valor exacto configurado como `API_KEY_UNLIMITED` en el `.env` real de `consulta-persona-api`, no un placeholder. Al ser `NEXT_PUBLIC_*` también quedaba expuesta en el bundle JS servido al navegador.
 
-```
-NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY="persona_unlimited_felcn_2026"
-```
+**Ya corregido en el archivo actual**: se reemplazó por un placeholder (`__CONSULTA_PERSONA_API_KEY__`), commiteado y pusheado a `develop`.
 
-Este no es un placeholder: es el mismo valor exacto configurado hoy como `API_KEY_UNLIMITED` en el `.env` real de `consulta-persona-api`. Es decir, hay **una clave de API real y activa, en texto plano, en un archivo versionado en git** — visible para cualquiera con acceso al repo (y, al estar en `NEXT_PUBLIC_*`, también visible en el bundle JS servido al navegador de cualquier usuario final).
-
-Acción recomendada (no aplicada todavía, requiere decisión del equipo): rotar esta clave, reemplazar el valor en `.env.sample` por un placeholder genérico, y evaluar si `consulta-persona-api` debería aceptar autenticación por sesión/JWT del usuario en vez de una API key estática compartida con el frontend público.
+**Pendiente, requiere decisión del equipo**: el valor real sigue en el historial de git (commits anteriores) y la clave sigue activa tal cual en `consulta-persona-api` — reemplazar el archivo no la invalida. Para cerrar esto de verdad hace falta (a) rotar la clave real en `consulta-persona-api` y en cualquier lugar que la consuma, y (b) decidir si vale la pena purgarla del historial de git (operación destructiva, requiere `git filter-repo`/BFG + force-push + coordinar con todo el equipo, ya que reescribe commits que otros ya tienen clonados) o si alcanza con que ya no sea válida tras la rotación. También evaluar si `consulta-persona-api` debería aceptar autenticación por sesión/JWT del usuario en vez de una API key estática compartida con el frontend público.
 
 ## 7. Buenas prácticas para el servidor nuevo
 

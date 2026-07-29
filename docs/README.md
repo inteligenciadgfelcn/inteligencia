@@ -19,8 +19,6 @@
 
 Al verificar cada afirmación contra el código y el servidor real (en vez de copiar documentación previa sin chequear), aparecieron 3 problemas concretos, independientes de esta tarea de documentación:
 
-1. **Backup automatizado de PostgreSQL roto desde el 1 de mayo de 2026** — el cron corre todos los días pero falla en la primera línea por un permiso de archivo, nunca llega a hacer `pg_dump`. Detalle en [03-base-de-datos.md](./03-base-de-datos.md) §9.2.
-2. **Clave de API real commiteada en texto plano** en `frontend/felcn-base-frontend/.env.sample` (archivo versionado en git). Detalle en [04-variables-de-entorno.md](./04-variables-de-entorno.md) §6.
-3. **Contraseña hardcodeada `'123'`** en el seed de usuarios — **ya corregido** en el código (`ADMIN_INITIAL_PASSWORD` obligatoria y validada). Detalle en [08](./08-runbook-reset-y-admin-inicial.md).
-
-Los puntos 1 y 2 no se tocaron — quedan para que el equipo decida cuándo y cómo corregirlos.
+1. **Backup automatizado de PostgreSQL roto desde el 1 de mayo de 2026** — el cron corría todos los días pero fallaba en la primera línea por un permiso de archivo, nunca llegaba a hacer `pg_dump`. **Resuelto: se eliminó el cron** (no reparado — no era un backup específico de este proyecto). Hoy no hay backup automatizado; solo scripts manuales. Detalle en [03-base-de-datos.md](./03-base-de-datos.md) §9.2.
+2. **Clave de API real commiteada en texto plano** en `frontend/felcn-base-frontend/.env.sample`. **Resuelto en el archivo actual** (reemplazada por placeholder, commiteado y pusheado) — el valor sigue en el historial de git y la clave real sigue activa en `consulta-persona-api`, pendiente rotarla. Detalle en [04-variables-de-entorno.md](./04-variables-de-entorno.md) §6.
+3. **Contraseña hardcodeada `'123'`** en el seed de usuarios — **resuelto** (`ADMIN_INITIAL_PASSWORD` obligatoria y validada). Detalle en [08](./08-runbook-reset-y-admin-inicial.md).
