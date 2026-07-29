@@ -7,8 +7,24 @@ import { Persona } from '@/core/usuario/entity/persona.entity'
 
 export class usuario1611171041790 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    const DEFAULT_PASS = '123'
-    const pass = await TextService.encrypt(DEFAULT_PASS)
+    // La contraseña de los usuarios sembrados (incluido el Admin) ya no se
+    // hardcodea: viene de ADMIN_INITIAL_PASSWORD y se valida su fortaleza
+    // (zxcvbn, mismo umbral que usa el resto de la app — Configurations.SCORE_PASSWORD)
+    // para que este seed no pueda dejar una contraseña débil conocida en ningún
+    // ambiente, incluida producción.
+    const initialPassword = process.env.ADMIN_INITIAL_PASSWORD
+    if (!initialPassword) {
+      throw new Error(
+        'ADMIN_INITIAL_PASSWORD no está seteada. Es obligatoria para sembrar ' +
+          'los usuarios iniciales (incluido el Admin) — no hay valor por defecto.'
+      )
+    }
+    if (!TextService.validateLevelPassword(initialPassword)) {
+      throw new Error(
+        'ADMIN_INITIAL_PASSWORD no cumple el nivel mínimo de fortaleza requerido.'
+      )
+    }
+    const pass = await TextService.encrypt(initialPassword)
     const items = [
       {
         //id: 1,
