@@ -17,6 +17,7 @@ import { GradoModule } from './parametro/grado/grado.module';
 import { TamanoDocModule } from './parametro/tamano-doc/tamano-doc.module';
 import { ContenidoBienModule } from './parametro/contenido-bien/contenido-bien.module';
 import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module';
+import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
 
 @Module({
   imports: [
@@ -36,6 +37,8 @@ import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module'
     TamanoDocModule,
     ContenidoBienModule,
     CalidadBienModule,
+    AsignacionLgiModule,
   ],
+  controllers: [],
 })
 export class LgiModule {}
