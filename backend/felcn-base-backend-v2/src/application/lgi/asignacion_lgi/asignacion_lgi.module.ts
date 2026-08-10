@@ -5,9 +5,10 @@ import { AsignacionLgiController } from './asignacion_lgi.controller'
 import { AsignacionLgi } from './entities/asignacion_lgi.entity'
 import { DB_LGI } from '@/core/config/database/database.module'
 import { AsignacionLgiRepository } from './repository/asignacion_lgi.repository'
+import { AsignacionesModule } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/asignaciones.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AsignacionLgi], DB_LGI)],
+  imports: [TypeOrmModule.forFeature([AsignacionLgi], DB_LGI), AsignacionesModule],
   controllers: [AsignacionLgiController],
   providers: [AsignacionLgiService,AsignacionLgiRepository],
   exports: [AsignacionLgiService],
