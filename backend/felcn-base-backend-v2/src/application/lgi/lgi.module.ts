@@ -18,6 +18,7 @@ import { TamanoDocModule } from './parametro/tamano-doc/tamano-doc.module';
 import { ContenidoBienModule } from './parametro/contenido-bien/contenido-bien.module';
 import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module';
 import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
+import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas_lgi.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
     ContenidoBienModule,
     CalidadBienModule,
     AsignacionLgiModule,
+    ParametricasLgiModule,
   ],
   controllers: [],
 })
