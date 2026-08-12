@@ -26,9 +26,7 @@ export class DistritalLgiRepository {
       AND u.es_operativa_admin = true
   `
 
-  private buildQuery(
-    extraWhere = ''
-  ): string {
+  private buildQuery(extraWhere = ''): string {
     return `
       ${this.baseQuery}
       ${extraWhere}
@@ -36,9 +34,7 @@ export class DistritalLgiRepository {
     `
   }
 
-  async findAllGeneral(
-    idUsuario: number
-  ): Promise<any[]> {
+  async findAllGeneral(idUsuario: number): Promise<any[]> {
     return await this.dataSource.query(
       this.buildQuery(`
         AND d.id_unidad = (
@@ -56,27 +52,41 @@ export class DistritalLgiRepository {
     )
   }
 
-  async findAllUnidad(
-    idUnidad: number
-  ): Promise<any[]> {
+  async findAllUnidad(idUnidad: number): Promise<any[]> {
     return await this.dataSource.query(
-      this.buildQuery(
-        'AND d.id_unidad = $1'
-      ),
+      this.buildQuery('AND d.id_unidad = $1'),
       [idUnidad]
     )
   }
 
-  async findOne(
-    id: number
-  ): Promise<any | null> {
-    const result =
-      await this.dataSource.query(
-        this.buildQuery(
-          'AND d.id = $1'
-        ),
-        [id]
-      )
+  async findOne(id: number): Promise<any | null> {
+    const result = await this.dataSource.query(
+      this.buildQuery('AND d.id = $1'),
+      [id]
+    )
+
+    return result[0] ?? null
+  }
+
+  async findUnidadByDistrito(disId: number): Promise<{
+    idUnidad: number
+    uniAbrev: string
+  } | null> {
+    const result = await this.dataSource.query(
+      `
+      SELECT
+        u.id AS "idUnidad",
+        TRIM(u.abreviatura) AS "uniAbrev"
+      FROM parametro.distrital d
+      INNER JOIN parametro.unidad u
+        ON d.id_unidad = u.id
+      WHERE d.id = $1
+        AND d._estado = 'ACTIVO'
+        AND u._estado = 'ACTIVO'
+      LIMIT 1
+    `,
+      [disId]
+    )
 
     return result[0] ?? null
   }
