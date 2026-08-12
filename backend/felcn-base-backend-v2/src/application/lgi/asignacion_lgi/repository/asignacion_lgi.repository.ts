@@ -13,6 +13,14 @@ export class AsignacionLgiRepository {
     private readonly repository: Repository<AsignacionLgi>
   ) {}
 
+  create(data: Partial<AsignacionLgi>): AsignacionLgi {
+    return this.repository.create(data)
+  }
+
+  saveDatosGenrales(data: AsignacionLgi): Promise<AsignacionLgi> {
+    return this.repository.save(data)
+  }
+
   async findAllPaginado(
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
@@ -52,5 +60,17 @@ export class AsignacionLgiRepository {
       .getRawMany()
 
     return [data, total]
+  }
+
+  async findOneById(id: number): Promise<AsignacionLgi | null> {
+    return await this.repository.findOne({
+      where: {
+        casosId: id,
+      },
+    })
+  }
+
+  save(data: AsignacionLgi): Promise<AsignacionLgi> {
+    return this.repository.save(data)
   }
 }

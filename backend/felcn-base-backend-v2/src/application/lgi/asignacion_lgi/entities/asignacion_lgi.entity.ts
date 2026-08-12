@@ -12,7 +12,7 @@ export class AsignacionLgi {
     name: 'casos_id',
     type: 'bigint',
   })
-  casosId!: string
+  casosId!: number
 
   @Column({
     name: 'dptoav_id',
@@ -32,7 +32,7 @@ export class AsignacionLgi {
     name: 'dis_id',
     type: 'bigint',
   })
-  disId!: string
+  disId!: number
 
   @Column({
     name: 'nombrecaso',
