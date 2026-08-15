@@ -49,7 +49,7 @@ export class ConsultaAvanzadaQueryDto {
   @ApiProperty({ required: false, description: 'ID tipo de relevancia (parametricas.tipo_relevancia)', example: '2' })
   idTipoRelevancia?: string
 
-  @ApiProperty({ required: false, description: 'ID unidad (public.unidad)', example: '5' })
+  @ApiProperty({ required: false, description: 'ID unidad (auth_fdw.unidad)', example: '5' })
   idUnidad?: string
 
   @ApiProperty({ required: false, description: 'ID plan de operaciones (parametricas.plan_operaciones)', example: '10' })
@@ -81,8 +81,11 @@ export class ConsultaAvanzadaQueryDto {
   lugar?: string
 
   // ── Bienes ─────────────────────────────────────────────────────────────────
-  @ApiProperty({ required: false, description: 'ID tipo de bien secuestrado (public.catalogo_tipo)', example: '7' })
-  idCatalogoTipo?: string
+  @ApiProperty({ required: false, description: 'ID tipo de bien secuestrado (parametricas.bienes)', example: '7' })
+  idBien?: string
+
+  @ApiProperty({ required: false, description: 'ID clase de bien secuestrado (public.catalogo_clase), depende de idBien', example: '15' })
+  idCatalogoClase?: string
 
   // ── Operativo: flags booleanos ─────────────────────────────────────────────
   @ApiProperty({ required: false, description: 'Es positivo (true/false)', example: 'true' })
@@ -134,13 +137,6 @@ export class ConsultaAvanzadaQueryDto {
 
   @ApiProperty({ required: false, description: 'ID país/nacionalidad de la persona (parametricas.pais)', example: '1' })
   idPaisPersona?: string
-
-  // ── Costo total ────────────────────────────────────────────────────────────
-  @ApiProperty({ required: false, description: 'Costo total mínimo consolidado (Bs)', example: '5000' })
-  costoTotalMin?: string
-
-  @ApiProperty({ required: false, description: 'Costo total máximo consolidado (Bs)', example: '200000' })
-  costoTotalMax?: string
 }
 
 export interface RespuestaAvanzadaCompleta {

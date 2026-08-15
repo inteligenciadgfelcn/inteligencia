@@ -14,6 +14,8 @@ export class UsuarioDto {
 
   ciudadaniaDigital?: boolean
 
+  otpHabilitado?: boolean
+
   usuarioCreacion?: string
 
   nombreApp?: string | null

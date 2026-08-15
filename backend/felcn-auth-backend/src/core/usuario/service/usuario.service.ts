@@ -32,11 +32,13 @@ import { RolRepository } from '@/core/authorization/repository/rol.repository'
 import { AuthorizationService } from '@/core/authorization/controller/authorization.service'
 import { UsuarioRolRepository } from '@/core/authorization/repository/usuario-rol.repository'
 import { MensajeriaService } from '@/core/external-services/mensajeria/mensajeria.service'
-import { SegipService } from '@/core/external-services/iop/segip/segip.service'
 import { UsuarioEstado } from '@/core/usuario/constant'
 import { UsuarioRolEstado } from '@/core/authorization/constant'
 import { ActualizarPerfilDto } from '@/core/usuario/dto/ActualizarPerfilDto'
 import { FileValidationService } from '@/common/lib/file-validation.service'
+import { RefreshTokensRepository } from '@/core/authentication/repository/refreshTokens.repository'
+import { HistorialContrasenaRepository } from '../repository/historial-contrasena.repository'
+import { Configurations } from '@/common/params'
 import path from 'path'
 import fs from 'node:fs/promises'
 
@@ -53,11 +55,62 @@ export class UsuarioService extends BaseService {
     private personaRepositorio: PersonaRepository,
     private readonly mensajeriaService: MensajeriaService,
     private readonly authorizationService: AuthorizationService,
-    private readonly segipServices: SegipService,
     private fileValidationService: FileValidationService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    @Inject(RefreshTokensRepository)
+    private refreshTokensRepositorio: RefreshTokensRepository,
+    @Inject(HistorialContrasenaRepository)
+    private historialContrasenaRepositorio: HistorialContrasenaRepository
   ) {
     super()
+  }
+
+  /**
+   * Revoca todas las sesiones activas (refresh tokens) del usuario. Se invoca
+   * tras cualquier cambio de contraseña (autogestionado, por recuperación o
+   * restaurado por un Administrador) para que una sesión ya abierta con la
+   * contraseña anterior no pueda seguir renovando su acceso indefinidamente.
+   * El access token (JWT) ya emitido antes del cambio sigue siendo válido
+   * hasta su propio vencimiento (no tiene estado, no se puede revocar antes).
+   */
+  async revocarSesionesActivas(idUsuario: string) {
+    await this.refreshTokensRepositorio.eliminarPorUsuario(idUsuario)
+  }
+
+  /**
+   * Rechaza la contraseña nueva si coincide con la actual o con alguna de
+   * las últimas PASSWORD_HISTORY_SIZE contraseñas del usuario. Debe llamarse
+   * ANTES de guardar la nueva contraseña. `hashActual` es el hash vigente en
+   * ese momento (aún no reemplazado).
+   */
+  private async verificarContrasenaNoReutilizada(
+    idUsuario: string,
+    contrasenaNuevaPlano: string,
+    hashActual: string
+  ) {
+    const hashesAVerificar = [hashActual]
+    const historial = await this.historialContrasenaRepositorio.obtenerUltimas(
+      idUsuario,
+      Configurations.PASSWORD_HISTORY_SIZE
+    )
+    hashesAVerificar.push(...historial.map((h) => h.contrasena))
+
+    for (const hash of hashesAVerificar) {
+      if (await TextService.compare(contrasenaNuevaPlano, hash)) {
+        throw new PreconditionFailedException(Messages.PASSWORD_REUSED)
+      }
+    }
+  }
+
+  /**
+   * Archiva el hash que la contraseña de un usuario tenía antes de un cambio,
+   * para que futuras verificaciones de reuso lo tengan en cuenta.
+   */
+  private async archivarContrasenaAnterior(
+    idUsuario: string,
+    hashSaliente: string
+  ) {
+    await this.historialContrasenaRepositorio.guardar(idUsuario, hashSaliente)
   }
 
   async listar(@Query() paginacionQueryDto: FiltrosUsuarioDto) {
@@ -98,22 +151,7 @@ export class UsuarioService extends BaseService {
       }
     }
 
-    // Constrastación SEGIP
     const { persona, roles } = usuarioDto
-    const segipEnabled =
-      this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
-
-    if (segipEnabled) {
-      const contrastaSegip = await this.segipServices.contrastar(persona)
-
-      if (!contrastaSegip?.finalizado) {
-        throw new PreconditionFailedException(contrastaSegip?.mensaje)
-      }
-    } else {
-      this.logger.warn(
-        'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
-      )
-    }
 
     // [FAKE] Si está configurada la URL interna del fake de Ciudadanía Digital,
     // activar automáticamente la bandera ciudadaniaDigital en el nuevo usuario.
@@ -151,6 +189,13 @@ export class UsuarioService extends BaseService {
       await this.usuarioRolRepositorio.crear(
         usuario.id,
         roles,
+        usuarioAuditoria,
+        transaction
+      )
+
+      await this.procesarExcepcionesRecurso(
+        usuario.id,
+        usuarioDto.recursosExceptuados,
         usuarioAuditoria,
         transaction
       )
@@ -222,21 +267,6 @@ export class UsuarioService extends BaseService {
 
     if (!TextService.validateLevelPassword(usuarioDto.contrasenaNueva)) {
       throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
-    }
-
-    // contrastación SEGIP
-    const segipEnabled =
-      this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
-
-    if (segipEnabled) {
-      const contrastaSegip = await this.segipServices.contrastar(persona)
-      if (!contrastaSegip?.finalizado) {
-        throw new PreconditionFailedException(contrastaSegip?.mensaje)
-      }
-    } else {
-      this.logger.warn(
-        'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
-      )
     }
 
     let correoActivacion: string | null = null
@@ -426,6 +456,18 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
     }
 
+    const contrasenaNuevaPlano = TextService.decodeBase64(
+      nuevaContrasenaDto.contrasenaNueva
+    )
+
+    if (usuario.contrasena) {
+      await this.verificarContrasenaNoReutilizada(
+        usuario.id,
+        contrasenaNuevaPlano,
+        usuario.contrasena
+      )
+    }
+
     await this.usuarioRepositorio.actualizar(
       usuario.id,
       {
@@ -434,9 +476,7 @@ export class UsuarioService extends BaseService {
         codigoDesbloqueo: null,
         codigoTransaccion: null,
         codigoRecuperacion: null,
-        contrasena: await TextService.encrypt(
-          TextService.decodeBase64(nuevaContrasenaDto.contrasenaNueva)
-        ),
+        contrasena: await TextService.encrypt(contrasenaNuevaPlano),
         estado: UsuarioEstado.ACTIVE,
       },
       usuario.id
@@ -449,6 +489,12 @@ export class UsuarioService extends BaseService {
     if (!usuarioActualizado) {
       throw new NotFoundException(Messages.INVALID_USER)
     }
+
+    if (usuario.contrasena) {
+      await this.archivarContrasenaAnterior(usuario.id, usuario.contrasena)
+    }
+
+    await this.revocarSesionesActivas(usuario.id)
 
     return { id: usuarioActualizado.id }
   }
@@ -751,6 +797,12 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
     }
 
+    await this.verificarContrasenaNoReutilizada(
+      idUsuario,
+      contrasena,
+      usuario.contrasena
+    )
+
     // guardar en bd
     await this.usuarioRepositorio.actualizar(
       idUsuario,
@@ -768,6 +820,9 @@ export class UsuarioService extends BaseService {
     if (!usuarioActualizado) {
       throw new PreconditionFailedException(Messages.INVALID_USER)
     }
+
+    await this.archivarContrasenaAnterior(idUsuario, usuario.contrasena)
+    await this.revocarSesionesActivas(idUsuario)
 
     return {
       id: usuarioActualizado.id,
@@ -825,6 +880,8 @@ export class UsuarioService extends BaseService {
         this.logger.error(error, mensaje)
       })
     }
+
+    await this.revocarSesionesActivas(idUsuario)
 
     return { id: usuarioResult.id, estado: usuarioResult.estado }
   }
@@ -893,23 +950,6 @@ export class UsuarioService extends BaseService {
   ) {
     const { persona } = usuarioDto
 
-    // Contrastación SEGIP antes de abrir la transacción para no mantenerla abierta durante latencia HTTP externa
-    if (persona) {
-      const segipEnabled =
-        this.configService.get('IOP_SEGIP_CONTRASTACION_ENABLED') !== 'false'
-
-      if (segipEnabled) {
-        const contrastaSegip = await this.segipServices.contrastar(persona)
-        if (!contrastaSegip?.finalizado) {
-          throw new PreconditionFailedException(contrastaSegip?.mensaje)
-        }
-      } else {
-        this.logger.warn(
-          'Saltando verificación SEGIP por configuración (IOP_SEGIP_CONTRASTACION_ENABLED=false)'
-        )
-      }
-    }
-
     // 1. verificar que exista el usuario
     const op = async (transaction: EntityManager) => {
       const usuario =
@@ -956,12 +996,14 @@ export class UsuarioService extends BaseService {
         correoElectronico,
         roles,
         ciudadaniaDigital,
+        otpHabilitado,
         nombreApp,
         telefonoCelular,
         telefonoCorporativo,
         idGrado,
         idGrupo,
         numeroPase,
+        recursosExceptuados,
       } = usuarioDto
       // 2. verificar que el email no este registrado
 
@@ -991,11 +1033,29 @@ export class UsuarioService extends BaseService {
         await this.actualizarRoles(id, roles, usuarioAuditoria, transaction)
       }
 
+      await this.procesarExcepcionesRecurso(
+        id,
+        recursosExceptuados,
+        usuarioAuditoria,
+        transaction
+      )
+
       if (ciudadaniaDigital !== undefined && ciudadaniaDigital !== null) {
         await this.usuarioRepositorio.actualizar(
           id,
           {
             ciudadaniaDigital: ciudadaniaDigital,
+          },
+          usuarioAuditoria,
+          transaction
+        )
+      }
+
+      if (otpHabilitado !== undefined && otpHabilitado !== null) {
+        await this.usuarioRepositorio.actualizar(
+          id,
+          {
+            otpHabilitado: otpHabilitado,
           },
           usuarioAuditoria,
           transaction
@@ -1105,6 +1165,51 @@ export class UsuarioService extends BaseService {
     }
   }
 
+  /**
+   * Sincroniza las excepciones de recurso enviadas para cada rol mencionado
+   * en `recursosExceptuados`. Si el campo no viene en el payload, no se toca
+   * nada — así ningún cliente/integración existente que no lo use se ve
+   * afectado. Un rol mencionado con el que el usuario no cuenta (activo) es
+   * un error del cliente, no un no-op silencioso.
+   */
+  private async procesarExcepcionesRecurso(
+    idUsuario: string,
+    recursosExceptuados: Record<string, string[]> | undefined,
+    usuarioAuditoria: string,
+    transaccion: EntityManager
+  ) {
+    if (!recursosExceptuados) {
+      return
+    }
+
+    const usuarioRoles =
+      await this.usuarioRolRepositorio.obtenerRolesPorUsuario(
+        idUsuario,
+        transaccion
+      )
+    const usuarioRolesActivos = usuarioRoles.filter(
+      (usuarioRol) => usuarioRol.estado === UsuarioRolEstado.ACTIVE
+    )
+
+    for (const [idRol, idsModulo] of Object.entries(recursosExceptuados)) {
+      const usuarioRol = usuarioRolesActivos.find(
+        (item) => item.rol.id === idRol
+      )
+      if (!usuarioRol) {
+        throw new PreconditionFailedException(
+          `No se pueden gestionar excepciones para el rol ${idRol}: el usuario no lo tiene asignado activo`
+        )
+      }
+      await this.authorizationService.sincronizarExcepcionesRecurso(
+        usuarioRol.id,
+        usuarioRol.rol.rol,
+        idsModulo,
+        usuarioAuditoria,
+        transaccion
+      )
+    }
+  }
+
   async buscarUsuarioPerfil(id: string, idRol: string) {
     const perfil = await this.buscarUsuarioId(id)
     return { ...perfil, idRol }
@@ -1125,6 +1230,7 @@ export class UsuarioService extends BaseService {
       id: usuario.id,
       usuario: usuario.usuario,
       ciudadaniaDigital: usuario.ciudadaniaDigital,
+      otpHabilitado: usuario.otpHabilitado,
       correoElectronico: usuario.correoElectronico,
       urlFoto: usuario.urlFoto,
       estado: usuario.estado,
@@ -1140,7 +1246,10 @@ export class UsuarioService extends BaseService {
           .map(async (usuarioRol) => {
             const { id, rol, nombre, descripcion } = usuarioRol.rol
             const modulos =
-              await this.authorizationService.obtenerPermisosPorRol(rol)
+              await this.authorizationService.obtenerPermisosPorRol(
+                rol,
+                usuarioRol.id
+              )
             return {
               idRol: id,
               rol,
@@ -1384,6 +1493,31 @@ export class UsuarioService extends BaseService {
       )
     }
     return { codigo }
+  }
+
+  /**
+   * Desbloqueo manual por un Administrador, sin depender del correo del
+   * usuario. Único camino administrativo hoy: el bloqueo ya no expira solo
+   * (ver `AuthenticationService.verificarBloqueo`).
+   */
+  async desbloquearPorAdmin(idUsuario: string, usuarioAuditoria: string) {
+    const usuario = await this.usuarioRepositorio.buscarPorId(idUsuario)
+
+    if (!usuario) {
+      throw new NotFoundException(Messages.INVALID_USER)
+    }
+
+    await this.usuarioRepositorio.actualizar(
+      idUsuario,
+      {
+        fechaBloqueo: null,
+        intentos: 0,
+        codigoDesbloqueo: null,
+      },
+      usuarioAuditoria
+    )
+
+    return { id: idUsuario }
   }
 
   async actualizarDatosPersona(datosPersona: PersonaDto) {

@@ -13,3 +13,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Sitio de documentación generado por mkdocs (no versionar)
+site/
+
+# Respaldos locales de BD y configuración de servidor (contienen datos reales, no versionar)
+/backups/
+/nginx/

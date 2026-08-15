@@ -34,6 +34,7 @@ import { FiltroUsuarios } from '@/app/admin/(configuracion)/usuarios/ui/FiltroUs
 import { AlertaEstadoUsuario } from '@/app/admin/(configuracion)/usuarios/ui/AlertaEstadoUsuario'
 import { AlertaRestablecerContrasena } from './AlertaRestablecerContrasena'
 import { AlertaReenvioCorreo } from './AlertaReenvioCorreo'
+import { AlertaDesbloqueoUsuario } from './AlertaDesbloqueoUsuario'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { ModalUsuarioDetalle } from './ModalUsuarioDetalle'
 
@@ -49,6 +50,7 @@ export const UsuariosDatatable: React.FC = () => {
   const [alertaRestablecerContrasenaOpen, setAlertaRestablecerContrasenaOpen] =
     useState(false)
   const [alertaReenvioCorreoOpen, setAlertaReenvioCorreoOpen] = useState(false)
+  const [alertaDesbloqueoOpen, setAlertaDesbloqueoOpen] = useState(false)
 
   const [limite, setLimite] = useState<number>(10)
   const [pagina, setPagina] = useState<number>(1)
@@ -159,6 +161,11 @@ export const UsuariosDatatable: React.FC = () => {
   const abrirAlertaRestablecerContrasena = (usuario: UsuarioCRUDType) => {
     setUsuarioSeleccionado(usuario)
     setAlertaRestablecerContrasenaOpen(true)
+  }
+
+  const abrirAlertaDesbloqueo = (usuario: UsuarioCRUDType) => {
+    setUsuarioSeleccionado(usuario)
+    setAlertaDesbloqueoOpen(true)
   }
 
   const abrirAlertaReenvioCorreo = (usuario: UsuarioCRUDType) => {
@@ -316,6 +323,16 @@ export const UsuariosDatatable: React.FC = () => {
               name={'Reenviar correo de activación'}
             />
           )}
+          {permisos.update && !!params.row.fechaBloqueo && (
+            <IconoTooltip
+              id={`desbloquearUsuario-${params.row.id}`}
+              titulo={'Desbloquear cuenta'}
+              color={'warning'}
+              accion={() => abrirAlertaDesbloqueo(params.row)}
+              icono={'lock_open'}
+              name={'Desbloquear cuenta'}
+            />
+          )}
           {permisos.update && (
             <IconoTooltip
               id={`editarUsuario-${params.row.id}`}
@@ -456,6 +473,14 @@ export const UsuariosDatatable: React.FC = () => {
         <AlertaReenvioCorreo
           isOpen={alertaReenvioCorreoOpen}
           onClose={() => setAlertaReenvioCorreoOpen(false)}
+          usuario={usuarioSeleccionado}
+          onSuccess={() => refetchUsuarios()}
+        />
+      )}
+      {alertaDesbloqueoOpen && (
+        <AlertaDesbloqueoUsuario
+          isOpen={alertaDesbloqueoOpen}
+          onClose={() => setAlertaDesbloqueoOpen(false)}
           usuario={usuarioSeleccionado}
           onSuccess={() => refetchUsuarios()}
         />
