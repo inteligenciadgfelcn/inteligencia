@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
+import { useConfirmDialog } from '@/hooks'
 import { useParametricas } from '@/hooks/useParametricas'
 import { SeguimientoServiceInstance } from '@/services/seguimiento/SeguimientoCasosService'
 import { InterpreteMensajes } from '@/utils/interpreteMensajes'
@@ -75,6 +76,7 @@ function FotoArchivoThumb({
 
 export function ArchivosSeccion({ idCaso, datos, onGuardar }: ArchivosSeccionProps) {
   const { Alerta } = useAlerts()
+  const { confirm, ConfirmDialog } = useConfirmDialog()
   const { contenidoCaso, cargarContenidoCaso } = useParametricas()
   const [file, setFile] = useState<File | null>(null)
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
@@ -118,20 +120,24 @@ export function ArchivosSeccion({ idCaso, datos, onGuardar }: ArchivosSeccionPro
     void SeguimientoServiceInstance.descargarArchivo(id, nombre)
   }
 
-  const handleEliminar = async (id: string) => {
-    if (confirm('¿Está seguro de eliminar este archivo?')) {
-      try {
-        await SeguimientoServiceInstance.eliminarArchivo(id)
-        Alerta({ mensaje: 'Archivo eliminado', variant: 'success' })
-        onGuardar()
-      } catch (error) {
-        Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
-      }
-    }
+  const handleEliminar = (id: string) => {
+    confirm({
+      texto: '¿Está seguro de eliminar este archivo?',
+      onConfirm: async () => {
+        try {
+          await SeguimientoServiceInstance.eliminarArchivo(id)
+          Alerta({ mensaje: 'Archivo eliminado', variant: 'success' })
+          onGuardar()
+        } catch (error) {
+          Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
+        }
+      },
+    })
   }
 
   return (
     <div className="space-y-8">
+      <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">

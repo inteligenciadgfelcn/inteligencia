@@ -176,9 +176,9 @@ export class CuadrosRepository {
     JOIN  parametricas.localidad            loc  ON o.id_localidad      = loc.id_localidad
     JOIN  parametricas.tipo_operacion       top  ON o.id_tipo_operacion = top.id_tipo_operacion
     JOIN  parametricas.tipo_relevancia      tr   ON o.id_tipo_relevancia= tr.id_tipo_relevancia
-    LEFT JOIN public.unidad                 uni  ON o.id_unidad         = uni.id_unidad
-    LEFT JOIN public.distrital              dis  ON o.id_distrital      = dis.id_distrital
-    LEFT JOIN public.grupo                  grp  ON o.id_grupo          = grp.id_grupo
+    LEFT JOIN auth_fdw.unidad               uni  ON o.id_unidad         = uni.id
+    LEFT JOIN auth_fdw.distrital            dis  ON o.id_distrital      = dis.id
+    LEFT JOIN auth_fdw.grupo                grp  ON o.id_grupo          = grp.id
   `
 
   // ─── Métodos privados (reutilizados por los 5 filtros públicos) ────────────

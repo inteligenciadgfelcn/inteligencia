@@ -12,7 +12,7 @@ import {
 import { useDropzone } from 'react-dropzone'
 import Image from 'next/image'
 import { Constantes } from '@/config/Constantes'
-import { useAlerts, useSession } from '@/hooks'
+import { useAlerts, useConfirmDialog, useSession } from '@/hooks'
 import { useAuth } from '@/context/AuthProvider'
 import { imprimir } from '@/utils/imprimir'
 
@@ -31,9 +31,9 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
   )
   const [newFileToUpload, setNewFileToUpload] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
   const { sesionPeticion } = useSession()
   const { Alerta } = useAlerts()
+  const { confirm, ConfirmDialog } = useConfirmDialog()
 
   useEffect(() => {
     setPreviewUrl(usuario?.urlFoto || null)
@@ -109,18 +109,24 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
       })
     } finally {
       setIsUploading(false)
-      setIsConfirmingDelete(false)
     }
+  }
+
+  const handleEliminarClick = () => {
+    confirm({
+      texto: '¿Estás seguro de que quieres eliminar la foto?',
+      onConfirm: handleConfirmDelete,
+    })
   }
 
   const handleCancel = () => {
     setNewFileToUpload(null)
     setPreviewUrl(usuario?.urlFoto || null)
-    setIsConfirmingDelete(false)
   }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <ConfirmDialog />
       <DialogTitle>Foto de Perfil</DialogTitle>
       <DialogContent>
         <Box
@@ -170,23 +176,7 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        {isConfirmingDelete ? (
-          <>
-            <Typography variant="body2" color="error">
-              ¿Estás seguro de que quieres eliminar la foto?
-            </Typography>
-            <Button onClick={handleCancel} disabled={isUploading}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              color="error"
-              disabled={isUploading}
-            >
-              Confirmar Eliminación
-            </Button>
-          </>
-        ) : newFileToUpload ? (
+        {newFileToUpload ? (
           <>
             <Button onClick={handleCancel} disabled={isUploading}>
               Cancelar
@@ -202,7 +192,7 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
         ) : (
           <>
             <Button
-              onClick={() => setIsConfirmingDelete(true)}
+              onClick={handleEliminarClick}
               color="error"
               disabled={isUploading || !previewUrl}
             >

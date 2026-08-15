@@ -23,13 +23,13 @@ export class CruzadasController extends BaseController {
   }
 
   /**
-   * Búsqueda avanzada con 42 filtros todos opcionales.
+   * Búsqueda avanzada con 41 filtros todos opcionales.
    * Consulta unificada que reemplaza los 8 botones del formulario SEG-CAS-04.aspx.cs.
    */
   @ApiOperation({
     summary: 'Búsqueda avanzada de operativos (todos los filtros opcionales)',
     description:
-      'Acepta hasta 42 query params opcionales. Cuando un parámetro no se envía ' +
+      'Acepta hasta 41 query params opcionales. Cuando un parámetro no se envía ' +
       'el filtro correspondiente se ignora. Devuelve operativos con todas sus ' +
       'subentidades (drogas, personas, bienes, sustancias, laboratorios).',
   })

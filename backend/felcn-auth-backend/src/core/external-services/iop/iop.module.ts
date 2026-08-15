@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common'
-import { SegipModule } from './segip/segip.module'
 import { SinModule } from './sin/sin.module'
 
 @Module({
-  imports: [SegipModule, SinModule],
+  imports: [SinModule],
   providers: [],
-  exports: [SegipModule, SinModule],
+  exports: [SinModule],
 })
 export class IopModule {}

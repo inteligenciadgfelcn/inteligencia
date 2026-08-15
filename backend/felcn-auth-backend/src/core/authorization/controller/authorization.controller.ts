@@ -20,6 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger'
 import { PoliticaDto } from '../dto/politica.dto'
+import { RecursosPorRolDto } from '../dto/recursos-por-rol.dto'
 import { JwtAuthGuard } from '@/core/authentication/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
@@ -87,6 +88,20 @@ export class AuthorizationController extends BaseController {
   @Get('/permisos')
   async obtenerRoles() {
     const result = await this.authorizationService.obtenerRoles()
+    return this.successList(result)
+  }
+
+  @ApiOperation({
+    summary:
+      'Catálogo de recursos (módulos) de un rol para un usuario_rol puntual, marcando cuáles están excluidos — para el formulario de gestión de excepciones',
+  })
+  @ApiQuery({ name: 'query', type: RecursosPorRolDto })
+  @Get('/recursos')
+  async obtenerRecursosPorRol(@Query() query: RecursosPorRolDto) {
+    const result = await this.authorizationService.obtenerModulosConExcepcion(
+      query.rol,
+      query.idUsuarioRol
+    )
     return this.successList(result)
   }
 }

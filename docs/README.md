@@ -11,7 +11,11 @@
 | 06 | [systemd y contenedores](./06-systemd-y-contenedores.md) | Políticas de reinicio |
 | 07 | [Servidor nuevo desde cero](./07-servidor-nuevo-desde-cero.md) | Bootstrap completo, nginx y Postgres dockerizados |
 | 08 | [Runbook: reset + Admin inicial](./08-runbook-reset-y-admin-inicial.md) | Contraseña fuerte obligatoria, sin `'123'` |
-| 09 | [Manual de usuario](./09-manual-de-usuario.md) | Placeholder — pendiente con capturas |
+| 09 | [Manual de usuario](./09-manual-de-usuario.md) | Redirección — ver [manual-usuario/01](./manual-usuario/01-autenticacion-y-autorizacion.md) y [manual-usuario/02](./manual-usuario/02-sistema-de-inteligencia.md). Capturas de pantalla pendientes; sección de módulos `(fase_2)` en la Parte 2 en curso |
+| 10 | [Formularios y APIs](./10-formularios-y-apis.md) | Inventario de formularios del frontend (excluye `(fase_2)`), endpoints que consumen y tablas de BD involucradas |
+| 11 | [Tablas por base de datos](./11-tablas-por-base-de-datos.md) | Reagrupación del documento 10 en sentido inverso: base de datos → tabla → dónde se usa |
+
+Informes de productos (entregables puntuales, fuera de la numeración): [informes/producto-3-implementacion-fase1.md](./informes/producto-3-implementacion-fase1.md)
 
 `templates/` queda de una iteración anterior y está desactualizado (compose de un solo ambiente) — no usar como fuente de verdad, ver nota en [02](./02-entorno-docker-dev.md).
 

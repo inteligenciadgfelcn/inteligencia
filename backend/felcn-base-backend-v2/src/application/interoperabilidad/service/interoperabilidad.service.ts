@@ -2,17 +2,13 @@ import { HttpService } from '@nestjs/axios'
 import { BadGatewayException, Injectable, InternalServerErrorException } from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { ConsultarItvDto } from '../dto/consultar-itv.dto'
-import { ConsultarSegipDto } from '../dto/consultar-segip.dto'
 import { SinConsultaContribuyenteDto } from '../dto/sin-consulta-contribuyente.dto'
-import { fakeSegip } from './fake.segip.service'
 import { contribuyentes } from './fake.sin.service'
 
 @Injectable()
 export class InteroperabilidadService {
   private readonly itvUrl = process.env.IOP_ITV_URL || ''
   private readonly itvToken = process.env.IOP_ITV_TOKEN || ''
-  private readonly segipUrl = process.env.IOP_SEGIP_URL || ''
-  private readonly segipToken = process.env.IOP_SEGIP_TOKEN || ''
   private readonly inraTituloUrl = process.env.IOP_INRA_TITULO_URL || ''
   private readonly inraTituloToken = process.env.IOP_INRA_TITULO_TOKEN || ''
   private readonly inraNroIdentificacionUrl =
@@ -60,50 +56,6 @@ export class InteroperabilidadService {
     } catch (error) {
       throw new BadGatewayException(
         'No se pudo obtener una respuesta valida del servicio ITV'
-      )
-    }
-  }
-
-  async consultarSegip(payload: ConsultarSegipDto) {
-    // this.ensureConfig(
-    //   [this.segipUrl, this.segipToken],
-    //   'Falta configurar IOP_SEGIP_URL o IOP_SEGIP_TOKEN en variables de entorno'
-    // )
-
-    const body = {
-      ced: payload.ced,
-      com: payload.com || '',
-      nom: payload.nom || '',
-      pat: payload.pat || '',
-      mat: payload.mat || '',
-    }
-
-    try {
-      const data = fakeSegip.find(
-        (persona) =>
-          persona.NumeroDocumento === body.ced &&
-          persona.Complemento === body.com 
-      )
-
-      if(!data) {
-        throw new BadGatewayException(
-          'No se encontró una persona que coincida con los datos proporcionados'
-        )
-      }
-      return data
-      // const response = await firstValueFrom(
-      //   this.httpService.post(this.segipUrl, body, {
-      //     headers: {
-      //       Authorization: this.authHeader(this.segipToken, 'Bearer'),
-      //       Accept: 'application/json',
-      //       'Content-Type': 'application/json',
-      //     },
-      //   })
-      // )
-      // return response.data
-    } catch (error) {
-      throw new BadGatewayException(
-        'No se pudo obtener una respuesta valida del servicio SEGIP'
       )
     }
   }

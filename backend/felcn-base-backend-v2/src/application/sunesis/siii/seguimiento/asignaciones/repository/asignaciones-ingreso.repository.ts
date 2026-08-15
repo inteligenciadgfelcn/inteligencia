@@ -31,17 +31,17 @@ export class AsignacionesIngresoRepository {
       a.fiscal_asignado_caso  AS "fiscalAsignadoCaso"
     FROM public.asignacion a
     INNER JOIN public.operativo  o ON a.id_caso     = o.id_caso
-    INNER JOIN public.distrital  d ON a.id_distrital = d.id_distrital
-    INNER JOIN public.grupo      g ON a.id_grupo     = g.id_grupo
-    INNER JOIN public.unidad     u ON d.id_unidad    = u.id_unidad
+    INNER JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+    INNER JOIN auth_fdw.grupo     g ON a.id_grupo     = g.id
+    INNER JOIN auth_fdw.unidad    u ON d.id_unidad    = u.id
   `
 
   private readonly FROM_BASE = `
     FROM public.asignacion a
     INNER JOIN public.operativo  o ON a.id_caso     = o.id_caso
-    INNER JOIN public.distrital  d ON a.id_distrital = d.id_distrital
-    INNER JOIN public.grupo      g ON a.id_grupo     = g.id_grupo
-    INNER JOIN public.unidad     u ON d.id_unidad    = u.id_unidad
+    INNER JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+    INNER JOIN auth_fdw.grupo     g ON a.id_grupo     = g.id
+    INNER JOIN auth_fdw.unidad    u ON d.id_unidad    = u.id
   `
 
   private async paginar(
