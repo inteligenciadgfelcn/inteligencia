@@ -41,6 +41,9 @@ export class ActualizarUsuarioDto {
   @IsOptional()
   ciudadaniaDigital?: boolean | null
 
+  @IsOptional()
+  otpHabilitado?: boolean | null
+
   @ApiProperty()
   @IsOptional()
   urlFoto?: string | null

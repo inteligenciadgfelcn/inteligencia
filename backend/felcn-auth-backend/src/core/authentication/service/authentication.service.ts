@@ -34,25 +34,28 @@ export class AuthenticationService extends BaseService {
     super()
   }
 
+  /**
+   * Una cuenta bloqueada permanece bloqueada indefinidamente — sin expiración
+   * automática por tiempo — hasta que se desbloquea por el enlace enviado a
+   * su correo o por acción de un Administrador (`UsuarioController.desbloquear`).
+   * `fechaBloqueo` registra el momento en que se bloqueó (dato de auditoría),
+   * no una fecha de liberación.
+   */
   private async verificarBloqueo(usuario: Usuario) {
     if (usuario.intentos < Configurations.WRONG_LOGIN_LIMIT) {
       return false
     }
 
     if (usuario.fechaBloqueo) {
-      return !(usuario.fechaBloqueo && dayjs().isAfter(usuario.fechaBloqueo))
+      return true
     }
 
-    // generar código y fecha de desbloqueo
+    // primera vez que cruza el límite: registrar el bloqueo y notificar
     const codigo = TextService.generateUuid()
-    const fechaBloqueo = dayjs().add(
-      Configurations.MINUTES_LOGIN_LOCK,
-      'minute'
-    )
     await this.usuarioService.actualizarDatosBloqueo(
       usuario.id,
       codigo,
-      fechaBloqueo.toDate()
+      dayjs().toDate()
     )
     // enviar código por email
     const urlDesbloqueo = new URL(this.configService.get('URL_FRONTEND') ?? '')
@@ -78,12 +81,6 @@ export class AuthenticationService extends BaseService {
   }
 
   async generarIntentoBloqueo(usuario: Usuario) {
-    if (dayjs().isAfter(usuario.fechaBloqueo)) {
-      // restaurar datos bloqueo
-      await this.usuarioService.actualizarDatosBloqueo(usuario.id, null, null)
-      await this.usuarioService.actualizarContadorBloqueos(usuario.id, 1)
-      return
-    }
     const intento = usuario.intentos + 1
     await this.usuarioService.actualizarContadorBloqueos(usuario.id, intento)
   }

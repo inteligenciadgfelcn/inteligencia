@@ -16,8 +16,9 @@ import { AuthorizationService } from '@/core/authorization/controller/authorizat
 import { RolRepository } from '@/core/authorization/repository/rol.repository'
 import { MensajeriaService } from '@/core/external-services/mensajeria/mensajeria.service'
 import { MensajeriaModule } from '@/core/external-services/mensajeria/mensajeria.module'
-import { SegipService } from '@/core/external-services/iop/segip/segip.service'
 import { FileValidationService } from '@/common/lib/file-validation.service'
+import { RefreshTokensRepository } from '@/core/authentication/repository/refreshTokens.repository'
+import { HistorialContrasenaRepository } from '../repository/historial-contrasena.repository'
 
 const resUsuarioList = {
   id: '1e9215f2-47cd-45e4-a593-4289413503e0',
@@ -208,12 +209,6 @@ describe('UsuarioService', () => {
           },
         },
         {
-          provide: SegipService,
-          useValue: {
-            contrastar: jest.fn(() => ({ finalizado: true })),
-          },
-        },
-        {
           provide: PersonaRepository,
           useValue: {},
         },
@@ -230,6 +225,17 @@ describe('UsuarioService', () => {
         {
           provide: FileValidationService,
           useValue: {},
+        },
+        {
+          provide: RefreshTokensRepository,
+          useValue: { eliminarPorUsuario: jest.fn() },
+        },
+        {
+          provide: HistorialContrasenaRepository,
+          useValue: {
+            obtenerUltimas: jest.fn().mockResolvedValue([]),
+            guardar: jest.fn(),
+          },
         },
       ],
       imports: [MensajeriaModule],
@@ -573,12 +579,6 @@ describe('[actualizarDatos] Integridad de transacción', () => {
           useValue: { sendEmail: jest.fn().mockResolvedValue(true) },
         },
         {
-          provide: SegipService,
-          useValue: {
-            contrastar: jest.fn().mockResolvedValue({ finalizado: true }),
-          },
-        },
-        {
           provide: PersonaRepository,
           useValue: {},
         },
@@ -593,6 +593,17 @@ describe('[actualizarDatos] Integridad de transacción', () => {
         {
           provide: FileValidationService,
           useValue: {},
+        },
+        {
+          provide: RefreshTokensRepository,
+          useValue: { eliminarPorUsuario: jest.fn() },
+        },
+        {
+          provide: HistorialContrasenaRepository,
+          useValue: {
+            obtenerUltimas: jest.fn().mockResolvedValue([]),
+            guardar: jest.fn(),
+          },
         },
       ],
     }).compile()
@@ -671,10 +682,6 @@ describe('[actualizarDatos] Integridad de transacción', () => {
           useValue: { sendEmail: mockSendEmail },
         },
         {
-          provide: SegipService,
-          useValue: { contrastar: jest.fn() },
-        },
-        {
           provide: PersonaRepository,
           useValue: {},
         },
@@ -689,6 +696,17 @@ describe('[actualizarDatos] Integridad de transacción', () => {
         {
           provide: FileValidationService,
           useValue: {},
+        },
+        {
+          provide: RefreshTokensRepository,
+          useValue: { eliminarPorUsuario: jest.fn() },
+        },
+        {
+          provide: HistorialContrasenaRepository,
+          useValue: {
+            obtenerUltimas: jest.fn().mockResolvedValue([]),
+            guardar: jest.fn(),
+          },
         },
       ],
     }).compile()

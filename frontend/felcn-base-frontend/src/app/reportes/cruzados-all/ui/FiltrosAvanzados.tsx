@@ -106,10 +106,9 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
   const [nroDocumento, setNroDocumento] = useState('')
   const [idPaisPersona, setIdPaisPersona] = useState('')
 
-  // ── Bienes y Costo ──────────────────────────────────────────────────────────
-  const [idCatalogoTipo, setIdCatalogoTipo] = useState('')
-  const [costoTotalMin, setCostoTotalMin] = useState('')
-  const [costoTotalMax, setCostoTotalMax] = useState('')
+  // ── Bienes ──────────────────────────────────────────────────────────────────
+  const [idBien, setIdBien] = useState('')
+  const [idCatalogoClase, setIdCatalogoClase] = useState('')
 
   // ── Indicadores booleanos ───────────────────────────────────────────────────
   const [esPositivo, setEsPositivo] = useState('')
@@ -140,6 +139,8 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
 
   const [opPaises, setOpPaises] = useState<SelectOption[]>([])
   const [opBienes, setOpBienes] = useState<SelectOption[]>([])
+  const [opClasesBien, setOpClasesBien] = useState<SelectOption[]>([])
+  const [cargandoClasesBien, setCargandoClasesBien] = useState(false)
 
   // ── Carga inicial de combos estáticos ───────────────────────────────────────
   useEffect(() => {
@@ -202,6 +203,16 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
       .finally(() => setCargandoEstados(false))
   }, [idTipoDroga])
 
+  // ── Cascade: Tipo de Bien → Clase de Bien ───────────────────────────────────
+  useEffect(() => {
+    setIdCatalogoClase(''); setOpClasesBien([])
+    if (!idBien) return
+    setCargandoClasesBien(true)
+    void SiiiLookupsService.obtenerClasesBien(Number(idBien))
+      .then(r => setOpClasesBien(r.datos.map(x => ({ value: x.id, label: x.descripcion }))))
+      .finally(() => setCargandoClasesBien(false))
+  }, [idBien])
+
   // ── Limpiar todo ─────────────────────────────────────────────────────────────
   const limpiar = () => {
     setFechaInicio(hace30Dias()); setFechaFin(hoy())
@@ -216,7 +227,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
     setCostoDrogaMin(''); setCostoDrogaMax('')
     setNombresPersona(''); setApellidoPaterno(''); setApellidoMaterno('')
     setNroDocumento(''); setIdPaisPersona('')
-    setIdCatalogoTipo(''); setCostoTotalMin(''); setCostoTotalMax('')
+    setIdBien(''); setIdCatalogoClase('')
     setEsPositivo(''); setEsAprehendido(''); setEsArrestado('')
     setEsIcia(''); setEsParteDiario(''); setEsRevisado('')
     onLimpiar?.()
@@ -232,7 +243,7 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
     idTipoDroga, idEstadoDroga, idPaisProcedencia, idPaisDestino,
     costoDrogaMin, costoDrogaMax,
     nombresPersona, apellidoPaterno, apellidoMaterno, nroDocumento, idPaisPersona,
-    idCatalogoTipo, costoTotalMin, costoTotalMax,
+    idBien, idCatalogoClase,
     esPositivo, esAprehendido, esArrestado, esIcia, esParteDiario, esRevisado,
   })
 
@@ -491,25 +502,23 @@ export function FiltrosAvanzados({ onBuscar, onLimpiar, cargando }: FiltrosAvanz
         </div>
       </SeccionFiltro>
 
-      {/* ── Sección 6: Bienes y Costo Total ──────────────────────────────────── */}
-      <SeccionFiltro titulo="Bienes Secuestrados y Costo Total" icono="inventory_2"
+      {/* ── Sección 6: Bienes Secuestrados ───────────────────────────────────── */}
+      <SeccionFiltro titulo="Bienes Secuestrados" icono="inventory_2"
         colorClass="bg-purple-50/70 dark:bg-purple-900/10 text-purple-800 dark:text-purple-300">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className={fieldLabel}>Tipo de Bien</label>
-            <Select size="sm" value={idCatalogoTipo}
-              onChange={e => setIdCatalogoTipo(e.target.value)}
+            <Select size="sm" value={idBien}
+              onChange={e => setIdBien(e.target.value)}
               options={opBienes} placeholder="Todos..." />
           </div>
           <div>
-            <label className={fieldLabel}>Costo Total Mín (Bs)</label>
-            <Input size="sm" type="number" min="0" value={costoTotalMin}
-              onChange={e => setCostoTotalMin(e.target.value)} placeholder="0" />
-          </div>
-          <div>
-            <label className={fieldLabel}>Costo Total Máx (Bs)</label>
-            <Input size="sm" type="number" min="0" value={costoTotalMax}
-              onChange={e => setCostoTotalMax(e.target.value)} placeholder="Sin límite" />
+            <label className={fieldLabel}>Clase de Bien</label>
+            <Select size="sm" value={idCatalogoClase}
+              onChange={e => setIdCatalogoClase(e.target.value)}
+              options={opClasesBien}
+              disabled={!idBien || cargandoClasesBien}
+              placeholder={idBien ? 'Todos...' : 'Seleccione un tipo de bien primero'} />
           </div>
         </div>
       </SeccionFiltro>

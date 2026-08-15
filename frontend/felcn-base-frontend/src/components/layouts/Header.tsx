@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Link from 'next/link'
 import { IRootState } from '@/store'
@@ -12,65 +12,19 @@ import IconLaptop from '@/components/Icon/IconLaptop'
 import IconUser from '@/components/Icon/IconUser'
 import IconLogout from '@/components/Icon/IconLogout'
 import { useSession } from '@/hooks'
-import { useRouter, usePathname } from 'next/navigation'
-import { useDebouncedCallback } from 'use-debounce'
-import { NavbarSearch } from '@/components/navbars/NavbarUser/NavbarSearch'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/AuthProvider'
 import AppMenuHorizontal from './HorizontalMenu'
 import { BASE_PATH } from '@/imageLoader'
 import { RoleType } from '@/app/login/types/loginTypes'
 
 const Header = () => {
-  const router = useRouter()
   const pathname = usePathname()
-  const { rolUsuario, usuario, setRolUsuario } = useAuth()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [autocompleteOpen, setAutocompleteOpen] = useState(false)
+  const { rolUsuario, setRolUsuario, usuario } = useAuth()
   const { cerrarSesion } = useSession()
 
   const handleLogout = async () => {
     await cerrarSesion()
-    // router.push('/login')
-  }
-
-  const normalizeText = (text: string) => {
-    return text
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-  }
-
-  const debouncedSearch = useDebouncedCallback((term: string) => {
-    const normalizedTerm = normalizeText(term)
-
-    const results = rolUsuario?.modulos
-      ?.flatMap((m: any) => m.subModulo)
-      .filter((s: any) => normalizeText(s.label).includes(normalizedTerm))
-
-    setSearchResults(results || [])
-  }, 300)
-
-  const handleInputChange = (_: any, value: string) => {
-    setSearchTerm(value)
-
-    if (!value) {
-      setSearchResults([])
-      setAutocompleteOpen(false)
-      return
-    }
-
-    setAutocompleteOpen(true)
-    debouncedSearch(value)
-  }
-
-  const handleOptionSelect = (_: any, value: any) => {
-    if (value?.url) {
-      router.push(value.url)
-      setSearchTerm('')
-      setSearchResults([])
-      setAutocompleteOpen(false)
-    }
   }
 
   useEffect(() => {
@@ -116,7 +70,7 @@ const Header = () => {
 
   return (
     <header
-      className={`z-40 ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}
+      className={`relative z-[55] ${themeConfig.semidark && themeConfig.menu === 'horizontal' ? 'dark' : ''}`}
     >
       <div className="shadow-sm">
         <div className="relative flex w-full items-center bg-white px-5 py-2.5 dark:bg-black">
@@ -147,18 +101,7 @@ const Header = () => {
               <IconMenu className="h-5 w-5" />
             </button>
           </div>
-          <div className="flex items-center space-x-1.5 ltr:ml-auto rtl:mr-auto rtl:space-x-reverse dark:text-[#d0d2d6] sm:flex-1 ltr:sm:ml-0 sm:rtl:mr-0 lg:space-x-2">
-            <div className="sm:ltr:mr-auto sm:rtl:ml-auto">
-              <NavbarSearch
-                searchTerm={searchTerm}
-                searchResults={searchResults}
-                handleInputChange={handleInputChange}
-                handleOptionSelect={handleOptionSelect}
-                open={autocompleteOpen}
-                onOpen={() => setAutocompleteOpen(true)}
-                onClose={() => setAutocompleteOpen(false)}
-              />
-            </div>
+          <div className="flex items-center justify-end space-x-1.5 ltr:ml-auto rtl:mr-auto rtl:space-x-reverse dark:text-[#d0d2d6] sm:flex-1 ltr:sm:ml-0 sm:rtl:mr-0 lg:space-x-2">
             <div>
               {themeConfig.theme === 'light' ? (
                 <button
@@ -201,7 +144,7 @@ const Header = () => {
                 button={
                   <img
                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                    src={`${BASE_PATH}/assets/images/user-profile.jpeg`}
+                    src={`${BASE_PATH}/assets/images/user-profile.png`}
                     alt="userProfile"
                   />
                 }

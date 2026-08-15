@@ -22,6 +22,12 @@ export class RefreshTokensRepository {
     return await this.dataSource.getRepository(RefreshTokens).delete(id)
   }
 
+  async eliminarPorUsuario(grantId: string) {
+    return await this.dataSource
+      .getRepository(RefreshTokens)
+      .delete({ grantId })
+  }
+
   async eliminarTokensCaducos() {
     const now: Date = new Date()
     return await this.dataSource

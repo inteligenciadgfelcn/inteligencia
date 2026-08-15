@@ -1,6 +1,6 @@
 {
   "name": "felcn-base-backend",
-  "version": "1.18.1-rc",
+  "version": "1.18.2-rc",
   "description": "Backend base con Nest.js, TypeORM y TypeScript",
   "author": "support@felcn.gob.bo",
   "private": true,

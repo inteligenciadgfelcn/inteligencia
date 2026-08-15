@@ -53,9 +53,9 @@ export class AsignacionSiiiRepository {
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
       FROM public.asignacion a
-      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
-      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
-      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN auth_fdw.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+      LEFT JOIN auth_fdw.grupo g ON a.id_grupo = g.id
       WHERE a.usuario = $1
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -82,9 +82,9 @@ export class AsignacionSiiiRepository {
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
         a.ianus AS "ianus"
       FROM public.asignacion a
-      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
-      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
-      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN auth_fdw.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+      LEFT JOIN auth_fdw.grupo g ON a.id_grupo = g.id
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.numero_caso, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -116,9 +116,9 @@ export class AsignacionSiiiRepository {
         a.asignado_caso AS "asignadoCaso",
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
       FROM public.asignacion a
-      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
-      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
-      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN auth_fdw.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+      LEFT JOIN auth_fdw.grupo g ON a.id_grupo = g.id
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.numero_caso, '')) = ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]
@@ -143,9 +143,9 @@ export class AsignacionSiiiRepository {
         a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
         a.ianus AS "ianus"
       FROM public.asignacion a
-      LEFT JOIN public.unidad u ON a.abreviatura_unidad = u.abreviatura
-      LEFT JOIN public.distrital d ON a.id_distrital = d.id_distrital
-      LEFT JOIN public.grupo g ON a.id_grupo = g.id_grupo
+      LEFT JOIN auth_fdw.unidad u ON a.abreviatura_unidad = u.abreviatura
+      LEFT JOIN auth_fdw.distrital d ON a.id_distrital = d.id
+      LEFT JOIN auth_fdw.grupo g ON a.id_grupo = g.id
       WHERE a.usuario = $1 AND TRIM(COALESCE(a.ianus, '')) <> ''
       ORDER BY u.descripcion, d.descripcion, g.descripcion`,
       [usuario]

@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import dayjs from 'dayjs'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import IconTrash from '@/components/Icon/IconTrash'
@@ -132,6 +133,58 @@ const MAPA_COLUMNAS_FISCALIA: Record<string, keyof FlujoFiscaliaForm | 'fecha' |
   'DURACION': 'duracion',
 }
 
+/** Encabezado canónico (el que reconoce el parser) y fila de ejemplo para la plantilla descargable. */
+const ENCABEZADOS_PLANTILLA_FISCALIA: [string, keyof FlujoFiscaliaForm][] = [
+  ['TIPO SERVICIO', 'servicio'],
+  ['TIPO REGISTRO', 'registro'],
+  ['NUMERO A', 'numeroA'],
+  ['IMEI A', 'imeiA'],
+  ['RBS UTILIZADA A', 'rbsA'],
+  ['CELDA A', 'celdaA'],
+  ['LATITUD CELDA A', 'latA'],
+  ['LONGITUD CELDA A', 'lonA'],
+  ['NUMERO B', 'numeroB'],
+  ['TITULAR', 'titular'],
+  ['IMEI B', 'imeiB'],
+  ['RBS UTILIZADA B', 'rbsB'],
+  ['CELDA B', 'celdaB'],
+  ['LATITUD CELDA B', 'latB'],
+  ['LONGITUD CELDA B', 'lonB'],
+  ['FECHA Y HORA', 'fechaHora'],
+  ['DURACION', 'duracion'],
+]
+
+const FILA_EJEMPLO_FISCALIA: FlujoFiscaliaForm = {
+  servicio: 'VOZ',
+  registro: 'SALIENTE',
+  numeroA: '70123456',
+  imeiA: '123456789012345',
+  rbsA: 'RBS-001',
+  celdaA: 'CEL-01',
+  latA: '-16.500000',
+  lonA: '-68.150000',
+  numeroB: '71234567',
+  titular: 'JUAN PEREZ',
+  imeiB: '123456789012346',
+  rbsB: 'RBS-002',
+  celdaB: 'CEL-02',
+  latB: '-16.510000',
+  lonB: '-68.160000',
+  fechaHora: '17/06/2026 14:30:00',
+  duracion: '00:05:32',
+}
+
+interface FilaOmitida {
+  fila: number
+  motivo: string
+}
+
+interface ResultadoImportacionCsv {
+  totalFilas: number
+  importados: number
+  omitidos: FilaOmitida[]
+}
+
 const detectarDelimitadorCsv = (linea: string) => {
   const comas = (linea.match(/,/g) ?? []).length
   const puntoYComa = (linea.match(/;/g) ?? []).length
@@ -198,7 +251,17 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
   const [lista, setLista] = useState<FlujoFiscalia[]>([])
   const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState<FlujoFiscaliaForm>(FISCALIA_VACIO)
+  const [resultadoImportacion, setResultadoImportacion] = useState<ResultadoImportacionCsv | null>(null)
   const inputCsvRef = useRef<HTMLInputElement>(null)
+
+  const descargarFormatoCsv = () => {
+    exportToCSV<FlujoFiscaliaForm>(
+      [FILA_EJEMPLO_FISCALIA],
+      ENCABEZADOS_PLANTILLA_FISCALIA.map(([encabezado]) => encabezado),
+      ENCABEZADOS_PLANTILLA_FISCALIA.map(([, campo]) => campo),
+      'formato-flujo-fiscalia-ejemplo'
+    )
+  }
 
   const cargar = useCallback(async () => {
     setCargando(true)
@@ -212,6 +275,7 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
 
   const importarCsv = async (file: File) => {
     setImportando(true)
+    setResultadoImportacion(null)
     try {
       const texto = await file.text()
       const lineas = texto.split(/\r?\n/).filter((l) => l.trim() !== '')
@@ -230,15 +294,18 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
         if (conteo > mejorConteo) { mejorConteo = conteo; idxEncabezado = i }
       }
       if (idxEncabezado === -1 || mejorConteo < 4) {
-        Alerta({ mensaje: 'No se reconocieron las columnas del CSV de flujo fiscalía', variant: 'error' })
+        Alerta({ mensaje: 'No se reconocieron las columnas del CSV de flujo fiscalía. Descargue el formato de ejemplo para verificar los encabezados.', variant: 'error' })
         return
       }
 
       const encabezados = parseLineaCsv(lineas[idxEncabezado], delimitador).map(normalizarEncabezado)
 
       let importados = 0
-      let omitidos = 0
+      const omitidos: FilaOmitida[] = []
+      const totalFilas = lineas.length - idxEncabezado - 1
+
       for (let i = idxEncabezado + 1; i < lineas.length; i++) {
+        const numFila = i - idxEncabezado
         const celdas = parseLineaCsv(lineas[i], delimitador)
         const fila: Partial<Record<keyof FlujoFiscaliaForm | 'fecha' | 'hora', string>> = {}
         encabezados.forEach((h, idx) => {
@@ -257,17 +324,24 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
         const latB = parseFloat((fila.latB ?? '').replace(',', '.'))
         const lonB = parseFloat((fila.lonB ?? '').replace(',', '.'))
 
-        const requeridos = [
-          fila.servicio, fila.registro, fila.numeroA, fila.imeiA, fila.rbsA, fila.celdaA,
-          fila.numeroB, fila.titular, fila.imeiB, fila.rbsB, fila.celdaB, fila.duracion,
+        const camposRequeridos: [string, string | undefined][] = [
+          ['Tipo Servicio', fila.servicio], ['Tipo Registro', fila.registro],
+          ['Número A', fila.numeroA], ['IMEI A', fila.imeiA], ['RBS A', fila.rbsA], ['Celda A', fila.celdaA],
+          ['Número B', fila.numeroB], ['Titular', fila.titular], ['IMEI B', fila.imeiB],
+          ['RBS B', fila.rbsB], ['Celda B', fila.celdaB], ['Duración', fila.duracion],
         ]
 
-        if (
-          requeridos.some((v) => !v) ||
-          !fechaHora ||
-          isNaN(latA) || isNaN(lonA) || isNaN(latB) || isNaN(lonB)
-        ) {
-          omitidos++
+        const motivos: string[] = []
+        const faltantes = camposRequeridos.filter(([, v]) => !v).map(([label]) => label)
+        if (faltantes.length > 0) motivos.push(`Falta(n): ${faltantes.join(', ')}`)
+        if (!fechaHora) motivos.push('Fecha y Hora inválida o con formato no reconocido')
+        if (isNaN(latA)) motivos.push('Latitud A inválida')
+        if (isNaN(lonA)) motivos.push('Longitud A inválida')
+        if (isNaN(latB)) motivos.push('Latitud B inválida')
+        if (isNaN(lonB)) motivos.push('Longitud B inválida')
+
+        if (motivos.length > 0) {
+          omitidos.push({ fila: numFila, motivo: motivos.join(' · ') })
           continue
         }
 
@@ -288,20 +362,21 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
             celdaB: fila.celdaB!.slice(0, 10),
             latB,
             lonB,
-            fechaHora,
+            fechaHora: fechaHora!,
             duracion: fila.duracion!.slice(0, 15),
           })
           if (r?.finalizado) importados++
-          else omitidos++
-        } catch {
-          omitidos++
+          else omitidos.push({ fila: numFila, motivo: 'El servidor rechazó el registro' })
+        } catch (e) {
+          omitidos.push({ fila: numFila, motivo: InterpreteMensajes(e) })
         }
       }
 
       void cargar()
+      setResultadoImportacion({ totalFilas, importados, omitidos })
       Alerta({
-        mensaje: `Importación completada: ${importados} registro(s) importado(s)${omitidos ? `, ${omitidos} fila(s) omitida(s) por datos incompletos o inválidos` : ''}`,
-        variant: importados === 0 ? 'error' : omitidos ? 'warning' : 'success',
+        mensaje: `Importación completada: ${importados} de ${totalFilas} registro(s) importado(s)${omitidos.length ? '. Revise el detalle de filas omitidas debajo del botón de importar.' : ''}`,
+        variant: importados === 0 ? 'error' : omitidos.length ? 'warning' : 'success',
       })
     } catch (e) {
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
@@ -417,7 +492,17 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
       <ConfirmDialog />
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-gray-500">Detalle de llamadas (Fiscalía)</p>
-        <div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            type="button"
+            onClick={descargarFormatoCsv}
+            title="Descargar una plantilla CSV con los encabezados correctos y una fila de ejemplo"
+          >
+            <IconDownload className="mr-1 h-4 w-4" />
+            Descargar formato
+          </Button>
           <input
             ref={inputCsvRef}
             type="file"
@@ -442,6 +527,38 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
           </Button>
         </div>
       </div>
+
+      {resultadoImportacion && (
+        <div className="rounded border border-[#e0e6ed] bg-white p-3 text-xs dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex items-center justify-between gap-2">
+            <p>
+              <span className="font-semibold">Resultado de la importación:</span>{' '}
+              <span className="text-success font-medium">{resultadoImportacion.importados} importado(s)</span>
+              {' '}de {resultadoImportacion.totalFilas} fila(s) procesada(s)
+              {resultadoImportacion.omitidos.length > 0 && (
+                <span className="text-danger font-medium"> · {resultadoImportacion.omitidos.length} omitida(s)</span>
+              )}
+            </p>
+            <button
+              type="button"
+              className="text-lg leading-none text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              onClick={() => setResultadoImportacion(null)}
+              title="Cerrar"
+            >
+              ×
+            </button>
+          </div>
+          {resultadoImportacion.omitidos.length > 0 && (
+            <ul className="mt-2 max-h-40 space-y-1 overflow-y-auto border-t border-gray-100 pt-2 dark:border-gray-700/50">
+              {resultadoImportacion.omitidos.map((o) => (
+                <li key={o.fila} className="text-gray-600 dark:text-gray-400">
+                  <span className="font-medium text-danger">Fila {o.fila}:</span> {o.motivo}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="mb-1 block text-xs font-medium">Servicio <span className="text-danger">*</span></label>
@@ -617,7 +734,7 @@ function PanelFlujoFiscalia({ idFlujo }: { idFlujo: string }) {
                   <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  {f.fechaHora}
+                  {dayjs(f.fechaHora).format('DD/MM/YYYY HH:mm:ss')}
                 </span>
                 <div className="flex gap-2">
                   <span><span className="font-medium">Servicio:</span> {f.servicio}</span>

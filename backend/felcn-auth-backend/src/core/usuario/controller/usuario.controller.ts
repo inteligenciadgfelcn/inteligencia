@@ -341,6 +341,26 @@ export class UsuarioController extends BaseController {
   }
 
   @ApiOperation({
+    summary:
+      'Desbloquea manualmente la cuenta de un usuario bloqueado por intentos fallidos, sin depender del correo del usuario',
+  })
+  @ApiBearerAuth()
+  @ApiProperty({
+    type: ParamIdDto,
+  })
+  @UseGuards(JwtAuthGuard, CasbinGuard)
+  @Patch('/:id/desbloqueo')
+  async desbloquear(@Req() req: Request, @Param() params: ParamIdDto) {
+    const { id: idUsuario } = params
+    const usuarioAuditoria = this.getUser(req)
+    const result = await this.usuarioService.desbloquearPorAdmin(
+      idUsuario,
+      usuarioAuditoria
+    )
+    return this.successUpdate(result, Messages.SUCCESS_ACCOUNT_UNLOCK)
+  }
+
+  @ApiOperation({
     summary: 'Actualiza la contrasena de un usuario authenticado',
   })
   @ApiBearerAuth()
@@ -364,6 +384,19 @@ export class UsuarioController extends BaseController {
       contrasenaNueva
     )
     return this.successUpdate(result)
+  }
+
+  @ApiOperation({
+    summary:
+      'Cierra todas las sesiones activas de la cuenta autenticada (revoca todos los refresh tokens). Los access tokens (JWT) ya emitidos siguen vigentes hasta su propio vencimiento.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, CasbinGuard)
+  @Delete('/cuenta/sesiones')
+  async cerrarTodasLasSesiones(@Req() req: Request) {
+    const idUsuario = this.getUser(req)
+    await this.usuarioService.revocarSesionesActivas(idUsuario)
+    return this.successUpdate({}, Messages.SUCCESS_SESSIONS_CLOSED)
   }
 
   @ApiOperation({ summary: 'API para restaurar la contraseña de un usuario' })

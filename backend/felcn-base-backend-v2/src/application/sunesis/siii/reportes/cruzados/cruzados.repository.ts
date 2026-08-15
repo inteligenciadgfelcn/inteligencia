@@ -168,9 +168,9 @@ export class CruzadasRepository {
     JOIN  parametricas.departamento    dep  ON o.id_departamento  = dep.id_departamento
     JOIN  parametricas.provincia       prov ON o.id_provincia     = prov.id_provincia
     JOIN  parametricas.localidad       loc  ON o.id_localidad     = loc.id_localidad
-    LEFT JOIN public.unidad            uni  ON o.id_unidad        = uni.id_unidad
-    LEFT JOIN public.distrital         dis  ON o.id_distrital     = dis.id_distrital
-    LEFT JOIN public.grupo             grp  ON o.id_grupo         = grp.id_grupo
+    LEFT JOIN auth_fdw.unidad          uni  ON o.id_unidad        = uni.id
+    LEFT JOIN auth_fdw.distrital       dis  ON o.id_distrital     = dis.id
+    LEFT JOIN auth_fdw.grupo           grp  ON o.id_grupo         = grp.id
   `
 
   /**
@@ -305,7 +305,7 @@ export class CruzadasRepository {
     )
   }
 
-  // ── Consulta avanzada (42 filtros opcionales) ────────────────────────────
+  // ── Consulta avanzada (41 filtros opcionales) ────────────────────────────
 
   private readonly SQL_AVANZADO = `
 SELECT
@@ -443,9 +443,9 @@ JOIN  parametricas.tipo_operacion       top  ON o.id_tipo_operacion     = top.id
 JOIN  parametricas.tipo_relevancia      tr   ON o.id_tipo_relevancia    = tr.id_tipo_relevancia
 JOIN  parametricas.plan_operaciones     po   ON o.id_plan_operacion     = po.id_plan_operacion
 JOIN  parametricas.categoria_operativo  cat  ON o.id_categoria_operativo= cat.id_categoria_operativo
-LEFT JOIN public.unidad                 uni  ON o.id_unidad             = uni.id_unidad
-LEFT JOIN public.distrital              dis  ON o.id_distrital          = dis.id_distrital
-LEFT JOIN public.grupo                  grp  ON o.id_grupo              = grp.id_grupo
+LEFT JOIN auth_fdw.unidad               uni  ON o.id_unidad             = uni.id
+LEFT JOIN auth_fdw.distrital            dis  ON o.id_distrital          = dis.id
+LEFT JOIN auth_fdw.grupo                grp  ON o.id_grupo              = grp.id
 LEFT JOIN parametricas.tipo_denuncia    tden ON o.id_tipo_denuncia      = tden.id_tipo_denuncia
 LEFT JOIN parametricas.tipo_penal       tpen ON o.id_tipo_penal         = tpen.id_tipo_penal
 
@@ -466,7 +466,11 @@ WHERE
   AND ($10::text   IS NULL OR o.lugar ILIKE '%' || $10 || '%')
   AND ($11::integer IS NULL OR EXISTS (
     SELECT 1 FROM public.item_bien_secuestrado ibs
-    WHERE ibs.id_operativo = o.id_operativo AND ibs.id_catalogo_tipo = $11
+    JOIN public.catalogo_tipo ct2 ON ibs.id_catalogo_tipo = ct2.id_catalogo_tipo
+    JOIN public.catalogo_clase cc ON ct2.id_catalogo_clase = cc.id_catalogo_clase
+    WHERE ibs.id_operativo = o.id_operativo
+      AND cc.id_bien = $11
+      AND ($28::integer IS NULL OR cc.id_catalogo_clase = $28)
   ))
   AND ($12::text   IS NULL OR a.numero_caso          ILIKE '%' || $12 || '%')
   AND ($13::integer IS NULL OR o.id_unidad           = $13)
@@ -512,31 +516,19 @@ WHERE
     SELECT 1 FROM public.persona_auxiliar per
     WHERE per.id_operativo = o.id_operativo AND per.id_pais = $27
   ))
-  AND ($28::numeric IS NULL OR (
-    COALESCE((SELECT SUM(dr2.costo)             FROM public.droga                  dr2  WHERE dr2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(ss2.costo)             FROM public.sustancia_solida       ss2  WHERE ss2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(sl2.costo)             FROM public.sustancia_liquida      sl2  WHERE sl2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(ibs2.costo_aproximado) FROM public.item_bien_secuestrado ibs2  WHERE ibs2.id_operativo = o.id_operativo), 0)
-  ) >= $28)
-  AND ($29::numeric IS NULL OR (
-    COALESCE((SELECT SUM(dr2.costo)             FROM public.droga                  dr2  WHERE dr2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(ss2.costo)             FROM public.sustancia_solida       ss2  WHERE ss2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(sl2.costo)             FROM public.sustancia_liquida      sl2  WHERE sl2.id_operativo  = o.id_operativo), 0) +
-    COALESCE((SELECT SUM(ibs2.costo_aproximado) FROM public.item_bien_secuestrado ibs2  WHERE ibs2.id_operativo = o.id_operativo), 0)
-  ) <= $29)
-  AND ($30::integer IS NULL OR o.id_tipo_denuncia      = $30)
-  AND ($31::integer IS NULL OR o.id_tipo_penal         = $31)
-  AND ($32::integer IS NULL OR o.id_categoria_operativo= $32)
-  AND ($33::boolean IS NULL OR o.es_aprehendido        = $33)
-  AND ($34::boolean IS NULL OR o.es_arrestado          = $34)
-  AND ($35::boolean IS NULL OR o.es_icia               = $35)
-  AND ($36::boolean IS NULL OR o.es_parte_diario       = $36)
-  AND ($37::boolean IS NULL OR o.es_revisado           = $37)
-  AND ($38::text IS NULL OR a.nombre_caso       ILIKE '%' || $38 || '%')
-  AND ($39::text IS NULL OR a.numero_operativo  ILIKE '%' || $39 || '%')
-  AND ($40::text IS NULL OR a.ianus             ILIKE '%' || $40 || '%')
-  AND ($41::text IS NULL OR a.fiscal_solicitud  ILIKE '%' || $41 || '%')
-  AND ($42::text IS NULL OR a.asignado_caso     ILIKE '%' || $42 || '%')
+  AND ($29::integer IS NULL OR o.id_tipo_denuncia      = $29)
+  AND ($30::integer IS NULL OR o.id_tipo_penal         = $30)
+  AND ($31::integer IS NULL OR o.id_categoria_operativo= $31)
+  AND ($32::boolean IS NULL OR o.es_aprehendido        = $32)
+  AND ($33::boolean IS NULL OR o.es_arrestado          = $33)
+  AND ($34::boolean IS NULL OR o.es_icia               = $34)
+  AND ($35::boolean IS NULL OR o.es_parte_diario       = $35)
+  AND ($36::boolean IS NULL OR o.es_revisado           = $36)
+  AND ($37::text IS NULL OR a.nombre_caso       ILIKE '%' || $37 || '%')
+  AND ($38::text IS NULL OR a.numero_operativo  ILIKE '%' || $38 || '%')
+  AND ($39::text IS NULL OR a.ianus             ILIKE '%' || $39 || '%')
+  AND ($40::text IS NULL OR a.fiscal_solicitud  ILIKE '%' || $40 || '%')
+  AND ($41::text IS NULL OR a.asignado_caso     ILIKE '%' || $41 || '%')
 
 ORDER BY o.fecha_operativo DESC
 `
@@ -658,7 +650,7 @@ ORDER BY o.fecha_operativo DESC
       n(filtro.idProvincia),          // $8
       n(filtro.idLocalidad),          // $9
       s(filtro.lugar),                // $10
-      n(filtro.idCatalogoTipo),       // $11
+      n(filtro.idBien),               // $11
       s(filtro.numeroCaso),           // $12
       n(filtro.idUnidad),             // $13
       s(filtro.fiscal),               // $14
@@ -675,21 +667,20 @@ ORDER BY o.fecha_operativo DESC
       s(filtro.apellidoMaterno),      // $25
       s(filtro.nroDocumento),         // $26
       n(filtro.idPaisPersona),        // $27
-      n(filtro.costoTotalMin),        // $28
-      n(filtro.costoTotalMax),        // $29
-      n(filtro.idTipoDenuncia),       // $30
-      n(filtro.idTipoPenal),          // $31
-      n(filtro.idCategoriaOperativo), // $32
-      b(filtro.esAprehendido),        // $33
-      b(filtro.esArrestado),          // $34
-      b(filtro.esIcia),               // $35
-      b(filtro.esParteDiario),        // $36
-      b(filtro.esRevisado),           // $37
-      s(filtro.nombreCaso),           // $38
-      s(filtro.numeroOperativo),      // $39
-      s(filtro.ianus),                // $40
-      s(filtro.fiscalSolicitud),      // $41
-      s(filtro.asignadoCaso),         // $42
+      n(filtro.idCatalogoClase),      // $28
+      n(filtro.idTipoDenuncia),       // $29
+      n(filtro.idTipoPenal),          // $30
+      n(filtro.idCategoriaOperativo), // $31
+      b(filtro.esAprehendido),        // $32
+      b(filtro.esArrestado),          // $33
+      b(filtro.esIcia),               // $34
+      b(filtro.esParteDiario),        // $35
+      b(filtro.esRevisado),           // $36
+      s(filtro.nombreCaso),           // $37
+      s(filtro.numeroOperativo),      // $38
+      s(filtro.ianus),                // $39
+      s(filtro.fiscalSolicitud),      // $40
+      s(filtro.asignadoCaso),         // $41
     ]
 
     const filas = await this.dataSource.query<ResultadoConsultaAvanzada[]>(this.SQL_AVANZADO, params)
