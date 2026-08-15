@@ -6,17 +6,20 @@ import { Constantes } from '@/config/Constantes'
 import IconPencilPaper from '@/components/Icon/IconPencilPaper'
 import IconLock from '@/components/Icon/IconLock'
 import IconCamera from '@/components/Icon/IconCamera'
+import IconLogout from '@/components/Icon/IconLogout'
 
 interface Props {
   usuario: UsuarioType | null
   onChangePassword: () => void
   onEditProfile: () => void
+  onCerrarSesiones: () => void
 }
 
 export const PerfilCard = ({
   usuario,
   onChangePassword,
   onEditProfile,
+  onCerrarSesiones,
 }: Props) => {
   const obtenerIniciales = (nombres: string, apellido: string) =>
     (nombres?.charAt(0) + apellido?.charAt(0)).toUpperCase()
@@ -66,6 +69,14 @@ export const PerfilCard = ({
         <button className="btn btn-primary w-full" onClick={onChangePassword}>
           <IconLock className="ltr:mr-2 rtl:ml-2" />
           Cambiar Contraseña
+        </button>
+
+        <button
+          className="btn btn-outline-danger w-full"
+          onClick={onCerrarSesiones}
+        >
+          <IconLogout className="ltr:mr-2 rtl:ml-2" />
+          Cerrar todas las sesiones
         </button>
       </div>
     </div>

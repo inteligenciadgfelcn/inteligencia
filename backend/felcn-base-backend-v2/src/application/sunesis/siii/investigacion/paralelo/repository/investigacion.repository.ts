@@ -47,8 +47,8 @@ export class InvestigacionRepository {
         a.id_distrital                         AS "idDistrital",
         a.id_grupo                             AS "idGrupo"
       FROM public.asignacion a
-      INNER JOIN public.unidad    u ON TRIM(a.abreviatura_unidad) = TRIM(u.abreviatura)
-      INNER JOIN public.distrital d ON a.id_distrital = d.id_distrital`
+      INNER JOIN auth_fdw.unidad    u ON TRIM(a.abreviatura_unidad) = TRIM(u.abreviatura)
+      INNER JOIN auth_fdw.distrital d ON a.id_distrital = d.id`
 
     if (filtros.investigador) {
       // Button3_Click: JOIN con investigador, sin filtro de unidad

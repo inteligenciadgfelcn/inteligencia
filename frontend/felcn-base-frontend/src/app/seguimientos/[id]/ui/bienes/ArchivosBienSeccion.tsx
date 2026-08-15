@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { Icono } from '@/components/Icono'
 import { useAlerts } from '@/hooks/useAlerts'
+import { useConfirmDialog } from '@/hooks'
 import { useParametricas } from '@/hooks/useParametricas'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import { BienesServiceInstance } from '@/services/seguimiento/SeguimientoBienesService'
@@ -71,6 +72,7 @@ const TIPOS_DOC = [
 
 export function ArchivosBienSeccion({ idCaso }: Props) {
   const { Alerta } = useAlerts()
+  const { confirm, ConfirmDialog } = useConfirmDialog()
   const { contenidoBien, cargarContenidoBien } = useParametricas()
   const [file, setFile] = useState<File | null>(null)
   const [registros, setRegistros] = useState<any[]>([])
@@ -125,20 +127,24 @@ export function ArchivosBienSeccion({ idCaso }: Props) {
     void BienesServiceInstance.descargarArchivo(id, nombre)
   }
 
-  const handleEliminar = async (id: string) => {
-    if (confirm('¿Está seguro de eliminar este archivo?')) {
-      try {
-        await BienesServiceInstance.eliminarArchivo(id)
-        Alerta({ mensaje: 'Archivo eliminado', variant: 'success' })
-        void cargarRegistros()
-      } catch (error) {
-        Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
-      }
-    }
+  const handleEliminar = (id: string) => {
+    confirm({
+      texto: '¿Está seguro de eliminar este archivo?',
+      onConfirm: async () => {
+        try {
+          await BienesServiceInstance.eliminarArchivo(id)
+          Alerta({ mensaje: 'Archivo eliminado', variant: 'success' })
+          void cargarRegistros()
+        } catch (error) {
+          Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
+        }
+      },
+    })
   }
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog />
       <form onSubmit={handleSubmit(onSubmit)} className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div className="lg:col-span-1">

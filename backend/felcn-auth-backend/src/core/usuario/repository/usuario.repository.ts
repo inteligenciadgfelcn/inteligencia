@@ -41,6 +41,8 @@ export class UsuarioRepository {
         'usuario.correoElectronico',
         'usuario.estado',
         'usuario.ciudadaniaDigital',
+        'usuario.intentos',
+        'usuario.fechaBloqueo',
         'usuario.fechaCreacion',
         'usuario.nombreApp',
         'usuario.idGrado',
@@ -177,6 +179,8 @@ export class UsuarioRepository {
         'usuario.correoElectronico',
         'usuario.estado',
         'usuario.ciudadaniaDigital',
+        'usuario.intentos',
+        'usuario.fechaBloqueo',
         'usuario.fechaCreacion',
         'usuario.nombreApp',
         'usuario.telefonoCelular',
@@ -343,6 +347,7 @@ export class UsuarioRepository {
           usuarioDto?.contrasena ??
           (await TextService.encrypt(TextService.generateUuid())),
         ciudadaniaDigital: usuarioDto?.ciudadaniaDigital ?? false,
+        otpHabilitado: usuarioDto?.otpHabilitado ?? false,
         nombreApp: usuarioDto?.nombreApp,
         telefonoCelular: usuarioDto?.telefonoCelular,
         telefonoCorporativo: usuarioDto?.telefonoCorporativo,
@@ -465,7 +470,12 @@ export class UsuarioRepository {
     return await this.dataSource
       .getRepository(Usuario)
       .createQueryBuilder('usuario')
-      .select(['usuario.id', 'usuario.estado', 'usuario.fechaBloqueo'])
+      .select([
+        'usuario.id',
+        'usuario.estado',
+        'usuario.fechaBloqueo',
+        'usuario.contrasena',
+      ])
       .where('usuario.codigoTransaccion = :codigo', { codigo })
       .getOne()
   }

@@ -32,6 +32,8 @@ export interface UsuarioCRUDType {
   ciudadaniaDigital: boolean
   correoElectronico: string
   estado: string
+  intentos?: number
+  fechaBloqueo?: string | null
   usuarioRol: UsuarioRolCRUDType[]
   persona: PersonaCRUDType
   grupo?: {

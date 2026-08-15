@@ -20,75 +20,89 @@ import { Switch } from '@/components/ui/Switch'
 import { Button } from '@/components/ui/Button'
 import { MultiSelect } from '@/components/form/FormMultiSelect'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
+import { RecursosPorRol } from './RecursosPorRol'
 
 interface FormularioUsuarioProps {
   usuarioId?: string
 }
 
-const formSchema = z.object({
-  nombres: z.string().min(2, {
-    message: 'El nombre es requerido.',
-  }),
-  primerApellido: z.string().min(2, {
-    message: 'El primer apellido es requerido.',
-  }),
-  segundoApellido: z.string().optional(),
-  nroDocumento: z.string().min(5, {
-    message: 'El número de documento debe tener al menos 5 caracteres.',
-  }),
-  fechaNacimiento: z.string().refine(
-    (date) => {
-      return validarFechaFormato(date, 'YYYY-MM-DD')
-    },
-    {
-      message: 'Fecha de nacimiento inválida',
-    }
-  ),
-  correoElectronico: z.string().email({
-    message: 'Debe ser un correo electrónico válido.',
-  }),
-  telefono: z
-    .string()
-    .nullable()
-    .refine(
-      (value) => value === null || value === '' || /^[6-7]\d{7}$/.test(value),
+const formSchema = z
+  .object({
+    nombres: z.string().min(2, {
+      message: 'El nombre es requerido.',
+    }),
+    primerApellido: z
+      .string()
+      .optional()
+      .refine((value) => !value || value.trim().length >= 2, {
+        message: 'El primer apellido debe tener al menos 2 caracteres.',
+      }),
+    segundoApellido: z
+      .string()
+      .optional()
+      .refine((value) => !value || value.trim().length >= 2, {
+        message: 'El segundo apellido debe tener al menos 2 caracteres.',
+      }),
+    nroDocumento: z.string().min(5, {
+      message: 'El número de documento debe tener al menos 5 caracteres.',
+    }),
+    fechaNacimiento: z.string().refine(
+      (date) => {
+        return validarFechaFormato(date, 'YYYY-MM-DD')
+      },
       {
-        message: 'Debe ser un teléfono válido',
+        message: 'Fecha de nacimiento inválida',
       }
-    )
-    .optional(),
-  roles: z.array(z.string()).min(1, {
-    message: 'Debe seleccionar al menos un rol.',
-  }),
-  ciudadaniaDigital: z.boolean().default(false),
-  idGrado: z.preprocess(
-    (val) => (val === null || val === '' || val === undefined) ? undefined : Number(val),
-    z.number({ required_error: 'El grado es requerido.' })
-  ),
-  idGrupo: z.preprocess(
-    (val) => (val === null || val === '' || val === undefined) ? undefined : Number(val),
-    z.number({ required_error: 'El grupo es requerido.' })
-  ),
-  numeroPase: z.string().min(1, {
-    message: 'El número de pase es requerido.',
-  }),
-})
+    ),
+    correoElectronico: z.string().email({
+      message: 'Debe ser un correo electrónico válido.',
+    }),
+    telefono: z
+      .string()
+      .nullable()
+      .refine(
+        (value) => value === null || value === '' || /^[6-7]\d{7}$/.test(value),
+        {
+          message: 'Debe ser un teléfono válido',
+        }
+      )
+      .optional(),
+    roles: z.array(z.string()).min(1, {
+      message: 'Debe seleccionar al menos un rol.',
+    }),
+    ciudadaniaDigital: z.boolean().default(false),
+    otpHabilitado: z.boolean().default(false),
+    idGrado: z.preprocess(
+      (val) => (val === null || val === '' || val === undefined) ? undefined : Number(val),
+      z.number({ required_error: 'El grado es requerido.' })
+    ),
+    idGrupo: z.preprocess(
+      (val) => (val === null || val === '' || val === undefined) ? undefined : Number(val),
+      z.number({ required_error: 'El grupo es requerido.' })
+    ),
+    numeroPase: z.string().min(1, {
+      message: 'El número de pase es requerido.',
+    }),
+  })
+  .superRefine((values, ctx) => {
+    if (!values.primerApellido?.trim() && !values.segundoApellido?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['primerApellido'],
+        message: 'Debe ingresar al menos un apellido.',
+      })
+    }
+  })
 
 type FormValues = z.infer<typeof formSchema>
-
-interface SnapshotVerificacion {
-  nroDocumento: string
-  fechaNacimiento: string
-}
 
 export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [idUnidad, setIdUnidad] = useState<number | null>(null)
   const [idDistrital, setIdDistrital] = useState<number | null>(null)
-  const [verificadoSegip, setVerificadoSegip] = useState<boolean>(false)
-  const [verificandoSegip, setVerificandoSegip] = useState<boolean>(false)
-  const [snapshotVerificado, setSnapshotVerificado] =
-    useState<SnapshotVerificacion | null>(null)
+  const [recursosExceptuados, setRecursosExceptuados] = useState<
+    Record<string, string[]>
+  >({})
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const { confirm, ConfirmDialog } = useConfirmDialog()
@@ -119,6 +133,22 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     queryKey: ['roles'],
     queryFn: obtenerRoles,
   })
+
+  // idRol -> idUsuarioRol (solo existe en edición; en alta el usuario_rol
+  // todavía no se creó, RecursosPorRol lo maneja como catálogo sin excepciones)
+  const idUsuarioRolPorRol: Record<string, string> = (
+    usuario?.usuarioRol ?? []
+  ).reduce(
+    (acc: Record<string, string>, ur: any) => ({
+      ...acc,
+      [ur.rol.id]: ur.id,
+    }),
+    {}
+  )
+
+  const manejarCambioRecursos = (idRol: string, idsExcluidos: string[]) => {
+    setRecursosExceptuados((previo) => ({ ...previo, [idRol]: idsExcluidos }))
+  }
 
   const obtenerGrados = async () => {
     const respuesta = await sesionPeticion({
@@ -190,6 +220,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       telefono: '',
       roles: [],
       ciudadaniaDigital: false,
+      otpHabilitado: false,
       idGrado: undefined as any,
       idGrupo: undefined as any,
       numeroPase: '',
@@ -208,6 +239,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         telefono: usuario.persona.telefono,
         roles: usuario.usuarioRol.map((value: any) => value.rol.id),
         ciudadaniaDigital: usuario.ciudadaniaDigital ?? false,
+        otpHabilitado: usuario.otpHabilitado ?? false,
         idGrado: (usuario.idGrado ?? undefined) as any,
         idGrupo: (usuario.idGrupo ?? undefined) as any,
         numeroPase: usuario.numeroPase ?? '',
@@ -217,134 +249,19 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       const distritalId = usuario.grupo?.distrital?.id ?? null
       setIdUnidad(unidadId)
       setIdDistrital(distritalId)
-      // Usuario con ciudadanía digital ya tenía datos verificados al crearlo
-      if (usuario.ciudadaniaDigital) {
-        setVerificadoSegip(true)
-        setSnapshotVerificado({
-          nroDocumento: usuario.persona.nroDocumento,
-          fechaNacimiento: usuario.persona.fechaNacimiento,
-        })
-      }
     }
   }, [usuario, reset])
 
-  // Datos que determinan si el snapshot de verificación sigue vigente
-  const nroDocumentoActual = watch('nroDocumento')
-  const fechaNacimientoActual = watch('fechaNacimiento')
-
-  const datosModificadosDesdeVerificacion =
-    verificadoSegip &&
-    snapshotVerificado !== null &&
-    (nroDocumentoActual !== snapshotVerificado.nroDocumento ||
-      fechaNacimientoActual !== snapshotVerificado.fechaNacimiento)
-
-  // Resetear verificación si el usuario edita los campos clave después de haber verificado
-  useEffect(() => {
-    if (datosModificadosDesdeVerificacion) {
-      setVerificadoSegip(false)
-      setSnapshotVerificado(null)
-    }
-  }, [nroDocumentoActual, fechaNacimientoActual, datosModificadosDesdeVerificacion])
-
-  const verificarConSegip = async () => {
-    const nroDocumento = watch('nroDocumento')
-    const fechaNacimiento = watch('fechaNacimiento')
-    const nombres = watch('nombres')
-    const primerApellido = watch('primerApellido')
-    const segundoApellido = watch('segundoApellido')
-
-    if (!nroDocumento || !fechaNacimiento) {
-      Alerta({
-        mensaje: 'Ingrese el número de documento y fecha de nacimiento antes de verificar.',
-        variant: 'warning',
-      })
-      return
-    }
-
-    // Convertir de YYYY-MM-DD a dd/MM/yyyy requerido por la API
-    const [year, month, day] = fechaNacimiento.split('-')
-    const fechaFormateada = `${day}/${month}/${year}`
-
-    try {
-      setVerificandoSegip(true)
-      const response = await fetch(
-        `${Constantes.consultaPersonaUrl}/v1/persona`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': Constantes.consultaPersonaApiKey,
-          },
-          body: JSON.stringify({
-            numero_documento: nroDocumento,
-            fecha_nacimiento: fechaFormateada,
-            nombre: nombres || undefined,
-            primer_apellido: primerApellido || undefined,
-            segundo_apellido: segundoApellido || undefined,
-          }),
-        }
-      )
-
-      const data = await response.json()
-
-      if (data.success && data.objeto) {
-        setVerificadoSegip(true)
-        setSnapshotVerificado({ nroDocumento, fechaNacimiento })
-        Alerta({
-          mensaje: `Persona verificada: ${data.objeto.nombres} ${data.objeto.primer_apellido} ${data.objeto.segundo_apellido ?? ''}`.trim(),
-          variant: 'success',
-        })
-      } else {
-        setVerificadoSegip(false)
-        setSnapshotVerificado(null)
-        Alerta({
-          mensaje:
-            data.mensaje ??
-            'No se encontró la persona con los datos proporcionados.',
-          variant: 'error',
-        })
-      }
-    } catch (e) {
-      imprimir('Error verificando con SEGIP', e)
-      Alerta({
-        mensaje: 'Error al conectar con el servicio de verificación.',
-        variant: 'error',
-      })
-    } finally {
-      setVerificandoSegip(false)
-    }
-  }
-
-  const limpiarDatosPersonales = () => {
-    setValue('nombres', '', { shouldValidate: true })
-    setValue('primerApellido', '', { shouldValidate: true })
-    setValue('segundoApellido', '', { shouldValidate: true })
-    setValue('nroDocumento', '', { shouldValidate: true })
-    setValue('fechaNacimiento', '', { shouldValidate: true })
-    setVerificadoSegip(false)
-    setSnapshotVerificado(null)
-  }
-
   const onSubmit = async (values: FormValues) => {
-    if (Constantes.segipVerificacionEnabled && !usuarioId && !verificadoSegip) {
-      Alerta({
-        mensaje:
-          'Debe verificar los datos personales con el SEGIP antes de registrar un nuevo usuario.',
-        variant: 'error',
-      })
-      return
-    }
-
-    if (Constantes.segipVerificacionEnabled && values.ciudadaniaDigital && !verificadoSegip) {
-      Alerta({
-        mensaje:
-          'Para habilitar Ciudadanía Digital debe verificar los datos con el SEGIP.',
-        variant: 'error',
-      })
-      return
-    }
-
     const datos = trimPayload(values)
+
+    // Solo se manda la excepción de los roles que siguen seleccionados —
+    // si un rol se quitó del MultiSelect, su entrada acá queda descartada.
+    const recursosExceptuadosAEnviar = Object.fromEntries(
+      Object.entries(recursosExceptuados).filter(([idRol]) =>
+        values.roles.includes(idRol)
+      )
+    )
 
     try {
       setLoading(true)
@@ -354,6 +271,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         body: {
           ...datos,
           numeroPase: datos.numeroPase === '' ? null : datos.numeroPase,
+          recursosExceptuados: recursosExceptuadosAEnviar,
           persona: {
             nombres: datos.nombres,
             primerApellido: datos.primerApellido,
@@ -389,18 +307,14 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   }
 
   const ciudadaniaDigitalActiva = watch('ciudadaniaDigital')
-  const deshabilitarDatosPersonales =
-    Constantes.segipVerificacionEnabled && !usuarioId && verificadoSegip
+  const otpHabilitadoActivo = watch('otpHabilitado')
+  const rolesSeleccionados = watch('roles') ?? []
 
   return (
     <div className="w-full px-4 py-6">
       <LoadingDialog
         show={loading}
         message={usuarioId ? 'Actualizando usuario...' : 'Guardando usuario...'}
-      />
-      <LoadingDialog
-        show={verificandoSegip}
-        message="Verificando datos con el SEGIP..."
       />
       <ConfirmDialog />
 
@@ -433,7 +347,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   className="w-full"
                   style={{ textTransform: 'uppercase' }}
                   error={!!errors.nombres}
-                  disabled={loading || deshabilitarDatosPersonales}
+                  disabled={loading}
                   {...register('nombres', {
                     onChange: (e) => {
                       e.target.value = e.target.value.toUpperCase()
@@ -450,7 +364,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
               {/* Primer Apellido */}
               <div className="col-span-1">
                 <label htmlFor="primerApellido" className="mb-1 block text-sm font-medium">
-                  Primer Apellido <span className="text-danger">*</span>
+                  Primer Apellido
                 </label>
                 <Input
                   id="primerApellido"
@@ -458,7 +372,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   className="w-full"
                   style={{ textTransform: 'uppercase' }}
                   error={!!errors.primerApellido}
-                  disabled={loading || deshabilitarDatosPersonales}
+                  disabled={loading}
                   {...register('primerApellido', {
                     onChange: (e) => {
                       e.target.value = e.target.value.toUpperCase()
@@ -483,7 +397,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   className="w-full"
                   style={{ textTransform: 'uppercase' }}
                   error={!!errors.segundoApellido}
-                  disabled={loading || deshabilitarDatosPersonales}
+                  disabled={loading}
                   {...register('segundoApellido', {
                     onChange: (e) => {
                       e.target.value = e.target.value.toUpperCase()
@@ -495,6 +409,9 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                     {errors.segundoApellido.message}
                   </span>
                 )}
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                  Debe completar al menos uno de los dos apellidos.
+                </span>
               </div>
 
               {/* Nro Documento */}
@@ -508,7 +425,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   className="w-full"
                   style={{ textTransform: 'uppercase' }}
                   error={!!errors.nroDocumento}
-                  disabled={loading || deshabilitarDatosPersonales}
+                  disabled={loading}
                   {...register('nroDocumento', {
                     onChange: (e) => {
                       e.target.value = e.target.value.toUpperCase()
@@ -520,6 +437,9 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                     {errors.nroDocumento.message}
                   </span>
                 )}
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 block">
+                  Si el número tiene complemento, regístrelo tal cual. Ejemplo: 1234567-1A
+                </span>
               </div>
 
               {/* Fecha Nacimiento */}
@@ -532,7 +452,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   type="date"
                   className="w-full"
                   error={!!errors.fechaNacimiento}
-                  disabled={loading || deshabilitarDatosPersonales}
+                  disabled={loading}
                   {...register('fechaNacimiento')}
                 />
                 {errors.fechaNacimiento && (
@@ -541,41 +461,6 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                   </span>
                 )}
               </div>
-
-              {/* Botón de verificación SEGIP / Limpiar datos */}
-              {Constantes.segipVerificacionEnabled && (
-                <div className="col-span-1 flex flex-col justify-end pb-1">
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant={verificadoSegip ? 'success' : 'primary'}
-                      onClick={verificarConSegip}
-                      disabled={loading || verificandoSegip || deshabilitarDatosPersonales}
-                      className="w-full"
-                      icon={<Icono>{verificadoSegip ? 'verified_user' : 'check'}</Icono>}
-                    >
-                      {verificandoSegip
-                        ? 'Verificando...'
-                        : verificadoSegip
-                          ? 'Verificado'
-                          : 'Verificar con SEGIP'}
-                    </Button>
-
-                    {deshabilitarDatosPersonales && (
-                      <Button
-                        type="button"
-                        variant="outline-danger"
-                        onClick={limpiarDatosPersonales}
-                        disabled={loading}
-                        title="Limpiar datos"
-                        icon={<Icono>delete</Icono>}
-                      >
-                        Limpiar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
@@ -673,18 +558,77 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
                 />
               </div>
               
-              {Constantes.segipVerificacionEnabled && ciudadaniaDigitalActiva && !verificadoSegip && (
+              {ciudadaniaDigitalActiva && (
                 <div className="col-span-1 md:col-span-3 mt-2">
                   <div className="alert alert-warning bg-warning/10 text-warning border-warning/20 p-3 rounded-lg text-sm flex items-center gap-2">
-                    <Icono>settings</Icono>
+                    <Icono>info</Icono>
                     <span>
-                      La Ciudadanía Digital requiere datos oficiales del SEGIP. Debe verificar los datos personales antes de guardar.
+                      Debe coincidir exactamente con la Cédula de Identidad: el sistema contrasta estos datos contra Ciudadanía Digital y, si difieren, el ingreso por esa vía quedará bloqueado.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Doble factor de autenticación (OTP) */}
+              <div className="col-span-1 flex flex-col justify-end pb-1">
+                <Controller
+                  name="otpHabilitado"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      label="Habilitar doble factor de autenticación (2FA)"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      disabled={loading}
+                    />
+                  )}
+                />
+              </div>
+
+              {otpHabilitadoActivo && (
+                <div className="col-span-1 md:col-span-3 mt-2">
+                  <div className="alert alert-info bg-info/10 text-info border-info/20 p-3 rounded-lg text-sm flex items-center gap-2">
+                    <Icono>info</Icono>
+                    <span>
+                      Al iniciar sesión, el sistema pedirá además un código enviado por correo electrónico (o WhatsApp, si el usuario tiene teléfono registrado y ese canal configurado).
                     </span>
                   </div>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Sección: Recursos por rol */}
+          {rolesSeleccionados.length > 0 && (
+            <div className="border-t border-[#ebedf2] dark:border-[#1b2e4b] pt-6">
+              <h5 className="text-lg font-semibold mb-1 text-dark dark:text-white-light">
+                Recursos por rol
+              </h5>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Por defecto cada rol habilita todos sus recursos. Solo si
+                necesita una excepción puntual para este usuario, elija
+                &quot;Personalizar&quot;.
+              </p>
+              <div className="space-y-4">
+                {rolesSeleccionados.map((idRol) => {
+                  const rolInfo = roles.find(
+                    (rol: RolType) => rol.id === idRol
+                  )
+                  if (!rolInfo) return null
+                  return (
+                    <RecursosPorRol
+                      key={idRol}
+                      idRol={idRol}
+                      codigoRol={rolInfo.rol}
+                      nombreRol={rolInfo.nombre}
+                      idUsuarioRol={idUsuarioRolPorRol[idRol]}
+                      onChange={manejarCambioRecursos}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Sección: Estructura dentro de la FELCN */}
           <div className="border-t border-[#ebedf2] dark:border-[#1b2e4b] pt-6">

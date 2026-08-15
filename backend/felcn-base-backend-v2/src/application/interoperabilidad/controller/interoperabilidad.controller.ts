@@ -9,7 +9,6 @@ import {
 import { BaseController } from '@/common/base'
 import { ConsultarItvDto } from '../dto/consultar-itv.dto'
 import { InteroperabilidadService } from '../service/interoperabilidad.service'
-import { ConsultarSegipDto } from '../dto/consultar-segip.dto'
 import { SinConsultaContribuyenteDto } from '../dto/sin-consulta-contribuyente.dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
@@ -32,14 +31,6 @@ export class InteroperabilidadController extends BaseController {
   async consultarInspeccion(@Body() payload: ConsultarItvDto) {
     const result =
       await this.interoperabilidadService.consultarInspeccion(payload)
-    return this.success(result)
-  }
-
-  @Post('segip/consulta')
-  @ApiOperation({ summary: 'Consultar datos en SEGIP' })
-  @ApiBody({ type: ConsultarSegipDto })
-  async consultarSegip(@Body() payload: ConsultarSegipDto) {
-    const result = await this.interoperabilidadService.consultarSegip(payload)
     return this.success(result)
   }
 

@@ -136,6 +136,18 @@ export class RefreshTokensService extends BaseService {
     return this.refreshTokensRepository.eliminar(refreshToken.id)
   }
 
+  /**
+   * Revoca todos los refresh tokens de un usuario (todas sus sesiones).
+   * Se invoca tras un cambio/recuperación/restauración de contraseña, y
+   * está disponible como acción de autogestión ("cerrar todas las sesiones").
+   * Los access tokens (JWT) ya emitidos siguen siendo válidos hasta su propio
+   * vencimiento (JWT_EXPIRES_IN) — son sin estado y no se pueden revocar
+   * individualmente; esto acota a lo sumo ese tiempo la ventana de exposición.
+   */
+  async revocarTodasPorUsuario(idUsuario: string) {
+    return this.refreshTokensRepository.eliminarPorUsuario(idUsuario)
+  }
+
   @Cron(process.env.REFRESH_TOKEN_REVISIONS || '0 3 * * *')
   eliminarCaducos() {
     return this.refreshTokensRepository.eliminarTokensCaducos()

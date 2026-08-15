@@ -6,6 +6,8 @@ import { Constantes } from '@/config/Constantes'
 import { InterpreteMensajes, delay } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import { PoliticaCRUDType } from '@/app/admin/(configuracion)/politicas/types/PoliticasCRUDTypes'
+import { AlertDialog } from '@/components/modales/AlertDialog'
+import { Button } from '@/components/ui/Button'
 
 interface AlertaEliminarPoliticaProps {
   isOpen: boolean
@@ -23,8 +25,6 @@ export const AlertaEliminarPolitica = ({
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const [loading, setLoading] = useState(false)
-
-  if (!isOpen) return null
 
   const eliminarPolitica = async () => {
     if (!politica || loading) return
@@ -64,49 +64,25 @@ export const AlertaEliminarPolitica = ({
   }
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60">
-      <div className="panel w-full max-w-lg p-5 animate__animated animate__zoomIn">
-        {/* HEADER */}
-        <h5 className="mb-3 text-lg font-semibold">Confirmar eliminación</h5>
-
-        {/* BODY */}
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          ¿Está seguro de eliminar la política{' '}
-          <span className="font-semibold">
-            {politica?.app}-{politica?.objeto}-{politica?.sujeto}-
-            {politica?.accion}
-          </span>
-          ?
-        </p>
-
-        {/* LOADING */}
-        {loading && (
-          <div className="mt-4">
-            <div className="h-1 w-full rounded bg-gray-200 overflow-hidden">
-              <div className="h-full bg-primary animate-pulse" />
-            </div>
-          </div>
-        )}
-
-        {/* FOOTER */}
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            className="btn btn-outline-primary"
-            onClick={onClose}
-            disabled={loading}
-          >
-            Cancelar
-          </button>
-
-          <button
-            className="btn btn-primary"
-            onClick={eliminarPolitica}
-            disabled={loading}
-          >
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
+    <AlertDialog
+      isOpen={isOpen}
+      titulo="Confirmar eliminación"
+      texto={`¿Está seguro de eliminar la política ${politica?.app}-${politica?.objeto}-${politica?.sujeto}-${politica?.accion}?`}
+    >
+      <Button
+        variant="outline-secondary"
+        onClick={onClose}
+        disabled={loading}
+      >
+        Cancelar
+      </Button>
+      <Button
+        variant="danger"
+        onClick={() => void eliminarPolitica()}
+        disabled={loading}
+      >
+        {loading ? 'Procesando...' : 'Eliminar'}
+      </Button>
+    </AlertDialog>
   )
 }

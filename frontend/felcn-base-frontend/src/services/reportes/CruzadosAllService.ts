@@ -72,7 +72,8 @@ export interface FiltrosAvanzadosParams {
   idProvincia?: string
   idLocalidad?: string
   lugar?: string
-  idCatalogoTipo?: string
+  idBien?: string
+  idCatalogoClase?: string
   esPositivo?: string
   esAprehendido?: string
   esArrestado?: string
@@ -89,8 +90,6 @@ export interface FiltrosAvanzadosParams {
   apellidoMaterno?: string
   nroDocumento?: string
   idPaisPersona?: string
-  costoTotalMin?: string
-  costoTotalMax?: string
 }
 
 export interface RespuestaAvanzada {
