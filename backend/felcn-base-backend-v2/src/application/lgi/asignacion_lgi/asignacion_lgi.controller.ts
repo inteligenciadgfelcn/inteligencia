@@ -9,7 +9,6 @@ import {
   UseGuards,
   Query,
   UseInterceptors,
-  ParseIntPipe,
 } from '@nestjs/common'
 import { AsignacionLgiService } from './asignacion_lgi.service'
 import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
