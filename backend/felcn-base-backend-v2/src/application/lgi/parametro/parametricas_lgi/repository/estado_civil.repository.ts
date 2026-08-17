@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm'
 import { DB_LGI } from '@/core/config/database/database.module'
 
 @Injectable()
-export class DepartamentoLgiRepository {
+export class EstadoCivilLgiRepository {
   constructor(
     @InjectDataSource(DB_LGI)
     private readonly dataSource: DataSource
@@ -12,7 +12,7 @@ export class DepartamentoLgiRepository {
   
     private readonly baseQuery = `
       SELECT d.*
-      FROM public.departamentos d
+      FROM public.estadocivil d
     `
   
     private buildQuery(

@@ -19,6 +19,8 @@ import { ContenidoBienModule } from './parametro/contenido-bien/contenido-bien.m
 import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module';
 import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
 import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas_lgi.module';
+import { PersonasImplicadasModule } from './personas_implicadas/personas_implicadas.module';
+import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas
     CalidadBienModule,
     AsignacionLgiModule,
     ParametricasLgiModule,
+    PersonasImplicadasModule,
+    SituacionJuridicaModule,
   ],
   controllers: [],
 })

@@ -39,12 +39,52 @@ export class ParametricasLgiController extends BaseController {
     return this.parametricasLgiService.findAllGrupo(idDistrito)
   }
 
+  @Get('allPais')
+  @ApiOperation({
+    summary: 'Listar los países',
+  })
+  findAllPais() {
+    return this.parametricasLgiService.findAllPais()
+  }
   
   @Get('allDepartamento')
   @ApiOperation({
-    summary: 'Listar los departamentos del usuario autenticado',
+    summary: 'Listar los departamentos',
   })
   findAllDepartamento() {
     return this.parametricasLgiService.findAllDepartamento()
   }
+
+  @Get('allSituacionJuridica')
+  @ApiOperation({
+    summary: 'Listar las situaciones jurídicas',
+  })
+  findAllSituacionJuridica() {
+    return this.parametricasLgiService.findAllSituacionJuridica()
+  }
+
+  @Get('allEstadoCivil')
+  @ApiOperation({
+    summary: 'Listar los estados civiles',
+  })
+  findAllEstadoCivil() {
+    return this.parametricasLgiService.findAllEstadoCivil()
+  }
+
+  @Get('allProfesion')
+  @ApiOperation({
+    summary: 'Listar las profesiones',
+  })
+  findAllProfesion() {
+    return this.parametricasLgiService.findAllProfesion()
+  }
+
+  @Get('allTipoDocumento')
+  @ApiOperation({
+    summary: 'Listar los tipos de documento',
+  })
+  findAllTipoDocumento() {
+    return this.parametricasLgiService.findAllTipoDocumento()
+  }
 }
+
