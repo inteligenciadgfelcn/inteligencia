@@ -118,9 +118,13 @@ export class PersonasImplicada {
   })
   fechaHoraActualizacion?: Date
 
-  @OneToMany(
-    () => SituacionJuridica,
-    (situacion) => situacion.personaImplicada,
-  )
-  situacionesJuridicas!: SituacionJuridica[];
+  @Column({
+    type: 'boolean',
+    name: 'estado',
+    default: true,
+  })
+  estado!: boolean
+
+  @OneToMany(() => SituacionJuridica, (situacion) => situacion.personaImplicada)
+  situacionesJuridicas!: SituacionJuridica[]
 }

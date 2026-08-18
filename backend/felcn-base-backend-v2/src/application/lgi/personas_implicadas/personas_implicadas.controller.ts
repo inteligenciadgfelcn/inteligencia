@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { CreatePersonaImplicadaDto } from './dto/create-personas_implicada.dto'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { DeletePersonasImplicadaDto } from './dto/delete-personas_implicadas.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -65,20 +66,30 @@ export class PersonasImplicadasController extends BaseController {
   ) {
     return this.personasImplicadasService.findOne(id)
   }
-  
+
   @Patch(':id')
+  @ApiOperation({
+    summary: 'Actualizar una persona implicada',
+  })
   update(
-    @Param('id') id: string,
-    @Body() updatePersonasImplicadaDto: UpdatePersonasImplicadaDto
+    @Param('id', ParseIntPipe)
+    id: number,
+    @Body()
+    dto: UpdatePersonasImplicadaDto
   ) {
-    return this.personasImplicadasService.update(
-      +id,
-      updatePersonasImplicadaDto
-    )
+    return this.personasImplicadasService.update(id, dto)
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.personasImplicadasService.remove(+id)
+  @Patch(':id/eliminar')
+  @ApiOperation({
+    summary: 'Eliminar lógicamente una persona implicada',
+  })
+  updateEstado(
+    @Param('id', ParseIntPipe)
+    id: number,
+    @Body()
+    dto: DeletePersonasImplicadaDto
+  ) {
+    return this.personasImplicadasService.eliminarLogicamente(id, dto)
   }
 }

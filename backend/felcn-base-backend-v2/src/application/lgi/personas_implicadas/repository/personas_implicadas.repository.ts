@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { DB_LGI } from '@/core/config/database/database.module'
 import { CreatePersonaImplicadaDto } from '../dto/create-personas_implicada.dto'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { UpdatePersonasImplicadaDto } from '../dto/update-personas_implicada.dto'
+import { DeletePersonasImplicadaDto } from '../dto/delete-personas_implicadas.dto'
 
 @Injectable()
 export class PersonasImplicadasLgiRepository {
@@ -66,26 +68,84 @@ export class PersonasImplicadasLgiRepository {
       .getManyAndCount()
   }
 
-  async findOne(
-  deId: number,
-): Promise<PersonasImplicada | null> {
-  return this.personasRepository
-    .createQueryBuilder('p')
-    .leftJoinAndSelect(
-      'p.situacionesJuridicas',
-      's',
-    )
-    .leftJoinAndMapOne(
-      's.tipoPersona',
-      'tipopersona',
-      'tp',
-      'tp.tp_id = s.sl_id',
-    )
-    .where('p.de_id = :deId', {
-      deId,
+  async findOne(deId: number): Promise<PersonasImplicada | null> {
+    return this.personasRepository
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.situacionesJuridicas', 's')
+      .leftJoinAndMapOne(
+        's.tipoPersona',
+        'tipopersona',
+        'tp',
+        'tp.tp_id = s.sl_id'
+      )
+      .where('p.de_id = :deId', {
+        deId,
+      })
+      .orderBy('s.fecha', 'DESC')
+      .addOrderBy('s.sit_id', 'DESC')
+      .getOne()
+  }
+
+  async update(
+    deId: number,
+    dto: UpdatePersonasImplicadaDto
+  ): Promise<PersonasImplicada | null> {
+    const persona = await this.personasRepository.findOne({
+      where: {
+        deId,
+      },
     })
-    .orderBy('s.fecha', 'DESC')
-    .addOrderBy('s.sit_id', 'DESC')
-    .getOne();
-}
+
+    if (!persona) {
+      return null
+    }
+
+    const cambios = {
+      ...dto,
+    }
+
+    if (dto.nombres !== undefined) {
+      cambios.nombres = dto.nombres.trim()
+    }
+
+    if (dto.paterno !== undefined) {
+      cambios.paterno = dto.paterno.trim()
+    }
+
+    if (dto.materno !== undefined) {
+      cambios.materno = dto.materno.trim()
+    }
+
+    if (dto.esposo !== undefined) {
+      cambios.esposo = dto.esposo.trim()
+    }
+
+    if (dto.numeroDocumento !== undefined) {
+      cambios.numeroDocumento = dto.numeroDocumento.trim()
+    }
+    Object.assign(persona, cambios)
+
+    return this.personasRepository.save(persona)
+  }
+
+  async eliminarLogicamente(
+    deId: number,
+    dto: DeletePersonasImplicadaDto
+  ): Promise<PersonasImplicada | null> {
+    const persona = await this.personasRepository.findOne({
+      where: {
+        deId,
+        estado: true,
+      },
+    })
+
+    if (!persona) {
+      return null
+    }
+
+    persona.estado = false
+    Object.assign(persona, dto)
+
+    return this.personasRepository.save(persona)
+  }
 }
