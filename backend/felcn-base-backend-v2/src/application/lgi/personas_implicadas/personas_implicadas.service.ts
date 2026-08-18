@@ -4,6 +4,7 @@ import { UpdatePersonasImplicadaDto } from './dto/update-personas_implicada.dto'
 import { PersonasImplicadasLgiRepository } from './repository/personas_implicadas.repository'
 import { PersonasImplicada } from './entities/personas_implicada.entity'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { DeletePersonasImplicadaDto } from './dto/delete-personas_implicadas.dto'
 
 @Injectable()
 export class PersonasImplicadasService {
@@ -40,11 +41,49 @@ export class PersonasImplicadasService {
     return persona
   }
 
-  update(id: number, updatePersonasImplicadaDto: UpdatePersonasImplicadaDto) {
-    return `This action updates a #${id} personasImplicada`
+  async update(
+    deId: number,
+    dto: UpdatePersonasImplicadaDto
+  ): Promise<{
+    message: string
+    id: number
+  }> {
+    const persona = await this.repository.update(deId, dto)
+
+    if (!persona) {
+      throw new NotFoundException(
+        `No se encontró la persona implicada con id ${deId}`
+      )
+    }
+
+    return {
+      message: 'Persona implicada actualizada exitosamente',
+      id: persona.deId,
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} personasImplicada`
+  async eliminarLogicamente(
+  deId: number,
+  dto: DeletePersonasImplicadaDto,
+): Promise<{
+  message: string;
+  id: number;
+}> {
+  const persona =
+    await this.repository.eliminarLogicamente(
+      deId,
+      dto,
+    );
+
+  if (!persona) {
+    throw new NotFoundException(
+      `No se encontró la persona implicada activa con id ${deId}`,
+    );
   }
+
+  return {
+    message: 'Persona implicada eliminada exitosamente',
+    id: persona.deId,
+  };
+}
 }
