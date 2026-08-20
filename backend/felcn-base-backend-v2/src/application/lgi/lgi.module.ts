@@ -21,6 +21,7 @@ import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
 import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas_lgi.module';
 import { PersonasImplicadasModule } from './personas_implicadas/personas_implicadas.module';
 import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
+import { InvestigadoresModule } from './investigadores/investigadores.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica
     ParametricasLgiModule,
     PersonasImplicadasModule,
     SituacionJuridicaModule,
+    InvestigadoresModule,
   ],
   controllers: [],
 })
