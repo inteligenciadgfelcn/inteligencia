@@ -21,20 +21,18 @@ import IconPlus from '@/components/Icon/IconPlus'
 import IconTrash from '@/components/Icon/IconTrash'
 
 import type {
-  CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
   GrupoLgi,
+  TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import { RegistroCasoApi } from '../api/registro-caso.api'
 import {
   buildDatosGeneralesPayload,
-  buildPersonaPayload,
   buscarDescripcion,
   codigoDepartamento,
   formatNombreCompleto,
-  mapCatalogoToOption,
   mapDepartamentoToOption,
   mapDistritalToOption,
   mapGrupoToOption,
@@ -42,23 +40,22 @@ import {
 } from '../mappers/registro-caso.mappers'
 import {
   datosGeneralesSchema,
-  personaImplicadaSchema,
   situacionJuridicaSchema,
   type DatosGeneralesSchemaValues,
-  type PersonaImplicadaSchemaValues,
   type SituacionJuridicaSchemaValues,
 } from '../schemas/registro-caso.schema'
 import type {
   CatalogOption,
+  PersonaImplicadaPayload,
   PersonaImplicadaRow,
   SituacionLegalCatalogo,
 } from '../types/registro-caso.types'
 import {
   createDefaultDatosGeneralesValues,
-  createDefaultPersonaValues,
   createDefaultSituacionJuridicaValues,
   leerCasoDeStorage,
 } from '../utils/registro-caso.utils'
+import { PersonaUpsertDialog } from './PersonaUpsertDialog'
 
 type TabKey =
   | 'datos-generales'
@@ -108,14 +105,6 @@ const placeholderCards: Record<
   ],
 }
 
-const catalogoOption = (
-  catalogo: CatalogoLgi[],
-  id?: number
-): CatalogOption<CatalogoLgi> | null => {
-  const item = catalogo.find((c) => String(c.id) === String(id))
-  return item ? mapCatalogoToOption(item) : null
-}
-
 export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -143,22 +132,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     queryFn: () => ParametricasLgiApi.listarDepartamentos(),
   })
 
-  const { data: paises = [] } = useQuery<CatalogoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'paises'],
-    queryFn: () => ParametricasLgiApi.listarPaises(),
-  })
-
-  const { data: estadosCiviles = [] } = useQuery<CatalogoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'estados-civiles'],
-    queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
-  })
-
-  const { data: profesiones = [] } = useQuery<CatalogoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'profesiones'],
-    queryFn: () => ParametricasLgiApi.listarProfesiones(),
-  })
-
-  const { data: tiposDocumento = [] } = useQuery<CatalogoLgi[]>({
+  const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
     queryKey: ['lgi-registro-caso', 'tipos-documento'],
     queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
   })
@@ -278,7 +252,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [personaModalOpen, setPersonaModalOpen] = useState(false)
   const [personaEditando, setPersonaEditando] =
     useState<PersonaImplicadaRow | null>(null)
-  const [guardandoPersona, setGuardandoPersona] = useState(false)
   const [personaEliminar, setPersonaEliminar] =
     useState<PersonaImplicadaRow | null>(null)
   const [eliminandoPersona, setEliminandoPersona] = useState(false)
@@ -308,49 +281,20 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       }),
   })
 
-  const personaForm = useForm<PersonaImplicadaSchemaValues>({
-    resolver: zodResolver(personaImplicadaSchema),
-    defaultValues: createDefaultPersonaValues(),
-  })
-
   const abrirPersonaModal = (row?: PersonaImplicadaRow) => {
     setPersonaEditando(row ?? null)
-    personaForm.reset(
-      row
-        ? {
-            nombres: row.nombres,
-            paterno: row.paterno,
-            materno: row.materno,
-            esposo: row.esposo,
-            numeroDocumento: row.numeroDocumento,
-            paisId: catalogoOption(paises, row.paisId),
-            estadoCivilId: catalogoOption(estadosCiviles, row.estadoCivilId),
-            profesionId: catalogoOption(profesiones, row.profesionId),
-            tipoDocumentoId: catalogoOption(
-              tiposDocumento,
-              row.tipoDocumentoId
-            ),
-          }
-        : createDefaultPersonaValues()
-    )
     setPersonaModalOpen(true)
   }
 
-  const onSubmitPersona = async (values: PersonaImplicadaSchemaValues) => {
+  const guardarPersona = async (payload: PersonaImplicadaPayload) => {
     if (!casoIdEfectivo) return
-    setGuardandoPersona(true)
-    try {
-      const payload = buildPersonaPayload(casoIdEfectivo, values)
-      if (personaEditando) {
-        await RegistroCasoApi.actualizarPersona(personaEditando.deId, payload)
-      } else {
-        await RegistroCasoApi.crearPersona(payload)
-      }
-      setPersonaModalOpen(false)
-      refetchPersonas()
-    } finally {
-      setGuardandoPersona(false)
+    if (personaEditando) {
+      await RegistroCasoApi.actualizarPersona(personaEditando.deId, payload)
+    } else {
+      await RegistroCasoApi.crearPersona(payload)
     }
+    setPersonaModalOpen(false)
+    refetchPersonas()
   }
 
   const confirmarEliminarPersona = async () => {
@@ -401,21 +345,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       ),
     },
     { accessor: 'numeroDocumento', title: 'Nro documento' },
-    {
-      accessor: 'pais',
-      title: 'País',
-      render: (row) => buscarDescripcion(paises, row.paisId),
-    },
-    {
-      accessor: 'estadoCivil',
-      title: 'Estado civil',
-      render: (row) => buscarDescripcion(estadosCiviles, row.estadoCivilId),
-    },
-    {
-      accessor: 'profesion',
-      title: 'Profesión',
-      render: (row) => buscarDescripcion(profesiones, row.profesionId),
-    },
     {
       accessor: 'tipoDoc',
       title: 'Tipo doc.',
@@ -803,177 +732,15 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         </div>
       </div>
 
-      {/* Modal persona implicada */}
-      <CustomDialog
-        isOpen={personaModalOpen}
-        handleClose={() => setPersonaModalOpen(false)}
-        title={
-          personaEditando ? 'Editar persona investigada' : 'Registrar persona'
-        }
-        maxWidth="md"
-      >
-        <form
-          onSubmit={personaForm.handleSubmit(onSubmitPersona)}
-          className="space-y-4 p-5"
-        >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Nombres
-              </label>
-              <Input
-                {...personaForm.register('nombres')}
-                error={!!personaForm.formState.errors.nombres}
-                className="w-full"
-                placeholder="Nombres"
-              />
-              {personaForm.formState.errors.nombres && (
-                <p className="mt-1 text-xs text-danger">
-                  {personaForm.formState.errors.nombres.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Paterno
-              </label>
-              <Input
-                {...personaForm.register('paterno')}
-                error={!!personaForm.formState.errors.paterno}
-                className="w-full"
-                placeholder="Apellido paterno"
-              />
-              {personaForm.formState.errors.paterno && (
-                <p className="mt-1 text-xs text-danger">
-                  {personaForm.formState.errors.paterno.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Materno
-              </label>
-              <Input
-                {...personaForm.register('materno')}
-                error={!!personaForm.formState.errors.materno}
-                className="w-full"
-                placeholder="Apellido materno"
-              />
-              {personaForm.formState.errors.materno && (
-                <p className="mt-1 text-xs text-danger">
-                  {personaForm.formState.errors.materno.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Esposo
-              </label>
-              <Input
-                {...personaForm.register('esposo')}
-                error={!!personaForm.formState.errors.esposo}
-                className="w-full"
-                placeholder="Apellido de casada"
-              />
-              {personaForm.formState.errors.esposo && (
-                <p className="mt-1 text-xs text-danger">
-                  {personaForm.formState.errors.esposo.message}
-                </p>
-              )}
-            </div>
-
-            <RHFSelect<CatalogoLgi>
-              id="paisId"
-              name="paisId"
-              control={personaForm.control}
-              label="País / nacionalidad"
-              error={
-                personaForm.formState.errors.paisId?.message as
-                  | string
-                  | undefined
-              }
-              originalData={paises}
-              mapOption={mapCatalogoToOption}
-            />
-
-            <RHFSelect<CatalogoLgi>
-              id="estadoCivilId"
-              name="estadoCivilId"
-              control={personaForm.control}
-              label="Estado civil"
-              error={
-                personaForm.formState.errors.estadoCivilId?.message as
-                  | string
-                  | undefined
-              }
-              originalData={estadosCiviles}
-              mapOption={mapCatalogoToOption}
-            />
-
-            <RHFSelect<CatalogoLgi>
-              id="profesionId"
-              name="profesionId"
-              control={personaForm.control}
-              label="Profesión"
-              error={
-                personaForm.formState.errors.profesionId?.message as
-                  | string
-                  | undefined
-              }
-              originalData={profesiones}
-              mapOption={mapCatalogoToOption}
-            />
-
-            <RHFSelect<CatalogoLgi>
-              id="tipoDocumentoId"
-              name="tipoDocumentoId"
-              control={personaForm.control}
-              label="Tipo de documento"
-              error={
-                personaForm.formState.errors.tipoDocumentoId?.message as
-                  | string
-                  | undefined
-              }
-              originalData={tiposDocumento}
-              mapOption={mapCatalogoToOption}
-            />
-
-            <div>
-              <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                Nro de documento
-              </label>
-              <Input
-                {...personaForm.register('numeroDocumento')}
-                error={!!personaForm.formState.errors.numeroDocumento}
-                className="w-full"
-                placeholder="Número de documento"
-              />
-              {personaForm.formState.errors.numeroDocumento && (
-                <p className="mt-1 text-xs text-danger">
-                  {personaForm.formState.errors.numeroDocumento.message}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
-            <Button
-              type="button"
-              variant="outline-secondary"
-              disabled={guardandoPersona}
-              onClick={() => setPersonaModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" variant="primary" loading={guardandoPersona}>
-              {personaEditando ? 'Actualizar persona' : 'Registrar persona'}
-            </Button>
-          </div>
-        </form>
-      </CustomDialog>
+      {/* Dialog upsert persona implicada */}
+      <PersonaUpsertDialog
+        open={personaModalOpen}
+        persona={personaEditando}
+        casoId={casoIdEfectivo ?? 0}
+        tiposDocumento={tiposDocumento}
+        onClose={() => setPersonaModalOpen(false)}
+        onGuardar={guardarPersona}
+      />
 
       {/* Modal situación jurídica */}
       <CustomDialog

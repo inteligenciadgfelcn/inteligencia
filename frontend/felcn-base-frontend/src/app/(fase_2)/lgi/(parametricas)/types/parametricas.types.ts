@@ -25,3 +25,8 @@ export interface DepartamentoLgi {
   pa_id: string
   descripcion: string
 }
+
+export interface TipoDocumentoLgi {
+  td_id: string
+  descripcion: string
+}

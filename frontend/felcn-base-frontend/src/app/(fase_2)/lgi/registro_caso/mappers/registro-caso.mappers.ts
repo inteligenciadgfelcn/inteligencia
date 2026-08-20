@@ -3,12 +3,14 @@ import type {
   DepartamentoLgi,
   DistritalLgi,
   GrupoLgi,
+  TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import type {
   CatalogOption,
   DatosGeneralesPayload,
   PersonaImplicadaPayload,
   PersonaImplicadaRow,
+  PersonaImplicadaShortPayload,
   SituacionLegalCatalogo,
 } from '../types/registro-caso.types'
 
@@ -16,6 +18,14 @@ export const mapCatalogoToOption = (
   item: CatalogoLgi
 ): CatalogOption<CatalogoLgi> => ({
   value: String(item.id),
+  label: item.descripcion,
+  original: item,
+})
+
+export const mapTipoDocumentoToOption = (
+  item: TipoDocumentoLgi
+): CatalogOption<TipoDocumentoLgi> => ({
+  value: item.td_id,
   label: item.descripcion,
   original: item,
 })
@@ -70,14 +80,16 @@ export const formatNombreCompleto = (row: PersonaImplicadaRow) =>
   `${row.nombres} ${row.paterno} ${row.materno}`.replace(/\s+/g, ' ').trim()
 
 export const buscarDescripcion = (
-  catalogo: CatalogoLgi[] | SituacionLegalCatalogo[],
+  catalogo: Array<CatalogoLgi | TipoDocumentoLgi | SituacionLegalCatalogo>,
   id: string | number
-): string =>
-  catalogo.find((item) => {
-    const itemId =
-      'id' in item ? item.id : (item as SituacionLegalCatalogo).slId
-    return String(itemId) === String(id)
-  })?.descripcion ?? '-'
+): string => {
+  const item = catalogo.find((entry) => {
+    if ('id' in entry) return String(entry.id) === String(id)
+    if ('td_id' in entry) return String(entry.td_id) === String(id)
+    return String((entry as SituacionLegalCatalogo).slId) === String(id)
+  })
+  return item?.descripcion ?? '-'
+}
 
 export const buildDatosGeneralesPayload = (values: {
   disId: { value: string } | null
