@@ -31,13 +31,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config'
                   }
                 : false,
           })
-          const enforcer = await newEnforcer(
-            join(__dirname, 'model.conf'),
-            adapter
-          )
-          enforcer.enableLog(false)
-          await enforcer.loadPolicy()
-          return enforcer
+          // const enforcer = await newEnforcer(
+          //   join(__dirname, 'model.conf'),
+          //   adapter
+          // )
+          // enforcer.enableLog(false)
+          // await enforcer.loadPolicy()
+          // return enforcer
         },
         inject: [ConfigService],
       },

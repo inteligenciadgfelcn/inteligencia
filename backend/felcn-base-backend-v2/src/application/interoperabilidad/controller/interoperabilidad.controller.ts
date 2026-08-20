@@ -10,6 +10,7 @@ import { BaseController } from '@/common/base'
 import { ConsultarItvDto } from '../dto/consultar-itv.dto'
 import { InteroperabilidadService } from '../service/interoperabilidad.service'
 import { SinConsultaContribuyenteDto } from '../dto/sin-consulta-contribuyente.dto'
+import { RegistroSinarapDto } from '../dto/registro-sinarap.dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
@@ -74,6 +75,14 @@ export class InteroperabilidadController extends BaseController {
   async verificarComunicacionSin() {
     const result =
       await this.interoperabilidadService.verificarComunicacionSin()
+    return this.success(result)
+  }
+
+  @Post('sinarap/registro')
+  @ApiOperation({ summary: 'Registrar antecedente de filiacion en SINARAP' })
+  @ApiBody({ type: RegistroSinarapDto })
+  async registrarSinarap(@Body() payload: RegistroSinarapDto) {
+    const result = await this.interoperabilidadService.registrarSinarap(payload)
     return this.success(result)
   }
 }
