@@ -1,8 +1,8 @@
 import type {
-  CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
   GrupoLgi,
+  TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 
 export interface CatalogOption<T = unknown> {
@@ -59,10 +59,7 @@ export interface PersonaImplicadaFormValues {
   paterno: string
   materno: string
   esposo: string
-  paisId: CatalogOption<CatalogoLgi> | null
-  estadoCivilId: CatalogOption<CatalogoLgi> | null
-  profesionId: CatalogOption<CatalogoLgi> | null
-  tipoDocumentoId: CatalogOption<CatalogoLgi> | null
+  tipoDocumentoId: CatalogOption<TipoDocumentoLgi> | null
   numeroDocumento: string
 }
 
@@ -75,6 +72,16 @@ export interface PersonaImplicadaPayload {
   paisId: number
   estadoCivilId: number
   profesionId: number
+  tipoDocumentoId: number
+  numeroDocumento: string
+}
+
+export interface PersonaImplicadaShortPayload {
+  casoId: number
+  nombres: string
+  paterno?: string
+  materno?: string
+  esposo?: string
   tipoDocumentoId: number
   numeroDocumento: string
 }

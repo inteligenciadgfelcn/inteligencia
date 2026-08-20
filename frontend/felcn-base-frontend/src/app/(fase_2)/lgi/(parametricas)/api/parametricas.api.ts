@@ -5,6 +5,7 @@ import type {
   DepartamentoLgi,
   DistritalLgi,
   GrupoLgi,
+  TipoDocumentoLgi,
 } from '../types/parametricas.types'
 
 const BASE = `${Constantes.baseUrl}/parametricas-lgi`
@@ -74,7 +75,7 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarTiposDocumento(): Promise<CatalogoLgi[]> {
+  listarTiposDocumento(): Promise<TipoDocumentoLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allTipoDocumento`,
       method: 'get',

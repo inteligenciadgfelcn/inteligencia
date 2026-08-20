@@ -80,12 +80,15 @@ export const personaImplicadaSchema = z
       50,
       'Máximo 50 caracteres'
     ),
-    paterno: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
-    materno: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
+    paterno: requiredText('El apellido paterno es obligatorio').max(
+      50,
+      'Máximo 50 caracteres'
+    ),
+    materno: requiredText('El apellido materno es obligatorio').max(
+      50,
+      'Máximo 50 caracteres'
+    ),
     esposo: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
-    paisId: optionSchema.nullable(),
-    estadoCivilId: optionSchema.nullable(),
-    profesionId: optionSchema.nullable(),
     tipoDocumentoId: optionSchema.nullable(),
     numeroDocumento: requiredText('El número de documento es obligatorio').max(
       50,
@@ -93,30 +96,6 @@ export const personaImplicadaSchema = z
     ),
   })
   .superRefine((values, context) => {
-    if (!values.paisId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El país es obligatorio',
-        path: ['paisId'],
-      })
-    }
-
-    if (!values.estadoCivilId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'El estado civil es obligatorio',
-        path: ['estadoCivilId'],
-      })
-    }
-
-    if (!values.profesionId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La profesión es obligatoria',
-        path: ['profesionId'],
-      })
-    }
-
     if (!values.tipoDocumentoId) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
