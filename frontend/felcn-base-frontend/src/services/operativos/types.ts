@@ -127,6 +127,8 @@ export interface ResponseDroga {
   descripcionFormaTransporte?: string
   descripcionPaisProcedencia?: string
   descripcionPaisDestino?: string
+  // Unidad real (estado_droga.medida: 'Gramos' | 'Litros')
+  unidadMedida?: string
 }
 
 export interface SustanciaPayload {
@@ -163,6 +165,7 @@ export interface EstadoDroga {
   id: number
   idTipoDroga: number
   descripcion: string
+  medida: string
 }
 
 export interface CatalogoBien {

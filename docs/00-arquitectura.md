@@ -9,8 +9,6 @@
 | `base-frontend` | Next.js | `frontend/felcn-base-frontend` | 3000 | 3017 |
 | `base-backend-v2` | NestJS | `backend/felcn-base-backend-v2` | 3000 | 3015 |
 | `auth-backend` | NestJS | `backend/felcn-auth-backend` | 4000 | 3016 (127.0.0.1) |
-| `consulta-persona-api` | FastAPI | `backend/consulta-persona-api` | 8000 | 3018 (127.0.0.1) |
-| `consulta-persona-redis` | Redis | (imagen `redis:7-alpine`) | 6379 | — (solo red interna) |
 
 Todos corren como contenedores Docker (`docker-compose.yml` en la raíz del repo, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) con `restart: unless-stopped`, en la red bridge `felcn-network`.
 
@@ -30,7 +28,6 @@ https://desarrollo.felcn.gob.bo/
 ├── /dev/auth/api             → auth-backend (dev)             :3016
 ├── /pandora-api              → auth-backend (callback PANDORA) :3016
 ├── /felcn/api/whatsapp       → auth-backend (webhook Meta, no operativo — ver 04-variables-de-entorno.md) :3016
-├── /persona/                 → consulta-persona-api           :3018
 └── /socket.io/               → base-backend-v2 (websockets)   :3015
 ```
 

@@ -220,6 +220,7 @@ export class OperativoService extends BaseService {
       idTipoDroga: estadoDroga?.idTipoDroga ?? null,
       descripcionEstadoDroga: estadoDroga?.descripcion ?? null,
       descripcionTipoDroga: estadoDroga?.tipoDroga?.descripcion ?? null,
+      unidadMedida: estadoDroga?.medida ?? null,
       descripcionFormaTransporte: formaTransporte?.descripcion ?? null,
       descripcionPaisProcedencia: paisProcedencia?.descripcion ?? null,
       descripcionPaisDestino: paisDestino?.descripcion ?? null,

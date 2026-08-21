@@ -16,8 +16,6 @@ Cómo levantar el stack de aplicación con Docker, tal como corre hoy en `server
 | `base-backend-v2` | `base-backend-v2` | `3015:3000` | `backend/felcn-base-backend-v2/.env` |
 | `base-auth` | `auth-backend` | `127.0.0.1:3016:4000` | `backend/felcn-auth-backend/.env` |
 | `base-frontend` | `base-frontend` | `127.0.0.1:3017:3000` | `frontend/felcn-base-frontend/.env` |
-| `consulta-persona-api` | `consulta-persona-api` | `127.0.0.1:3018:8000` | `backend/consulta-persona-api/.env` |
-| `consulta-persona-redis` | `consulta-persona-redis` | interno | — |
 
 `fake-ciudadania-api` **no está en este compose** — confirmado sin uso (no hay ninguna variable que lo active en ningún `.env` real), pendiente de sacarlo también del repo. El login es contra Ciudadanía Digital real (AGETIC) — ver [00-arquitectura.md](./00-arquitectura.md) §4.
 
@@ -57,7 +55,6 @@ Al desplegar cambios de código, reconstruir los contenedores afectados juntos (
 | Volumen | Contenido |
 |---|---|
 | `logs_data` | Logs de dev (`/tmp/logs` dentro de los contenedores) |
-| `consulta_persona_redis_data` | Datos de Redis de consulta-persona |
 
 ## 6. Autenticación
 

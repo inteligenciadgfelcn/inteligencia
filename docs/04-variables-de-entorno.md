@@ -24,7 +24,7 @@ Tabla consolidada por proyecto. El detalle completo de cada variable está en el
 
 **OTP por WhatsApp — código presente pero no operativo.** El módulo (`src/core/external-services/mensajeria/whatsapp/`), el webhook y el campo `usuario.otp_canal` existen y están conectados a `otp.service.ts`, pero **no hay credenciales de Meta (WABA) configuradas** — no existe ninguna variable `WHATSAPP_*`/`META_*` en `.env.sample`. El canal por defecto es `EMAIL` (`OTP_CANAL_DEFAULT`, hardcodeado en `src/common/params/index.ts`, no es variable de entorno). No seleccionar WhatsApp como canal de OTP en ningún ambiente hasta que se complete ese trabajo (credenciales Meta, verificación de firma del webhook, endpoint para que el usuario elija canal, tests — pendiente de una propuesta anterior, ver `docs/keycloack/PROPUESTA-FASES-PENDIENTES.md` §OTP). nginx expone igual la ruta del webhook (`/felcn/api/whatsapp`) aunque el canal no esté en uso.
 
-**Corrección importante (21/08/2026): dev también usa AGETIC real, no un simulador.** El `.env` real de dev ya tiene `OIDC_ISSUER=https://proveedor.ciudadania.demo.agetic.gob.bo` (el `.env.sample` apunta al endpoint de test `account-idetest.agcs.agetic.gob.bo`) — no hay ningún `fake-ciudadania-api` corriendo ni configurado (`FAKE_CIUDADANIA_INTERNAL_URL` no existe en ningún `.env` real ni en el `.env.sample`, y nginx confirma en su propio comentario que el callback OIDC de dev es "Ciudadanía Digital (real, AGETIC)"). El único login del sistema, en cualquier ambiente, es Ciudadanía Digital real — ver también sección 5 (`fake-ciudadania-api` está confirmado sin uso, pendiente de sacarlo del repo).
+**Corrección importante (21/08/2026): dev también usa AGETIC real, no un simulador.** El `.env` real de dev ya tiene `OIDC_ISSUER=https://proveedor.ciudadania.demo.agetic.gob.bo` (el `.env.sample` apunta al endpoint de test `account-idetest.agcs.agetic.gob.bo`) — no hay ningún `fake-ciudadania-api` corriendo ni configurado (`FAKE_CIUDADANIA_INTERNAL_URL` no existe en ningún `.env` real ni en el `.env.sample`, y nginx confirma en su propio comentario que el callback OIDC de dev es "Ciudadanía Digital (real, AGETIC)"). El único login del sistema, en cualquier ambiente, es Ciudadanía Digital real — ver también sección 4 (`fake-ciudadania-api` está confirmado sin uso, pendiente de sacarlo del repo).
 
 Existe además `.env.staging` (no versionado) con sus propias credenciales de AGETIC para el ambiente de staging — **huérfano hoy**: staging se sacó por completo de este servidor el 21/08/2026 (nginx y contenedores, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) y se levanta en el servidor nuevo asignado para eso, siguiendo [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) como fuente de verdad. Evaluar si conviene rotar esas credenciales de AGETIC al pasarlas al servidor nuevo en vez de reutilizarlas tal cual.
 
@@ -55,24 +55,16 @@ Existe además `.env.staging` (no versionado) con sus propias credenciales de AG
 |---|---|
 | `NEXT_PUBLIC_BASE_URL`, `NEXT_PUBLIC_AUTH_URL`, `NEXT_PUBLIC_SOCKET_URL` | URLs públicas de los backends — cambian entre dev/staging (ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) |
 | `NEXT_PUBLIC_CIUDADANIA_URL`, `NEXT_PUBLIC_FIRMADOR_URL`, `NEXT_PUBLIC_NOMINATIM_URL` | Servicios externos de terceros (AGETIC / OpenStreetMap) |
-| `NEXT_PUBLIC_CONSULTA_PERSONA_URL`, `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` | Ver hallazgo de seguridad abajo (sección 6) |
+| `NEXT_PUBLIC_CONSULTA_PERSONA_URL`, `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` | Ver hallazgo de seguridad abajo (sección 5) |
 | `NEXT_PUBLIC_COOKIE_SECURE` | Debe ser `true` en cualquier ambiente servido por HTTPS |
 
 Todo lo que empieza con `NEXT_PUBLIC_` termina embebido en el bundle de JavaScript que llega al navegador — **nunca poner ahí un secreto real**, solo URLs y claves pensadas para ser públicas.
 
-## 4. `consulta-persona-api` (`.env.example`, Python/FastAPI)
-
-| Bloque | Variables clave | Secreto |
-|---|---|---|
-| Base de datos | `APP_USER_DB`, `APP_HOST_DB`, `APP_PASSWORD_DB` | sí |
-| Redis | `REDIS_HOST`, `REDIS_PASSWORD` | sí si se setea |
-| API | `API_KEY` (placeholder `cambia_esta_clave_segura` en el `.example`) | sí |
-
-## 5. `fake-ciudadania-api` — confirmado sin uso (21/08/2026), pendiente de sacar del repo
+## 4. `fake-ciudadania-api` — confirmado sin uso (21/08/2026), pendiente de sacar del repo
 
 Existe como directorio (`backend/fake-ciudadania-api/`, trackeado en git) pero **no está desplegado en ningún lado**: no aparece en `docker-compose.yml`, no tiene ninguna ruta en el nginx real, y `FAKE_CIUDADANIA_INTERNAL_URL` (la variable que `auth-backend` necesitaría para usarlo) no existe ni en el `.env` real ni en el `.env.sample`. El login, en dev y en cualquier otro ambiente, ya es contra Ciudadanía Digital real (AGETIC) — ver sección 1. Queda pendiente eliminar el directorio del repo y el bloque muerto que todavía lo referencia en `usuario.service.ts` (`darDeAltaEnFakeCiudadania`, la variable `fakeCiudadaniaUrl`) — no se tocó en esta pasada, solo se corrigió la documentación que lo daba por activo.
 
-## 6. Hallazgo de seguridad: clave de API real commiteada en `.env.sample` — parcialmente resuelto
+## 5. Hallazgo de seguridad: clave de API real commiteada en `.env.sample` — parcialmente resuelto
 
 `frontend/felcn-base-frontend/.env.sample` traía, hasta el commit `e7f811e0`, el valor real de `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` en texto plano — el mismo valor exacto configurado como `API_KEY_UNLIMITED` en el `.env` real de `consulta-persona-api`, no un placeholder. Al ser `NEXT_PUBLIC_*` también quedaba expuesta en el bundle JS servido al navegador.
 
@@ -80,7 +72,7 @@ Existe como directorio (`backend/fake-ciudadania-api/`, trackeado en git) pero *
 
 **Pendiente, requiere decisión del equipo**: el valor real sigue en el historial de git (commits anteriores) y la clave sigue activa tal cual en `consulta-persona-api` — reemplazar el archivo no la invalida. Para cerrar esto de verdad hace falta (a) rotar la clave real en `consulta-persona-api` y en cualquier lugar que la consuma, y (b) decidir si vale la pena purgarla del historial de git (operación destructiva, requiere `git filter-repo`/BFG + force-push + coordinar con todo el equipo, ya que reescribe commits que otros ya tienen clonados) o si alcanza con que ya no sea válida tras la rotación. También evaluar si `consulta-persona-api` debería aceptar autenticación por sesión/JWT del usuario en vez de una API key estática compartida con el frontend público.
 
-## 7. Buenas prácticas para el servidor nuevo
+## 6. Buenas prácticas para el servidor nuevo
 
 - Ningún `.env` real (`.env`, `.env.staging`, `.env.backup-*`) debe llegar a git — confirmar `.gitignore` de cada proyecto antes de clonar en el servidor nuevo.
 - Rotar `JWT_SECRET`, `SESSION_SECRET`, `OIDC_CLIENT_SECRET`, `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` y todos los `*_TOKEN`/`*_PASSWORD` al pasar a un servidor nuevo o a producción — no reutilizar los valores de dev/staging.

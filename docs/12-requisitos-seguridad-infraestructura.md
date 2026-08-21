@@ -52,7 +52,7 @@ Cada punto está atado a un incidente real detectado en `servertest` — no son 
 ## 7. Secretos y variables de entorno
 
 - [ ] Ningún `.env` real llega a git — confirmar `.gitignore` de cada proyecto antes de cualquier clonado nuevo.
-- [ ] Todos los secretos (`JWT_SECRET`, `SESSION_SECRET`, `OIDC_CLIENT_SECRET`, `*_PASSWORD`, `*_TOKEN`) rotados al pasar a un servidor nuevo — nunca reutilizados entre dev/staging/producción. *Incidente real: hubo una clave de API real commiteada en texto plano en un `.env.sample` — ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) §6.*
+- [ ] Todos los secretos (`JWT_SECRET`, `SESSION_SECRET`, `OIDC_CLIENT_SECRET`, `*_PASSWORD`, `*_TOKEN`) rotados al pasar a un servidor nuevo — nunca reutilizados entre dev/staging/producción. *Incidente real: hubo una clave de API real commiteada en texto plano en un `.env.sample` — ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) §5.*
 - [ ] `ADMIN_INITIAL_PASSWORD` del seed de usuarios: contraseña fuerte real, nunca un valor trivial. *Incidente real: el seed usaba `'123'` hardcodeado hasta que se corrigió — ver [08-runbook-reset-y-admin-inicial.md](./08-runbook-reset-y-admin-inicial.md).*
 - [ ] `04-variables-de-entorno.md` refleja **todas** las variables reales de cada `.env.sample`/`.env.example`, sin variables fantasma ni faltantes — auditar de nuevo si se agregan variables nuevas al código.
 
