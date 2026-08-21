@@ -24,6 +24,12 @@ import { Servicios } from '@/services'
 import { VerificarServicioResponse } from '@/app/(fase_2)/inteligencia/registro/services/registro.service'
 import { set } from 'lodash'
 
+export interface OtpPendienteType {
+  otpSesionId: string
+  destinoOfuscado: string
+  canal: string
+}
+
 interface ContextProps {
   cargarUsuarioManual: () => Promise<void>
   inicializarUsuario: () => Promise<void>
@@ -40,6 +46,9 @@ interface ContextProps {
   permisoUsuario: (routerName: string) => Promise<CasbinTypes>
   permisoAccion: (objeto: string, accion: string) => Promise<boolean>
   abreviaturaUnidad: string | undefined
+  otpPendiente: OtpPendienteType | null
+  verificarOtp: (codigo: string) => Promise<void>
+  cancelarOtp: () => void
 }
 
 const AuthContext = createContext<ContextProps>({} as ContextProps)
@@ -53,6 +62,9 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [isVerified, setIsVerified] = useState<boolean>(false)
   const [codigoIcia, setCodigoIcia] = useState<String>('')
+  const [otpPendiente, setOtpPendiente] = useState<OtpPendienteType | null>(
+    null
+  )
 
   // Hook para mostrar alertas
   const { Alerta } = useAlerts()
@@ -136,6 +148,24 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     }
   }
 
+  // Común a login directo y a la verificación OTP: guarda el token, carga
+  // usuario/permisos y redirige al home.
+  const finalizarAutenticacion = async (datos: any) => {
+    guardarCookie('token', datos?.access_token)
+    imprimir(`Token ✅: ${datos?.access_token}`)
+
+    setUser(datos)
+    imprimir(`Usuarios ✅`, datos)
+
+    await obtenerPermisos()
+    // await verificarServicioUsuario(respuesta.datos.numeroPase)
+
+    mostrarFullScreen()
+    await delay(1000)
+    router.replace('/admin/home')
+    await delay(1000)
+  }
+
   const login = async ({ usuario, contrasena }: LoginType) => {
     // console.log('...');
     try {
@@ -148,19 +178,18 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         headers: {},
       })
 
-      guardarCookie('token', respuesta.datos?.access_token)
-      imprimir(`Token ✅: ${respuesta.datos?.access_token}`)
+      // Credenciales correctas pero el usuario tiene 2FA habilitado: no hay
+      // token todavía, se debe esperar a que verifique el código OTP.
+      if (respuesta.datos?.requiereOtp) {
+        setOtpPendiente({
+          otpSesionId: respuesta.datos.otpSesionId,
+          destinoOfuscado: respuesta.datos.destinoOfuscado,
+          canal: respuesta.datos.canal,
+        })
+        return
+      }
 
-      setUser(respuesta.datos)
-      imprimir(`Usuarios ✅`, respuesta.datos)
-
-      await obtenerPermisos()
-      // await verificarServicioUsuario(respuesta.datos.numeroPase)
-
-      mostrarFullScreen()
-      await delay(1000)
-      router.replace('/admin/home')
-      await delay(1000)
+      await finalizarAutenticacion(respuesta.datos)
     } catch (e) {
       imprimir(`Error al iniciar sesión: `, e)
       Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
@@ -169,6 +198,33 @@ export const AuthProvider = ({ children }: AuthContextType) => {
       setLoading(false)
       ocultarFullScreen()
     }
+  }
+
+  const verificarOtp = async (codigo: string) => {
+    if (!otpPendiente) return
+
+    try {
+      setLoading(true)
+
+      const respuesta = await Servicios.post({
+        url: `${Constantes.authUrl}/auth/otp`,
+        body: { otpSesionId: otpPendiente.otpSesionId, codigo },
+        headers: {},
+      })
+
+      setOtpPendiente(null)
+      await finalizarAutenticacion(respuesta.datos)
+    } catch (e) {
+      imprimir(`Error al verificar OTP: `, e)
+      Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
+    } finally {
+      setLoading(false)
+      ocultarFullScreen()
+    }
+  }
+
+  const cancelarOtp = () => {
+    setOtpPendiente(null)
   }
 
   const cambiarRol = async ({ idRol }: idRolType) => {
@@ -253,6 +309,9 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         setRolUsuario: cambiarRol,
         ingresar: login,
         progresoLogin: loading,
+        otpPendiente,
+        verificarOtp,
+        cancelarOtp,
         estaEnServicio: isVerified,
         codigoIcia,
         verificarServicioUsuario,

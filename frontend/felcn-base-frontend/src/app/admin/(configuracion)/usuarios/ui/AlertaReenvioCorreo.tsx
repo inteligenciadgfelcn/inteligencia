@@ -19,6 +19,7 @@ import {
   TransitionZoom,
 } from '@/components/modales/Animations'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
+import { DialogLinkActivacion } from './DialogLinkActivacion'
 
 interface AlertaReenvioCorreoProps {
   isOpen: boolean
@@ -36,6 +37,7 @@ export const AlertaReenvioCorreo: React.FC<AlertaReenvioCorreoProps> = ({
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const [loading, setLoading] = useState(false)
+  const [urlActivacion, setUrlActivacion] = useState<string | null>(null)
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -55,7 +57,11 @@ export const AlertaReenvioCorreo: React.FC<AlertaReenvioCorreoProps> = ({
         variant: 'success',
       })
       onSuccess()
-      handleClose()
+      if (respuesta?.datos?.urlActivacion) {
+        setUrlActivacion(respuesta.datos.urlActivacion)
+      } else {
+        handleClose()
+      }
     } catch (e) {
       imprimir(`Error al reenviar correo`, e)
       Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
@@ -70,37 +76,50 @@ export const AlertaReenvioCorreo: React.FC<AlertaReenvioCorreoProps> = ({
     }
   }
 
+  const handleCloseLinkActivacion = () => {
+    setUrlActivacion(null)
+    onClose()
+  }
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
-      fullScreen={fullScreen}
-    >
-      <DialogTitle id="alert-dialog-title">
-        {'Confirmar reenvío de correo de activación'}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {`¿Está seguro de reenviar el correo de activación al usuario: ${titleCase(usuario?.persona.nombres || '')}?`}
-        </DialogContentText>
-        <ProgresoLineal mostrar={loading} />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary" disabled={loading}>
-          Cancelar
-        </Button>
-        <Button
-          onClick={reenviarCorreo}
-          color="primary"
-          autoFocus
-          disabled={loading}
-        >
-          Confirmar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog
+        open={isOpen && !urlActivacion}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
+        fullScreen={fullScreen}
+      >
+        <DialogTitle id="alert-dialog-title">
+          {'Confirmar reenvío de correo de activación'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`¿Está seguro de reenviar el correo de activación al usuario: ${titleCase(usuario?.persona.nombres || '')}?`}
+          </DialogContentText>
+          <ProgresoLineal mostrar={loading} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary" disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={reenviarCorreo}
+            color="primary"
+            autoFocus
+            disabled={loading}
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <DialogLinkActivacion
+        isOpen={!!urlActivacion}
+        onClose={handleCloseLinkActivacion}
+        url={urlActivacion ?? ''}
+      />
+    </>
   )
 }

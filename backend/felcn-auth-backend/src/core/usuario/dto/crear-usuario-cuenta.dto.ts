@@ -3,7 +3,6 @@ import {
   CorreoLista,
   IsEmail,
   IsNotEmpty,
-  IsString,
   ValidateNested,
 } from '@/common/validation'
 import { Type } from 'class-transformer'
@@ -20,9 +19,4 @@ export class CrearUsuarioCuentaDto {
   @IsEmail()
   @CorreoLista()
   correoElectronico: string
-
-  @ApiProperty({ example: 'AGEPIC.admin135' })
-  @IsString()
-  @IsNotEmpty()
-  contrasenaNueva: string
 }

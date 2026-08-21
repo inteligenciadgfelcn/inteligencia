@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/Button'
 import { MultiSelect } from '@/components/form/FormMultiSelect'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { RecursosPorRol } from './RecursosPorRol'
+import { DialogLinkActivacion } from './DialogLinkActivacion'
 
 interface FormularioUsuarioProps {
   usuarioId?: string
@@ -103,6 +104,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   const [recursosExceptuados, setRecursosExceptuados] = useState<
     Record<string, string[]>
   >({})
+  const [urlActivacion, setUrlActivacion] = useState<string | null>(null)
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const { confirm, ConfirmDialog } = useConfirmDialog()
@@ -286,13 +288,22 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         mensaje: InterpreteMensajes(respuesta),
         variant: 'success',
       })
-      router.push('/admin/usuarios')
+      if (!usuarioId && respuesta?.datos?.urlActivacion) {
+        setUrlActivacion(respuesta.datos.urlActivacion)
+      } else {
+        router.push('/admin/usuarios')
+      }
     } catch (e) {
       imprimir(`Error al crear o actualizar usuario`, e)
       Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCloseLinkActivacion = () => {
+    setUrlActivacion(null)
+    router.push('/admin/usuarios')
   }
 
   const handleCancel = () => {
@@ -317,6 +328,11 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
         message={usuarioId ? 'Actualizando usuario...' : 'Guardando usuario...'}
       />
       <ConfirmDialog />
+      <DialogLinkActivacion
+        isOpen={!!urlActivacion}
+        onClose={handleCloseLinkActivacion}
+        url={urlActivacion ?? ''}
+      />
 
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-dark dark:text-white-light">

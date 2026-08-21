@@ -14,7 +14,14 @@ const tokenVigente = (token: string | undefined): boolean => {
 }
 
 // Rutas accesibles sin sesión iniciada. Todo lo demás requiere token vigente.
-const RUTAS_PUBLICAS = ['/login', '/login/ciudadania', '/registro', '/recuperacion']
+const RUTAS_PUBLICAS = [
+  '/login',
+  '/login/ciudadania',
+  '/registro',
+  '/recuperacion',
+  '/activacion',
+  '/desbloqueo',
+]
 
 export const middleware = (req: NextRequest) => {
   const token = req.cookies.get('token')
