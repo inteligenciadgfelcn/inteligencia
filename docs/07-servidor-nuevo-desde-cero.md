@@ -6,7 +6,7 @@ Procedimiento completo, con **comandos manuales literales**, para dejar funciona
 
 - **PostgreSQL nativo** en el host (no en contenedor) — Fase 3.
 - **nginx nativo** en el host (no en contenedor) — Fase 4.
-- **Las aplicaciones (auth-backend, base-backend-v2, base-frontend, consulta-persona-api) se levantan normal con Docker** — Fase 5.
+- **Las aplicaciones (auth-backend, base-backend-v2, base-frontend) se levantan normal con Docker** — Fase 5.
 - El servidor **debe ser headless** (sin sesión de escritorio — ver hallazgo de la sección 7, causó una caída total en `servertest`).
 
 Como este servidor es dedicado a staging (no corre dev en paralelo), el compose de la app corre un solo ambiente, con las credenciales reales de Ciudadanía Digital (AGETIC) directamente en su `.env`.
@@ -204,7 +204,7 @@ EOF
 sudo systemctl restart docker
 ```
 
-Docker acá **solo levanta las apps** (`base-auth`, `base-frontend`, `base-backend-v2`, `consulta-persona-api`, `consulta-persona-redis` — el mismo `docker-compose.yml` de la raíz del repo, ya sin los servicios de staging que tenía antes, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)). Postgres y nginx quedan fuera de Docker (Fases 3 y 4).
+Docker acá **solo levanta las apps** (`base-auth`, `base-frontend`, `base-backend-v2` — el mismo `docker-compose.yml` de la raíz del repo, ya sin los servicios de staging que tenía antes, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)). Postgres y nginx quedan fuera de Docker (Fases 3 y 4).
 
 ## 6. Fase 6 — Estructura de producción
 
@@ -254,7 +254,7 @@ No dar el servidor nuevo por completo solo porque `docker compose up -d --build`
 - [ ] **Seguridad**: `sudo ufw status verbose` con las reglas esperadas activas, fail2ban con los jails de sshd/nginx corriendo (`fail2ban-client status`), SSH con `PasswordAuthentication` habilitado a propósito — no repetir el hardening que hubo que revertir en `servertest` (sección 1).
 - [ ] **Docker**: `docker.service` habilitado en systemd (`systemctl is-enabled docker`), límites de logging configurados en `/etc/docker/daemon.json`, todos los servicios del compose con `restart: unless-stopped` (solo las apps — Postgres y nginx quedan fuera de Docker, Fases 3 y 4).
 - [ ] **Imágenes**: build hecho con el código que realmente se quiere desplegar — el build context toma el disco tal cual está (incluye cambios sin commitear), no `git HEAD`; confirmar `git status` limpio antes de un build de producción.
-- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`, `consulta-persona-api`, `consulta-persona-redis`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), puertos expuestos solo donde corresponde (`127.0.0.1` para lo que no debe ser público — comparar contra [00-arquitectura.md](./00-arquitectura.md)).
+- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), puertos expuestos solo donde corresponde (`127.0.0.1` para lo que no debe ser público — comparar contra [00-arquitectura.md](./00-arquitectura.md)).
 - [ ] **nginx** (nativo): `sudo nginx -t` sin errores, `systemctl status nginx` activo con el drop-in de `Restart=on-failure` aplicado (Fase 4), rate limiting y headers de seguridad activos, sin ningún `include` colgando de `/srv/interop/...` (ese proyecto no corre acá).
 - [ ] **Certificados**: Let's Encrypt emitido para el dominio de este servidor y renovando solo (`certbot renew --dry-run`, `systemctl list-timers | grep certbot`).
 - [ ] **SMTP**: ver verificación explícita abajo — sin esto, todo el ciclo de altas de usuario queda roto en silencio.

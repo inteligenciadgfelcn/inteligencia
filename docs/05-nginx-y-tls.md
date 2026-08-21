@@ -12,14 +12,13 @@ nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), 
 
 ## 3. Upstreams (backends que nginx conoce)
 
-> Actualizado 21/08/2026: se sacaron los upstreams de staging (`backend_v2_staging`, `backend_auth_staging`, `frontend_staging`) — staging se sacó de este servidor por completo, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md). No existe (ni existió en este archivo real) ningún upstream para `fake-ciudadania-api` — confirmado sin uso, ver [00-arquitectura.md](./00-arquitectura.md).
+> Actualizado 21/08/2026: se sacaron los upstreams de staging (`backend_v2_staging`, `backend_auth_staging`, `frontend_staging`) y de `consulta_persona` — staging se sacó de este servidor por completo (ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) y `consulta-persona-api`/`consulta-persona-redis` quedaron sin referencia en la documentación (los contenedores se detuvieron, el código sigue en el repo). No existe (ni existió en este archivo real) ningún upstream para `fake-ciudadania-api` — confirmado sin uso, ver [00-arquitectura.md](./00-arquitectura.md).
 
 ```nginx
 upstream hub_gateway        { server 127.0.0.1:8088; }   # proyecto /srv/interop
 upstream backend_v2         { server 127.0.0.1:3015; }   # base-backend-v2 (dev)
 upstream backend_auth       { server 127.0.0.1:3016; }   # auth-backend (dev)
 upstream frontend           { server 127.0.0.1:3017; }   # base-frontend (dev)
-upstream consulta_persona   { server 127.0.0.1:3018; }
 ```
 
 Todos con `keepalive` configurado.
@@ -36,7 +35,6 @@ Todos con `keepalive` configurado.
 | `/pandora-api` | `backend_auth` (rewrite a `/api`) | callbacks de PANDORA — url fija externa, no cambiar sin coordinar con PANDORA |
 | `/felcn/api/whatsapp`, `/dev/api/whatsapp` | `backend_auth` | webhook Meta Cloud API (WhatsApp) — ruta expuesta pero canal no operativo, ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) |
 | `/login/ciudadania` | `frontend` | callback OIDC Ciudadanía Digital real (AGETIC); `redirect_uri` registrado ante AGETIC apunta a la raíz de este dominio |
-| `/persona/` | `consulta_persona` | rate-limited |
 | `/socket.io/` | `backend_v2` | WebSockets, `proxy_read_timeout 86400`, sin buffering |
 | `/_next/static/` | `frontend` | assets inmutables, sin rate limit, cache 1 año |
 

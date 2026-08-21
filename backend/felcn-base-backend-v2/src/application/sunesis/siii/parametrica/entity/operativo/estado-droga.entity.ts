@@ -20,6 +20,9 @@ export class EstadoDroga {
   @Column({ name: 'descripcion', type: 'varchar', length: 50 })
   descripcion: string
 
+  @Column({ name: 'medida', type: 'varchar', length: 10 })
+  medida: string
+
   @ManyToOne(() => TipoDroga)
   @JoinColumn({ name: 'id_tipo_droga' })
   tipoDroga?: TipoDroga

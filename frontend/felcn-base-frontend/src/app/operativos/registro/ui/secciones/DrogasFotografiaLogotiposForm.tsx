@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/Input'
 import { InputDecimal } from '@/components/ui/InputDecimal'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
-import { Switch } from '@/components/ui/Switch'
 import { formatDecimal } from '@/utils/formatDecimal'
 import {
   DrogasService,
@@ -649,7 +648,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [cantidadKg, setCantidadKg] = useState('0')
   const [cantidadG, setCantidadG] = useState('0')
   const [cantidadMg, setCantidadMg] = useState('0')
-  const [esLiquido, setEsLiquido] = useState(false)
   const [cantidadLts, setCantidadLts] = useState('0')
   const [cantidadMl, setCantidadMl] = useState('0')
   const [costo, setCosto] = useState<number | null>(0)
@@ -659,6 +657,13 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const [dropzoneToken, setDropzoneToken] = useState(0)
   const [pruebaCampo, setPruebaCampo] = useState<File | null>(null)
   const [pesaje, setPesaje] = useState<File | null>(null)
+
+  // Unidad derivada del Estado de Droga elegido (catálogo estado_droga.medida),
+  // ya no es una elección manual del operador.
+  const estadoDrogaSeleccionado = estadosDroga.find(
+    (e) => String(e.id) === idEstadoDroga
+  )
+  const esLiquido = estadoDrogaSeleccionado?.medida === 'Litros'
 
   useEffect(() => {
     if (!paises.length || idBoliviaDefault) return
@@ -766,7 +771,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
     setCantidadKg('0')
     setCantidadG('0')
     setCantidadMg('0')
-    setEsLiquido(false)
     setCantidadLts('0')
     setCantidadMl('0')
     setCosto(0)
@@ -931,22 +935,29 @@ export function SeccionDrogasFotografiaLogotiposForm({
             )}
           </div>
 
-          {/* Interruptor de tipo de medida (Sólido / Líquido) */}
-          <div className="col-span-1 md:col-span-2">
-            <label className="mb-1 block text-sm font-medium">
-              La Cantidad de la droga, estupefaciente o psicotropico es?
-            </label>
-            <div className="flex items-center h-10 mt-1">
-              <Switch
-                label={esLiquido ? 'Líquido' : 'Sólido'}
-                checked={esLiquido}
-                onChange={(e) => setEsLiquido(e.target.checked)}
-              />
+          {/* Unidad de medida: derivada automáticamente del Estado de Droga elegido */}
+          {idEstadoDroga && (
+            <div className="col-span-1 md:col-span-2">
+              <label className="mb-1 block text-sm font-medium">
+                Unidad de Medida
+              </label>
+              <div className="flex items-center h-10 mt-1 text-sm font-medium">
+                {esLiquido ? 'Líquido (Litros / ml)' : 'Sólido (Tn / Kg / g / Mg)'}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Cantidad multi-unidad */}
-          {!esLiquido ? (
+          {!idEstadoDroga ? (
+            <div className="col-span-1 md:col-span-2">
+              <label className="mb-1 block text-sm font-medium">
+                Cantidad <span className="text-danger">*</span>
+              </label>
+              <p className="mt-1 text-xs text-gray-500">
+                Seleccione un Estado de Droga para ingresar la cantidad
+              </p>
+            </div>
+          ) : !esLiquido ? (
             <div className="col-span-1 md:col-span-2">
               <label className="mb-1 block text-sm font-medium">Cantidad <span className="text-danger">*</span></label>
               <div className="grid grid-cols-4 gap-2">
@@ -1196,10 +1207,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 {
                   accessor: 'unidadMedida',
                   title: 'Unidad de Medida',
-                  render: (r) => {
-                    const desc = (r.descripcionEstadoDroga ?? '').toLowerCase();
-                    return desc.includes('liqui') || desc.includes('líqui') ? 'Lts' : 'Gramos';
-                  },
+                  render: (r) => (r.unidadMedida === 'Litros' ? 'Lts' : 'Gramos'),
                 },
                 {
                   accessor: 'costo',

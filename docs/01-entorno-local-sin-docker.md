@@ -27,7 +27,6 @@ inteligencia/
 ├── backend/
 │   ├── felcn-auth-backend/       # NestJS, puerto 4000
 │   ├── felcn-base-backend-v2/    # NestJS, puerto 3000
-│   ├── consulta-persona-api/     # FastAPI, puerto 8000
 │   └── fake-ciudadania-api/      # NestJS, puerto 3001 (OIDC simulado, solo dev)
 ├── frontend/
 │   └── felcn-base-frontend/      # Next.js, puerto 8080 en local / 3000 en docker
@@ -100,18 +99,6 @@ npm run dev
 
 Debe correr **antes** de que un usuario intente loguearse vía `auth-backend` en modo dev. Los OTP se imprimen en logs si `SMTP_ENABLED=false`.
 
-### 3.6. `consulta-persona-api` (puerto 8000) — Python/FastAPI
-
-Este es el único proyecto no-Node del backend. Requiere Python 3.11+, `pip install -r requirements.txt`, y conecta a una base de datos (host configurado en `.env.example`) y a Redis (usar `docker run redis:7-alpine` o instalar nativo).
-
-```bash
-cd backend/consulta-persona-api
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload --port 8000
-```
-
 ## 4. Verificación rápida
 
 | Servicio | URL de salud |
@@ -120,7 +107,6 @@ uvicorn app.main:app --reload --port 8000
 | base-backend-v2 | `http://localhost:3000/api/estado` |
 | frontend | `http://localhost:8080/login` |
 | fake-ciudadania-api | `http://localhost:3001/.well-known/openid-configuration` |
-| consulta-persona-api | `http://localhost:8000/docs` (Swagger de FastAPI) |
 
 ## 5. Comandos útiles (aplican a ambos backends NestJS)
 
