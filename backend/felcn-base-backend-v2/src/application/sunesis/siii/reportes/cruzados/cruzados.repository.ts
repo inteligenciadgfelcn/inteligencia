@@ -142,6 +142,12 @@ export class CruzadasRepository {
             || E'\n   Nac.: ' || pa_per.descripcion
             || E'\n   Estado: ' || per.estado,
           ' | '
+          ORDER BY CASE UPPER(TRIM(per.estado))
+            WHEN 'PRINCIPAL IMPLICADO' THEN 1
+            WHEN 'APREHENDIDO' THEN 2
+            WHEN 'ARRESTADO' THEN 3
+            ELSE 4
+          END
         )
         FROM public.persona_auxiliar per
         JOIN parametricas.pais pa_per ON per.id_pais = pa_per.id_pais
@@ -355,6 +361,12 @@ SELECT
         || E'\\n   Nac.: '    || pa_per.descripcion
         || E'\\n   Estado: '  || per.estado,
       ' | '
+      ORDER BY CASE UPPER(TRIM(per.estado))
+        WHEN 'PRINCIPAL IMPLICADO' THEN 1
+        WHEN 'APREHENDIDO' THEN 2
+        WHEN 'ARRESTADO' THEN 3
+        ELSE 4
+      END
     )
     FROM public.persona_auxiliar per
     JOIN parametricas.pais pa_per ON per.id_pais = pa_per.id_pais
