@@ -147,13 +147,17 @@ Backend: **auth-backend**, `felcn_auth_v3`.
 
 ### 4.3 Registro de cuenta
 
+> Actualizado 20/08/2026: la contraseña ya **no** se captura en el registro — se define recién al activar la cuenta (ver 4.4). Antes de este cambio, `crear-cuenta` sí pedía contraseña en el mismo formulario; si algo referencia ese comportamiento viejo, está desactualizado.
+
 - **Ruta**: `/registro`
 - **Archivo**: `login/ui/RegistroContainer.tsx`
-- **Campos**: Nro. Documento*, Nombres*, Primer/Segundo Apellido, Fecha de nacimiento*, Correo*, Contraseña* (score 4), Confirmar*.
+- **Campos**: Nro. Documento*, Nombres*, Primer/Segundo Apellido, Fecha de nacimiento*, Correo*.
 
 | Método | Endpoint | Tabla(s) BD |
 |---|---|---|
-| POST | `/usuarios/crear-cuenta` | Transacción: `usuario.persona` → `usuario.usuario` → `usuario.usuario_rol` (rol fijo "USUARIO") |
+| POST | `/usuarios/crear-cuenta` | Transacción: `usuario.persona` → `usuario.usuario` (estado `PENDIENTE`, contraseña placeholder — ver `UsuarioRepository.crear`) → `usuario.usuario_rol` (rol fijo "USUARIO") |
+
+La cuenta creada por `POST /usuarios` (alta por administrador, panel) y la reactivación de un usuario `INACTIVO` (`PATCH /usuarios/:id/activacion`) siguen el mismo patrón desde el 20/08/2026: nunca se genera ni se envía una contraseña por correo — se manda (o reutiliza) un enlace de activación/recuperación para que el propio usuario la defina.
 
 ### 4.4 Activación / Desbloqueo / Recuperación
 
@@ -162,11 +166,13 @@ Backend: **auth-backend**, `felcn_auth_v3`.
 
 | Formulario | Campos | Método | Endpoint | Tabla(s) BD |
 |---|---|---|---|---|
-| Activación (automática, sin captura) | — | PATCH | `/usuarios/cuenta/activacion` | `usuario.usuario` |
+| Activación | Nueva contraseña*, Confirmar* | PATCH | `/usuarios/cuenta/activacion` | `usuario.usuario` |
 | Desbloqueo (automático, sin captura) | — | GET (con efecto de escritura) | `/usuarios/cuenta/desbloqueo` | `usuario.usuario` |
 | Recuperación paso 1 | Correo* | POST | `/usuarios/recuperar` | `usuario.usuario` |
 | Recuperación (validar código, automático) | — | POST | `/usuarios/validar-recuperar` | `usuario.usuario` |
 | Recuperación paso 2 | Nueva contraseña*, Repetir* | PATCH | `/usuarios/cuenta/nueva-contrasena` | `usuario.usuario` |
+
+Si el correo no llega (SMTP caído u otro problema), un administrador con permisos puede ver y copiar el link de activación/recuperación directamente desde el panel de usuarios (respuesta de `POST /usuarios`, `PATCH /usuarios/:id/reenviar`, `PATCH /usuarios/:id/restauracion` y `PATCH /usuarios/:id/activacion` — todas devuelven `urlActivacion`/`urlRecuperacion` en el JSON, no solo lo mandan por correo) y compartirlo por otro medio.
 
 ---
 

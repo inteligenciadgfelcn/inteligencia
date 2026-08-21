@@ -2,7 +2,7 @@
 
 ## 1. Dónde vive
 
-nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), no dockerizado, en `servertest`. Archivo de sitio: `/etc/nginx/sites-available/desarrollo.felcn.gob.bo` (symlink en `sites-enabled`). Esto cambia para el servidor nuevo — nginx se dockeriza, ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), no dockerizado, en `servertest`. Archivo de sitio: `/etc/nginx/sites-available/desarrollo.felcn.gob.bo` (symlink en `sites-enabled`). El servidor nuevo (staging) replica el mismo patrón, nginx nativo — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
 
 ## 2. TLS
 
@@ -12,16 +12,14 @@ nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), 
 
 ## 3. Upstreams (backends que nginx conoce)
 
+> Actualizado 21/08/2026: se sacaron los upstreams de staging (`backend_v2_staging`, `backend_auth_staging`, `frontend_staging`) — staging se sacó de este servidor por completo, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md). No existe (ni existió en este archivo real) ningún upstream para `fake-ciudadania-api` — confirmado sin uso, ver [00-arquitectura.md](./00-arquitectura.md).
+
 ```nginx
 upstream hub_gateway        { server 127.0.0.1:8088; }   # proyecto /srv/interop
 upstream backend_v2         { server 127.0.0.1:3015; }   # base-backend-v2 (dev)
 upstream backend_auth       { server 127.0.0.1:3016; }   # auth-backend (dev)
 upstream frontend           { server 127.0.0.1:3017; }   # base-frontend (dev)
 upstream consulta_persona   { server 127.0.0.1:3018; }
-upstream fake_ciudadania    { server 127.0.0.1:3019; }
-upstream backend_v2_staging { server 127.0.0.1:3025; }
-upstream backend_auth_staging { server 127.0.0.1:3026; }
-upstream frontend_staging   { server 127.0.0.1:3027; }
 ```
 
 Todos con `keepalive` configurado.
@@ -36,17 +34,13 @@ Todos con `keepalive` configurado.
 | `/dev/api` | `backend_v2` | alias legado, mismo destino que `/api` |
 | `/dev/auth/api` | `backend_auth` | auth dev |
 | `/pandora-api` | `backend_auth` (rewrite a `/api`) | callbacks de PANDORA — url fija externa, no cambiar sin coordinar con PANDORA |
-| `/felcn/api/whatsapp`, `/dev/api/whatsapp` | `backend_auth` | webhook Meta Cloud API (WhatsApp) |
-| `/login/ciudadania` | `301 → /staging/login/ciudadania` | callback OIDC real (AGETIC) |
-| `/dev/login/ciudadania` | `frontend` (rewrite) | callback OIDC fake (dev) |
-| `/ciudadania/`, `/interaction/` | `fake_ciudadania` | solo dev |
+| `/felcn/api/whatsapp`, `/dev/api/whatsapp` | `backend_auth` | webhook Meta Cloud API (WhatsApp) — ruta expuesta pero canal no operativo, ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) |
+| `/login/ciudadania` | `frontend` | callback OIDC Ciudadanía Digital real (AGETIC); `redirect_uri` registrado ante AGETIC apunta a la raíz de este dominio |
 | `/persona/` | `consulta_persona` | rate-limited |
 | `/socket.io/` | `backend_v2` | WebSockets, `proxy_read_timeout 86400`, sin buffering |
 | `/_next/static/` | `frontend` | assets inmutables, sin rate limit, cache 1 año |
-| `/staging`, `/staging/` | `301 → /staging/login/` | mismo bug de Next.js que la raíz dev |
-| `/staging/api` | `backend_v2_staging` | |
-| `/staging/auth/api` | `backend_auth_staging` | |
-| `/staging` (resto) | `frontend_staging` | |
+
+No hay ninguna ruta `/staging/*` ni `/ciudadania/`, `/interaction/`, `/dev/login/ciudadania` en el archivo real — si aparecen en una versión vieja de este documento (o en una copia local desactualizada), son incorrectas.
 
 ## 5. Rate limiting
 

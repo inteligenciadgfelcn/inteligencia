@@ -23,9 +23,20 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
+const otpSchema = z.object({
+  codigo: z
+    .string()
+    .min(6, 'El código debe tener 6 dígitos')
+    .max(6, 'El código debe tener 6 dígitos')
+    .regex(/^\d+$/, 'Solo dígitos'),
+})
+
+type OtpFormValues = z.infer<typeof otpSchema>
+
 export default function LoginContainer() {
   const router = useRouter()
-  const { ingresar, progresoLogin } = useAuth()
+  const { ingresar, progresoLogin, otpPendiente, verificarOtp, cancelarOtp } =
+    useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -41,8 +52,82 @@ export default function LoginContainer() {
     resolver: zodResolver(formSchema),
   })
 
+  const {
+    register: registerOtp,
+    handleSubmit: handleSubmitOtp,
+    formState: { errors: errorsOtp },
+    reset: resetOtp,
+  } = useForm<OtpFormValues>({
+    resolver: zodResolver(otpSchema),
+  })
+
   const iniciarSesion = async (data: FormValues) => {
     await ingresar(data)
+  }
+
+  const confirmarOtp = async (data: OtpFormValues) => {
+    await verificarOtp(data.codigo)
+  }
+
+  const volverALogin = () => {
+    resetOtp()
+    cancelarOtp()
+  }
+
+  if (otpPendiente) {
+    return (
+      <div className="w-full max-w-[420px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold text-primary">
+            Verificación en dos pasos
+          </h1>
+          <p className="text-white-dark">
+            {otpPendiente.canal === 'WHATSAPP'
+              ? `Te enviamos un código por WhatsApp a ${otpPendiente.destinoOfuscado}`
+              : `Te enviamos un código a tu correo ${otpPendiente.destinoOfuscado}`}
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmitOtp(confirmarOtp)}
+          className="space-y-5"
+        >
+          <div>
+            <label className="mb-0 block text-white-dark">
+              Código de verificación
+            </label>
+            <input
+              {...registerOtp('codigo')}
+              maxLength={6}
+              inputMode="numeric"
+              autoFocus
+              className="form-input text-center tracking-[0.5em]"
+            />
+            <p className="text-danger text-sm">
+              {errorsOtp.codigo?.message}
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={mounted ? progresoLogin : false}
+            className="btn btn-gradient w-full uppercase"
+          >
+            {mounted && progresoLogin ? 'Verificando...' : 'Verificar'}
+          </button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={volverALogin}
+              className="text-primary text-sm font-semibold"
+            >
+              Volver
+            </button>
+          </div>
+        </form>
+      </div>
+    )
   }
 
   return (

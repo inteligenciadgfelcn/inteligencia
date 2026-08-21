@@ -1,6 +1,8 @@
-# 02 — Entorno Docker (dev + staging)
+# 02 — Entorno Docker (dev)
 
-Cómo levantar todo el stack de aplicación con Docker, tal como corre hoy en `servertest`. Esto **no incluye Postgres** (corre nativo en el host, ver [03-base-de-datos.md](./03-base-de-datos.md)) ni nginx (también nativo, ver [05-nginx-y-tls.md](./05-nginx-y-tls.md)) — ambos puntos cambian en el servidor nuevo, ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+Cómo levantar el stack de aplicación con Docker, tal como corre hoy en `servertest`. Esto **no incluye Postgres** (corre nativo en el host, ver [03-base-de-datos.md](./03-base-de-datos.md)) ni nginx (también nativo, ver [05-nginx-y-tls.md](./05-nginx-y-tls.md)) — ambos puntos cambian en el servidor nuevo, ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+
+> **Staging se sacó por completo de este servidor (21/08/2026)**: los 3 servicios de staging (`base-backend-v2-staging`, `base-auth-staging`, `base-frontend-staging`) se eliminaron del `docker-compose.yml`, sus contenedores se borraron, y sus bloques de nginx (`upstream` + `location`) también se sacaron del sitio real. Staging vive ahora en un servidor nuevo separado, ya asignado para eso — [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) es la fuente de verdad para levantarlo ahí, no acá. Este documento describe únicamente dev.
 
 ## 1. Requisitos
 
@@ -9,23 +11,17 @@ Cómo levantar todo el stack de aplicación con Docker, tal como corre hoy en `s
 
 ## 2. Archivo `docker-compose.yml` (raíz del repo)
 
-Un solo archivo orquesta **dos ambientes en paralelo** (dev y staging) del mismo código, en la misma red `felcn-network`:
+| Servicio (compose) | Container | Puerto host | env_file |
+|---|---|---|---|
+| `base-backend-v2` | `base-backend-v2` | `3015:3000` | `backend/felcn-base-backend-v2/.env` |
+| `base-auth` | `auth-backend` | `127.0.0.1:3016:4000` | `backend/felcn-auth-backend/.env` |
+| `base-frontend` | `base-frontend` | `127.0.0.1:3017:3000` | `frontend/felcn-base-frontend/.env` |
+| `consulta-persona-api` | `consulta-persona-api` | `127.0.0.1:3018:8000` | `backend/consulta-persona-api/.env` |
+| `consulta-persona-redis` | `consulta-persona-redis` | interno | — |
 
-| Servicio (compose) | Container | Ambiente | Puerto host | env_file |
-|---|---|---|---|---|
-| `base-backend-v2` | `base-backend-v2` | dev | `3015:3000` | `backend/felcn-base-backend-v2/.env` |
-| `base-auth` | `auth-backend` | dev | `127.0.0.1:3016:4000` | `backend/felcn-auth-backend/.env` |
-| `base-frontend` | `base-frontend` | dev | `127.0.0.1:3017:3000` | `frontend/felcn-base-frontend/.env` |
-| `base-backend-v2-staging` | `base-backend-v2-staging` | staging | `127.0.0.1:3025:3000` | mismo `.env` de dev (ver nota) |
-| `base-auth-staging` | `auth-backend-staging` | staging | `127.0.0.1:3026:4000` | `backend/felcn-auth-backend/.env.staging` (credenciales **reales** de Ciudadanía Digital) |
-| `base-frontend-staging` | `base-frontend-staging` | staging | `127.0.0.1:3027:3000` | `frontend/felcn-base-frontend/.env` |
-| `consulta-persona-api` | `consulta-persona-api` | único | `127.0.0.1:3018:8000` | `backend/consulta-persona-api/.env` |
-| `consulta-persona-redis` | `consulta-persona-redis` | único | interno | — |
-| `fake-ciudadania-api` | `fake-ciudadania-api` | dev | `127.0.0.1:3019:3001` | `backend/fake-ciudadania-api/.env` |
+`fake-ciudadania-api` **no está en este compose** — confirmado sin uso (no hay ninguna variable que lo active en ningún `.env` real), pendiente de sacarlo también del repo. El login es contra Ciudadanía Digital real (AGETIC) — ver [00-arquitectura.md](./00-arquitectura.md) §4.
 
-> **Nota importante**: `base-backend-v2-staging` usa **el mismo `.env`** que dev (mismo archivo, comentario explícito en el compose: *"Misma BD que dev por ahora"*). Solo `auth-backend-staging` tiene su propio `.env.staging` con credenciales reales de AGETIC. Si se separan las bases de datos de staging en el futuro, este compose debe actualizarse.
-
-Todos los servicios de Node exponen solo a `127.0.0.1` (excepto `base-backend-v2` dev, que escucha en todas las interfaces en `0.0.0.0:3015` — revisar si es intencional) porque nginx en el host es quien expone al público vía HTTPS.
+Todos los servicios de Node exponen solo a `127.0.0.1` (excepto `base-backend-v2`, que escucha en todas las interfaces en `0.0.0.0:3015` — revisar si es intencional) porque nginx en el host es quien expone al público vía HTTPS.
 
 Todos tienen `restart: unless-stopped` y `extra_hosts: host.docker.internal:host-gateway` para poder conectarse al Postgres nativo del host desde dentro del contenedor (usar `DB_HOST=host.docker.internal` en el `.env`, no `localhost`).
 
@@ -54,18 +50,15 @@ docker compose logs -f auth-backend
 docker compose down
 ```
 
-Al desplegar cambios de código en dev+staging, **reconstruir los 6 contenedores principales juntos** (no uno a la vez) para evitar que queden versiones mezcladas del mismo código sirviendo distinto ambiente.
+Al desplegar cambios de código, reconstruir los contenedores afectados juntos (no uno a la vez si dependen entre sí) para evitar versiones mezcladas del mismo código sirviendo distinto componente.
 
 ## 5. Volúmenes
 
 | Volumen | Contenido |
 |---|---|
-| `logs_data` | Logs de dev (`/tmp/logs` dentro de los contenedores dev) |
-| `logs_data_staging` | Logs de staging |
+| `logs_data` | Logs de dev (`/tmp/logs` dentro de los contenedores) |
 | `consulta_persona_redis_data` | Datos de Redis de consulta-persona |
-| `fake_jwk_keys` | Claves RSA generadas por `fake-ciudadania-api` para firmar tokens OIDC simulados — si se borra este volumen, los tokens firmados previamente dejan de validar |
 
-## 6. Diferencia clave dev vs staging
+## 6. Autenticación
 
-- **Dev**: `auth-backend` usa `fake-ciudadania-api` como proveedor OIDC (sin credenciales reales).
-- **Staging**: `auth-backend-staging` usa Ciudadanía Digital real (AGETIC demo) vía `.env.staging`. Por eso staging es el ambiente correcto para probar el flujo real de login antes de producción.
+El único proveedor de login es Ciudadanía Digital real (AGETIC) — ver [00-arquitectura.md](./00-arquitectura.md) §4 y [04-variables-de-entorno.md](./04-variables-de-entorno.md). No hay ambiente con proveedor simulado hoy.

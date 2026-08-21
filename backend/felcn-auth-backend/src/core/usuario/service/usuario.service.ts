@@ -121,6 +121,18 @@ export class UsuarioService extends BaseService {
     return await this.usuarioRepositorio.buscarUsuario(usuario)
   }
 
+  /**
+   * Arma una URL absoluta hacia una ruta del frontend (activación, recuperación,
+   * desbloqueo, etc.) resolviéndola en forma relativa a URL_FRONTEND, para que
+   * el path base (p. ej. "/staging/" en el entorno de staging) no se pierda.
+   */
+  private construirUrlAccion(pathname: string, codigo: string): URL {
+    const base = this.configService.get('URL_FRONTEND') ?? ''
+    const url = new URL(pathname, base.endsWith('/') ? base : `${base}/`)
+    url.searchParams.append('q', codigo)
+    return url
+  }
+
   async crear(usuarioDto: CrearUsuarioDto, usuarioAuditoria: string) {
     // verificar si el usuario ya fue registrado
     const usuario = await this.usuarioRepositorio.buscarUsuarioPorCI(
@@ -155,20 +167,20 @@ export class UsuarioService extends BaseService {
 
     // [FAKE] Si está configurada la URL interna del fake de Ciudadanía Digital,
     // activar automáticamente la bandera ciudadaniaDigital en el nuevo usuario.
-    const fakeCiudadaniaUrl = this.configService.get<string>('FAKE_CIUDADANIA_INTERNAL_URL')
+    const fakeCiudadaniaUrl = this.configService.get<string>(
+      'FAKE_CIUDADANIA_INTERNAL_URL'
+    )
     if (fakeCiudadaniaUrl) {
       usuarioDto.ciudadaniaDigital = true
     }
 
-    const contrasena = TextService.generateShortRandomText()
-    const datosCorreo = {
-      correo: usuarioDto.correoElectronico,
-      asunto: Messages.SUBJECT_EMAIL_ACCOUNT_ACTIVE,
-    }
+    let codigoActivacion = ''
 
     const op = async (transaction: EntityManager) => {
-      usuarioDto.contrasena = await TextService.encrypt(contrasena)
-      usuarioDto.estado = UsuarioEstado.ACTIVE
+      // No se define contrasena: el repositorio genera un hash placeholder
+      // (ver UsuarioRepository.crear) que nadie conoce. El usuario recién
+      // define su propia contraseña al activar la cuenta desde el enlace.
+      usuarioDto.estado = UsuarioEstado.PENDING
 
       const persona = await this.personaRepositorio.crear(
         usuarioDto.persona,
@@ -200,31 +212,64 @@ export class UsuarioService extends BaseService {
         transaction
       )
 
+      codigoActivacion = TextService.generateUuid()
+      await this.actualizarDatosActivacion(
+        usuario.id,
+        codigoActivacion,
+        usuarioAuditoria,
+        transaction
+      )
+
       return usuario
     }
 
     const crearResult = await this.usuarioRepositorio.runTransaction(op)
 
-    await this.enviarCorreoContrasenia(
-      datosCorreo,
-      usuarioDto.persona.nroDocumento,
-      contrasena
-    ).catch((error) => {
-      this.logger.error(
-        error,
-        `Falló al enviar la contraseña del usuario por correo electrónico — CI: ${usuarioDto.persona.nroDocumento} | contraseña generada: ${contrasena}`
-      )
-    })
+    const urlActivacion = this.construirUrlAccion(
+      'activacion',
+      codigoActivacion
+    )
+
+    if (crearResult.correoElectronico) {
+      const template =
+        TemplateEmailService.armarPlantillaActivacionCuentaPorAdmin(
+          urlActivacion.toString()
+        )
+
+      await this.mensajeriaService
+        .sendEmail(
+          crearResult.correoElectronico,
+          Messages.NEW_USER_ACCOUNT_VERIFY,
+          template
+        )
+        .catch((error) => {
+          this.logger.error(
+            error,
+            `Falló al enviar el correo de activación de cuenta — CI: ${usuarioDto.persona.nroDocumento}`
+          )
+        })
+    }
 
     // [FAKE] Dar de alta en el fake de Ciudadanía Digital (fire-and-forget).
-    // Se elimina esta llamada al desacoplar el fake; no afecta el flujo principal.
+    // Usa una contraseña propia, desacoplada de la cuenta real: el fake simula
+    // un proveedor externo de identidad, no el login local del sistema.
     if (fakeCiudadaniaUrl) {
-      this.darDeAltaEnFakeCiudadania(fakeCiudadaniaUrl, usuarioDto, contrasena).catch((err) => {
-        this.logger.warn(`[FAKE] No se pudo registrar en fake-ciudadania-api: ${err.message}`)
+      const contrasenaFake = TextService.generateShortRandomText()
+      this.darDeAltaEnFakeCiudadania(
+        fakeCiudadaniaUrl,
+        usuarioDto,
+        contrasenaFake
+      ).catch((err) => {
+        this.logger.warn(
+          `[FAKE] No se pudo registrar en fake-ciudadania-api: ${err.message}`
+        )
       })
     }
 
-    return crearResult
+    // El link se devuelve también en la respuesta (endpoint admin-only) como
+    // respaldo por si el envío de correo falla (p. ej. SMTP caído): el admin
+    // puede copiarlo y hacérselo llegar al usuario por otro canal.
+    return { ...crearResult, urlActivacion: urlActivacion.toString() }
   }
 
   async crearCuenta(usuarioDto: CrearUsuarioCuentaDto) {
@@ -265,10 +310,6 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.NO_PERMISSION_FOUND)
     }
 
-    if (!TextService.validateLevelPassword(usuarioDto.contrasenaNueva)) {
-      throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
-    }
-
     let correoActivacion: string | null = null
     let templateActivacion: string | null = null
 
@@ -282,15 +323,15 @@ export class UsuarioService extends BaseService {
         transaction
       )
 
+      // No se define contrasena: el repositorio genera un hash placeholder
+      // (ver UsuarioRepository.crear) que nadie conoce. El usuario recién
+      // define su propia contraseña al activar la cuenta desde el enlace.
       const usuarioNuevo = await this.usuarioRepositorio.crear(
         personaNueva.id,
         {
           usuario: persona.nroDocumento,
           correoElectronico: datosUsuarios.correoElectronico,
           estado: UsuarioEstado.PENDING,
-          contrasena: await TextService.encrypt(
-            TextService.decodeBase64(datosUsuarios.contrasenaNueva)
-          ),
         },
         USUARIO_NORMAL,
         transaction
@@ -304,12 +345,7 @@ export class UsuarioService extends BaseService {
       )
 
       const codigo = TextService.generateUuid()
-
-      const urlActivacion = new URL(
-        this.configService.get('URL_FRONTEND') ?? ''
-      )
-      urlActivacion.pathname = 'activacion'
-      urlActivacion.searchParams.append('q', codigo)
+      const urlActivacion = this.construirUrlAccion('activacion', codigo)
 
       this.logger.info(`📩 urlActivacion: ${urlActivacion}`)
 
@@ -349,7 +385,7 @@ export class UsuarioService extends BaseService {
     return resultado
   }
 
-  async activarCuenta(codigo: string) {
+  async activarCuenta(codigo: string, contrasenaNueva: string) {
     const usuario =
       await this.usuarioRepositorio.buscarPorCodigoActivacion(codigo)
 
@@ -357,13 +393,20 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_USER)
     }
 
+    const contrasenaPlano = TextService.decodeBase64(contrasenaNueva)
+
+    if (!TextService.validateLevelPassword(contrasenaPlano)) {
+      throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
+    }
+
     await this.usuarioRepositorio.actualizar(
-      usuario?.id,
+      usuario.id,
       {
         estado: UsuarioEstado.ACTIVE,
         codigoActivacion: null,
+        contrasena: await TextService.encrypt(contrasenaPlano),
       },
-      usuario?.id
+      usuario.id
     )
 
     const usuarioActualizado = await this.usuarioRepositorio.buscarPorId(
@@ -388,11 +431,7 @@ export class UsuarioService extends BaseService {
     }
 
     const codigo = TextService.generateUuid()
-    const urlRecuperacion = new URL(
-      this.configService.get('URL_FRONTEND') ?? ''
-    )
-    urlRecuperacion.pathname = 'recuperacion'
-    urlRecuperacion.searchParams.append('q', codigo)
+    const urlRecuperacion = this.construirUrlAccion('recuperacion', codigo)
 
     // this.logger.info(`📩 urlRecuperacion: ${urlRecuperacion}`)
 
@@ -450,15 +489,13 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_USER)
     }
 
-    if (
-      !TextService.validateLevelPassword(nuevaContrasenaDto.contrasenaNueva)
-    ) {
-      throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
-    }
-
     const contrasenaNuevaPlano = TextService.decodeBase64(
       nuevaContrasenaDto.contrasenaNueva
     )
+
+    if (!TextService.validateLevelPassword(contrasenaNuevaPlano)) {
+      throw new PreconditionFailedException(Messages.INVALID_PASSWORD_SCORE)
+    }
 
     if (usuario.contrasena) {
       await this.verificarContrasenaNoReutilizada(
@@ -681,13 +718,9 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
-    // cambiar estado al usuario y generar una nueva contrasena
-    const contrasena = TextService.generateShortRandomText()
-
     await this.usuarioRepositorio.actualizar(
       idUsuario,
       {
-        contrasena: await TextService.encrypt(contrasena),
         estado: UsuarioEstado.ACTIVE,
       },
       usuarioAuditoria
@@ -701,24 +734,37 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_USER)
     }
 
-    if (usuarioActualizado.correoElectronico) {
-      // sí está bien ≥ enviar el mail con la contraseña generada
-      const datosCorreo = {
-        correo: usuarioActualizado.correoElectronico,
-        asunto: Messages.SUBJECT_EMAIL_ACCOUNT_ACTIVE,
-      }
+    // Mismo patrón que recuperación/restablecimiento: nunca se genera ni se
+    // envía una contraseña por correo. La cuenta queda activa de inmediato
+    // con su contraseña anterior; el enlace es solo por si el usuario no la
+    // recuerda.
+    const codigo = TextService.generateUuid()
+    const urlRecuperacion = this.construirUrlAccion('recuperacion', codigo)
 
-      await this.enviarCorreoContrasenia(
-        datosCorreo,
-        usuario.usuario,
-        contrasena
-      ).catch((err) => {
-        const mensaje = `Falló al enviar el correo de activación de cuenta`
-        this.logger.error(err, mensaje)
-      })
+    await this.actualizarDatosRecuperacion(idUsuario, codigo)
+
+    if (usuarioActualizado.correoElectronico) {
+      const template = TemplateEmailService.armarPlantillaRecuperacionCuenta(
+        urlRecuperacion.toString()
+      )
+
+      await this.mensajeriaService
+        .sendEmail(
+          usuarioActualizado.correoElectronico,
+          Messages.SUBJECT_EMAIL_ACCOUNT_ACTIVE,
+          template
+        )
+        .catch((err) => {
+          const mensaje = `Falló al enviar el correo de activación de cuenta`
+          this.logger.error(err, mensaje)
+        })
     }
 
-    return { id: usuarioActualizado.id, estado: usuarioActualizado.estado }
+    return {
+      id: usuarioActualizado.id,
+      estado: usuarioActualizado.estado,
+      urlRecuperacion: urlRecuperacion.toString(),
+    }
   }
 
   async inactivar(idUsuario: string, usuarioAuditoria: string) {
@@ -750,26 +796,6 @@ export class UsuarioService extends BaseService {
       id: usuarioActualizado.id,
       estado: usuarioActualizado.estado,
     }
-  }
-
-  async enviarCorreoContrasenia(
-    datosCorreo: { correo: string; asunto: Messages },
-    usuario: string,
-    contrasena: string
-  ) {
-    const url = this.configService.get('URL_FRONTEND')
-    const template = TemplateEmailService.armarPlantillaActivacionCuenta(
-      url,
-      usuario,
-      contrasena
-    )
-
-    await this.mensajeriaService.sendEmail(
-      datosCorreo.correo,
-      datosCorreo.asunto,
-      template
-    )
-    return true
   }
 
   verificarPermisos(usuarioAuditoria: string, id: string) {
@@ -839,51 +865,39 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
-    const contrasena = TextService.generateShortRandomText()
+    // Mismo patrón que la autorecuperación: se manda un enlace de un solo uso
+    // y es el propio usuario quien define su contraseña nueva — nunca se
+    // genera ni se envía una contraseña por correo.
+    const codigo = TextService.generateUuid()
+    const urlRecuperacion = this.construirUrlAccion('recuperacion', codigo)
 
-    const op = async (transaccion: EntityManager) => {
-      await this.usuarioRepositorio.actualizar(
-        idUsuario,
-        {
-          contrasena: await TextService.encrypt(contrasena),
-        },
-        usuarioAuditoria,
-        transaccion
-      )
-
-      const usuarioActualizado = await this.usuarioRepositorio.buscarPorId(
-        idUsuario,
-        transaccion
-      )
-
-      if (!usuarioActualizado) {
-        throw new NotFoundException(Messages.INVALID_USER)
-      }
-
-      return usuarioActualizado
-    }
-
-    const usuarioResult = await this.usuarioRepositorio.runTransaction(op)
-
-    if (usuarioResult.correoElectronico) {
-      const datosCorreo = {
-        correo: usuarioResult.correoElectronico,
-        asunto: Messages.SUBJECT_EMAIL_ACCOUNT_RESET,
-      }
-
-      await this.enviarCorreoContrasenia(
-        datosCorreo,
-        usuarioResult.usuario,
-        contrasena
-      ).catch((error) => {
-        const mensaje = `Ocurrió un error al enviar el correo electrónico para restaurar la contraseña`
-        this.logger.error(error, mensaje)
-      })
-    }
-
+    await this.actualizarDatosRecuperacion(idUsuario, codigo)
     await this.revocarSesionesActivas(idUsuario)
 
-    return { id: usuarioResult.id, estado: usuarioResult.estado }
+    if (usuario.correoElectronico) {
+      const template = TemplateEmailService.armarPlantillaRecuperacionCuenta(
+        urlRecuperacion.toString()
+      )
+
+      await this.mensajeriaService
+        .sendEmail(
+          usuario.correoElectronico,
+          Messages.SUBJECT_EMAIL_ACCOUNT_RESET,
+          template
+        )
+        .catch((error) => {
+          const mensaje = `Ocurrió un error al enviar el correo electrónico para restaurar la contraseña`
+          this.logger.error(error, mensaje)
+        })
+    }
+
+    // El link se devuelve también en la respuesta (endpoint admin-only) como
+    // respaldo por si el envío de correo falla (p. ej. SMTP caído).
+    return {
+      id: idUsuario,
+      estado: usuario.estado,
+      urlRecuperacion: urlRecuperacion.toString(),
+    }
   }
 
   async reenviarCorreoActivacion(idUsuario: string, usuarioAuditoria: string) {
@@ -895,11 +909,7 @@ export class UsuarioService extends BaseService {
     }
 
     const codigo = TextService.generateUuid()
-    const urlActivacion = new URL(
-      this.configService.get('URL_FRONTEND') ?? ''
-    )
-    urlActivacion.pathname = 'activacion'
-    urlActivacion.searchParams.append('q', codigo)
+    const urlActivacion = this.construirUrlAccion('activacion', codigo)
 
     const op = async (transaction: EntityManager) => {
       await this.actualizarDatosActivacion(
@@ -940,7 +950,14 @@ export class UsuarioService extends BaseService {
         })
     }
 
-    return { id: idUsuario, estado: usuarioResult.estado }
+    // El link se devuelve también en la respuesta (endpoint admin-only) como
+    // respaldo por si el envío de correo falla (p. ej. SMTP caído): el admin
+    // puede copiarlo y hacérselo llegar al usuario por otro canal.
+    return {
+      id: idUsuario,
+      estado: usuarioResult.estado,
+      urlActivacion: urlActivacion.toString(),
+    }
   }
 
   async actualizarDatos(

@@ -2,7 +2,7 @@ const YEAR = new Date().getFullYear()
 
 // ─── Colores institucionales FELCN ────────────────────────────────────────────
 const C = {
-  primary: '#1B3A6B',     // azul marino institucional
+  primary: '#1B3A6B', // azul marino institucional
   primaryLight: '#dde6f5',
   primaryDark: '#122850',
   danger: '#C0392B',
@@ -19,81 +19,6 @@ const C = {
 }
 
 export class TemplateEmailService {
-  // ─── Template 1: Credenciales de acceso ──────────────────────────────────
-  // Uso: admin crea usuario / admin resetea contraseña
-  static armarPlantillaActivacionCuenta(
-    url: string,
-    usuario: string,
-    contrasena: string
-  ): string {
-    const content = `
-      ${header('Tus credenciales de acceso')}
-
-      <tr>
-        <td class="px" style="padding:0 28px 18px;">
-          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Tu cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong> ha sido creada.
-            A continuación encontrarás tus credenciales para ingresar por primera vez.
-            Te recomendamos cambiar tu contraseña inmediatamente después de acceder.
-          </p>
-
-          <!-- Bloque de credenciales -->
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                 style="background:${C.primaryLight};border:1px solid #b8cde8;border-radius:10px;margin-bottom:20px;">
-            <tr>
-              <td style="padding:18px 22px;">
-                <div style="font:700 11px/1.2 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;
-                            color:${C.primary};margin-bottom:14px;">
-                  Datos de acceso
-                </div>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                       style="font-size:14px;color:${C.text};">
-                  <tr>
-                    <td style="padding:8px 0;border-bottom:1px solid #b8cde8;color:${C.textMuted};width:35%;
-                               font-size:13px;">Usuario</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #b8cde8;
-                               font-family:'Courier New',monospace;font-size:18px;font-weight:700;
-                               letter-spacing:2px;color:${C.primary};">${usuario}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding:10px 0 0;color:${C.textMuted};font-size:13px;">Contraseña</td>
-                    <td style="padding:10px 0 0;font-family:'Courier New',monospace;font-size:18px;
-                               font-weight:700;letter-spacing:3px;color:${C.primary};">${contrasena}</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-
-      ${ctaButton(url, 'Acceder al sistema')}
-
-      <!-- Advertencia cambio de contraseña -->
-      <tr>
-        <td class="px" style="padding:0 28px 22px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
-                 style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #f9a825;border-radius:10px;">
-            <tr>
-              <td style="padding:14px 16px;">
-                <strong style="display:block;font-size:13px;color:#6d4c00;margin-bottom:4px;">
-                  ⚠ Importante: cambia tu contraseña
-                </strong>
-                <p style="margin:0;font-size:12.5px;line-height:1.55;color:#7a5500;">
-                  Esta contraseña fue generada automáticamente. Por seguridad, cámbiala en tu
-                  primer inicio de sesión. No la compartas con nadie.
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-
-      ${securityTips()}
-    `
-    return buildLayout(content)
-  }
-
   // ─── Template 2: Bloqueo por intentos fallidos ────────────────────────────
   // Uso: autenticación → demasiados intentos fallidos
   static armarPlantillaBloqueoCuenta(url: string): string {
@@ -235,6 +160,51 @@ export class TemplateEmailService {
     `
     return buildLayout(content)
   }
+
+  // ─── Template 4b: Activación de cuenta creada por un administrador ───────
+  // Uso: alta de usuario desde el panel de administración
+  static armarPlantillaActivacionCuentaPorAdmin(url: string): string {
+    const content = `
+      ${header('Activa tu cuenta')}
+
+      <tr>
+        <td class="px" style="padding:0 28px 18px;">
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Un administrador creó una cuenta para vos en el
+            <strong style="color:${C.text};">Sistema FELCN</strong>.
+            Para poder iniciar sesión, primero debés
+            <strong style="color:${C.text};">activar tu cuenta y definir tu propia
+            contraseña</strong> haciendo clic en el botón a continuación.
+          </p>
+        </td>
+      </tr>
+
+      ${ctaButton(url, 'Activar mi cuenta', C.success)}
+
+      <!-- Nota informativa -->
+      <tr>
+        <td class="px" style="padding:0 28px 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                 style="background:${C.successLight};border:1px solid #a3d9b8;
+                        border-left:4px solid ${C.success};border-radius:10px;">
+            <tr>
+              <td style="padding:14px 16px;">
+                <p style="margin:0;font-size:13px;line-height:1.55;color:#155226;">
+                  Una vez activada tu cuenta podrás iniciar sesión con tu usuario y la
+                  contraseña que elijas. Si tienes problemas para activar tu cuenta,
+                  comunícate con el administrador del sistema.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      ${securityTips()}
+    `
+    return buildLayout(content)
+  }
+
   // ─── Template 5: Código OTP / Verificación en dos pasos ──────────────────
   // Uso: login con 2FA habilitado
   static armarPlantillaOtp(codigo: string, expiracionMin: number): string {
@@ -448,7 +418,11 @@ function header(titulo: string): string {
   </tr>`
 }
 
-function ctaButton(url: string, label: string, color: string = C.primary): string {
+function ctaButton(
+  url: string,
+  label: string,
+  color: string = C.primary
+): string {
   return `
   <tr>
     <td class="px" style="padding:0 28px 22px;">

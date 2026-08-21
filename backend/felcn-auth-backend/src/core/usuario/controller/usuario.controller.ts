@@ -261,7 +261,8 @@ export class UsuarioController extends BaseController {
   @Patch('/cuenta/activacion')
   async activarCuenta(@Body() activarCuentaDto: ActivarCuentaDto) {
     const result = await this.usuarioService.activarCuenta(
-      activarCuentaDto.codigo
+      activarCuentaDto.codigo,
+      activarCuentaDto.contrasenaNueva
     )
     return this.successUpdate(result, Messages.ACCOUNT_ACTIVED_SUCCESSFULLY)
   }

@@ -19,6 +19,7 @@ import {
   TransitionZoom,
 } from '@/components/modales/Animations'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
+import { DialogLinkActivacion } from './DialogLinkActivacion'
 
 interface AlertaRestablecerContrasenaProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ export const AlertaRestablecerContrasena: React.FC<
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const [loading, setLoading] = useState(false)
+  const [urlRecuperacion, setUrlRecuperacion] = useState<string | null>(null)
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -52,7 +54,11 @@ export const AlertaRestablecerContrasena: React.FC<
         variant: 'success',
       })
       onSuccess()
-      handleClose()
+      if (respuesta?.datos?.urlRecuperacion) {
+        setUrlRecuperacion(respuesta.datos.urlRecuperacion)
+      } else {
+        handleClose()
+      }
     } catch (e) {
       imprimir(`Error al restablecer contraseña`, e)
       Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
@@ -67,37 +73,52 @@ export const AlertaRestablecerContrasena: React.FC<
     }
   }
 
+  const handleCloseLinkRecuperacion = () => {
+    setUrlRecuperacion(null)
+    onClose()
+  }
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
-      fullScreen={fullScreen}
-    >
-      <DialogTitle id="alert-dialog-title">
-        {'Confirmar restablecimiento de contraseña'}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {`¿Está seguro de restablecer la contraseña del usuario: ${titleCase(usuario?.persona.nombres || '')}?`}
-        </DialogContentText>
-        <ProgresoLineal mostrar={loading} />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary" disabled={loading}>
-          Cancelar
-        </Button>
-        <Button
-          onClick={restablecerContrasena}
-          color="primary"
-          autoFocus
-          disabled={loading}
-        >
-          Confirmar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog
+        open={isOpen && !urlRecuperacion}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
+        fullScreen={fullScreen}
+      >
+        <DialogTitle id="alert-dialog-title">
+          {'Confirmar restablecimiento de contraseña'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`¿Está seguro de restablecer la contraseña del usuario: ${titleCase(usuario?.persona.nombres || '')}? Se le va a enviar un enlace para que defina una contraseña nueva.`}
+          </DialogContentText>
+          <ProgresoLineal mostrar={loading} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary" disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={restablecerContrasena}
+            color="primary"
+            autoFocus
+            disabled={loading}
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <DialogLinkActivacion
+        isOpen={!!urlRecuperacion}
+        onClose={handleCloseLinkRecuperacion}
+        url={urlRecuperacion ?? ''}
+        titulo="Link de recuperación de contraseña"
+        descripcion="El correo puede tardar o no llegar. Copiá este link y compartíselo al usuario (WhatsApp, teléfono, etc.). Al abrirlo, el usuario define su nueva contraseña."
+      />
+    </>
   )
 }

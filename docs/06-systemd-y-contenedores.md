@@ -41,4 +41,13 @@ Orden de arranque en un boot: `docker.service` (systemd) → contenedores con `r
 
 ## 5. Recomendación para el servidor nuevo
 
-Si nginx se dockeriza (ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md)), este gap desaparece solo: pasaría a tener `restart: unless-stopped` como cualquier otro contenedor del compose, sin necesitar el drop-in de systemd de la sección 1.
+El servidor nuevo (staging) replica el mismo patrón de hoy — nginx nativo, no dockerizado (ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md)) — así que este gap se repite si no se aplica el drop-in. Aplicarlo desde el arranque en vez de descubrirlo después de un incidente:
+
+```ini
+# /etc/systemd/system/nginx.service.d/override.conf
+[Service]
+Restart=on-failure
+RestartSec=5
+```
+
+y `systemctl daemon-reload`. Pendiente aplicar también en `servertest`, donde sigue sin corregirse (sección 1).

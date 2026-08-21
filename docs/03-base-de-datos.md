@@ -2,7 +2,7 @@
 
 ## 1. Motor
 
-PostgreSQL ^16 (el servidor actual tiene el cliente 17.10 instalado — verificar compatibilidad si se apunta a una versión de servidor distinta a 16). Hoy corre **nativo en el host** `servertest`, no dockerizado. Para el servidor nuevo se dockeriza — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+PostgreSQL ^16 (el servidor actual tiene el cliente 17.10 instalado — verificar compatibilidad si se apunta a una versión de servidor distinta a 16). Corre **nativo en el host** `servertest`, no dockerizado. El servidor nuevo (staging) replica el mismo patrón, Postgres nativo — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
 
 ## 2. Bases de datos reales en uso
 
@@ -10,7 +10,9 @@ Fuente de verdad: los `.env` / `.env.sample` de cada backend (no los `dbcreate.s
 
 | Base de datos | Usada por | Schemas relevantes |
 |---|---|---|
-| `felcn_auth_v3` | `auth-backend` (principal), `base-backend-v2` (conexión `DB_AUTH_*`, lectura de usuarios), `fake-ciudadania-api` (schema propio) | `usuario` (usuarios, personas, roles, módulos, sesiones), `parametro`, `felcn_estructura`, `proyecto`, `fake_ciudadania` |
+| `felcn_auth_v3` | `auth-backend` (principal), `base-backend-v2` (conexión `DB_AUTH_*`, lectura de usuarios) | `usuario` (usuarios, personas, roles, módulos, sesiones), `parametro`, `felcn_estructura`, `proyecto` |
+
+El schema `fake_ciudadania` **sigue existiendo físicamente** en esta base (`\dn` lo confirma) aunque `fake-ciudadania-api` está confirmado sin uso (ver [00-arquitectura.md](./00-arquitectura.md) §1) — nadie lo escribe hoy. Queda huérfano hasta que se limpie el código de `fake-ciudadania-api`; en ese momento evaluar si también hay que dropear este schema.
 | `felcn_siii` | `base-backend-v2` (`DB_SIII_*`) | ver `felcn_siii.sql` |
 | `felcn_lgi` | `base-backend-v2` (`DB_LGI_*`, mismo servidor que SIII) | ver `lgi-catalogos.sql` |
 | `a_felcn_asignacion_caso` | `base-backend-v2` (`DB_ASIG_CASOS_*`) | ver `felcn_asignacion_caso.sql` |

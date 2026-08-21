@@ -22,6 +22,11 @@ export class ActivarCuentaDto {
   @IsString()
   @IsNotEmpty()
   codigo: string
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  contrasenaNueva: string
 }
 
 export class NuevaContrasenaDto {

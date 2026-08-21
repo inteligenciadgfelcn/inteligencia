@@ -19,6 +19,7 @@ import {
   TransitionZoom,
 } from '@/components/modales/Animations'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
+import { DialogLinkActivacion } from './DialogLinkActivacion'
 
 interface AlertaEstadoUsuarioProps {
   isOpen: boolean
@@ -36,6 +37,7 @@ export const AlertaEstadoUsuario: React.FC<AlertaEstadoUsuarioProps> = ({
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const [loading, setLoading] = useState(false)
+  const [urlRecuperacion, setUrlRecuperacion] = useState<string | null>(null)
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -57,7 +59,11 @@ export const AlertaEstadoUsuario: React.FC<AlertaEstadoUsuarioProps> = ({
         variant: 'success',
       })
       onSuccess()
-      handleClose()
+      if (respuesta?.datos?.urlRecuperacion) {
+        setUrlRecuperacion(respuesta.datos.urlRecuperacion)
+      } else {
+        handleClose()
+      }
     } catch (e) {
       imprimir(`Error estado usuario`, e)
       Alerta({ mensaje: `${InterpreteMensajes(e)}`, variant: 'error' })
@@ -72,39 +78,54 @@ export const AlertaEstadoUsuario: React.FC<AlertaEstadoUsuarioProps> = ({
     }
   }
 
+  const handleCloseLinkRecuperacion = () => {
+    setUrlRecuperacion(null)
+    onClose()
+  }
+
   return (
-    <Dialog
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
-      fullScreen={fullScreen}
-    >
-      <DialogTitle id="alert-dialog-title">
-        {'Confirmar cambio de estado'}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {`¿Está seguro de ${
-            usuario?.estado === 'ACTIVO' ? 'inactivar' : 'activar'
-          } el usuario: ${titleCase(usuario?.persona.nombres || '')}?`}
-        </DialogContentText>
-        <ProgresoLineal mostrar={loading} />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} color="primary" disabled={loading}>
-          Cancelar
-        </Button>
-        <Button
-          onClick={cambiarEstadoUsuario}
-          color="primary"
-          autoFocus
-          disabled={loading}
-        >
-          Confirmar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog
+        open={isOpen && !urlRecuperacion}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        TransitionComponent={fullScreen ? TransitionSlide : TransitionZoom}
+        fullScreen={fullScreen}
+      >
+        <DialogTitle id="alert-dialog-title">
+          {'Confirmar cambio de estado'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {`¿Está seguro de ${
+              usuario?.estado === 'ACTIVO' ? 'inactivar' : 'activar'
+            } el usuario: ${titleCase(usuario?.persona.nombres || '')}?`}
+          </DialogContentText>
+          <ProgresoLineal mostrar={loading} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary" disabled={loading}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={cambiarEstadoUsuario}
+            color="primary"
+            autoFocus
+            disabled={loading}
+          >
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <DialogLinkActivacion
+        isOpen={!!urlRecuperacion}
+        onClose={handleCloseLinkRecuperacion}
+        url={urlRecuperacion ?? ''}
+        titulo="Link de recuperación de contraseña"
+        descripcion="La cuenta ya está activa. Si el usuario no recuerda su contraseña anterior, compartíselo este link (WhatsApp, teléfono, etc.) para que defina una nueva."
+      />
+    </>
   )
 }

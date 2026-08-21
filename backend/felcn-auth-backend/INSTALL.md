@@ -166,20 +166,6 @@ Las siguientes variables de entorno se encuentran en el archivo .env que fue cop
 | `SMTP_PASS`    |                   | Contraseña o App Password. Para Gmail: generar en myaccount.google.com/apppasswords.              |
 | `SMTP_FROM`    |                   | Dirección remitente, ej: `"FELCN Sistema <noreply@felcn.gob.bo>"`.                               |
 
-**Configuración para el servicio SEGIP de IOP, si corresponde**
-
-| Variable          | Valor por defecto | Descripción                                              |
-| ----------------- | ----------------- | -------------------------------------------------------- |
-| `IOP_SEGIP_URL`   |                   | URL de consumo al servicio interoperabilidad de SEGIP.   |
-| `IOP_SEGIP_TOKEN` |                   | Token de consumo al servicio interoperabilidad de SEGIP. |
-
-**Configuración para el servicio SIN de IOP, si corresponde**
-
-| Variable        | Valor por defecto | Descripción                                           |
-| --------------- | ----------------- | ----------------------------------------------------- |
-| `IOP_SIN_URL`   |                   | URL de consumo al Servicio de Impuestos Nacionales.   |
-| `IOP_SIN_TOKEN` |                   | Token de consumo al Servicio de Impuestos Nacionales. |
-
 **Configuración para la integracion de autenticación con Ciudadanía Digital**
 
 Para realizar la configuración de la integración de autenticación con Ciudadanía Digital debe considerar tener conocimiento sobre los siguientes puntos importantes primero:
@@ -203,7 +189,7 @@ Para poder acceder a un usuario de prueba, la plataforma **Ciudadanía Digital D
 
 | Variable       | Valor por defecto | Descripción                                                           |
 | -------------- | ----------------- | --------------------------------------------------------------------- |
-| `URL_FRONTEND` |                   | dominio en el que se encuentra levantado el frontend, si corresponde. |
+| `URL_FRONTEND` |                   | dominio en el que se encuentra levantado el frontend (con `/` final). **Obligatoria**: de acá se arman los links de los correos de activación, recuperación y desbloqueo de cuenta — si queda mal seteada, esos correos quedan con un link roto. |
 
 **Configuración para almacenamiento de archivos**
 

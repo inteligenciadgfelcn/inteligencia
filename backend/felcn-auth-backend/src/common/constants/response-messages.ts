@@ -21,7 +21,7 @@ export enum Messages {
   SUCCESS_DELETE = 'Registro eliminado con éxito.',
 
   // Mensajes de lógica de negocios
-  SUCCESS_RESTART_PASSWORD = 'Se ha enviado una nueva contraseña por correo.',
+  SUCCESS_RESTART_PASSWORD = 'Se ha enviado un enlace para restablecer la contraseña.',
   SUCCESS_RESEND_MAIL_ACTIVATION = 'Se ha enviado un nuevo correo de activación.',
   SUCCESS_ACCOUNT_UNLOCK = 'Cuenta desbloqueada exitosamente.',
   SUCCESS_SESSIONS_CLOSED = 'Se cerraron todas las sesiones activas de la cuenta.',
@@ -36,7 +36,7 @@ export enum Messages {
   INVALID_PASSWORD_SCORE = 'La nueva contraseña no cumple con el nivel de seguridad necesario.',
   PASSWORD_REUSED = 'La nueva contraseña no puede ser igual a la actual ni a ninguna de sus últimas 5 contraseñas.',
   USER_BLOCKED = 'Usuario bloqueado debido a demasiados intentos fallidos de inicio de sesión. Revisa tu correo electrónico.',
-  SUBJECT_EMAIL_ACCOUNT_ACTIVE = 'Generación de credenciales.',
+  SUBJECT_EMAIL_ACCOUNT_ACTIVE = 'Tu cuenta fue reactivada.',
   SUBJECT_EMAIL_ACCOUNT_RECOVERY = 'Revisa tu bandeja de correo. Enviamos un enlace para que puedas recuperar tu cuenta.',
   SUBJECT_EMAIL_ACCOUNT_RESET = 'Restauración de contraseña.',
   SUBJECT_EMAIL_ACCOUNT_LOCKED = 'Bloqueo temporal de cuenta.',

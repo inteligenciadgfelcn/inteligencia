@@ -87,6 +87,8 @@ npm run dev                  # next dev -p 8080
 
 ### 3.5. `fake-ciudadania-api` (puerto 3001) — solo desarrollo
 
+> **Confirmado sin uso en `servertest` (21/08/2026)**: en el servidor real, dev ya corre contra Ciudadanía Digital real (AGETIC) — `fake-ciudadania-api` no está desplegado ahí, ver [00-arquitectura.md](./00-arquitectura.md) §4. Esta sección sigue siendo válida como opción para levantar el proyecto en una laptop sin credenciales de AGETIC, pero no es lo que corre hoy en `servertest`. El código de `auth-backend` que se conecta a este servicio (`FAKE_CIUDADANIA_INTERNAL_URL` en `usuario.service.ts`) sigue existiendo, pendiente de decidir si se elimina.
+
 Simula el proveedor OIDC de Ciudadanía Digital para no depender de credenciales reales de AGETIC en local.
 
 ```bash

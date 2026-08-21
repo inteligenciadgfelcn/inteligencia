@@ -7,48 +7,30 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import IconMail from '@/components/Icon/IconMail'
-import IconLockDots from '@/components/Icon/IconLockDots'
 
-import { encodeBase64, InterpreteMensajes, seguridadPass } from '@/utils'
+import { InterpreteMensajes } from '@/utils'
 import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
 import { formatoFecha, validarFechaFormato } from '@/utils/fechas'
 import { useAlerts } from '@/hooks'
 import { useRouter } from 'next/navigation'
-import { NivelSeguridadPass } from '@/components/utils/NivelSeguridadPass'
 import { BASE_PATH } from '@/imageLoader'
 
 /* VALIDACIONES*/
 
-const schema = z
-  .object({
-    nroDocumento: z.string().min(1, 'Ingrese Nro. Documento'),
-    nombres: z.string().min(1, 'Ingrese nombres'),
-    primerApellido: z.string().min(1, 'Ingrese primer apellido'),
-    segundoApellido: z.string().optional(),
-    fechaNacimiento: z
-      .string()
-      .refine((d) => validarFechaFormato(d, 'YYYY-MM-DD'), {
-        message: 'Fecha inválida',
-      }),
-    correoElectronico: z.string().email('Correo inválido'),
-    telefono: z.string().optional(),
-    password: z
-      .string()
-      .min(8, 'Mínimo 8 caracteres')
-      .refine(
-        async (p) => {
-          const { score } = await seguridadPass(p)
-          return score === 4
-        },
-        { message: 'Contraseña insegura' }
-      ),
-    confirmPassword: z.string(),
-  })
-  .refine((d) => d.password === d.confirmPassword, {
-    path: ['confirmPassword'],
-    message: 'No coinciden',
-  })
+const schema = z.object({
+  nroDocumento: z.string().min(1, 'Ingrese Nro. Documento'),
+  nombres: z.string().min(1, 'Ingrese nombres'),
+  primerApellido: z.string().min(1, 'Ingrese primer apellido'),
+  segundoApellido: z.string().optional(),
+  fechaNacimiento: z
+    .string()
+    .refine((d) => validarFechaFormato(d, 'YYYY-MM-DD'), {
+      message: 'Fecha inválida',
+    }),
+  correoElectronico: z.string().email('Correo inválido'),
+  telefono: z.string().optional(),
+})
 
 type FormData = z.infer<typeof schema>
 
@@ -62,7 +44,6 @@ export default function RegisterVristo() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -72,12 +53,11 @@ export default function RegisterVristo() {
     try {
       setLoading(true)
 
-      const resp = await Servicios.peticion({
+      await Servicios.peticion({
         url: `${Constantes.authUrl}/usuarios/crear-cuenta`,
         method: 'post',
         body: {
           correoElectronico: data.correoElectronico,
-          contrasenaNueva: encodeBase64(encodeURI(data.password)),
           persona: {
             nombres: data.nombres,
             primerApellido: data.primerApellido,
@@ -90,7 +70,8 @@ export default function RegisterVristo() {
       })
 
       Alerta({
-        mensaje: InterpreteMensajes(resp),
+        mensaje:
+          'Cuenta creada. Revisá tu correo electrónico para activarla y definir tu contraseña.',
         variant: 'success',
       })
 
@@ -186,44 +167,6 @@ export default function RegisterVristo() {
             </div>
             <p className="text-danger text-sm">
               {errors.correoElectronico?.message}
-            </p>
-          </div>
-
-          {/* PASSWORD */}
-          <div>
-            <label className="mb-0 block text-white-dark">Contraseña</label>
-            <div className="relative">
-              <input
-                type="password"
-                {...register('password')}
-                className="form-input ps-10"
-              />
-              <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                <IconLockDots />
-              </span>
-            </div>
-            <p className="text-danger text-sm">{errors.password?.message}</p>
-          </div>
-
-          {watch('password') && <NivelSeguridadPass pass={watch('password')} />}
-
-          {/* CONFIRM */}
-          <div>
-            <label className="mb-0 block text-white-dark">
-              Confirmar contraseña
-            </label>
-            <div className="relative">
-              <input
-                type="password"
-                {...register('confirmPassword')}
-                className="form-input ps-10"
-              />
-              <span className="absolute start-4 top-1/2 -translate-y-1/2">
-                <IconLockDots />
-              </span>
-            </div>
-            <p className="text-danger text-sm">
-              {errors.confirmPassword?.message}
             </p>
           </div>
 

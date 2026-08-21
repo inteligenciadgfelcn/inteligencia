@@ -58,8 +58,11 @@ export class AuthenticationService extends BaseService {
       dayjs().toDate()
     )
     // enviar código por email
-    const urlDesbloqueo = new URL(this.configService.get('URL_FRONTEND') ?? '')
-    urlDesbloqueo.pathname = 'desbloqueo'
+    const baseUrl = this.configService.get('URL_FRONTEND') ?? ''
+    const urlDesbloqueo = new URL(
+      'desbloqueo',
+      baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+    )
     urlDesbloqueo.searchParams.append('q', codigo)
 
     const template = TemplateEmailService.armarPlantillaBloqueoCuenta(

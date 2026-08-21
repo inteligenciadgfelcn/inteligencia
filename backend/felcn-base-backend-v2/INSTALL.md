@@ -162,13 +162,6 @@ Las siguientes variables de entorno se encuentran en el archivo .env que fue cop
 | `MSJ_TOKEN`               |                   | TOKEN de consumo al servicio de Mensajería Electrónico (Alertín). |
 | `MSJ_TIMEOUT_EN_SEGUNDOS` | `10`              | Tiempo máximo de espera para las consultas a mensajería           |
 
-**Configuración para el servicio SEGIP de IOP, si corresponde**
-
-| Variable          | Valor por defecto | Descripción                                              |
-| ----------------- | ----------------- | -------------------------------------------------------- |
-| `IOP_SEGIP_URL`   |                   | URL de consumo al servicio interoperabilidad de SEGIP.   |
-| `IOP_SEGIP_TOKEN` |                   | Token de consumo al servicio interoperabilidad de SEGIP. |
-
 **Configuración para el servicio SIN de IOP, si corresponde**
 
 | Variable        | Valor por defecto | Descripción                                           |
