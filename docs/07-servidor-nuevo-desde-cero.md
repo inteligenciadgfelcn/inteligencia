@@ -11,9 +11,112 @@ Procedimiento completo, con **comandos manuales literales**, para dejar funciona
 
 Como este servidor es dedicado a staging (no corre dev en paralelo), el compose de la app corre un solo ambiente, con las credenciales reales de Ciudadanía Digital (AGETIC) directamente en su `.env`.
 
+## 0. Fase 0 — Instalación de Debian 13 (VM en Proxmox, sin entorno gráfico, particionado correcto)
+
+Este servidor es una **VM en un Proxmox** (no bare metal) — la Fase 0 completa se hace desde la interfaz web de Proxmox (`https://<host-proxmox>:8006`), sin necesitar USB físico. Esto se hace **una sola vez**. Todo lo de acá abajo (Fase 1 en adelante) asume que ya existe un Debian 13 arrancado y accesible por SSH.
+
+### Subir el ISO a Proxmox
+
+1. Descargar el netinst de Debian 13 (trixie) — arquitectura `amd64` — desde `https://www.debian.org/distrib/`. Verificar el checksum (`SHA256SUMS`) antes de usarlo.
+2. En Proxmox: **Datacenter → `<nodo>` → `<storage con contenido "ISO Image" habilitado, típicamente `local`>` → ISO Images → Upload**, y subir el archivo descargado. (Si nadie tiene acceso web a Proxmox desde donde está el ISO, también se puede subir por SFTP/`scp` directo a `/var/lib/vz/template/iso/` del nodo.)
+
+### Crear la VM
+
+**Datacenter → `<nodo>` → Create VM**, con estos valores (ajustar nombre/recursos/storage al caso real, el resto no cambiarlo sin una razón concreta):
+
+| Sección | Valor | Motivo |
+|---|---|---|
+| General | Name: `staging-felcn` (o el nombre que corresponda) | Va a ser también el hostname |
+| OS | ISO image: el netinst subido arriba. Type: `Linux`, Version: `6.x - 2.6 Kernel` (o `Debian` si el wizard de esa versión de Proxmox ya lo ofrece como opción directa) | |
+| System | BIOS: `Default (SeaBIOS)` — no hace falta UEFI para este caso, simplifica el particionado (sin `/boot/efi`). **Qemu Agent: tildado** | El guest agent permite que Proxmox apague la VM de forma prolija y le reporte la IP — hay que instalarlo también adentro de la VM en la Fase 1 |
+| Disks | Bus/Device: `VirtIO SCSI` (con SCSI Controller = `VirtIO SCSI single`), tamaño generoso (ver tabla de particiones abajo — sumar todo + margen, p. ej. 200 GB), Storage: el pool real, **Discard: tildado** si el storage soporta thin-provisioning (ZFS, LVM-thin) | VirtIO es el driver paravirtualizado, mucho más rápido que IDE/SATA emulado. `Discard` permite recuperar espacio del storage cuando se borran datos adentro de la VM |
+| CPU | Type: `host` (a menos que la VM necesite migrar en vivo entre nodos con CPUs distintas — en ese caso usar un tipo genérico tipo `x86-64-v2-AES`) | Mejor performance, expone las features reales del CPU físico |
+| Memory | Según los requisitos reales de la app (mínimo razonable: 4 GB, más si hay margen) | |
+| Network | Model: `VirtIO (paravirtualized)`, Bridge: el `vmbrX` que corresponda a la red donde va a vivir este servidor | Igual que el disco, VirtIO es el driver rápido |
+
+Confirmar y crear. **No arrancar todavía** si hace falta revisar algo del hardware asignado — se puede editar antes del primer boot.
+
+### Arranque del instalador
+
+Iniciar la VM (**Start**) y abrir la **Console** (noVNC, botón en la barra superior de la VM) — es la única forma de interactuar con el instalador, no hay puerto serie/USB físico en este caso. Elegir **"Install"** (la opción de texto, no "Graphical install") — coherente con que este servidor va a ser headless de punta a punta, no solo después de instalado.
+
+### Pasos del instalador (en orden)
+
+1. **Idioma**: English (o español, no afecta nada funcional — mantener consistencia con el resto del equipo).
+2. **Ubicación**: Bolivia (u otra según corresponda) — define la zona horaria por defecto, se puede ajustar después con `timedatectl set-timezone America/La_Paz`.
+3. **Teclado**: el layout físico real del teclado que se use para administrar (si es acceso solo por consola remota/SSH después, no importa mucho — poner `American English` es seguro).
+4. **Hostname**: nombre corto y descriptivo del servidor (p. ej. `staging-felcn`). Evitar `localhost` o nombres genéricos.
+5. **Dominio**: dejar vacío si no hay uno interno definido — el dominio público (`nginx`, certificados) se configura después en la Fase 4, no acá.
+6. **Contraseña de root**: **dejar en blanco** — esto hace que el instalador cree automáticamente el primer usuario con permisos `sudo` en vez de una cuenta `root` separada con login directo (reduce superficie de ataque: nadie loguea como `root` por SSH). Alternativa aceptada: sí ponerle contraseña a `root` si la política del equipo lo requiere, pero **nunca reutilizar** esa contraseña en ningún otro lado.
+7. **Usuario y contraseña**: crear el primer usuario administrador (nombre real de la persona, no un genérico tipo `admin`) con una contraseña fuerte real — este es el usuario que después se usa para todo el resto de esta guía vía `sudo`.
+8. **Particionado — manual, no "guiado" (importante, ver detalle abajo)**.
+9. **Selección de software (`tasksel`)**: desmarcar **todo** lo que sea entorno de escritorio. Dejar marcado únicamente:
+   - `SSH server`
+   - `standard system utilities`
+
+   **No marcar** `Debian desktop environment`, `GNOME`, `print server`, ni ningún otro entorno gráfico — este es el paso exacto que causó la caída total de `servertest` el 29/07/2026 cuando se instaló con un entorno gráfico que después quedó con una sesión activa compitiendo con el rol de servidor.
+10. **GRUB**: instalar en el disco principal (el instalador lo sugiere solo si detecta un único disco — confirmar que apunta al disco correcto si hay más de uno).
+11. Reiniciar, sacar el medio de instalación, arrancar el sistema instalado.
+
+### Particionado — esquema recomendado (manual, con LVM)
+
+**No usar el particionado guiado "todo en una partición"** — en un servidor que corre Docker (imágenes/logs de contenedores crecen en `/var`) y Postgres nativo (datos de BD en `/var/lib/postgresql`), un log o una base de datos que crece sin control puede llenar `/` y tirar abajo todo el sistema, no solo el servicio responsable. Separar en particiones/volúmenes lógicos con LVM (permite agrandar después sin reinstalar):
+
+| Punto de montaje | Tamaño sugerido | Motivo |
+|---|---|---|
+| `/boot` | 1 GB, ext4, **fuera de LVM** | GRUB necesita una partición simple, no LVM |
+| `/boot/efi` | 512 MB, FAT32 (solo si el servidor bootea en modo UEFI) | Partición EFI estándar |
+| `swap` | Igual a la RAM hasta 8 GB, o un tamaño fijo razonable (p. ej. 4 GB) si la RAM es mucha | Evitar que el sistema OOM-kill procesos ante picos de memoria |
+| `/` (raíz) | 20–30 GB, ext4, dentro de LVM | Sistema base, paquetes — separado de los datos que realmente crecen |
+| `/var` | 40–60 GB, ext4, dentro de LVM | Imágenes/logs de Docker (`/var/lib/docker`), logs del sistema |
+| `/var/lib/postgresql` | 40–100 GB según el volumen de datos esperado, ext4, dentro de LVM | Datos de Postgres — aislado para que su crecimiento no afecte al resto, y para poder monitorear/alertar su uso de disco por separado |
+| `/home` | 10–20 GB, ext4, dentro de LVM | Home de los usuarios desarrolladores (Fase 2) |
+
+Dejar **espacio libre sin asignar dentro del volume group** (no ocupar el 100% del disco en la instalación) — permite extender cualquiera de estas particiones más adelante (`lvextend` + `resize2fs`) sin necesitar espacio nuevo de otro lado.
+
+En el instalador: elegir **"Manual"** en el paso de particionado, crear la partición `/boot` (y `/boot/efi` si aplica) primero como partición primaria normal, después crear una partición grande para LVM ("physical volume for LVM") con el resto del disco, configurar el volume group, y dentro de él crear los volúmenes lógicos de la tabla de arriba.
+
+### Verificación post-instalación
+
+```bash
+# Confirmar que arrancó en modo texto, sin entorno gráfico
+systemctl get-default        # debe ser multi-user.target
+
+# Confirmar el esquema de particiones
+lsblk
+df -h
+
+# Confirmar acceso SSH desde otra máquina antes de dar por terminado este paso
+ssh <usuario>@<ip-del-servidor>
+```
+
+### Guest Agent (obligatorio, específico de Proxmox)
+
+Sin esto, Proxmox no puede apagar la VM de forma prolija (hace un hard-stop) ni mostrar su IP real en la interfaz:
+
+```bash
+sudo apt install -y qemu-guest-agent
+sudo systemctl enable --now qemu-guest-agent
+```
+
+Confirmar desde Proxmox: la VM debería mostrar su IP en la pestaña **Summary** poco después de instalar el agente (puede requerir reiniciar la VM una vez si no aparece enseguida).
+
+### Backups a nivel de VM (complementan, no reemplazan, el backup de Postgres)
+
+Proxmox puede programar snapshots/backups de la VM completa (**Datacenter → Backup**, o `vzdump` manual) — es una capa adicional de seguridad (recupera la VM entera ante un desastre del hipervisor), pero **no reemplaza** el backup lógico de PostgreSQL de la Fase 3: un `vzdump` no permite restaurar una sola base de datos ni es tan liviano/frecuente como un `pg_dump`. Configurar ambos, no solo uno.
+
+### Si más adelante hay que agrandar el disco
+
+Crecer el disco es un paso en dos partes — agrandar el disco virtual en Proxmox **no** agranda solo la partición de adentro:
+
+1. En Proxmox: VM → Hardware → seleccionar el disco → **Resize** (solo agranda, nunca achica).
+2. Dentro de la VM: extender la partición LVM y el filesystem correspondiente (`growpart`, `pvresize`, `lvextend -r`, o el equivalente según cuál punto de montaje se esté agrandando).
+
+Con esto completado, seguir con la Fase 1.
+
 ## 1. Fase 1 — Sistema base
 
-- Debian 13 (trixie) — **instalación mínima/headless, sin entorno de escritorio**. `servertest` tuvo una caída total (29/07/2026) por una sesión GNOME + Firefox activa en la consola física compitiendo con el rol de servidor. **No instalar tareas de escritorio (`tasksel` "Debian desktop environment") al particionar el servidor nuevo.**
+Con Debian 13 ya instalado (Fase 0), sin entorno gráfico y con acceso SSH funcionando:
 
 ```bash
 # Actualizar el sistema
