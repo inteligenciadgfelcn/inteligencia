@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
-import { DataSource } from 'typeorm'
+import { DataSource, In } from 'typeorm'
 import { DB_S2I } from '../../../shared/constants'
 
 import { S2iBlanco } from '../entity/blanco.entity'
@@ -41,8 +41,29 @@ export class BlancoRepository {
     })
   }
 
+  /**
+   * flujo_telefonico, activo_patrimonial y ovise referencian id_blanco con
+   * delete_rule NO ACTION (sin cascada en BD), y flujo_fiscalia referencia
+   * a su vez flujo_telefonico también sin cascada. Sin este borrado manual
+   * previo, eliminar un blanco con estos registros asociados falla por
+   * violación de llave foránea.
+   */
   async eliminar(idBlanco: string): Promise<void> {
-    await this.dataSource.getRepository(S2iBlanco).delete(idBlanco)
+    await this.dataSource.transaction(async (manager) => {
+      const flujos = await manager.find(S2iFlujoTelefonico, {
+        select: ['idFlujo'],
+        where: { idBlanco },
+      })
+      if (flujos.length > 0) {
+        await manager.delete(S2iFlujoFiscalia, {
+          idFlujo: In(flujos.map((f) => f.idFlujo)),
+        })
+        await manager.delete(S2iFlujoTelefonico, { idBlanco })
+      }
+      await manager.delete(S2iActivoPatrimonial, { idBlanco })
+      await manager.delete(S2iOvise, { idBlanco })
+      await manager.delete(S2iBlanco, idBlanco)
+    })
   }
 
   /**

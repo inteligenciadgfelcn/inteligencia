@@ -23,6 +23,12 @@ export class PersonasRepository {
    * Lista las personas implicadas en un operativo con sus datos de identificación.
    * Origen: Muestradetenidos() — FRM-JUR-02.aspx.cs
    * Tablas: detenido_auxiliar, pais, estado_civil
+   *
+   * Orden: Principal Implicado, Aprehendido, Arrestado — según la columna
+   * `estado` de persona_auxiliar (registro del operativo), cruzada con
+   * detenido_auxiliar por id_operativo + nombres + apellidos, el mismo
+   * criterio de coincidencia usado en migrar-persona-a-detenido-auxiliar.sql.
+   * Quien no tenga coincidencia queda al final, orden alfabético.
    */
   async listarPersonasPorOperativo(idOperativo: string): Promise<Record<string, unknown>[]> {
     const sql = `
@@ -47,8 +53,20 @@ export class PersonasRepository {
       FROM public.detenido_auxiliar da
       INNER JOIN parametricas.pais p          ON da.id_pais = p.id_pais
       INNER JOIN parametricas.estado_civil ec ON da.id_estado_civil = ec.id_estado_civil
+      LEFT JOIN public.persona_auxiliar pa
+        ON pa.id_operativo = da.id_operativo
+       AND pa.nombres = da.nombres
+       AND pa.apellido_paterno = da.apellido_paterno
+       AND pa.apellido_materno = da.apellido_materno
       WHERE da.id_operativo = $1
-      ORDER BY da.apellido_paterno, da.nombres`
+      ORDER BY
+        CASE pa.estado
+          WHEN 'Principal Implicado' THEN 1
+          WHEN 'Aprehendido'         THEN 2
+          WHEN 'Arrestado'           THEN 3
+          ELSE 4
+        END,
+        da.apellido_paterno, da.nombres`
 
     return this.dataSource.query(sql, [idOperativo])
   }
