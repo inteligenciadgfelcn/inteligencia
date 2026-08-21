@@ -210,6 +210,20 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
             ),
         ])
 
+        const ordenCondicionPersona = (estado?: string): number => {
+            switch ((estado ?? '').trim().toUpperCase()) {
+                case 'PRINCIPAL IMPLICADO':
+                    return 1
+                case 'APREHENDIDO':
+                    return 2
+                case 'ARRESTADO':
+                    return 3
+                default:
+                    return 4
+            }
+        }
+        personas.sort((a, b) => ordenCondicionPersona(a.estado) - ordenCondicionPersona(b.estado))
+
         const logotipos = drogas.flatMap((d) => d.logotipos)
 
         return {
