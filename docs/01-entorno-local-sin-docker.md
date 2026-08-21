@@ -102,7 +102,7 @@ Debe correr **antes** de que un usuario intente loguearse vía `auth-backend` en
 
 ### 3.6. `consulta-persona-api` (puerto 8000) — Python/FastAPI
 
-Este es el único proyecto no-Node del backend. Requiere Python 3.11+, `pip install -r requirements.txt`, y conecta a una base de datos externa (`bolivia_hub`, host `72.60.156.246` según `.env.example` — confirmar con el equipo si en local se debe usar otro host) y a Redis (usar `docker run redis:7-alpine` o instalar nativo).
+Este es el único proyecto no-Node del backend. Requiere Python 3.11+, `pip install -r requirements.txt`, y conecta a una base de datos (host configurado en `.env.example`) y a Redis (usar `docker run redis:7-alpine` o instalar nativo).
 
 ```bash
 cd backend/consulta-persona-api

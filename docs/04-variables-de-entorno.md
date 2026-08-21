@@ -64,7 +64,7 @@ Todo lo que empieza con `NEXT_PUBLIC_` termina embebido en el bundle de JavaScri
 
 | Bloque | Variables clave | Secreto |
 |---|---|---|
-| Base de datos | `APP_USER_DB`, `APP_HOST_DB` (externo, `bolivia_hub`), `APP_PASSWORD_DB` | sí |
+| Base de datos | `APP_USER_DB`, `APP_HOST_DB`, `APP_PASSWORD_DB` | sí |
 | Redis | `REDIS_HOST`, `REDIS_PASSWORD` | sí si se setea |
 | API | `API_KEY` (placeholder `cambia_esta_clave_segura` en el `.example`) | sí |
 

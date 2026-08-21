@@ -14,6 +14,7 @@
 | 09 | [Manual de usuario](./09-manual-de-usuario.md) | Redirección — ver [manual-usuario/01](./manual-usuario/01-autenticacion-y-autorizacion.md) y [manual-usuario/02](./manual-usuario/02-sistema-de-inteligencia.md). Capturas de pantalla pendientes; sección de módulos `(fase_2)` en la Parte 2 en curso |
 | 10 | [Formularios y APIs](./10-formularios-y-apis.md) | Inventario de formularios del frontend (excluye `(fase_2)`), endpoints que consumen y tablas de BD involucradas |
 | 11 | [Tablas por base de datos](./11-tablas-por-base-de-datos.md) | Reagrupación del documento 10 en sentido inverso: base de datos → tabla → dónde se usa |
+| 12 | [Requisitos de seguridad e infraestructura](./12-requisitos-seguridad-infraestructura.md) | Checklist estándar que infraestructura/seguridad debe mantener en staging y producción — cada punto atado a un incidente real |
 
 Informes de productos (entregables puntuales, fuera de la numeración): [informes/producto-3-implementacion-fase1.md](./informes/producto-3-implementacion-fase1.md)
 
