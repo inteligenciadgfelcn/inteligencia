@@ -276,7 +276,7 @@ function LogotiposPanel({
 
   const guardar = async () => {
     setSubmitted(true)
-    if (!imagen || !descripcionLogo || !organizacion || !fotografia || !observacion) {
+    if (!imagen || !descripcionLogo || !organizacion || !blanco || !fotografia || !observacion) {
       return
     }
 
@@ -371,14 +371,19 @@ function LogotiposPanel({
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">
-            Posibles Blancos
+            Posibles Blancos <span className="text-danger">*</span>
           </label>
           <Input
             value={blanco}
             onChange={(e) => setBlanco(e.target.value)}
             uppercase
-            className="w-full"
+            className={`w-full ${!blanco && submitted ? 'border-danger' : ''}`}
           />
+          {!blanco && submitted && (
+            <div className="mt-1">
+              <span className="text-danger text-xs block">Este campo es obligatorio</span>
+            </div>
+          )}
         </div>
         <div className="col-span-1 md:col-span-2 lg:col-span-2">
           <label className="mb-1 block text-sm font-medium">Observación <span className="text-danger">*</span></label>
