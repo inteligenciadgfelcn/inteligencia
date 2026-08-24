@@ -17,6 +17,12 @@ import { GradoModule } from './parametro/grado/grado.module';
 import { TamanoDocModule } from './parametro/tamano-doc/tamano-doc.module';
 import { ContenidoBienModule } from './parametro/contenido-bien/contenido-bien.module';
 import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module';
+import { AsignacionLgiModule } from './asignacion_lgi/asignacion_lgi.module';
+import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas_lgi.module';
+import { PersonasImplicadasModule } from './personas_implicadas/personas_implicadas.module';
+import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
+import { InvestigadoresModule } from './investigadores/investigadores.module';
+import { InformacionSiiiModule } from './informacion_siii/informacion_siii.module';
 
 @Module({
   imports: [
@@ -36,6 +42,13 @@ import { CalidadBienModule } from './parametro/calidad-bien/calidad-bien.module'
     TamanoDocModule,
     ContenidoBienModule,
     CalidadBienModule,
+    AsignacionLgiModule,
+    ParametricasLgiModule,
+    PersonasImplicadasModule,
+    SituacionJuridicaModule,
+    InvestigadoresModule,
+    InformacionSiiiModule,
   ],
+  controllers: [],
 })
 export class LgiModule {}
