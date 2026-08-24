@@ -41,19 +41,11 @@ export class AsignacionLgiService {
       )
     }
 
-    const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
-
-    const asignacion = this.asignacionLgiRepository.create({
-      ...datos,
-      disId: disId,
-      uniAbrev,
-    })
-
-    await this.asignacionLgiRepository.save(asignacion)
-
+    const asignacionGuardada =
+      await this.asignacionLgiRepository.crearAsignacionDual(dto, uniAbrev)
     return {
       message: 'Datos generales registrados correctamente',
-      id: asignacion.casosId,
+      id: asignacionGuardada.casosId,
     }
   }
 

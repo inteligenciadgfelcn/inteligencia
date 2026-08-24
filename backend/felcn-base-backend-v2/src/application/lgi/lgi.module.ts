@@ -22,6 +22,7 @@ import { ParametricasLgiModule } from './parametro/parametricas_lgi/parametricas
 import { PersonasImplicadasModule } from './personas_implicadas/personas_implicadas.module';
 import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
 import { InvestigadoresModule } from './investigadores/investigadores.module';
+import { InformacionSiiiModule } from './informacion_siii/informacion_siii.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { InvestigadoresModule } from './investigadores/investigadores.module';
     PersonasImplicadasModule,
     SituacionJuridicaModule,
     InvestigadoresModule,
+    InformacionSiiiModule,
   ],
   controllers: [],
 })

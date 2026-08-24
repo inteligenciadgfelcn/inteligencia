@@ -7,6 +7,7 @@ import { CreatePersonaImplicadaDto } from '../dto/create-personas_implicada.dto'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { UpdatePersonasImplicadaDto } from '../dto/update-personas_implicada.dto'
 import { DeletePersonasImplicadaDto } from '../dto/delete-personas_implicadas.dto'
+import { SituacionJuridica } from '../../situacion_juridica/entities/situacion_juridica.entity'
 
 @Injectable()
 export class PersonasImplicadasLgiRepository {
@@ -43,6 +44,26 @@ export class PersonasImplicadasLgiRepository {
 
     const query = this.personasRepository
       .createQueryBuilder('p')
+      .leftJoinAndMapOne(
+        'p.ultimaSituacionJuridica',
+        SituacionJuridica,
+        's',
+        `s.sit_id = (
+          SELECT sj.sit_id
+          FROM situacion sj
+          WHERE sj.de_id = p.de_id
+          ORDER BY
+            sj.fechahoraing DESC NULLS LAST,
+            sj.sit_id DESC
+          LIMIT 1
+        )`
+      )
+      .leftJoinAndMapOne(
+        's.situacionLegal',
+        'situacionlegal',
+        'sl',
+        'sl.sl_id = s.sl_id'
+      )
       .where('p.caso_id = :casoId', {
         casoId,
       })
@@ -61,11 +82,14 @@ export class PersonasImplicadasLgiRepository {
       )
     }
 
-    return query
-      .orderBy('p.de_id', 'DESC')
-      .take(limite)
-      .skip(saltar)
-      .getManyAndCount()
+    return (
+      query
+        // Aquí se usa la propiedad de la Entity
+        .orderBy('p.deId', 'DESC')
+        .take(limite)
+        .skip(saltar)
+        .getManyAndCount()
+    )
   }
 
   async findOne(deId: number): Promise<PersonasImplicada | null> {
