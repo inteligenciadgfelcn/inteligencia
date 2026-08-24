@@ -1,62 +1,103 @@
-import { PrimaryGeneratedColumn, Column } from "typeorm";
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  UpdateDateColumn,
+} from 'typeorm'
+import { EstadoInvestigador } from '../enum/estado-investigador.enum'
 
+@Entity({
+  schema: 'public',
+  name: 'investigador',
+})
 export class InvestigadorLgi {
-
   @PrimaryGeneratedColumn({
     type: 'bigint',
     name: 'inv_id',
   })
-  investigadorId!: number;
+  investigadorId!: number
 
   @Column({
     type: 'bigint',
     name: 'casos_id',
   })
-  casoId!: number;
+  casoId!: number
 
   @Column({
-    type: 'char',
-    name: 'usuario',
+    type: 'varchar',
+    name: 'usuario_asignado',
     length: 15,
   })
-  numeroPase!: string;
+  numeroPase!: string
 
   @Column({
-    type: 'char',
+    type: 'varchar',
     name: 'memo',
     length: 15,
   })
-  memo!: string;
+  memo!: string
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     name: 'fechaasignacion',
   })
-  fechaAsignacion!: Date;
+  fechaAsignacion!: Date
 
   @Column({
     type: 'boolean',
     name: 'actual',
+    default: true,
   })
-  actual!: boolean;
+  actual!: boolean
 
   @Column({
     type: 'text',
     name: 'updinf',
   })
-  informacionActualizada!: string;
+  informacionActualizada!: string
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     name: 'fechahoraing',
+    default: () => 'CURRENT_TIMESTAMP',
   })
-  fechaHoraIngreso!: Date;
+  fechaHoraIngreso!: Date
 
   @Column({
-    type: 'char',
+    type: 'varchar',
     name: 'usuario',
     length: 15,
   })
-  usuarioRegistro!: string;
+  usuario!: string
 
+  @Column({
+    type: 'enum',
+    enum: EstadoInvestigador,
+    enumName: 'investigador_estado_enum',
+    name: 'estado_investigador',
+    default: EstadoInvestigador.ASIGNADO,
+  })
+  estadoInvestigador!: EstadoInvestigador
+
+  @Column({
+    type: 'timestamptz',
+    name: 'fecha_separacion',
+    nullable: true,
+  })
+  fechaSeparacion!: Date | null
+
+  @Column({
+    name: 'usuario_actualizacion',
+    type: 'varchar',
+    length: 15,
+    nullable: true,
+  })
+  usuarioActualizacion!: string | null
+
+  @UpdateDateColumn({
+    name: 'fecha_actualizacion',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  fechaActualizacion!: Date
 }
