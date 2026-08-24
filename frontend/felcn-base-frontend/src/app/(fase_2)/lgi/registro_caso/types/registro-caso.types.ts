@@ -1,7 +1,10 @@
 import type {
   DepartamentoLgi,
   DistritalLgi,
+  EstadoCivilLgi,
   GrupoLgi,
+  PaisLgi,
+  ProfesionLgi,
   TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 
@@ -59,6 +62,9 @@ export interface PersonaImplicadaFormValues {
   paterno: string
   materno: string
   esposo: string
+  paisId: CatalogOption<PaisLgi> | null
+  estadoCivilId: CatalogOption<EstadoCivilLgi> | null
+  profesionId: CatalogOption<ProfesionLgi> | null
   tipoDocumentoId: CatalogOption<TipoDocumentoLgi> | null
   numeroDocumento: string
 }

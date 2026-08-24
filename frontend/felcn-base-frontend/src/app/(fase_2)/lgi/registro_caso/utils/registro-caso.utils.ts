@@ -49,6 +49,9 @@ export const createDefaultPersonaValues = (): PersonaImplicadaFormValues => ({
   paterno: '',
   materno: '',
   esposo: '',
+  paisId: null,
+  estadoCivilId: null,
+  profesionId: null,
   tipoDocumentoId: null,
   numeroDocumento: '',
 })
