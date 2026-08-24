@@ -2,7 +2,10 @@ import type {
   CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
+  EstadoCivilLgi,
   GrupoLgi,
+  PaisLgi,
+  ProfesionLgi,
   TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import type {
@@ -26,6 +29,30 @@ export const mapTipoDocumentoToOption = (
   item: TipoDocumentoLgi
 ): CatalogOption<TipoDocumentoLgi> => ({
   value: item.td_id,
+  label: item.descripcion,
+  original: item,
+})
+
+export const mapPaisToOption = (
+  item: PaisLgi
+): CatalogOption<PaisLgi> => ({
+  value: item.pa_id,
+  label: item.descripcion,
+  original: item,
+})
+
+export const mapEstadoCivilToOption = (
+  item: EstadoCivilLgi
+): CatalogOption<EstadoCivilLgi> => ({
+  value: item.ec_id,
+  label: item.descripcion,
+  original: item,
+})
+
+export const mapProfesionToOption = (
+  item: ProfesionLgi
+): CatalogOption<ProfesionLgi> => ({
+  value: item.prof_id,
   label: item.descripcion,
   original: item,
 })

@@ -9,9 +9,17 @@ import { Input } from '@/components/ui/Input'
 import { CustomDialog } from '@/components/modales/CustomDialog'
 import { RHFSelect } from '@/components/form/RHFSelect'
 
-import type { TipoDocumentoLgi } from '../../(parametricas)/types/parametricas.types'
+import type {
+  EstadoCivilLgi,
+  PaisLgi,
+  ProfesionLgi,
+  TipoDocumentoLgi,
+} from '../../(parametricas)/types/parametricas.types'
 import {
   formatNombreCompleto,
+  mapEstadoCivilToOption,
+  mapPaisToOption,
+  mapProfesionToOption,
   mapTipoDocumentoToOption,
   buildPersonaPayload,
 } from '../mappers/registro-caso.mappers'
@@ -31,6 +39,9 @@ interface PersonaUpsertDialogProps {
   persona: PersonaImplicadaRow | null
   casoId: number
   tiposDocumento: TipoDocumentoLgi[]
+  paises: PaisLgi[]
+  estadosCiviles: EstadoCivilLgi[]
+  profesiones: ProfesionLgi[]
   onClose: () => void
   onGuardar: (payload: PersonaImplicadaPayload) => Promise<void>
 }
@@ -43,11 +54,38 @@ const catalogoOption = (
   return item ? mapTipoDocumentoToOption(item) : null
 }
 
+const paisOption = (
+  catalogo: PaisLgi[],
+  id?: number
+): CatalogOption<PaisLgi> | null => {
+  const item = catalogo.find((c) => String(c.pa_id) === String(id))
+  return item ? mapPaisToOption(item) : null
+}
+
+const estadoCivilOption = (
+  catalogo: EstadoCivilLgi[],
+  id?: number
+): CatalogOption<EstadoCivilLgi> | null => {
+  const item = catalogo.find((c) => String(c.ec_id) === String(id))
+  return item ? mapEstadoCivilToOption(item) : null
+}
+
+const profesionOption = (
+  catalogo: ProfesionLgi[],
+  id?: number
+): CatalogOption<ProfesionLgi> | null => {
+  const item = catalogo.find((c) => String(c.prof_id) === String(id))
+  return item ? mapProfesionToOption(item) : null
+}
+
 export function PersonaUpsertDialog({
   open,
   persona,
   casoId,
   tiposDocumento,
+  paises,
+  estadosCiviles,
+  profesiones,
   onClose,
   onGuardar,
 }: PersonaUpsertDialogProps) {
@@ -62,21 +100,30 @@ export function PersonaUpsertDialog({
     if (!open) return
     form.reset(
       persona
-        ? {
-            nombres: persona.nombres,
-            paterno: persona.paterno,
-            materno: persona.materno,
-            esposo: persona.esposo,
-            tipoDocumentoId: catalogoOption(
-              tiposDocumento,
-              persona.tipoDocumentoId
-            ),
-            numeroDocumento: persona.numeroDocumento,
-          }
-        : createDefaultPersonaValues()
+          ? {
+              nombres: persona.nombres,
+              paterno: persona.paterno,
+              materno: persona.materno,
+              esposo: persona.esposo,
+              paisId: paisOption(paises, persona.paisId),
+              estadoCivilId: estadoCivilOption(
+                estadosCiviles,
+                persona.estadoCivilId
+              ),
+              profesionId: profesionOption(
+                profesiones,
+                persona.profesionId
+              ),
+              tipoDocumentoId: catalogoOption(
+                tiposDocumento,
+                persona.tipoDocumentoId
+              ),
+              numeroDocumento: persona.numeroDocumento,
+            }
+          : createDefaultPersonaValues()
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, persona, tiposDocumento])
+  }, [open, persona, tiposDocumento, paises, estadosCiviles, profesiones])
 
   const onSubmit = async (values: PersonaImplicadaSchemaValues) => {
     setGuardando(true)
@@ -169,6 +216,36 @@ export function PersonaUpsertDialog({
               </p>
             )}
           </div>
+
+          <RHFSelect<PaisLgi>
+            id="paisId"
+            name="paisId"
+            control={form.control}
+            label="País"
+            error={errors.paisId?.message as string | undefined}
+            originalData={paises}
+            mapOption={mapPaisToOption}
+          />
+
+          <RHFSelect<EstadoCivilLgi>
+            id="estadoCivilId"
+            name="estadoCivilId"
+            control={form.control}
+            label="Estado civil"
+            error={errors.estadoCivilId?.message as string | undefined}
+            originalData={estadosCiviles}
+            mapOption={mapEstadoCivilToOption}
+          />
+
+          <RHFSelect<ProfesionLgi>
+            id="profesionId"
+            name="profesionId"
+            control={form.control}
+            label="Profesión"
+            error={errors.profesionId?.message as string | undefined}
+            originalData={profesiones}
+            mapOption={mapProfesionToOption}
+          />
 
           <RHFSelect<TipoDocumentoLgi>
             id="tipoDocumentoId"

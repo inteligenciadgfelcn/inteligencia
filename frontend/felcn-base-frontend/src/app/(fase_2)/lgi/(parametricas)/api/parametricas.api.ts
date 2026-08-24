@@ -4,7 +4,10 @@ import type {
   CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
+  EstadoCivilLgi,
   GrupoLgi,
+  PaisLgi,
+  ProfesionLgi,
   TipoDocumentoLgi,
 } from '../types/parametricas.types'
 
@@ -35,7 +38,7 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarPaises(): Promise<CatalogoLgi[]> {
+  listarPaises(): Promise<PaisLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allPais`,
       method: 'get',
@@ -59,7 +62,7 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarEstadosCiviles(): Promise<CatalogoLgi[]> {
+  listarEstadosCiviles(): Promise<EstadoCivilLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allEstadoCivil`,
       method: 'get',
@@ -67,7 +70,7 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarProfesiones(): Promise<CatalogoLgi[]> {
+  listarProfesiones(): Promise<ProfesionLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allProfesion`,
       method: 'get',

@@ -30,3 +30,20 @@ export interface TipoDocumentoLgi {
   td_id: string
   descripcion: string
 }
+
+export interface PaisLgi {
+  pa_id: string
+  cont_id: string
+  descripcion: string
+}
+
+export interface EstadoCivilLgi {
+  ec_id: string
+  descripcion: string
+}
+
+export interface ProfesionLgi {
+  prof_id: string
+  descripcion: string
+  prof_ocup: boolean
+}

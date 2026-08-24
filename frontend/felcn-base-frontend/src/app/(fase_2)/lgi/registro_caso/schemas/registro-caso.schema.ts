@@ -89,6 +89,9 @@ export const personaImplicadaSchema = z
       'Máximo 50 caracteres'
     ),
     esposo: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
+    paisId: optionSchema.nullable(),
+    estadoCivilId: optionSchema.nullable(),
+    profesionId: optionSchema.nullable(),
     tipoDocumentoId: optionSchema.nullable(),
     numeroDocumento: requiredText('El número de documento es obligatorio').max(
       50,
@@ -120,10 +123,31 @@ export const situacionJuridicaSchema = z
     }
   })
 
+export const informacionCasoSchema = z
+  .object({
+    formaInicio: optionSchema.nullable(),
+    nroCasoFelcn: requiredText('El número de caso FELCN es obligatorio').max(
+      50,
+      'Máximo 50 caracteres'
+    ),
+  })
+  .superRefine((values, context) => {
+    if (!values.formaInicio) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La forma de inicio es obligatoria',
+        path: ['formaInicio'],
+      })
+    }
+  })
+
 export type DatosGeneralesSchemaValues = z.infer<typeof datosGeneralesSchema>
 export type PersonaImplicadaSchemaValues = z.infer<
   typeof personaImplicadaSchema
 >
 export type SituacionJuridicaSchemaValues = z.infer<
   typeof situacionJuridicaSchema
+>
+export type InformacionCasoSchemaValues = z.infer<
+  typeof informacionCasoSchema
 >

@@ -23,7 +23,10 @@ import IconTrash from '@/components/Icon/IconTrash'
 import type {
   DepartamentoLgi,
   DistritalLgi,
+  EstadoCivilLgi,
   GrupoLgi,
+  PaisLgi,
+  ProfesionLgi,
   TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
@@ -40,8 +43,10 @@ import {
 } from '../mappers/registro-caso.mappers'
 import {
   datosGeneralesSchema,
+  informacionCasoSchema,
   situacionJuridicaSchema,
   type DatosGeneralesSchemaValues,
+  type InformacionCasoSchemaValues,
   type SituacionJuridicaSchemaValues,
 } from '../schemas/registro-caso.schema'
 import type {
@@ -56,6 +61,7 @@ import {
   leerCasoDeStorage,
 } from '../utils/registro-caso.utils'
 import { PersonaUpsertDialog } from './PersonaUpsertDialog'
+import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 
 type TabKey =
   | 'datos-generales'
@@ -70,6 +76,18 @@ interface Props {
   modo?: Modo
 }
 
+const FORMAS_INICIO = [
+  'Remisión fiscalía',
+  'Por denuncia',
+  'Reporte inteligencia',
+]
+
+const formaInicioToOption = (value: string): CatalogOption<string> => ({
+  value,
+  label: value,
+  original: value,
+})
+
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: 'datos-generales', label: 'Datos generales del caso' },
   { key: 'personas', label: 'Personas investigadas' },
@@ -83,16 +101,7 @@ const placeholderCards: Record<
 > = {
   'datos-generales': [],
   personas: [],
-  'informacion-caso': [
-    {
-      label: 'Estado',
-      value: 'Sección preparada para la próxima fase',
-    },
-    {
-      label: 'Observación',
-      value: 'Requiere endpoints de información del caso',
-    },
-  ],
+  'informacion-caso': [],
   investigadores: [
     {
       label: 'Registros',
@@ -118,6 +127,8 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [mensaje, setMensaje] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [generandoNumero, setGenerandoNumero] = useState(false)
+  const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
+    useState(false)
 
   const casoIdEfectivo = casoActivo ?? casoActivoId
 
@@ -135,6 +146,21 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
     queryKey: ['lgi-registro-caso', 'tipos-documento'],
     queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
+  })
+
+  const { data: paises = [] } = useQuery<PaisLgi[]>({
+    queryKey: ['lgi-registro-caso', 'paises'],
+    queryFn: () => ParametricasLgiApi.listarPaises(),
+  })
+
+  const { data: estadosCiviles = [] } = useQuery<EstadoCivilLgi[]>({
+    queryKey: ['lgi-registro-caso', 'estados-civiles'],
+    queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
+  })
+
+  const { data: profesiones = [] } = useQuery<ProfesionLgi[]>({
+    queryKey: ['lgi-registro-caso', 'profesiones'],
+    queryFn: () => ParametricasLgiApi.listarProfesiones(),
   })
 
   const { data: situacionesLegales = [] } = useQuery<SituacionLegalCatalogo[]>({
@@ -224,6 +250,26 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     } finally {
       setGenerandoNumero(false)
     }
+  }
+
+  // ── Formulario información del caso ────────────────────────────────────────
+  const informacionForm = useForm<InformacionCasoSchemaValues>({
+    resolver: zodResolver(informacionCasoSchema),
+    defaultValues: {
+      formaInicio: null,
+      nroCasoFelcn: '',
+    },
+  })
+
+  const {
+    register: registerInformacion,
+    control: controlInformacion,
+    handleSubmit: handleSubmitInformacion,
+    formState: { errors: errorsInformacion },
+  } = informacionForm
+
+  const onSubmitInformacion = () => {
+    setActiveTab('investigadores')
   }
 
   const onSubmitDatosGenerales = async (values: DatosGeneralesSchemaValues) => {
@@ -689,27 +735,99 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     columns={personaColumns}
                     loading={loadingPersonas || fetchingPersonas}
                   />
+
+                  {!isLectura && (
+                    <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
+                      <Button
+                        type="button"
+                        variant="outline-secondary"
+                        onClick={() => setActiveTab('datos-generales')}
+                      >
+                        Volver
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => setActiveTab('informacion-caso')}
+                      >
+                        Siguiente
+                      </Button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           )}
 
           {activeTab === 'informacion-caso' && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {currentCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a]"
-                >
-                  <p className="text-xs uppercase tracking-wide text-gray-500">
-                    {card.label}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-dark dark:text-white-light">
-                    {card.value}
-                  </p>
+            <form
+              onSubmit={handleSubmitInformacion(onSubmitInformacion)}
+              className="space-y-4"
+            >
+              <Card title="Información del caso">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <RHFSelect<string>
+                    id="formaInicio"
+                    name="formaInicio"
+                    control={controlInformacion}
+                    label="Forma de inicio del caso"
+                    error={
+                      errorsInformacion.formaInicio?.message as
+                        | string
+                        | undefined
+                    }
+                    isDisable={isLectura}
+                    originalData={FORMAS_INICIO}
+                    mapOption={formaInicioToOption}
+                  />
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Nro Caso FELCN
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        {...registerInformacion('nroCasoFelcn')}
+                        disabled={isLectura}
+                        error={!!errorsInformacion.nroCasoFelcn}
+                        className="w-full"
+                        placeholder="Número de caso FELCN"
+                      />
+                      {!isLectura && (
+                        <Button
+                          type="button"
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => setSolicitarInteligenciaOpen(true)}
+                        >
+                          Buscar
+                        </Button>
+                      )}
+                    </div>
+                    {errorsInformacion.nroCasoFelcn && (
+                      <p className="mt-1 text-xs text-danger">
+                        {errorsInformacion.nroCasoFelcn.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
+              </Card>
+
+              {!isLectura && (
+                <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={() => setActiveTab('personas')}
+                  >
+                    Volver
+                  </Button>
+                  <Button type="submit" variant="primary">
+                    Siguiente
+                  </Button>
+                </div>
+              )}
+            </form>
           )}
 
           {activeTab === 'investigadores' && (
@@ -738,8 +856,17 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         persona={personaEditando}
         casoId={casoIdEfectivo ?? 0}
         tiposDocumento={tiposDocumento}
+        paises={paises}
+        estadosCiviles={estadosCiviles}
+        profesiones={profesiones}
         onClose={() => setPersonaModalOpen(false)}
         onGuardar={guardarPersona}
+      />
+
+      {/* Dialog solicitar info de inteligencia */}
+      <SolicitarInteligenciaDialog
+        open={solicitarInteligenciaOpen}
+        onClose={() => setSolicitarInteligenciaOpen(false)}
       />
 
       {/* Modal situación jurídica */}
