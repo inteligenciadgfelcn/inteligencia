@@ -19,5 +19,6 @@ import { Servicio } from '../servicio/entities/servicio.entity'
   ],
   providers: [AsignacionesService, AsignacionesRepository],
   controllers: [AsignacionesController],
+  exports: [AsignacionesService]
 })
 export class AsignacionesModule {}
