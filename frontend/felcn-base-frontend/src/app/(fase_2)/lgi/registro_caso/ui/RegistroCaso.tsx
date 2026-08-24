@@ -62,6 +62,8 @@ import {
 } from '../utils/registro-caso.utils'
 import { PersonaUpsertDialog } from './PersonaUpsertDialog'
 import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
+import { CasoSiiiDialog } from './CasoSiiiDialog'
+import { InvestigadoresDataTable } from './InvestigadoresDataTable'
 
 type TabKey =
   | 'datos-generales'
@@ -190,15 +192,15 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       ...createDefaultDatosGeneralesValues(),
       ...(casoInicial && casoId
         ? {
-            disId: disIdInicial,
-            nombreCaso: casoInicial.nombreCaso ?? '',
-            nroCaso: casoInicial.nroCaso ?? '',
-            cudIfp: casoInicial.cudIfp ?? '',
-            remiteFiscal: casoInicial.remiteFiscal ?? '',
-            conformeA: casoInicial.conformeA ?? '',
-            controlJurisdiccional:
-              (casoInicial.controlJurisdiccional as string | undefined) ?? '',
-          }
+          disId: disIdInicial,
+          nombreCaso: casoInicial.nombreCaso ?? '',
+          nroCaso: casoInicial.nroCaso ?? '',
+          cudIfp: casoInicial.cudIfp ?? '',
+          remiteFiscal: casoInicial.remiteFiscal ?? '',
+          conformeA: casoInicial.conformeA ?? '',
+          controlJurisdiccional:
+            (casoInicial.controlJurisdiccional as string | undefined) ?? '',
+        }
         : {}),
     },
   })
@@ -399,48 +401,48 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     ...(isLectura
       ? []
       : ([
-          {
-            accessor: 'acciones',
-            title: 'Acciones',
-            render: (row: PersonaImplicadaRow) => (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  aria-label={`Editar ${formatNombreCompleto(row)}`}
-                  title="Editar"
-                  onClick={() => abrirPersonaModal(row)}
-                >
-                  <IconEdit className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  aria-label={`Situación jurídica de ${formatNombreCompleto(row)}`}
-                  title="Situación jurídica"
-                  onClick={() => abrirSituacionModal(row)}
-                >
-                  <IconClipboardText className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline-danger"
-                  size="sm"
-                  className="!p-1.5"
-                  aria-label={`Eliminar ${formatNombreCompleto(row)}`}
-                  title="Eliminar"
-                  onClick={() => setPersonaEliminar(row)}
-                >
-                  <IconTrash className="h-4 w-4" />
-                </Button>
-              </div>
-            ),
-          },
-        ] as Column<PersonaImplicadaRow>[])),
+        {
+          accessor: 'acciones',
+          title: 'Acciones',
+          render: (row: PersonaImplicadaRow) => (
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                aria-label={`Editar ${formatNombreCompleto(row)}`}
+                title="Editar"
+                onClick={() => abrirPersonaModal(row)}
+              >
+                <IconEdit className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                aria-label={`Situación jurídica de ${formatNombreCompleto(row)}`}
+                title="Situación jurídica"
+                onClick={() => abrirSituacionModal(row)}
+              >
+                <IconClipboardText className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-danger"
+                size="sm"
+                className="!p-1.5"
+                aria-label={`Eliminar ${formatNombreCompleto(row)}`}
+                title="Eliminar"
+                onClick={() => setPersonaEliminar(row)}
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            </div>
+          ),
+        },
+      ] as Column<PersonaImplicadaRow>[])),
   ]
 
   const currentCards = useMemo(() => placeholderCards[activeTab], [activeTab])
@@ -491,11 +493,10 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`border-b-2 px-5 py-4 text-sm font-semibold transition ${
-                    active
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
-                  }`}
+                  className={`border-b-2 px-5 py-4 text-sm font-semibold transition ${active
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
+                    }`}
                   onClick={() => setActiveTab(tab.key)}
                 >
                   {tab.label}
@@ -773,8 +774,8 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     label="Forma de inicio del caso"
                     error={
                       errorsInformacion.formaInicio?.message as
-                        | string
-                        | undefined
+                      | string
+                      | undefined
                     }
                     isDisable={isLectura}
                     originalData={FORMAS_INICIO}
@@ -831,21 +832,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
           )}
 
           {activeTab === 'investigadores' && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {currentCards.map((card) => (
-                <div
-                  key={card.label}
-                  className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a]"
-                >
-                  <p className="text-xs uppercase tracking-wide text-gray-500">
-                    {card.label}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-dark dark:text-white-light">
-                    {card.value}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <InvestigadoresDataTable casoId={casoId!} />
           )}
         </div>
       </div>
@@ -864,10 +851,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       />
 
       {/* Dialog solicitar info de inteligencia */}
-      <SolicitarInteligenciaDialog
-        open={solicitarInteligenciaOpen}
-        onClose={() => setSolicitarInteligenciaOpen(false)}
-      />
+      <CasoSiiiDialog isOpen={solicitarInteligenciaOpen} nroCaso={informacionForm.getValues('nroCasoFelcn')} onClose={() => {
+        setSolicitarInteligenciaOpen(false)
+      }} />
 
       {/* Modal situación jurídica */}
       <CustomDialog
@@ -892,8 +878,8 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
               label="Situación legal"
               error={
                 situacionForm.formState.errors.situacionLegalId?.message as
-                  | string
-                  | undefined
+                | string
+                | undefined
               }
               originalData={situacionesLegales}
               mapOption={mapSituacionLegalToOption}
