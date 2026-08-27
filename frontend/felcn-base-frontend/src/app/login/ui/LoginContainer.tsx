@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, useEffect } from 'react'
@@ -14,6 +14,7 @@ import { useAuth } from '@/context/AuthProvider'
 import { OAuthButton } from './OAuthButton'
 import { Constantes } from '@/config/Constantes'
 import IconEye from '@/components/Icon/IconEye'
+import { OtpCodeInput } from '@/components/form/OtpCodeInput'
 
 /* VALIDACIONES */
 const formSchema = z.object({
@@ -53,12 +54,13 @@ export default function LoginContainer() {
   })
 
   const {
-    register: registerOtp,
+    control: controlOtp,
     handleSubmit: handleSubmitOtp,
     formState: { errors: errorsOtp },
     reset: resetOtp,
   } = useForm<OtpFormValues>({
     resolver: zodResolver(otpSchema),
+    defaultValues: { codigo: '' },
   })
 
   const iniciarSesion = async (data: FormValues) => {
@@ -93,17 +95,27 @@ export default function LoginContainer() {
           className="space-y-5"
         >
           <div>
-            <label className="mb-0 block text-white-dark">
+            <label className="mb-0 block text-center text-white-dark">
               Código de verificación
             </label>
-            <input
-              {...registerOtp('codigo')}
-              maxLength={6}
-              inputMode="numeric"
-              autoFocus
-              className="form-input text-center tracking-[0.5em]"
+            <Controller
+              name="codigo"
+              control={controlOtp}
+              render={({ field }) => (
+                <OtpCodeInput
+                  value={field.value}
+                  onChange={(codigo) => {
+                    field.onChange(codigo)
+                    if (codigo.length === 6) {
+                      handleSubmitOtp(confirmarOtp)()
+                    }
+                  }}
+                  disabled={mounted ? progresoLogin : false}
+                  autoFocus
+                />
+              )}
             />
-            <p className="text-danger text-sm">
+            <p className="text-danger text-sm text-center">
               {errorsOtp.codigo?.message}
             </p>
           </div>
