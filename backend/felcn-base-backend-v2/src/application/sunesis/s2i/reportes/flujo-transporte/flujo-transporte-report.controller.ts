@@ -117,12 +117,9 @@ export class FlujoTransporteReportController extends BaseController {
       )
       const filas = await this.reporteService.listarTodos(filtro)
 
-      const { usuario, accessToken } = req.user as PassportUser
+      const { usuario } = req.user as PassportUser
       const usuarioGenerador =
-        await this.reportBaseService.obtenerUsuarioGenerador(
-          accessToken,
-          usuario
-        )
+        await this.reportBaseService.obtenerUsuarioGenerador(usuario)
 
       const template = new RepFlujoTransporteTemplate(usuarioGenerador)
       const pdfBuffer = await this.reportBaseService.generatePdf(template, {

@@ -141,8 +141,8 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(usuario)
       const template = new OperativeReportTemplate(usuarioGenerador)
       const data = await OperativeReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
@@ -174,8 +174,8 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(usuario)
       const template = new CasoGralReportTemplate(usuarioGenerador)
       const data = await CasoGralReportTemplate.fetchData(this.operativoService, numeroOperativo)
 
@@ -209,8 +209,8 @@ export class OperativeReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(usuario)
       const { filas } = await this.cruzadasService.buscarAvanzado(filtro)
       const template = new CruzadasReportTemplate(usuarioGenerador)
       const pdfBuffer = await this.reportService.generatePdf(template, filas)
