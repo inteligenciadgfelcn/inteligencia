@@ -12,13 +12,21 @@ import {
   seguridadPass,
   siteName,
 } from '@/utils'
-import { Box, Card, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Card,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import { Icono } from '@/components/Icono'
 import Button from '@mui/material/Button'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { NivelSeguridadPass } from '@/components/utils/NivelSeguridadPass'
 import { useAlerts } from '@/hooks'
+import { Visibility, VisibilityOff } from '@mui/icons-material'
 
 const schema = z
   .object({
@@ -49,6 +57,8 @@ export default function ActivacionPage() {
 
   const [loading, setLoading] = useState(false)
   const [activada, setActivada] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const {
     register,
@@ -161,22 +171,56 @@ export default function ActivacionPage() {
               </Typography>
               <TextField
                 label="Contraseña"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 fullWidth
                 {...register('password')}
                 error={!!errors.password}
                 helperText={errors.password?.message}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
               {watch('password') && (
                 <NivelSeguridadPass pass={watch('password')} />
               )}
               <TextField
                 label="Confirmar contraseña"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 fullWidth
                 {...register('confirmPassword')}
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword?.message}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          edge="end"
+                        >
+                          {showConfirmPassword ? (
+                            <VisibilityOff />
+                          ) : (
+                            <Visibility />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
               <ProgresoLineal mostrar={loading} />
               <Button type="submit" variant="contained" disabled={loading}>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -48,6 +48,18 @@ export default function RegisterVristo() {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
+
+  /** Fuerza mayúsculas mientras se escribe (todos los campos excepto el correo). */
+  const registerMayusculas = (name: keyof FormData) => {
+    const campo = register(name)
+    return {
+      ...campo,
+      onChange: (e: ChangeEvent<HTMLInputElement>) => {
+        e.target.value = e.target.value.toUpperCase()
+        return campo.onChange(e)
+      },
+    }
+  }
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -106,7 +118,7 @@ export default function RegisterVristo() {
           {/* DOCUMENTO */}
           <div>
             <label className="mb-0 block text-white-dark">Nro. Documento</label>
-            <input {...register('nroDocumento')} className="form-input" />
+            <input {...registerMayusculas('nroDocumento')} className="form-input" />
             <p className="text-danger text-sm">
               {errors.nroDocumento?.message}
             </p>
@@ -115,7 +127,7 @@ export default function RegisterVristo() {
           {/* NOMBRES */}
           <div>
             <label className="mb-0 block text-white-dark">Nombres</label>
-            <input {...register('nombres')} className="form-input" />
+            <input {...registerMayusculas('nombres')} className="form-input" />
             <p className="text-danger text-sm">{errors.nombres?.message}</p>
           </div>
 
@@ -125,14 +137,20 @@ export default function RegisterVristo() {
               <label className="mb-0 block text-white-dark">
                 Primer Apellido
               </label>
-              <input {...register('primerApellido')} className="form-input" />
+              <input
+                {...registerMayusculas('primerApellido')}
+                className="form-input"
+              />
             </div>
 
             <div>
               <label className="mb-0 block text-white-dark">
                 Segundo Apellido
               </label>
-              <input {...register('segundoApellido')} className="form-input" />
+              <input
+                {...registerMayusculas('segundoApellido')}
+                className="form-input"
+              />
             </div>
           </div>
 
