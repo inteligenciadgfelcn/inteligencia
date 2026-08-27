@@ -120,7 +120,7 @@ export class RepCasoSigTemplate implements ReportTemplate<any> {
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th { background: #5D7B9D; color: white; padding: 6px 8px; text-align: left; }
     td { border: 1px solid #e5e7eb; padding: 6px 8px; }
-    #map { display: block; box-sizing: border-box; position: relative; overflow: hidden; width: 896px; height: 420px; margin: 0 auto; border: 3px solid #3e5f8a; border-radius: 6px; page-break-inside: avoid; }
+    #map { display: block; box-sizing: border-box; position: relative; overflow: hidden; width: 896px; height: 340px; margin: 0 auto; border: 3px solid #3e5f8a; border-radius: 6px; page-break-inside: avoid; }
     @media print { body { background: white; padding: 0; }
                    .doc { box-shadow: none; } }
   </style>
