@@ -10,6 +10,10 @@ export const Configurations = {
   OTP_MAX_INTENTOS: 3,        // Intentos fallidos antes de invalidar la sesión OTP
   OTP_RATE_LIMIT_SEGUNDOS: 60, // Segundos de espera mínima entre solicitudes de OTP
   OTP_CANAL_DEFAULT: 'EMAIL' as string, // Canal por defecto cuando el usuario no tiene uno configurado
+  // Dispositivo de confianza: tras un OTP verificado, ese navegador no vuelve
+  // a pedir OTP hasta que pase esta ventana (o hasta que se revoquen sesiones).
+  OTP_CONFIANZA_COOKIE: 'otp_confianza',
+  OTP_CONFIANZA_HORAS: 24,
   // LISTA DE DOMINIOS DE EMAIL NO PERMITIDOS
   BLACK_LIST_EMAILS: [
     '10minutemail.com',
