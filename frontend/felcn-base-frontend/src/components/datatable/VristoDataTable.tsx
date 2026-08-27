@@ -297,7 +297,10 @@ export function VristoDataTable<T>({
                       {rowExpansion && expanded && (
                         <tr>
                           <td colSpan={totalColumns} className="p-0">
-                            <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30">
+                            {/* sticky + ancho acotado al viewport: evita que el
+                                formulario anidado quede "perdido" fuera de pantalla
+                                cuando la tabla es más ancha que el viewport (móvil) */}
+                            <div className="sticky left-0 w-[min(100%,calc(100vw-4rem))] whitespace-normal border-t border-[#e0e6ed] p-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30">
                               {rowExpansion.renderContent(row)}
                             </div>
                           </td>
