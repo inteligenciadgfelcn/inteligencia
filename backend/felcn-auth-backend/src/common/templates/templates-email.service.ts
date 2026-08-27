@@ -225,12 +225,18 @@ export class TemplateEmailService {
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                  style="margin-bottom:20px;">
             <tr>
-              <td align="center" style="padding:16px 10px;background:${C.primaryLight};
-                         border:2px solid ${C.primary};border-radius:8px;">
-                <span style="font-family:'Courier New',monospace;font-size:32px;
-                             font-weight:700;letter-spacing:10px;color:${C.primary};">
-                  ${codigo}
-                </span>
+              <td align="center">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" style="padding:10px 22px;background:${C.successLight};
+                               border:1px solid ${C.success};border-radius:6px;">
+                      <span style="font-family:'Courier New',monospace;font-size:24px;
+                                   font-weight:700;letter-spacing:6px;color:${C.success};">
+                        ${codigo}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>
