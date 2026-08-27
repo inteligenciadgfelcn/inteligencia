@@ -6,8 +6,14 @@ import { MensajeriaService } from '@/core/external-services/mensajeria/mensajeri
 import { UsuarioRepository } from '@/core/usuario/repository/usuario.repository'
 import { Usuario } from '@/core/usuario/entity/usuario.entity'
 import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
 import { OtpSesionRepository } from '../repository/otp-sesion.repository'
 import dayjs from 'dayjs'
+
+interface TokenConfianzaPayload {
+  sub: string
+  tipo: 'otp_confianza'
+}
 
 export const OtpCanal = {
   EMAIL: 'EMAIL',
@@ -23,19 +29,74 @@ export class OtpService extends BaseService {
   constructor(
     private readonly otpSesionRepository: OtpSesionRepository,
     private readonly usuarioRepository: UsuarioRepository,
-    private readonly mensajeriaService: MensajeriaService
+    private readonly mensajeriaService: MensajeriaService,
+    private readonly jwtService: JwtService
   ) {
     super()
+  }
+
+  /**
+   * Firma el token para la cookie de "dispositivo de confianza" — se emite
+   * tras un OTP verificado con éxito, vigente por OTP_CONFIANZA_HORAS.
+   */
+  generarTokenConfianza(idUsuario: string): string {
+    const payload: TokenConfianzaPayload = { sub: idUsuario, tipo: 'otp_confianza' }
+    return this.jwtService.sign(payload, {
+      expiresIn: `${Configurations.OTP_CONFIANZA_HORAS}h`,
+    })
+  }
+
+  /**
+   * Verifica si el navegador ya es un dispositivo de confianza para este
+   * usuario: el token debe ser válido (firma + vigencia) y haberse emitido
+   * después de la última revocación de sesiones del usuario (cambio de
+   * contraseña, "cerrar todas las sesiones", bloqueo, etc.).
+   */
+  async esDispositivoConfiable(
+    idUsuario: string,
+    token: string | undefined
+  ): Promise<boolean> {
+    if (!token) return false
+
+    let payload: TokenConfianzaPayload & { iat: number }
+    try {
+      payload = this.jwtService.verify(token)
+    } catch {
+      return false
+    }
+
+    if (payload.tipo !== 'otp_confianza' || payload.sub !== idUsuario) {
+      return false
+    }
+
+    const usuario = await this.usuarioRepository.buscarPorId(idUsuario)
+    const revocadasDesde = usuario?.sesionesRevocadasDesde
+    if (revocadasDesde && payload.iat * 1000 < revocadasDesde.getTime()) {
+      return false
+    }
+
+    return true
   }
 
   /**
    * Evalúa si el usuario requiere OTP. Si es así, genera y envía el código.
    * Llamar desde el controller de login después de que Passport valide las credenciales.
    */
-  async iniciarOtp(idUsuario: string): Promise<ResultadoInicioOtp> {
+  async iniciarOtp(
+    idUsuario: string,
+    tokenConfianza?: string
+  ): Promise<ResultadoInicioOtp> {
     const usuario = await this.usuarioRepository.buscarPorId(idUsuario)
 
     if (!usuario?.otpHabilitado) {
+      return { necesita: false }
+    }
+
+    if (await this.esDispositivoConfiable(idUsuario, tokenConfianza)) {
+      this.logger.audit('otp', {
+        mensaje: 'OTP omitido — dispositivo de confianza vigente',
+        metadata: { idUsuario },
+      })
       return { necesita: false }
     }
 

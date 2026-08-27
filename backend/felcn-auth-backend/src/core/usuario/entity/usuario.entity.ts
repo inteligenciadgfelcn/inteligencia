@@ -201,6 +201,15 @@ export class Usuario extends AuditoriaEntity {
   fechaPerfilCompletado?: Date | null
 
   @Column({
+    name: 'sesiones_revocadas_desde',
+    type: 'timestamp',
+    nullable: true,
+    comment:
+      'Invalida cualquier refresh token o cookie de dispositivo de confianza emitidos antes de esta fecha (ver revocarSesionesActivas).',
+  })
+  sesionesRevocadasDesde?: Date | null
+
+  @Column({
     name: 'otp_habilitado',
     type: 'boolean',
     default: false,
