@@ -89,6 +89,7 @@ export const EditarPerfilModal = ({
     handleSubmit,
     watch,
     setValue,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -173,7 +174,24 @@ export const EditarPerfilModal = ({
       })
       onClose()
     } catch (error) {
-      Alerta({ mensaje: InterpreteMensajes(error), variant: 'error' })
+      const mensaje = InterpreteMensajes(error)
+
+      if (mensaje.includes('teléfono')) {
+        setError('telefono', { type: 'server' })
+      } else if (mensaje.includes('correo')) {
+        setError('correoElectronico', { type: 'server' })
+      } else if (
+        mensaje.includes('Grado') ||
+        mensaje.includes('Grupo') ||
+        mensaje.includes('Pase') ||
+        mensaje.includes('completó')
+      ) {
+        setError('idGrado', { type: 'server' })
+        setError('idGrupo', { type: 'server' })
+        setError('numeroPase', { type: 'server' })
+      }
+
+      Alerta({ mensaje, variant: 'error' })
     }
   }
 
@@ -218,7 +236,7 @@ export const EditarPerfilModal = ({
                       },
                     })}
                     disabled={isSubmitting}
-                    className="form-input ps-10"
+                    className={`form-input ps-10 ${errors.nombres ? '!border-danger' : ''}`}
                   />
                 </div>
 
@@ -239,7 +257,7 @@ export const EditarPerfilModal = ({
                       },
                     })}
                     disabled={isSubmitting}
-                    className="form-input"
+                    className={`form-input ${errors.primerApellido ? '!border-danger' : ''}`}
                   />
 
                   <p className="text-danger text-sm">
@@ -259,7 +277,7 @@ export const EditarPerfilModal = ({
                       },
                     })}
                     disabled={isSubmitting}
-                    className="form-input"
+                    className={`form-input ${errors.segundoApellido ? '!border-danger' : ''}`}
                   />
                 </div>
               </div>
@@ -283,7 +301,7 @@ export const EditarPerfilModal = ({
                     {...register('correoElectronico')}
                     disabled={isSubmitting}
                     type="email"
-                    className="form-input ps-10"
+                    className={`form-input ps-10 ${errors.correoElectronico ? '!border-danger' : ''}`}
                   />
                 </div>
 
@@ -302,7 +320,7 @@ export const EditarPerfilModal = ({
                     {...register('telefono')}
                     disabled={isSubmitting}
                     type="tel"
-                    className="form-input ps-10"
+                    className={`form-input ps-10 ${errors.telefono ? '!border-danger' : ''}`}
                   />
                 </div>
 
