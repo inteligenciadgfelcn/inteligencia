@@ -193,7 +193,7 @@ function FotosExpansion({
 
   if (!cache) {
     return (
-      <div className="grid grid-cols-3 gap-4 border-t border-[#e0e6ed] p-4 dark:border-gray-700">
+      <div className="grid grid-cols-1 gap-4 border-t border-[#e0e6ed] p-4 dark:border-gray-700 sm:grid-cols-3">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -209,7 +209,7 @@ function FotosExpansion({
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
         Fotos de Identificación
       </p>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <FotoSlot src={cache.frente} label="Foto Frente" onZoom={onZoom} />
         <FotoSlot src={cache.perfil} label="Perfil Izquierdo" onZoom={onZoom} />
         <FotoSlot
