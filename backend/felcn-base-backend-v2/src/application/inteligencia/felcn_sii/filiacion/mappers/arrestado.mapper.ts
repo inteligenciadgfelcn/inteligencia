@@ -12,7 +12,6 @@ export function mapArrestadoEntity(
   dto: CreateFiliacionDto,
   profesionDescripcion: string | null
 ): DeepPartial<ArrestadoAuxiliar> {
-
   const {
     arrestado,
     documento,
@@ -28,8 +27,13 @@ export function mapArrestadoEntity(
     idPais,
     idEstadoCivil,
     direccion,
-    observacion
+    observacion,
   } = dto
+
+  const auditoria = dto as CreateFiliacionDto & {
+    usuario?: string
+    fechaHoraIngreso?: Date
+  }
 
   let pais: Pais | undefined
   if (idPais) {
@@ -78,7 +82,7 @@ export function mapArrestadoEntity(
 
     genero,
 
-    pais:pais?.idPais,
+    pais: pais?.idPais,
     estadoCivil,
 
     numeroDocumento: documento?.numeroDocumento,
@@ -102,10 +106,13 @@ export function mapArrestadoEntity(
     colorCabello,
 
     senasParticulares: fenotipo?.senasParticulares,
-    estatura:fenotipo?.estatura,
+    estatura: fenotipo?.estatura,
 
     lugarArresto: arrestado?.lugarOperativo,
 
-    observaciones: observacion
+    observaciones: observacion,
+
+    usuario: auditoria.usuario ?? 'SISTEMA',
+    fechaHoraIngreso: auditoria.fechaHoraIngreso ?? new Date(),
   }
 }

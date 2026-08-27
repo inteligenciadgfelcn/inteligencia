@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
-import { DataSource, EntityManager, Repository } from 'typeorm'
+import { DataSource, DeepPartial, EntityManager, Repository } from 'typeorm'
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
 import { DB_SII, DB_SIII } from '@/core/config/database/database.module'
 import { PersonasRepository } from './repository/personas.repository'
@@ -14,7 +18,8 @@ import { ProfesionDetenido } from './profesion_detenido/entities/profesion_deten
 import { Detenido } from './detenido/entities/detenido.entity'
 import { mapDetenidoEntity } from './mappers/detenido.mapper'
 import { ArrestadoAuxiliar } from '../../felcn_siii/operaciones/filiacion/arrestado_auxiliar/entities/arrestado_auxiliar.entity'
-import { async } from 'rxjs'
+import { DetenidoAuxiliar } from '@/application/sunesis/siii/seguimiento/personas/entity/detenido-auxiliar.entity'
+import { mapDetenidoAuxiliarEntity } from './mappers/detenido-auxiliar.mapper'
 
 @Injectable()
 export class FiliacionService {
@@ -46,6 +51,7 @@ export class FiliacionService {
 
       let arrestado: ArrestadoAuxiliar | null = null
       let detenido: Detenido | null = null
+      let detenidoAuxiliar: DetenidoAuxiliar | null = null
 
       // ===== CREAR ARRESTADO =====
       if (dto.estadoPersona === 'Arrestado') {
@@ -54,6 +60,49 @@ export class FiliacionService {
         arrestado = await this.dataSourceSIII
           .getRepository(ArrestadoAuxiliar)
           .save(arrestadoData)
+      }
+
+   
+      // ===== CREAR DETENIDO AUXILIAR EN SIII =====
+      if (
+        dto.estadoPersona ===
+          'Principal Aprehendido' ||
+        dto.estadoPersona === 'Aprehendido' ||
+        dto.estadoPersona ===
+          'LGI O Perdida de Dominio'
+      ) {
+        if (
+          dto.arrestado?.idOperativo === null ||
+          dto.arrestado?.idOperativo === undefined
+        ) {
+          throw new BadRequestException(
+            'El idOperativo es obligatorio para registrar al aprehendido',
+          )
+        }
+
+        if (
+          dto.idPais === null ||
+          dto.idPais === undefined
+        ) {
+          throw new BadRequestException(
+            'El idPais es obligatorio para registrar al aprehendido',
+          )
+        }
+
+        const detenidoAuxiliarRepository =
+          this.dataSourceSIII.getRepository(
+            DetenidoAuxiliar,
+          )
+
+        const detenidoAuxiliarData =
+          mapDetenidoAuxiliarEntity(dto)
+
+        detenidoAuxiliar =
+          await detenidoAuxiliarRepository.save(
+            detenidoAuxiliarRepository.create(
+              detenidoAuxiliarData,
+            ),
+          )
       }
 
       // ===== CREAR DETENIDO =====
@@ -114,12 +163,12 @@ export class FiliacionService {
       await Promise.all(operations)
 
       try {
-       await this.dataSourceSIII.query(
-  `UPDATE public.persona_auxiliar 
+        await this.dataSourceSIII.query(
+          `UPDATE public.persona_auxiliar 
    SET enviado = 1 
    WHERE id_persona_auxiliar = $1`,
-  [dto.idPersona]
-)
+          [dto.idPersona]
+        )
       } catch (error) {
         console.error('Error actualizando persona_auxiliar:', error)
       }

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Query,
   ParseIntPipe,
+  UseInterceptors,
 } from '@nestjs/common'
 import { FiliacionService } from './filiacion.service'
 import { CreateFiliacionDto } from './dto/create-filiacion.dto'
@@ -14,8 +15,10 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestj
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
+import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
 
 @ApiBearerAuth()
+@UseInterceptors(AuditoriaUsuarioInterceptor)
 @UseGuards(JwtAuthGuard)
 @ApiTags('SII - Filiacion')
 @Controller('filiacion')

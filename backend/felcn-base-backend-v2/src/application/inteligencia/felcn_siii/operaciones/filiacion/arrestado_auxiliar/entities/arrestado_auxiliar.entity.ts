@@ -1,4 +1,3 @@
-
 import { ColorCabello } from '@/application/inteligencia/felcn_sii/parametricas/color_cabello/entities/color_cabello.entity'
 import { ColorOjo } from '@/application/inteligencia/felcn_sii/parametricas/color_ojos/entities/color_ojo.entity'
 import { ColorPiel } from '@/application/inteligencia/felcn_sii/parametricas/color_piel/entities/color_piel.entity'

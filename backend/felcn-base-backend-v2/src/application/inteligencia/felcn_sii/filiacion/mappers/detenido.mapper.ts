@@ -19,7 +19,10 @@ export function mapDetenidoEntity(
     idPais,
     idEstadoCivil,
   } = dto
-
+const auditoria = dto as CreateFiliacionDto & {
+    usuario?: string
+    fechaHoraIngreso?: Date
+  }
   return {
     numeroCaso,
 
@@ -47,5 +50,9 @@ export function mapDetenidoEntity(
     pais: idPais ? { idPais } : undefined,
 
     estadoCivil: idEstadoCivil ? { idEstadoCivil } : undefined,
+
+    usuario: auditoria.usuario ?? 'SISTEMA',
+    fechaHoraIngreso:
+      auditoria.fechaHoraIngreso ?? new Date(),
   }
 }
