@@ -1,22 +1,8 @@
+import { redirect } from 'next/navigation'
 
-
-'use client'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/Button'
-import { GestionOperativoTabs } from './ui/GestionOperativoTabs'
-
-export default function GestionOperativoPage() {
-  const router = useRouter()
-
-  return (
-    <div className="space-y-6">
-      <div className="panel px-5 py-4">
-        <h2 className="text-xl font-bold text-dark dark:text-white-light">
-          Gestión Operativo - Casos Registrados
-        </h2>
-      </div>
-
-      <GestionOperativoTabs />
-    </div>
-  )
+// La página de listado se movió a /operativos/listado. Se mantiene este
+// stub para no romper accesos existentes (menú lateral configurado en BD,
+// marcadores/bookmarks, etc.) mientras se actualiza esa configuración.
+export default function OperativosRedirect() {
+  redirect('/operativos/listado')
 }

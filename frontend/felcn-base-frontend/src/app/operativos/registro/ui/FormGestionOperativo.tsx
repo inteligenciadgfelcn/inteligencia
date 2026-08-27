@@ -269,7 +269,7 @@ export function FormGestionOperativo({
         <Button
           variant="outline-primary"
           size="sm"
-          onClick={() => router.push('/operativos')}
+          onClick={() => router.push('/operativos/listado')}
         >
           Casos Registrados
         </Button>
