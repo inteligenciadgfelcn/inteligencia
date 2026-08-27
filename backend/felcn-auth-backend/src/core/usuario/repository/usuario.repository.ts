@@ -391,6 +391,7 @@ export class UsuarioRepository {
       ...(usuarioDto.codigoTransaccion !== undefined && { codigoTransaccion: usuarioDto.codigoTransaccion }),
       ...(usuarioDto.codigoActivacion !== undefined && { codigoActivacion: usuarioDto.codigoActivacion }),
       ...(usuarioDto.ciudadaniaDigital !== undefined && { ciudadaniaDigital: usuarioDto.ciudadaniaDigital }),
+      ...(usuarioDto.otpHabilitado !== undefined && { otpHabilitado: usuarioDto.otpHabilitado }),
       ...(usuarioDto.urlFoto !== undefined && { urlFoto: usuarioDto.urlFoto }),
       ...(usuarioDto.nombreApp !== undefined && { nombreApp: usuarioDto.nombreApp }),
       ...(usuarioDto.telefonoCelular !== undefined && { telefonoCelular: usuarioDto.telefonoCelular }),
