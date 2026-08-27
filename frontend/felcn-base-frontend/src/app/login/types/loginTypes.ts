@@ -96,6 +96,9 @@ export interface UsuarioType {
   grado?: GradoType | null
   /** Nombre para mostrar precomputado en backend (ej. "grado + nombre completo"), fallback si no hay grado/persona. */
   nombreApp?: string | null
+  idGrado?: number | null
+  /** Fecha en que el usuario completó por única vez su Estructura FELCN. `null` = pendiente. */
+  fechaPerfilCompletado?: string | null
 }
 
 export interface PoliticaType {

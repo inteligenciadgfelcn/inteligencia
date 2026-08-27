@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import IconMail from '@/components/Icon/IconMail'
 
 import { InterpreteMensajes } from '@/utils'
+import { trimPayload } from '@/utils/trimPayload'
 import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
 import { formatoFecha, validarFechaFormato } from '@/utils/fechas'
@@ -49,22 +50,36 @@ export default function RegisterVristo() {
     resolver: zodResolver(schema),
   })
 
+  /** Fuerza mayúsculas mientras se escribe (todos los campos excepto el correo). */
+  const registerMayusculas = (name: keyof FormData) => {
+    const campo = register(name)
+    return {
+      ...campo,
+      onChange: (e: ChangeEvent<HTMLInputElement>) => {
+        e.target.value = e.target.value.toUpperCase()
+        return campo.onChange(e)
+      },
+    }
+  }
+
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true)
+
+      const datos = trimPayload(data)
 
       await Servicios.peticion({
         url: `${Constantes.authUrl}/usuarios/crear-cuenta`,
         method: 'post',
         body: {
-          correoElectronico: data.correoElectronico,
+          correoElectronico: datos.correoElectronico,
           persona: {
-            nombres: data.nombres,
-            primerApellido: data.primerApellido,
-            segundoApellido: data.segundoApellido,
-            nroDocumento: data.nroDocumento,
-            telefono: data.telefono || null,
-            fechaNacimiento: formatoFecha(data.fechaNacimiento, 'YYYY-MM-DD'),
+            nombres: datos.nombres,
+            primerApellido: datos.primerApellido,
+            segundoApellido: datos.segundoApellido,
+            nroDocumento: datos.nroDocumento,
+            telefono: datos.telefono || null,
+            fechaNacimiento: formatoFecha(datos.fechaNacimiento, 'YYYY-MM-DD'),
           },
         },
       })
@@ -106,7 +121,7 @@ export default function RegisterVristo() {
           {/* DOCUMENTO */}
           <div>
             <label className="mb-0 block text-white-dark">Nro. Documento</label>
-            <input {...register('nroDocumento')} className="form-input" />
+            <input {...registerMayusculas('nroDocumento')} className="form-input" />
             <p className="text-danger text-sm">
               {errors.nroDocumento?.message}
             </p>
@@ -115,7 +130,7 @@ export default function RegisterVristo() {
           {/* NOMBRES */}
           <div>
             <label className="mb-0 block text-white-dark">Nombres</label>
-            <input {...register('nombres')} className="form-input" />
+            <input {...registerMayusculas('nombres')} className="form-input" />
             <p className="text-danger text-sm">{errors.nombres?.message}</p>
           </div>
 
@@ -125,14 +140,20 @@ export default function RegisterVristo() {
               <label className="mb-0 block text-white-dark">
                 Primer Apellido
               </label>
-              <input {...register('primerApellido')} className="form-input" />
+              <input
+                {...registerMayusculas('primerApellido')}
+                className="form-input"
+              />
             </div>
 
             <div>
               <label className="mb-0 block text-white-dark">
                 Segundo Apellido
               </label>
-              <input {...register('segundoApellido')} className="form-input" />
+              <input
+                {...registerMayusculas('segundoApellido')}
+                className="form-input"
+              />
             </div>
           </div>
 

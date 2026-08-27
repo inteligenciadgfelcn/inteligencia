@@ -65,4 +65,7 @@ export class ActualizarUsuarioDto {
 
   @IsOptional()
   numeroPase?: string | null
+
+  @IsOptional()
+  fechaPerfilCompletado?: Date | null
 }

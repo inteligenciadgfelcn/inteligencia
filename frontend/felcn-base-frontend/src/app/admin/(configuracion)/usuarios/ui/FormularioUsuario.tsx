@@ -229,6 +229,15 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     },
   })
 
+  // Alta de usuario nuevo: el rol USUARIO viene preseleccionado por defecto.
+  useEffect(() => {
+    if (usuarioId || roles.length === 0) return
+    if ((watch('roles') ?? []).length > 0) return
+    const idUsuarioRol = roles.find((rol: RolType) => rol.rol === 'USUARIO')?.id
+    if (idUsuarioRol) setValue('roles', [idUsuarioRol])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioId, roles])
+
   useEffect(() => {
     if (usuario) {
       reset({
@@ -255,6 +264,22 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
   }, [usuario, reset])
 
   const onSubmit = async (values: FormValues) => {
+    const idUsuarioRol = roles.find((rol: RolType) => rol.rol === 'USUARIO')?.id
+    if (idUsuarioRol && !values.roles.includes(idUsuarioRol)) {
+      confirm({
+        titulo: 'Rol Usuario no asignado',
+        texto:
+          'Este usuario se guardará sin el rol Usuario. Es el rol base recomendado para cualquier cuenta — quitarlo es una decisión del administrador. ¿Desea continuar de todas formas?',
+        variante: 'warning',
+        textoConfirmar: 'Guardar igual',
+        onConfirm: () => guardarUsuario(values),
+      })
+      return
+    }
+    await guardarUsuario(values)
+  }
+
+  const guardarUsuario = async (values: FormValues) => {
     const datos = trimPayload(values)
 
     // Solo se manda la excepción de los roles que siguen seleccionados —
@@ -291,7 +316,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       if (!usuarioId && respuesta?.datos?.urlActivacion) {
         setUrlActivacion(respuesta.datos.urlActivacion)
       } else {
-        router.push('/admin/usuarios')
+        router.back()
       }
     } catch (e) {
       imprimir(`Error al crear o actualizar usuario`, e)
@@ -303,7 +328,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
 
   const handleCloseLinkActivacion = () => {
     setUrlActivacion(null)
-    router.push('/admin/usuarios')
+    router.back()
   }
 
   const handleCancel = () => {
@@ -312,7 +337,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       texto: '¿Está seguro de cancelar? Se perderán todos los cambios no guardados.',
       variante: 'warning',
       onConfirm: () => {
-        router.push('/admin/usuarios')
+        router.back()
       },
     })
   }

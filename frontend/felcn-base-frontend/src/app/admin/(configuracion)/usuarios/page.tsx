@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Suspense } from 'react'
 import { UsuariosDatatable } from '@/app/admin/(configuracion)/usuarios/ui/UsuariosDatatable'
 import { siteName } from '@/utils'
 
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function UsuariosPage() {
-  return <UsuariosDatatable />
+  return (
+    <Suspense>
+      <UsuariosDatatable />
+    </Suspense>
+  )
 }

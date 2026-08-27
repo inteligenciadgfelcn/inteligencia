@@ -15,7 +15,7 @@ import {
 import { InterpreteMensajes } from '@/utils'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { IconoTooltip } from '@/components/botones/IconoTooltip'
 import { CustomDatagrid } from '@/components/datagrid/CustomDataGrid'
 import {
@@ -52,8 +52,13 @@ export const UsuariosDatatable: React.FC = () => {
   const [alertaReenvioCorreoOpen, setAlertaReenvioCorreoOpen] = useState(false)
   const [alertaDesbloqueoOpen, setAlertaDesbloqueoOpen] = useState(false)
 
-  const [limite, setLimite] = useState<number>(10)
-  const [pagina, setPagina] = useState<number>(1)
+  const searchParams = useSearchParams()
+  const [limite, setLimite] = useState<number>(
+    () => Number(searchParams.get('limite')) || 10
+  )
+  const [pagina, setPagina] = useState<number>(
+    () => Number(searchParams.get('pagina')) || 1
+  )
   const [sortModel, setSortModel] = useState<GridSortModel>([])
 
   const [filtroUsuario, setFiltroUsuario] = useState<string>('')
@@ -69,6 +74,17 @@ export const UsuariosDatatable: React.FC = () => {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const pathname = usePathname()
+
+  /** Refleja página/límite en la URL para que volver desde "Editar" no pierda la página actual. */
+  const sincronizarUrl = useCallback(
+    (nuevaPagina: number, nuevoLimite: number) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('pagina', String(nuevaPagina))
+      params.set('limite', String(nuevoLimite))
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    },
+    [searchParams, pathname, router]
+  )
 
   const obtenerUsuarios = async () => {
     let ordenQuery = ''
@@ -133,6 +149,7 @@ export const UsuariosDatatable: React.FC = () => {
     setFiltroRoles([])
     setPagina(1)
     setLimite(10)
+    sincronizarUrl(1, 10)
   }
 
   const toggleFiltroUsuarios = () => {
@@ -238,8 +255,25 @@ export const UsuariosDatatable: React.FC = () => {
           }}
         >
           {params.row.usuarioRol.map((itemUsuarioRol, index) => (
-            <Chip key={index} label={itemUsuarioRol.rol.nombre} size="small" />
+            <Chip
+              key={index}
+              label={itemUsuarioRol.rol.nombre}
+              size="small"
+              color={itemUsuarioRol.rol.rol === 'USUARIO' ? 'warning' : 'default'}
+            />
           ))}
+          {params.row.usuarioRol.some((ur) => ur.rol.rol === 'USUARIO') && (
+            <Chip
+              size="small"
+              variant="outlined"
+              color="warning"
+              label={
+                params.row.fechaPerfilCompletado
+                  ? 'Datos completos, falta rol'
+                  : 'Aún completando datos'
+              }
+            />
+          )}
         </Box>
       ),
     },
@@ -411,6 +445,7 @@ export const UsuariosDatatable: React.FC = () => {
           accionCorrecta={(filtros) => {
             setPagina(1)
             setLimite(10)
+            sincronizarUrl(1, 10)
             setFiltroRoles(filtros.roles)
             setFiltroUsuario(filtros.usuario)
           }}
@@ -441,6 +476,7 @@ export const UsuariosDatatable: React.FC = () => {
           onPaginationModelChange={(model) => {
             setPagina(model.page + 1)
             setLimite(model.pageSize)
+            sincronizarUrl(model.page + 1, model.pageSize)
           }}
           sortModel={sortModel}
           onSortModelChange={handleSortModelChange}
