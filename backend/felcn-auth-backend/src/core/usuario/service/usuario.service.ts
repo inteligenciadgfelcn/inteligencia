@@ -1080,7 +1080,7 @@ export class UsuarioService extends BaseService {
       }
 
       // Actualizar campos FELCN opcionales si fueron enviados
-      const camposFelcn = {
+      const camposFelcn: Record<string, unknown> = {
         ...(nombreApp !== undefined && { nombreApp }),
         ...(telefonoCelular !== undefined && { telefonoCelular }),
         ...(telefonoCorporativo !== undefined && { telefonoCorporativo }),
@@ -1088,6 +1088,23 @@ export class UsuarioService extends BaseService {
         ...(idGrupo !== undefined && { idGrupo }),
         ...(numeroPase !== undefined && { numeroPase }),
       }
+
+      // Si el admin completa la Estructura FELCN (y el usuario nunca la
+      // había completado), se marca fechaPerfilCompletado acá mismo — así
+      // ese usuario no ve el gate obligatorio de completar perfil al entrar.
+      const idGradoFinal = idGrado !== undefined ? idGrado : usuario.idGrado
+      const idGrupoFinal = idGrupo !== undefined ? idGrupo : usuario.idGrupo
+      const numeroPaseFinal =
+        numeroPase !== undefined ? numeroPase : usuario.numeroPase
+      if (
+        !usuario.fechaPerfilCompletado &&
+        idGradoFinal &&
+        idGrupoFinal &&
+        numeroPaseFinal
+      ) {
+        camposFelcn.fechaPerfilCompletado = new Date()
+      }
+
       if (Object.keys(camposFelcn).length > 0) {
         await this.usuarioRepositorio.actualizar(
           id,
@@ -1257,6 +1274,7 @@ export class UsuarioService extends BaseService {
       grado: usuario.grado ?? null,
       grupo: usuario.grupo ?? null,
       numeroPase: usuario.numeroPase ?? null,
+      fechaPerfilCompletado: usuario.fechaPerfilCompletado ?? null,
       roles: await Promise.all(
         usuario.usuarioRol
           .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)
@@ -1354,7 +1372,26 @@ export class UsuarioService extends BaseService {
       segundoApellido,
       correoElectronico,
       telefono,
+      idGrado,
+      idGrupo,
+      numeroPase,
     } = actualizarPerfilDto
+
+    // Estructura FELCN: solo se acepta una vez, completa (los 3 campos
+    // juntos) — ver fechaPerfilCompletado en la entidad Usuario.
+    const estructuraFelcnProvista =
+      idGrado !== undefined || idGrupo !== undefined || numeroPase !== undefined
+
+    if (estructuraFelcnProvista) {
+      if (usuario.fechaPerfilCompletado) {
+        throw new PreconditionFailedException(
+          Messages.PROFILE_ALREADY_COMPLETED
+        )
+      }
+      if (idGrado === undefined || idGrupo === undefined || !numeroPase) {
+        throw new BadRequestException(Messages.INCOMPLETE_FELCN_STRUCTURE)
+      }
+    }
 
     const op = async (transaction: EntityManager) => {
       if (telefono && telefono !== usuario.persona.telefono) {
@@ -1389,6 +1426,15 @@ export class UsuarioService extends BaseService {
         await this.usuarioRepositorio.actualizar(
           idUsuario,
           { correoElectronico },
+          idUsuario,
+          transaction
+        )
+      }
+
+      if (estructuraFelcnProvista) {
+        await this.usuarioRepositorio.actualizar(
+          idUsuario,
+          { idGrado, idGrupo, numeroPase, fechaPerfilCompletado: new Date() },
           idUsuario,
           transaction
         )

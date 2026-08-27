@@ -255,8 +255,25 @@ export const UsuariosDatatable: React.FC = () => {
           }}
         >
           {params.row.usuarioRol.map((itemUsuarioRol, index) => (
-            <Chip key={index} label={itemUsuarioRol.rol.nombre} size="small" />
+            <Chip
+              key={index}
+              label={itemUsuarioRol.rol.nombre}
+              size="small"
+              color={itemUsuarioRol.rol.rol === 'USUARIO' ? 'warning' : 'default'}
+            />
           ))}
+          {params.row.usuarioRol.some((ur) => ur.rol.rol === 'USUARIO') && (
+            <Chip
+              size="small"
+              variant="outlined"
+              color="warning"
+              label={
+                params.row.fechaPerfilCompletado
+                  ? 'Datos completos, falta rol'
+                  : 'Aún completando datos'
+              }
+            />
+          )}
         </Box>
       ),
     },
