@@ -45,18 +45,33 @@ interface UsuarioGenerador {
   usuario?: string | null
   nombreApp?: string | null
   grado?: { abreviatura?: string | null } | null
+  persona?: {
+    nombres?: string | null
+    primerApellido?: string | null
+    segundoApellido?: string | null
+  } | null
 }
 
 /**
  * Arma el "Generado por" para el pie de los reportes, con la misma prioridad que usa el
  * backend (`ReportBaseService.obtenerUsuarioGenerador`): abreviatura de grado + nombre a
  * mostrar (`nombreApp`, que en algunos usuarios ya viene precargado como "grado + nombre
- * completo" — de ahí la verificación para no duplicar el grado), si no el login.
+ * completo" — de ahí la verificación para no duplicar el grado); si no hay `nombreApp`,
+ * se arma el nombre a partir de `persona` (nombres y apellidos). Solo si tampoco hay datos
+ * de persona se cae al login/CI (`usuario.usuario`) — nunca como si fuera un nombre.
  */
 export function obtenerNombreGenerador(usuario: UsuarioGenerador | null | undefined): string {
   if (!usuario) return ''
   const abreviatura = usuario.grado?.abreviatura?.trim() || undefined
-  const nombreMostrar = usuario.nombreApp?.trim() || undefined
+  const nombrePersona = [
+    usuario.persona?.nombres,
+    usuario.persona?.primerApellido,
+    usuario.persona?.segundoApellido,
+  ]
+    .filter((v) => v && v.trim())
+    .join(' ')
+    .trim()
+  const nombreMostrar = usuario.nombreApp?.trim() || nombrePersona || undefined
 
   if (abreviatura && nombreMostrar) {
     return nombreMostrar.toLowerCase().startsWith(abreviatura.toLowerCase())
@@ -64,7 +79,6 @@ export function obtenerNombreGenerador(usuario: UsuarioGenerador | null | undefi
       : `${abreviatura}: ${nombreMostrar}`
   }
   if (nombreMostrar) return nombreMostrar
-  if (abreviatura) return `${abreviatura}: ${usuario.usuario ?? ''}`
   return usuario.usuario ?? ''
 }
 

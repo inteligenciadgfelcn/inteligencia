@@ -149,8 +149,8 @@ export class CasosReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(usuario)
       const template = new RepCasoDetalleTemplate(usuarioGenerador)
       const data = await RepCasoDetalleTemplate.fetchData(
         this.reporteCasosService,
@@ -191,8 +191,8 @@ export class CasosReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportBaseService.obtenerUsuarioGenerador(usuario)
       const template = new RepCasoSigTemplate(usuarioGenerador)
       const data = await RepCasoSigTemplate.fetchData(
         this.reporteCasosService,

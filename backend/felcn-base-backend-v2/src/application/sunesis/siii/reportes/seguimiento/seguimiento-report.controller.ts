@@ -39,8 +39,8 @@ export class SeguimientoReportController extends BaseController {
     @Res() res: Response,
   ) {
     try {
-      const { usuario, accessToken } = req.user as PassportUser
-      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(accessToken, usuario)
+      const { usuario } = req.user as PassportUser
+      const usuarioGenerador = await this.reportService.obtenerUsuarioGenerador(usuario)
       const template = new SeguimientoReportTemplate(usuarioGenerador)
       const data = await SeguimientoReportTemplate.fetchData(
         this.seguimientoService,

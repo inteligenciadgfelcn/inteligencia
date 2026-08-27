@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common'
-import { HttpModule } from '@nestjs/axios'
+import { TypeOrmModule } from '@nestjs/typeorm'
 import { S2iModule } from '../s2i.module'
 import { ReportBaseService } from '../../siii/reportes/services/reporte-base.service'
 import { ReporteCasosService } from './services/reporte-casos.service'
 import { ReporteFlujoTransporteService } from './services/reporte-flujo-transporte.service'
 import { CasosReportController } from './casos/casos-report.controller'
 import { FlujoTransporteReportController } from './flujo-transporte/flujo-transporte-report.controller'
+import { DB_AUTH } from '@/core/config/database/database.module'
 
 /**
  * Módulo de reportes del sistema S2I (Casos de Investigación y Flujo de Transporte).
@@ -20,7 +21,9 @@ import { FlujoTransporteReportController } from './flujo-transporte/flujo-transp
  *   GET /s2i/reportes/flujo-transporte/pdf      → PDF con los mismos filtros
  */
 @Module({
-  imports: [S2iModule, HttpModule],
+  // TypeOrmModule.forFeature([], DB_AUTH): habilita @InjectDataSource(DB_AUTH) en
+  // ReportBaseService (nombre de usuario para el pie de los reportes PDF).
+  imports: [S2iModule, TypeOrmModule.forFeature([], DB_AUTH)],
   controllers: [CasosReportController, FlujoTransporteReportController],
   providers: [
     ReportBaseService,   // servicio Puppeteer compartido con SIII
