@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,6 +12,7 @@ import {
   seguridadPass,
   siteName,
 } from '@/utils'
+import Footer from '@/components/layouts/Footer'
 import {
   Box,
   Card,
@@ -57,6 +58,7 @@ export default function ActivacionPage() {
 
   const [loading, setLoading] = useState(false)
   const [activada, setActivada] = useState(false)
+  const [linkVencido, setLinkVencido] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -81,7 +83,12 @@ export default function ActivacionPage() {
       })
       setActivada(true)
     } catch (e) {
-      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      const mensaje = InterpreteMensajes(e)
+      if (mensaje.includes('venció')) {
+        setLinkVencido(true)
+      } else {
+        Alerta({ mensaje, variant: 'error' })
+      }
     } finally {
       setLoading(false)
     }
@@ -90,6 +97,13 @@ export default function ActivacionPage() {
   const irAlLogin = () => {
     router.replace('/login')
   }
+
+  useEffect(() => {
+    if (!linkVencido) return
+    const timeout = setTimeout(irAlLogin, 6000)
+    return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkVencido])
 
   return (
     <>
@@ -109,7 +123,7 @@ export default function ActivacionPage() {
             width: '100%',
           }}
         >
-          {!codigoActivar ? (
+          {!codigoActivar || linkVencido ? (
             <Box
               display={'flex'}
               flexDirection={'column'}
@@ -120,13 +134,18 @@ export default function ActivacionPage() {
               </Icono>
               <Box height={'20px'} />
               <Typography sx={{ fontWeight: '600' }} variant={'subtitle2'}>
-                Link inválido
+                {linkVencido ? 'Enlace vencido' : 'Enlace inválido'}
               </Typography>
               <Box height={'20px'} />
               <Typography variant="body2" color="text.secondary" align="center">
-                Este link de activación no es válido. Solicitá uno nuevo al
-                administrador.
+                {linkVencido
+                  ? 'Este enlace de activación venció. Será redirigido al inicio en unos segundos; solicite uno nuevo desde el panel de administración.'
+                  : 'Este enlace de activación no es válido. Solicite uno nuevo al administrador.'}
               </Typography>
+              <Box height={'20px'} />
+              <Button type="button" variant="contained" onClick={irAlLogin}>
+                Ir al inicio
+              </Button>
             </Box>
           ) : activada ? (
             <Box
@@ -143,8 +162,8 @@ export default function ActivacionPage() {
               </Typography>
               <Box height={'20px'} />
               <Typography variant="body2" color="text.secondary" align="center">
-                Ya podés iniciar sesión con tu usuario y la contraseña que
-                definiste.
+                Ya puede iniciar sesión con su usuario y la contraseña
+                definida.
               </Typography>
               <Box height={'20px'} />
               <Button type="button" variant="contained" onClick={irAlLogin}>
@@ -164,10 +183,10 @@ export default function ActivacionPage() {
                 variant={'subtitle2'}
                 align="center"
               >
-                Definí tu contraseña
+                Establezca su contraseña
               </Typography>
               <Typography variant="body2" color="text.secondary" align="center">
-                Para activar tu cuenta, elegí una contraseña segura.
+                Para activar su cuenta, defina una contraseña segura.
               </Typography>
               <TextField
                 label="Contraseña"
@@ -230,6 +249,7 @@ export default function ActivacionPage() {
           )}
         </Card>
       </Grid>
+      <Footer />
     </>
   )
 }
