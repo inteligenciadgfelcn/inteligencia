@@ -291,7 +291,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       if (!usuarioId && respuesta?.datos?.urlActivacion) {
         setUrlActivacion(respuesta.datos.urlActivacion)
       } else {
-        router.push('/admin/usuarios')
+        router.back()
       }
     } catch (e) {
       imprimir(`Error al crear o actualizar usuario`, e)
@@ -303,7 +303,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
 
   const handleCloseLinkActivacion = () => {
     setUrlActivacion(null)
-    router.push('/admin/usuarios')
+    router.back()
   }
 
   const handleCancel = () => {
@@ -312,7 +312,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       texto: '¿Está seguro de cancelar? Se perderán todos los cambios no guardados.',
       variante: 'warning',
       onConfirm: () => {
-        router.push('/admin/usuarios')
+        router.back()
       },
     })
   }
