@@ -189,6 +189,8 @@ export class UsuarioRepository {
         'usuario.telefonoCorporativo',
         'usuario.idGrado',
         'usuario.idGrupo',
+        'usuario.otpHabilitado',
+        'usuario.otpCanal',
         'usuarioRol',
         'rol.id',
         'rol.rol',
