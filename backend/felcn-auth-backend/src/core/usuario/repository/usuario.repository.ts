@@ -401,6 +401,9 @@ export class UsuarioRepository {
       ...(usuarioDto.fechaPerfilCompletado !== undefined && {
         fechaPerfilCompletado: usuarioDto.fechaPerfilCompletado,
       }),
+      ...(usuarioDto.sesionesRevocadasDesde !== undefined && {
+        sesionesRevocadasDesde: usuarioDto.sesionesRevocadasDesde,
+      }),
       usuarioModificacion: usuarioAuditoria,
     })
 
