@@ -108,6 +108,14 @@ export class Usuario extends AuditoriaEntity {
   codigoActivacion?: string | null
 
   @Column({
+    name: 'codigo_activacion_expira',
+    type: 'timestamp',
+    nullable: true,
+    comment: 'Vencimiento del enlace de activación (72hs desde su emisión/reenvío)',
+  })
+  codigoActivacionExpira?: Date | null
+
+  @Column({
     name: 'fecha_bloqueo',
     type: 'timestamp without time zone',
     nullable: true,

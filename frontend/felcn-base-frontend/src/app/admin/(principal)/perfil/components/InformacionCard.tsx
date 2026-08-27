@@ -68,6 +68,31 @@ export const InformacionCard = ({ usuario }: InformacionCardProps) => {
       label: 'Teléfono',
       value: usuario?.persona.telefono || 'No disponible',
     },
+    {
+      icon: 'apartment',
+      label: 'Unidad',
+      value: usuario?.grupo?.distrital?.unidad?.descripcion || 'No asignada',
+    },
+    {
+      icon: 'location_city',
+      label: 'Distrital',
+      value: usuario?.grupo?.distrital?.descripcion || 'No asignado',
+    },
+    {
+      icon: 'groups',
+      label: 'Grupo',
+      value: usuario?.grupo?.descripcion || 'No asignado',
+    },
+    {
+      icon: 'military_tech',
+      label: 'Grado',
+      value: usuario?.grado?.descripcion || 'No asignado',
+    },
+    {
+      icon: 'badge',
+      label: 'Número de Pase',
+      value: usuario?.numeroPase || 'No asignado',
+    },
   ]
 
   /* ---------------- ROLES ---------------- */

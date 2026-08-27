@@ -9,6 +9,7 @@ import { PerfilCard } from './PerfilCard'
 import { InformacionCard } from './InformacionCard'
 import { CambioPassModal } from './CambioPassModal'
 import { EditarPerfilModal } from './EditarPerfilModal'
+import { FotoPerfilModal } from './FotoPerfilModal'
 
 export const Perfil = () => {
   const { usuario, rolUsuario } = useAuth()
@@ -17,6 +18,7 @@ export const Perfil = () => {
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const [modalPass, setModalPass] = useState(false)
   const [modalEdicion, setModalEdicion] = useState(false)
+  const [modalFoto, setModalFoto] = useState(false)
 
   const perfilPendiente =
     rolUsuario?.rol === 'USUARIO' && !usuario?.fechaPerfilCompletado
@@ -55,8 +57,8 @@ export const Perfil = () => {
 
       {perfilPendiente && (
         <div className="mb-5 rounded-md border-l-4 border-warning bg-warning/10 p-4 text-warning">
-          <strong>Información pendiente.</strong> Debe completar su
-          Estructura FELCN para continuar utilizando el sistema.
+          <strong>Información pendiente.</strong> Debe completar y verificar
+          su información para continuar utilizando el sistema.
         </div>
       )}
 
@@ -64,7 +66,7 @@ export const Perfil = () => {
         <PerfilCard
           usuario={usuario}
           onChangePassword={() => setModalPass(true)}
-          onEditProfile={() => setModalEdicion(true)}
+          onEditPhoto={() => setModalFoto(true)}
           onCerrarSesiones={handleCerrarSesiones}
         />
 
@@ -80,6 +82,8 @@ export const Perfil = () => {
         onClose={() => setModalEdicion(false)}
         usuario={usuario}
       />
+
+      <FotoPerfilModal open={modalFoto} onClose={() => setModalFoto(false)} />
 
       <ConfirmDialog />
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { BASE_PATH } from '@/imageLoader'
+import Footer from '@/components/layouts/Footer'
 
 interface Props {
   children: React.ReactNode
@@ -42,6 +43,10 @@ const LoginCoverVristo = ({ children }: Props) => {
             {/* AQUÍ ENTRA TU LOGIN REAL */}
             {children}
           </div>
+        </div>
+
+        <div className="absolute inset-x-0 bottom-2 text-white/80">
+          <Footer />
         </div>
       </div>
     </div>
