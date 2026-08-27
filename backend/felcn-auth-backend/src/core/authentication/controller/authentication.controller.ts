@@ -13,6 +13,7 @@ import {
 import { Request, Response } from 'express'
 import { Issuer } from 'openid-client'
 import { CookieService } from '@/common/lib/cookie.service'
+import { Configurations } from '@/common/params'
 import { BaseController } from '@/common/base'
 import { LocalAuthGuard } from '../guards/local-auth.guard'
 import { OidcAuthGuard } from '../guards/oidc-auth.guard'
@@ -55,8 +56,13 @@ export class AuthenticationController extends BaseController {
       )
     }
 
-    // Verificar si el usuario tiene 2FA habilitado
-    const resultadoOtp = await this.otpService.iniciarOtp(req.user.id)
+    // Verificar si el usuario tiene 2FA habilitado (salvo que este navegador
+    // ya sea un dispositivo de confianza vigente para este mismo usuario)
+    const tokenConfianza = req.cookies?.[Configurations.OTP_CONFIANZA_COOKIE]
+    const resultadoOtp = await this.otpService.iniciarOtp(
+      req.user.id,
+      tokenConfianza
+    )
 
     if (resultadoOtp.necesita) {
       return res.status(202).json({
@@ -94,11 +100,26 @@ export class AuthenticationController extends BaseController {
       body.codigo
     )
     const refreshToken = result.refresh_token.id
+    const tokenConfianza = this.otpService.generarTokenConfianza(
+      result.data.id
+    )
     return res
       .cookie(
         this.configService.get('REFRESH_TOKEN_NAME') || '',
         refreshToken,
         CookieService.makeConfig(this.configService)
+      )
+      .cookie(
+        Configurations.OTP_CONFIANZA_COOKIE,
+        tokenConfianza,
+        {
+          httpOnly: true,
+          secure: this.configService.get('REFRESH_TOKEN_SECURE') === 'true',
+          expires: new Date(
+            Date.now() + Configurations.OTP_CONFIANZA_HORAS * 60 * 60 * 1000
+          ),
+          path: this.configService.get('REFRESH_TOKEN_PATH'),
+        }
       )
       .status(200)
       .send({ finalizado: true, mensaje: 'ok', datos: result.data })

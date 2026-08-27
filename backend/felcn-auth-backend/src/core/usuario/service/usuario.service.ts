@@ -75,6 +75,13 @@ export class UsuarioService extends BaseService {
    */
   async revocarSesionesActivas(idUsuario: string) {
     await this.refreshTokensRepositorio.eliminarPorUsuario(idUsuario)
+    // También invalida cualquier cookie de "dispositivo de confianza" (OTP)
+    // emitida antes de ahora — ver OtpConfianzaService.esDispositivoConfiable.
+    await this.usuarioRepositorio.actualizar(
+      idUsuario,
+      { sesionesRevocadasDesde: new Date() },
+      idUsuario
+    )
   }
 
   /**
