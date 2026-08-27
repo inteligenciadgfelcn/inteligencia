@@ -208,21 +208,6 @@ export class TemplateEmailService {
   // ─── Template 5: Código OTP / Verificación en dos pasos ──────────────────
   // Uso: login con 2FA habilitado
   static armarPlantillaOtp(codigo: string, expiracionMin: number): string {
-    const digitos = codigo.split('')
-    const bloqueDigitos = digitos
-      .map(
-        (d) =>
-          `<td style="padding:0 5px;">
-             <div style="width:44px;height:56px;line-height:56px;text-align:center;
-                         background:${C.primaryLight};border:2px solid ${C.primary};
-                         border-radius:8px;font-family:'Courier New',monospace;
-                         font-size:28px;font-weight:700;color:${C.primary};">
-               ${d}
-             </div>
-           </td>`
-      )
-      .join('')
-
     const content = `
       ${header('Código de verificación')}
 
@@ -234,14 +219,18 @@ export class TemplateEmailService {
             introduce el siguiente código de verificación.
           </p>
 
-          <!-- Bloque de código OTP -->
+          <!-- Bloque de código OTP: un solo nodo de texto, seleccionable/copiable
+               de una — separarlo en celdas por dígito rompe el copiado en la
+               mayoría de clientes de correo (inserta espacios/saltos de línea). -->
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                  style="margin-bottom:20px;">
             <tr>
-              <td align="center">
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                  <tr>${bloqueDigitos}</tr>
-                </table>
+              <td align="center" style="padding:16px 10px;background:${C.primaryLight};
+                         border:2px solid ${C.primary};border-radius:8px;">
+                <span style="font-family:'Courier New',monospace;font-size:32px;
+                             font-weight:700;letter-spacing:10px;color:${C.primary};">
+                  ${codigo}
+                </span>
               </td>
             </tr>
           </table>
