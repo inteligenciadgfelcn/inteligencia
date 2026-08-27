@@ -1,5 +1,5 @@
 'use client'
-import { createContext, ReactNode, useContext, useState } from 'react'
+import { createContext, ReactNode, useCallback, useContext, useState } from 'react'
 
 import { Box, Fade } from '@mui/material'
 import { FullScreenLoading } from '@/components/progreso/FullScreenLoading'
@@ -24,15 +24,18 @@ export const FullScreenLoadingProvider = ({
   const [mensaje, setMensaje] = useState<string | null>()
   const [mostrar, setMostrar] = useState<boolean>(false)
 
-  const mostrarFullScreen = (mensaje?: string | null) => {
+  // Memoizadas: si cambiaran de identidad en cada render, cualquier efecto
+  // que las tenga como dependencia (ej. login/page.tsx) se re-dispara apenas
+  // se llama a una de las dos, deshaciendo el overlay que se acababa de mostrar.
+  const mostrarFullScreen = useCallback((mensaje?: string | null) => {
     setMensaje(mensaje)
     setMostrar(true)
-  }
+  }, [])
 
-  const ocultarFullScreen = () => {
+  const ocultarFullScreen = useCallback(() => {
     setMensaje(undefined)
     setMostrar(false)
-  }
+  }, [])
 
   return (
     <FullScreenLoadingContext.Provider
