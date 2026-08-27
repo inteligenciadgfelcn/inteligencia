@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import IconMail from '@/components/Icon/IconMail'
 
 import { InterpreteMensajes } from '@/utils'
+import { trimPayload } from '@/utils/trimPayload'
 import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
 import { formatoFecha, validarFechaFormato } from '@/utils/fechas'
@@ -65,18 +66,20 @@ export default function RegisterVristo() {
     try {
       setLoading(true)
 
+      const datos = trimPayload(data)
+
       await Servicios.peticion({
         url: `${Constantes.authUrl}/usuarios/crear-cuenta`,
         method: 'post',
         body: {
-          correoElectronico: data.correoElectronico,
+          correoElectronico: datos.correoElectronico,
           persona: {
-            nombres: data.nombres,
-            primerApellido: data.primerApellido,
-            segundoApellido: data.segundoApellido,
-            nroDocumento: data.nroDocumento,
-            telefono: data.telefono || null,
-            fechaNacimiento: formatoFecha(data.fechaNacimiento, 'YYYY-MM-DD'),
+            nombres: datos.nombres,
+            primerApellido: datos.primerApellido,
+            segundoApellido: datos.segundoApellido,
+            nroDocumento: datos.nroDocumento,
+            telefono: datos.telefono || null,
+            fechaNacimiento: formatoFecha(datos.fechaNacimiento, 'YYYY-MM-DD'),
           },
         },
       })
