@@ -15,6 +15,7 @@ import { Constantes } from '@/config/Constantes'
 import { useAlerts, useConfirmDialog, useSession } from '@/hooks'
 import { useAuth } from '@/context/AuthProvider'
 import { imprimir } from '@/utils/imprimir'
+import { redimensionarImagen } from '@/utils/redimensionarImagen'
 
 interface FotoPerfilModalProps {
   open: boolean
@@ -39,8 +40,10 @@ export const FotoPerfilModal: React.FC<FotoPerfilModalProps> = ({
     setPreviewUrl(usuario?.urlFoto || null)
   }, [usuario?.urlFoto])
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0]
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const original = acceptedFiles[0]
+    if (!original) return
+    const file = await redimensionarImagen(original).catch(() => original)
     setNewFileToUpload(file)
     const localPreviewUrl = URL.createObjectURL(file)
     setPreviewUrl(localPreviewUrl)

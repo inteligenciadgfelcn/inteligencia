@@ -393,6 +393,13 @@ export class UsuarioService extends BaseService {
       throw new PreconditionFailedException(Messages.INVALID_USER)
     }
 
+    if (
+      usuario.codigoActivacionExpira &&
+      usuario.codigoActivacionExpira.getTime() < Date.now()
+    ) {
+      throw new PreconditionFailedException(Messages.EXPIRED_ACTIVATION_LINK)
+    }
+
     const contrasenaPlano = TextService.decodeBase64(contrasenaNueva)
 
     if (!TextService.validateLevelPassword(contrasenaPlano)) {
@@ -1377,20 +1384,32 @@ export class UsuarioService extends BaseService {
       numeroPase,
     } = actualizarPerfilDto
 
-    // Estructura FELCN: solo se acepta una vez, completa (los 3 campos
-    // juntos) — ver fechaPerfilCompletado en la entidad Usuario.
+    // Todo el perfil autogestionable (datos personales + Estructura FELCN)
+    // se edita una única vez — ver fechaPerfilCompletado en la entidad
+    // Usuario. Pasada esa primera vez, solo un administrador puede tocarlo.
+    const camposPersonalesProvistos =
+      nombres !== undefined ||
+      primerApellido !== undefined ||
+      segundoApellido !== undefined ||
+      correoElectronico !== undefined ||
+      telefono !== undefined
     const estructuraFelcnProvista =
       idGrado !== undefined || idGrupo !== undefined || numeroPase !== undefined
 
-    if (estructuraFelcnProvista) {
-      if (usuario.fechaPerfilCompletado) {
-        throw new PreconditionFailedException(
-          Messages.PROFILE_ALREADY_COMPLETED
-        )
-      }
-      if (idGrado === undefined || idGrupo === undefined || !numeroPase) {
-        throw new BadRequestException(Messages.INCOMPLETE_FELCN_STRUCTURE)
-      }
+    if (
+      (camposPersonalesProvistos || estructuraFelcnProvista) &&
+      usuario.fechaPerfilCompletado
+    ) {
+      throw new PreconditionFailedException(
+        Messages.PROFILE_ALREADY_COMPLETED
+      )
+    }
+
+    if (
+      estructuraFelcnProvista &&
+      (idGrado === undefined || idGrupo === undefined || !numeroPase)
+    ) {
+      throw new BadRequestException(Messages.INCOMPLETE_FELCN_STRUCTURE)
     }
 
     const op = async (transaction: EntityManager) => {

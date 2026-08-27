@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthProvider'
 import AppMenuHorizontal from './HorizontalMenu'
 import { BASE_PATH } from '@/imageLoader'
 import { RoleType } from '@/app/login/types/loginTypes'
+import { Constantes } from '@/config/Constantes'
 
 const Header = () => {
   const pathname = usePathname()
@@ -144,7 +145,11 @@ const Header = () => {
                 button={
                   <img
                     className="h-9 w-9 rounded-full object-cover saturate-50 group-hover:saturate-100"
-                    src={`${BASE_PATH}/assets/images/user-profile.png`}
+                    src={
+                      usuario?.urlFoto
+                        ? `${Constantes.authUrl}${usuario.urlFoto}`
+                        : `${BASE_PATH}/assets/images/user-profile.png`
+                    }
                     alt="userProfile"
                   />
                 }
@@ -152,17 +157,15 @@ const Header = () => {
                 <ul className="w-[230px] !py-0 font-semibold text-dark dark:text-white-dark dark:text-white-light/90">
                   <li>
                     <div className="flex items-center px-4 py-4">
-                      {usuario?.urlFoto ? (
-                        <img
-                          className="h-9 w-9 rounded-full object-cover"
-                          src={usuario.urlFoto}
-                          alt="userProfile"
-                        />
-                      ) : (
-                        <div className="h-9 w-9 rounded-full bg-primary text-white flex items-center justify-center font-bold">
-                          {usuario?.persona?.nombres?.[0]}
-                        </div>
-                      )}
+                      <img
+                        className="h-9 w-9 rounded-full object-cover"
+                        src={
+                          usuario?.urlFoto
+                            ? `${Constantes.authUrl}${usuario.urlFoto}`
+                            : `${BASE_PATH}/assets/images/user-profile.png`
+                        }
+                        alt="userProfile"
+                      />
 
                       <div className="truncate ltr:pl-4 rtl:pr-4">
                         <h4 className="text-base">

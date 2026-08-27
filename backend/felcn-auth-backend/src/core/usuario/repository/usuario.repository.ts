@@ -446,6 +446,7 @@ export class UsuarioRepository {
     const existing = await repo.findOne({ where: { id: idUsuario as any } })
     if (!existing) return null
     existing.codigoActivacion = codigo
+    existing.codigoActivacionExpira = dayjs().add(72, 'hour').toDate()
     existing.usuarioModificacion = usuarioAuditoria
     return await repo.save(existing)
   }
@@ -494,7 +495,12 @@ export class UsuarioRepository {
     return await this.dataSource
       .getRepository(Usuario)
       .createQueryBuilder('usuario')
-      .select(['usuario.id', 'usuario.estado', 'usuario.fechaBloqueo'])
+      .select([
+        'usuario.id',
+        'usuario.estado',
+        'usuario.fechaBloqueo',
+        'usuario.codigoActivacionExpira',
+      ])
       .where('usuario.codigoActivacion = :codigo', { codigo })
       .getOne()
   }
