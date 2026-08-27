@@ -10,6 +10,10 @@ export const Configurations = {
   OTP_MAX_INTENTOS: 3,        // Intentos fallidos antes de invalidar la sesión OTP
   OTP_RATE_LIMIT_SEGUNDOS: 60, // Segundos de espera mínima entre solicitudes de OTP
   OTP_CANAL_DEFAULT: 'EMAIL' as string, // Canal por defecto cuando el usuario no tiene uno configurado
+  // Costo bcrypt para el hash del código OTP — deliberadamente bajo (~ms en
+  // vez de ~1.3s con SALT_ROUNDS=15). El código ya está protegido por su
+  // corta vigencia (OTP_EXPIRACION_MIN) y el límite de intentos (OTP_MAX_INTENTOS).
+  OTP_SALT_ROUNDS: 6,
   // Dispositivo de confianza: tras un OTP verificado, ese navegador no vuelve
   // a pedir OTP hasta que pase esta ventana (o hasta que se revoquen sesiones).
   OTP_CONFIANZA_COOKIE: 'otp_confianza',

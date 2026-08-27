@@ -8,11 +8,18 @@ import { Configurations } from '../params'
 @Injectable()
 export class TextService {
   /**
-   * Método para encriptar un password
+   * Método para encriptar un password.
    * @param password contraseña
+   * @param rounds costo bcrypt — por defecto el de contraseñas (SALT_ROUNDS).
+   *   Para valores de vida corta y ya protegidos por rate-limit/intentos
+   *   máximos (ej. el código OTP), usar un costo bajo (ver OTP_SALT_ROUNDS)
+   *   evita una demora de más de un segundo por operación sin aportar
+   *   seguridad real — el costo alto de bcrypt defiende contra fuerza bruta
+   *   offline de un hash robado, algo que no aplica a un código de 6 dígitos
+   *   que expira en minutos y ya tiene su propio límite de intentos.
    */
-  static async encrypt(password: string) {
-    return await hash(password, Configurations.SALT_ROUNDS)
+  static async encrypt(password: string, rounds: number = Configurations.SALT_ROUNDS) {
+    return await hash(password, rounds)
   }
 
   static async compare(

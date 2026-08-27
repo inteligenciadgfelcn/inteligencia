@@ -170,7 +170,10 @@ export class OtpService extends BaseService {
     await this.otpSesionRepository.invalidarPendientes(usuario.id)
 
     const codigo = TextService.generateNumericOtp(Configurations.OTP_LONGITUD)
-    const codigoHash = await TextService.encrypt(codigo)
+    const codigoHash = await TextService.encrypt(
+      codigo,
+      Configurations.OTP_SALT_ROUNDS
+    )
 
     const canal: string = usuario.otpCanal ?? Configurations.OTP_CANAL_DEFAULT
     const destino =
