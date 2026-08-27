@@ -212,6 +212,11 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         headers: {},
       })
 
+      // El overlay de carga cubre pantalla completa ANTES de limpiar
+      // otpPendiente — si se limpiara primero, el formulario de login
+      // se alcanza a renderizar un instante por debajo antes de tapar
+      // con el spinner ("vuelve al login y luego recién ingresa").
+      mostrarFullScreen()
       setOtpPendiente(null)
       await finalizarAutenticacion(respuesta.datos)
     } catch (e) {
