@@ -43,6 +43,8 @@ export enum Messages {
   EXISTING_USER = 'Ya existe un usuario registrado con el mismo número de documento.',
   EXISTING_EMAIL = 'Ya existe un usuario registrado con el mismo correo electrónico.',
   EXISTING_PHONE = 'Ya existe un usuario registrado con el mismo teléfono.',
+  PROFILE_ALREADY_COMPLETED = 'Ya completó esta información. No podrá modificarla directamente — cualquier corrección posterior deberá solicitarse a un administrador del sistema.',
+  INCOMPLETE_FELCN_STRUCTURE = 'Debe completar Unidad, Distrital, Grupo, Grado y Número de Pase en conjunto.',
   NEW_USER_ACCOUNT = '¡Usuario creado exitosamente!',
   NEW_USER_ACCOUNT_VERIFY = 'Activación de cuenta.',
   ACCOUNT_ACTIVED_SUCCESSFULLY = '¡Activación de cuenta exitosa!',
