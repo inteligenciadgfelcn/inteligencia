@@ -49,6 +49,12 @@ export class DepartamentoController extends BaseController {
     )
   }
 
+  @Get('allExtension')
+  @ApiOperation({ summary: 'Listar todos los siglas (sin paginación)' })
+  findAllExtension() {
+    return this.departamentoService.findAllExtension()
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un departamento por ID' })
   findOne(@Param('id') id: number) {

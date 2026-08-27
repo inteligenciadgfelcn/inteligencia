@@ -183,12 +183,10 @@ export class FiliacionService {
 
   async obtenerPersonasPorCaso(
     nroCaso: string,
-    filiado: number,
     pagination: PaginacionQueryDto
   ) {
     const [filas, total] = await this.personasRepository.obtenerPersonasPorCaso(
       nroCaso,
-      filiado,
       pagination
     )
 

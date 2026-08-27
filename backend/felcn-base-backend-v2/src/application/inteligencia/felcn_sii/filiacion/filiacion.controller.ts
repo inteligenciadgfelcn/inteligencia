@@ -37,11 +37,6 @@ export class FiliacionController extends BaseController {
     description: 'Número de caso',
   })
   @ApiQuery({
-    name: 'filiado',
-    example: 1,
-    description: 'Estado de filiación: 1 = Filiado, 0 = No Filiado',
-  })
-  @ApiQuery({
     name: 'pagina',
     example: 1,
     required: false,
@@ -55,15 +50,11 @@ export class FiliacionController extends BaseController {
     @Query('caso')
     caso: string,
 
-    @Query('filiado', ParseIntPipe)
-    filiado: number,
-
     @Query()
     pagination: PaginacionQueryDto
   ) {
     const result = await this.filiacionService.obtenerPersonasPorCaso(
       caso,
-      filiado,
       pagination
     )
 

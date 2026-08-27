@@ -13,7 +13,6 @@ export class PersonasRepository {
 
   async obtenerPersonasPorCaso(
     nroCaso: string,
-    filiado: number,
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
     const { limite, saltar, filtro } = pagination || { limite: 10, saltar: 0 }
@@ -30,7 +29,6 @@ export class PersonasRepository {
       )
       .leftJoin('asignacion', 'a', 'o.id_caso = a.id_caso')
       .where('TRIM(a.numero_caso) = :caso', { caso: nroCaso.trim() })
-      .andWhere('p.enviado = :enviado', { enviado: filiado })
 
     if (filtro) {
       baseQuery.andWhere(
@@ -64,6 +62,11 @@ export class PersonasRepository {
         'p.direccion AS direccion',
         'p.estado AS estado',
         'p.enviado AS enviado',
+        `CASE
+  WHEN p.enviado = 1 THEN 'Filiado'
+  WHEN p.enviado = 0 THEN 'Sin filiar'
+  ELSE 'Sin filiar'
+END AS filiado`,
       ])
       .take(limite)
       .skip(saltar)
