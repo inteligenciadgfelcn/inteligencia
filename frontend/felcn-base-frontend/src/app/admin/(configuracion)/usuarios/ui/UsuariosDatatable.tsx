@@ -254,26 +254,19 @@ export const UsuariosDatatable: React.FC = () => {
             height: '100%',
           }}
         >
-          {params.row.usuarioRol.map((itemUsuarioRol, index) => (
-            <Chip
-              key={index}
-              label={itemUsuarioRol.rol.nombre}
-              size="small"
-              color={itemUsuarioRol.rol.rol === 'USUARIO' ? 'warning' : 'default'}
-            />
-          ))}
-          {params.row.usuarioRol.some((ur) => ur.rol.rol === 'USUARIO') && (
-            <Chip
-              size="small"
-              variant="outlined"
-              color="warning"
-              label={
-                params.row.fechaPerfilCompletado
-                  ? 'Datos completos, falta rol'
-                  : 'Aún completando datos'
-              }
-            />
-          )}
+          {(() => {
+            const soloUsuario =
+              params.row.usuarioRol.length === 1 &&
+              params.row.usuarioRol[0].rol.rol === 'USUARIO'
+            return params.row.usuarioRol.map((itemUsuarioRol, index) => (
+              <Chip
+                key={index}
+                label={itemUsuarioRol.rol.nombre}
+                size="small"
+                color={soloUsuario ? 'warning' : 'default'}
+              />
+            ))
+          })()}
         </Box>
       ),
     },

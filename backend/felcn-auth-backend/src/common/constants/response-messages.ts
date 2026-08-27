@@ -28,6 +28,7 @@ export enum Messages {
   INVALID_USER_CREDENTIALS = 'Credenciales de usuario inválidas.',
   NO_PERMISSION_USER = 'El usuario no tiene roles asignados.',
   INVALID_USER = 'El usuario no existe o no tiene un estado válido.',
+  EXPIRED_ACTIVATION_LINK = 'Este enlace de activación venció. Solicite uno nuevo desde el panel de administración o iniciando sesión.',
   INVALID_CREDENTIALS = 'Credenciales incorrectas.',
   INACTIVE_USER = 'El usuario está inactivo.',
   CIUDADANIA_DIGITAL_NOT_ENABLED = 'El usuario no tiene habilitada la autenticación con Ciudadanía Digital.',
