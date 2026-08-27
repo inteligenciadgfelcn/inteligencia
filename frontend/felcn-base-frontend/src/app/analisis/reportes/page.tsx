@@ -1,9 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import IconShare from '@/components/Icon/IconShare'
 import { FiltrosCasos } from './ui/FiltrosCasos'
 import { ReporteCasosListado } from './ui/ReporteCasosListado'
 import { ReportesS2iService } from '@/services/analisis'
@@ -38,11 +35,6 @@ export default function ReportesPage() {
         <h2 className="text-xl font-bold text-dark dark:text-white-light">
           Reportes de Casos Investigados
         </h2>
-        <Link href="/analisis/reportes/vinculos">
-          <Button variant="outline-primary" size="sm">
-            <IconShare className="mr-1 h-4 w-4" /> Diagrama de Vínculos
-          </Button>
-        </Link>
       </div>
 
       <FiltrosCasos onBuscar={buscar} cargando={cargando} />

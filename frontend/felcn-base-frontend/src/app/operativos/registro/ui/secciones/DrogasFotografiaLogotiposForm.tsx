@@ -564,7 +564,7 @@ function ExpansionContenidoDroga({
     <div className="border-t border-[#e0e6ed] p-4 dark:border-gray-700">
       {/* Fotos */}
       {!cache ? (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[0, 1].map((i) => (
             <div
               key={i}
@@ -573,7 +573,7 @@ function ExpansionContenidoDroga({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FotoSlot
             src={cache.pruebaCampo}
             label="Prueba de Campo"

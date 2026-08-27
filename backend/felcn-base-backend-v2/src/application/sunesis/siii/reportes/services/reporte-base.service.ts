@@ -1,51 +1,62 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import * as puppeteer from 'puppeteer';
+import { DB_AUTH } from '@/core/config/database/database.module';
 import { ReportTemplate } from '../interfaces/reporte-template.interface';
 
 @Injectable()
 export class ReportBaseService implements OnModuleDestroy {
   private browser: puppeteer.Browser | null = null;
   private readonly logger = new Logger(ReportBaseService.name);
-  private readonly authBackendUrl = process.env.AUTH_BACKEND_INTERNAL_URL || '';
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    @InjectDataSource(DB_AUTH)
+    private readonly dsAuth: DataSource,
+  ) { }
 
   /**
-   * Arma "GRADO: Nombre" para el pie de los reportes, consultando el perfil del
-   * usuario en felcn-auth-backend (el grado no viaja en el JWT). El endpoint
-   * `/usuarios/cuenta/perfil` no expone una relación `persona` con nombres/apellidos
-   * separados, así que el nombre a mostrar sale de `nombreApp` (que en algunos
-   * usuarios ya viene precargado como "grado + nombre completo" — de ahí la
-   * verificación para no duplicar el grado). Si la consulta falla o el perfil no
-   * trae grado/nombreApp, cae de vuelta al login/CI para no romper el PDF.
+   * Arma "GRADO: Nombre" para el pie de los reportes, consultando directamente la
+   * base de datos de autenticación (felcn_auth): usuario.usuario ⋈ usuario.persona
+   * (nombres/apellidos) ⋈ parametro.grado (abreviatura). Mismo join que usa
+   * `UsuarioService.findOne`, pero por login/CI en vez de número de pase.
+   *
+   * Se reemplazó la llamada HTTP anterior a `/usuarios/cuenta/perfil` de
+   * felcn-auth-backend porque ese endpoint no siempre trae `nombreApp` cargado,
+   * lo que hacía caer al login/CI crudo combinado con el grado — ej. mostrar
+   * "Sbtte.: 3256478" como si el CI fuera un nombre. La tabla `usuario.persona`
+   * sí tiene el nombre de todos los usuarios.
    */
-  async obtenerUsuarioGenerador(accessToken: string | undefined, fallback: string): Promise<string> {
-    if (!accessToken || !this.authBackendUrl) return fallback
+  async obtenerUsuarioGenerador(usuarioLogin: string): Promise<string> {
+    if (!usuarioLogin) return usuarioLogin
 
     try {
-      const response = await firstValueFrom(
-        this.httpService.get(`${this.authBackendUrl.replace(/\/$/, '')}/api/usuarios/cuenta/perfil`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }),
+      const rows = await this.dsAuth.query(
+        `
+        SELECT
+          gr.abreviatura AS "abreviatura",
+          TRIM(CONCAT(
+            p.nombres, ' ',
+            p.primer_apellido, ' ',
+            COALESCE(p.segundo_apellido, '')
+          )) AS "nombreCompleto"
+        FROM usuario.usuario u
+        LEFT JOIN usuario.persona p ON u.id_persona = p.id
+        LEFT JOIN parametro.grado gr ON u.id_grado = gr.id
+        WHERE u.usuario = $1
+        `,
+        [usuarioLogin],
       )
 
-      const perfil = response.data?.datos
-      const abreviatura: string | undefined = perfil?.grado?.abreviatura?.trim() || undefined
-      const nombreMostrar: string | undefined = perfil?.nombreApp?.trim() || undefined
+      const abreviatura: string | undefined = rows[0]?.abreviatura?.trim() || undefined
+      const nombreCompleto: string | undefined = rows[0]?.nombreCompleto?.trim() || undefined
 
-      if (abreviatura && nombreMostrar) {
-        return nombreMostrar.toLowerCase().startsWith(abreviatura.toLowerCase())
-          ? nombreMostrar
-          : `${abreviatura}: ${nombreMostrar}`
-      }
-      if (nombreMostrar) return nombreMostrar
-      if (abreviatura) return `${abreviatura}: ${fallback}`
-      return fallback
+      if (abreviatura && nombreCompleto) return `${abreviatura} ${nombreCompleto}`
+      if (nombreCompleto) return nombreCompleto
+      return usuarioLogin
     } catch (error) {
-      this.logger.warn(`No se pudo obtener el perfil del usuario para el pie del reporte: ${error.message}`)
-      return fallback
+      this.logger.warn(`No se pudo obtener el nombre del usuario para el pie del reporte: ${error.message}`)
+      return usuarioLogin
     }
   }
 
