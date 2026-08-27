@@ -24,6 +24,9 @@ WORKDIR /home/node/app
 # 👇 crear carpeta de logs con permisos correctos
 RUN mkdir -p /tmp/logs && chown -R node:node /tmp/logs
 
+# 👇 carpeta de almacenamiento (fotos de perfil, etc.) — se monta como volumen
+RUN mkdir -p /home/node/app/storage && chown -R node:node /home/node/app/storage
+
 # copiar solo lo necesario
 COPY --from=prod-deps /home/node/app/node_modules ./node_modules
 COPY --from=build /home/node/app/dist ./dist
