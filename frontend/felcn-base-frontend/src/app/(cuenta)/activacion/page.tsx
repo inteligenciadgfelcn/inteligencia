@@ -12,22 +12,13 @@ import {
   seguridadPass,
   siteName,
 } from '@/utils'
-import Footer from '@/components/layouts/Footer'
-import {
-  Box,
-  Card,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Typography,
-} from '@mui/material'
-import Grid from '@mui/material/Grid2'
 import { Icono } from '@/components/Icono'
-import Button from '@mui/material/Button'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { NivelSeguridadPass } from '@/components/utils/NivelSeguridadPass'
 import { useAlerts } from '@/hooks'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
+import IconLockDots from '@/components/Icon/IconLockDots'
+import IconEye from '@/components/Icon/IconEye'
+import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 const schema = z
   .object({
@@ -108,148 +99,128 @@ export default function ActivacionPage() {
   return (
     <>
       <title>{`Activación de cuenta - ${siteName()}`}</title>
-      <Grid
-        container
-        justifyContent="center"
-        alignItems={'start'}
-        mt={3}
-        style={{ minHeight: '100vh' }}
-      >
-        <Card
-          sx={{
-            borderRadius: 4,
-            p: 4,
-            maxWidth: '450px',
-            width: '100%',
-          }}
-        >
+      <LoginCoverVristo>
+        <div className="w-full max-w-[420px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {!codigoActivar || linkVencido ? (
-            <Box
-              display={'flex'}
-              flexDirection={'column'}
-              alignItems={'center'}
-            >
-              <Icono fontSize={'large'} color={'error'}>
-                cancel
-              </Icono>
-              <Box height={'20px'} />
-              <Typography sx={{ fontWeight: '600' }} variant={'subtitle2'}>
+            <div className="flex flex-col items-center gap-4 text-center">
+              <Icono fontSize="large">cancel</Icono>
+              <h1 className="text-2xl font-extrabold text-primary">
                 {linkVencido ? 'Enlace vencido' : 'Enlace inválido'}
-              </Typography>
-              <Box height={'20px'} />
-              <Typography variant="body2" color="text.secondary" align="center">
+              </h1>
+              <p className="text-white-dark">
                 {linkVencido
                   ? 'Este enlace de activación venció. Será redirigido al inicio en unos segundos; solicite uno nuevo desde el panel de administración.'
                   : 'Este enlace de activación no es válido. Solicite uno nuevo al administrador.'}
-              </Typography>
-              <Box height={'20px'} />
-              <Button type="button" variant="contained" onClick={irAlLogin}>
+              </p>
+              <button
+                type="button"
+                className="btn btn-gradient w-full uppercase"
+                onClick={irAlLogin}
+              >
                 Ir al inicio
-              </Button>
-            </Box>
+              </button>
+            </div>
           ) : activada ? (
-            <Box
-              display={'flex'}
-              flexDirection={'column'}
-              alignItems={'center'}
-            >
-              <Icono fontSize={'large'} color={'success'}>
-                check_circle
-              </Icono>
-              <Box height={'20px'} />
-              <Typography sx={{ fontWeight: '600' }} variant={'subtitle2'}>
+            <div className="flex flex-col items-center gap-4 text-center">
+              <Icono fontSize="large">check_circle</Icono>
+              <h1 className="text-2xl font-extrabold text-primary">
                 Cuenta activada
-              </Typography>
-              <Box height={'20px'} />
-              <Typography variant="body2" color="text.secondary" align="center">
+              </h1>
+              <p className="text-white-dark">
                 Ya puede iniciar sesión con su usuario y la contraseña
                 definida.
-              </Typography>
-              <Box height={'20px'} />
-              <Button type="button" variant="contained" onClick={irAlLogin}>
-                Ir al inicio
-              </Button>
-            </Box>
-          ) : (
-            <Box
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-              display={'flex'}
-              flexDirection={'column'}
-              gap={2}
-            >
-              <Typography
-                sx={{ fontWeight: '600' }}
-                variant={'subtitle2'}
-                align="center"
+              </p>
+              <button
+                type="button"
+                className="btn btn-gradient w-full uppercase"
+                onClick={irAlLogin}
               >
-                Establezca su contraseña
-              </Typography>
-              <Typography variant="body2" color="text.secondary" align="center">
-                Para activar su cuenta, defina una contraseña segura.
-              </Typography>
-              <TextField
-                label="Contraseña"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                {...register('password')}
-                error={!!errors.password}
-                helperText={errors.password?.message}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
-                          edge="end"
-                        >
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
-              {watch('password') && (
-                <NivelSeguridadPass pass={watch('password')} />
-              )}
-              <TextField
-                label="Confirmar contraseña"
-                type={showConfirmPassword ? 'text' : 'password'}
-                fullWidth
-                {...register('confirmPassword')}
-                error={!!errors.confirmPassword}
-                helperText={errors.confirmPassword?.message}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          edge="end"
-                        >
-                          {showConfirmPassword ? (
-                            <VisibilityOff />
-                          ) : (
-                            <Visibility />
-                          )}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+                Ir al inicio
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div className="mb-8">
+                <h1 className="text-3xl font-extrabold text-primary">
+                  Establezca su contraseña
+                </h1>
+                <p className="text-white-dark">
+                  Para activar su cuenta, defina una contraseña segura.
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-0 block text-white-dark">
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    {...register('password')}
+                    disabled={loading}
+                    className="form-input ps-10"
+                  />
+                  <span className="absolute start-4 top-1/2 -translate-y-1/2">
+                    <IconLockDots />
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute end-3 top-1/2 -translate-y-1/2 text-white-dark hover:text-primary"
+                  >
+                    {showPassword ? <IconLockDots /> : <IconEye />}
+                  </button>
+                </div>
+                <p className="text-danger text-sm">
+                  {errors.password?.message}
+                </p>
+                {watch('password') && (
+                  <NivelSeguridadPass pass={watch('password')} />
+                )}
+              </div>
+
+              <div>
+                <label className="mb-0 block text-white-dark">
+                  Confirmar contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    {...register('confirmPassword')}
+                    disabled={loading}
+                    className="form-input ps-10"
+                  />
+                  <span className="absolute start-4 top-1/2 -translate-y-1/2">
+                    <IconLockDots />
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="absolute end-3 top-1/2 -translate-y-1/2 text-white-dark hover:text-primary"
+                  >
+                    {showConfirmPassword ? <IconLockDots /> : <IconEye />}
+                  </button>
+                </div>
+                <p className="text-danger text-sm">
+                  {errors.confirmPassword?.message}
+                </p>
+              </div>
+
               <ProgresoLineal mostrar={loading} />
-              <Button type="submit" variant="contained" disabled={loading}>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-gradient w-full uppercase"
+              >
                 {loading ? 'Activando...' : 'Activar cuenta'}
-              </Button>
-            </Box>
+              </button>
+            </form>
           )}
-        </Card>
-      </Grid>
-      <Footer />
+        </div>
+      </LoginCoverVristo>
     </>
   )
 }

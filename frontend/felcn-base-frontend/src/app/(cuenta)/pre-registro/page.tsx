@@ -15,7 +15,7 @@ import { Constantes } from '@/config/Constantes'
 import { Icono } from '@/components/Icono'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { Select } from '@/components/ui/Select'
-import { BASE_PATH } from '@/imageLoader'
+import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 const formSchema = z
   .object({
@@ -167,12 +167,7 @@ export default function PreRegistroPage() {
   return (
     <>
       <title>{`Preregistro - ${siteName()}`}</title>
-      <div
-        className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6 py-10"
-        style={{
-          backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)`,
-        }}
-      >
+      <LoginCoverVristo>
         <div className="w-full max-w-2xl rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {estadoLink === 'validando' && (
             <div className="flex flex-col items-center gap-4 text-center">
@@ -396,7 +391,7 @@ export default function PreRegistroPage() {
               </form>
             ))}
         </div>
-      </div>
+      </LoginCoverVristo>
     </>
   )
 }
