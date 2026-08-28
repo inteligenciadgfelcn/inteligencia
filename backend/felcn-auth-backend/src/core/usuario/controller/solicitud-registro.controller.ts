@@ -8,9 +8,9 @@ import { CasbinGuard } from '@/core/authorization/guards/casbin.guard'
 import { SolicitudRegistroService } from '../service/solicitud-registro.service'
 import { SolicitarAccesoRegistroDto } from '../dto/solicitar-acceso-registro.dto'
 import { CompletarSolicitudRegistroDto } from '../dto/completar-solicitud-registro.dto'
-import { AprobarSolicitudRegistroDto } from '../dto/aprobar-solicitud-registro.dto'
 import { RechazarSolicitudRegistroDto } from '../dto/rechazar-solicitud-registro.dto'
 import { FiltrosSolicitudRegistroDto } from '../dto/filtros-solicitud-registro.dto'
+import { CrearUsuarioDto } from '../dto/crear-usuario.dto'
 import { Messages } from '@/common/constants/response-messages'
 
 @Controller('usuarios/solicitudes-registro')
@@ -72,15 +72,17 @@ export class SolicitudRegistroController extends BaseController {
     return this.success(result)
   }
 
+  // El body es el mismo formulario de "Nuevo Usuario" (precargado en el
+  // frontend con los datos de la solicitud, pero editable por el admin).
   @ApiOperation({ summary: 'API para aprobar una solicitud de registro' })
   @ApiBearerAuth()
-  @ApiBody({ type: AprobarSolicitudRegistroDto, required: true })
+  @ApiBody({ type: CrearUsuarioDto, required: true })
   @UseGuards(JwtAuthGuard, CasbinGuard)
   @Patch(':id/aprobar')
   async aprobar(
     @Req() req: Request,
     @Param() params: ParamUuidDto,
-    @Body() dto: AprobarSolicitudRegistroDto
+    @Body() dto: CrearUsuarioDto
   ) {
     const idAdmin = this.getUser(req)
     const result = await this.solicitudRegistroService.aprobar(params.id, dto, idAdmin)
