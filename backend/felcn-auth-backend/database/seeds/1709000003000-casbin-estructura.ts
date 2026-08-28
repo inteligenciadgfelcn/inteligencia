@@ -13,19 +13,15 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
     const frontendRoutes: CasbinValue = {
       '/admin/estructura/grados': {
         [RolEnum.ADMINISTRADOR]: 'read|create|update',
-        [RolEnum.TECNICO]: 'read',
       },
       '/admin/estructura/unidades': {
         [RolEnum.ADMINISTRADOR]: 'read|create|update',
-        [RolEnum.TECNICO]: 'read',
       },
       '/admin/estructura/distritales': {
         [RolEnum.ADMINISTRADOR]: 'read|create|update',
-        [RolEnum.TECNICO]: 'read',
       },
       '/admin/estructura/grupos': {
         [RolEnum.ADMINISTRADOR]: 'read|create|update',
-        [RolEnum.TECNICO]: 'read',
       },
     }
 
@@ -34,7 +30,6 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
       // Grados
       '/api/estructura/grados': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
       '/api/estructura/grados/listado': {
         [RolEnum.TODOS]: 'GET',
@@ -52,7 +47,6 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
       // Unidades
       '/api/estructura/unidades': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
       '/api/estructura/unidades/listado': {
         [RolEnum.TODOS]: 'GET',
@@ -70,7 +64,6 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
       // Distritales
       '/api/estructura/distritales': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
       '/api/estructura/distritales/listado': {
         [RolEnum.TODOS]: 'GET',
@@ -88,7 +81,6 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
       // Grupos
       '/api/estructura/grupos': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
       '/api/estructura/grupos/listado': {
         [RolEnum.TODOS]: 'GET',
@@ -129,5 +121,5 @@ export class casbinEstructura1709000003000 implements MigrationInterface {
   }
 
   /* eslint-disable */
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
