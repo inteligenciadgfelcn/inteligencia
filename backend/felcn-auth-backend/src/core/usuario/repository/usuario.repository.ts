@@ -48,7 +48,6 @@ export class UsuarioRepository {
         'usuario.idGrado',
         'usuario.idGrupo',
         'usuario.numeroPase',
-        'usuario.fechaPerfilCompletado',
         'usuarioRol',
         'rol.id',
         'rol.rol',
@@ -236,7 +235,6 @@ export class UsuarioRepository {
         'usuario.idGrado',
         'usuario.idGrupo',
         'usuario.numeroPase',
-        'usuario.fechaPerfilCompletado',
         'persona.id',
         'persona.telefono',
       ])
@@ -273,7 +271,6 @@ export class UsuarioRepository {
         'usuario.nombreApp',
         'usuario.idGrado',
         'usuario.idGrupo',
-        'usuario.fechaPerfilCompletado',
         'persona.nombres',
         'persona.primerApellido',
         'persona.segundoApellido',
@@ -401,9 +398,6 @@ export class UsuarioRepository {
       ...(usuarioDto.idGrado !== undefined && { idGrado: usuarioDto.idGrado }),
       ...(usuarioDto.idGrupo !== undefined && { idGrupo: usuarioDto.idGrupo }),
       ...(usuarioDto.numeroPase !== undefined && { numeroPase: usuarioDto.numeroPase }),
-      ...(usuarioDto.fechaPerfilCompletado !== undefined && {
-        fechaPerfilCompletado: usuarioDto.fechaPerfilCompletado,
-      }),
       ...(usuarioDto.sesionesRevocadasDesde !== undefined && {
         sesionesRevocadasDesde: usuarioDto.sesionesRevocadasDesde,
       }),

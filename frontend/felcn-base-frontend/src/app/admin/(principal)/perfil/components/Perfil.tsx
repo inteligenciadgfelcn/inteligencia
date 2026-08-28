@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/context/AuthProvider'
 import { useAlerts, useConfirmDialog, useSession } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
@@ -12,21 +12,13 @@ import { EditarPerfilModal } from './EditarPerfilModal'
 import { FotoPerfilModal } from './FotoPerfilModal'
 
 export const Perfil = () => {
-  const { usuario, rolUsuario } = useAuth()
+  const { usuario } = useAuth()
   const { sesionPeticion, cerrarSesion } = useSession()
   const { Alerta } = useAlerts()
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const [modalPass, setModalPass] = useState(false)
   const [modalEdicion, setModalEdicion] = useState(false)
   const [modalFoto, setModalFoto] = useState(false)
-
-  const perfilPendiente =
-    rolUsuario?.rol === 'USUARIO' && !usuario?.fechaPerfilCompletado
-
-  useEffect(() => {
-    if (perfilPendiente) setModalEdicion(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [perfilPendiente])
 
   const handleCerrarSesiones = () => {
     confirm({
@@ -55,18 +47,12 @@ export const Perfil = () => {
     <div className="pt-5">
       <h2 className="mb-5 text-xl font-semibold">Perfil de Usuario</h2>
 
-      {perfilPendiente && (
-        <div className="mb-5 rounded-md border-l-4 border-warning bg-warning/10 p-4 text-warning">
-          <strong>Información pendiente.</strong> Debe completar y verificar
-          su información para continuar utilizando el sistema.
-        </div>
-      )}
-
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <PerfilCard
           usuario={usuario}
           onChangePassword={() => setModalPass(true)}
           onEditPhoto={() => setModalFoto(true)}
+          onEditarPerfil={() => setModalEdicion(true)}
           onCerrarSesiones={handleCerrarSesiones}
         />
 

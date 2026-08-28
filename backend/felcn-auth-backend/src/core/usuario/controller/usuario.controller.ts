@@ -23,7 +23,6 @@ import { ActualizarContrasenaDto } from '../dto/actualizar-contrasena.dto'
 import { ActualizarUsuarioRolDto } from '../dto/actualizar-usuario-rol.dto'
 import { CrearUsuarioCiudadaniaDto } from '../dto/crear-usuario-ciudadania.dto'
 import { FiltrosUsuarioDto } from '../dto/filtros-usuario.dto'
-import { CrearUsuarioCuentaDto } from '../dto/crear-usuario-cuenta.dto'
 import {
   ActivarCuentaDto,
   NuevaContrasenaDto,
@@ -119,14 +118,6 @@ export class UsuarioController extends BaseController {
     const usuarioAuditoria = this.getUser(req)
     const result = await this.usuarioService.crear(usuarioDto, usuarioAuditoria)
     return this.successCreate(result)
-  }
-
-  //create user account
-  @ApiOperation({ summary: 'API para crear una nueva Cuenta' })
-  @Post('crear-cuenta')
-  async crearUsuario(@Body() usuarioDto: CrearUsuarioCuentaDto) {
-    const result = await this.usuarioService.crearCuenta(usuarioDto)
-    return this.successCreate(result, Messages.NEW_USER_ACCOUNT)
   }
 
   @ApiOperation({ summary: 'Actualiza el perfil del usuario' })
