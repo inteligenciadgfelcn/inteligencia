@@ -16,7 +16,7 @@ export class usuario1611171041790 implements MigrationInterface {
     if (!initialPassword) {
       throw new Error(
         'ADMIN_INITIAL_PASSWORD no está seteada. Es obligatoria para sembrar ' +
-          'los usuarios iniciales (incluido el Admin) — no hay valor por defecto.'
+        'los usuarios iniciales (incluido el Admin) — no hay valor por defecto.'
       )
     }
     if (!TextService.validateLevelPassword(initialPassword)) {
@@ -29,43 +29,15 @@ export class usuario1611171041790 implements MigrationInterface {
       {
         //id: 1,
         usuario: 'ADMINISTRADOR',
-        correoElectonico: 'agepic-9270815@yopmail.com',
+        correoElectonico: 'superadmin@mailinator.com',
         persona: {
-          nombres: 'YASMIN',
-          primerApellido: 'RODRIGUEZ',
-          segundoApellido: 'ROMERO',
+          nombres: 'SUPER',
+          primerApellido: 'ADMIN',
+          segundoApellido: 'ADMIN',
           tipoDocumento: TipoDocumento.CI,
-          nroDocumento: '9270815',
-          fechaNacimiento: '2001-12-16',
+          nroDocumento: '3333333',
+          fechaNacimiento: '1998-12-30',
           genero: Genero.FEMENINO,
-        },
-      },
-      {
-        //id: 2,
-        usuario: 'ADMINISTRADOR-TECNICO',
-        correoElectonico: 'agepic-1765251@yopmail.com',
-        persona: {
-          nombres: 'ALBANO',
-          primerApellido: 'ROJAS',
-          segundoApellido: 'AGUADA',
-          tipoDocumento: TipoDocumento.CI,
-          nroDocumento: '1765251',
-          fechaNacimiento: '1967-05-28',
-          genero: Genero.MASCULINO,
-        },
-      },
-      {
-        //id: 3,
-        usuario: 'TECNICO',
-        correoElectonico: 'agepic-6114767@yopmail.com',
-        persona: {
-          nombres: 'JESUS',
-          primerApellido: 'ROJAS',
-          segundoApellido: 'ZABALA',
-          tipoDocumento: TipoDocumento.CI,
-          nroDocumento: '6114767',
-          fechaNacimiento: '2009-02-28',
-          genero: Genero.MASCULINO,
         },
       },
     ]
@@ -103,5 +75,5 @@ export class usuario1611171041790 implements MigrationInterface {
   }
 
   /* eslint-disable */
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
