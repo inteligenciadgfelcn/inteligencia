@@ -10,7 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { UsuarioRepository } from '../repository/usuario.repository'
-import { Status, TipoDocumento, USUARIO_NORMAL } from '@/common/constants'
+import { Status, USUARIO_NORMAL } from '@/common/constants'
 import { CrearUsuarioDto } from '../dto/crear-usuario.dto'
 import { TextService } from '@/common/lib/text.service'
 import { Messages } from '@/common/constants/response-messages'
@@ -21,7 +21,6 @@ import { ConfigService } from '@nestjs/config'
 import { TemplateEmailService } from '@/common/templates/templates-email.service'
 import { FiltrosUsuarioDto } from '../dto/filtros-usuario.dto'
 import { EntityManager } from 'typeorm'
-import { CrearUsuarioCuentaDto } from '../dto/crear-usuario-cuenta.dto'
 import {
   NuevaContrasenaDto,
   RecuperarCuentaDto,
@@ -277,119 +276,6 @@ export class UsuarioService extends BaseService {
     // respaldo por si el envío de correo falla (p. ej. SMTP caído): el admin
     // puede copiarlo y hacérselo llegar al usuario por otro canal.
     return { ...crearResult, urlActivacion: urlActivacion.toString() }
-  }
-
-  async crearCuenta(usuarioDto: CrearUsuarioCuentaDto) {
-    const { persona, ...datosUsuarios } = usuarioDto
-
-    // verificar si el usuario ya fue registrado con su correo
-    const usuario = await this.usuarioRepositorio.buscarUsuario(
-      persona.nroDocumento
-    )
-
-    if (usuario) {
-      throw new PreconditionFailedException(Messages.EXISTING_USER)
-    }
-
-    // verificar si el correo no esta registrado
-    const correo = await this.usuarioRepositorio.buscarUsuarioPorCorreo(
-      usuarioDto.correoElectronico
-    )
-
-    if (correo) {
-      throw new PreconditionFailedException(Messages.EXISTING_EMAIL)
-    }
-
-    // verificar si el telefono no esta registrado
-    if (usuarioDto.persona.telefono) {
-      const telefono = await this.personaRepositorio.buscarPersonaPorTelefono(
-        usuarioDto.persona.telefono
-      )
-
-      if (telefono) {
-        throw new PreconditionFailedException(Messages.EXISTING_PHONE)
-      }
-    }
-
-    const rol = await this.rolRepositorio.buscarPorNombreRol('USUARIO')
-
-    if (!rol) {
-      throw new PreconditionFailedException(Messages.NO_PERMISSION_FOUND)
-    }
-
-    let correoActivacion: string | null = null
-    let templateActivacion: string | null = null
-
-    const op = async (transaction: EntityManager) => {
-      const personaNueva = await this.personaRepositorio.crear(
-        {
-          ...persona,
-          tipoDocumento: usuarioDto.persona.tipoDocumento ?? TipoDocumento.CI,
-        },
-        USUARIO_NORMAL,
-        transaction
-      )
-
-      // No se define contrasena: el repositorio genera un hash placeholder
-      // (ver UsuarioRepository.crear) que nadie conoce. El usuario recién
-      // define su propia contraseña al activar la cuenta desde el enlace.
-      const usuarioNuevo = await this.usuarioRepositorio.crear(
-        personaNueva.id,
-        {
-          usuario: persona.nroDocumento,
-          correoElectronico: datosUsuarios.correoElectronico,
-          estado: UsuarioEstado.PENDING,
-        },
-        USUARIO_NORMAL,
-        transaction
-      )
-
-      await this.usuarioRolRepositorio.crear(
-        usuarioNuevo.id,
-        [rol.id],
-        USUARIO_NORMAL,
-        transaction
-      )
-
-      const codigo = TextService.generateUuid()
-      const urlActivacion = this.construirUrlAccion('activacion', codigo)
-
-      this.logger.info(`📩 urlActivacion: ${urlActivacion}`)
-
-      await this.actualizarDatosActivacion(
-        usuarioNuevo.id,
-        codigo,
-        USUARIO_NORMAL,
-        transaction
-      )
-
-      correoActivacion = usuarioNuevo.correoElectronico ?? null
-      templateActivacion =
-        TemplateEmailService.armarPlantillaActivacionCuentaManual(
-          urlActivacion.toString()
-        )
-
-      const { id, usuario, correoElectronico, estado } = usuarioNuevo
-      return { id, usuario, correoElectronico, estado }
-    }
-
-    const resultado = await this.usuarioRepositorio.runTransaction(op)
-
-    // Envío de correo fuera de la transacción (no bloquea la respuesta)
-    if (correoActivacion) {
-      this.mensajeriaService
-        .sendEmail(
-          correoActivacion,
-          Messages.NEW_USER_ACCOUNT_VERIFY,
-          templateActivacion!
-        )
-        .catch((err) => {
-          const mensaje = `Falló al enviar el correo de activación de cuenta`
-          this.logger.error(err, mensaje)
-        })
-    }
-
-    return resultado
   }
 
   async activarCuenta(codigo: string, contrasenaNueva: string) {
@@ -1103,22 +989,6 @@ export class UsuarioService extends BaseService {
         ...(numeroPase !== undefined && { numeroPase }),
       }
 
-      // Si el admin completa la Estructura FELCN (y el usuario nunca la
-      // había completado), se marca fechaPerfilCompletado acá mismo — así
-      // ese usuario no ve el gate obligatorio de completar perfil al entrar.
-      const idGradoFinal = idGrado !== undefined ? idGrado : usuario.idGrado
-      const idGrupoFinal = idGrupo !== undefined ? idGrupo : usuario.idGrupo
-      const numeroPaseFinal =
-        numeroPase !== undefined ? numeroPase : usuario.numeroPase
-      if (
-        !usuario.fechaPerfilCompletado &&
-        idGradoFinal &&
-        idGrupoFinal &&
-        numeroPaseFinal
-      ) {
-        camposFelcn.fechaPerfilCompletado = new Date()
-      }
-
       if (Object.keys(camposFelcn).length > 0) {
         await this.usuarioRepositorio.actualizar(
           id,
@@ -1288,7 +1158,6 @@ export class UsuarioService extends BaseService {
       grado: usuario.grado ?? null,
       grupo: usuario.grupo ?? null,
       numeroPase: usuario.numeroPase ?? null,
-      fechaPerfilCompletado: usuario.fechaPerfilCompletado ?? null,
       roles: await Promise.all(
         usuario.usuarioRol
           .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)
@@ -1380,44 +1249,8 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
-    const {
-      nombres,
-      primerApellido,
-      segundoApellido,
-      correoElectronico,
-      telefono,
-      idGrado,
-      idGrupo,
-      numeroPase,
-    } = actualizarPerfilDto
-
-    // Todo el perfil autogestionable (datos personales + Estructura FELCN)
-    // se edita una única vez — ver fechaPerfilCompletado en la entidad
-    // Usuario. Pasada esa primera vez, solo un administrador puede tocarlo.
-    const camposPersonalesProvistos =
-      nombres !== undefined ||
-      primerApellido !== undefined ||
-      segundoApellido !== undefined ||
-      correoElectronico !== undefined ||
-      telefono !== undefined
-    const estructuraFelcnProvista =
-      idGrado !== undefined || idGrupo !== undefined || numeroPase !== undefined
-
-    if (
-      (camposPersonalesProvistos || estructuraFelcnProvista) &&
-      usuario.fechaPerfilCompletado
-    ) {
-      throw new PreconditionFailedException(
-        Messages.PROFILE_ALREADY_COMPLETED
-      )
-    }
-
-    if (
-      estructuraFelcnProvista &&
-      (idGrado === undefined || idGrupo === undefined || !numeroPase)
-    ) {
-      throw new BadRequestException(Messages.INCOMPLETE_FELCN_STRUCTURE)
-    }
+    const { nombres, primerApellido, segundoApellido, correoElectronico, telefono } =
+      actualizarPerfilDto
 
     const op = async (transaction: EntityManager) => {
       if (telefono && telefono !== usuario.persona.telefono) {
@@ -1452,15 +1285,6 @@ export class UsuarioService extends BaseService {
         await this.usuarioRepositorio.actualizar(
           idUsuario,
           { correoElectronico },
-          idUsuario,
-          transaction
-        )
-      }
-
-      if (estructuraFelcnProvista) {
-        await this.usuarioRepositorio.actualizar(
-          idUsuario,
-          { idGrado, idGrupo, numeroPase, fechaPerfilCompletado: new Date() },
           idUsuario,
           transaction
         )

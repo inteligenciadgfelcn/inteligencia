@@ -192,15 +192,6 @@ export class Usuario extends AuditoriaEntity {
   numeroPase?: string | null
 
   @Column({
-    name: 'fecha_perfil_completado',
-    type: 'timestamp',
-    nullable: true,
-    comment:
-      'Fecha en que el usuario completó por única vez su Estructura FELCN (grado/grupo/número de pase) desde su perfil. Una vez seteada, esos campos quedan de solo lectura para el usuario — solo un administrador puede modificarlos.',
-  })
-  fechaPerfilCompletado?: Date | null
-
-  @Column({
     name: 'sesiones_revocadas_desde',
     type: 'timestamp',
     nullable: true,
