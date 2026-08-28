@@ -36,8 +36,6 @@ export interface UsuarioCRUDType {
   fechaBloqueo?: string | null
   usuarioRol: UsuarioRolCRUDType[]
   persona: PersonaCRUDType
-  /** Fecha en que el usuario completó por única vez su Estructura FELCN. `null`/ausente = pendiente. */
-  fechaPerfilCompletado?: string | null
   grupo?: {
     id: number
     descripcion: string

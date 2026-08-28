@@ -7,11 +7,13 @@ import { BASE_PATH } from '@/imageLoader'
 import IconLock from '@/components/Icon/IconLock'
 import IconCamera from '@/components/Icon/IconCamera'
 import IconLogout from '@/components/Icon/IconLogout'
+import IconPencil from '@/components/Icon/IconPencil'
 
 interface Props {
   usuario: UsuarioType | null
   onChangePassword: () => void
   onEditPhoto: () => void
+  onEditarPerfil: () => void
   onCerrarSesiones: () => void
 }
 
@@ -19,6 +21,7 @@ export const PerfilCard = ({
   usuario,
   onChangePassword,
   onEditPhoto,
+  onEditarPerfil,
   onCerrarSesiones,
 }: Props) => {
   return (
@@ -55,6 +58,11 @@ export const PerfilCard = ({
 
       {/* Botones */}
       <div className="flex w-full flex-col gap-3">
+        <button className="btn btn-outline-primary w-full" onClick={onEditarPerfil}>
+          <IconPencil className="ltr:mr-2 rtl:ml-2" />
+          Editar Perfil
+        </button>
+
         <button className="btn btn-primary w-full" onClick={onChangePassword}>
           <IconLock className="ltr:mr-2 rtl:ml-2" />
           Cambiar Contraseña
