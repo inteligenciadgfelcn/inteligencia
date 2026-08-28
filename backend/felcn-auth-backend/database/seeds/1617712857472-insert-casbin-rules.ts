@@ -7,11 +7,9 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
     const frontendRoutes: CasbinValue = {
       '/admin/usuarios': {
         [RolEnum.ADMINISTRADOR]: 'read|update|create|delete',
-        [RolEnum.TECNICO]: 'read',
       },
       '/admin/parametros': {
         [RolEnum.ADMINISTRADOR]: 'read|update|create',
-        [RolEnum.TECNICO]: 'read',
       },
 
       '/admin/modulos': {
@@ -24,13 +22,11 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
 
       '/admin/perfil': {
         [RolEnum.ADMINISTRADOR]: 'read|update',
-        [RolEnum.TECNICO]: 'read|update',
         [RolEnum.USUARIO]: 'read|update',
       },
 
       '/admin/home': {
         [RolEnum.ADMINISTRADOR]: 'read',
-        [RolEnum.TECNICO]: 'read',
         [RolEnum.USUARIO]: 'read',
       },
       '/admin/roles': {
@@ -44,7 +40,6 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
       },
       '/api/autorizacion/modulos': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST|DELETE|PATCH',
-        [RolEnum.TECNICO]: 'GET',
       },
 
       '/api/autorizacion/modulos/:id': {
@@ -61,7 +56,6 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
 
       '/api/autorizacion/roles': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
 
       '/api/autorizacion/roles/todos': {
@@ -81,7 +75,6 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
 
       '/api/usuarios': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET',
       },
 
       '/api/usuarios/:id': {
@@ -109,7 +102,6 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
 
       '/api/parametros': {
         [RolEnum.ADMINISTRADOR]: 'GET|POST',
-        [RolEnum.TECNICO]: 'GET|POST',
       },
       '/api/parametros/:id': {
         [RolEnum.ADMINISTRADOR]: 'PATCH',
@@ -169,7 +161,7 @@ export class insertCasbinRules1617712857472 implements MigrationInterface {
   }
 
   /* eslint-disable */
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
 
 export type RouteItem = {

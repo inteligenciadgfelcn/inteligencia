@@ -7,24 +7,15 @@ export class rol1611498173795 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const items = [
       {
-        // id: '1',
+        rol: RolEnum.USUARIO,
+        nombre: 'USUARIO',
+        descripcion: 'Individuo que utiliza el sistema.',
+      },
+      {
         rol: RolEnum.ADMINISTRADOR,
-        nombre: 'Administrador',
+        nombre: 'ADMINISTRADOR',
         descripcion:
           'Responsable de la gestión y supervisión general del sistema.',
-      },
-      {
-        // id: '2',
-        rol: RolEnum.TECNICO,
-        nombre: 'Técnico',
-        descripcion:
-          'Responsable de herramientas y funciones específicas del sistema.',
-      },
-      {
-        // id: '3',
-        rol: RolEnum.USUARIO,
-        nombre: 'Usuario',
-        descripcion: 'Individuo que utiliza el sistema.',
       },
     ]
     const roles = items.map((item) => {
