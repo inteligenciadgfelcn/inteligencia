@@ -10,12 +10,10 @@ import { MensajeriaService } from '@/core/external-services/mensajeria/mensajeri
 import { TemplateEmailService } from '@/common/templates/templates-email.service'
 import { SolicitarAccesoRegistroDto } from '../dto/solicitar-acceso-registro.dto'
 import { CompletarSolicitudRegistroDto } from '../dto/completar-solicitud-registro.dto'
-import { AprobarSolicitudRegistroDto } from '../dto/aprobar-solicitud-registro.dto'
 import { RechazarSolicitudRegistroDto } from '../dto/rechazar-solicitud-registro.dto'
 import { FiltrosSolicitudRegistroDto } from '../dto/filtros-solicitud-registro.dto'
 import { SolicitudRegistroEstado } from '../entity/solicitud-registro.entity'
 import { Messages } from '@/common/constants/response-messages'
-import { TipoDocumento } from '@/common/constants'
 import { CrearUsuarioDto } from '../dto/crear-usuario.dto'
 
 const TOKEN_ACCESO_MINUTOS = 60
@@ -166,31 +164,16 @@ export class SolicitudRegistroService extends BaseService {
     return solicitud
   }
 
-  async aprobar(
-    id: string,
-    dto: AprobarSolicitudRegistroDto,
-    idAdmin: string
-  ) {
-    const solicitud = await this.obtenerPendiente(id)
+  /**
+   * El admin confirma desde el mismo formulario de "Nuevo Usuario",
+   * precargado con los datos de la solicitud pero totalmente editable —
+   * lo que llega acá ya es lo que el admin revisó/corrigió, no los datos
+   * originales de la solicitud (que solo sirvieron para precargar el form).
+   */
+  async aprobar(id: string, dto: CrearUsuarioDto, idAdmin: string) {
+    await this.obtenerPendiente(id)
 
-    const usuarioDto: CrearUsuarioDto = {
-      correoElectronico: solicitud.correoElectronico,
-      roles: dto.roles,
-      idGrado: solicitud.idGrado,
-      idGrupo: dto.idGrupo,
-      numeroPase: solicitud.numeroPase,
-      persona: {
-        nombres: solicitud.nombres,
-        primerApellido: solicitud.primerApellido ?? undefined,
-        segundoApellido: solicitud.segundoApellido ?? undefined,
-        nroDocumento: solicitud.nroDocumento,
-        fechaNacimiento: solicitud.fechaNacimiento as unknown as Date,
-        telefono: solicitud.telefono,
-        tipoDocumento: TipoDocumento.CI,
-      },
-    } as CrearUsuarioDto
-
-    const resultado = await this.usuarioService.crear(usuarioDto, idAdmin)
+    const resultado = await this.usuarioService.crear(dto, idAdmin)
 
     await this.solicitudRepositorio.actualizar(id, {
       estado: SolicitudRegistroEstado.APROBADA,
