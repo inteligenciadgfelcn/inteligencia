@@ -287,6 +287,81 @@ export class TemplateEmailService {
     `
     return buildLayout(content)
   }
+
+  // ─── Template 6: Acceso al formulario de preregistro ─────────────────────
+  // Uso: paso 1 del autorregistro — solo se solicitó un correo, este es el
+  // único correo que revela el link al formulario detallado.
+  static armarPlantillaSolicitudAccesoRegistro(url: string, expiracionMin: number): string {
+    const content = `
+      ${header('Completa tu preregistro')}
+
+      <tr>
+        <td class="px" style="padding:0 28px 18px;">
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Recibimos una solicitud para iniciar un
+            <strong style="color:${C.text};">preregistro</strong> en el
+            <strong style="color:${C.text};">Sistema FELCN</strong> con este correo electrónico.
+          </p>
+          <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Haz clic en el botón para completar el formulario con tus datos. Tu solicitud
+            quedará pendiente de revisión por un administrador.
+          </p>
+        </td>
+      </tr>
+
+      ${ctaButton(url, 'Completar preregistro')}
+
+      <!-- Vigencia -->
+      <tr>
+        <td class="px" style="padding:0 28px 22px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                 style="background:#fff8e1;border:1px solid #ffe082;border-left:4px solid #f9a825;
+                        border-radius:10px;">
+            <tr>
+              <td style="padding:14px 16px;">
+                <strong style="display:block;font-size:13px;color:#6d4c00;margin-bottom:4px;">
+                  ⏱ Vigencia: ${expiracionMin} minutos
+                </strong>
+                <p style="margin:0;font-size:12.5px;line-height:1.55;color:#7a5500;">
+                  Este enlace expirará en ${expiracionMin} minutos. Si no solicitaste este
+                  preregistro, ignora este mensaje.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      ${securityTips()}
+    `
+    return buildLayout(content)
+  }
+
+  // ─── Template 7: Cuenta ya existente detectada en preregistro ────────────
+  // Uso: paso 2 del autorregistro — el documento o correo ya pertenecen a
+  // una cuenta real; no se crea ninguna solicitud, solo se avisa por correo.
+  static armarPlantillaCuentaYaExiste(): string {
+    const content = `
+      ${header('Ya existe una cuenta registrada')}
+
+      <tr>
+        <td class="px" style="padding:0 28px 22px;">
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Detectamos que ya existe una cuenta en el
+            <strong style="color:${C.text};">Sistema FELCN</strong> asociada a los datos
+            ingresados en este preregistro.
+          </p>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
+            Si crees que se trata de un error, o si no reconoces esa cuenta, comunícate con
+            el administrador del sistema para que revise tu caso.
+          </p>
+        </td>
+      </tr>
+
+      ${securityTips()}
+    `
+    return buildLayout(content)
+  }
 }
 
 // ─── Helpers privados de construcción HTML ────────────────────────────────────

@@ -44,12 +44,12 @@ export enum Messages {
   EXISTING_USER = 'Ya existe un usuario registrado con el mismo número de documento.',
   EXISTING_EMAIL = 'Ya existe un usuario registrado con el mismo correo electrónico.',
   EXISTING_PHONE = 'Ya existe un usuario registrado con el mismo teléfono.',
-  PROFILE_ALREADY_COMPLETED = 'Ya completó esta información. No podrá modificarla directamente — cualquier corrección posterior deberá solicitarse a un administrador del sistema.',
-  INCOMPLETE_FELCN_STRUCTURE = 'Debe completar Unidad, Distrital, Grupo, Grado y Número de Pase en conjunto.',
-  NEW_USER_ACCOUNT = '¡Usuario creado exitosamente!',
   NEW_USER_ACCOUNT_VERIFY = 'Activación de cuenta.',
   ACCOUNT_ACTIVED_SUCCESSFULLY = '¡Activación de cuenta exitosa!',
   NO_PERMISSION_FOUND = 'Rol no encontrado.',
+  SOLICITUD_REGISTRO_ACCESO_ENVIADA = 'Si el correo es válido, recibirás un enlace para completar tu preregistro.',
+  SOLICITUD_REGISTRO_COMPLETADA = 'Si los datos son válidos, tu solicitud quedará registrada y será revisada por un administrador.',
+  SOLICITUD_REGISTRO_YA_RESUELTA = 'Esta solicitud ya fue resuelta anteriormente.',
 
   // Parámetros
   REPEATED_PARAMETER = 'Parámetro repetido.',

@@ -18,6 +18,7 @@ const RUTAS_PUBLICAS = [
   '/login',
   '/login/ciudadania',
   '/registro',
+  '/pre-registro',
   '/recuperacion',
   '/activacion',
   '/desbloqueo',
