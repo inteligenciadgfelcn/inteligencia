@@ -12,7 +12,7 @@ import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
 import { Icono } from '@/components/Icono'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
-import { BASE_PATH } from '@/imageLoader'
+import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 const formSchema = z.object({
   correoElectronico: z.string().email({
@@ -69,13 +69,8 @@ export default function RegistroPage() {
   return (
     <>
       <title>{`Crear Cuenta - ${siteName()}`}</title>
-      <div
-        className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-        style={{
-          backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)`,
-        }}
-      >
-        <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
+      <LoginCoverVristo>
+        <div className="w-full max-w-[420px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {enviado ? (
             <div className="flex flex-col items-center gap-4 text-center">
               <Icono fontSize="large">mark_email_unread</Icono>
@@ -148,7 +143,7 @@ export default function RegistroPage() {
             </form>
           )}
         </div>
-      </div>
+      </LoginCoverVristo>
     </>
   )
 }
