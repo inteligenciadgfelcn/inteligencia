@@ -25,6 +25,10 @@ import { DialogLinkActivacion } from './DialogLinkActivacion'
 
 interface FormularioUsuarioProps {
   usuarioId?: string
+  /** Confirmar una solicitud de autorregistro: precarga el form con sus
+   *  datos (editables) y, al guardar, aprueba la solicitud en vez de
+   *  crear un usuario directo. */
+  solicitudId?: string
 }
 
 const formSchema = z
@@ -97,7 +101,10 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>
 
-export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
+export const FormularioUsuario = ({
+  usuarioId,
+  solicitudId,
+}: FormularioUsuarioProps) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [idUnidad, setIdUnidad] = useState<number | null>(null)
   const [idDistrital, setIdDistrital] = useState<number | null>(null)
@@ -125,10 +132,24 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     return respuesta.datos
   }
 
+  const obtenerSolicitud = async () => {
+    if (!solicitudId) return null
+    const respuesta = await sesionPeticion({
+      url: `${Constantes.authUrl}/usuarios/solicitudes-registro/${solicitudId}`,
+    })
+    return respuesta.datos
+  }
+
   const { data: usuario } = useQuery({
     queryKey: ['usuario', usuarioId],
     queryFn: obtenerUsuario,
     enabled: !!usuarioId,
+  })
+
+  const { data: solicitud } = useQuery({
+    queryKey: ['solicitud-registro', solicitudId],
+    queryFn: obtenerSolicitud,
+    enabled: !!solicitudId,
   })
 
   const { data: roles = [] } = useQuery({
@@ -229,14 +250,17 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     },
   })
 
-  // Alta de usuario nuevo: el rol USUARIO viene preseleccionado por defecto.
+  // Alta de usuario nuevo (o confirmación de solicitud): el rol USUARIO
+  // viene preseleccionado por defecto. En modo solicitud se espera a que
+  // cargue (su reset() pone roles en []) para no pisarlo.
   useEffect(() => {
     if (usuarioId || roles.length === 0) return
+    if (solicitudId && !solicitud) return
     if ((watch('roles') ?? []).length > 0) return
     const idUsuarioRol = roles.find((rol: RolType) => rol.rol === 'USUARIO')?.id
     if (idUsuarioRol) setValue('roles', [idUsuarioRol])
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuarioId, roles])
+  }, [usuarioId, roles, solicitudId, solicitud])
 
   useEffect(() => {
     if (usuario) {
@@ -262,6 +286,29 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
       setIdDistrital(distritalId)
     }
   }, [usuario, reset])
+
+  // Precarga con los datos de la solicitud — el admin los revisa/corrige
+  // antes de confirmar. idGrupo no viene en la solicitud: el admin lo
+  // asigna acá, igual que en el alta manual.
+  useEffect(() => {
+    if (solicitud) {
+      reset({
+        nombres: solicitud.nombres,
+        primerApellido: solicitud.primerApellido ?? '',
+        segundoApellido: solicitud.segundoApellido ?? '',
+        nroDocumento: solicitud.nroDocumento,
+        fechaNacimiento: solicitud.fechaNacimiento,
+        correoElectronico: solicitud.correoElectronico,
+        telefono: solicitud.telefono ?? '',
+        roles: [],
+        ciudadaniaDigital: false,
+        otpHabilitado: false,
+        idGrado: (solicitud.idGrado ?? undefined) as any,
+        idGrupo: undefined as any,
+        numeroPase: solicitud.numeroPase ?? '',
+      })
+    }
+  }, [solicitud, reset])
 
   const onSubmit = async (values: FormValues) => {
     const idUsuarioRol = roles.find((rol: RolType) => rol.rol === 'USUARIO')?.id
@@ -292,9 +339,12 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
 
     try {
       setLoading(true)
+      const url = solicitudId
+        ? `${Constantes.authUrl}/usuarios/solicitudes-registro/${solicitudId}/aprobar`
+        : `${Constantes.authUrl}/usuarios${usuarioId ? `/${usuarioId}` : ''}`
       const respuesta = await sesionPeticion({
-        url: `${Constantes.authUrl}/usuarios${usuarioId ? `/${usuarioId}` : ''}`,
-        method: usuarioId ? 'patch' : 'post',
+        url,
+        method: usuarioId || solicitudId ? 'patch' : 'post',
         body: {
           ...datos,
           numeroPase: datos.numeroPase === '' ? null : datos.numeroPase,
@@ -350,7 +400,13 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
     <div className="w-full px-4 py-6">
       <LoadingDialog
         show={loading}
-        message={usuarioId ? 'Actualizando usuario...' : 'Guardando usuario...'}
+        message={
+          solicitudId
+            ? 'Confirmando registro...'
+            : usuarioId
+              ? 'Actualizando usuario...'
+              : 'Guardando usuario...'
+        }
       />
       <ConfirmDialog />
       <DialogLinkActivacion
@@ -361,10 +417,18 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
 
       <div className="mb-6 flex flex-col gap-1">
         <h1 className="text-2xl font-bold text-dark dark:text-white-light">
-          {usuarioId ? 'Editar Usuario' : 'Nuevo Usuario'}
+          {solicitudId
+            ? 'Confirmar registro de usuario'
+            : usuarioId
+              ? 'Editar Usuario'
+              : 'Nuevo Usuario'}
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          {usuarioId ? 'Actualice la información del usuario en el sistema.' : 'Registre la información para crear un nuevo usuario.'}
+          {solicitudId
+            ? 'Revise y corrija los datos enviados por el solicitante antes de confirmar la creación de la cuenta.'
+            : usuarioId
+              ? 'Actualice la información del usuario en el sistema.'
+              : 'Registre la información para crear un nuevo usuario.'}
         </p>
       </div>
 
@@ -828,7 +892,7 @@ export const FormularioUsuario = ({ usuarioId }: FormularioUsuarioProps) => {
               loading={loading}
               icon={<Icono>save</Icono>}
             >
-              {usuarioId ? 'Actualizar' : 'Guardar'}
+              {solicitudId ? 'Confirmar y crear cuenta' : usuarioId ? 'Actualizar' : 'Guardar'}
             </Button>
           </div>
         </form>

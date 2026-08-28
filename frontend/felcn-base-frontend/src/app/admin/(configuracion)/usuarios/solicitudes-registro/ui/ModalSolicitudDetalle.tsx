@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Button,
   Dialog,
@@ -18,7 +19,6 @@ import {
 } from '@/components/modales/Animations'
 import CustomMensajeEstado from '@/components/estados/CustomMensajeEstado'
 import { SolicitudRegistroType } from '../types/solicitudesRegistroTypes'
-import { AlertaAprobarSolicitud } from './AlertaAprobarSolicitud'
 import { AlertaRechazarSolicitud } from './AlertaRechazarSolicitud'
 
 interface Props {
@@ -45,8 +45,13 @@ export const ModalSolicitudDetalle: React.FC<Props> = ({
 }) => {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
-  const [aprobarOpen, setAprobarOpen] = useState(false)
+  const router = useRouter()
   const [rechazarOpen, setRechazarOpen] = useState(false)
+
+  const irAConfirmar = () => {
+    if (!solicitud) return
+    router.push(`/admin/usuarios/solicitudes-registro/confirmar/${solicitud.id}`)
+  }
 
   const pendiente = solicitud?.estado === 'PENDIENTE_APROBACION'
 
@@ -127,25 +132,12 @@ export const ModalSolicitudDetalle: React.FC<Props> = ({
             <Button color="error" onClick={() => setRechazarOpen(true)}>
               Rechazar
             </Button>
-            <Button
-              variant="contained"
-              onClick={() => setAprobarOpen(true)}
-            >
+            <Button variant="contained" onClick={irAConfirmar}>
               Aprobar
             </Button>
           </DialogActions>
         )}
       </Dialog>
-
-      <AlertaAprobarSolicitud
-        isOpen={aprobarOpen}
-        onClose={() => setAprobarOpen(false)}
-        solicitud={solicitud}
-        onSuccess={() => {
-          onSuccess()
-          onClose()
-        }}
-      />
 
       <AlertaRechazarSolicitud
         isOpen={rechazarOpen}
