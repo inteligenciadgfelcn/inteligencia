@@ -13,7 +13,7 @@ import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { CambioPass } from '@/app/login/ui/CambioPass'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { BASE_PATH } from '@/imageLoader'
+import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 /*VALIDACION*/
 
@@ -114,13 +114,8 @@ export default function RecuperacionPage() {
   return (
     <>
       <title>{`Recupera tu cuenta - ${siteName()}`}</title>
-      <div
-        className="relative flex min-h-screen items-center justify-center bg-cover bg-center px-6"
-        style={{
-          backgroundImage: `url(${BASE_PATH}/assets/images/auth/map.png)`,
-        }}
-      >
-        <div className="w-full max-w-[520px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
+      <LoginCoverVristo>
+        <div className="w-full max-w-[420px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
           {!code && (
             <>
               {indicadorTareaRealizada ? (
@@ -195,7 +190,7 @@ export default function RecuperacionPage() {
 
           {code && <CambioPass code={code} />}
         </div>
-      </div>
+      </LoginCoverVristo>
     </>
   )
 }
