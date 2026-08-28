@@ -1,13 +1,3 @@
-import {
-  AlertTitle,
-  Box,
-  Button,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  TextField,
-} from '@mui/material'
-import Grid from '@mui/material/Grid2'
 import React, { useState } from 'react'
 import { useAlerts } from '@/hooks'
 import { useRouter } from 'next/navigation'
@@ -18,12 +8,12 @@ import { Servicios } from '@/services'
 import { imprimir } from '@/utils/imprimir'
 import { Constantes } from '@/config/Constantes'
 import { Icono } from '@/components/Icono'
-import Typography from '@mui/material/Typography'
 import { NivelSeguridadPass } from '@/components/utils/NivelSeguridadPass'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
+import IconLockDots from '@/components/Icon/IconLockDots'
+import IconEye from '@/components/Icon/IconEye'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Visibility, VisibilityOff } from '@mui/icons-material'
 
 interface CambioPassParams {
   code: string
@@ -103,164 +93,108 @@ export const CambioPass = ({ code }: CambioPassParams) => {
     ocultarFullScreen()
   }
 
-  return (
-    <Box>
-      {!indicadorTareaRealizada && (
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Box
-            display={'flex'}
-            flexDirection={'column'}
-            alignItems={'center'}
-            gap={2}
-          >
-            <Box
-              display={'flex'}
-              flexDirection={'column'}
-              alignItems={'center'}
-              gap={1}
-            >
-              <Icono fontSize={'large'}>password</Icono>
-              <AlertTitle>Crea una nueva contraseña</AlertTitle>
-            </Box>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              align="inherit"
-              paddingLeft={2}
-            >
-              <li>Las contraseñas deben tener 8 caracteres o más.</li>
-              <li>
-                Las buenas contraseñas son difíciles de adivinar y usan
-                palabras, números, símbolos y letras mayúsculas poco comunes.
-              </li>
-            </Typography>
-
-            <Grid container direction="row" spacing={{ xs: 2, sm: 1, md: 2 }}>
-              <Grid size={12}>
-                <InputLabel
-                  htmlFor={'contrasenaNueva'}
-                  sx={{ color: 'text.primary', fontWeight: '500' }}
-                >
-                  Nueva contraseña
-                </InputLabel>
-                <TextField
-                  {...register('password')}
-                  id="contrasenaNueva"
-                  fullWidth
-                  type={showPassword ? 'text' : 'password'}
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                  disabled={loading}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-              </Grid>
-
-              {watch('password') && (
-                <Grid size={12}>
-                  <NivelSeguridadPass pass={watch('password')} />
-                </Grid>
-              )}
-              <Grid size={12}>
-                <InputLabel
-                  htmlFor={'contrasenaConfirmacion'}
-                  sx={{ color: 'text.primary', fontWeight: '500' }}
-                >
-                  Repita su nueva contraseña
-                </InputLabel>
-                <TextField
-                  {...register('confirmPassword')}
-                  id="contrasenaConfirmacion"
-                  fullWidth
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
-                  disabled={loading}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            edge="end"
-                          >
-                            {showConfirmPassword ? (
-                              <VisibilityOff />
-                            ) : (
-                              <Visibility />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-              </Grid>
-            </Grid>
-            <ProgresoLineal mostrar={loading} />
-            <Box
-              display={'flex'}
-              flexDirection={'column'}
-              gap={0.5}
-              alignSelf={'stretch'}
-            >
-              <Button
-                variant={'contained'}
-                disabled={loading}
-                type={'submit'}
-                fullWidth
-              >
-                Modificar
-              </Button>
-              <Button
-                variant={'outlined'}
-                onClick={redireccionarInicio}
-                disabled={loading}
-                fullWidth
-              >
-                Cancelar
-              </Button>
-            </Box>
-          </Box>
-        </form>
-      )}
-      {indicadorTareaRealizada && (
-        <Box
-          display={'flex'}
-          flexDirection={'column'}
-          alignItems={'center'}
-          gap={2}
+  if (indicadorTareaRealizada) {
+    return (
+      <div className="flex flex-col items-center gap-4 text-center">
+        <Icono fontSize="large">check_circle</Icono>
+        <h1 className="text-2xl font-extrabold text-primary">
+          Nueva contraseña
+        </h1>
+        <p className="text-white-dark">
+          Recuperaste tu cuenta, inicia sesión con tu nueva contraseña
+        </p>
+        <button
+          type="button"
+          className="btn btn-gradient w-full uppercase"
+          onClick={redireccionarInicio}
         >
-          <Icono fontSize={'large'} color={'success'}>
-            check_circle
-          </Icono>
-          <Typography sx={{ fontWeight: '600' }}>Nueva contraseña</Typography>
-          <Typography variant="body2" color="text.secondary" align="center">
-            Recuperaste tu cuenta, inicia sesión con tu nueva contraseña
-          </Typography>
-          <Button
+          Ir al inicio
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <div className="mb-8">
+        <h1 className="text-3xl font-extrabold text-primary">
+          Crea una nueva contraseña
+        </h1>
+        <p className="text-white-dark">
+          Las contraseñas deben tener 8 caracteres o más, y usar palabras,
+          números, símbolos y letras mayúsculas poco comunes.
+        </p>
+      </div>
+
+      <div>
+        <label className="mb-0 block text-white-dark">Nueva contraseña</label>
+        <div className="relative">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            {...register('password')}
+            disabled={loading}
+            className="form-input ps-10"
+          />
+          <span className="absolute start-4 top-1/2 -translate-y-1/2">
+            <IconLockDots />
+          </span>
+          <button
             type="button"
-            variant="contained"
-            onClick={redireccionarInicio}
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-white-dark hover:text-primary"
           >
-            <Typography sx={{ fontWeight: '600' }}>Ir al inicio</Typography>
-          </Button>
-        </Box>
-      )}
-    </Box>
+            {showPassword ? <IconLockDots /> : <IconEye />}
+          </button>
+        </div>
+        <p className="text-danger text-sm">{errors.password?.message}</p>
+        {watch('password') && <NivelSeguridadPass pass={watch('password')} />}
+      </div>
+
+      <div>
+        <label className="mb-0 block text-white-dark">
+          Repita su nueva contraseña
+        </label>
+        <div className="relative">
+          <input
+            type={showConfirmPassword ? 'text' : 'password'}
+            {...register('confirmPassword')}
+            disabled={loading}
+            className="form-input ps-10"
+          />
+          <span className="absolute start-4 top-1/2 -translate-y-1/2">
+            <IconLockDots />
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-white-dark hover:text-primary"
+          >
+            {showConfirmPassword ? <IconLockDots /> : <IconEye />}
+          </button>
+        </div>
+        <p className="text-danger text-sm">
+          {errors.confirmPassword?.message}
+        </p>
+      </div>
+
+      <ProgresoLineal mostrar={loading} />
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="btn btn-gradient w-full uppercase"
+      >
+        {loading ? 'Modificando...' : 'Modificar'}
+      </button>
+
+      <button
+        type="button"
+        onClick={redireccionarInicio}
+        disabled={loading}
+        className="btn btn-outline-primary w-full uppercase"
+      >
+        Cancelar
+      </button>
+    </form>
   )
 }

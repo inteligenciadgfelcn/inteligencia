@@ -6,11 +6,9 @@ import { imprimir } from '@/utils/imprimir'
 import { delay, InterpreteMensajes, siteName } from '@/utils'
 import { Servicios } from '@/services'
 import { Constantes } from '@/config/Constantes'
-import { Box, Card, Typography } from '@mui/material'
-import Grid from '@mui/material/Grid2'
 import { Icono } from '@/components/Icono'
-import Button from '@mui/material/Button'
 import { useQuery } from '@tanstack/react-query'
+import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 export default function DesbloqueoPage() {
   const { mostrarFullScreen, ocultarFullScreen } = useFullScreenLoading()
@@ -68,49 +66,34 @@ export default function DesbloqueoPage() {
       : ''
 
   if (isLoading) {
-    return null // O puedes mostrar un indicador de carga si lo prefieres
+    return null
   }
 
   return (
     <>
       <title>{`Desbloqueo tu cuenta - ${siteName()}`}</title>
-      <Grid
-        container
-        justifyContent="center"
-        alignItems={'start'}
-        mt={3}
-        style={{ minHeight: '100vh' }}
-      >
-        <Card
-          sx={{
-            borderRadius: 4,
-            p: 4,
-            maxWidth: '450px',
-          }}
-        >
-          <Box display={'flex'} flexDirection={'column'} alignItems={'center'}>
-            <Icono fontSize={'large'}> lock_open</Icono>
-            <Box height={'20px'} />
-            <Typography sx={{ fontWeight: '600' }} variant={'subtitle2'}>
+      <LoginCoverVristo>
+        <div className="w-full max-w-[420px] rounded-md bg-white/60 p-10 backdrop-blur-lg dark:bg-black/50">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Icono fontSize="large">
+              {error ? 'cancel' : 'lock_open'}
+            </Icono>
+            <h1 className="text-2xl font-extrabold text-primary">
               {error ? 'Error al desbloquear cuenta' : 'Cuenta desbloqueada'}
-            </Typography>
-            <Box height={'20px'} />
-            <Typography variant="body2" color="text.secondary" align="center">
-              {mensaje}
-            </Typography>
-            <Box height={'20px'} />
-            <Button
-              type="submit"
-              variant="contained"
+            </h1>
+            <p className="text-white-dark">{mensaje}</p>
+            <button
+              type="button"
+              className="btn btn-gradient w-full uppercase"
               onClick={() => {
                 redireccionarInicio().finally()
               }}
             >
-              <Typography>Ir al inicio</Typography>
-            </Button>
-          </Box>
-        </Card>
-      </Grid>
+              Ir al inicio
+            </button>
+          </div>
+        </div>
+      </LoginCoverVristo>
     </>
   )
 }
