@@ -116,6 +116,8 @@ Con esto completado, seguir con la Fase 1.
 
 ## 1. Fase 1 — Sistema base
 
+> El checklist de mantenimiento continuo de todo lo que se configura en esta fase (firewall, SSH, headless, actualizaciones) vive en [12-requisitos-seguridad-infraestructura.md](./12-requisitos-seguridad-infraestructura.md) — no se duplica acá, revisarlo periódicamente después de la instalación, no solo el día de hoy.
+
 Con Debian 13 ya instalado (Fase 0), sin entorno gráfico y con acceso SSH funcionando:
 
 ```bash
@@ -245,7 +247,7 @@ sudo -u postgres psql -c "ALTER USER postgres PASSWORD '<password fuerte>';"
 ```
 
 - `scram-sha-256` como método de auth (no `trust`, no `md5`) — editar `password_encryption = scram-sha-256` en `postgresql.conf` y `local all postgres scram-sha-256` (o `md5` como mínimo aceptable) en `pg_hba.conf`, antes de crear usuarios/bases.
-- Crear las bases reales con los scripts de cada backend — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 6 ("Creación desde cero, Postgres nativo") y su advertencia sobre nombres desactualizados en `dbcreate.sql`. Restaurar los `.sql`/`.dump` de las bases reales (`felcn_auth_v3`, `felcn_siii`, `felcn_lgi`, etc.) o partir de cero con el runbook de [08-runbook-reset-y-admin-inicial.md](./08-runbook-reset-y-admin-inicial.md).
+- Crear las bases reales con los scripts de cada backend — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 6 ("Creación desde cero, Postgres nativo") y su advertencia sobre nombres desactualizados en `dbcreate.sql`. **Este servidor es staging: se restaura el dump con datos** (ver punto siguiente). Para producción el mecanismo es distinto (schema vacío + migraciones, sin restaurar datos de dev/staging) — ver [13-migración-y-restauración-bd.md](./13-migracion-y-restauracion-bd.md).
   - **Dump ya generado (21/08/2026)** de las 8 bases reales, listo para restaurar: `backups/20260821-staging-migracion/` (fuera de git — `/backups/` está en `.gitignore`, contiene datos reales; copiar al servidor nuevo por un canal seguro). Trae su propio `README.md` con los comandos de restauración exactos.
 - Las aplicaciones corren en Docker (Fase 5) y necesitan llegar a este Postgres nativo del host: usar `DB_HOST=host.docker.internal` en los `.env` (no `localhost`, que dentro de un contenedor no resuelve al host) — cada servicio del compose ya trae `extra_hosts: host.docker.internal:host-gateway` para esto, igual que en `servertest`.
 - Backup automatizado **desde el primer día**, con `pg_dump` nativo por cron apuntando a un directorio fuera de cualquier volumen Docker (p. ej. `/opt/backups/postgres/`). Este punto es crítico: en `servertest` el backup automatizado diario **lleva roto desde el 1 de mayo de 2026** por un problema de permisos en su propio archivo de log (`set -euo pipefail` corta el script en la primera línea) — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 9.2. Para el servidor nuevo: correr el script de backup manualmente una vez después de instalarlo y **confirmar que el archivo de dump se generó**, no confiar en que el cron "corrió sin error" en el log — el mismo tipo de fallo silencioso que rompió el de `servertest`.
@@ -369,6 +371,22 @@ No dar el servidor nuevo por completo solo porque `docker compose up -d --build`
 En `servertest` el SMTP estuvo caído (`connect EHOSTUNREACH <ip>:587`) sin que nada lo hiciera evidente hasta que se probó un envío real: la app creaba la cuenta y respondía éxito igual, pero el correo de activación nunca salía — el usuario quedaba con la cuenta creada y sin forma de entrar. Antes de dar por funcional el servidor nuevo:
 
 1. Confirmar conectividad de red saliente al host/puerto SMTP configurado (`SMTP_HOST`/`SMTP_PORT` del `.env` de `auth-backend`) desde donde corre el contenedor — un firewall saliente bloqueando 587/465 es indistinguible de "está todo bien" hasta que se prueba.
-2. Hacer una prueba real end-to-end: crear un usuario de prueba (`POST /usuarios/crear-cuenta` o desde el panel admin) y **confirmar que el correo llega**, no solo que el endpoint respondió 200/201 — revisar los logs de `auth-backend` en busca de `Falló al enviar el correo` si no llega.
+2. Hacer una prueba real end-to-end: solicitar un preregistro (`POST /usuarios/solicitudes-registro/acceso` — ver [10-formularios-y-apis.md](./10-formularios-y-apis.md) §4.3, reemplaza al viejo `POST /usuarios/crear-cuenta`) o crear un usuario desde el panel admin, y **confirmar que el correo llega**, no solo que el endpoint respondió 200/201 — revisar los logs de `auth-backend` en busca de `Falló al enviar el correo` si no llega.
 3. Si falla: revisar reglas de firewall saliente, y si el proveedor SMTP bloquea la IP nueva del servidor por defecto (algunos requieren habilitar IPs explícitamente).
 4. Mientras tanto (o como respaldo permanente si el SMTP no es confiable), el admin puede ver y copiar el link de activación/recuperación directamente desde el panel de usuarios sin depender del correo — ver [10-formularios-y-apis.md](./10-formularios-y-apis.md) §4.4.
+
+## 10. Producción — ⚠️ PENDIENTE, servidor aún no aprovisionado (29/08/2026)
+
+Todavía no existe servidor, IP ni dominio de producción — esta sección documenta **qué va a ser distinto de las Fases 0-9 de arriba** (pensadas para staging) el día que exista, no un procedimiento ya ejecutado.
+
+Las Fases 0 (VM/SO), 1 (sistema base/firewall), 2 (git y usuarios — con la salvedad de abajo), 3 (Postgres) y 4 (nginx) se replican igual que en staging. Las diferencias son:
+
+- **Fase 5/8 — código: NO se clona el repo con git.** Producción es el único ambiente donde no debe haber código fuente en el servidor (a diferencia de dev y staging, que sí lo tienen — ver convención en [02-entorno-docker-dev.md](./02-entorno-docker-dev.md) §7). En vez de `git clone` + `docker compose up -d --build`, producción **descarga imágenes ya construidas desde un Docker registry** y las corre directo (`docker compose up -d`, sin `--build`, con `image: <registry>/<imagen>:<tag>` en vez de `build:` en el compose — ver plantilla en [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml)).
+  - **⚠️ No existe ningún Docker registry configurado para este proyecto todavía** (ni uno propio self-hosted ni una cuenta en Docker Hub/GHCR/ECR confirmada en uso) — esto es un prerequisito real que falta resolver antes de poder desplegar producción así. Hasta que exista, la única alternativa (no ideal, solo para no bloquear un primer despliegue) sería construir la imagen en un ambiente de build separado y transferirla con `docker save`/`docker load`, pero el plan correcto es un registry.
+  - Solo el `.env` de cada servicio y el `docker-compose.yml` final viajan a producción — nunca el código fuente ni el `.git/`.
+- **Fase 3 — base de datos: se inicializa vacía, no se restaura el dump de staging.** Ver [13-migración-y-restauración-bd.md](./13-migracion-y-restauracion-bd.md) para el mecanismo completo (`migrations:run` + `seeds:run` desde cero) y la advertencia sobre el backup automatizado roto.
+- **Fase 4 — nginx/dominio: sin definir.** Dominio público de producción, certificado TLS y `server_name` — todavía no hay un nombre ni servidor de producción asignado. La topología de dev/staging (`sunesis-dev.felcn.gob.bo` → `172.16.76.23`, `sunesis-staging.felcn.gob.bo` → `172.16.76.24`) ya está confirmada — ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1 — pero producción es un tercer servidor aparte, aún sin definir.
+- **Ciudadanía Digital (AGETIC): credenciales de producción, no las de demo.** Ver la nota ya existente en la sección 9 de este documento — aplica igual acá, con mayor razón (producción no puede usar el ambiente demo de AGETIC).
+- **Variables de entorno: todas rotadas, ninguna reutilizada de dev/staging** — ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) §6.
+
+No hay checklist de cierre para producción todavía (equivalente a la sección 9) — escribirlo cuando el servidor exista y se pueda verificar cada punto contra la realidad, siguiendo la misma disciplina de este documento (no dar nada por completo sin confirmarlo explícitamente).
