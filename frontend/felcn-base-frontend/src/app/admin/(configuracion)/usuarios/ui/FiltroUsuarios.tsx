@@ -76,7 +76,7 @@ export const FiltroUsuarios: React.FC<FiltroModalUsuarioType> = ({
             htmlFor={'buscar'}
             sx={{ color: 'text.primary', fontWeight: '500' }}
           >
-            Nombre
+            Nombre o Nro. Documento
           </InputLabel>
           <TextField
             id="nombre"
