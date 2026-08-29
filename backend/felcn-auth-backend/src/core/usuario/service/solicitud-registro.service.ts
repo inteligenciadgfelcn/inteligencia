@@ -120,18 +120,61 @@ export class SolicitudRegistroService extends BaseService {
       return
     }
 
-    await this.solicitudRepositorio.crear({
-      estado: SolicitudRegistroEstado.PENDIENTE_APROBACION,
-      nombres: dto.nombres,
-      primerApellido: dto.primerApellido,
-      segundoApellido: dto.segundoApellido,
-      nroDocumento: dto.nroDocumento,
-      fechaNacimiento: dto.fechaNacimiento,
-      correoElectronico,
-      telefono: dto.telefono,
-      idGrado: dto.idGrado,
-      numeroPase: dto.numeroPase,
-    })
+    // El SELECT de arriba no alcanza a evitar la carrera entre dos requests
+    // simultáneos con el mismo documento/correo (TOCTOU) — verificado
+    // empíricamente. La barrera real son los índices únicos parciales
+    // (WHERE estado = PENDIENTE_APROBACION) de la migración
+    // 1788600000000-unicidad-solicitud-registro-pendiente. Si el INSERT
+    // choca contra ellos, se trata igual que un duplicado ya detectado.
+    try {
+      await this.solicitudRepositorio.crear({
+        estado: SolicitudRegistroEstado.PENDIENTE_APROBACION,
+        nombres: dto.nombres,
+        primerApellido: dto.primerApellido,
+        segundoApellido: dto.segundoApellido,
+        nroDocumento: dto.nroDocumento,
+        fechaNacimiento: dto.fechaNacimiento,
+        correoElectronico,
+        telefono: dto.telefono,
+        idGrado: dto.idGrado,
+        numeroPase: dto.numeroPase,
+      })
+    } catch (error) {
+      if (!this.esViolacionDeUnicidad(error)) {
+        throw error
+      }
+      const template = TemplateEmailService.armarPlantillaCuentaYaExiste()
+      this.mensajeriaService
+        .sendEmail(correoElectronico, 'Preregistro — Sistema FELCN', template)
+        .catch((emailError) => {
+          this.logger.error(
+            emailError,
+            'Falló al enviar el aviso de cuenta ya existente (tras choque de unicidad)'
+          )
+        })
+    }
+  }
+
+  /**
+   * El error real de Postgres (código 23505, "llave duplicada") llega acá ya
+   * envuelto por el logger genérico de la app (BaseException), que lo
+   * aplana a texto — no sobrevive como objeto estructurado con `.code`. Se
+   * identifica por el nombre de los índices únicos de la migración
+   * 1788600000000, que son exclusivos de este chequeo.
+   */
+  private esViolacionDeUnicidad(error: unknown): boolean {
+    const texto = [
+      (error as any)?.message,
+      (error as any)?.causa,
+      (error as any)?.error,
+      String(error),
+    ]
+      .filter(Boolean)
+      .join(' ')
+    return (
+      texto.includes('uq_solicitud_registro_documento_pendiente') ||
+      texto.includes('uq_solicitud_registro_correo_pendiente')
+    )
   }
 
   /** Lookup público — el formulario de preregistro no tiene sesión todavía. */
