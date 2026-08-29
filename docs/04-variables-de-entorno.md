@@ -9,9 +9,10 @@ Tabla consolidada por proyecto. El detalle completo de cada variable está en el
 | Despliegue | `NODE_ENV`, `PORT`, `PATH_SUBDOMAIN` (prefijo de rutas, default `api`), `REQUEST_TIMEOUT_IN_SECONDS` (default 30) | No |
 | Base de datos | `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE=felcn_auth_v3`, `DB_USE_SSL`, `DB_VERIFY_SSL`, `DB_SCHEMA`, `DB_SCHEMA_USUARIO`, `DB_SCHEMA_PARAMETRO` | `DB_PASSWORD` sí |
 | Seed inicial | `ADMIN_INITIAL_PASSWORD` | Sí — obligatoria para `seeds:run`, nunca commitear con valor real. Ver [08-runbook-reset-y-admin-inicial.md](./08-runbook-reset-y-admin-inicial.md) |
-| Autenticación | `JWT_SECRET`, `JWT_EXPIRES_IN`, `REFRESH_TOKEN_NAME`, `REFRESH_TOKEN_EXPIRES_IN`, `REFRESH_TOKEN_ROTATE_IN`, `REFRESH_TOKEN_SECURE`, `REFRESH_TOKEN_PATH` | `JWT_SECRET` sí |
+| Autenticación | `JWT_SECRET`, `JWT_EXPIRES_IN` (real en dev: `15m`), `REFRESH_TOKEN_NAME` (`jid`), `REFRESH_TOKEN_EXPIRES_IN` (real en dev: `3600000` ms = 60 min), `REFRESH_TOKEN_ROTATE_IN`, `REFRESH_TOKEN_SECURE`, `REFRESH_TOKEN_PATH` | `JWT_SECRET` sí |
 | **`URL_FRONTEND`** | URL pública del frontend (con barra final, p. ej. `https://desarrollo.felcn.gob.bo/`). **Crítica**: de acá se arman los links de los correos de activación, recuperación y desbloqueo de cuenta (ver [10-formularios-y-apis.md](./10-formularios-y-apis.md) §4.3/4.4). Si queda mal seteada (o sin barra final más un basePath, como pasaba con `/staging/`), los links de los correos apuntan a la URL equivocada y el usuario no puede activar ni recuperar su cuenta. **Verificar explícitamente después de cada despliegue nuevo**, no asumir que quedó bien solo porque el resto del `.env` es correcto. | No |
 | SMTP | `SMTP_ENABLED`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | `SMTP_PASS` sí (App Password de Gmail) |
+  | SMTP — respaldo (28/08/2026) | `SMTP_BACKUP1_HOST/PORT/SECURE/USER/PASS/FROM`, `SMTP_BACKUP2_HOST/PORT/SECURE/USER/PASS/FROM` — 2 cuentas Gmail de respaldo; mensajeria.service.ts reintenta primario → respaldo-1 → respaldo-2 en orden, sin bloquear la respuesta al usuario (envío fire-and-forget). **Faltan en .env.sample** — agregar antes de dar este documento por completo. | Los *_PASS sí (App Password de cada cuenta) |
 | Ciudadanía Digital (OIDC) — **único login del sistema, real (AGETIC)** | `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_SCOPE`, `OIDC_REDIRECT_URI`, `OIDC_POST_LOGOUT_REDIRECT_URI`, `SESSION_SECRET` | `OIDC_CLIENT_SECRET`, `SESSION_SECRET` sí |
 | Storage / Logs | `STORAGE_NFS_PATH`, `LOG_*` | No |
 
@@ -19,6 +20,8 @@ Tabla consolidada por proyecto. El detalle completo de cada variable está en el
 
 - `DB_SCHEMA_FELCN` — el schema `felcn_estructura` se referencia en otros lugares por su nombre literal, no a través de esta variable.
 - `REFRESH_TOKEN_DOMAIN` — el resto de la config de la cookie de refresh token (`REFRESH_TOKEN_SECURE`, `REFRESH_TOKEN_PATH`) sí se usa.
+
+**Hallazgo (29/08/2026): `IOP_SIN_URL`/`IOP_SIN_TOKEN` reaparecieron en el `.env` real** de `auth-backend` (no en `.env.sample`) pese a que el punto siguiente documenta que el código que las usaba se eliminó el 21/08/2026 — quedaron como valores huérfanos en el archivo real, sin ningún código que las lea hoy (confirmado con grep sobre `src/` el 29/08/2026). No son riesgo de seguridad por sí solas, pero conviene limpiarlas del `.env` real para no confundir a quien lo lea después.
 
 **`IOP_SEGIP_*` e `IOP_SIN_*` ya no existen en este proyecto (21/08/2026)** — se eliminó el código (`src/core/external-services/iop/`, nunca tenía ningún controller que lo expusiera — quedaba instanciado por inyección de dependencias pero nada lo llamaba nunca) y las variables del `.env.sample`/`INSTALL.md`. `auth-backend` **no tiene ninguna interoperabilidad activa hoy**. Importante no confundir con `felcn-base-backend-v2`: ese proyecto sí tiene una integración SIN real y en uso (`POST /interoperabilidad/sin/consulta-datos-contribuyente`, `GET /interoperabilidad/sin/verificar-comunicacion`, controller registrado y guardado con `JwtAuthGuard`) — ver sección 2. Son dos bases de código distintas; la limpieza acá no le pega a esa.
 
@@ -59,6 +62,8 @@ Existe además `.env.staging` (no versionado) con sus propias credenciales de AG
 | `NEXT_PUBLIC_COOKIE_SECURE` | Debe ser `true` en cualquier ambiente servido por HTTPS |
 
 Todo lo que empieza con `NEXT_PUBLIC_` termina embebido en el bundle de JavaScript que llega al navegador — **nunca poner ahí un secreto real**, solo URLs y claves pensadas para ser públicas.
+
+**Bug corregido (28/08/2026): `NEXT_PUBLIC_PATH=""` en `docker-compose.yml`.** En la sintaxis de lista (`environment: - NEXT_PUBLIC_PATH=""`), Docker Compose toma las comillas como parte literal del valor — el contenedor terminaba con la variable seteada al string de 2 caracteres `""`, no vacío. Esto rompía `Constantes.loginPath` (`frontend/src/config/Constantes.ts`), generando redirects a `/""/login` en vez de `/login` cuando `cerrarSesion()`/errores 401 usaban `window.location.href`. **Corregido**: la línea ahora es `- NEXT_PUBLIC_PATH=` (sin comillas). Si se usa la forma de mapa (`NEXT_PUBLIC_PATH: ""` bajo `args:` de un `build:`), ese formato sí interpreta las comillas correctamente — el bug era específico de la lista `environment:`. **Verificar este mismo patrón en cualquier otra variable con valor vacío** definida como lista en `docker-compose.yml` antes de un despliegue nuevo.
 
 ## 4. `fake-ciudadania-api` — confirmado sin uso (21/08/2026), pendiente de sacar del repo
 

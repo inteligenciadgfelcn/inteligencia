@@ -33,7 +33,6 @@ test-report.xml
 /.vscode
 
 requests.http
-database/migrations/
 documentation
 sonar-project.properties
 sonar-project.properties.sample

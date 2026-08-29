@@ -4,6 +4,20 @@
 
 nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), no dockerizado, en `servertest`. Archivo de sitio: `/etc/nginx/sites-available/desarrollo.felcn.gob.bo` (symlink en `sites-enabled`). El servidor nuevo (staging) replica el mismo patrón, nginx nativo — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
 
+### Topología de nombres/IPs — confirmada por el usuario (29/08/2026)
+
+Este servidor (el actual, `servertest`) sigue siendo `desarrollo.felcn.gob.bo` / `172.16.76.20` **de forma temporal**: es el servidor "dev" histórico, y se dará de baja (junto con esta IP) una vez que los servidores nuevos de abajo estén operativos. No hay que reutilizar `desarrollo.felcn.gob.bo` como nombre definitivo en ningún documento de instalación nueva.
+
+Los nombres definitivos, cada uno para un **servidor físico/virtual distinto y todavía no aprovisionado**:
+
+| Nombre | IP objetivo | Servidor | Estado |
+|---|---|---|---|
+| `desarrollo.felcn.gob.bo` | `172.16.76.20` (este host) | `servertest` actual | Vigente hoy — **a eliminar** cuando `sunesis-dev` esté operativo |
+| `sunesis-dev.felcn.gob.bo` | `172.16.76.23` | servidor dev nuevo | **Pendiente de aprovisionar** |
+| `sunesis-staging.felcn.gob.bo` | `172.16.76.24` | servidor staging nuevo | **Pendiente de aprovisionar** (staging ya se sacó de este host el 21/08/2026, pero el servidor `.24` con ese nombre aún no existe) |
+
+**Hallazgo de la verificación técnica (29/08/2026, antes de esta confirmación):** hoy, resolviendo contra DNS público, `desarrollo.felcn.gob.bo`, `sunesis-dev.felcn.gob.bo` y `sunesis-staging.felcn.gob.bo` devuelven los tres la misma IP pública (`186.121.212.123`, NAT hacia este host `.20`). Esto es **esperado mientras `.23`/`.24` no existan** — no es un error de configuración, es simplemente que los registros DNS de `sunesis-dev`/`sunesis-staging` todavía no se actualizaron para apuntar a los servidores nuevos. Acción pendiente para quien administra DNS: al aprovisionar cada servidor nuevo, repuntar su nombre a la IP interna correspondiente (`.23`/`.24`) y, en su momento, dar de baja el registro de `desarrollo.felcn.gob.bo` junto con este host.
+
 ## 2. TLS
 
 - Certificado Let's Encrypt para `desarrollo.felcn.gob.bo` y `www.desarrollo.felcn.gob.bo`.

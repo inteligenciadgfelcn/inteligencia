@@ -15,10 +15,11 @@
 | 10 | [Formularios y APIs](./10-formularios-y-apis.md) | Inventario de formularios del frontend (excluye `(fase_2)`), endpoints que consumen y tablas de BD involucradas |
 | 11 | [Tablas por base de datos](./11-tablas-por-base-de-datos.md) | Reagrupación del documento 10 en sentido inverso: base de datos → tabla → dónde se usa |
 | 12 | [Requisitos de seguridad e infraestructura](./12-requisitos-seguridad-infraestructura.md) | Checklist estándar que infraestructura/seguridad debe mantener en staging y producción — cada punto atado a un incidente real |
+| 13 | [Migración y restauración de BD](./13-migracion-y-restauracion-bd.md) | Mecanismo real (TypeORM, no Liquibase), política distinta por ambiente — producción arranca vacía, nunca restaura dump de dev/staging |
 
 Informes de productos (entregables puntuales, fuera de la numeración): [informes/producto-3-implementacion-fase1.md](./informes/producto-3-implementacion-fase1.md)
 
-`templates/` queda de una iteración anterior y está desactualizado (compose de un solo ambiente) — no usar como fuente de verdad, ver nota en [02](./02-entorno-docker-dev.md).
+`templates/docker-compose.yml` queda de una iteración anterior y está desactualizado (compose de un solo ambiente) — no usar como fuente de verdad, ver nota en [02](./02-entorno-docker-dev.md). Para producción usar [templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml) (29/08/2026, ver [07](./07-servidor-nuevo-desde-cero.md) §10).
 
 ## Hallazgos que salieron de escribir esta documentación (no relacionados a los documentos en sí)
 
