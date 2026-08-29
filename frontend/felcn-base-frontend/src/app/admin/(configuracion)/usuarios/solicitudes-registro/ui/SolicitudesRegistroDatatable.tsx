@@ -15,6 +15,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { InterpreteMensajes } from '@/utils'
+import { formatoFecha } from '@/utils/fechas'
 import { Constantes } from '@/config/Constantes'
 import { imprimir } from '@/utils/imprimir'
 import { usePathname } from 'next/navigation'
@@ -110,7 +111,7 @@ export const SolicitudesRegistroDatatable: React.FC = () => {
       headerName: 'Fecha de solicitud',
       flex: 1,
       valueFormatter: (value: string) =>
-        value ? new Date(value).toLocaleString() : '-',
+        value ? formatoFecha(value, 'DD/MM/YYYY HH:mm') : '-',
     },
     {
       field: 'estado',

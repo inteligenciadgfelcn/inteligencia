@@ -19,6 +19,7 @@ import { Select } from '@/components/ui/Select'
 import { Switch } from '@/components/ui/Switch'
 import { Button } from '@/components/ui/Button'
 import { MultiSelect } from '@/components/form/FormMultiSelect'
+import { RHFDate } from '@/components/form/RHFDate'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 import { RecursosPorRol } from './RecursosPorRol'
 import { DialogLinkActivacion } from './DialogLinkActivacion'
@@ -549,22 +550,14 @@ export const FormularioUsuario = ({
 
               {/* Fecha Nacimiento */}
               <div className="col-span-1">
-                <label htmlFor="fechaNacimiento" className="mb-1 block text-sm font-medium">
-                  Fecha de Nacimiento <span className="text-danger">*</span>
-                </label>
-                <Input
+                <RHFDate
                   id="fechaNacimiento"
-                  type="date"
-                  className="w-full"
-                  error={!!errors.fechaNacimiento}
+                  name="fechaNacimiento"
+                  control={control}
+                  label="Fecha de Nacimiento *"
+                  format="YYYY-MM-DD"
                   disabled={loading}
-                  {...register('fechaNacimiento')}
                 />
-                {errors.fechaNacimiento && (
-                  <span className="text-danger text-xs mt-1 block">
-                    {errors.fechaNacimiento.message}
-                  </span>
-                )}
               </div>
             </div>
           </div>

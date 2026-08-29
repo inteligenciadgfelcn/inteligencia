@@ -339,21 +339,23 @@ export class TemplateEmailService {
 
   // ─── Template 7: Cuenta ya existente detectada en preregistro ────────────
   // Uso: paso 2 del autorregistro — el documento o correo ya pertenecen a
-  // una cuenta real; no se crea ninguna solicitud, solo se avisa por correo.
+  // una cuenta real, o ya hay una solicitud pendiente con esos mismos datos;
+  // no se crea ninguna solicitud nueva, solo se avisa por correo.
   static armarPlantillaCuentaYaExiste(): string {
     const content = `
-      ${header('Ya existe una cuenta registrada')}
+      ${header('Ya existe un registro con estos datos')}
 
       <tr>
         <td class="px" style="padding:0 28px 22px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Detectamos que ya existe una cuenta en el
+            Detectamos que ya existe una cuenta, o una solicitud de registro
+            pendiente de revisión, en el
             <strong style="color:${C.text};">Sistema FELCN</strong> asociada a los datos
             ingresados en este preregistro.
           </p>
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Si crees que se trata de un error, o si no reconoces esa cuenta, comunícate con
-            el administrador del sistema para que revise tu caso.
+            Si crees que se trata de un error, o si no reconoces esa cuenta o solicitud,
+            comunícate con el administrador del sistema para que revise tu caso.
           </p>
         </td>
       </tr>
