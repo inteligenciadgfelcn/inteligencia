@@ -90,20 +90,27 @@ export class SolicitudRegistroService extends BaseService {
   }
 
   /**
-   * Paso 2 — recién acá se evalúa si ya existe una cuenta real con el mismo
-   * documento o correo. Si existe, no se crea ninguna fila: se le avisa por
-   * ese mismo correo (no por la respuesta del API) para no filtrar nada a
-   * quien esté llenando el formulario.
+   * Paso 2 — recién acá se evalúa si ya existe una cuenta real, o una
+   * solicitud pendiente de otro intento, con el mismo documento o correo
+   * (ambos se chequean por separado: ni el documento ni el correo pueden
+   * repetirse mientras haya una solicitud sin resolver). Si existe algo, no
+   * se crea ninguna fila: se le avisa por ese mismo correo (no por la
+   * respuesta del API) para no filtrar nada a quien esté llenando el
+   * formulario.
    */
   async completarFormulario(dto: CompletarSolicitudRegistroDto): Promise<void> {
     const { correoElectronico } = this.validarToken(dto.token)
 
-    const [usuarioPorDocumento, usuarioPorCorreo] = await Promise.all([
+    const [usuarioPorDocumento, usuarioPorCorreo, solicitudPendiente] = await Promise.all([
       this.usuarioRepositorio.buscarUsuarioPorCI(dto.nroDocumento),
       this.usuarioRepositorio.buscarUsuarioPorCorreo(correoElectronico),
+      this.solicitudRepositorio.buscarPendientePorDocumentoOCorreo(
+        dto.nroDocumento,
+        correoElectronico
+      ),
     ])
 
-    if (usuarioPorDocumento || usuarioPorCorreo) {
+    if (usuarioPorDocumento || usuarioPorCorreo || solicitudPendiente) {
       const template = TemplateEmailService.armarPlantillaCuentaYaExiste()
       this.mensajeriaService
         .sendEmail(correoElectronico, 'Preregistro — Sistema FELCN', template)

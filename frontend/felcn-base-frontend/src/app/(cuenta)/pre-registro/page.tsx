@@ -15,6 +15,7 @@ import { Constantes } from '@/config/Constantes'
 import { Icono } from '@/components/Icono'
 import ProgresoLineal from '@/components/progreso/ProgresoLineal'
 import { Select } from '@/components/ui/Select'
+import { RHFDate } from '@/components/form/RHFDate'
 import LoginCoverVristo from '@/app/login/ui/LoginCoverVristo'
 
 const formSchema = z
@@ -84,6 +85,7 @@ export default function PreRegistroPage() {
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -247,21 +249,6 @@ export default function PreRegistroPage() {
 
                   <div>
                     <label className="mb-0 block text-white-dark">
-                      Fecha de nacimiento
-                    </label>
-                    <input
-                      type="date"
-                      {...register('fechaNacimiento')}
-                      disabled={cargando}
-                      className="form-input"
-                    />
-                    <p className="text-danger text-sm">
-                      {errors.fechaNacimiento?.message}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="mb-0 block text-white-dark">
                       Primer Apellido
                     </label>
                     <input
@@ -314,6 +301,15 @@ export default function PreRegistroPage() {
                       regístrelo tal cual. Ejemplo: 1234567-1A.
                     </span>
                   </div>
+
+                  <RHFDate
+                    id="fechaNacimiento"
+                    name="fechaNacimiento"
+                    control={control}
+                    label="Fecha de nacimiento"
+                    format="YYYY-MM-DD"
+                    disabled={cargando}
+                  />
 
                   <div>
                     <label className="mb-0 block text-white-dark">

@@ -18,6 +18,7 @@ import {
   TransitionZoom,
 } from '@/components/modales/Animations'
 import CustomMensajeEstado from '@/components/estados/CustomMensajeEstado'
+import { formatoFecha } from '@/utils/fechas'
 import { SolicitudRegistroType } from '../types/solicitudesRegistroTypes'
 import { AlertaRechazarSolicitud } from './AlertaRechazarSolicitud'
 
@@ -103,7 +104,14 @@ export const ModalSolicitudDetalle: React.FC<Props> = ({
               value={`${solicitud?.nombres ?? ''} ${solicitud?.primerApellido ?? ''} ${solicitud?.segundoApellido ?? ''}`}
             />
             <Dato label="Nro. Documento" value={solicitud?.nroDocumento} />
-            <Dato label="Fecha de nacimiento" value={solicitud?.fechaNacimiento} />
+            <Dato
+              label="Fecha de nacimiento"
+              value={
+                solicitud?.fechaNacimiento
+                  ? formatoFecha(solicitud.fechaNacimiento, 'DD/MM/YYYY')
+                  : undefined
+              }
+            />
             <Dato label="Correo electrónico" value={solicitud?.correoElectronico} />
             <Dato label="Teléfono" value={solicitud?.telefono} />
             <Dato
@@ -115,11 +123,25 @@ export const ModalSolicitudDetalle: React.FC<Props> = ({
               }
             />
             <Dato label="Número de Pase" value={solicitud?.numeroPase} />
-            <Dato label="Fecha de solicitud" value={solicitud?.fechaCreacion} />
+            <Dato
+              label="Fecha de solicitud"
+              value={
+                solicitud?.fechaCreacion
+                  ? formatoFecha(solicitud.fechaCreacion, 'DD/MM/YYYY HH:mm')
+                  : undefined
+              }
+            />
 
             {!pendiente && (
               <>
-                <Dato label="Fecha de resolución" value={solicitud?.fechaResolucion} />
+                <Dato
+                  label="Fecha de resolución"
+                  value={
+                    solicitud?.fechaResolucion
+                      ? formatoFecha(solicitud.fechaResolucion, 'DD/MM/YYYY HH:mm')
+                      : undefined
+                  }
+                />
                 {solicitud?.comentarioRechazo && (
                   <Dato label="Comentario" value={solicitud.comentarioRechazo} />
                 )}
