@@ -36,6 +36,9 @@
 #      versión anterior que usaba el superusuario para todo) — corren como `felcn_app`,
 #      un rol sin privilegios de superusuario/DDL (ver docs/templates/postgres/01-crear-bases.sh).
 #      Las migraciones siguen corriendo a mano como `postgres` (ver docs/13-migracion-y-restauracion-bd.md).
+#      Probado de punta a punta: `felcn_app` no puede hacer `CREATE TABLE` (permission
+#      denied, confirmado con un intento real), y sí puede loguearse y crear un usuario
+#      real vía la API (INSERT/SELECT/UPDATE reales, confirmado end-to-end).
 
 services:
   postgres:
