@@ -1,7 +1,7 @@
 services:
   base-backend-v2:
     build:
-      context: ./backend/felcn-base-backend-v2
+      context: ./backend/felcn-base-backend
       dockerfile: dockerfile
     container_name: base-backend-v2
     restart: unless-stopped
