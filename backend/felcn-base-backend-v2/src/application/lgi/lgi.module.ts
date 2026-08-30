@@ -23,6 +23,7 @@ import { PersonasImplicadasModule } from './personas_implicadas/personas_implica
 import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
 import { InvestigadoresModule } from './investigadores/investigadores.module';
 import { InformacionSiiiModule } from './informacion_siii/informacion_siii.module';
+import { ActuacionesModule } from './actuaciones/actuaciones.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { InformacionSiiiModule } from './informacion_siii/informacion_siii.modul
     SituacionJuridicaModule,
     InvestigadoresModule,
     InformacionSiiiModule,
+    ActuacionesModule,
   ],
   controllers: [],
 })

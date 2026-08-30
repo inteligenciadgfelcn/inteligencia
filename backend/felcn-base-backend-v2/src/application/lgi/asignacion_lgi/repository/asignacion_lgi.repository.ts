@@ -64,10 +64,6 @@ export class AsignacionLgiRepository {
     return this.repository.create(data)
   }
 
-  saveDatosGenrales(data: AsignacionLgi): Promise<AsignacionLgi> {
-    return this.repository.save(data)
-  }
-
   async findAllPaginado(
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
@@ -78,6 +74,7 @@ export class AsignacionLgiRepository {
       .leftJoin('distritales', 'd', 'a.dis_id = d.dis_id')
       .leftJoin('etapainvest', 'e', 'a.eta_inv = e.eta_inv')
       .leftJoin('unidades', 'u', 'a.uni_abrev = u.uni_abrev')
+      .where('a.estado = :estado', { estado: 'ACTIVO' })
 
     if (filtro?.trim()) {
       const valor = `%${filtro.trim()}%`
@@ -115,11 +112,24 @@ export class AsignacionLgiRepository {
     return await this.repository.findOne({
       where: {
         casosId: id,
+        estado: 'ACTIVO',
       },
     })
   }
 
-  save(data: AsignacionLgi): Promise<AsignacionLgi> {
-    return this.repository.save(data)
+  async update(asignacion: AsignacionLgi): Promise<AsignacionLgi> {
+    return this.repository.save(asignacion)
+  }
+
+  async inactivar(id: number): Promise<AsignacionLgi | null> {
+    const asignacion = await this.findOneById(id)
+
+    if (!asignacion) {
+      return null
+    }
+
+    asignacion.estado = 'INACTIVO'
+
+    return this.repository.save(asignacion)
   }
 }

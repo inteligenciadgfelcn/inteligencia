@@ -1,36 +1,42 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
+
 import { DB_LGI } from '@/core/config/database/database.module'
 
 @Injectable()
-export class TipoDocumentoLgiRepository {
+export class TipoInformeLgiRepository {
   constructor(
     @InjectDataSource(DB_LGI)
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
   ) {}
 
   private readonly baseQuery = `
-      SELECT d.*
-      FROM parametricas.tipodoc d
-    `
+    SELECT i.*
+    FROM parametricas.tipo_informe i
+    WHERE 1 = 1
+  `
 
   private buildQuery(extraWhere = ''): string {
     return `
-        ${this.baseQuery}
-        ${extraWhere}
-        ORDER BY d.descripcion ASC
-      `
+      ${this.baseQuery}
+      ${extraWhere}
+      ORDER BY i.id ASC
+    `
   }
 
-  async findAllGeneral() {
-    return await this.dataSource.query(this.buildQuery())
+  async findAllGeneral(): Promise<any[]> {
+    return this.dataSource.query(
+      this.buildQuery(),
+    )
   }
 
   async findOne(id: number): Promise<any | null> {
     const result = await this.dataSource.query(
-      this.buildQuery('AND d.id = $1'),
-      [id]
+      this.buildQuery(
+        'AND i.id = $1',
+      ),
+      [id],
     )
 
     return result[0] ?? null

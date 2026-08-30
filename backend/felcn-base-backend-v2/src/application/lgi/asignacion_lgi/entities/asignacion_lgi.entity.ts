@@ -141,6 +141,14 @@ export class AsignacionLgi {
   })
   fechaInicio!: Date
 
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 10,
+    default: 'ACTIVO',
+  })
+  estado!: string
+
   @CreateDateColumn({
     name: 'fechahoraing',
     type: 'timestamptz',

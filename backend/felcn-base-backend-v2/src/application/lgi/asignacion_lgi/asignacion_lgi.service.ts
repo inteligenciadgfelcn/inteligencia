@@ -3,16 +3,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
-import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
+
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { AsignacionLgi } from './entities/asignacion_lgi.entity'
 import { AsignacionLgiRepository } from './repository/asignacion_lgi.repository'
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
+import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
+import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
 
 @Injectable()
 export class AsignacionLgiService {
   constructor(
     private readonly asignacionLgiRepository: AsignacionLgiRepository,
+
     private readonly distritalLgiRepository: DistritalLgiRepository
   ) {}
 
@@ -41,8 +44,16 @@ export class AsignacionLgiService {
       )
     }
 
+    const dtoConUsuario = {
+      ...dto,
+    }
+
     const asignacionGuardada =
-      await this.asignacionLgiRepository.crearAsignacionDual(dto, uniAbrev)
+      await this.asignacionLgiRepository.crearAsignacionDual(
+        dtoConUsuario,
+        uniAbrev
+      )
+
     return {
       message: 'Datos generales registrados correctamente',
       id: asignacionGuardada.casosId,
@@ -53,7 +64,7 @@ export class AsignacionLgiService {
     const asignacion = await this.asignacionLgiRepository.findOneById(id)
 
     if (!asignacion) {
-      throw new NotFoundException('Asignación no encontrada')
+      throw new NotFoundException(`No existe la asignación con ID ${id}`)
     }
 
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
@@ -78,7 +89,7 @@ export class AsignacionLgiService {
 
       if (uniAbrev.length > 3) {
         throw new BadRequestException(
-          'La abreviatura de la unidad no puede superar los 3 caracteres'
+          'La abreviatura no puede superar los 3 caracteres'
         )
       }
 
@@ -88,22 +99,34 @@ export class AsignacionLgiService {
 
     Object.assign(asignacion, datos)
 
-    await this.asignacionLgiRepository.save(asignacion)
+    await this.asignacionLgiRepository.update(asignacion)
 
     return {
       message: 'Datos generales actualizados correctamente',
     }
   }
 
-  async findAllPaginado(pagination: PaginacionQueryDto) {
-    return await this.asignacionLgiRepository.findAllPaginado(pagination)
+  findAllPaginado(pagination: PaginacionQueryDto) {
+    return this.asignacionLgiRepository.findAllPaginado(pagination)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asignacionLgi`
+  async findOne(id: number): Promise<AsignacionLgi> {
+    const asignacion = await this.asignacionLgiRepository.findOneById(id)
+
+    if (!asignacion) {
+      throw new NotFoundException(`No existe la asignación con ID ${id}`)
+    }
+
+    return asignacion
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} asignacionLgi`
+  async remove(id: number): Promise<AsignacionLgi> {
+    const asignacion = await this.asignacionLgiRepository.inactivar(id)
+
+    if (!asignacion) {
+      throw new NotFoundException(`No existe la asignación activa con ID ${id}`)
+    }
+
+    return asignacion
   }
 }

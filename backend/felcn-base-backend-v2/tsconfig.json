@@ -21,6 +21,12 @@
       "@/*": [
         "src/*"
       ],
-    }
+    },
+     "types": [
+      "node",
+      "express",
+      "multer",
+      "jest"
+    ]
   }
 }

@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
 
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
@@ -6,13 +13,19 @@ import { BaseController } from '@/common/base/base-controller'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 import { ParametricasLgiService } from './parametricas_lgi.service'
+import { EtapaLgiService } from '../etapa/etapa.service'
+import { EstadoLgiService } from '../estado/estado.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('Paramétricas LGI')
 @Controller('parametricas-lgi')
 export class ParametricasLgiController extends BaseController {
-  constructor(private readonly parametricasLgiService: ParametricasLgiService) {
+  constructor(
+    private readonly parametricasLgiService: ParametricasLgiService,
+    private readonly etapaService: EtapaLgiService,
+    private readonly estadoService: EstadoLgiService
+  ) {
     super()
   }
 
@@ -31,7 +44,9 @@ export class ParametricasLgiController extends BaseController {
   }
 
   @Get('grupo/:idDistrito')
-  @ApiOperation({ summary: 'Listar los grupos de acuerdo con la distrital seleccionada' })
+  @ApiOperation({
+    summary: 'Listar los grupos de acuerdo con la distrital seleccionada',
+  })
   findAllGrupo(
     @Param('idDistrito')
     idDistrito: number
@@ -46,7 +61,7 @@ export class ParametricasLgiController extends BaseController {
   findAllPais() {
     return this.parametricasLgiService.findAllPais()
   }
-  
+
   @Get('allDepartamento')
   @ApiOperation({
     summary: 'Listar los departamentos',
@@ -86,5 +101,25 @@ export class ParametricasLgiController extends BaseController {
   findAllTipoDocumento() {
     return this.parametricasLgiService.findAllTipoDocumento()
   }
-}
 
+  @Get('allEtapa')
+  @ApiOperation({
+    summary: 'Listar las etapas',
+  })
+  findAllEtapa() {
+    return this.etapaService.findAll()
+  }
+
+  @Get('allTipoInforme')
+  findAllTipoInforme() {
+    return this.parametricasLgiService.findAllTipoInforme()
+  }
+
+  @Get(':idEtapa')
+  @ApiOperation({
+    summary: 'Listar detalle etapa',
+  })
+  find(@Param('idEtapa', ParseIntPipe) idEtapa: number) {
+    return this.estadoService.findAllEtapa(idEtapa)
+  }
+}
