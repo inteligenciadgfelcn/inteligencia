@@ -7,7 +7,7 @@
 | Componente | Tipo | Repo/carpeta | Puerto interno | Puerto host (dev) |
 |---|---|---|---|---|
 | `base-frontend` | Next.js | `frontend/felcn-base-frontend` | 3000 | 3017 |
-| `base-backend-v2` | NestJS | `backend/felcn-base-backend-v2` | 3000 | 3015 |
+| `base-backend-v2` | NestJS | `backend/felcn-base-backend` | 3000 | 3015 |
 | `auth-backend` | NestJS | `backend/felcn-auth-backend` | 4000 | 3016 (127.0.0.1) |
 
 Todos corren como contenedores Docker (`docker-compose.yml` en la raíz del repo, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) con `restart: unless-stopped`, en la red bridge `felcn-network`.
@@ -52,11 +52,11 @@ Actualmente Postgres corre **nativo en el host** (no dockerizado) para las bases
 
 Cada proyecto ya mantiene su propia documentación interna — este documento consolidado no la reemplaza:
 
-- `backend/felcn-base-backend-v2/docs/arquitectura.md` — estructura de directorios y diagrama ERD del proyecto.
+- `backend/felcn-base-backend/docs/arquitectura.md` — estructura de directorios y diagrama ERD del proyecto.
 - `backend/felcn-auth-backend/docs/arquitectura.md` — ídem para auth-backend.
-- `backend/felcn-base-backend-v2/docs/openapi.yaml`, `backend/felcn-auth-backend/docs/openapi.yaml` — especificación de API (Swagger).
+- `backend/felcn-base-backend/docs/openapi.yaml`, `backend/felcn-auth-backend/docs/openapi.yaml` — especificación de API (Swagger).
 
-> Nota: `backend/felcn-base-backend-v2/docs/ARQUITECTURA_SERVICIOS.md` es una **propuesta de migración legacy** (SUNESIS .aspx → microservicios .NET) y no describe el sistema actual (NestJS/Postgres) — no usarlo como referencia de arquitectura vigente.
+> Nota: `backend/felcn-base-backend/docs/ARQUITECTURA_SERVICIOS.md` es una **propuesta de migración legacy** (SUNESIS .aspx → microservicios .NET) y no describe el sistema actual (NestJS/Postgres) — no usarlo como referencia de arquitectura vigente.
 
 ## 6. Incidentes conocidos que afectan la arquitectura operativa
 

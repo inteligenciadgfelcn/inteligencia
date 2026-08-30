@@ -1,10 +1,10 @@
 # Formularios del frontend, APIs y tablas de base de datos
 
-> Alcance: `frontend/felcn-base-frontend/src/app/`, **excluyendo** `(fase_2)/`. Generado el 2026-07-30 cruzando el frontend contra los controladores/servicios/repositorios/entidades reales de `felcn-auth-backend` y `felcn-base-backend-v2`. Cada afirmación de este documento se verificó leyendo el código fuente correspondiente (no se copió de documentación previa).
+> Alcance: `frontend/felcn-base-frontend/src/app/`, **excluyendo** `(fase_2)/`. Generado el 2026-07-30 cruzando el frontend contra los controladores/servicios/repositorios/entidades reales de `felcn-auth-backend` y `felcn-base-backend`. Cada afirmación de este documento se verificó leyendo el código fuente correspondiente (no se copió de documentación previa).
 
 ## 0. Convenciones
 
-- **Backend**: `auth-backend` (`felcn-auth-backend`, puerto 4000 en dev) o `base-backend-v2` (`felcn-base-backend-v2`, puerto 3000 en dev, prefijo global `/api`).
+- **Backend**: `auth-backend` (`felcn-auth-backend`, puerto 4000 en dev) o `base-backend-v2` (`felcn-base-backend`, puerto 3000 en dev, prefijo global `/api`).
 - Las rutas de API se listan **relativas al backend** (sin el host ni, en el caso de base-backend-v2, el prefijo `/api`).
 - "Obligatorio" se refiere a la validación del formulario en el frontend (react-hook-form + zod, o validación manual), no necesariamente a una constraint `NOT NULL` en la base de datos.
 - Los campos de texto marcados "mayúsculas" se transforman a uppercase automáticamente en el frontend antes de enviarse.
@@ -14,11 +14,11 @@
 | Backend | Base de datos | Schemas relevantes | Notas |
 |---|---|---|---|
 | `felcn-auth-backend` | `felcn_auth_v3` | `usuario` (usuarios, roles, módulos, casbin_rule, recurso_excepcion, bitácora, otp, refresh_token), `parametro` (grado, unidad, distrital, grupo) | Variable `DB_SCHEMA_FELCN` existe en `.env.sample` pero no se usa en ninguna entidad activa. El adaptador Casbin (`typeorm-adapter`) abre **su propia conexión** a Postgres hacia `usuario.casbin_rule`, separada del `DataSource` principal de la app. |
-| `felcn-base-backend-v2` (módulo `sunesis/siii`) | `felcn_siii` | `public` (asignacion, operativo, droga, persona_auxiliar, item_bien_secuestrado, investigacion_paralela, seguimiento, etc.), `parametricas` (catálogos), `auth_fdw` (**foreign tables** vía `postgres_fdw` hacia `felcn_auth_v3.parametro.{unidad,distrital,grupo,grado}` — fuente canónica de estructura organizacional; ver [fix de hoy](#10-hallazgos-técnicos)), `fiscalia` | Un endpoint (`GET /operativos/caso/:idCaso`) toca además una **quinta base**, `felcn_asignacion_casos` (conexión `DB_ASIG_CASOS`), solo para `fechaOperativo`. |
-| `felcn-base-backend-v2` (módulo `sunesis/siii`, legado) | `felcn_lgi` | `public` (asignacion, operativo, investigador, distritales, unidades, departamentosc, provincias, localidad) | Sistema GIAEF migrado; **no** usa `auth_fdw` — tiene su propio catálogo organizacional legado, desincronizado del canónico por diseño (no es el mismo bug del fix de hoy). |
-| `felcn-base-backend-v2` (módulo `sunesis/s2i`) | `felcn_s2i` | `public` (asignacion/caso, blanco, empresa, item_bien_investigado, conductor, transporte, flujo_transporte, lugar, telefono, vehiculo), `parametricas` (catálogos) | Resuelve Conductor y Transporte consultando primero `felcn_personas`/`felcn_vls` (ver más abajo). |
-| `felcn-base-backend-v2` (auxiliar) | `felcn_personas` | `public.personas` | Datos civiles por documento; usado por el módulo Transporte para resolver Conductor. |
-| `felcn-base-backend-v2` (auxiliar) | `felcn_vls` | `public` (vehiculo, marca, modelo, clase, color) | Registro vehicular oficial; usado por el módulo Transporte para resolver Transporte (por placa). |
+| `felcn-base-backend` (módulo `sunesis/siii`) | `felcn_siii` | `public` (asignacion, operativo, droga, persona_auxiliar, item_bien_secuestrado, investigacion_paralela, seguimiento, etc.), `parametricas` (catálogos), `auth_fdw` (**foreign tables** vía `postgres_fdw` hacia `felcn_auth_v3.parametro.{unidad,distrital,grupo,grado}` — fuente canónica de estructura organizacional; ver [fix de hoy](#10-hallazgos-técnicos)), `fiscalia` | Un endpoint (`GET /operativos/caso/:idCaso`) toca además una **quinta base**, `felcn_asignacion_casos` (conexión `DB_ASIG_CASOS`), solo para `fechaOperativo`. |
+| `felcn-base-backend` (módulo `sunesis/siii`, legado) | `felcn_lgi` | `public` (asignacion, operativo, investigador, distritales, unidades, departamentosc, provincias, localidad) | Sistema GIAEF migrado; **no** usa `auth_fdw` — tiene su propio catálogo organizacional legado, desincronizado del canónico por diseño (no es el mismo bug del fix de hoy). |
+| `felcn-base-backend` (módulo `sunesis/s2i`) | `felcn_s2i` | `public` (asignacion/caso, blanco, empresa, item_bien_investigado, conductor, transporte, flujo_transporte, lugar, telefono, vehiculo), `parametricas` (catálogos) | Resuelve Conductor y Transporte consultando primero `felcn_personas`/`felcn_vls` (ver más abajo). |
+| `felcn-base-backend` (auxiliar) | `felcn_personas` | `public.personas` | Datos civiles por documento; usado por el módulo Transporte para resolver Conductor. |
+| `felcn-base-backend` (auxiliar) | `felcn_vls` | `public` (vehiculo, marca, modelo, clase, color) | Registro vehicular oficial; usado por el módulo Transporte para resolver Transporte (por placa). |
 
 ---
 

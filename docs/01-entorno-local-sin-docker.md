@@ -2,7 +2,7 @@
 
 Instrucciones para que un developer nuevo levante el proyecto **nativamente** (sin contenedores) en su máquina. Para el modo con Docker ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md).
 
-> Nota: los `INSTALL.md` dentro de `felcn-auth-backend` y `felcn-base-backend-v2` referencian un clon separado desde `gitlab.felcn.gob.bo` — eso quedó desactualizado. **Hoy todo vive en un único monorepo**: `git@github.com:inteligenciadgfelcn/inteligencia.git`. Clonar una sola vez y trabajar en las subcarpetas.
+> Nota: los `INSTALL.md` dentro de `felcn-auth-backend` y `felcn-base-backend` referencian un clon separado desde `gitlab.felcn.gob.bo` — eso quedó desactualizado. **Hoy todo vive en un único monorepo**: `git@github.com:inteligenciadgfelcn/inteligencia.git`. Clonar una sola vez y trabajar en las subcarpetas.
 
 ## 1. Requisitos
 
@@ -26,7 +26,7 @@ Estructura relevante:
 inteligencia/
 ├── backend/
 │   ├── felcn-auth-backend/       # NestJS, puerto 4000
-│   ├── felcn-base-backend-v2/    # NestJS, puerto 3000
+│   ├── felcn-base-backend/    # NestJS, puerto 3000
 │   └── fake-ciudadania-api/      # NestJS, puerto 3001 (OIDC simulado, solo dev)
 ├── frontend/
 │   └── felcn-base-frontend/      # Next.js, puerto 8080 en local / 3000 en docker
@@ -62,10 +62,10 @@ npm run dev                 # start:dev con logs SQL/consola (equivalente a star
 
 Variables clave a revisar en `.env` antes de arrancar: `DB_DATABASE=felcn_auth_v3`, `JWT_SECRET` (usar cualquier valor en dev), `SMTP_ENABLED=false` si no hay cuenta SMTP configurada (los correos se imprimen en logs), y el bloque `OIDC_*` — en dev debe apuntar a `fake-ciudadania-api` (ver 3.5). Tabla completa de variables en [04-variables-de-entorno.md](./04-variables-de-entorno.md).
 
-### 3.3. `felcn-base-backend-v2` (puerto 3000)
+### 3.3. `felcn-base-backend` (puerto 3000)
 
 ```bash
-cd backend/felcn-base-backend-v2
+cd backend/felcn-base-backend
 npm install
 cp .env.sample .env
 npm run db:create          # crea sus bases adicionales (felcn_siii, felcn_lgi, etc.)
