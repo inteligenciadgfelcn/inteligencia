@@ -29,6 +29,7 @@
 | `usuario.otp_sesion` | Login `§4.1` |
 | `usuario.persona` | Alta/edición usuario `§2.1`, editar perfil `§3.1`, callback Ciudadanía Digital `§4.2`, registro `§4.3` |
 | `usuario.recurso_excepcion` | Alta/edición usuario `§2.1`, delete cascade políticas `§2.5`, login `§4.1` |
+| `usuario.solicitud_registro` *(nueva, 28/08/2026 — no auditada contra doc 10 todavía)* | Autorregistro rediseñado en 2 pasos: `POST /usuarios/solicitudes-registro/acceso` (solicitar link, no escribe nada) → `POST /usuarios/solicitudes-registro/completar` (persiste solo si no hay duplicado real) → panel admin `/admin/usuarios/solicitudes-registro` (listar/aprobar/rechazar). Reemplaza al viejo `POST /usuarios/crear-cuenta` (eliminado) — cualquier referencia a ese endpoint en doc 10/otros documentos está desactualizada. |
 | `usuario.refresh_token` | Login `§4.1`, callback Ciudadanía Digital `§4.2` |
 | `usuario.rol` | Alta/edición usuario `§2.1`, CRUD roles `§2.6`, login `§4.1`, Ciudadanía Digital `§4.2` |
 | `usuario.usuario` | Alta/edición usuario `§2.1`, datatable+estados `§2.2`, editar perfil/contraseña/foto `§3.1`, login `§4.1`, callback Ciudadanía Digital `§4.2`, registro `§4.3`, activación/desbloqueo/recuperación `§4.4` |

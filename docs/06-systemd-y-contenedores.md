@@ -41,7 +41,9 @@ Orden de arranque en un boot: `docker.service` (systemd) → contenedores con `r
 
 ## 5. Recomendación para el servidor nuevo
 
-El servidor nuevo (staging) replica el mismo patrón de hoy — nginx nativo, no dockerizado (ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md)) — así que este gap se repite si no se aplica el drop-in. Aplicarlo desde el arranque en vez de descubrirlo después de un incidente:
+**Revisado 29/08/2026 — este gap ya NO aplica a los servidores nuevos.** La decisión de arquitectura cambió: dev (`.23`), staging (`.24`) y producción futura corren nginx **dockerizado** (`nginx:1.26-alpine`, ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 4), no como servicio nativo de systemd — el contenedor ya tiene `restart: unless-stopped`, Docker lo reinicia solo si el proceso muere, sin necesitar ningún drop-in.
+
+Este gap (`Restart=no`) sigue siendo real y sin corregir **solo en `servertest`** (sección 1), que mantiene nginx nativo hasta que se dé de baja. Ahí sí sigue pendiente aplicar el drop-in:
 
 ```ini
 # /etc/systemd/system/nginx.service.d/override.conf
@@ -50,4 +52,4 @@ Restart=on-failure
 RestartSec=5
 ```
 
-y `systemctl daemon-reload`. Pendiente aplicar también en `servertest`, donde sigue sin corregirse (sección 1).
+y `systemctl daemon-reload`.
