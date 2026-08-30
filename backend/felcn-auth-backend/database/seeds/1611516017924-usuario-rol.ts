@@ -7,23 +7,13 @@ export class usuarioRol1611516017924 implements MigrationInterface {
     const items = [
       {
         id: '1',
-        rol: '1', //TextService.textToUuid(RolEnum.ADMINISTRADOR),
-        usuario: '1', //TextService.textToUuid('ADMINISTRADOR'),
+        rol: '1',
+        usuario: '1',
       },
       {
         id: '2',
-        rol: '1', // TextService.textToUuid(RolEnum.ADMINISTRADOR),
-        usuario: '2', // TextService.textToUuid('ADMINISTRADOR-TECNICO'),
-      },
-      {
-        id: '3',
-        rol: '2', // TextService.textToUuid(RolEnum.TECNICO),
-        usuario: '2', // TextService.textToUuid('ADMINISTRADOR-TECNICO'),
-      },
-      {
-        id: '4',
-        rol: '2', //TextService.textToUuid(RolEnum.TECNICO),
-        usuario: '3', // TextService.textToUuid('TECNICO'),
+        rol: '2',
+        usuario: '1',
       },
     ]
     const usuariosRoles = items.map((item) => {
@@ -39,5 +29,5 @@ export class usuarioRol1611516017924 implements MigrationInterface {
   }
 
   /* eslint-disable */
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
