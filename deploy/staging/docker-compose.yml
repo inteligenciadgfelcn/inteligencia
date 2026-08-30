@@ -1,21 +1,22 @@
-# Plantilla de docker-compose para servidores NUEVOS dockerizados por completo
-# (staging: sunesis-staging.felcn.gob.bo/.24 — producción: cuando exista).
-# Ver docs/07-servidor-nuevo-desde-cero.md Fases 3/4/5b y docs/13-migracion-y-restauracion-bd.md
-# antes de usar esto. `desarrollo.felcn.gob.bo` (.20, servertest) NO usa esta plantilla —
-# sigue con Postgres/nginx nativos hasta que se dé de baja, ver docs/05-nginx-y-tls.md §1.
+# docker-compose de STAGING (sunesis-staging.felcn.gob.bo/.24), dockerizado por completo.
+# Producción usa su propia copia en deploy/production/docker-compose.yml (mismo shape,
+# dominio/secretos propios). Ver ../../docs/07-servidor-nuevo-desde-cero.md Fases 3/4/5b y
+# ../../docs/13-migracion-y-restauracion-bd.md antes de usar esto. `desarrollo.felcn.gob.bo`
+# (.20, servertest) NO usa esta plantilla — sigue con Postgres/nginx nativos hasta que se dé
+# de baja, ver ../../docs/05-nginx-y-tls.md §1.
 #
 # Diferencias clave contra el docker-compose.yml real de dev (raíz del repo, gitignored):
 #   1. `image:` en vez de `build:` para las 3 apps — este servidor NUNCA construye desde
 #      código fuente, consume imágenes ya construidas y subidas al registry propio
-#      (ver docs/templates/registry/, docs/14-registro-de-imagenes.md). El tag se pasa
-#      por la variable de entorno TAG (ver docs/templates/registry/pull-and-deploy.sh).
+#      (ver deploy/tools/registry/, ../../docs/14-registro-de-imagenes.md). El tag se pasa
+#      por la variable de entorno TAG (ver deploy/tools/registry/pull-and-deploy.sh).
 #   2. Sin bind mounts de código fuente — solo el .env de cada servicio y este compose
 #      viajan al servidor, nunca el repo/`.git/`.
 #   3. NODE_ENV=production en los 3 servicios (en dev, auth-backend queda en `development`
 #      a propósito — ver docker-compose.yml real).
 #   4. NEXT_PUBLIC_* del frontend: usar el dominio real de este servidor (sunesis-staging.felcn.gob.bo,
 #      o el de producción cuando exista — ⚠️ PENDIENTE, producción todavía no tiene dominio
-#      asignado, ver docs/05-nginx-y-tls.md §1).
+#      asignado, ver ../../docs/05-nginx-y-tls.md §1).
 #   5. Postgres y nginx SÍ van acá, dockerizados (decisión del 29/08/2026, reemplaza la
 #      versión anterior de esta plantilla que los dejaba nativos) — probado de punta a
 #      punta en servertest antes de documentarlo (build/push/pull real contra un registry
@@ -27,15 +28,15 @@
 #      nunca toca el volumen de otro; si Postgres o nginx mueren o se recrean, sus datos
 #      siguen ahí. Solo un `docker compose down -v` explícito los borraría.
 #   7. El Docker Registry (`registry:2`) NO va en este compose — vive en un compose aparte
-#      solo en el servidor dev (.23), ver docs/templates/registry/docker-compose.registry.yml.
+#      solo en el servidor dev (.23), ver deploy/tools/registry/docker-compose.registry.yml.
 #      Este archivo es para servidores que solo CONSUMEN imágenes (staging, producción).
 #   8. `consulta-persona-api`/`consulta-persona-redis` no están incluidos — confirmar si
 #      ese servicio corre en este ambiente antes de agregarlo (en dev están definidos en
-#      el compose pero documentados como sin uso activo, ver docs/README.md).
+#      el compose pero documentados como sin uso activo, ver ../../docs/README.md).
 #   9. Las apps NO se conectan como `postgres` (decisión del 30/08/2026, reemplaza la
 #      versión anterior que usaba el superusuario para todo) — corren como `felcn_app`,
-#      un rol sin privilegios de superusuario/DDL (ver docs/templates/postgres/01-crear-bases.sh).
-#      Las migraciones siguen corriendo a mano como `postgres` (ver docs/13-migracion-y-restauracion-bd.md).
+#      un rol sin privilegios de superusuario/DDL (ver deploy/tools/postgres/01-crear-bases.sh).
+#      Las migraciones siguen corriendo a mano como `postgres` (ver ../../docs/13-migracion-y-restauracion-bd.md).
 #      Probado de punta a punta: `felcn_app` no puede hacer `CREATE TABLE` (permission
 #      denied, confirmado con un intento real), y sí puede loguearse y crear un usuario
 #      real vía la API (INSERT/SELECT/UPDATE reales, confirmado end-to-end).
@@ -89,16 +90,16 @@ services:
     # contenedor no corre en loop, se invoca puntualmente con
     # `docker compose run --rm certbot ...` (funciona igual, `run` ignora el
     # profile) desde el timer de systemd del host, ver
-    # docs/templates/nginx/certbot-renew.sh. No se le monta docker.sock.
+    # deploy/tools/nginx/certbot-renew.sh. No se le monta docker.sock.
     profiles:
       - tools
 
   base-backend-v2:
-    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-backend-v2:${TAG:?falta TAG}
+    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-backend:${TAG:?falta TAG}
     container_name: base-backend-v2
     restart: unless-stopped
     env_file:
-      - ./felcn-base-backend-v2.env
+      - ./felcn-base-backend.env
     volumes:
       - logs_data:/tmp/logs
     networks:
@@ -109,7 +110,7 @@ services:
       - TZ=America/La_Paz
       - NODE_ENV=production
       # base-backend-v2 conecta a 9 bases distintas por bloques de env var con
-      # prefijo (ver docs/03-base-de-datos.md §2) — TODAS viven ahora en este
+      # prefijo (ver ../../docs/03-base-de-datos.md §2) — TODAS viven ahora en este
       # mismo Postgres dockerizado, así que TODAS necesitan apuntar acá, no
       # solo el bloque sin prefijo. Bug real encontrado probando esta plantilla
       # literal (29/08/2026): con solo DB_HOST=postgres, los otros 8 bloques
@@ -118,7 +119,7 @@ services:
       - DB_HOST=postgres
       - DB_DATABASE=felcn_auth
       # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
-      # y docs/templates/postgres/01-crear-bases.sh. Solo aplica al bloque
+      # y deploy/tools/postgres/01-crear-bases.sh. Solo aplica al bloque
       # default (felcn_auth) — los otros 8 bloques siguen con lo que traiga
       # su propio .env (ver limitación anotada en 01-crear-bases.sh).
       - DB_USERNAME=felcn_app
@@ -151,7 +152,7 @@ services:
       - DB_HOST=postgres
       - DB_DATABASE=felcn_auth
       # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
-      # y docs/templates/postgres/01-crear-bases.sh.
+      # y deploy/tools/postgres/01-crear-bases.sh.
       - DB_USERNAME=felcn_app
       - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
 
