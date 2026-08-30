@@ -90,7 +90,7 @@ Distinto de las tablas de arriba (esas son el `.env`/`.env.sample` de cada proye
 | Variable | Para qué | Secreto |
 |---|---|---|
 | `DB_PASSWORD` | Contraseña del superusuario `postgres` — la usa `POSTGRES_PASSWORD` del servicio `postgres` (init del contenedor) y quien corre migraciones a mano (`npm run migrations:run`, siempre con el superusuario, nunca con `felcn_app`) | Sí |
-| `DB_APP_PASSWORD` | Contraseña del rol `felcn_app` (decisión del 30/08/2026, ver [03-base-de-datos.md](./03-base-de-datos.md)) — el que usan las apps en runtime, sin privilegios de DDL. Se inyecta como `DB_PASSWORD` dentro del `environment:` de cada servicio de app en el compose, pisando lo que traiga su propio `.env` | Sí |
+| `DB_APP_PASSWORD` | Contraseña del rol `felcn_app` (decisión del 30/08/2026, ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 3) — el que usan las apps en runtime, sin privilegios de DDL. Se inyecta como `DB_PASSWORD` dentro del `environment:` de cada servicio de app en el compose, pisando lo que traiga su propio `.env` | Sí |
 | `TAG` | Tag de las 3 imágenes a desplegar (`registry.sunesis-dev.felcn.gob.bo/felcn-<imagen>:${TAG}`) — ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) | No |
 
 Las credenciales del registry (usuario/contraseña de `htpasswd`) **no tienen nombre de variable de entorno** en ningún compose — se piden interactivo al correr `crear-htpasswd.sh` (ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) §2) y quedan hasheadas en un archivo `htpasswd`, no en ningún `.env`.
