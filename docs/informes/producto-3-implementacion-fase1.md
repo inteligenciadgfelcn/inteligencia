@@ -89,7 +89,7 @@ El sistema es una **aplicación web**, por lo que su validación multiplataforma
 | Proyecto | Ubicación de las pruebas | Suites | Cobertura funcional |
 |---|---|---|---|
 | Backend de autenticación | `backend/felcn-auth-backend/src/**/*.spec.ts` | 23 | Autenticación, autorización RBAC, gestión de usuarios y roles, validadores de datos, mensajería OTP |
-| Backend base v2 | `backend/felcn-base-backend-v2/src/**/*.spec.ts` | 11 | Servicios de negocio, interceptores, middlewares, conexión a base de datos |
+| Backend base v2 | `backend/felcn-base-backend/src/**/*.spec.ts` | 11 | Servicios de negocio, interceptores, middlewares, conexión a base de datos |
 
 Comandos de ejecución (documentados en el `package.json` de cada proyecto): `npm run test` (ejecución local), `npm run test:cov` (con reporte de cobertura) y `npm run test:ci` (modo integración continua, genera reportes JUnit y SonarQube — archivo `test-report.xml`). Las suites se ejecutan en cada ciclo de desarrollo; cualquier revisor puede reproducirlas con esos comandos sobre el repositorio.
 
