@@ -32,6 +32,10 @@
 #   8. `consulta-persona-api`/`consulta-persona-redis` no están incluidos — confirmar si
 #      ese servicio corre en este ambiente antes de agregarlo (en dev están definidos en
 #      el compose pero documentados como sin uso activo, ver docs/README.md).
+#   9. Las apps NO se conectan como `postgres` (decisión del 30/08/2026, reemplaza la
+#      versión anterior que usaba el superusuario para todo) — corren como `felcn_app`,
+#      un rol sin privilegios de superusuario/DDL (ver docs/templates/postgres/01-crear-bases.sh).
+#      Las migraciones siguen corriendo a mano como `postgres` (ver docs/13-migracion-y-restauracion-bd.md).
 
 services:
   postgres:
@@ -40,10 +44,11 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD:?falta DB_PASSWORD}
+      - DB_APP_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
       - TZ=America/La_Paz
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres/01-crear-bases.sql:/docker-entrypoint-initdb.d/01-crear-bases.sql:ro
+      - ./postgres/01-crear-bases.sh:/docker-entrypoint-initdb.d/01-crear-bases.sh:ro
     networks:
       - felcn-network
     # Sin puertos publicados al host — solo lo alcanzan las apps de este mismo compose,
@@ -109,6 +114,12 @@ services:
       # del .env real) y el servicio quedaba en crash-loop.
       - DB_HOST=postgres
       - DB_DATABASE=felcn_auth
+      # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
+      # y docs/templates/postgres/01-crear-bases.sh. Solo aplica al bloque
+      # default (felcn_auth) — los otros 8 bloques siguen con lo que traiga
+      # su propio .env (ver limitación anotada en 01-crear-bases.sh).
+      - DB_USERNAME=felcn_app
+      - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
       - DB_SIII_HOST=postgres
       - DB_LGI_HOST=postgres
       - DB_S2I_HOST=postgres
@@ -136,6 +147,10 @@ services:
       - NODE_ENV=production
       - DB_HOST=postgres
       - DB_DATABASE=felcn_auth
+      # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
+      # y docs/templates/postgres/01-crear-bases.sh.
+      - DB_USERNAME=felcn_app
+      - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
 
   base-frontend:
     image: registry.sunesis-dev.felcn.gob.bo/felcn-base-frontend:${TAG:?falta TAG}
