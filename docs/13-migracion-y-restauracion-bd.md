@@ -36,6 +36,26 @@ Ambos comandos (`migrations:run`, `seeds:run`) son **idempotentes y acumulativos
 
 Si en algún momento se decide que sí hace falta migrar datos reales de dev/staging a producción (por ejemplo, catálogos que un usuario cargó a mano y no están en ningún seed versionado), eso es una decisión aparte, puntual, que hay que evaluar caso por caso — no el procedimiento por defecto.
 
+## 4. Los backups NUNCA van a git — se trasladan a mano
+
+`/backups/` está en `.gitignore` a propósito: son dumps reales de bases con datos operativos (personas, casos, operativos), no algo que deba viajar por un repositorio de código ni quedar en el historial de git. Esto aplica tanto a los `.sql`/`.dump` de una restauración puntual como a cualquier backup "fresco" que se genere para poblar un servidor nuevo.
+
+Convención de nombre para un backup fresco: `backups/<fecha>-<motivo>/`, un archivo `<base>.sql.gz` por base de datos (`pg_dump <base> | gzip > backups/<fecha>-<motivo>/<base>.sql.gz`).
+
+Para llevar un backup a un servidor nuevo (por ejemplo, poblar dev `.23` o staging `.24` con las 8 bases de dominio que no son `felcn_auth`, ver §2), el mecanismo es transferencia directa entre máquinas, nunca vía git:
+
+```bash
+# Desde la máquina que tiene el backup, hacia el servidor destino:
+scp -r backups/<fecha>-<motivo>/ usuario@<servidor-destino>:/ruta/temporal/
+
+# o, si ya hay acceso SSH configurado, rsync (mejor para backups grandes/repetidos):
+rsync -avz backups/<fecha>-<motivo>/ usuario@<servidor-destino>:/ruta/temporal/
+```
+
+Una vez el `.sql.gz` está en el servidor destino, restaurar con [deploy/tools/postgres/pg-restore.sh](../deploy/tools/postgres/pg-restore.sh) contra el contenedor de Postgres ya desplegado (requiere solo el usuario/contraseña de la app, generados al levantar Postgres — ver [deploy/tools/postgres/01-crear-bases.sh](../deploy/tools/postgres/01-crear-bases.sh) — no hace falta ninguna llave SSH ni configuración adicional).
+
+Después de restaurar, borrar la copia temporal del backup en el servidor destino (no debe quedar un dump con datos reales suelto en el filesystem de un servidor más tiempo del necesario).
+
 ## 3. ⚠️ El backup automatizado de Postgres está roto desde el 1 de mayo de 2026
 
 Ver detalle completo en [03-base-de-datos.md](./03-base-de-datos.md) §9.2 — el cron diario de `pg_dump` fallaba en su primera línea por un permiso de archivo de log y nunca llegó a respaldar nada. Se decidió eliminar el cron en vez de repararlo (no era específico de este proyecto) y **hoy no existe ningún backup automatizado**.
