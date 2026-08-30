@@ -14,7 +14,6 @@ export class casbinRecursoExcepcion1785389000000 implements MigrationInterface {
     const backendRoutes: CasbinValue = {
       '/api/autorizacion/recursos': {
         [RolEnum.ADMINISTRADOR]: 'GET',
-        [RolEnum.TECNICO]: 'GET',
       },
     }
 
@@ -33,5 +32,5 @@ export class casbinRecursoExcepcion1785389000000 implements MigrationInterface {
   }
 
   /* eslint-disable */
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(queryRunner: QueryRunner): Promise<void> { }
 }
