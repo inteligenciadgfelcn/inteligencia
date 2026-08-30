@@ -12,11 +12,19 @@ import { TipoDocumentoLgiRepository } from './repository/tipo_documento.reposito
 import { EtapaModule } from '../etapa/etapa.module'
 import { EstadoModule } from '../estado/estado.module'
 import { TipoInformeLgiRepository } from './repository/tipo_informe.repository'
+import { BienesModule } from '../bienes/bienes.module'
+import { CatalogoClaseModule } from '../catalogo-clase/catalogo-clase.module'
+import { CatalogoTipoModule } from '../catalogo-tipo/catalogo-tipo.module'
+import { CatalogoCaracteristicasModule } from '../catalogo-caracteristica/catalogo-caracteristicas.module'
 
 @Module({
    imports: [
     EtapaModule,
     EstadoModule,
+    BienesModule,
+    CatalogoClaseModule,
+    CatalogoTipoModule,
+    CatalogoCaracteristicasModule,
   ],
 
   controllers: [ParametricasLgiController],

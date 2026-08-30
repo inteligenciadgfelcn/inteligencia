@@ -62,4 +62,5 @@ export class ParametricasLgiService {
   findAllTipoInforme() {
     return this.tipoInformeRepository.findAllGeneral()
   }
+
 }

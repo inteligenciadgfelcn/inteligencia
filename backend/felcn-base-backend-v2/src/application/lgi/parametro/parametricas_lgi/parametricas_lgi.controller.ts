@@ -15,6 +15,10 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { ParametricasLgiService } from './parametricas_lgi.service'
 import { EtapaLgiService } from '../etapa/etapa.service'
 import { EstadoLgiService } from '../estado/estado.service'
+import { BienesService } from '../bienes/bienes.service'
+import { CatalogoClaseLgiService } from '../catalogo-clase/catalogo-clase.service'
+import { CatalogoTipoLgiService } from '../catalogo-tipo/catalogo-tipo.service'
+import { CatalogoCaracteristicasLgiService } from '../catalogo-caracteristica/catalogo-caracteristicas.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -24,7 +28,11 @@ export class ParametricasLgiController extends BaseController {
   constructor(
     private readonly parametricasLgiService: ParametricasLgiService,
     private readonly etapaService: EtapaLgiService,
-    private readonly estadoService: EstadoLgiService
+    private readonly estadoService: EstadoLgiService,
+    private readonly bienesLgiService: BienesService,
+    private readonly claseBienService: CatalogoClaseLgiService,
+    private readonly tipoService: CatalogoTipoLgiService,
+    private readonly caracteristicaService:CatalogoCaracteristicasLgiService,
   ) {
     super()
   }
@@ -110,16 +118,51 @@ export class ParametricasLgiController extends BaseController {
     return this.etapaService.findAll()
   }
 
-  @Get('allTipoInforme')
-  findAllTipoInforme() {
-    return this.parametricasLgiService.findAllTipoInforme()
-  }
-
-  @Get(':idEtapa')
+  @Get('estado/:idEtapa')
   @ApiOperation({
     summary: 'Listar detalle etapa',
   })
   find(@Param('idEtapa', ParseIntPipe) idEtapa: number) {
     return this.estadoService.findAllEtapa(idEtapa)
+  }
+
+  @Get('allTipoInforme')
+  @ApiOperation({
+    summary: 'Listar tipos de informe',
+  })
+  findAllTipoInforme() {
+    return this.parametricasLgiService.findAllTipoInforme()
+  }
+
+  @Get('allBienes')
+  @ApiOperation({
+    summary: 'Listar bienes',
+  })
+  findAllBienes() {
+    return this.bienesLgiService.findAll()
+  }
+
+  @Get('allClaseBien/:idBien')
+  @ApiOperation({
+    summary: 'Listar clase del bien',
+  })
+  findAllClaseBien(@Param('idBien', ParseIntPipe) idBien: number) {
+    return this.claseBienService.findAllClaseBien(idBien)
+  }
+
+  @Get('allTipoClase/:idClase')
+  @ApiOperation({
+    summary: 'Listar tipos de una clase',
+  })
+  findAllTipoClase(@Param('idClase', ParseIntPipe) idClase: number) {
+    return this.tipoService.findAllTipoClase(idClase)
+  }
+
+   @Get('allCaracteristicasClase/:idClase')
+  @ApiOperation({
+    summary: 'Listar caracteristicas de una clase del bien',
+  })
+  findAllCaracteristicaClase(@Param('idClase', ParseIntPipe) idClase: number) {
+    return this.caracteristicaService.findAllCaracteristicaClase(idClase)
   }
 }

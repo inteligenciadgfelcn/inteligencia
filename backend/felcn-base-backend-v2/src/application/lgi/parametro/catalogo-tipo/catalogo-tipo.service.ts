@@ -1,17 +1,11 @@
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CatalogoTipoLgiRepository } from './repository/catalogo-tipo.repository'
 import { CreateCatalogoTipoDto } from './dto/create-catalogo-tipo.dto'
 import { UpdateCatalogoTipoDto } from './dto/update-catalogo-tipo.dto'
 
-
 @Injectable()
 export class CatalogoTipoLgiService {
-  constructor(
-    private readonly repository: CatalogoTipoLgiRepository,
-  ) {}
+  constructor(private readonly repository: CatalogoTipoLgiRepository) {}
 
   async create(dto: CreateCatalogoTipoDto) {
     const data = this.repository.create(dto)
@@ -28,29 +22,20 @@ export class CatalogoTipoLgiService {
   }
 
   async findOne(id: number) {
-    const data =
-      await this.repository.findActiveById(id)
+    const data = await this.repository.findActiveById(id)
 
     if (!data) {
-      throw new NotFoundException(
-        'Registro no encontrada',
-      )
+      throw new NotFoundException('Registro no encontrada')
     }
 
     return data
   }
 
-  async update(
-    id: number,
-    dto: UpdateCatalogoTipoDto,
-  ) {
-    const data =
-      await this.repository.findActiveById(id)
+  async update(id: number, dto: UpdateCatalogoTipoDto) {
+    const data = await this.repository.findActiveById(id)
 
     if (!data) {
-      throw new NotFoundException(
-        'Registro no encontrada',
-      )
+      throw new NotFoundException('Registro no encontrada')
     }
 
     Object.assign(data, dto)
@@ -62,4 +47,7 @@ export class CatalogoTipoLgiService {
     }
   }
 
+  findAllTipoClase(idClase: number): Promise<any[]> {
+    return this.repository.findAllByTipoClase(idClase)
+  }
 }
