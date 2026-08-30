@@ -4,12 +4,9 @@ import { USUARIO_SISTEMA } from '@/common/constants'
 
 export class usuarioRol1611516017924 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Solo ADMINISTRADOR — ADMINISTRADOR ya incluye todo lo que tiene USUARIO
+    // (/admin/home, /admin/perfil), asignarle también USUARIO era redundante.
     const items = [
-      {
-        id: '1',
-        rol: '1',
-        usuario: '1',
-      },
       {
         id: '2',
         rol: '2',
