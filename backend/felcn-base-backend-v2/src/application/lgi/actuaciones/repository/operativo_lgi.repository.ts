@@ -6,6 +6,7 @@ import { DB_LGI } from '@/core/config/database/database.module'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 import { OperativoLgi } from '../entities/operativoLgi.entity'
+import { formatearFechaBolivia } from '@/common/utils/date.util'
 
 @Injectable()
 export class OperativoLgiRepository {
@@ -24,28 +25,30 @@ export class OperativoLgiRepository {
     return this.repository.save(operativo)
   }
 
-  async findOne(id: number): Promise<OperativoLgi | null> {
-    return this.repository
+  async findOne(id: number): Promise<any | null> {
+    const operativo = await this.repository
       .createQueryBuilder('o')
       .where('o.op_id = :id', { id })
-      .andWhere('o.estado = :estado', {
-        estado: 'ACTIVO',
-      })
+      .andWhere('o.estado = :estado', { estado: 'ACTIVO' })
       .getOne()
+
+    if (!operativo) {
+      return null
+    }
+
+    return this.formatearRespuesta(operativo)
   }
 
   async findAllPaginadoByCaso(
     casosId: number,
     pagination: PaginacionQueryDto
-  ): Promise<[OperativoLgi[], number]> {
+  ): Promise<[any[], number]> {
     const { limite, saltar, filtro } = pagination
 
     const query = this.repository
       .createQueryBuilder('o')
       .where('o.casos_id = :casosId', { casosId })
-      .andWhere('o.estado = :estado', {
-        estado: 'ACTIVO',
-      })
+      .andWhere('o.estado = :estado', { estado: 'ACTIVO' })
 
     if (filtro?.trim()) {
       const valor = `%${filtro.trim()}%`
@@ -60,11 +63,17 @@ export class OperativoLgiRepository {
       )
     }
 
-    return query
+    const [operativos, total] = await query
       .orderBy('o.op_id', 'DESC')
       .take(limite)
       .skip(saltar)
       .getManyAndCount()
+
+    const data = operativos.map((operativo) =>
+      this.formatearRespuesta(operativo)
+    )
+
+    return [data, total]
   }
 
   async update(
@@ -98,5 +107,21 @@ export class OperativoLgiRepository {
     operativo.usuarioActualizacion = usuario
 
     return this.repository.save(operativo)
+  }
+
+  private formatearRespuesta(operativo: OperativoLgi) {
+    return {
+      ...operativo,
+
+      opFechainf: formatearFechaBolivia(operativo.opFechainf),
+
+      fechaRecepcionFiscalia: formatearFechaBolivia(
+        operativo.fechaRecepcionFiscalia
+      ),
+
+      fechaHoraIng: formatearFechaBolivia(operativo.fechaHoraIng),
+
+      fechaActualizacion: formatearFechaBolivia(operativo.fechaActualizacion),
+    }
   }
 }

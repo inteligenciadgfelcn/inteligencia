@@ -35,6 +35,12 @@ export class AsignacionLgi {
   disId!: number
 
   @Column({
+    name: 'descripcion_grupo',
+    type: 'varchar',
+  })
+  descripcionGrupo!: string
+
+  @Column({
     name: 'nombrecaso',
     type: 'varchar',
     length: 30,

@@ -28,3 +28,29 @@ export function formatearFechaVisualizacion(
   if (!incluirHora) return base
   return `${base} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
+
+export function formatearFechaBolivia(
+  fecha: Date | string | null | undefined,
+): string | null {
+  if (!fecha) {
+    return null
+  }
+
+  const date =
+    fecha instanceof Date
+      ? fecha
+      : new Date(fecha)
+
+  if (Number.isNaN(date.getTime())) {
+    return null
+  }
+
+  // Bolivia utiliza UTC-04:00
+  const fechaBolivia = new Date(
+    date.getTime() - 4 * 60 * 60 * 1000,
+  )
+
+  return fechaBolivia
+    .toISOString()
+    .replace('Z', '-04:00')
+}

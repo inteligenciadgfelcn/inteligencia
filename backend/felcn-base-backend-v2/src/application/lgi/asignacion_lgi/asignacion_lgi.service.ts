@@ -10,13 +10,15 @@ import { AsignacionLgiRepository } from './repository/asignacion_lgi.repository'
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
 import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
 import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
+import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
 
 @Injectable()
 export class AsignacionLgiService {
   constructor(
     private readonly asignacionLgiRepository: AsignacionLgiRepository,
 
-    private readonly distritalLgiRepository: DistritalLgiRepository
+    private readonly distritalLgiRepository: DistritalLgiRepository,
+    private readonly grupoLgiRepository: GrupoLgiRepository
   ) {}
 
   async create(dto: CreateAsignacionLgiDto) {
@@ -30,7 +32,7 @@ export class AsignacionLgiService {
       )
     }
 
-    const uniAbrev = String(unidad.uniAbrev).trim().toUpperCase()
+    const uniAbrev = String(unidad.uniAbrev).trim()
 
     if (!uniAbrev) {
       throw new BadRequestException(
@@ -44,14 +46,25 @@ export class AsignacionLgiService {
       )
     }
 
-    const dtoConUsuario = {
-      ...dto,
+    const grupo = await this.grupoLgiRepository.findOne(dto.idGrupo)
+
+    if (!grupo) {
+      throw new NotFoundException('No se encontró el grupo seleccionado')
+    }
+
+    const descripcionGrupo = String(grupo.descripcion).trim()
+
+    if (!descripcionGrupo) {
+      throw new BadRequestException(
+        'El grupo no tiene una descripción configurada'
+      )
     }
 
     const asignacionGuardada =
       await this.asignacionLgiRepository.crearAsignacionDual(
-        dtoConUsuario,
-        uniAbrev
+        dto,
+        uniAbrev,
+        descripcionGrupo
       )
 
     return {
@@ -69,6 +82,7 @@ export class AsignacionLgiService {
 
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
+    // Actualizar distrital y unidad
     if (disId !== undefined) {
       const unidad =
         await this.distritalLgiRepository.findUnidadByDistrito(disId)
@@ -95,6 +109,25 @@ export class AsignacionLgiService {
 
       asignacion.disId = disId
       asignacion.uniAbrev = uniAbrev
+    }
+
+    // Actualizar descripción del grupo
+    if (idGrupo !== undefined) {
+      const grupo = await this.grupoLgiRepository.findOne(idGrupo)
+
+      if (!grupo) {
+        throw new NotFoundException('No se encontró el grupo seleccionado')
+      }
+
+      const descripcionGrupo = String(grupo.descripcion).trim()
+
+      if (!descripcionGrupo) {
+        throw new BadRequestException(
+          'El grupo no tiene una descripción configurada'
+        )
+      }
+
+      asignacion.descripcionGrupo = descripcionGrupo
     }
 
     Object.assign(asignacion, datos)
