@@ -29,6 +29,8 @@ Tabla consolidada por proyecto. El detalle completo de cada variable está en el
 
 **Corrección importante (21/08/2026): dev también usa AGETIC real, no un simulador.** El `.env` real de dev ya tiene `OIDC_ISSUER=https://proveedor.ciudadania.demo.agetic.gob.bo` (el `.env.sample` apunta al endpoint de test `account-idetest.agcs.agetic.gob.bo`) — no hay ningún `fake-ciudadania-api` corriendo ni configurado (`FAKE_CIUDADANIA_INTERNAL_URL` no existe en ningún `.env` real ni en el `.env.sample`, y nginx confirma en su propio comentario que el callback OIDC de dev es "Ciudadanía Digital (real, AGETIC)"). El único login del sistema, en cualquier ambiente, es Ciudadanía Digital real — ver también sección 4 (`fake-ciudadania-api` está confirmado sin uso, pendiente de sacarlo del repo).
 
+**Servidores nuevos dockerizados (dev `.23` / staging `.24` / producción): `DB_HOST=postgres`, `DB_DATABASE=felcn_auth`.** Distinto de `servertest`/.20, donde Postgres es nativo y la base real se llama `felcn_auth_v3` (nombre de trabajo). `felcn_auth` es el nombre oficial corregido (confirmado por el usuario 29/08/2026) — `postgres` es el nombre del servicio Docker en el mismo compose (ver [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml)), no una IP ni `host.docker.internal`. No cambiar esto en el `.env` de `servertest`.
+
 Existe además `.env.staging` (no versionado) con sus propias credenciales de AGETIC para el ambiente de staging — **huérfano hoy**: staging se sacó por completo de este servidor el 21/08/2026 (nginx y contenedores, ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md)) y se levanta en el servidor nuevo asignado para eso, siguiendo [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) como fuente de verdad. Evaluar si conviene rotar esas credenciales de AGETIC al pasarlas al servidor nuevo en vez de reutilizarlas tal cual.
 
 ## 2. `felcn-base-backend-v2` (`.env.sample`)
@@ -44,6 +46,10 @@ Existe además `.env.staging` (no versionado) con sus propias credenciales de AG
 | Lookups estáticos | `LOOKUP_GENERO`, `LOOKUP_ESTADO_SUJETO` | No |
 | Reportes | `LOGO_REPORT` (base64) | No |
 | Logs | `LOG_*` (mismo esquema que auth-backend) | No |
+
+**Servidores nuevos dockerizados: mismo `DB_HOST=postgres` en todos los bloques** (`DB_HOST` por defecto y cada `DB_<NOMBRE>_HOST`) — todas las bases viven en el mismo contenedor de Postgres del compose, no hosts distintos.
+
+**Variable muerta eliminada (29/08/2026): `DB_SCHEMA_PARAMETRICAS`.** Estaba en el `environment:` de `docker-compose.yml` (raíz, gitignored) pero sin ningún uso en `src/` (confirmado con grep) — se sacó del compose real y no se incluye en ninguna plantilla nueva. `DB_SCHEMA_USUARIOS` sí se usa (`auditoria-cambio.subscriber.ts`, `authorization.module.ts`) y se mantiene.
 
 **Variables documentadas antes pero sin ningún uso real en código** (verificado con grep sobre `src/`, agosto 2026) — copiadas en algún momento del `.env.sample` de auth-backend, no eliminar del archivo sin confirmar primero que ningún script fuera de `src/` las necesite:
 

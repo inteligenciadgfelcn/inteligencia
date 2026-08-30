@@ -60,7 +60,6 @@
 ├──.eslintrc.js             # Archivo config para detectar y corregir errores en tiempo de desarrollo
 ├──.gitignore
 ├──.prettierrc              # Archivo config para que el código se vea consistente y bien formateado
-├──.gitlab-ci.yml
 ├──ecosystem.config.js.sample  # Archivo config para desplegar el servicio en entornos de producción
 ├──INSTALL.md                  # Archivo con instrucciones de instalación
 ├──LICENSE
