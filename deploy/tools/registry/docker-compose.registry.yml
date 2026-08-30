@@ -5,7 +5,7 @@
 #
 # Reutiliza `felcn-network` (misma red que las apps de dev) y la instancia de
 # nginx dockerizada de ese servidor para exponerlo por HTTPS con auth htpasswd
-# (ver docs/templates/nginx/conf.d/registry.conf.template) — el registry en sí
+# (ver deploy/tools/nginx/conf.d/registry.conf.template) — el registry en sí
 # no publica ningún puerto al host, solo es alcanzable vía nginx.
 
 services:
