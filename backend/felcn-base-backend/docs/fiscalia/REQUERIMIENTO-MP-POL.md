@@ -1,6 +1,6 @@
 # Requerimiento: APIs de recepción de información del Ministerio Público (MP → POL)
 
-> Documento base del requerimiento. Estas APIs las expone **felcn-base-backend-v2** para que la
+> Documento base del requerimiento. Estas APIs las expone **felcn-base-backend** para que la
 > **Fiscalía (Ministerio Público)** nos envíe información de casos. Se consumen con el *token hijo*
 > (API key harcodeada por convenio, **sin JWT**). Registrado: 2026-07-06.
 

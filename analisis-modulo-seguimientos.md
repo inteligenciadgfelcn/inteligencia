@@ -8,7 +8,7 @@ Fecha: 2026-08-21
 |---|---|
 | Frontend (listado) | `frontend/felcn-base-frontend/src/app/seguimientos/page.tsx` |
 | Frontend (detalle de un caso) | `frontend/felcn-base-frontend/src/app/seguimientos/[id]/page.tsx` → `FormSeguimiento.tsx` (tabs `casos` / `personas` / `bienes`) |
-| Backend (controller) | `backend/felcn-base-backend-v2/src/application/sunesis/siii/seguimiento/asignaciones/controller/asignaciones-ingreso.controller.ts` |
+| Backend (controller) | `backend/felcn-base-backend/src/application/sunesis/siii/seguimiento/asignaciones/controller/asignaciones-ingreso.controller.ts` |
 | Backend (service) | `.../asignaciones/service/asignaciones-ingreso.service.ts` |
 | Backend (repository / SQL) | `.../asignaciones/repository/asignaciones-ingreso.repository.ts` |
 | Base de datos | `felcn_siii` (tablas `asignacion`, `operativo`; vía FDW `auth_fdw.distrital` / `auth_fdw.grupo` / `auth_fdw.unidad` apuntando a `felcn_auth_v3`) |
@@ -63,7 +63,7 @@ El tab "Registrados" usa la misma base pero exige `COALESCE(o.descripcion, '') !
 - **Existe solo en `felcn_siii`.** No hay tabla con ese nombre exacto en ninguna otra base del sistema.
 - **Homóloga legacy:** `a_felcn_lgi.detenidosaux` (mismo modelo, columnas abreviadas), del sistema jurídico anterior (LGI) que este módulo reemplaza. `a_felcn_lgi.arrestadosaux` es la contraparte de "arrestados" (aún no migrada a `felcn_siii`).
 - **No relacionadas directamente:** `a_felcn_sii.detenido` y `a_felcn_sospechoso.detenido` pertenecen a otros subsistemas con modelos de datos propios.
-- **Backend:** módulo `personas` (`backend/felcn-base-backend-v2/src/application/sunesis/siii/seguimiento/personas/`), controller `GET /personas/operativo/:idOperativo` (solo lectura sobre `detenido_auxiliar`). Los `POST /personas/:idDetenido/situacion` y `POST /personas/:idDetenido/etapa-proceso` escriben en las tablas hijas `situacion` y `etapa_proceso` (FK a `detenido_auxiliar`), no en la tabla misma.
+- **Backend:** módulo `personas` (`backend/felcn-base-backend/src/application/sunesis/siii/seguimiento/personas/`), controller `GET /personas/operativo/:idOperativo` (solo lectura sobre `detenido_auxiliar`). Los `POST /personas/:idDetenido/situacion` y `POST /personas/:idDetenido/etapa-proceso` escriben en las tablas hijas `situacion` y `etapa_proceso` (FK a `detenido_auxiliar`), no en la tabla misma.
 - **Relación:** `Operativo` (1) → `DetenidoAuxiliar` (N) → `Situacion` (N) / `EtapaProceso` (N).
 - **Origen de los datos:** no hay flujo de la app que inserte filas nuevas en `detenido_auxiliar`; la única vía de escritura es el script manual `database/scripts/migrar-persona-a-detenido-auxiliar.sql`, que migra registros legacy desde `persona_auxiliar` filtrando por `numero_caso` (idempotente).
 - **Estado actual en BD:** 1 solo registro (id 152, caso `CB-PD-1/26`, MAURICIO MENDEZ, migrado 2026-08-16), con historial de `situacion` y `etapa_proceso` ya cargado.
