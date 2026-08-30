@@ -13,6 +13,7 @@ Cada punto está atado a un incidente real detectado en `servertest` — no son 
   - GitHub (para `git clone`/`pull` con la clave de deploy).
   - Ninguna otra dependencia externa hoy (agosto 2026) — si en el futuro algún componente necesita interoperar con otro host externo, documentar acá la IP/puerto exacto cuando se defina; hasta entonces no hay nada que abrir.
 - [ ] Reglas de UFW auditadas contra lo que documenta [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 1 — no reglas agregadas "a mano" sin quedar documentadas acá.
+- [ ] **Registry de imágenes (solo servidor dev, `.23`, 29/08/2026)**: el contenedor `registry:2` **nunca** publica su puerto directo al host — solo es alcanzable vía nginx (mismo servidor), con TLS + auth `htpasswd` (mismo patrón que `/docs/`, ver [05-nginx-y-tls.md](./05-nginx-y-tls.md)). Confirmar `docker port registry` sin salida (sin bind al host) antes de dar por terminada la Fase 5b de [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
 
 ## 2. Accesos SSH
 
@@ -36,7 +37,7 @@ Cada punto está atado a un incidente real detectado en `servertest` — no son 
 
 ## 5. Base de datos
 
-- [ ] `scram-sha-256` como método de auth en `pg_hba.conf` — nunca `trust`, nunca `md5`. Confirmar después de cualquier reinstalación de Postgres, no solo la primera vez.
+- [ ] `scram-sha-256` como método de auth en `pg_hba.conf` — nunca `trust`, nunca `md5`. Confirmar después de cualquier reinstalación de Postgres, no solo la primera vez. En los servidores nuevos dockerizados (`postgres:17`), esto ya viene por defecto para conexiones por red sin configuración extra — confirmado el 29/08/2026 (`docker exec postgres cat .../pg_hba.conf`) — pero seguir confirmándolo explícitamente, no asumirlo indefinidamente.
 - [ ] **Backup automatizado, y probado de verdad** (no solo "el cron existe"). *Incidente real: en `servertest` el backup diario llevaba roto desde el 1 de mayo de 2026 — el cron corría, pero fallaba en la primera línea por un permiso de archivo de log y nunca llegaba a hacer `pg_dump`. Nadie lo notó hasta que se auditó explícitamente.* Verificación mínima recurrente: confirmar que el archivo de dump más reciente existe y tiene una fecha de menos de 24-48h, no solo que el log del cron "no tiene errores".
 - [ ] Retención definida y aplicada (ej. 30 días) — no dumps acumulándose sin límite ni desapareciendo antes de lo esperado.
 - [ ] Backups fuera del servidor que respaldan, o al menos fuera de cualquier volumen que se borre junto con los datos originales.
@@ -46,7 +47,7 @@ Cada punto está atado a un incidente real detectado en `servertest` — no son 
 
 - [ ] Todos los servicios de aplicación con `restart: unless-stopped`.
 - [ ] Límites de logging configurados en `/etc/docker/daemon.json` (`max-size`, `max-file`) — sin esto, los logs de un contenedor con mucho tráfico pueden llenar el disco del host sin avisar.
-- [ ] Ningún puerto de servicio interno (backend, Postgres si se dockeriza, Redis) expuesto más allá de `127.0.0.1` salvo lo que nginx necesite.
+- [ ] Ningún puerto de servicio interno (backend, Postgres, registry, Redis) expuesto más allá de `127.0.0.1` o de la red interna de Docker — en los servidores nuevos dockerizados (29/08/2026), Postgres no publica ningún puerto al host en absoluto, solo es alcanzable por nombre de servicio (`DB_HOST=postgres`) desde los demás contenedores de la misma red.
 - [ ] Imágenes construidas a partir de código commiteado y revisado — recordar que el build context de Docker toma el disco tal cual está, no `git HEAD`; un `git status` sucio antes de un build de producción puede desplegar código que nadie revisó.
 
 ## 7. Secretos y variables de entorno

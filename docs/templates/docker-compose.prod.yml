@@ -1,0 +1,199 @@
+# Plantilla de docker-compose para servidores NUEVOS dockerizados por completo
+# (staging: sunesis-staging.felcn.gob.bo/.24 — producción: cuando exista).
+# Ver docs/07-servidor-nuevo-desde-cero.md Fases 3/4/5b y docs/13-migracion-y-restauracion-bd.md
+# antes de usar esto. `desarrollo.felcn.gob.bo` (.20, servertest) NO usa esta plantilla —
+# sigue con Postgres/nginx nativos hasta que se dé de baja, ver docs/05-nginx-y-tls.md §1.
+#
+# Diferencias clave contra el docker-compose.yml real de dev (raíz del repo, gitignored):
+#   1. `image:` en vez de `build:` para las 3 apps — este servidor NUNCA construye desde
+#      código fuente, consume imágenes ya construidas y subidas al registry propio
+#      (ver docs/templates/registry/, docs/14-registro-de-imagenes.md). El tag se pasa
+#      por la variable de entorno TAG (ver docs/templates/registry/pull-and-deploy.sh).
+#   2. Sin bind mounts de código fuente — solo el .env de cada servicio y este compose
+#      viajan al servidor, nunca el repo/`.git/`.
+#   3. NODE_ENV=production en los 3 servicios (en dev, auth-backend queda en `development`
+#      a propósito — ver docker-compose.yml real).
+#   4. NEXT_PUBLIC_* del frontend: usar el dominio real de este servidor (sunesis-staging.felcn.gob.bo,
+#      o el de producción cuando exista — ⚠️ PENDIENTE, producción todavía no tiene dominio
+#      asignado, ver docs/05-nginx-y-tls.md §1).
+#   5. Postgres y nginx SÍ van acá, dockerizados (decisión del 29/08/2026, reemplaza la
+#      versión anterior de esta plantilla que los dejaba nativos) — probado de punta a
+#      punta en servertest antes de documentarlo (build/push/pull real contra un registry
+#      de prueba, restore real de un dump, kill+recreate del contenedor de Postgres con
+#      los datos intactos por el volumen nombrado). DB_HOST=postgres (nombre del servicio,
+#      no host.docker.internal — ya no hace falta `extra_hosts`).
+#   6. Volúmenes nombrados independientes por servicio con estado (postgres_data,
+#      certbot_certs, certbot_webroot) — recrear o actualizar la imagen de un contenedor
+#      nunca toca el volumen de otro; si Postgres o nginx mueren o se recrean, sus datos
+#      siguen ahí. Solo un `docker compose down -v` explícito los borraría.
+#   7. El Docker Registry (`registry:2`) NO va en este compose — vive en un compose aparte
+#      solo en el servidor dev (.23), ver docs/templates/registry/docker-compose.registry.yml.
+#      Este archivo es para servidores que solo CONSUMEN imágenes (staging, producción).
+#   8. `consulta-persona-api`/`consulta-persona-redis` no están incluidos — confirmar si
+#      ese servicio corre en este ambiente antes de agregarlo (en dev están definidos en
+#      el compose pero documentados como sin uso activo, ver docs/README.md).
+#   9. Las apps NO se conectan como `postgres` (decisión del 30/08/2026, reemplaza la
+#      versión anterior que usaba el superusuario para todo) — corren como `felcn_app`,
+#      un rol sin privilegios de superusuario/DDL (ver docs/templates/postgres/01-crear-bases.sh).
+#      Las migraciones siguen corriendo a mano como `postgres` (ver docs/13-migracion-y-restauracion-bd.md).
+#      Probado de punta a punta: `felcn_app` no puede hacer `CREATE TABLE` (permission
+#      denied, confirmado con un intento real), y sí puede loguearse y crear un usuario
+#      real vía la API (INSERT/SELECT/UPDATE reales, confirmado end-to-end).
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?falta DB_PASSWORD}
+      - DB_APP_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
+      - TZ=America/La_Paz
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/01-crear-bases.sh:/docker-entrypoint-initdb.d/01-crear-bases.sh:ro
+    networks:
+      - felcn-network
+    # Sin puertos publicados al host — solo lo alcanzan las apps de este mismo compose,
+    # por nombre de servicio (DB_HOST=postgres), en la red interna de Docker.
+
+  nginx:
+    image: nginx:1.26-alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    networks:
+      - felcn-network
+    depends_on:
+      - base-backend-v2
+      - base-auth
+      - base-frontend
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    networks:
+      - felcn-network
+    # `profiles: [tools]` lo excluye de un `docker compose up -d` normal — este
+    # contenedor no corre en loop, se invoca puntualmente con
+    # `docker compose run --rm certbot ...` (funciona igual, `run` ignora el
+    # profile) desde el timer de systemd del host, ver
+    # docs/templates/nginx/certbot-renew.sh. No se le monta docker.sock.
+    profiles:
+      - tools
+
+  base-backend-v2:
+    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-backend-v2:${TAG:?falta TAG}
+    container_name: base-backend-v2
+    restart: unless-stopped
+    env_file:
+      - ./felcn-base-backend-v2.env
+    volumes:
+      - logs_data:/tmp/logs
+    networks:
+      - felcn-network
+    depends_on:
+      - postgres
+    environment:
+      - TZ=America/La_Paz
+      - NODE_ENV=production
+      # base-backend-v2 conecta a 9 bases distintas por bloques de env var con
+      # prefijo (ver docs/03-base-de-datos.md §2) — TODAS viven ahora en este
+      # mismo Postgres dockerizado, así que TODAS necesitan apuntar acá, no
+      # solo el bloque sin prefijo. Bug real encontrado probando esta plantilla
+      # literal (29/08/2026): con solo DB_HOST=postgres, los otros 8 bloques
+      # seguían apuntando a la IP del Postgres nativo de servertest (heredada
+      # del .env real) y el servicio quedaba en crash-loop.
+      - DB_HOST=postgres
+      - DB_DATABASE=felcn_auth
+      # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
+      # y docs/templates/postgres/01-crear-bases.sh. Solo aplica al bloque
+      # default (felcn_auth) — los otros 8 bloques siguen con lo que traiga
+      # su propio .env (ver limitación anotada en 01-crear-bases.sh).
+      - DB_USERNAME=felcn_app
+      - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
+      - DB_SIII_HOST=postgres
+      - DB_LGI_HOST=postgres
+      - DB_S2I_HOST=postgres
+      - DB_ASIG_CASOS_HOST=postgres
+      - DB_SII_HOST=postgres
+      - DB_SOSPECHOSO_HOST=postgres
+      - DB_PERSONAS_HOST=postgres
+      - DB_VLS_HOST=postgres
+      - DB_SCHEMA_USUARIOS=usuario
+
+  base-auth:
+    image: registry.sunesis-dev.felcn.gob.bo/felcn-auth-backend:${TAG:?falta TAG}
+    container_name: auth-backend
+    restart: unless-stopped
+    env_file:
+      - ./felcn-auth-backend.env
+    volumes:
+      - logs_data:/tmp/logs
+      - storage_data:/home/node/app/storage
+    networks:
+      - felcn-network
+    depends_on:
+      - postgres
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_DATABASE=felcn_auth
+      # felcn_app: rol de aplicación sin privilegios de DDL, ver nota 9 arriba
+      # y docs/templates/postgres/01-crear-bases.sh.
+      - DB_USERNAME=felcn_app
+      - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
+
+  base-frontend:
+    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-frontend:${TAG:?falta TAG}
+    container_name: base-frontend
+    restart: unless-stopped
+    env_file:
+      - ./felcn-base-frontend.env
+    networks:
+      - felcn-network
+    depends_on:
+      - base-backend-v2
+      - base-auth
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_ENV=production
+      - NEXT_PUBLIC_SITE_NAME=FELCN
+      # ⚠️ Reemplazar por el dominio real de este servidor
+      - NEXT_PUBLIC_BASE_URL=https://<DOMINIO>/api
+      - NEXT_PUBLIC_AUTH_URL=https://<DOMINIO>/auth/api
+      - NEXT_PUBLIC_IMAGES_DOMAIN=<DOMINIO>
+      - NEXT_PUBLIC_SOCKET_URL=https://<DOMINIO>/
+      - NEXT_PUBLIC_COOKIE_SECURE=true
+      - NEXT_PUBLIC_PATH=
+
+volumes:
+  postgres_data:
+  certbot_certs:
+  certbot_webroot:
+  logs_data:
+  storage_data:
+
+networks:
+  felcn-network:
+    # `name:` fijo — sin esto, Compose antepone el nombre del directorio al
+    # nombre real de la red (ej. `docker-production_felcn-network`), y el
+    # `docker-compose.registry.yml` de la Fase 5b (que espera conectarse a la
+    # red externa literal `felcn-network`) falla con "network felcn-network
+    # declared as external, but could not be found". Confirmado probando
+    # ambos compose tal cual estaban escritos (29/08/2026) — sin este `name:`
+    # el registry nunca podía levantar en `.23`, donde ambos compose corren
+    # uno al lado del otro.
+    name: felcn-network
+    driver: bridge

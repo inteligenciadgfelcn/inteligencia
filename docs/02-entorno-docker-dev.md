@@ -55,7 +55,21 @@ Al desplegar cambios de código, reconstruir los contenedores afectados juntos (
 | Volumen | Contenido |
 |---|---|
 | `logs_data` | Logs de dev (`/tmp/logs` dentro de los contenedores) |
+| `storage_data` | Fotos de perfil de usuario (`/home/node/app/storage` en `auth-backend`) — agregado 28/08/2026 tras un 502 causado por `STORAGE_NFS_PATH` apuntando a una ruta inexistente/no escribible dentro del contenedor; el `dockerfile` de `auth-backend` crea y da permisos al directorio (`mkdir -p` + `chown node:node`) antes de montar este volumen encima |
 
 ## 6. Autenticación
 
 El único proveedor de login es Ciudadanía Digital real (AGETIC) — ver [00-arquitectura.md](./00-arquitectura.md) §4 y [04-variables-de-entorno.md](./04-variables-de-entorno.md). No hay ambiente con proveedor simulado hoy.
+
+## 7. Convenciones de nomenclatura y ramas — dev y staging
+
+Aplica a **dev y staging únicamente**: son los dos únicos ambientes donde el código fuente vive en el servidor (`git clone` + `docker compose up -d --build`, construyendo la imagen ahí mismo). **Producción no clona el repo** — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) §8 y la nota correspondiente, pendiente de que exista un registry de imágenes.
+
+| Concepto | Convención | Notas |
+|---|---|---|
+| Rama de integración | `develop` | Toda la app se actualiza mergeando a `develop` — nunca commitear directo ahí |
+| Rama de feature/fix | prefijo obligatorio `fase1/` (p. ej. `fase1/autorregistro-preregistro`) | Confirmado con el historial real de commits/ramas de agosto 2026 (`git branch -a`). Flujo: crear rama `fase1/...` → commit → push → checkout `develop` → `git pull` → `merge --no-ff` → push → rebuild/redeploy del o los servicios afectados |
+| Rama `main` | Existe en el remoto (`origin/main`, `HEAD` del repo apunta ahí) | Su rol respecto a `develop` no está formalizado en ningún documento — **a definir**: si `main` va a ser la rama que efectivamente se construye para producción (tag/release), documentarlo acá antes del primer despliegue a producción |
+| Nombre de servidor / hostname | `servertest` (dev **actual**, IP interna `172.16.76.20`) — se dará de baja cuando `sunesis-dev` esté operativo | Ver tabla de topología confirmada en [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1 |
+| Dominio público | `desarrollo.felcn.gob.bo` en este host (temporal); los definitivos son `sunesis-dev.felcn.gob.bo` (→ `172.16.76.23`, servidor nuevo, pendiente de aprovisionar) y `sunesis-staging.felcn.gob.bo` (→ `172.16.76.24`, servidor nuevo, pendiente de aprovisionar) | Ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1 — confirmado por el usuario 29/08/2026, DNS público todavía no repuntado |
+| Nombre de contenedor vs. servicio de compose | El nombre del servicio en `docker-compose.yml` (p. ej. `base-auth`) no siempre coincide con `container_name` (p. ej. `auth-backend`) — ver tabla en §2 | Al correr `docker compose logs`/`exec`, cualquiera de los dos nombres funciona, pero para `docker ps`/`docker logs` directo hace falta el `container_name` |

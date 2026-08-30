@@ -2,17 +2,22 @@
 
 ## 1. Motor
 
-PostgreSQL ^16 (el servidor actual tiene el cliente 17.10 instalado — verificar compatibilidad si se apunta a una versión de servidor distinta a 16). Corre **nativo en el host** `servertest`, no dockerizado. El servidor nuevo (staging) replica el mismo patrón, Postgres nativo — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+**Corregido 29/08/2026: PostgreSQL 17.11**, no 16 — el dato anterior ("^16, cliente 17.10") era una suposición sin verificar contra el servidor real. Confirmado empíricamente restaurando un dump real (`felcn_auth_v3_schemaonly_20260827_094430.sql`, cabecera `Dumped from database version 17.11`) contra un contenedor `postgres:16` (falló: `ERROR: unrecognized configuration parameter "transaction_timeout"`, sintaxis introducida en Postgres 17) y luego contra `postgres:17` (funcionó limpio). Corre **nativo en el host** `servertest`, no dockerizado.
+
+**Los servidores nuevos (dev `.23` / staging `.24` / producción) ya NO replican el patrón nativo** — corren Postgres dockerizado (`postgres:17`, versión real confirmada arriba) — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 3 y las plantillas en [docs/templates/postgres/](./templates/postgres/).
 
 ## 2. Bases de datos reales en uso
 
 Fuente de verdad: los `.env` / `.env.sample` de cada backend (no los `dbcreate.sql`, ver advertencia en sección 4).
 
+**Corregido 29/08/2026** — la tabla anterior tenía dos errores (nombre real de LGI sin el prefijo `a_`, y faltaba `felcn_s2i` por completo): faltante confirmado contra los `.env` reales de `base-backend-v2` (`grep -oE "^DB_[A-Z0-9_]*_DATABASE=" .env`), que listan 9 bases en total, no 8. También el nombre oficial de la primera se corrigió de `felcn_auth_v3` a `felcn_auth` (ver advertencia debajo de esta tabla y [04-variables-de-entorno.md](./04-variables-de-entorno.md)) — aplica a servidores **nuevos**, `servertest` sigue con `felcn_auth_v3`.
+
 | Base de datos | Usada por | Schemas relevantes |
 |---|---|---|
-| `felcn_auth_v3` | `auth-backend` (principal), `base-backend-v2` (conexión `DB_AUTH_*`, lectura de usuarios) | `usuario` (usuarios, personas, roles, módulos, sesiones), `parametro`, `felcn_estructura`, `proyecto` |
+| `felcn_auth` (`felcn_auth_v3` en `servertest`) | `auth-backend` (principal), `base-backend-v2` (conexión `DB_AUTH_*`/por defecto, lectura de usuarios) | `usuario` (usuarios, personas, roles, módulos, sesiones), `parametro`, `felcn_estructura`, `proyecto` |
 | `felcn_siii` | `base-backend-v2` (`DB_SIII_*`) | ver `felcn_siii.sql` |
-| `felcn_lgi` | `base-backend-v2` (`DB_LGI_*`, mismo servidor que SIII) | ver `lgi-catalogos.sql` |
+| `a_felcn_lgi` | `base-backend-v2` (`DB_LGI_*`) | ver `lgi-catalogos.sql` |
+| `felcn_s2i` | `base-backend-v2` (`DB_S2I_*`) | — |
 | `a_felcn_asignacion_caso` | `base-backend-v2` (`DB_ASIG_CASOS_*`) | ver `felcn_asignacion_caso.sql` |
 | `a_felcn_sii` | `base-backend-v2` (`DB_SII_*`) | — |
 | `a_felcn_sospechoso` | `base-backend-v2` (`DB_SOSPECHOSO_*`) | — |
@@ -43,18 +48,22 @@ Los scripts `database/scripts/dbcreate.sql` de **ambos** proyectos crean nombres
 | `felcn-auth-backend/database/scripts/dbcreate.sql` | `felcn_auth` | `proyecto`, `usuario`, `parametro`, `felcn_estructura` | `felcn_auth_v3` |
 | `felcn-base-backend-v2/database/scripts/dbcreate.sql` | `database_db` | `proyecto`, `usuarios`, `parametricas` | (multi-base, ver tabla arriba) — y el schema real es `usuario` (singular), no `usuarios` |
 
-**Antes de correr `dbcreate.sql` en un servidor nuevo**, editar el nombre de la base (`CREATE DATABASE ...`) para que coincida con el `.env` que se vaya a usar, o renombrar la base después de crearla. Esto es una fuente típica de "no conecta" para un developer nuevo que sigue el script al pie de la letra.
+**Antes de correr `dbcreate.sql` en `servertest`**, editar el nombre de la base (`CREATE DATABASE ...`) para que coincida con el `.env` que se vaya a usar (`felcn_auth_v3`), o renombrar la base después de crearla. Esto es una fuente típica de "no conecta" para un developer nuevo que sigue el script al pie de la letra.
 
-## 5. Creación desde cero (desarrollo, con Docker)
+**Nota (29/08/2026): para servidores nuevos dockerizados, no se usa `dbcreate.sql` directamente** — el nombre `felcn_auth` que ya trae este script es, de hecho, el nombre oficial correcto para esos servidores (ver corrección de la tabla arriba). El init real para esos servidores es [docs/templates/postgres/01-crear-bases.sql](./templates/postgres/01-crear-bases.sql), que crea las 9 bases reales (con el nombre `felcn_auth` correcto) de una sola vez — no requiere editar nada a mano. `dbcreate.sql` de `base-backend-v2` sigue desactualizado (crea `database_db` con schema `usuarios` en plural) y no se usa en ningún lado para bootstrap real; dev/staging bootstrapean restaurando un dump, no corriendo `dbcreate.sql`.
+
+## 5. Creación desde cero (sandbox local de un developer, con Docker)
+
+Para un contenedor de Postgres puntual en la máquina de un developer (no para levantar un servidor nuevo — eso es [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 3, con `postgres:17` y [docs/templates/postgres/](./templates/postgres/)):
 
 ```bash
-docker run --name pg16 -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 postgres:16.0
+docker run --name pg17 -e POSTGRES_PASSWORD=postgres -d -p 5432:5432 postgres:17
 
 cd backend/felcn-auth-backend
-bash database/scripts/dbcreate_docker.sh pg16
+bash database/scripts/dbcreate_docker.sh pg17
 
 cd ../felcn-base-backend-v2
-bash database/scripts/dbcreate_docker.sh pg16
+bash database/scripts/dbcreate_docker.sh pg17
 ```
 
 ## 6. Creación desde cero (Postgres nativo)
@@ -92,6 +101,8 @@ El seed `felcn-auth-backend/database/seeds/1611171041790-usuario.ts` ya no usa c
 ### 9.1. Scripts manuales por proyecto
 
 Cada proyecto trae `backups/dbbackup.sh` / `dbbackup_docker.sh` / `dbrestore.sh` / `dbrestore_docker.sh` (ver `backups/BACKUP_AND_RESTORE.md` en cada uno) — son manuales, para uso puntual de un developer (`pg_dump` de una sola base).
+
+**Bug real encontrado y corregido (29/08/2026, solo en la versión dockerizada nueva)**: `felcn-auth-backend/backups/dbbackup.sh` hacía `pg_dump ... database_db` — `database_db` es el nombre de placeholder de `base-backend-v2`, copiado mal; el script de auth-backend nunca respaldó realmente `felcn_auth_v3`. La versión nueva para servidores dockerizados ([docs/templates/postgres/pg-backup.sh](./templates/postgres/pg-backup.sh)) recibe el nombre de la base como argumento, corrigiendo esto. El script original de este repo (`backups/dbbackup.sh`) no se tocó.
 
 ### 9.2. No hay backup automatizado para este proyecto
 

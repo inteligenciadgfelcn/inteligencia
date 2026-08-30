@@ -145,19 +145,42 @@ Backend: **auth-backend**, `felcn_auth_v3`.
 | GET | `/ciudadania-auth` (inicio OAuth, redirección) | `usuario.bitacora_login` (solo si falla antes de llegar al IdP) |
 | GET | `/ciudadania-autorizar` (callback) | `usuario.usuario`, `usuario.persona`, `usuario.usuario_rol`, `usuario.rol`, `usuario.bitacora_login`, `usuario.refresh_token` |
 
-### 4.3 Registro de cuenta
+### 4.3 Registro de cuenta — rediseñado 28/08/2026, en 2 pasos con aprobación admin
 
-> Actualizado 20/08/2026: la contraseña ya **no** se captura en el registro — se define recién al activar la cuenta (ver 4.4). Antes de este cambio, `crear-cuenta` sí pedía contraseña en el mismo formulario; si algo referencia ese comportamiento viejo, está desactualizado.
+> **Reemplaza por completo** el flujo anterior de esta sección (un solo formulario público → `POST /usuarios/crear-cuenta`, creaba la cuenta real de inmediato sin ninguna revisión — esa era la vulnerabilidad: cualquiera podía autorregistrarse y entrar al sistema). **El endpoint `POST /usuarios/crear-cuenta` fue eliminado**; cualquier referencia a él en otros documentos, tests e2e (`test/e2e/playwright/crear-cuenta.spec.ts`, `bloqueo-desbloqueo.spec.ts` — quedaron rotos, pendiente de reescribir) está desactualizada.
 
+**Paso 1 — solicitar acceso** (público, no persiste nada):
 - **Ruta**: `/registro`
-- **Archivo**: `login/ui/RegistroContainer.tsx`
-- **Campos**: Nro. Documento*, Nombres*, Primer/Segundo Apellido, Fecha de nacimiento*, Correo*.
+- **Archivo**: `(cuenta)/registro/page.tsx`
+- **Campos**: Correo electrónico* (único campo — no se expone ningún otro dato del formulario detallado sin antes validar el correo).
 
 | Método | Endpoint | Tabla(s) BD |
 |---|---|---|
-| POST | `/usuarios/crear-cuenta` | Transacción: `usuario.persona` → `usuario.usuario` (estado `PENDIENTE`, contraseña placeholder — ver `UsuarioRepository.crear`) → `usuario.usuario_rol` (rol fijo "USUARIO") |
+| POST | `/usuarios/solicitudes-registro/acceso` | Ninguna — firma un JWT sellando el correo (60 min) y lo envía por correo con el link al paso 2. Respuesta siempre genérica (anti-enumeración). |
 
-La cuenta creada por `POST /usuarios` (alta por administrador, panel) y la reactivación de un usuario `INACTIVO` (`PATCH /usuarios/:id/activacion`) siguen el mismo patrón desde el 20/08/2026: nunca se genera ni se envía una contraseña por correo — se manda (o reutiliza) un enlace de activación/recuperación para que el propio usuario la defina.
+**Paso 2 — completar preregistro** (público solo con link válido del paso 1):
+- **Ruta**: `/pre-registro?token=`
+- **Archivo**: `(cuenta)/pre-registro/page.tsx`
+- **Campos**: Nombres*, Primer/Segundo Apellido, Nro. Documento*, Fecha de nacimiento*, Teléfono, Grado*, Número de Pase*. El correo no se captura acá — viene sellado en el token del paso 1, no editable.
+
+| Método | Endpoint | Tabla(s) BD |
+|---|---|---|
+| GET | `/usuarios/solicitudes-registro/acceso/:token` | Ninguna — valida el token, no consume nada |
+| GET | `/usuarios/solicitudes-registro/grados` | `parametro.grado` (lookup público, sin sesión) |
+| POST | `/usuarios/solicitudes-registro/completar` | Valida `nroDocumento`+`correoElectronico` contra `usuario.usuario`/`usuario.persona` (comparación exacta); si ya existe una cuenta real, **no crea ninguna fila** y avisa solo a ese correo. Si no hay duplicado: `usuario.solicitud_registro` (nueva tabla, estado `PENDIENTE_APROBACION`) |
+
+**Aprobación — admin, panel** (`/admin/usuarios/solicitudes-registro`):
+- Abre el mismo formulario de alta manual (`FormularioUsuario.tsx`, prop `solicitudId`), precargado con los datos de la solicitud pero editable — el admin revisa/corrige antes de confirmar.
+
+| Método | Endpoint | Tabla(s) BD |
+|---|---|---|
+| GET | `/usuarios/solicitudes-registro` (lista, filtro por estado), `/usuarios/solicitudes-registro/:id` (detalle) | `usuario.solicitud_registro` |
+| PATCH | `/usuarios/solicitudes-registro/:id/aprobar` | Recibe el `CrearUsuarioDto` completo (lo que el admin editó, no los datos originales de la solicitud) → mismo flujo transaccional de alta manual: `usuario.persona` → `usuario.usuario` (estado `PENDIENTE`) → `usuario.usuario_rol` → marca la solicitud `APROBADA` con `id_usuario_creado` |
+| PATCH | `/usuarios/solicitudes-registro/:id/rechazar` | Marca la solicitud `RECHAZADA` con comentario opcional — no toca `usuario.*` |
+
+La cuenta aprobada, la creada por `POST /usuarios` (alta directa por administrador) y la reactivación de un usuario `INACTIVO` (`PATCH /usuarios/:id/activacion`) siguen el mismo patrón desde el 20/08/2026: nunca se genera ni se envía una contraseña por correo — se manda (o reutiliza) un enlace de activación/recuperación para que el propio usuario la defina.
+
+**Se eliminó también** el mecanismo de "completar perfil una sola vez" (columna `usuario.fecha_perfil_completado`, existió y se dropeó en la misma semana) — Grado/Grupo/Número de Pase ahora se asignan al aprobar la solicitud, no por autogestión del usuario en `/admin/perfil`.
 
 ### 4.4 Activación / Desbloqueo / Recuperación
 

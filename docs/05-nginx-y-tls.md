@@ -2,7 +2,25 @@
 
 ## 1. Dónde vive
 
-nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), no dockerizado, en `servertest`. Archivo de sitio: `/etc/nginx/sites-available/desarrollo.felcn.gob.bo` (symlink en `sites-enabled`). El servidor nuevo (staging) replica el mismo patrón, nginx nativo — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md).
+nginx corre **instalado en el host** (paquete Debian `nginx` 1.26.3-3+deb13u5), no dockerizado, en `servertest`. Archivo de sitio: `/etc/nginx/sites-available/desarrollo.felcn.gob.bo` (symlink en `sites-enabled`).
+
+**Revisado 29/08/2026 — los servidores nuevos ya NO replican este patrón.** `desarrollo.felcn.gob.bo` (`.20`, este documento) sigue con nginx nativo hasta que se dé de baja. Los servidores nuevos (`sunesis-dev.felcn.gob.bo`/.23, `sunesis-staging.felcn.gob.bo`/.24, producción futura) corren nginx **dockerizado** (`nginx:1.26-alpine`) — ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 4 y las plantillas en [docs/templates/nginx/](./templates/nginx/), probadas de punta a punta (`nginx -t` + proxy real contra los contenedores de la app) antes de documentarlas. La config dockerizada no incluye mTLS ni `partner-locations.conf` (`/srv/interop`, sección 2 de este documento) — queda fuera de ese trabajo.
+
+**Hallazgo real encontrado al probar la versión dockerizada (no corregido acá, fuera de alcance):** un `add_header` dentro de una `location` resetea TODOS los `add_header` heredados del `server` block — comportamiento real de nginx, no un typo. La location `/_next/static/` de este archivo real (abajo, sección 4) tiene ese `add_header Cache-Control` sin volver a incluir `security-headers.conf`, así que esa ruta específica no lleva los headers de seguridad. La plantilla nueva para servidores dockerizados ya lo corrige; este archivo real de `servertest` no se toca (se va a dar de baja).
+
+### Topología de nombres/IPs — confirmada por el usuario (29/08/2026)
+
+Este servidor (el actual, `servertest`) sigue siendo `desarrollo.felcn.gob.bo` / `172.16.76.20` **de forma temporal**: es el servidor "dev" histórico, y se dará de baja (junto con esta IP) una vez que los servidores nuevos de abajo estén operativos. No hay que reutilizar `desarrollo.felcn.gob.bo` como nombre definitivo en ningún documento de instalación nueva.
+
+Los nombres definitivos, cada uno para un **servidor físico/virtual distinto y todavía no aprovisionado**:
+
+| Nombre | IP objetivo | Servidor | Estado |
+|---|---|---|---|
+| `desarrollo.felcn.gob.bo` | `172.16.76.20` (este host) | `servertest` actual | Vigente hoy — **a eliminar** cuando `sunesis-dev` esté operativo |
+| `sunesis-dev.felcn.gob.bo` | `172.16.76.23` | servidor dev nuevo | **Pendiente de aprovisionar** |
+| `sunesis-staging.felcn.gob.bo` | `172.16.76.24` | servidor staging nuevo | **Pendiente de aprovisionar** (staging ya se sacó de este host el 21/08/2026, pero el servidor `.24` con ese nombre aún no existe) |
+
+**Hallazgo de la verificación técnica (29/08/2026, antes de esta confirmación):** hoy, resolviendo contra DNS público, `desarrollo.felcn.gob.bo`, `sunesis-dev.felcn.gob.bo` y `sunesis-staging.felcn.gob.bo` devuelven los tres la misma IP pública (`186.121.212.123`, NAT hacia este host `.20`). Esto es **esperado mientras `.23`/`.24` no existan** — no es un error de configuración, es simplemente que los registros DNS de `sunesis-dev`/`sunesis-staging` todavía no se actualizaron para apuntar a los servidores nuevos. Acción pendiente para quien administra DNS: al aprovisionar cada servidor nuevo, repuntar su nombre a la IP interna correspondiente (`.23`/`.24`) y, en su momento, dar de baja el registro de `desarrollo.felcn.gob.bo` junto con este host.
 
 ## 2. TLS
 

@@ -1,0 +1,187 @@
+# Plantilla de sitio para UN servidor dockerizado dedicado a UN solo ambiente
+# (sunesis-dev.felcn.gob.bo → .23, sunesis-staging.felcn.gob.bo → .24, o
+# producción cuando exista). A diferencia de `desarrollo.felcn.gob.bo` (real,
+# servertest/.20), acá no hay upstreams "_staging" en el mismo archivo — cada
+# servidor nuevo es un solo ambiente, no dos compartiendo dominio.
+#
+# NO incluye mTLS ni `partner-locations.conf` (`/srv/interop`) — queda fuera de
+# este trabajo, se define después en otro documento si hace falta.
+# NO incluye `/persona/` (consulta-persona) ni `/docs/` (felcn-docs) — son
+# específicos de servertest, no de un servidor nuevo genérico.
+#
+# Reemplazar <DOMINIO> por el dominio real (sunesis-dev.felcn.gob.bo / sunesis-staging.felcn.gob.bo)
+# antes de usar — mismo criterio que <REGISTRY>/<TAG> en docker-compose.prod.yml.
+#
+# Los upstreams apuntan al nombre del servicio Docker (misma red `felcn-network`
+# que nginx), no a 127.0.0.1:puerto — las apps ya no necesitan publicar sus
+# puertos al host en absoluto.
+
+upstream backend_v2 {
+    server base-backend-v2:3000;
+    keepalive 32;
+}
+
+upstream backend_auth {
+    server auth-backend:4000;
+    keepalive 32;
+}
+
+upstream frontend {
+    server base-frontend:3000;
+    keepalive 32;
+}
+
+# ── HTTPS principal ──────────────────────────────────────────────────────────
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl ipv6only=on;
+    server_name <DOMINIO>;
+
+    ssl_certificate     /etc/letsencrypt/live/<DOMINIO>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<DOMINIO>/privkey.pem;
+    # NO se incluye options-ssl-nginx.conf/ssl-dhparams.pem de certbot a propósito:
+    # esos archivos los crea el PLUGIN nginx de certbot (`certbot --nginx`), nunca
+    # `certonly --webroot` (el modo que usamos, porque certbot corre en un
+    # contenedor aparte, no dentro del de nginx) — confirmado en el código fuente
+    # de certbot (certbot/_internal/constants.py: "Path to the nginx ssl_dhparams
+    # file", solo se despliega vía ese plugin). Sin esto, nginx fallaría al
+    # arrancar buscando un archivo que jamás se crea. `ssl_protocols`/
+    # `ssl_prefer_server_ciphers` ya están seteados a nivel `http` en nginx.conf,
+    # que alcanza (TLS 1.3 no necesita dhparam; ECDHE de TLS 1.2 tampoco).
+
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location ~ /\. {
+        deny all;
+        return 404;
+    }
+
+    # ── Auth backend: /auth/api/* → auth-backend:4000/api/* ──────────────────
+    location ^~ /auth/api {
+        limit_req zone=login burst=10 nodelay;
+        rewrite ^/auth(/api.*) $1 break;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    # ── WhatsApp Webhook (Meta Cloud API) → auth-backend ──────────────────────
+    location ^~ /api/whatsapp {
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 20;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    10s;
+        proxy_connect_timeout 5s;
+    }
+
+    # ── Main backend: /api/* → base-backend-v2:3000/api/* ─────────────────────
+    location ^~ /api {
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 30;
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    # ── Callback OIDC Ciudadanía Digital (AGETIC) → frontend ──────────────────
+    # El redirect_uri registrado ante AGETIC para este dominio debe apuntar acá.
+    location = /login/ciudadania {
+        proxy_pass         http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_buffering off;
+        proxy_cache off;
+        client_max_body_size 20M;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location ^~ /_next/static/ {
+        # `add_header` en una location resetea TODOS los add_header heredados
+        # del server block (comportamiento real de nginx, no un typo) — hay
+        # que re-incluir los headers de seguridad acá explícitamente. El
+        # nginx real de servertest tiene este mismo bug (no lo corrige este
+        # trabajo, es una instancia distinta, ver docs/05-nginx-y-tls.md).
+        include      /etc/nginx/snippets/security-headers.conf;
+        proxy_pass   http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        add_header   Cache-Control "public, max-age=31536000, immutable";
+        access_log   off;
+    }
+
+    location = / {
+        return 301 /login/;
+    }
+
+    location / {
+        proxy_pass         http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    location = /health {
+        include    /etc/nginx/snippets/security-headers.conf;
+        access_log off;
+        return 200 "OK\n";
+        add_header Content-Type text/plain;
+    }
+}
+
+# ── HTTP: challenge ACME + redirect a HTTPS ──────────────────────────────────
+server {
+    listen 80;
+    listen [::]:80;
+    server_name <DOMINIO>;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
