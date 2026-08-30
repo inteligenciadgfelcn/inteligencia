@@ -83,7 +83,19 @@ Existe como directorio (`backend/fake-ciudadania-api/`, trackeado en git) pero *
 
 **Pendiente, requiere decisión del equipo**: el valor real sigue en el historial de git (commits anteriores) y la clave sigue activa tal cual en `consulta-persona-api` — reemplazar el archivo no la invalida. Para cerrar esto de verdad hace falta (a) rotar la clave real en `consulta-persona-api` y en cualquier lugar que la consuma, y (b) decidir si vale la pena purgarla del historial de git (operación destructiva, requiere `git filter-repo`/BFG + force-push + coordinar con todo el equipo, ya que reescribe commits que otros ya tienen clonados) o si alcanza con que ya no sea válida tras la rotación. También evaluar si `consulta-persona-api` debería aceptar autenticación por sesión/JWT del usuario en vez de una API key estática compartida con el frontend público.
 
-## 6. Buenas prácticas para el servidor nuevo
+## 6. Variables de infraestructura (`.env` de compose, servidores nuevos dockerizados)
+
+Distinto de las tablas de arriba (esas son el `.env`/`.env.sample` de cada proyecto) — estas viven en un `.env` propio, al lado del `docker-compose.yml` del servidor, que Compose lee automáticamente para resolver los `${...}` de [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml). Ver [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 6 para el contenido literal esperado de este archivo.
+
+| Variable | Para qué | Secreto |
+|---|---|---|
+| `DB_PASSWORD` | Contraseña del superusuario `postgres` — la usa `POSTGRES_PASSWORD` del servicio `postgres` (init del contenedor) y quien corre migraciones a mano (`npm run migrations:run`, siempre con el superusuario, nunca con `felcn_app`) | Sí |
+| `DB_APP_PASSWORD` | Contraseña del rol `felcn_app` (decisión del 30/08/2026, ver [03-base-de-datos.md](./03-base-de-datos.md)) — el que usan las apps en runtime, sin privilegios de DDL. Se inyecta como `DB_PASSWORD` dentro del `environment:` de cada servicio de app en el compose, pisando lo que traiga su propio `.env` | Sí |
+| `TAG` | Tag de las 3 imágenes a desplegar (`registry.sunesis-dev.felcn.gob.bo/felcn-<imagen>:${TAG}`) — ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) | No |
+
+Las credenciales del registry (usuario/contraseña de `htpasswd`) **no tienen nombre de variable de entorno** en ningún compose — se piden interactivo al correr `crear-htpasswd.sh` (ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) §2) y quedan hasheadas en un archivo `htpasswd`, no en ningún `.env`.
+
+## 7. Buenas prácticas para el servidor nuevo
 
 - Ningún `.env` real (`.env`, `.env.staging`, `.env.backup-*`) debe llegar a git — confirmar `.gitignore` de cada proyecto antes de clonar en el servidor nuevo.
 - Rotar `JWT_SECRET`, `SESSION_SECRET`, `OIDC_CLIENT_SECRET`, `NEXT_PUBLIC_CONSULTA_PERSONA_API_KEY` y todos los `*_TOKEN`/`*_PASSWORD` al pasar a un servidor nuevo o a producción — no reutilizar los valores de dev/staging.
