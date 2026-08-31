@@ -430,6 +430,21 @@ Y seguir el runbook de bootstrap de datos: [08-runbook-reset-y-admin-inicial.md]
 
 No dar el servidor nuevo por completo solo porque `docker compose up -d --build` no tiró error — varios de estos puntos fallan en silencio (la app responde 200 igual). Verificar explícitamente cada uno:
 
+**Corrido de punta a punta el 30/08/2026 contra `172.16.76.22`** (servidor físico de prueba, simula `.23` con IP sin dominio, alcance "solo inteligencia" — ver el historial de commits de esta rama para el detalle completo). Resultado por ítem:
+
+| Ítem | Resultado |
+|---|---|
+| Base de datos | ✅ Verificado — `felcn_app` sin superusuario confirmado, `scram-sha-256` por defecto, 8 bases restauradas + `felcn_auth` migrada/sembrada |
+| Seguridad (ufw/fail2ban/SSH) | ✅ Verificado, con el incidente real de fail2ban descrito en la Fase 1 |
+| Docker | ✅ Verificado |
+| Imágenes | ✅ Verificado (build real, sin git HEAD sucio) |
+| Contenedores | ✅ Verificado, los 7 (incluye `registry`/`registry-ui`, no solo los 5 de la lista original) arriba sin reinicios |
+| nginx | ✅ Verificado, adaptado para IP (ver Fase 4/5b) |
+| Certificados | ⚠️ **No aplica tal cual** — sin dominio no hay Let's Encrypt real posible; se usó un certificado autofirmado (`openssl req -x509`) como sustituto explícito, no simulado como si fuera válido. Pendiente probar la emisión real el día que haya DNS. |
+| SMTP | ⚠️ **Deshabilitado a propósito** para esta prueba (`SMTP_ENABLED=false`, sin credenciales reales a mano) — no verificado, queda pendiente con credenciales reales |
+| Backup | ✅ Verificado — `pg-backup.sh felcn_auth` generó un dump válido al primer intento |
+| Ciudadanía Digital (AGETIC) | ⚠️ **No probado** — mismo ambiente demo que dev, pero el `OIDC_REDIRECT_URI` con IP casi seguro no está registrado del lado de AGETIC (solo acepta el dominio real de dev). El login con usuario/contraseña local (no OIDC) sí se probó real y funcionó — ver runbook de admin inicial |
+
 - [ ] **Base de datos** (Postgres dockerizado, `postgres:17`): `docker compose ps postgres` activo y sin reinicios en loop, `scram-sha-256` confirmado (`docker exec postgres cat /var/lib/postgresql/data/pg_hba.conf | grep scram`), conexión real confirmada desde cada backend vía `DB_HOST=postgres` (no solo que `psql` funcione dentro del contenedor), bases reales restauradas o runbook de bootstrap corrido (sección 3, [08-runbook-reset-y-admin-inicial.md](./08-runbook-reset-y-admin-inicial.md)), volumen `postgres_data` confirmado como named volume (no anónimo) para que sobreviva a un `docker compose down` sin `-v`. Confirmar también que las apps arrancaron con `felcn_app` (`DB_USERNAME=felcn_app` en su `environment:`, no `postgres`) — un `\du felcn_app` dentro del contenedor debe mostrarlo sin ningún atributo de superusuario.
 - [ ] **Seguridad**: `sudo ufw status verbose` con las reglas esperadas activas, fail2ban con los jails de sshd/nginx corriendo (`fail2ban-client status`), SSH con `PasswordAuthentication` habilitado a propósito — no repetir el hardening que hubo que revertir en `servertest` (sección 1).
 - [ ] **Docker**: `docker.service` habilitado en systemd (`systemctl is-enabled docker`), límites de logging configurados en `/etc/docker/daemon.json`, **todos** los servicios del compose con `restart: unless-stopped` (ahora incluye Postgres y nginx, no solo las apps).
