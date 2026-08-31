@@ -15,6 +15,25 @@ Procedimiento completo, con **comandos manuales literales**, para dejar funciona
 
 Como este servidor es dedicado a un solo ambiente (no corre dev y staging en paralelo, a diferencia de `servertest` históricamente), el compose de la app corre un solo ambiente, con las credenciales reales de Ciudadanía Digital (AGETIC) directamente en su `.env`.
 
+> ## ⚠️ Orden real de ejecución — leer esto ANTES de empezar
+>
+> Este documento numera las fases en un orden histórico (Postgres = Fase 3, Docker = Fase 5) que **no es el orden en que se ejecutan los comandos** — no se puede levantar un Postgres dockerizado sin tener Docker instalado primero. Confirmado real dos veces (servidor de prueba `172.16.76.22` y `sunesis-dev.felcn.gob.bo`/`.23`, agosto 2026): seguir la numeración de arriba a abajo tal cual genera confusión real, no solo en teoría.
+>
+> **El orden real, de punta a punta, es:**
+> 1. Fase 0 (si aplica — VM nueva en Proxmox) / o nada si el servidor físico ya existe
+> 2. Fase 1 — Sistema base (update, UFW, fail2ban, hardening SSH, headless)
+> 3. Fase 2 — Git
+> 4. **Fase 5 — Motor Docker** ← va acá, no donde dice "5"
+> 5. Fase 3 — Postgres (dockerizado)
+> 6. Fase 8 — Clonar el repo + configurar los `.env`
+> 7. Migraciones y seeds de `felcn_auth`
+> 8. Fase 5 (resto) — Levantar las 3 apps
+> 9. Fase 4 — nginx + TLS
+> 10. Fase 5b — Registry de imágenes (solo `.23`)
+> 11. Fase 9 — Checklist final
+>
+> Referencia real completa de un servidor instalado siguiendo este orden: [docs/bitacora-sunesis-dev-23.md](./bitacora-sunesis-dev-23.md).
+
 ## 0. Fase 0 — Instalación de Debian 13 (VM en Proxmox, sin entorno gráfico, particionado correcto)
 
 Este servidor es una **VM en un Proxmox** (no bare metal) — la Fase 0 completa se hace desde la interfaz web de Proxmox (`https://<host-proxmox>:8006`), sin necesitar USB físico. Esto se hace **una sola vez**. Todo lo de acá abajo (Fase 1 en adelante) asume que ya existe un Debian 13 arrancado y accesible por SSH.
@@ -301,12 +320,41 @@ Ya no se instala en el host — corre como contenedor (`nginx:1.26-alpine`), mis
 - **`conf.d/app.conf.template`** — un server block HTTPS por dominio (copiar y reemplazar `<DOMINIO>` por `sunesis-dev.felcn.gob.bo` / `sunesis-staging.felcn.gob.bo`). A diferencia de `desarrollo.felcn.gob.bo`, este servidor es UN solo ambiente — no hay upstreams `_staging` compartiendo archivo. Los upstreams apuntan al nombre del servicio Docker (`base-backend-v2`, `auth-backend`, `base-frontend`), no a `127.0.0.1:puerto` — las apps ya no publican sus puertos al host en absoluto.
 - **NO incluye** mTLS ni `partner-locations.conf` (`/srv/interop`) — queda fuera de este trabajo. **NO incluye** `/persona/` ni `/docs/` — específicos de `servertest`.
 - **Hallazgo real corregido en la plantilla**: un `add_header` dentro de una `location` resetea TODOS los `add_header` heredados del `server` (comportamiento real de nginx) — las locations `/health` y `/_next/static/` re-incluyen `security-headers.conf` explícitamente por esto. El nginx real de `servertest` tiene este mismo bug sin corregir en `/_next/static/` (no se toca, ver [05-nginx-y-tls.md](./05-nginx-y-tls.md)).
-- **TLS**: volumen nombrado `certbot_certs` (nunca certificados horneados en la imagen, cumple el requisito de [12-requisitos-seguridad-infraestructura.md](./12-requisitos-seguridad-infraestructura.md) §4) + `certbot_webroot` compartido con el contenedor `certbot` del mismo compose (`location /.well-known/acme-challenge/` en el server HTTP de la plantilla). Primera emisión:
-  ```bash
-  docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d <dominio>
-  ```
+- **TLS**: volumen nombrado `certbot_certs` (nunca certificados horneados en la imagen, cumple el requisito de [12-requisitos-seguridad-infraestructura.md](./12-requisitos-seguridad-infraestructura.md) §4) + `certbot_webroot` compartido con el contenedor `certbot` del mismo compose (`location /.well-known/acme-challenge/` en el server HTTP de la plantilla).
+
+  **⚠️ Secuencia real de la primera emisión — probado de punta a punta el 31/08/2026 contra `sunesis-dev.felcn.gob.bo`.** Activar `app.conf.template` completo (con el bloque HTTPS) **antes** de tener el certificado hace que nginx falle al arrancar — el `ssl_certificate` apunta a un archivo que todavía no existe. El orden real que sí funciona:
+
+  1. Crear una config **solo HTTP** (sin el bloque 443), solo con el challenge ACME y un catch-all:
+     ```bash
+     cd deploy/tools/nginx/conf.d
+     tee <dominio>.conf > /dev/null <<'EOF'
+     server {
+         listen 80;
+         listen [::]:80;
+         server_name <dominio>;
+
+         location /.well-known/acme-challenge/ {
+             root /var/www/certbot;
+         }
+
+         location / {
+             return 200 "ok\n";
+         }
+     }
+     EOF
+     ```
+  2. Levantar nginx con esa config mínima: `docker compose up -d nginx && docker compose exec nginx nginx -t`.
+  3. Emitir el certificado real:
+     ```bash
+     docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d <dominio>
+     ```
+  4. Recién ahí activar la plantilla completa (ahora sí encuentra el certificado):
+     ```bash
+     sed 's/<DOMINIO>/<dominio>/g' app.conf.template > <dominio>.conf
+     docker compose exec nginx nginx -t && docker compose exec nginx nginx -s reload
+     ```
 - **Renovación**: timer de systemd **en el host** (no un cron dentro de un contenedor con `docker.sock` montado — evitar darle a un contenedor acceso al socket de Docker, riesgo de seguridad innecesario, ver antecedente del incidente cryptominer de julio/2026) ejecutando [deploy/tools/nginx/certbot-renew.sh](../deploy/tools/nginx/certbot-renew.sh) (`docker compose run --rm certbot renew` + `docker compose exec nginx nginx -s reload`). Configurar el timer con el mismo patrón que el `certbot.timer` nativo ya documentado.
-- **⚠️ Limitación real de esta revisión**: la emisión real de un certificado no se pudo probar todavía porque el DNS de `sunesis-dev.felcn.gob.bo` aún no apunta a `.23` (ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1) — se validó `nginx -t` y el proxy/rutas/rate-limit/headers en HTTP plano contra los contenedores reales de la app, pero no el challenge HTTP-01 real. Probarlo de verdad en cuanto el DNS apunte acá, antes de dar la Fase 4 por terminada.
+- **✅ Confirmado real (31/08/2026, `sunesis-dev.felcn.gob.bo`)**: certificado Let's Encrypt real emitido y funcionando, sin advertencia del navegador, `nginx -t`/`-s reload` sin errores con la config completa activa.
 - **Restart**: el gap `Restart=no` de nginx documentado para `servertest` ([06-systemd-y-contenedores.md](./06-systemd-y-contenedores.md)) **no aplica acá** — nginx corre como contenedor con `restart: unless-stopped`, Docker lo reinicia solo si el proceso muere.
 - El callback OIDC (`location = /login/ciudadania` en la plantilla) apunta al frontend igual que en dev — **por ahora este servidor usa la misma configuración de AGETIC (demo) que dev, sin cambios**. Ver la nota completa sobre esto en el checklist (sección 9, ítem de AGETIC): recién va a hacer falta tocar `redirect_uri`/credenciales el día que llegue AGETIC de producción.
 
@@ -362,10 +410,57 @@ bash crear-htpasswd.sh <usuario>          # pide la contraseña interactivo, no 
 docker compose -f docker-compose.registry.yml up -d
 ```
 
-- Expuesto vía nginx (mismo contenedor de la Fase 4) con TLS + auth `htpasswd` — ver `deploy/tools/nginx/conf.d/registry.conf.template`, dominio propuesto `registry.sunesis-dev.felcn.gob.bo` (**nuevo registro DNS a coordinar**, misma IP `.23`). El registry en sí no publica ningún puerto al host.
-- Build y push desde acá: `bash deploy/tools/registry/build-and-push.sh [tag]` (requiere `docker login registry.sunesis-dev.felcn.gob.bo` una vez antes). Sin dominio propio para el registry (ej. probando en un servidor solo por IP, ver variante de la Fase 0), `REGISTRY_HOST` acepta la IP directa: `REGISTRY_HOST=<ip> bash build-and-push.sh [tag]`.
-- **Sin dominio (solo IP), `registry.conf.template` no aplica tal cual** — asume un `server_name` propio (subdominio) para el registry, distinto del de la app. Con una sola IP no hay forma de que nginx distinga dos `server_name` por SNI, así que la alternativa probada (30/08/2026, `172.16.76.22`) es rutear por **path** dentro del mismo server block ya activado para la IP: agregar un `location /v2/ { proxy_pass http://registry:5000/v2/; ... }` (con `client_max_body_size 0;` y `chunked_transfer_encoding on;`, igual que en la plantilla) al `<IP>.conf` de la Fase 4, en vez de un server block aparte. En un servidor con dominio real, seguir usando `registry.conf.template` con su propio subdominio — es la opción más limpia cuando hay DNS disponible.
-- **UI para navegar repos/tags visualmente** (opcional, `registry:2` no trae ninguna): agregar el servicio `registry-ui` (`joxit/docker-registry-ui`) a `docker-compose.registry.yml`, con `NGINX_PROXY_PASS_URL=http://registry:5000` y `SINGLE_REGISTRY=true` — usa las mismas credenciales `htpasswd`, el navegador pide usuario/contraseña automáticamente al recibir el 401 del registry real. Sin dominio propio, exponerla con un puerto publicado directo (ej. `8081:80`) en vez de vía nginx: esta imagen sirve sus assets con rutas absolutas a la raíz, sin soporte de sub-path en runtime. Probado de punta a punta el 30/08/2026.
+- El registry en sí no publica ningún puerto al host — solo alcanzable vía nginx.
+
+**Cómo exponerlo — dos opciones reales, probadas las dos (31/08/2026, `sunesis-dev.felcn.gob.bo` ya con dominio y DNS real):**
+
+- **Opción recomendada por defecto: por path (`/v2/`), sin subdominio nuevo.** Conseguir un registro DNS nuevo (`registry.<dominio>`) implica coordinar con quien administra DNS — un paso externo, no técnico, que puede demorar. La alternativa evita esa dependencia por completo: agregar un `location /v2/ { proxy_pass http://registry:5000/v2/; ...}` (con `client_max_body_size 0;` y `chunked_transfer_encoding on;`) al server block **ya activo** del dominio principal (el mismo `<dominio>.conf` de la Fase 4) — reutiliza el certificado que ya existe, cero DNS/TLS nuevo. Es obligatoria si el servidor solo tiene IP (sin dominio) — ver la variante de la Fase 0 —, pero es también la opción más simple incluso *con* dominio real, y la que se usó en la práctica en `.23`.
+  ```bash
+  # Insertar antes de "location = /health {" en el <dominio>.conf ya activo:
+  #   location /v2/ {
+  #       client_max_body_size 0;
+  #       chunked_transfer_encoding on;
+  #       proxy_pass http://registry:5000/v2/;
+  #       proxy_http_version 1.1;
+  #       proxy_set_header Host $host;
+  #       proxy_set_header X-Real-IP $remote_addr;
+  #       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  #       proxy_set_header X-Forwarded-Proto $scheme;
+  #       proxy_read_timeout 900s;
+  #   }
+  docker compose exec nginx nginx -t && docker compose exec nginx nginx -s reload
+  ```
+- **Opción alternativa: subdominio propio** (`registry.<dominio>`, plantilla `deploy/tools/nginx/conf.d/registry.conf.template`) — más limpia si ya se tiene el hábito de pedir subdominios sin fricción, con su propio certificado Let's Encrypt (mismo flujo de la Fase 4). Preferible solo si de verdad no hay costo de coordinación de DNS.
+
+- Build y push desde acá: `REGISTRY_HOST=<dominio-o-ip> bash deploy/tools/registry/build-and-push.sh <tag>` (requiere `docker login <dominio-o-ip>` una vez antes). **Versionado: usar tags semánticos reales (`1.0.0`, `1.0.1`, ...), no el short-SHA por defecto** — decisión del 31/08/2026, más legible para saber qué versión corre en cada ambiente.
+
+  **⚠️ "Hairpin NAT" al hacer push desde el mismo servidor que hostea el registry (hallazgo real, 31/08/2026).** Si `.23` hace `build-and-push.sh` apuntando a su **propio** dominio público, el tráfico sale a internet y vuelve a entrar por la misma IP — con imágenes grandes (`felcn-base-backend`, que incluye Chromium para Puppeteer, ronda 1.8GB) esto puede producir `TLS handshake timeout` intermitente en algunos blobs, más frecuente cuantas más capas haya que revisar. Fix: hacer que el servidor se resuelva a sí mismo directo, sin salir a internet:
+  ```bash
+  echo "127.0.0.1 <dominio>" | sudo tee -a /etc/hosts
+  ```
+  Esto solo afecta cómo *este servidor* se ve a sí mismo — no cambia nada para usuarios reales entrando desde afuera, que siguen resolviendo por DNS público normal.
+
+- **UI para navegar repos/tags visualmente** (opcional, `registry:2` no trae ninguna): agregar el servicio `registry-ui` (`joxit/docker-registry-ui`) a `docker-compose.registry.yml`, con `NGINX_PROXY_PASS_URL=http://registry:5000` y `SINGLE_REGISTRY=true` — usa las mismas credenciales `htpasswd`. Esta imagen sirve sus assets con rutas absolutas a la raíz, **no soporta sub-path** — no puede ir integrada como `/registry` del dominio principal. La solución real y probada (31/08/2026, con dominio + TLS real) es darle **su propio puerto, con HTTPS real reutilizando el mismo certificado** (no HTTP plano):
+  ```nginx
+  # deploy/tools/nginx/conf.d/registry-ui.conf — server block aparte, puerto dedicado
+  server {
+      listen 8081 ssl;
+      listen [::]:8081 ssl;
+      server_name <dominio>;
+      ssl_certificate     /etc/letsencrypt/live/<dominio>/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/<dominio>/privkey.pem;
+      location / {
+          proxy_pass http://registry-ui:80;
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+  }
+  ```
+  (Requiere agregar `- "8081:8081"` a los `ports:` de nginx en el `docker-compose.yml`, y sacar la publicación directa de puerto de `registry-ui` en `docker-compose.registry.yml` si la tenía.)
+  **Restringir el acceso a la red interna** — una herramienta de administración así no necesita estar abierta a todo internet: `ufw allow from <rango-red-interna> to any port 8081 proto tcp`, nunca `ufw allow 8081/tcp` a secas.
 
 ## 6. Fase 6 — Estructura de producción
 
@@ -414,14 +509,33 @@ Una vez completadas las fases 1-5b (Postgres, nginx y — si es `.23` — el reg
 ```bash
 git clone -b develop git@github.com:inteligenciadgfelcn/inteligencia.git /srv/inteligencia
 cd /srv/inteligencia
-# .env por proyecto — ver 04-variables-de-entorno.md — con secretos rotados, no copiados de servertest.
-# Como este servidor ES el ambiente de staging (no corre dev en paralelo), las credenciales reales
-# de AGETIC van directo en backend/felcn-auth-backend/.env — no hace falta un .env.staging aparte
-# acá. DB_HOST=postgres, DB_DATABASE=felcn_auth (Postgres dockerizado, mismo compose, ver Fase 3).
-docker compose up -d --build
+```
+
+**⚠️ El `.env.sample` NO alcanza con "pegar los secretos" (hallazgo real, 31/08/2026, `sunesis-dev.felcn.gob.bo`).** Un `cp .env.sample .env` + pegar solo las contraseñas generadas deja **otros valores por defecto sin corregir** que rompen el servidor en silencio o, peor, quedan como una brecha de seguridad real sin ningún error que lo avise:
+
+- `DB_HOST=localhost`, `DB_DATABASE=felcn_auth_v3`, `DB_USERNAME=postgres` en `auth-backend/.env` — deben pasar a `postgres`/`felcn_auth`/`felcn_app`. Sin esto, las migraciones fallan con `ECONNREFUSED 127.0.0.1:5432` (el contenedor de migraciones no tiene "localhost" para conectarse, tiene que ser el nombre del servicio Docker).
+- `ADMIN_INITIAL_PASSWORD=__CONTRASENA_FUERTE__` — **este es el más peligroso de los tres**: es un placeholder de ejemplo, pero pasa la validación de fortaleza de `zxcvbn` sin ningún error (tiene longitud y variedad de caracteres suficiente) — el seed lo acepta como si fuera una contraseña real, y el usuario `ADMINISTRADOR` queda con una contraseña públicamente conocida (cualquiera que haya visto el `.env.sample` del repo la conoce). **No hay ningún error, warning, ni log que lo delate** — solo se nota si alguien revisa manualmente el valor del `.env` después.
+- `backend/felcn-base-backend/.env` tiene el mismo problema multiplicado por 8 (un bloque `DB_<NOMBRE>_*` por cada base de dominio) — ver la plantilla completa corregida en [04-variables-de-entorno.md](./04-variables-de-entorno.md) §8.
+
+**Si esto ya pasó** (el seed ya corrió con el placeholder): no alcanza con corregir el `.env` y volver a correr `seeds:run` — es idempotente, no va a tocar un usuario que ya existe. Hay que actualizar la contraseña directo en la base, con el mismo hash `bcrypt` que usa la app:
+
+```bash
+HASH=$(docker run --rm auth-backend-migrate:tmp node -e "console.log(require('bcrypt').hashSync('<contraseña-real>', 10))")
+docker exec postgres psql -U postgres -d felcn_auth -c "UPDATE usuario.usuario SET contrasena = '$HASH' WHERE usuario = 'ADMINISTRADOR';"
+```
+
+(`auth-backend-migrate:tmp` es la imagen intermedia de la sección de migraciones más abajo — si todavía no existe, construirla primero con `docker build --target build -t auth-backend-migrate:tmp backend/felcn-auth-backend`.)
+
+Con los 3 `.env` corregidos (`deploy/development/.env`, `backend/felcn-auth-backend/.env`, `backend/felcn-base-backend/.env` — el de `frontend` no necesita cambios, sus URLs las pisa la variable `DOMINIO` del compose):
+
+```bash
+cd deploy/development
+docker compose up -d --build base-auth base-backend-v2 base-frontend
 ```
 
 Staging sigue el mismo criterio que dev (código fuente en el servidor, build local) — ver [02-entorno-docker-dev.md](./02-entorno-docker-dev.md). Producción es la excepción: nunca clona el repo ni buildea, solo hace `pull` de las imágenes ya construidas en dev — ver sección 10 y [14-registro-de-imagenes.md](./14-registro-de-imagenes.md).
+
+**Conceptual importante, fácil de confundir (hallazgo real, 31/08/2026):** las imágenes que corren acá (`development-base-auth`, etc., construidas por el `docker compose up -d --build` de arriba) **no tienen ninguna relación** con las imágenes que se suben al registry (`sunesis-dev.felcn.gob.bo/felcn-auth-backend:<tag>`, ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md)). Son dos artefactos de build completamente separados desde el mismo código fuente: uno sirve el ambiente de dev de este mismo servidor, el otro es el "paquete" para que staging/producción lo bajen. Correr `build-and-push.sh` **no actualiza** los contenedores que ya corren acá — si se quiere reflejar código nuevo en el dev local, hay que correr el `docker compose up -d --build` de arriba, aparte.
 
 `fake-ciudadania-api` no está en este compose — confirmado sin uso, este servidor usa AGETIC real (ver [00-arquitectura.md](./00-arquitectura.md) §4).
 
@@ -445,6 +559,15 @@ No dar el servidor nuevo por completo solo porque `docker compose up -d --build`
 | SMTP | ✅ **Actualizado 31/08/2026, a pedido explícito**: se usan las mismas credenciales reales que `desarrollo.felcn.gob.bo` (canal institucional + 2 Gmail de respaldo) para paridad exacta. Conectividad de red saliente confirmada real a `mail.felcn.gob.bo:587` y `smtp.gmail.com:587` (`/dev/tcp` desde el servidor). No se probó un envío real de correo (requiere una dirección de prueba real, no una inventada) — pendiente si se quiere cerrar el ítem al 100%. |
 | Backup | ✅ Verificado — `pg-backup.sh felcn_auth` generó un dump válido al primer intento |
 | Ciudadanía Digital (AGETIC) | ⚠️ **Actualizado 31/08/2026**: se usan las mismas credenciales OIDC reales que `desarrollo.felcn.gob.bo` (no las de demo genéricas) — pero el registro ante AGETIC está atado a ese dominio, así que el `OIDC_REDIRECT_URI` adaptado a esta IP casi seguro es rechazado por AGETIC al no coincidir con lo registrado (limitación esperada de cambiar de dominio, no del mecanismo). El login con usuario/contraseña local (no OIDC) sí se probó real y funcionó — ver runbook de admin inicial |
+
+### Confirmado también en `sunesis-dev.felcn.gob.bo` (`.23`, servidor real con dominio) — 31/08/2026
+
+Mismo resultado que la tabla de arriba en todos los ítems, con estas diferencias reales por tener dominio/DNS de verdad (a diferencia de la prueba en `172.16.76.22`, solo IP):
+
+- **Certificados**: ✅ ahora sí aplica y está confirmado — Let's Encrypt real emitido para `sunesis-dev.felcn.gob.bo`, sin advertencia del navegador (ver secuencia real en la Fase 4 más arriba).
+- **Registry**: expuesto por path (`/v2/`) sobre el dominio real, no por IP — mismo mecanismo, cero diferencia real salvo que reutiliza el certificado del dominio en vez de uno autofirmado. Ciclo build→push→pull confirmado con imágenes reales (`1.0.0`, `1.0.1`).
+- **AGETIC/OIDC**: pendiente de solicitar el registro del `redirect_uri` real de este dominio ante AGETIC — a diferencia de la prueba con IP (donde ni siquiera vale la pena pedirlo), acá sí es un trámite real pendiente, no una limitación permanente.
+- Ver [docs/bitacora-sunesis-dev-23.md](./bitacora-sunesis-dev-23.md) para el registro completo de comandos de esta instalación real.
 
 ### ⚠️ Bug real encontrado post-login (31/08/2026): dato corrupto en un seed rompía el panel para cualquier admin
 
