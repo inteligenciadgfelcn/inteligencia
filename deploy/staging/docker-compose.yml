@@ -95,7 +95,7 @@ services:
       - tools
 
   base-backend-v2:
-    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-backend:${TAG:?falta TAG}
+    image: sunesis-dev.felcn.gob.bo/felcn-base-backend:${TAG:?falta TAG}
     container_name: base-backend-v2
     restart: unless-stopped
     env_file:
@@ -135,7 +135,7 @@ services:
       - DB_SCHEMA_USUARIOS=usuario
 
   base-auth:
-    image: registry.sunesis-dev.felcn.gob.bo/felcn-auth-backend:${TAG:?falta TAG}
+    image: sunesis-dev.felcn.gob.bo/felcn-auth-backend:${TAG:?falta TAG}
     container_name: auth-backend
     restart: unless-stopped
     env_file:
@@ -157,7 +157,7 @@ services:
       - DB_PASSWORD=${DB_APP_PASSWORD:?falta DB_APP_PASSWORD}
 
   base-frontend:
-    image: registry.sunesis-dev.felcn.gob.bo/felcn-base-frontend:${TAG:?falta TAG}
+    image: sunesis-dev.felcn.gob.bo/felcn-base-frontend:${TAG:?falta TAG}
     container_name: base-frontend
     restart: unless-stopped
     env_file:
