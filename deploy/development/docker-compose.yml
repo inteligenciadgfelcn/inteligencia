@@ -164,11 +164,21 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_APP_ENV=development
       - NEXT_PUBLIC_SITE_NAME=FELCN (dev)
-      # ⚠️ Reemplazar por el dominio real de este servidor (o `localhost` en una laptop)
-      - NEXT_PUBLIC_BASE_URL=https://<DOMINIO>/api
-      - NEXT_PUBLIC_AUTH_URL=https://<DOMINIO>/auth/api
-      - NEXT_PUBLIC_IMAGES_DOMAIN=<DOMINIO>
-      - NEXT_PUBLIC_SOCKET_URL=https://<DOMINIO>/
+      # DOMINIO viene del .env de este compose (deploy/development/.env.sample) —
+      # el dominio real de este servidor, o la IP si todavía no hay DNS (ver
+      # docs/04-variables-de-entorno.md). Antes esto era un placeholder literal
+      # `<DOMINIO>` que había que reemplazar a mano en este archivo — bug real
+      # encontrado el 31/08/2026: `environment:` tiene precedencia sobre
+      # `env_file:`, así que aunque el `.env` del frontend tuviera la URL
+      # correcta, este placeholder sin reemplazar la pisaba en silencio (el
+      # login fallaba contra `https://<DOMINIO>/auth/api/auth` literal, sin
+      # ningún error de "falta variable" que lo hiciera evidente). Corregido a
+      # interpolación de variable, igual que DB_PASSWORD/DB_APP_PASSWORD, para
+      # que `docker compose` falle fuerte si falta en vez de fallar en silencio.
+      - NEXT_PUBLIC_BASE_URL=https://${DOMINIO:?falta DOMINIO}/api
+      - NEXT_PUBLIC_AUTH_URL=https://${DOMINIO:?falta DOMINIO}/auth/api
+      - NEXT_PUBLIC_IMAGES_DOMAIN=${DOMINIO:?falta DOMINIO}
+      - NEXT_PUBLIC_SOCKET_URL=https://${DOMINIO:?falta DOMINIO}/
       - NEXT_PUBLIC_COOKIE_SECURE=true
       - NEXT_PUBLIC_PATH=
 
