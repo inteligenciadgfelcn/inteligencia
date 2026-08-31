@@ -23,6 +23,35 @@ services:
     networks:
       - felcn-network
 
+  # UI de solo lectura para navegar repos/tags visualmente (registry:2 no trae
+  # ninguna interfaz propia, solo la API /v2/). joxit/docker-registry-ui trae
+  # su propio nginx interno que reenvía las llamadas /v2/ vía NGINX_PROXY_PASS_URL
+  # (evita problemas de CORS) — al pedir el catálogo recibe 401 de la auth
+  # htpasswd del registry real y el navegador solo, sin nada que configurar
+  # acá, muestra el prompt básico de usuario/contraseña.
+  #
+  # Publica el puerto directo al host (8081) en vez de ir por el nginx
+  # principal: esta imagen sirve sus assets con rutas absolutas a la raíz, sin
+  # soporte de sub-path en runtime — sin un subdominio propio (no hay DNS en
+  # este servidor) no hay forma limpia de exponerla vía path bajo `/`. En un
+  # servidor con dominio real, la alternativa correcta es un subdominio propio
+  # (ej. registry-ui.<dominio>) con su propio server block, igual que
+  # registry.conf.template hace para la API del registry.
+  registry-ui:
+    image: joxit/docker-registry-ui:main
+    container_name: registry-ui
+    restart: unless-stopped
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=FELCN Registry (dev)
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+    ports:
+      - "8081:80"
+    networks:
+      - felcn-network
+    depends_on:
+      - registry
+
 volumes:
   registry_data:
 
