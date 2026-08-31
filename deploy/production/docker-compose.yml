@@ -173,11 +173,18 @@ services:
       - NODE_ENV=production
       - NEXT_PUBLIC_APP_ENV=production
       - NEXT_PUBLIC_SITE_NAME=FELCN
-      # ⚠️ Reemplazar por el dominio real de este servidor
-      - NEXT_PUBLIC_BASE_URL=https://<DOMINIO>/api
-      - NEXT_PUBLIC_AUTH_URL=https://<DOMINIO>/auth/api
-      - NEXT_PUBLIC_IMAGES_DOMAIN=<DOMINIO>
-      - NEXT_PUBLIC_SOCKET_URL=https://<DOMINIO>/
+      # DOMINIO viene del .env de este compose (deploy/production/.env.sample) —
+      # antes era un placeholder literal `<DOMINIO>` que había que reemplazar a
+      # mano acá mismo. Bug real (31/08/2026): `environment:` tiene precedencia
+      # sobre `env_file:`, así que un `<DOMINIO>` sin reemplazar pisaba en
+      # silencio cualquier URL correcta puesta en el `.env` del frontend — el
+      # login fallaba contra `https://<DOMINIO>/auth/api/auth` literal, sin
+      # error de "falta variable" que lo hiciera evidente. Ver
+      # docs/04-variables-de-entorno.md.
+      - NEXT_PUBLIC_BASE_URL=https://${DOMINIO:?falta DOMINIO}/api
+      - NEXT_PUBLIC_AUTH_URL=https://${DOMINIO:?falta DOMINIO}/auth/api
+      - NEXT_PUBLIC_IMAGES_DOMAIN=${DOMINIO:?falta DOMINIO}
+      - NEXT_PUBLIC_SOCKET_URL=https://${DOMINIO:?falta DOMINIO}/
       - NEXT_PUBLIC_COOKIE_SECURE=true
       - NEXT_PUBLIC_PATH=
 
