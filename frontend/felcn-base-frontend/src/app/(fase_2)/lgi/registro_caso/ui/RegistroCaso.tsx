@@ -6,61 +6,40 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useWatch } from 'react-hook-form'
 
-import { AlertDialog } from '@/components/modales/AlertDialog'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { CustomDialog } from '@/components/modales/CustomDialog'
-import { RHFDate } from '@/components/form/RHFDate'
 import { RHFSelect } from '@/components/form/RHFSelect'
-import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import type { Column } from '@/components/datatable/VristoDataTable'
-import IconClipboardText from '@/components/Icon/IconClipboardText'
-import IconEdit from '@/components/Icon/IconEdit'
-import IconPlus from '@/components/Icon/IconPlus'
-import IconTrash from '@/components/Icon/IconTrash'
+
+import { PersonasInvestigadas } from '../../caso_detalle/ui/PersonasInvestigadas'
 
 import type {
   DepartamentoLgi,
   DistritalLgi,
-  EstadoCivilLgi,
   GrupoLgi,
-  PaisLgi,
-  ProfesionLgi,
-  TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import { RegistroCasoApi } from '../api/registro-caso.api'
 import {
   buildDatosGeneralesPayload,
-  buscarDescripcion,
   codigoDepartamento,
-  formatNombreCompleto,
   mapDepartamentoToOption,
   mapDistritalToOption,
   mapGrupoToOption,
-  mapSituacionLegalToOption,
 } from '../mappers/registro-caso.mappers'
 import {
   datosGeneralesSchema,
   informacionCasoSchema,
-  situacionJuridicaSchema,
   type DatosGeneralesSchemaValues,
   type InformacionCasoSchemaValues,
-  type SituacionJuridicaSchemaValues,
 } from '../schemas/registro-caso.schema'
 import type {
   CatalogOption,
-  PersonaImplicadaPayload,
-  PersonaImplicadaRow,
-  SituacionLegalCatalogo,
 } from '../types/registro-caso.types'
 import {
   createDefaultDatosGeneralesValues,
-  createDefaultSituacionJuridicaValues,
   leerCasoDeStorage,
 } from '../utils/registro-caso.utils'
-import { PersonaUpsertDialog } from './PersonaUpsertDialog'
 import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 import { CasoSiiiDialog } from './CasoSiiiDialog'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
@@ -143,31 +122,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const { data: departamentos = [] } = useQuery<DepartamentoLgi[]>({
     queryKey: ['lgi-registro-caso', 'departamentos'],
     queryFn: () => ParametricasLgiApi.listarDepartamentos(),
-  })
-
-  const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'tipos-documento'],
-    queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
-  })
-
-  const { data: paises = [] } = useQuery<PaisLgi[]>({
-    queryKey: ['lgi-registro-caso', 'paises'],
-    queryFn: () => ParametricasLgiApi.listarPaises(),
-  })
-
-  const { data: estadosCiviles = [] } = useQuery<EstadoCivilLgi[]>({
-    queryKey: ['lgi-registro-caso', 'estados-civiles'],
-    queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
-  })
-
-  const { data: profesiones = [] } = useQuery<ProfesionLgi[]>({
-    queryKey: ['lgi-registro-caso', 'profesiones'],
-    queryFn: () => ParametricasLgiApi.listarProfesiones(),
-  })
-
-  const { data: situacionesLegales = [] } = useQuery<SituacionLegalCatalogo[]>({
-    queryKey: ['lgi-registro-caso', 'situaciones-legales'],
-    queryFn: () => RegistroCasoApi.listarSituacionesLegales(),
   })
 
   // ── Formulario datos generales ───────────────────────────────────────────────
@@ -293,157 +247,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       setIsSaving(false)
     }
   }
-
-  // ── Personas investigadas ────────────────────────────────────────────────────
-  const [pagePersonas, setPagePersonas] = useState(1)
-  const [limitPersonas, setLimitPersonas] = useState(10)
-  const [personaModalOpen, setPersonaModalOpen] = useState(false)
-  const [personaEditando, setPersonaEditando] =
-    useState<PersonaImplicadaRow | null>(null)
-  const [personaEliminar, setPersonaEliminar] =
-    useState<PersonaImplicadaRow | null>(null)
-  const [eliminandoPersona, setEliminandoPersona] = useState(false)
-  const [situacionModalOpen, setSituacionModalOpen] = useState(false)
-  const [personaSituacion, setPersonaSituacion] =
-    useState<PersonaImplicadaRow | null>(null)
-  const [guardandoSituacion, setGuardandoSituacion] = useState(false)
-
-  const {
-    data: personasData,
-    isLoading: loadingPersonas,
-    isFetching: fetchingPersonas,
-    refetch: refetchPersonas,
-  } = useQuery({
-    queryKey: [
-      'lgi-registro-caso',
-      'personas',
-      casoIdEfectivo ?? '',
-      pagePersonas,
-      limitPersonas,
-    ],
-    enabled: Boolean(casoIdEfectivo),
-    queryFn: () =>
-      RegistroCasoApi.listarPersonas(casoIdEfectivo!, {
-        pagina: pagePersonas,
-        limite: limitPersonas,
-      }),
-  })
-
-  const abrirPersonaModal = (row?: PersonaImplicadaRow) => {
-    setPersonaEditando(row ?? null)
-    setPersonaModalOpen(true)
-  }
-
-  const guardarPersona = async (payload: PersonaImplicadaPayload) => {
-    if (!casoIdEfectivo) return
-    if (personaEditando) {
-      await RegistroCasoApi.actualizarPersona(personaEditando.deId, payload)
-    } else {
-      await RegistroCasoApi.crearPersona(payload)
-    }
-    setPersonaModalOpen(false)
-    refetchPersonas()
-  }
-
-  const confirmarEliminarPersona = async () => {
-    if (!personaEliminar) return
-    setEliminandoPersona(true)
-    try {
-      await RegistroCasoApi.eliminarPersona(personaEliminar.deId)
-      setPersonaEliminar(null)
-      refetchPersonas()
-    } finally {
-      setEliminandoPersona(false)
-    }
-  }
-
-  const situacionForm = useForm<SituacionJuridicaSchemaValues>({
-    resolver: zodResolver(situacionJuridicaSchema),
-    defaultValues: createDefaultSituacionJuridicaValues(),
-  })
-
-  const abrirSituacionModal = (row: PersonaImplicadaRow) => {
-    setPersonaSituacion(row)
-    situacionForm.reset(createDefaultSituacionJuridicaValues())
-    setSituacionModalOpen(true)
-  }
-
-  const onSubmitSituacion = async (values: SituacionJuridicaSchemaValues) => {
-    if (!personaSituacion) return
-    setGuardandoSituacion(true)
-    try {
-      await RegistroCasoApi.registrarSituacionJuridica({
-        detenidoId: personaSituacion.deId,
-        situacionLegalId: Number(values.situacionLegalId?.value ?? 0),
-        fecha: values.fecha,
-      })
-      setSituacionModalOpen(false)
-    } finally {
-      setGuardandoSituacion(false)
-    }
-  }
-
-  const personaColumns: Column<PersonaImplicadaRow>[] = [
-    { accessor: 'deId', title: 'ID' },
-    {
-      accessor: 'nombre',
-      title: 'Nombre completo',
-      render: (row) => (
-        <span className="font-medium">{formatNombreCompleto(row)}</span>
-      ),
-    },
-    { accessor: 'numeroDocumento', title: 'Nro documento' },
-    {
-      accessor: 'tipoDoc',
-      title: 'Tipo doc.',
-      render: (row) => buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
-    },
-    ...(isLectura
-      ? []
-      : ([
-        {
-          accessor: 'acciones',
-          title: 'Acciones',
-          render: (row: PersonaImplicadaRow) => (
-            <div className="flex items-center gap-1.5">
-              <Button
-                type="button"
-                variant="outline-secondary"
-                size="sm"
-                className="!p-1.5"
-                aria-label={`Editar ${formatNombreCompleto(row)}`}
-                title="Editar"
-                onClick={() => abrirPersonaModal(row)}
-              >
-                <IconEdit className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline-secondary"
-                size="sm"
-                className="!p-1.5"
-                aria-label={`Situación jurídica de ${formatNombreCompleto(row)}`}
-                title="Situación jurídica"
-                onClick={() => abrirSituacionModal(row)}
-              >
-                <IconClipboardText className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline-danger"
-                size="sm"
-                className="!p-1.5"
-                aria-label={`Eliminar ${formatNombreCompleto(row)}`}
-                title="Eliminar"
-                onClick={() => setPersonaEliminar(row)}
-              >
-                <IconTrash className="h-4 w-4" />
-              </Button>
-            </div>
-          ),
-        },
-      ] as Column<PersonaImplicadaRow>[])),
-  ]
 
   const currentCards = useMemo(() => placeholderCards[activeTab], [activeTab])
 
@@ -702,41 +505,10 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 </Card>
               ) : (
                 <>
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-                        Personas investigadas del caso
-                      </h6>
-                      <p className="text-xs text-gray-500">
-                        Registre, edite o elimine personas implicadas.
-                      </p>
-                    </div>
-
-                    {!isLectura && (
-                      <Button
-                        type="button"
-                        variant="primary"
-                        className="gap-2"
-                        onClick={() => abrirPersonaModal()}
-                      >
-                        <IconPlus className="h-4 w-4" />
-                        Registrar persona
-                      </Button>
-                    )}
-                  </div>
-
-                  <VristoDataTable<PersonaImplicadaRow>
-                    title="Personas"
-                    rows={personasData?.filas ?? []}
-                    total={personasData?.total ?? 0}
-                    page={pagePersonas}
-                    limit={limitPersonas}
-                    onPageChange={setPagePersonas}
-                    onLimitChange={setLimitPersonas}
-                    columns={personaColumns}
-                    loading={loadingPersonas || fetchingPersonas}
+                  <PersonasInvestigadas
+                    casoId={casoIdEfectivo}
+                    isLectura={isLectura}
                   />
-
                   {!isLectura && (
                     <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
                       <Button
@@ -837,106 +609,10 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         </div>
       </div>
 
-      {/* Dialog upsert persona implicada */}
-      <PersonaUpsertDialog
-        open={personaModalOpen}
-        persona={personaEditando}
-        casoId={casoIdEfectivo ?? 0}
-        tiposDocumento={tiposDocumento}
-        paises={paises}
-        estadosCiviles={estadosCiviles}
-        profesiones={profesiones}
-        onClose={() => setPersonaModalOpen(false)}
-        onGuardar={guardarPersona}
-      />
-
       {/* Dialog solicitar info de inteligencia */}
       <CasoSiiiDialog isOpen={solicitarInteligenciaOpen} nroCaso={informacionForm.getValues('nroCasoFelcn')} onClose={() => {
         setSolicitarInteligenciaOpen(false)
       }} />
-
-      {/* Modal situación jurídica */}
-      <CustomDialog
-        isOpen={situacionModalOpen}
-        handleClose={() => setSituacionModalOpen(false)}
-        title={
-          personaSituacion
-            ? `Situación jurídica de ${formatNombreCompleto(personaSituacion)}`
-            : 'Situación jurídica'
-        }
-        maxWidth="sm"
-      >
-        <form
-          onSubmit={situacionForm.handleSubmit(onSubmitSituacion)}
-          className="space-y-4 p-5"
-        >
-          <div className="grid grid-cols-1 gap-4">
-            <RHFSelect<SituacionLegalCatalogo>
-              id="situacionLegalId"
-              name="situacionLegalId"
-              control={situacionForm.control}
-              label="Situación legal"
-              error={
-                situacionForm.formState.errors.situacionLegalId?.message as
-                | string
-                | undefined
-              }
-              originalData={situacionesLegales}
-              mapOption={mapSituacionLegalToOption}
-            />
-
-            <RHFDate
-              id="fecha"
-              name="fecha"
-              control={situacionForm.control}
-              label="Fecha de la situación jurídica"
-              clearable
-            />
-          </div>
-
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-end">
-            <Button
-              type="button"
-              variant="outline-secondary"
-              disabled={guardandoSituacion}
-              onClick={() => setSituacionModalOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              loading={guardandoSituacion}
-            >
-              Registrar
-            </Button>
-          </div>
-        </form>
-      </CustomDialog>
-
-      {/* Confirmación eliminar persona */}
-      <AlertDialog
-        isOpen={!!personaEliminar}
-        titulo="Eliminar persona"
-        texto={`¿Seguro que desea eliminar a "${personaEliminar ? formatNombreCompleto(personaEliminar) : ''}"?`}
-      >
-        <Button
-          type="button"
-          variant="outline-secondary"
-          disabled={eliminandoPersona}
-          onClick={() => setPersonaEliminar(null)}
-        >
-          Cancelar
-        </Button>
-        <Button
-          type="button"
-          variant="danger"
-          loading={eliminandoPersona}
-          onClick={confirmarEliminarPersona}
-        >
-          Eliminar
-        </Button>
-      </AlertDialog>
     </div>
   )
 }

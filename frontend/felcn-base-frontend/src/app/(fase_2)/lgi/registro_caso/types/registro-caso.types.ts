@@ -38,6 +38,16 @@ export interface DatosGeneralesPayload {
   controlJurisdiccional: string
 }
 
+export interface UltimaSituacionJuridica {
+  situacionId: string
+  detenidoId: string
+  situacionLegalId: string
+  situacionLegal: {
+    slId: number
+    descripcion: string
+  }
+}
+
 export interface PersonaImplicadaRow {
   deId: number
   casoId: number
@@ -54,6 +64,7 @@ export interface PersonaImplicadaRow {
   observaciones: string
   estado: boolean
   fechahoraing: string
+  ultimaSituacionJuridica: UltimaSituacionJuridica | null
   [key: string]: unknown
 }
 
