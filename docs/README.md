@@ -22,7 +22,7 @@ Informes de productos (entregables puntuales, fuera de la numeración): [informe
 
 Decisiones de arquitectura (ADR — por qué se decidió algo y qué se descartó, distinto de la documentación ejecutable de arriba): [adr/0001-postgres-nginx-registry-dockerizados.md](./adr/0001-postgres-nginx-registry-dockerizados.md).
 
-`templates/docker-compose.yml` queda de una iteración anterior y está desactualizado (compose de un solo ambiente) — no usar como fuente de verdad, ver nota en [02](./02-entorno-docker-dev.md). Para producción usar [templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml) (29/08/2026, ver [07](./07-servidor-nuevo-desde-cero.md) §10).
+Todo lo ejecutable (compose files, scripts, configs de Postgres/nginx/registry/MkDocs) se movió a [`deploy/`](../deploy/README.md) (30/08/2026) — `docs/` ya no tiene ninguna plantilla propia, solo la narrativa. Ver [`deploy/README.md`](../deploy/README.md) como punto de entrada operativo y [07](./07-servidor-nuevo-desde-cero.md) para la guía completa paso a paso.
 
 ## Hallazgos que salieron de escribir esta documentación (no relacionados a los documentos en sí)
 
@@ -43,7 +43,7 @@ Al diseñar Postgres/nginx/registry dockerizados para los servidores nuevos, se 
 8. **La versión real de Postgres es 17.11, no 16** — la documentación anterior decía "^16" sin haberlo verificado contra el servidor real. Confirmado restaurando un dump real contra `postgres:16` (falló por sintaxis de Postgres 17) y contra `postgres:17` (funcionó). Corregido en [03](./03-base-de-datos.md) §1 y en todas las plantillas nuevas.
 9. **Faltaba una base de datos en la documentación** (`felcn_s2i`) y el nombre real de otra estaba mal (`a_felcn_lgi`, no `felcn_lgi`) — confirmado contra los `.env` reales de `base-backend-v2`. Corregido en [03](./03-base-de-datos.md) §2.
 10. **Bug real en nginx**: un `add_header` dentro de una `location` resetea todos los `add_header` heredados del `server` — la ruta `/_next/static/` del nginx real de `servertest` no lleva los headers de seguridad por esto. No se corrige ahí (ese servidor se da de baja), pero sí en la plantilla nueva para servidores dockerizados. Detalle en [05](./05-nginx-y-tls.md) §1.
-11. **Bug real en el script de backup de `auth-backend`**: `backups/dbbackup.sh` respaldaba `database_db` (nombre de `base-backend-v2`, copiado mal) en vez de la base real. Corregido en la versión dockerizada nueva ([docs/templates/postgres/pg-backup.sh](./templates/postgres/pg-backup.sh)); el script original no se tocó. Detalle en [03](./03-base-de-datos.md) §9.1.
+11. **Bug real en el script de backup de `auth-backend`**: `backups/dbbackup.sh` respaldaba `database_db` (nombre de `base-backend-v2`, copiado mal) en vez de la base real. Corregido en la versión dockerizada nueva ([deploy/tools/postgres/pg-backup.sh](../deploy/tools/postgres/pg-backup.sh)); el script original no se tocó. Detalle en [03](./03-base-de-datos.md) §9.1.
 12. **Variable de entorno muerta eliminada**: `DB_SCHEMA_PARAMETRICAS` en el `docker-compose.yml` real de dev, sin ningún uso en código — sacada. Detalle en [04](./04-variables-de-entorno.md) §2.
 13. **Pipelines de CI/CD legados eliminados**: `.gitlab-ci.yml` y `.gitlab/k8s-*.yml` (AGETIC) en los 3 proyectos — confirmado sin push a ningún registry ni uso activo, no eran la base de nada del despliegue actual.
 

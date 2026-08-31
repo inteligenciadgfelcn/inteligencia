@@ -19,7 +19,7 @@ echo -e "\n\n >>> Build y push de las imágenes con tag '$tag' hacia '$registryH
 
 declare -A servicios=(
   [felcn-auth-backend]=./backend/felcn-auth-backend
-  [felcn-base-backend-v2]=./backend/felcn-base-backend-v2
+  [felcn-base-backend]=./backend/felcn-base-backend
   [felcn-base-frontend]=./frontend/felcn-base-frontend
 )
 

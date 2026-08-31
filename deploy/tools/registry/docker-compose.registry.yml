@@ -1,0 +1,60 @@
+# Registry de imágenes — SOLO se levanta en el servidor dev nuevo (.23), que es
+# donde se buildean las imágenes (decisión del usuario, 29/08/2026: Docker
+# Registry OSS simple, no Harbor). Staging/producción nunca corren esto, solo
+# hacen `docker pull` contra `registry.<dominio-dev>` (ver pull-and-deploy.sh).
+#
+# Reutiliza `felcn-network` (misma red que las apps de dev) y la instancia de
+# nginx dockerizada de ese servidor para exponerlo por HTTPS con auth htpasswd
+# (ver deploy/tools/nginx/conf.d/registry.conf.template) — el registry en sí
+# no publica ningún puerto al host, solo es alcanzable vía nginx.
+
+services:
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    environment:
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=Registry
+      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
+    volumes:
+      - registry_data:/var/lib/registry
+      - ./htpasswd:/auth/htpasswd:ro
+    networks:
+      - felcn-network
+
+  # UI de solo lectura para navegar repos/tags visualmente (registry:2 no trae
+  # ninguna interfaz propia, solo la API /v2/). joxit/docker-registry-ui trae
+  # su propio nginx interno que reenvía las llamadas /v2/ vía NGINX_PROXY_PASS_URL
+  # (evita problemas de CORS) — al pedir el catálogo recibe 401 de la auth
+  # htpasswd del registry real y el navegador solo, sin nada que configurar
+  # acá, muestra el prompt básico de usuario/contraseña.
+  #
+  # Publica el puerto directo al host (8081) en vez de ir por el nginx
+  # principal: esta imagen sirve sus assets con rutas absolutas a la raíz, sin
+  # soporte de sub-path en runtime — sin un subdominio propio (no hay DNS en
+  # este servidor) no hay forma limpia de exponerla vía path bajo `/`. En un
+  # servidor con dominio real, la alternativa correcta es un subdominio propio
+  # (ej. registry-ui.<dominio>) con su propio server block, igual que
+  # registry.conf.template hace para la API del registry.
+  registry-ui:
+    image: joxit/docker-registry-ui:main
+    container_name: registry-ui
+    restart: unless-stopped
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=FELCN Registry (dev)
+      - NGINX_PROXY_PASS_URL=http://registry:5000
+    ports:
+      - "8081:80"
+    networks:
+      - felcn-network
+    depends_on:
+      - registry
+
+volumes:
+  registry_data:
+
+networks:
+  felcn-network:
+    external: true
