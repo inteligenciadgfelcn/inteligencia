@@ -115,3 +115,96 @@ Cinco archivos distintos, cada uno con su propia responsabilidad — ningún val
 | 5 | `deploy/tools/nginx/conf.d/<DOMINIO>.conf` (activado desde `app.conf.template`) | El `server_name`/`ssl_certificate` con el `<DOMINIO>` real — **debe ser el mismo string** que la variable `DOMINIO` del punto 1, letra por letra (mayúsculas/IP/puerto incluido) | [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 4 |
 
 **Sin dominio real (solo IP, ej. un servidor de prueba)**: `DOMINIO` puede ser la IP literal (`172.16.76.22`) — funciona igual para los puntos 1, 4 y 5, pero el punto 2 (`OIDC_REDIRECT_URI`) casi seguro no funciona (AGETIC solo acepta el `redirect_uri` que tiene registrado para el dominio real de dev) y el punto 5 no puede emitir un certificado Let's Encrypt real (usar uno autofirmado, ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1). Probado de punta a punta el 30-31/08/2026 contra `172.16.76.22`.
+
+## 9. ⚠️ Trampa real: `cp .env.sample .env` + pegar secretos no es suficiente
+
+Confirmado real (31/08/2026, `sunesis-dev.felcn.gob.bo`): copiar el `.env.sample` y solo reemplazar las variables "obviamente secretas" (contraseñas, tokens) **deja otros valores por defecto sin corregir**, y ninguno de los tres backends avisa con un error claro cuando eso pasa:
+
+- `DB_HOST=localhost` (en vez de `postgres`) → `ECONNREFUSED 127.0.0.1:5432` al correr migraciones — al menos este sí es un error visible.
+- `DB_DATABASE=felcn_auth_v3` (en vez de `felcn_auth`) — no rompe nada visible en un servidor nuevo (la base simplemente no existe con ese nombre, TypeORM la crearía... no, en realidad falla también, pero con un mensaje menos obvio de "database does not exist").
+- **`ADMIN_INITIAL_PASSWORD=__CONTRASENA_FUERTE__` — el más peligroso.** Es un placeholder de ejemplo, pero tiene longitud y variedad suficiente para pasar la validación `zxcvbn` sin ningún error. El seed lo acepta como si fuera la contraseña real elegida, y el usuario `ADMINISTRADOR` queda con una contraseña que cualquiera que haya visto el `.env.sample` del repo conoce — **sin ningún log, warning, ni fallo que lo delate**. Solo se descubre revisando el `.env` a mano después. Ver el procedimiento de corrección (actualizar el hash directo en la base, ya que el seed no se repite) en [07-servidor-nuevo-desde-cero.md](./07-servidor-nuevo-desde-cero.md) Fase 8.
+
+**Antes de levantar cualquier app, correr esta verificación** (falla si queda algún placeholder sin reemplazar):
+
+```bash
+grep -c "localhost\|_v3\|CONTRASENA_FUERTE\|PENDIENTE" backend/felcn-auth-backend/.env backend/felcn-base-backend/.env
+```
+
+Debe dar `0` en ambos (o `2` en `auth-backend` si `OIDC_CLIENT_ID`/`SECRET` están a propósito como `__PENDIENTE_SOLICITAR_A_AGETIC__` mientras se tramita el registro real).
+
+### Plantilla completa de referencia — `backend/felcn-base-backend/.env`
+
+El `.env.sample` de este proyecto no tiene los valores correctos por bloque (`DB_HOST`, nombres reales de base, `DB_USERNAME`) para un servidor dockerizado nuevo — hay que corregir los 9 bloques a mano. Plantilla ya corregida, lista para reemplazar `<DB_PASSWORD>`/`<DB_APP_PASSWORD>`/`<JWT_SECRET>` (el mismo de `auth-backend`):
+
+```bash
+NODE_ENV=production
+PORT=3000
+
+DB_HOST=postgres
+DB_USERNAME=felcn_app
+DB_PASSWORD=<DB_APP_PASSWORD>
+DB_USE_SSL=false
+DB_VERIFY_SSL=false
+
+DB_AUTH_HOST=postgres
+DB_AUTH_USERNAME=felcn_app
+DB_AUTH_PASSWORD=<DB_APP_PASSWORD>
+DB_AUTH_DATABASE=felcn_auth
+
+DB_ASIG_CASOS_HOST=postgres
+DB_ASIG_CASOS_USERNAME=postgres
+DB_ASIG_CASOS_PASSWORD=<DB_PASSWORD>
+DB_ASIG_CASOS_DATABASE=a_felcn_asignacion_caso
+
+DB_SII_HOST=postgres
+DB_SII_USERNAME=postgres
+DB_SII_PASSWORD=<DB_PASSWORD>
+DB_SII_DATABASE=a_felcn_sii
+
+DB_SIII_HOST=postgres
+DB_SIII_USERNAME=postgres
+DB_SIII_PASSWORD=<DB_PASSWORD>
+DB_SIII_DATABASE=felcn_siii
+
+DB_LGI_HOST=postgres
+DB_LGI_USERNAME=postgres
+DB_LGI_PASSWORD=<DB_PASSWORD>
+DB_LGI_DATABASE=a_felcn_lgi
+
+DB_SOSPECHOSO_HOST=postgres
+DB_SOSPECHOSO_USERNAME=postgres
+DB_SOSPECHOSO_PASSWORD=<DB_PASSWORD>
+DB_SOSPECHOSO_DATABASE=a_felcn_sospechoso
+
+DB_PERSONAS_HOST=postgres
+DB_PERSONAS_USERNAME=postgres
+DB_PERSONAS_PASSWORD=<DB_PASSWORD>
+DB_PERSONAS_DATABASE=felcn_personas
+
+DB_VLS_HOST=postgres
+DB_VLS_USERNAME=postgres
+DB_VLS_PASSWORD=<DB_PASSWORD>
+DB_VLS_DATABASE=felcn_vls
+
+DB_S2I_HOST=postgres
+DB_S2I_USERNAME=postgres
+DB_S2I_PASSWORD=<DB_PASSWORD>
+DB_S2I_DATABASE=felcn_s2i
+
+JWT_SECRET=<JWT_SECRET>
+AUTH_BACKEND_INTERNAL_URL=http://auth-backend:4000
+
+LOG_SQL=true
+LOG_ENABLED=true
+LOG_LEVEL=info
+LOG_CONSOLE=true
+LOG_FILE_ENABLED=true
+LOG_FILE_PATH=/tmp/logs/
+LOG_FILE_SIZE=50M
+LOG_FILE_INTERVAL=YM
+
+LOOKUP_GENERO=1:Masculino,0:Femenino
+LOOKUP_ESTADO_SUJETO=Principal Implicado,Aprehendido,Arrestado,LGI O Perdida de Dominio
+```
+
+Nota: `felcn_app` solo tiene permisos sobre `felcn_auth` (ver `01-crear-bases.sh`) — por eso los 8 bloques de bases de dominio usan `postgres` (superusuario) como `DB_<NOMBRE>_USERNAME`, no `felcn_app`. Los campos omitidos a propósito (`IOP_SIN_*`, `MSJ_*`, `OIDC_*`, `URL_FRONTEND`) están documentados como sin uso real en este proyecto — ver sección 2.
