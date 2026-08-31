@@ -19,4 +19,19 @@ site/
 
 # Respaldos locales de BD y configuración de servidor (contienen datos reales, no versionar)
 /backups/
+# Copia local de referencia del nginx nativo real de servertest — contiene llaves
+# privadas TLS y la cuenta ACME reales de desarrollo.felcn.gob.bo. NUNCA versionar.
+# Hallazgo 30/08/2026: esto no debería vivir dentro del working tree del repo en
+# absoluto (mismo patrón que las llaves SSH encontradas en /backups/ssh/ antes) —
+# pendiente moverlo fuera por completo, se restaura el gitignore mientras tanto.
 /nginx/
+
+# Server blocks de nginx ya activados (`<DOMINIO>` reemplazado por el dominio/IP real
+# de un servidor puntual) — nunca los `.conf.template` versionados, ver deploy/tools/nginx/.
+# En dev/.23 este directorio se monta directo desde el repo clonado, así que el archivo
+# activado queda dentro del working tree si no se ignora acá.
+deploy/tools/nginx/conf.d/*.conf
+
+# Credenciales reales del Docker Registry (hashes bcrypt, generadas por
+# crear-htpasswd.sh) — nunca versionar, aunque estén hasheadas.
+deploy/tools/registry/htpasswd
