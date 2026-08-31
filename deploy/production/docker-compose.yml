@@ -54,7 +54,7 @@ services:
       - TZ=America/La_Paz
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../tools/postgres/01-crear-bases.sh:/docker-entrypoint-initdb.d/01-crear-bases.sh:ro
+      - ./postgres/01-crear-bases.sh:/docker-entrypoint-initdb.d/01-crear-bases.sh:ro
     networks:
       - felcn-network
     # Sin puertos publicados al host — solo lo alcanzan las apps de este mismo compose,
@@ -68,9 +68,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ../tools/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ../tools/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ../tools/nginx/snippets:/etc/nginx/snippets:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
     networks:
