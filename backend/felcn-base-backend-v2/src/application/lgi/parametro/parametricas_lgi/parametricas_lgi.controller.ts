@@ -19,6 +19,9 @@ import { BienesService } from '../bienes/bienes.service'
 import { CatalogoClaseLgiService } from '../catalogo-clase/catalogo-clase.service'
 import { CatalogoTipoLgiService } from '../catalogo-tipo/catalogo-tipo.service'
 import { CatalogoCaracteristicasLgiService } from '../catalogo-caracteristica/catalogo-caracteristicas.service'
+import { CalidadBienLgiService } from '../calidad-bien/calidad-bien.service'
+import { VinculoService } from '../vinculo/vinculo.service'
+import { TipoVinculoLgiService } from '../tipo-vinculo/tipo-vinculo.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -32,7 +35,10 @@ export class ParametricasLgiController extends BaseController {
     private readonly bienesLgiService: BienesService,
     private readonly claseBienService: CatalogoClaseLgiService,
     private readonly tipoService: CatalogoTipoLgiService,
-    private readonly caracteristicaService:CatalogoCaracteristicasLgiService,
+    private readonly caracteristicaService: CatalogoCaracteristicasLgiService,
+    private readonly situacionLegalService: CalidadBienLgiService,
+    private readonly vinculoService: VinculoService,
+    private readonly tipoVinculoService: TipoVinculoLgiService,
   ) {
     super()
   }
@@ -158,11 +164,39 @@ export class ParametricasLgiController extends BaseController {
     return this.tipoService.findAllTipoClase(idClase)
   }
 
-   @Get('allCaracteristicasClase/:idClase')
+  @Get('allCaracteristicasClase/:idClase')
   @ApiOperation({
     summary: 'Listar caracteristicas de una clase del bien',
   })
   findAllCaracteristicaClase(@Param('idClase', ParseIntPipe) idClase: number) {
     return this.caracteristicaService.findAllCaracteristicaClase(idClase)
   }
+
+  @Get('allSituacionlegalBien')
+  @ApiOperation({
+    summary: 'Listar situacion legal',
+  })
+  findAll() {
+    return this.situacionLegalService.findAll()
+  }
+
+  @Get('allVinculo')
+   @ApiOperation({
+    summary: 'Listar vinculo',
+  })
+  findAllVinculo() {
+    return this.vinculoService.findAll();
+  }
+
+  @Get('tipo/:idVinculo')
+  @ApiOperation({
+    summary: 'Listar bienes secuestrados por tipo de vínculo',
+  })
+  findAllByTipoVinculo(
+    @Param('idVinculo', ParseIntPipe)
+    idVinculo: number
+  ) {
+    return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
+  }
+
 }

@@ -13,7 +13,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { Request } from 'express'
 
 import { BaseController } from '@/common/base/base-controller'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'

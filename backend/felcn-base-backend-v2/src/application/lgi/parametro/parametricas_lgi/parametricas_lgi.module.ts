@@ -16,6 +16,9 @@ import { BienesModule } from '../bienes/bienes.module'
 import { CatalogoClaseModule } from '../catalogo-clase/catalogo-clase.module'
 import { CatalogoTipoModule } from '../catalogo-tipo/catalogo-tipo.module'
 import { CatalogoCaracteristicasModule } from '../catalogo-caracteristica/catalogo-caracteristicas.module'
+import { CalidadBienModule } from '../calidad-bien/calidad-bien.module'
+import { VinculoModule } from '../vinculo/vinculo.module'
+import { TipoVinculoModule } from '../tipo-vinculo/tipo-vinculo.module'
 
 @Module({
    imports: [
@@ -25,6 +28,9 @@ import { CatalogoCaracteristicasModule } from '../catalogo-caracteristica/catalo
     CatalogoClaseModule,
     CatalogoTipoModule,
     CatalogoCaracteristicasModule,
+    CalidadBienModule,
+    VinculoModule,
+    TipoVinculoModule,
   ],
 
   controllers: [ParametricasLgiController],

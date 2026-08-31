@@ -24,6 +24,9 @@ import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica
 import { InvestigadoresModule } from './investigadores/investigadores.module';
 import { InformacionSiiiModule } from './informacion_siii/informacion_siii.module';
 import { ActuacionesModule } from './actuaciones/actuaciones.module';
+import { BienesSecuestradosModule } from './bienes_secuestrados/bienes_secuestrados.module';
+import { VinculoModule } from './parametro/vinculo/vinculo.module';
+import { TipoVinculoModule } from './parametro/tipo-vinculo/tipo-vinculo.module';
 
 @Module({
   imports: [
@@ -43,6 +46,8 @@ import { ActuacionesModule } from './actuaciones/actuaciones.module';
     TamanoDocModule,
     ContenidoBienModule,
     CalidadBienModule,
+    VinculoModule,
+    TipoVinculoModule,
     AsignacionLgiModule,
     ParametricasLgiModule,
     PersonasImplicadasModule,
@@ -50,6 +55,7 @@ import { ActuacionesModule } from './actuaciones/actuaciones.module';
     InvestigadoresModule,
     InformacionSiiiModule,
     ActuacionesModule,
+    BienesSecuestradosModule,
   ],
   controllers: [],
 })
