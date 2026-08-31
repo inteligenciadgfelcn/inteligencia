@@ -109,16 +109,16 @@ export function FormNombresSupuestos({
               register={register}
             />
           </div>
-          <div className="col-span-12 mt-6 flex gap-4">
-            <button type="submit" className="btn btn-sm btn-primary col-span-2">
-              Agregar nombres supuestos
-            </button>
-          </div>
+        </div>
+        <div className="col-span-12 mt-6 flex gap-4">
+          <button type="submit" className="btn btn-sm btn-primary w-full md:w-auto">
+            Agregar nombres supuestos
+          </button>
         </div>
       </form>
 
       {idDetenido && (
-        <div className="mt-4">
+        <div className="mt-4 overflow-x-auto">
           <VristoDataTable<NombresSupuestosItem>
             rows={query.data ?? []}
             total={query.data?.length ?? 0}

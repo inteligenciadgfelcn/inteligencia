@@ -137,6 +137,23 @@ export const ServicioForm = () => {
       <LoadingDialog show={loading} />
       <div className="">
         <div className="">
+          {/* Breadcumb */}
+          <div className="mb-5">
+            <ol className="flex text-primary font-semibold dark:text-white-dark">
+              <li className="bg-[#ebedf2] ltr:rounded-l-md rtl:rounded-r-md dark:bg-[#1b2e4b]">
+                <button className="p-1.5 ltr:pl-3 rtl:pr-3 ltr:pr-2 rtl:pl-2 relative  h-full flex items-center before:absolute ltr:before:-right-[15px] rtl:before:-left-[15px] rtl:before:rotate-180 before:inset-y-0 before:m-auto before:w-0 before:h-0 before:border-[16px] before:border-l-[15px] before:border-r-0 before:border-t-transparent before:border-b-transparent before:border-l-[#ebedf2] before:z-[1] dark:before:border-l-[#1b2e4b] hover:text-primary/70 dark:hover:text-white-dark/70">
+                  Inicio
+                </button>
+              </li>
+              <li className="bg-[#ebedf2] dark:bg-[#1b2e4b]">
+                <button className="bg-primary text-white-light p-1.5 ltr:pl-6 rtl:pr-6 ltr:pr-2 rtl:pl-2 relative  h-full flex items-center before:absolute ltr:before:-right-[15px] rtl:before:-left-[15px] rtl:before:rotate-180 before:inset-y-0 before:m-auto before:w-0 before:h-0 before:border-[16px] before:border-l-[15px] before:border-r-0 before:border-t-transparent before:border-b-transparent before:border-l-primary before:z-[1]">
+                  Creación de servicios
+                </button>
+              </li>
+            </ol>
+          </div>
+          {/* End breadcum */}
+
           <div className="panel flex items-center p-3 text-primary mb-5">
             <span className="text-lg font-semibold">
               Formulario de creación de codigos de servicios
@@ -145,8 +162,8 @@ export const ServicioForm = () => {
           {/* FORM */}
           <div className="panel">
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-12 p-4 gap-4">
-                <div className="col-span-8">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
+                <div className="col-span-1 sm:col-span-8">
                   <AsyncSearchSelect<Usuario>
                     control={control}
                     name="entrante"
@@ -169,7 +186,7 @@ export const ServicioForm = () => {
                     }}
                   />
                 </div>
-                <div className="col-span-4">
+                <div className="col-span-1 sm:col-span-4">
                   <InputWithPrefix
                     name="entrantePase"
                     prefix="Numero de Pase"
@@ -178,7 +195,7 @@ export const ServicioForm = () => {
                     readOnly
                   />
                 </div>
-                <div className="col-span-8">
+                <div className="col-span-1 sm:col-span-8">
                   <AsyncSearchSelect<Usuario>
                     control={control}
                     name="emergencia"
@@ -201,7 +218,7 @@ export const ServicioForm = () => {
                     }}
                   />
                 </div>
-                <div className="col-span-4">
+                <div className="col-span-1 sm:col-span-4">
                   <InputWithPrefix
                     name="emergenciaPase"
                     prefix="Numero de Pase"
@@ -210,7 +227,7 @@ export const ServicioForm = () => {
                     readOnly
                   />
                 </div>
-                <div className="col-span-8">
+                <div className="col-span-1 sm:col-span-8">
                   <InputWithPrefix
                     name="fechaHoraIngreso"
                     prefix="Fecha y hora de Ingreso al Servicio"
@@ -218,8 +235,8 @@ export const ServicioForm = () => {
                     error={errors.fechaHoraIngreso?.message as string}
                   />
                 </div>
-                <div className="col-span-4"></div>
-                <div className="col-span-8">
+                <div className="hidden sm:block sm:col-span-4"></div>
+                <div className="col-span-1 sm:col-span-8">
                   <InputWithPrefix
                     name="fechaHoraSalida"
                     prefix="Fecha y hora de Salida del Servicio"
@@ -227,8 +244,8 @@ export const ServicioForm = () => {
                     error={errors.fechaHoraSalida?.message as string}
                   />
                 </div>
-                <div className="col-span-4"></div>
-                <div className="col-span-3">
+                <div className="hidden sm:block sm:col-span-4"></div>
+                <div className="col-span-1 sm:col-span-3">
                   <button
                     type="button"
                     disabled={loading}
@@ -241,7 +258,7 @@ export const ServicioForm = () => {
                     Asignar codigo de servicio
                   </button>
                 </div>
-                <div className="col-span-5">
+                <div className="col-span-1 sm:col-span-5">
                   <InputWithPrefix
                     name="codigoServicio"
                     register={register}
@@ -254,7 +271,7 @@ export const ServicioForm = () => {
               {/* <ProgresoLineal mostrar={loading} /> */}
 
               {/* FOOTER */}
-              <div className="flex justify-end gap-3 px-5 py-4 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 px-5 py-4 dark:border-gray-700">
                 {/* <button
               type="button"
               onClick={onClose}
@@ -267,7 +284,7 @@ export const ServicioForm = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="btn btn-primary"
+                  className="btn btn-primary w-full sm:w-auto"
                 >
                   Guardar codigo de servicio
                 </button>
