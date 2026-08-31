@@ -1,7 +1,7 @@
 {
-  "name": "felcn-base-backend",
+  "name": "felcn-auth-backend",
   "version": "1.18.1-rc",
-  "description": "Backend base con Nest.js, TypeORM y TypeScript",
+  "description": "Backend de autenticación con Nest.js, TypeORM y TypeScript",
   "author": "support@felcn.gob.bo",
   "private": true,
   "license": "LPG-Bolivia",

@@ -19,6 +19,8 @@ Como este servidor es dedicado a un solo ambiente (no corre dev y staging en par
 
 Este servidor es una **VM en un Proxmox** (no bare metal) — la Fase 0 completa se hace desde la interfaz web de Proxmox (`https://<host-proxmox>:8006`), sin necesitar USB físico. Esto se hace **una sola vez**. Todo lo de acá abajo (Fase 1 en adelante) asume que ya existe un Debian 13 arrancado y accesible por SSH.
 
+**Variante: servidor físico ya instalado (sin Proxmox).** Probado de punta a punta el 30/08/2026 contra `172.16.76.22` (IBM System x3250 M4, hardware real — confirmado con `systemd-detect-virt` → `none`). Esta Fase 0 completa **no aplica**: no hay VM que crear ni snapshot de hipervisor disponible como punto de restauración (ver [deploy/tools/reset-servidor-dev.sh](../deploy/tools/reset-servidor-dev.sh) para el equivalente scripted en este caso). Saltar directo a la Fase 1 una vez confirmado el acceso SSH — el resto de las fases (1 en adelante) es idéntico. Un hallazgo real de esta variante: el usuario administrador inicial puede no tener `sudo` instalado en absoluto (paquete faltante, no solo permiso denegado) — confirmar con `which sudo` antes de asumir que solo falta agregarlo al grupo; si falta el paquete, instalarlo desde una sesión con acceso root real (`su -`) y recién ahí `usermod -aG sudo <usuario>`.
+
 ### Subir el ISO a Proxmox
 
 1. Descargar el netinst de Debian 13 (trixie) — arquitectura `amd64` — desde `https://www.debian.org/distrib/`. Verificar el checksum (`SHA256SUMS`) antes de usarlo.
@@ -130,6 +132,8 @@ sudo apt update
 sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
 ```
 
+**Puerto SSH real de este servidor**: los bloques de abajo usan `22`/`ssh` como ejemplo — si el servidor usa un puerto no estándar (confirmar con `sudo sshd -T | grep '^port'` antes de tocar nada), reemplazar **en los tres lugares** (`ufw allow`, `port = ssh` de fail2ban, y cualquier referencia futura) por el puerto real. Fail2ban en particular no lo infiere solo: `port = ssh` se resuelve contra `/etc/services` (→ 22) para saber qué puerto banear, así que en un puerto no estándar sin corregir esto, el ban de fail2ban terminaría bloqueando el puerto 22 (que nadie usa) y dejando el puerto real completamente desprotegido — confirmado como hallazgo real al configurar `172.16.76.22` (puerto `50022`), no un caso hipotético.
+
 ### UFW (firewall)
 
 ```bash
@@ -146,6 +150,14 @@ sudo ufw status verbose   # confirmar que las 3 reglas quedaron activas
 
 ### Fail2ban
 
+**⚠️ Advertencia real (hallazgo del 30/08/2026, servidor de prueba `172.16.76.22`): instalar fail2ban con el jail `sshd` justo después de cualquier intento de login fallido — incluso uno de diagnóstico propio — puede causar un auto-bloqueo total e inmediato.** El backend `systemd` de fail2ban escanea el backlog del log de auth (dentro de `findtime`) al arrancar/reiniciar el servicio, así que cuenta también los intentos fallidos que ya pasaron, no solo los que ocurran después. Si quien está configurando el servidor probó una contraseña incorrecta minutos antes (por ejemplo para confirmar qué usuario/método de acceso es el correcto), fail2ban puede banear esa misma IP de gestión al primer `restart`, sin ninguna otra vía de entrada disponible salvo acceso físico/consola.
+
+Antes de reiniciar fail2ban después de instalarlo:
+1. Agregar la IP real desde la que se está administrando el servidor a `ignoreip` (además de `127.0.0.1/8 ::1`).
+2. Si no se conoce esa IP de antemano, esperar a que pase el `findtime` (10 min en esta config) desde el último intento fallido antes de reiniciar el servicio.
+
+Recuperación si ya pasó (requiere acceso físico/consola, no hay otra vía): `sudo fail2ban-client unban --all`.
+
 ```bash
 sudo apt install -y fail2ban
 sudo tee /etc/fail2ban/jail.local > /dev/null <<'EOF'
@@ -154,7 +166,7 @@ bantime  = 1h
 findtime = 10m
 maxretry = 5
 backend  = systemd
-ignoreip = 127.0.0.1/8 ::1
+ignoreip = 127.0.0.1/8 ::1 <IP-DE-GESTION-REAL>
 
 [sshd]
 enabled  = true
@@ -253,7 +265,33 @@ Ya no se instala en el host — corre como contenedor, definido en el mismo `doc
   - **Dump ya generado (21/08/2026)** de las 8 bases reales: `backups/20260821-staging-migracion/` (fuera de git — `/backups/` está en `.gitignore`, contiene datos reales; copiar al servidor nuevo por un canal seguro). Trae su propio `README.md` con los comandos de restauración exactos (adaptar a la versión dockerizada de arriba).
 - **Persistencia**: volumen nombrado `postgres_data` — recrear o actualizar la imagen del contenedor nunca borra los datos (probado: `docker kill`+recrear el contenedor y las bases/schemas restaurados seguían intactos). Solo un `docker compose down -v` explícito los borraría.
 - Las apps (Fase 5, mismo compose) llegan a Postgres por `DB_HOST=postgres` (nombre del servicio Docker, misma red `felcn-network`) — ya no hace falta `host.docker.internal` ni `extra_hosts`, Postgres está en la misma red interna, no en el host.
-- Backup automatizado **desde el primer día**, con [deploy/tools/postgres/pg-backup.sh](../deploy/tools/postgres/pg-backup.sh) (`docker exec` + `pg_dump` directo, ya no hace falta copiar el script adentro del contenedor como en la versión nativa) por cron, volcando a un directorio del host fuera de cualquier volumen Docker (p. ej. `/opt/backups/postgres/`). Este punto es crítico: en `servertest` el backup automatizado diario **lleva roto desde el 1 de mayo de 2026** por un problema de permisos en su propio archivo de log (`set -euo pipefail` corta el script en la primera línea) — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 9.2. Para el servidor nuevo: correr el script de backup manualmente una vez después de instalarlo y **confirmar que el archivo de dump se generó**, no confiar en que el cron "corrió sin error" en el log — el mismo tipo de fallo silencioso que rompió el de `servertest`.
+- Backup automatizado **desde el primer día**, con [deploy/tools/postgres/pg-backup.sh](../deploy/tools/postgres/pg-backup.sh) (`docker exec` + `pg_dump` directo, ya no hace falta copiar el script adentro del contenedor como en la versión nativa) por cron, volcando a un directorio del host fuera de cualquier volumen Docker (p. ej. `/opt/backups/postgres/`). Este punto es crítico: en `servertest` el backup automatizado diario **lleva roto desde el 1 de mayo de 2026** por un problema de permisos en su propio archivo de log (`set -euo pipefail` corta el script en la primera línea) — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 9.2. Para el servidor nuevo: correr el script de backup manualmente una vez después de instalarlo y **confirmar que el archivo de dump se generó**, no confiar en que el cron "corrió sin error" en el log — el mismo tipo de fallo silencioso que rompió el de `servertest`. **Probado real contra esta arquitectura dockerizada el 30/08/2026** (`172.16.76.22`): `pg-backup.sh felcn_auth` generó un `.sql.gz` válido (`gunzip -t` OK, contenido real confirmado) al primer intento, sin ajustes.
+
+### ⚠️ Cómo correr `migrations:run`/`seeds:run` sin Node instalado en el host (hallazgo real, 30/08/2026)
+
+Este servidor solo tiene Docker — no Node.js — y la imagen final de cada backend (`dockerfile`, etapa `app`) es deliberadamente mínima: `npm ci --omit=dev` + copia solo `dist/`, sin `database/` (las migraciones y seeds en TypeScript) ni el CLI de TypeORM/`ts-node`. Un `docker compose run --rm <servicio> npm run migrations:run` contra esa imagen **falla** (no existe `database/`, ni `ts-node`, ni los scripts npm que dependen de devDependencies). El mecanismo real que sí funciona es construir la etapa intermedia `build` del mismo `dockerfile` (esa sí trae devDependencies + el código fuente completo) y correrla puntualmente contra la red del compose, como `postgres` (superusuario, no `felcn_app`, que no tiene permisos de DDL):
+
+```bash
+# Una vez por backend (auth-backend y base-backend/base-backend-v2), después de
+# levantar el contenedor de Postgres:
+docker build --target build -t auth-backend-migrate:tmp backend/felcn-auth-backend
+
+DB_PW=$(grep ^DB_PASSWORD= deploy/development/.env | cut -d= -f2-)   # o el .env del compose que corresponda
+docker run --rm --network felcn-network \
+  --env-file backend/felcn-auth-backend/.env \
+  -e DB_USERNAME=postgres -e DB_PASSWORD="$DB_PW" \
+  -w /home/node/app auth-backend-migrate:tmp \
+  npm run migrations:run
+
+# Mismo patrón para seeds:run (usa ormconfig-seed.ts, mismo -e DB_USERNAME/DB_PASSWORD)
+docker run --rm --network felcn-network \
+  --env-file backend/felcn-auth-backend/.env \
+  -e DB_USERNAME=postgres -e DB_PASSWORD="$DB_PW" \
+  -w /home/node/app auth-backend-migrate:tmp \
+  npm run seeds:run
+```
+
+Probado de punta a punta el 30/08/2026 (`172.16.76.22`): las 9 migraciones y todos los seeds de `felcn-auth-backend` corrieron limpio con este mecanismo, sin instalar Node en el host. La imagen `auth-backend-migrate:tmp` es descartable — se puede borrar después (`docker rmi auth-backend-migrate:tmp`) o dejarla para la próxima vez que haga falta correr migraciones nuevas (rebuildear si el código cambió).
 
 ## 4. Fase 4 — nginx **dockerizado**
 
@@ -325,7 +363,9 @@ docker compose -f docker-compose.registry.yml up -d
 ```
 
 - Expuesto vía nginx (mismo contenedor de la Fase 4) con TLS + auth `htpasswd` — ver `deploy/tools/nginx/conf.d/registry.conf.template`, dominio propuesto `registry.sunesis-dev.felcn.gob.bo` (**nuevo registro DNS a coordinar**, misma IP `.23`). El registry en sí no publica ningún puerto al host.
-- Build y push desde acá: `bash deploy/tools/registry/build-and-push.sh [tag]` (requiere `docker login registry.sunesis-dev.felcn.gob.bo` una vez antes).
+- Build y push desde acá: `bash deploy/tools/registry/build-and-push.sh [tag]` (requiere `docker login registry.sunesis-dev.felcn.gob.bo` una vez antes). Sin dominio propio para el registry (ej. probando en un servidor solo por IP, ver variante de la Fase 0), `REGISTRY_HOST` acepta la IP directa: `REGISTRY_HOST=<ip> bash build-and-push.sh [tag]`.
+- **Sin dominio (solo IP), `registry.conf.template` no aplica tal cual** — asume un `server_name` propio (subdominio) para el registry, distinto del de la app. Con una sola IP no hay forma de que nginx distinga dos `server_name` por SNI, así que la alternativa probada (30/08/2026, `172.16.76.22`) es rutear por **path** dentro del mismo server block ya activado para la IP: agregar un `location /v2/ { proxy_pass http://registry:5000/v2/; ... }` (con `client_max_body_size 0;` y `chunked_transfer_encoding on;`, igual que en la plantilla) al `<IP>.conf` de la Fase 4, en vez de un server block aparte. En un servidor con dominio real, seguir usando `registry.conf.template` con su propio subdominio — es la opción más limpia cuando hay DNS disponible.
+- **UI para navegar repos/tags visualmente** (opcional, `registry:2` no trae ninguna): agregar el servicio `registry-ui` (`joxit/docker-registry-ui`) a `docker-compose.registry.yml`, con `NGINX_PROXY_PASS_URL=http://registry:5000` y `SINGLE_REGISTRY=true` — usa las mismas credenciales `htpasswd`, el navegador pide usuario/contraseña automáticamente al recibir el 401 del registry real. Sin dominio propio, exponerla con un puerto publicado directo (ej. `8081:80`) en vez de vía nginx: esta imagen sirve sus assets con rutas absolutas a la raíz, sin soporte de sub-path en runtime. Probado de punta a punta el 30/08/2026.
 
 ## 6. Fase 6 — Estructura de producción
 
@@ -368,8 +408,10 @@ sudo systemctl set-default multi-user.target
 
 Una vez completadas las fases 1-5b (Postgres, nginx y — si es `.23` — el registry ya arriba):
 
+**⚠️ Especificar siempre la rama (hallazgo real, 30/08/2026):** la rama por defecto del repo en GitHub es `main` (un stub viejo de 2 commits, sin relación con el desarrollo real) — un `git clone` sin `-b` trae ese stub casi vacío en vez del código real. Usar siempre `-b develop` (o la rama de trabajo puntual que corresponda) explícito:
+
 ```bash
-git clone git@github.com:inteligenciadgfelcn/inteligencia.git /srv/inteligencia
+git clone -b develop git@github.com:inteligenciadgfelcn/inteligencia.git /srv/inteligencia
 cd /srv/inteligencia
 # .env por proyecto — ver 04-variables-de-entorno.md — con secretos rotados, no copiados de servertest.
 # Como este servidor ES el ambiente de staging (no corre dev en paralelo), las credenciales reales
@@ -392,7 +434,7 @@ No dar el servidor nuevo por completo solo porque `docker compose up -d --build`
 - [ ] **Seguridad**: `sudo ufw status verbose` con las reglas esperadas activas, fail2ban con los jails de sshd/nginx corriendo (`fail2ban-client status`), SSH con `PasswordAuthentication` habilitado a propósito — no repetir el hardening que hubo que revertir en `servertest` (sección 1).
 - [ ] **Docker**: `docker.service` habilitado en systemd (`systemctl is-enabled docker`), límites de logging configurados en `/etc/docker/daemon.json`, **todos** los servicios del compose con `restart: unless-stopped` (ahora incluye Postgres y nginx, no solo las apps).
 - [ ] **Imágenes**: en dev/staging, build hecho con el código que realmente se quiere desplegar — el build context toma el disco tal cual está (incluye cambios sin commitear), no `git HEAD`; confirmar `git status` limpio antes de un build. En producción, el tag desplegado (`pull-and-deploy.sh <tag>`) corresponde al build real que se probó en dev — ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md).
-- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`, `postgres`, `nginx`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), ningún puerto de Postgres publicado al host (solo alcanzable por nombre de servicio en `felcn-network`).
+- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`, `postgres`, `nginx`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), ningún puerto de Postgres publicado al host (solo alcanzable por nombre de servicio en `felcn-network`). Nota: `base-backend-v2` imprime `[printRoutes] warn: no se encontraron rutas` en su log de arranque — confirmado cosmético (timing del logger antes de terminar de registrar rutas), no indica que el servicio esté roto; verificar con una petición HTTP real si hay duda, no solo mirando el log.
 - [ ] **nginx** (dockerizado): `docker compose exec nginx nginx -t` sin errores, contenedor activo con `restart: unless-stopped` (ya no depende de un drop-in de systemd, ver [06-systemd-y-contenedores.md](./06-systemd-y-contenedores.md)), rate limiting y headers de seguridad activos, sin ningún `include` colgando de `/srv/interop/...` (ese proyecto no corre acá).
 - [ ] **Certificados**: Let's Encrypt emitido para el dominio de este servidor y renovando solo (`docker compose run --rm certbot renew --dry-run`, timer de systemd del host listado en `systemctl list-timers`).
 - [ ] **SMTP**: ver verificación explícita abajo — sin esto, todo el ciclo de altas de usuario queda roto en silencio.
