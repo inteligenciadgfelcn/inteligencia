@@ -15,11 +15,11 @@ trap "echo -e '\n\nERROR: Ocurrió un error mientras se ejecutaba el script :(\n
 # repo. NO toca el sistema operativo, Docker Engine en sí, UFW ni fail2ban —
 # esos quedan instalados y configurados, listos para el próximo clone.
 #
-# En un servidor SIN snapshot de hipervisor (bare metal, como 172.16.76.22 —
-# ver docs/07-servidor-nuevo-desde-cero.md Fase 0) este script ES el punto de
-# restauración: no hay forma de "volver atrás" más confiable que esto en
-# hardware físico. En una VM con snapshot disponible, preferir el snapshot
-# (más rápido y no depende de que este script cubra todo correctamente).
+# Script puntual para el ejercicio de práctica en el servidor de prueba
+# 172.16.76.22 (bare metal, sin snapshot de hipervisor disponible) — no forma
+# parte de la guía general de servidores nuevos. En una VM con snapshot
+# disponible, preferir el snapshot (más rápido y no depende de que este
+# script cubra todo correctamente).
 #
 # Uso: bash reset-servidor-dev.sh [ruta-del-repo-clonado]
 # Por defecto asume /srv/inteligencia (la convención usada en todo el resto
@@ -30,6 +30,18 @@ repoPath="${1:-/srv/inteligencia}"
 if [ ! -d "$repoPath" ]; then
   echo -e "\n>>> '$repoPath' no existe, nada que resetear (ya está en cero).\n"
   exit 0
+fi
+
+# Este script vive dentro de $repoPath y termina borrándolo — si se ejecuta
+# desde ahí mismo, bash puede fallar a mitad de camino leyendo su propio
+# archivo ya borrado (confirmado real: el rm -rf final no llegó a correr).
+# Se copia a /tmp y se re-ejecuta desde ahí antes de tocar nada.
+scriptRealPath="$(readlink -f "$0")"
+if [[ "$scriptRealPath" == "$repoPath"/* ]]; then
+  tmpCopy="$(mktemp /tmp/reset-servidor-dev.XXXXXX.sh)"
+  cp "$scriptRealPath" "$tmpCopy"
+  chmod +x "$tmpCopy"
+  exec bash "$tmpCopy" "$repoPath"
 fi
 
 echo -e "\n\n >>> Reseteando el entorno Docker de '$repoPath' a cero...\n"
