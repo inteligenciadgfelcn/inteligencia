@@ -19,6 +19,8 @@ Como este servidor es dedicado a un solo ambiente (no corre dev y staging en par
 
 Este servidor es una **VM en un Proxmox** (no bare metal) — la Fase 0 completa se hace desde la interfaz web de Proxmox (`https://<host-proxmox>:8006`), sin necesitar USB físico. Esto se hace **una sola vez**. Todo lo de acá abajo (Fase 1 en adelante) asume que ya existe un Debian 13 arrancado y accesible por SSH.
 
+**Variante: servidor físico ya instalado (sin Proxmox).** Probado de punta a punta el 30/08/2026 contra `172.16.76.22` (IBM System x3250 M4, hardware real — confirmado con `systemd-detect-virt` → `none`). Esta Fase 0 completa **no aplica**: no hay VM que crear en este caso. Saltar directo a la Fase 1 una vez confirmado el acceso SSH — el resto de las fases (1 en adelante) es idéntico. Un hallazgo real de esta variante: el usuario administrador inicial puede no tener `sudo` instalado en absoluto (paquete faltante, no solo permiso denegado) — confirmar con `which sudo` antes de asumir que solo falta agregarlo al grupo; si falta el paquete, instalarlo desde una sesión con acceso root real (`su -`) y recién ahí `usermod -aG sudo <usuario>`.
+
 ### Subir el ISO a Proxmox
 
 1. Descargar el netinst de Debian 13 (trixie) — arquitectura `amd64` — desde `https://www.debian.org/distrib/`. Verificar el checksum (`SHA256SUMS`) antes de usarlo.
@@ -130,6 +132,8 @@ sudo apt update
 sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
 ```
 
+**Puerto SSH real de este servidor**: los bloques de abajo usan `22`/`ssh` como ejemplo — si el servidor usa un puerto no estándar (confirmar con `sudo sshd -T | grep '^port'` antes de tocar nada), reemplazar **en los tres lugares** (`ufw allow`, `port = ssh` de fail2ban, y cualquier referencia futura) por el puerto real. Fail2ban en particular no lo infiere solo: `port = ssh` se resuelve contra `/etc/services` (→ 22) para saber qué puerto banear, así que en un puerto no estándar sin corregir esto, el ban de fail2ban terminaría bloqueando el puerto 22 (que nadie usa) y dejando el puerto real completamente desprotegido — confirmado como hallazgo real al configurar `172.16.76.22` (puerto `50022`), no un caso hipotético.
+
 ### UFW (firewall)
 
 ```bash
@@ -146,6 +150,14 @@ sudo ufw status verbose   # confirmar que las 3 reglas quedaron activas
 
 ### Fail2ban
 
+**⚠️ Advertencia real (hallazgo del 30/08/2026, servidor de prueba `172.16.76.22`): instalar fail2ban con el jail `sshd` justo después de cualquier intento de login fallido — incluso uno de diagnóstico propio — puede causar un auto-bloqueo total e inmediato.** El backend `systemd` de fail2ban escanea el backlog del log de auth (dentro de `findtime`) al arrancar/reiniciar el servicio, así que cuenta también los intentos fallidos que ya pasaron, no solo los que ocurran después. Si quien está configurando el servidor probó una contraseña incorrecta minutos antes (por ejemplo para confirmar qué usuario/método de acceso es el correcto), fail2ban puede banear esa misma IP de gestión al primer `restart`, sin ninguna otra vía de entrada disponible salvo acceso físico/consola.
+
+Antes de reiniciar fail2ban después de instalarlo:
+1. Agregar la IP real desde la que se está administrando el servidor a `ignoreip` (además de `127.0.0.1/8 ::1`).
+2. Si no se conoce esa IP de antemano, esperar a que pase el `findtime` (10 min en esta config) desde el último intento fallido antes de reiniciar el servicio.
+
+Recuperación si ya pasó (requiere acceso físico/consola, no hay otra vía): `sudo fail2ban-client unban --all`.
+
 ```bash
 sudo apt install -y fail2ban
 sudo tee /etc/fail2ban/jail.local > /dev/null <<'EOF'
@@ -154,7 +166,7 @@ bantime  = 1h
 findtime = 10m
 maxretry = 5
 backend  = systemd
-ignoreip = 127.0.0.1/8 ::1
+ignoreip = 127.0.0.1/8 ::1 <IP-DE-GESTION-REAL>
 
 [sshd]
 enabled  = true
@@ -243,21 +255,47 @@ cat ~/.ssh/<nombre-servidor>_ed25519.pub   # registrar esta clave pública en la
 
 ## 3. Fase 3 — Base de datos: PostgreSQL **dockerizado**
 
-Ya no se instala en el host — corre como contenedor, definido en el mismo `docker-compose.yml` de este servidor (junto a las apps y nginx, ver plantilla [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml)). Init real, ya probado, en [docs/templates/postgres/](./templates/postgres/):
+Ya no se instala en el host — corre como contenedor, definido en el mismo `docker-compose.yml` de este servidor (junto a las apps y nginx, ver plantilla [deploy/staging/docker-compose.yml](../deploy/staging/docker-compose.yml)). Init real, ya probado, en [deploy/tools/postgres/](../deploy/tools/postgres/):
 
 **Antes de correr `docker compose up postgres`**, esto es lo que hay que saber sobre cómo queda configurado, sin tener que leer el YAML para inferirlo: no publica **ningún puerto** al host — solo lo alcanzan las apps de este mismo compose, por nombre de servicio (`postgres`), dentro de la red `felcn-network` (tipo `bridge`, definida una sola vez con `name: felcn-network` fijo en `docker-compose.prod.yml`, ver la nota 7 de ese archivo). Los datos viven en el volumen nombrado `postgres_data` — no uno anónimo, así sobrevive a un `docker compose down` sin `-v`. Ninguna de estas tres cosas (puerto, red, disco) necesita configuración manual aparte: ya vienen así en la plantilla.
 
 - **`01-crear-bases.sh`** se monta en `docker-entrypoint-initdb.d/` — al primer arranque del contenedor crea las 9 bases reales vacías (`felcn_auth` — nombre **corregido**, antes `felcn_auth_v3`, ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) — más las 8 de `base-backend-v2`), propiedad del rol `postgres` (superusuario, el único que corre migraciones/DDL). En la misma pasada crea `felcn_app` — un **rol de aplicación sin privilegios de superusuario ni DDL** (decisión del 30/08/2026, reemplaza la versión anterior que usaba `postgres` para todo) — con permisos de `SELECT`/`INSERT`/`UPDATE`/`DELETE` sobre las tablas de `felcn_auth` vía `ALTER DEFAULT PRIVILEGES FOR ROLE postgres`, así cada tabla nueva que una migración cree hereda el permiso automático. Es el rol que usan las apps en runtime (`DB_USERNAME=felcn_app` en el `environment:` de cada servicio, ver `docker-compose.prod.yml`) — probado de punta a punta: `felcn_app` no puede `CREATE TABLE` (permission denied confirmado), y sí puede loguearse y hacer CRUD real vía la API. No crea schemas ni tablas de negocio: eso lo pone la restauración del dump real (punto siguiente) — sí crea los 4 schemas vacíos de `felcn_auth` (`proyecto`, `usuario`, `parametro`, `felcn_estructura`), necesarios para que exista algo donde restaurar u otorgar permisos.
 - **`scram-sha-256` ya viene por defecto** en la imagen oficial `postgres:17` para conexiones por red (verificado: `host all all all scram-sha-256` en el `pg_hba.conf` generado, sin config extra) — no hay que tocar nada para esto, a diferencia de una instalación nativa.
-- **Este servidor es staging: se restaura el dump con datos** usando [docs/templates/postgres/pg-restore.sh](./templates/postgres/pg-restore.sh) contra el contenedor (no contra un Postgres nativo) — ver [13-migración-y-restauración-bd.md](./13-migracion-y-restauracion-bd.md) para el procedimiento completo. Para producción el mecanismo es distinto (schema vacío + migraciones, sin restaurar datos de dev/staging) — mismo documento.
+- **Este servidor es staging: se restaura el dump con datos** usando [deploy/tools/postgres/pg-restore.sh](../deploy/tools/postgres/pg-restore.sh) contra el contenedor (no contra un Postgres nativo) — ver [13-migración-y-restauración-bd.md](./13-migracion-y-restauracion-bd.md) para el procedimiento completo. Para producción el mecanismo es distinto (schema vacío + migraciones, sin restaurar datos de dev/staging) — mismo documento.
   - **Dump ya generado (21/08/2026)** de las 8 bases reales: `backups/20260821-staging-migracion/` (fuera de git — `/backups/` está en `.gitignore`, contiene datos reales; copiar al servidor nuevo por un canal seguro). Trae su propio `README.md` con los comandos de restauración exactos (adaptar a la versión dockerizada de arriba).
 - **Persistencia**: volumen nombrado `postgres_data` — recrear o actualizar la imagen del contenedor nunca borra los datos (probado: `docker kill`+recrear el contenedor y las bases/schemas restaurados seguían intactos). Solo un `docker compose down -v` explícito los borraría.
 - Las apps (Fase 5, mismo compose) llegan a Postgres por `DB_HOST=postgres` (nombre del servicio Docker, misma red `felcn-network`) — ya no hace falta `host.docker.internal` ni `extra_hosts`, Postgres está en la misma red interna, no en el host.
-- Backup automatizado **desde el primer día**, con [docs/templates/postgres/pg-backup.sh](./templates/postgres/pg-backup.sh) (`docker exec` + `pg_dump` directo, ya no hace falta copiar el script adentro del contenedor como en la versión nativa) por cron, volcando a un directorio del host fuera de cualquier volumen Docker (p. ej. `/opt/backups/postgres/`). Este punto es crítico: en `servertest` el backup automatizado diario **lleva roto desde el 1 de mayo de 2026** por un problema de permisos en su propio archivo de log (`set -euo pipefail` corta el script en la primera línea) — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 9.2. Para el servidor nuevo: correr el script de backup manualmente una vez después de instalarlo y **confirmar que el archivo de dump se generó**, no confiar en que el cron "corrió sin error" en el log — el mismo tipo de fallo silencioso que rompió el de `servertest`.
+- Backup automatizado **desde el primer día**, con [deploy/tools/postgres/pg-backup.sh](../deploy/tools/postgres/pg-backup.sh) (`docker exec` + `pg_dump` directo, ya no hace falta copiar el script adentro del contenedor como en la versión nativa) por cron, volcando a un directorio del host fuera de cualquier volumen Docker (p. ej. `/opt/backups/postgres/`). Este punto es crítico: en `servertest` el backup automatizado diario **lleva roto desde el 1 de mayo de 2026** por un problema de permisos en su propio archivo de log (`set -euo pipefail` corta el script en la primera línea) — ver [03-base-de-datos.md](./03-base-de-datos.md) sección 9.2. Para el servidor nuevo: correr el script de backup manualmente una vez después de instalarlo y **confirmar que el archivo de dump se generó**, no confiar en que el cron "corrió sin error" en el log — el mismo tipo de fallo silencioso que rompió el de `servertest`. **Probado real contra esta arquitectura dockerizada el 30/08/2026** (`172.16.76.22`): `pg-backup.sh felcn_auth` generó un `.sql.gz` válido (`gunzip -t` OK, contenido real confirmado) al primer intento, sin ajustes.
+
+### ⚠️ Cómo correr `migrations:run`/`seeds:run` sin Node instalado en el host (hallazgo real, 30/08/2026)
+
+Este servidor solo tiene Docker — no Node.js — y la imagen final de cada backend (`dockerfile`, etapa `app`) es deliberadamente mínima: `npm ci --omit=dev` + copia solo `dist/`, sin `database/` (las migraciones y seeds en TypeScript) ni el CLI de TypeORM/`ts-node`. Un `docker compose run --rm <servicio> npm run migrations:run` contra esa imagen **falla** (no existe `database/`, ni `ts-node`, ni los scripts npm que dependen de devDependencies). El mecanismo real que sí funciona es construir la etapa intermedia `build` del mismo `dockerfile` (esa sí trae devDependencies + el código fuente completo) y correrla puntualmente contra la red del compose, como `postgres` (superusuario, no `felcn_app`, que no tiene permisos de DDL):
+
+```bash
+# Una vez por backend (auth-backend y base-backend/base-backend-v2), después de
+# levantar el contenedor de Postgres:
+docker build --target build -t auth-backend-migrate:tmp backend/felcn-auth-backend
+
+DB_PW=$(grep ^DB_PASSWORD= deploy/development/.env | cut -d= -f2-)   # o el .env del compose que corresponda
+docker run --rm --network felcn-network \
+  --env-file backend/felcn-auth-backend/.env \
+  -e DB_USERNAME=postgres -e DB_PASSWORD="$DB_PW" \
+  -w /home/node/app auth-backend-migrate:tmp \
+  npm run migrations:run
+
+# Mismo patrón para seeds:run (usa ormconfig-seed.ts, mismo -e DB_USERNAME/DB_PASSWORD)
+docker run --rm --network felcn-network \
+  --env-file backend/felcn-auth-backend/.env \
+  -e DB_USERNAME=postgres -e DB_PASSWORD="$DB_PW" \
+  -w /home/node/app auth-backend-migrate:tmp \
+  npm run seeds:run
+```
+
+Probado de punta a punta el 30/08/2026 (`172.16.76.22`): las 9 migraciones y todos los seeds de `felcn-auth-backend` corrieron limpio con este mecanismo, sin instalar Node en el host. La imagen `auth-backend-migrate:tmp` es descartable — se puede borrar después (`docker rmi auth-backend-migrate:tmp`) o dejarla para la próxima vez que haga falta correr migraciones nuevas (rebuildear si el código cambió).
 
 ## 4. Fase 4 — nginx **dockerizado**
 
-Ya no se instala en el host — corre como contenedor (`nginx:1.26-alpine`), mismo `docker-compose.yml`. Config real, ya probada (`nginx -t` + proxy real contra los contenedores de la app), en [docs/templates/nginx/](./templates/nginx/):
+Ya no se instala en el host — corre como contenedor (`nginx:1.26-alpine`), mismo `docker-compose.yml`. Config real, ya probada (`nginx -t` + proxy real contra los contenedores de la app), en [deploy/tools/nginx/](../deploy/tools/nginx/):
 
 - **`nginx.conf`** — copia 1:1 de la config principal real de `servertest` (rate-limit zones, gzip, `server_tokens off`), solo con `user nginx;` en vez de `user www-data;` (la imagen oficial trae su propio usuario).
 - **`conf.d/app.conf.template`** — un server block HTTPS por dominio (copiar y reemplazar `<DOMINIO>` por `sunesis-dev.felcn.gob.bo` / `sunesis-staging.felcn.gob.bo`). A diferencia de `desarrollo.felcn.gob.bo`, este servidor es UN solo ambiente — no hay upstreams `_staging` compartiendo archivo. Los upstreams apuntan al nombre del servicio Docker (`base-backend-v2`, `auth-backend`, `base-frontend`), no a `127.0.0.1:puerto` — las apps ya no publican sus puertos al host en absoluto.
@@ -267,7 +305,7 @@ Ya no se instala en el host — corre como contenedor (`nginx:1.26-alpine`), mis
   ```bash
   docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d <dominio>
   ```
-- **Renovación**: timer de systemd **en el host** (no un cron dentro de un contenedor con `docker.sock` montado — evitar darle a un contenedor acceso al socket de Docker, riesgo de seguridad innecesario, ver antecedente del incidente cryptominer de julio/2026) ejecutando [docs/templates/nginx/certbot-renew.sh](./templates/nginx/certbot-renew.sh) (`docker compose run --rm certbot renew` + `docker compose exec nginx nginx -s reload`). Configurar el timer con el mismo patrón que el `certbot.timer` nativo ya documentado.
+- **Renovación**: timer de systemd **en el host** (no un cron dentro de un contenedor con `docker.sock` montado — evitar darle a un contenedor acceso al socket de Docker, riesgo de seguridad innecesario, ver antecedente del incidente cryptominer de julio/2026) ejecutando [deploy/tools/nginx/certbot-renew.sh](../deploy/tools/nginx/certbot-renew.sh) (`docker compose run --rm certbot renew` + `docker compose exec nginx nginx -s reload`). Configurar el timer con el mismo patrón que el `certbot.timer` nativo ya documentado.
 - **⚠️ Limitación real de esta revisión**: la emisión real de un certificado no se pudo probar todavía porque el DNS de `sunesis-dev.felcn.gob.bo` aún no apunta a `.23` (ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1) — se validó `nginx -t` y el proxy/rutas/rate-limit/headers en HTTP plano contra los contenedores reales de la app, pero no el challenge HTTP-01 real. Probarlo de verdad en cuanto el DNS apunte acá, antes de dar la Fase 4 por terminada.
 - **Restart**: el gap `Restart=no` de nginx documentado para `servertest` ([06-systemd-y-contenedores.md](./06-systemd-y-contenedores.md)) **no aplica acá** — nginx corre como contenedor con `restart: unless-stopped`, Docker lo reinicia solo si el proceso muere.
 - El callback OIDC (`location = /login/ciudadania` en la plantilla) apunta al frontend igual que en dev — **por ahora este servidor usa la misma configuración de AGETIC (demo) que dev, sin cambios**. Ver la nota completa sobre esto en el checklist (sección 9, ítem de AGETIC): recién va a hacer falta tocar `redirect_uri`/credenciales el día que llegue AGETIC de producción.
@@ -310,26 +348,28 @@ EOF
 sudo systemctl restart docker
 ```
 
-Con Docker instalado, seguir con la Fase 3 (Postgres) y la Fase 4 (nginx) de arriba — ambas, junto con las apps, terminan en el mismo `docker-compose.yml` de este servidor (ver plantilla [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml)). En el servidor dev (`.23`) además corre el compose aparte del registry (Fase 5b, siguiente).
+Con Docker instalado, seguir con la Fase 3 (Postgres) y la Fase 4 (nginx) de arriba — ambas, junto con las apps, terminan en el mismo `docker-compose.yml` de este servidor (ver plantilla [deploy/staging/docker-compose.yml](../deploy/staging/docker-compose.yml)). En el servidor dev (`.23`) además corre el compose aparte del registry (Fase 5b, siguiente).
 
 ## 5b. Fase 5b — Registry de imágenes (SOLO servidor dev, `.23`)
 
-**Solo en `sunesis-dev.felcn.gob.bo` (.23)** — staging y producción nunca corren esto, solo hacen `pull` (Fase 8 de este documento y [14-registro-de-imagenes.md](./14-registro-de-imagenes.md)). Decisión del 29/08/2026: Docker Registry OSS simple (`registry:2`), no Harbor — RBAC/scaneo de vulnerabilidades quedan fuera de alcance por ahora, se prioriza el mínimo mantenimiento. Archivos en [docs/templates/registry/](./templates/registry/), probados de punta a punta (build real → push → pull desde otro punto, con auth htpasswd) contra un registry de prueba antes de documentar esto:
+**Solo en `sunesis-dev.felcn.gob.bo` (.23)** — staging y producción nunca corren esto, solo hacen `pull` (Fase 8 de este documento y [14-registro-de-imagenes.md](./14-registro-de-imagenes.md)). Decisión del 29/08/2026: Docker Registry OSS simple (`registry:2`), no Harbor — RBAC/scaneo de vulnerabilidades quedan fuera de alcance por ahora, se prioriza el mínimo mantenimiento. Archivos en [deploy/tools/registry/](../deploy/tools/registry/), probados de punta a punta (build real → push → pull desde otro punto, con auth htpasswd) contra un registry de prueba antes de documentar esto:
 
-**Requisito de red — probado y confirmado (29/08/2026)**: `docker-compose.registry.yml` se conecta a `felcn-network` como red **externa** (`external: true`) — tiene que existir ya, con ese nombre literal, antes de levantar el registry. En `.23` corren dos `docker-compose.yml` distintos (el de las apps de dev normal, más este de acá) — sin fijar `name: felcn-network` en el compose "dueño" de la red (ya corregido en [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml); si `.23` sigue usando el `docker-compose.yml` normal de dev en vez de esa plantilla, aplicar el mismo `name: felcn-network` ahí), Docker antepone el nombre del directorio (ej. `dev_felcn-network`) y este compose falla con `network felcn-network declared as external, but could not be found`.
+**Requisito de red — probado y confirmado (29/08/2026)**: `docker-compose.registry.yml` se conecta a `felcn-network` como red **externa** (`external: true`) — tiene que existir ya, con ese nombre literal, antes de levantar el registry. En `.23` corren dos `docker-compose.yml` distintos (el de las apps de dev normal, más este de acá) — sin fijar `name: felcn-network` en el compose "dueño" de la red (ya corregido en [deploy/development/docker-compose.yml](../deploy/development/docker-compose.yml), el que corre en `.23`), Docker antepone el nombre del directorio (ej. `dev_felcn-network`) y este compose falla con `network felcn-network declared as external, but could not be found`.
 
 ```bash
-cd docs/templates/registry
+cd deploy/tools/registry
 bash crear-htpasswd.sh <usuario>          # pide la contraseña interactivo, no la deja en el historial
 docker compose -f docker-compose.registry.yml up -d
 ```
 
-- Expuesto vía nginx (mismo contenedor de la Fase 4) con TLS + auth `htpasswd` — ver `docs/templates/nginx/conf.d/registry.conf.template`, dominio propuesto `registry.sunesis-dev.felcn.gob.bo` (**nuevo registro DNS a coordinar**, misma IP `.23`). El registry en sí no publica ningún puerto al host.
-- Build y push desde acá: `bash docs/templates/registry/build-and-push.sh [tag]` (requiere `docker login registry.sunesis-dev.felcn.gob.bo` una vez antes).
+- Expuesto vía nginx (mismo contenedor de la Fase 4) con TLS + auth `htpasswd` — ver `deploy/tools/nginx/conf.d/registry.conf.template`, dominio propuesto `registry.sunesis-dev.felcn.gob.bo` (**nuevo registro DNS a coordinar**, misma IP `.23`). El registry en sí no publica ningún puerto al host.
+- Build y push desde acá: `bash deploy/tools/registry/build-and-push.sh [tag]` (requiere `docker login registry.sunesis-dev.felcn.gob.bo` una vez antes). Sin dominio propio para el registry (ej. probando en un servidor solo por IP, ver variante de la Fase 0), `REGISTRY_HOST` acepta la IP directa: `REGISTRY_HOST=<ip> bash build-and-push.sh [tag]`.
+- **Sin dominio (solo IP), `registry.conf.template` no aplica tal cual** — asume un `server_name` propio (subdominio) para el registry, distinto del de la app. Con una sola IP no hay forma de que nginx distinga dos `server_name` por SNI, así que la alternativa probada (30/08/2026, `172.16.76.22`) es rutear por **path** dentro del mismo server block ya activado para la IP: agregar un `location /v2/ { proxy_pass http://registry:5000/v2/; ... }` (con `client_max_body_size 0;` y `chunked_transfer_encoding on;`, igual que en la plantilla) al `<IP>.conf` de la Fase 4, en vez de un server block aparte. En un servidor con dominio real, seguir usando `registry.conf.template` con su propio subdominio — es la opción más limpia cuando hay DNS disponible.
+- **UI para navegar repos/tags visualmente** (opcional, `registry:2` no trae ninguna): agregar el servicio `registry-ui` (`joxit/docker-registry-ui`) a `docker-compose.registry.yml`, con `NGINX_PROXY_PASS_URL=http://registry:5000` y `SINGLE_REGISTRY=true` — usa las mismas credenciales `htpasswd`, el navegador pide usuario/contraseña automáticamente al recibir el 401 del registry real. Sin dominio propio, exponerla con un puerto publicado directo (ej. `8081:80`) en vez de vía nginx: esta imagen sirve sus assets con rutas absolutas a la raíz, sin soporte de sub-path en runtime. Probado de punta a punta el 30/08/2026.
 
 ## 6. Fase 6 — Estructura de producción
 
-- `/opt/docker-production/` (o el path que se decida) con el `docker-compose.yml` real, `logs/`, `reports/`. **Estructura exacta que espera la plantilla dockerizada**: copiar `docs/templates/docker-compose.prod.yml` acá como `docker-compose.yml`, y junto a él (mismo directorio) las carpetas `postgres/` y `nginx/` completas de `docs/templates/` (sin el prefijo `templates/`, los `volumes:` del compose las referencian como `./postgres/...` y `./nginx/...`) — más los `.env` de cada servicio (`felcn-auth-backend.env`, `felcn-base-backend-v2.env`, `felcn-base-frontend.env`).
+- `/opt/docker-production/` (o el path que se decida) con el `docker-compose.yml` real, `logs/`, `reports/`. **Estructura exacta que espera la plantilla dockerizada**: copiar `deploy/staging/docker-compose.yml` (o `deploy/production/docker-compose.yml` si es el servidor de producción) acá como `docker-compose.yml`, y junto a él (mismo directorio) las carpetas `postgres/` y `nginx/` completas de `deploy/tools/` (sin el prefijo `tools/`, los `volumes:` del compose las referencian como `./postgres/...` y `./nginx/...`) — más los `.env` de cada servicio (`felcn-auth-backend.env`, `felcn-base-backend.env`, `felcn-base-frontend.env`).
 - **Renombrar los `.conf.template` de `nginx/conf.d/`** después de reemplazar `<DOMINIO>` (Fase 4): `nginx.conf` solo incluye `conf.d/*.conf`, no `*.conf.template` — un `app.conf.template` copiado tal cual queda invisible para nginx (arranca sin ningún server block, sin avisar del error). Confirmado probando esto literal (29/08/2026): `cp app.conf.template sunesis-dev.felcn.gob.bo.conf` (con el `<DOMINIO>` ya reemplazado) es el paso que faltaba explicitar.
 - **Un `.env` propio para el `docker-compose.yml`** (a nivel de compose, distinto de los 3 `.env` de cada servicio de arriba), con este contenido literal (ver [04-variables-de-entorno.md](./04-variables-de-entorno.md) §6 para el detalle de cada variable):
   ```
@@ -338,10 +378,11 @@ docker compose -f docker-compose.registry.yml up -d
   TAG=<tag de la imagen a desplegar>
   ```
   Compose lo lee automáticamente si se llama `.env` y vive al lado del `docker-compose.yml`. Sin esto, `docker compose up` falla directo con `required variable DB_PASSWORD is missing a value` (o `DB_APP_PASSWORD`/`TAG`, según cuál falte).
-- **Orden real de arranque (confirmado probando la plantilla de punta a punta, 29/08/2026)**: `postgres` → restaurar el dump ([13-migracion-y-restauracion-bd.md](./13-migracion-y-restauracion-bd.md)) → recién ahí las 3 apps → `nginx` al final. nginx resuelve sus upstreams una sola vez al arrancar (no reintenta si el nombre no existe todavía) — si se levanta todo junto con `docker compose up -d` antes de que las apps existan, nginx puede fallar con `host not found in upstream` y quedar en loop de reinicio hasta que las apps ya estén arriba. En el día a día esto no afecta actualizar una sola app (nginx no se reinicia para eso), solo importa en el arranque inicial del servidor.
+- **Orden real de arranque (confirmado probando la plantilla de punta a punta, 29/08/2026)**: `postgres` → restaurar el dump ([13-migracion-y-restauracion-bd.md](./13-migracion-y-restauracion-bd.md)) → recién ahí las 3 apps → `nginx` al final. nginx resuelve sus upstreams una sola vez al arrancar (no reintenta si el nombre no existe todavía) — si se levanta todo junto con `docker compose up -d` antes de que las apps existan, nginx puede fallar con `host not found in upstream` y quedar en loop de reinicio hasta que las apps ya estén arriba.
+  - **Corrección importante (31/08/2026): esto SÍ afecta el día a día, no solo el arranque inicial** — la afirmación anterior de este documento ("no afecta actualizar una sola app") era incorrecta, nunca se había probado el caso real. nginx cachea la IP resuelta de cada upstream y no la vuelve a resolver hasta su próximo `reload`/restart — si se recrea un contenedor de app ya existente (`docker compose up -d <servicio>`, por ejemplo tras cambiar su `.env`), Docker le asigna una IP interna nueva y nginx sigue apuntando a la vieja: la app está sana pero nginx devuelve `502 Bad Gateway` hasta que se le pida recargar. Confirmado real (`172.16.76.22`, recreación de `auth-backend`): `docker compose exec nginx nginx -s reload` lo resuelve al instante. **Regla práctica: después de recrear cualquier contenedor de app (no solo en el arranque inicial), correr `nginx -s reload`** — no asumir que "la app respondió 200 en su propio log" significa que el sitio funciona de punta a punta.
   ```bash
   docker compose up -d postgres
-  bash docs/templates/postgres/pg-restore.sh <dump.sql.gz> felcn_auth   # y el resto de las 8 bases si aplica
+  bash deploy/tools/postgres/pg-restore.sh <dump.sql.gz> felcn_auth   # y el resto de las 8 bases si aplica
   docker compose up -d base-backend-v2 base-auth base-frontend
   docker compose up -d nginx
   ```
@@ -368,8 +409,10 @@ sudo systemctl set-default multi-user.target
 
 Una vez completadas las fases 1-5b (Postgres, nginx y — si es `.23` — el registry ya arriba):
 
+**⚠️ Especificar siempre la rama (hallazgo real, 30/08/2026):** la rama por defecto del repo en GitHub es `main` (un stub viejo de 2 commits, sin relación con el desarrollo real) — un `git clone` sin `-b` trae ese stub casi vacío en vez del código real. Usar siempre `-b develop` (o la rama de trabajo puntual que corresponda) explícito:
+
 ```bash
-git clone git@github.com:inteligenciadgfelcn/inteligencia.git /srv/inteligencia
+git clone -b develop git@github.com:inteligenciadgfelcn/inteligencia.git /srv/inteligencia
 cd /srv/inteligencia
 # .env por proyecto — ver 04-variables-de-entorno.md — con secretos rotados, no copiados de servertest.
 # Como este servidor ES el ambiente de staging (no corre dev en paralelo), las credenciales reales
@@ -388,11 +431,38 @@ Y seguir el runbook de bootstrap de datos: [08-runbook-reset-y-admin-inicial.md]
 
 No dar el servidor nuevo por completo solo porque `docker compose up -d --build` no tiró error — varios de estos puntos fallan en silencio (la app responde 200 igual). Verificar explícitamente cada uno:
 
+**Corrido de punta a punta el 30/08/2026 contra `172.16.76.22`** (servidor físico de prueba, simula `.23` con IP sin dominio, alcance "solo inteligencia" — ver el historial de commits de esta rama para el detalle completo). Resultado por ítem:
+
+| Ítem | Resultado |
+|---|---|
+| Base de datos | ✅ Verificado — `felcn_app` sin superusuario confirmado, `scram-sha-256` por defecto, 8 bases restauradas + `felcn_auth` migrada/sembrada |
+| Seguridad (ufw/fail2ban/SSH) | ✅ Verificado, con el incidente real de fail2ban descrito en la Fase 1 |
+| Docker | ✅ Verificado |
+| Imágenes | ✅ Verificado (build real, sin git HEAD sucio) |
+| Contenedores | ✅ Verificado, los 7 (incluye `registry`/`registry-ui`, no solo los 5 de la lista original) arriba sin reinicios |
+| nginx | ✅ Verificado, adaptado para IP (ver Fase 4/5b) |
+| Certificados | ⚠️ **No aplica tal cual** — sin dominio no hay Let's Encrypt real posible; se usó un certificado autofirmado (`openssl req -x509`) como sustituto explícito, no simulado como si fuera válido. Pendiente probar la emisión real el día que haya DNS. |
+| SMTP | ✅ **Actualizado 31/08/2026, a pedido explícito**: se usan las mismas credenciales reales que `desarrollo.felcn.gob.bo` (canal institucional + 2 Gmail de respaldo) para paridad exacta. Conectividad de red saliente confirmada real a `mail.felcn.gob.bo:587` y `smtp.gmail.com:587` (`/dev/tcp` desde el servidor). No se probó un envío real de correo (requiere una dirección de prueba real, no una inventada) — pendiente si se quiere cerrar el ítem al 100%. |
+| Backup | ✅ Verificado — `pg-backup.sh felcn_auth` generó un dump válido al primer intento |
+| Ciudadanía Digital (AGETIC) | ⚠️ **Actualizado 31/08/2026**: se usan las mismas credenciales OIDC reales que `desarrollo.felcn.gob.bo` (no las de demo genéricas) — pero el registro ante AGETIC está atado a ese dominio, así que el `OIDC_REDIRECT_URI` adaptado a esta IP casi seguro es rechazado por AGETIC al no coincidir con lo registrado (limitación esperada de cambiar de dominio, no del mecanismo). El login con usuario/contraseña local (no OIDC) sí se probó real y funcionó — ver runbook de admin inicial |
+
+### ⚠️ Bug real encontrado post-login (31/08/2026): dato corrupto en un seed rompía el panel para cualquier admin
+
+Tras corregir el login (ver nota de `DOMINIO` arriba), el panel de administración (`/admin/home`) tiraba `Cannot read properties of undefined (reading 'toUpperCase')` en el navegador. Causa real, sin relación con nginx/IP/dominio: `database/seeds/1786700000000-casbin-roles-f1.ts` (cherry-pickeado de la rama de un compañero al curar el set de roles de Fase 1) tiene una política Casbin con `v1='user-profile.jpeg'` para el rol `SEGUIMIENTO_CASOS` — un nombre de archivo, no una ruta válida. El componente `frontend/.../home/components/graphs/ModulesByRole.tsx` hace `objeto.split('/')[2].toUpperCase()` sobre **todas** las políticas frontend de **todos** los roles (no solo las del usuario logueado, el panel agrega estadísticas globales) — con esa política, `split('/')[2]` da `undefined` y el `.toUpperCase()` revienta el render completo del dashboard para cualquier admin, apenas ese seed corre en cualquier ambiente.
+
+- **Mitigado** (commit de esta rama): `ModulesByRole.tsx` ahora descarta políticas con ruta malformada (menos de 2 niveles) en vez de romper el gráfico entero.
+- **Confirmado real en producción, no un artefacto de esta prueba (31/08/2026)**: la política ya existe en la base real de `desarrollo.felcn.gob.bo` (seed `casbinRolesFaseUno1786700000000`, id 25 en `proyecto.migrations`), y el bundle JS realmente desplegado hoy (`page-c6ccbd69a51176cb.js`) contiene el mismo código vulnerable — el bug está latente ahí también, no reportado todavía.
+- **Decisión del usuario (31/08/2026): dejarlo para después, no bloquea nada** — la mitigación del frontend (arriba) ya evita que rompa el panel para cualquier admin; la plataforma funciona con normalidad. Queda pendiente, sin fecha asignada, corregir el valor real de esa política en el seed (no se adivinó — probablemente algo como `/perfil/foto` o una ruta real de subida de foto de perfil, requiere confirmar con quien conozca la intención original).
+
+### ⚠️ nginx no reintenta la IP de un upstream recreado (hallazgo real, 31/08/2026)
+
+Al actualizar el `.env` de `auth-backend` y recrear solo ese contenedor (`docker compose up -d base-auth`), el login empezó a devolver `502 Bad Gateway` con la app arriba y sana (log de arranque limpio) — nginx cachea la IP interna del upstream resuelta en su último `reload`/arranque, y Docker le asigna una IP nueva al contenedor recreado. Esto corrige una afirmación anterior de este mismo documento (ver la nota en el orden de arranque de la Fase 3/8) que decía que esto "no afecta el día a día" — sí afecta, cualquier vez que se recree un contenedor de app. **Regla práctica: `docker compose exec nginx nginx -s reload` después de recrear cualquier app**, no solo en el arranque inicial del servidor.
+
 - [ ] **Base de datos** (Postgres dockerizado, `postgres:17`): `docker compose ps postgres` activo y sin reinicios en loop, `scram-sha-256` confirmado (`docker exec postgres cat /var/lib/postgresql/data/pg_hba.conf | grep scram`), conexión real confirmada desde cada backend vía `DB_HOST=postgres` (no solo que `psql` funcione dentro del contenedor), bases reales restauradas o runbook de bootstrap corrido (sección 3, [08-runbook-reset-y-admin-inicial.md](./08-runbook-reset-y-admin-inicial.md)), volumen `postgres_data` confirmado como named volume (no anónimo) para que sobreviva a un `docker compose down` sin `-v`. Confirmar también que las apps arrancaron con `felcn_app` (`DB_USERNAME=felcn_app` en su `environment:`, no `postgres`) — un `\du felcn_app` dentro del contenedor debe mostrarlo sin ningún atributo de superusuario.
 - [ ] **Seguridad**: `sudo ufw status verbose` con las reglas esperadas activas, fail2ban con los jails de sshd/nginx corriendo (`fail2ban-client status`), SSH con `PasswordAuthentication` habilitado a propósito — no repetir el hardening que hubo que revertir en `servertest` (sección 1).
 - [ ] **Docker**: `docker.service` habilitado en systemd (`systemctl is-enabled docker`), límites de logging configurados en `/etc/docker/daemon.json`, **todos** los servicios del compose con `restart: unless-stopped` (ahora incluye Postgres y nginx, no solo las apps).
 - [ ] **Imágenes**: en dev/staging, build hecho con el código que realmente se quiere desplegar — el build context toma el disco tal cual está (incluye cambios sin commitear), no `git HEAD`; confirmar `git status` limpio antes de un build. En producción, el tag desplegado (`pull-and-deploy.sh <tag>`) corresponde al build real que se probó en dev — ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md).
-- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`, `postgres`, `nginx`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), ningún puerto de Postgres publicado al host (solo alcanzable por nombre de servicio en `felcn-network`).
+- [ ] **Contenedores**: todos arriba (`base-auth`, `base-frontend`, `base-backend-v2`, `postgres`, `nginx`) y sin reinicios en loop (`docker ps`, revisar `Status`/`RESTARTING`), logs de arranque sin errores (`docker compose logs --tail 50 <servicio>`), ningún puerto de Postgres publicado al host (solo alcanzable por nombre de servicio en `felcn-network`). Nota: `base-backend-v2` imprime `[printRoutes] warn: no se encontraron rutas` en su log de arranque — confirmado cosmético (timing del logger antes de terminar de registrar rutas), no indica que el servicio esté roto; verificar con una petición HTTP real si hay duda, no solo mirando el log.
 - [ ] **nginx** (dockerizado): `docker compose exec nginx nginx -t` sin errores, contenedor activo con `restart: unless-stopped` (ya no depende de un drop-in de systemd, ver [06-systemd-y-contenedores.md](./06-systemd-y-contenedores.md)), rate limiting y headers de seguridad activos, sin ningún `include` colgando de `/srv/interop/...` (ese proyecto no corre acá).
 - [ ] **Certificados**: Let's Encrypt emitido para el dominio de este servidor y renovando solo (`docker compose run --rm certbot renew --dry-run`, timer de systemd del host listado en `systemctl list-timers`).
 - [ ] **SMTP**: ver verificación explícita abajo — sin esto, todo el ciclo de altas de usuario queda roto en silencio.
@@ -414,7 +484,7 @@ Todavía no existe servidor, IP ni dominio de producción — esta sección docu
 
 Las Fases 0 (VM/SO), 1 (sistema base/firewall), 2 (git y usuarios — con la salvedad de abajo), 3 (Postgres) y 4 (nginx) se replican igual que en staging. Las diferencias son:
 
-- **Fase 5/8 — código: NO se clona el repo con git.** Producción es el único ambiente donde no debe haber código fuente en el servidor (a diferencia de dev y staging, que sí lo tienen — ver convención en [02-entorno-docker-dev.md](./02-entorno-docker-dev.md) §7). En vez de `git clone` + `docker compose up -d --build`, producción **descarga imágenes ya construidas desde el registry propio** (Fase 5b, servidor dev `.23`) y las corre directo con [docs/templates/registry/pull-and-deploy.sh](./templates/registry/pull-and-deploy.sh) (`docker compose pull` + `docker compose up -d`, sin `--build`, con `image: registry.sunesis-dev.felcn.gob.bo/felcn-<imagen>:${TAG}` en vez de `build:` — ver plantilla en [docs/templates/docker-compose.prod.yml](./templates/docker-compose.prod.yml)). El registry **ya existe** (29/08/2026, Docker Registry OSS simple en `.23`) — este prerequisito quedó resuelto, ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) para el flujo completo.
+- **Fase 5/8 — código: NO se clona el repo con git.** Producción es el único ambiente donde no debe haber código fuente en el servidor (a diferencia de dev y staging, que sí lo tienen — ver convención en [02-entorno-docker-dev.md](./02-entorno-docker-dev.md) §7). En vez de `git clone` + `docker compose up -d --build`, producción **descarga imágenes ya construidas desde el registry propio** (Fase 5b, servidor dev `.23`) y las corre directo con [deploy/tools/registry/pull-and-deploy.sh](../deploy/tools/registry/pull-and-deploy.sh) (`docker compose pull` + `docker compose up -d`, sin `--build`, con `image: registry.sunesis-dev.felcn.gob.bo/felcn-<imagen>:${TAG}` en vez de `build:` — ver plantilla en [deploy/production/docker-compose.yml](../deploy/production/docker-compose.yml)). El registry **ya existe** (29/08/2026, Docker Registry OSS simple en `.23`) — este prerequisito quedó resuelto, ver [14-registro-de-imagenes.md](./14-registro-de-imagenes.md) para el flujo completo.
   - Solo el `.env` de cada servicio y el `docker-compose.yml` final viajan a producción — nunca el código fuente ni el `.git/`.
 - **Fase 3 — base de datos: se inicializa vacía, no se restaura el dump de staging.** Ver [13-migración-y-restauración-bd.md](./13-migracion-y-restauracion-bd.md) para el mecanismo completo (`migrations:run` + `seeds:run` desde cero) y la advertencia sobre el backup automatizado roto.
 - **Fase 4 — nginx/dominio: sin definir.** Dominio público de producción, certificado TLS y `server_name` — todavía no hay un nombre ni servidor de producción asignado. La topología de dev/staging (`sunesis-dev.felcn.gob.bo` → `172.16.76.23`, `sunesis-staging.felcn.gob.bo` → `172.16.76.24`) ya está confirmada — ver [05-nginx-y-tls.md](./05-nginx-y-tls.md) §1 — pero producción es un tercer servidor aparte, aún sin definir.

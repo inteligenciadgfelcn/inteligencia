@@ -5,8 +5,9 @@ trap "echo -e '\n\nERROR: Ocurrió un error mientras se ejecutaba el script :(\n
 
 # Corre en staging o producción, parado junto al docker-compose.yml de ese
 # servidor (con `image: registry.sunesis-dev.felcn.gob.bo/felcn-*:<TAG>`, ver
-# docs/templates/docker-compose.prod.yml). Nunca hace `docker build` ni clona
-# el código fuente — solo baja imágenes ya construidas en dev.
+# deploy/staging/docker-compose.yml o deploy/production/docker-compose.yml).
+# Nunca hace `docker build` ni clona el código fuente — solo baja imágenes ya
+# construidas en dev.
 
 tag="${1:?Uso: pull-and-deploy.sh <tag>}"
 

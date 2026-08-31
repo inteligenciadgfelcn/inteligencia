@@ -6,7 +6,7 @@
 ## 1. Contexto
 
 La Fiscalía (MP) enviará información de casos a la FELCN (POL) consumiendo ~21 endpoints que
-nosotros debemos exponer en `felcn-base-backend-v2`. Características clave del requerimiento:
+nosotros debemos exponer en `felcn-base-backend`. Características clave del requerimiento:
 
 - Autenticación por **API key fija** ("token hijo"), **sin JWT ni Casbin** — distinto a todo el
   resto de la aplicación, que usa `JwtAuthGuard`.

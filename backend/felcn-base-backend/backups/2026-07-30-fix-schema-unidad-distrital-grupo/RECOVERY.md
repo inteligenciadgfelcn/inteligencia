@@ -39,7 +39,7 @@ Commit HEAD antes del cambio: `ab01218d558ab7134b03fff23b9043c68a1643e5`
 
 **Opción A — si el cambio aún no se commiteó:**
 ```bash
-cd /srv/inteligencia/backend/felcn-base-backend-v2
+cd /srv/inteligencia/backend/felcn-base-backend
 git checkout -- src/application/sunesis/siii/asignacion/repository/asignacion-siii.repository.ts \
   src/application/sunesis/siii/investigacion/paralelo/repository/investigacion.repository.ts \
   src/application/sunesis/siii/reportes/cuadros/cuadros.repository.ts \
@@ -50,7 +50,7 @@ git checkout -- src/application/sunesis/siii/asignacion/repository/asignacion-si
 
 **Opción B — si ya se commiteó, usando este backup directamente (no depende de git):**
 ```bash
-cd /srv/inteligencia/backend/felcn-base-backend-v2
+cd /srv/inteligencia/backend/felcn-base-backend
 cp -r backups/2026-07-30-fix-schema-unidad-distrital-grupo/codigo/src/* src/
 ```
 
@@ -62,7 +62,7 @@ git checkout ab01218d558ab7134b03fff23b9043c68a1643e5 -- src/application/sunesis
 ## Cómo recuperar la base de datos (solo si hiciera falta)
 
 ```bash
-cd /srv/inteligencia/backend/felcn-base-backend-v2
+cd /srv/inteligencia/backend/felcn-base-backend
 export PGPASSWORD=$(grep '^DB_SIII_PASSWORD=' .env | cut -d= -f2-)
 
 # ADVERTENCIA: esto reemplaza la base felcn_siii completa. No ejecutar sin

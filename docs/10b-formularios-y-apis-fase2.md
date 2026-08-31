@@ -1,8 +1,8 @@
 # Formularios, APIs y hallazgos técnicos — Módulos `(fase_2)`
 
-> Alcance: `frontend/felcn-base-frontend/src/app/(fase_2)/` — los 5 módulos que [10-formularios-y-apis.md](./10-formularios-y-apis.md) excluye explícitamente de su alcance. Verificado el 10/08/2026 leyendo el código real de `frontend/felcn-base-frontend/src/app/(fase_2)/`, `backend/felcn-base-backend-v2/src/application/inteligencia/` y `backend/felcn-base-backend-v2/src/application/interoperabilidad/`. Estos módulos están **activos** en el menú real de producción (`usuario.modulo._estado = ACTIVO`), verificado contra la base de datos.
+> Alcance: `frontend/felcn-base-frontend/src/app/(fase_2)/` — los 5 módulos que [10-formularios-y-apis.md](./10-formularios-y-apis.md) excluye explícitamente de su alcance. Verificado el 10/08/2026 leyendo el código real de `frontend/felcn-base-frontend/src/app/(fase_2)/`, `backend/felcn-base-backend/src/application/inteligencia/` y `backend/felcn-base-backend/src/application/interoperabilidad/`. Estos módulos están **activos** en el menú real de producción (`usuario.modulo._estado = ACTIVO`), verificado contra la base de datos.
 >
-> **Nota de arquitectura**: existe un tercer backend NestJS en el repositorio, `backend/felcn-fase2-backend/`, pero ningún archivo de estos 5 módulos lo referencia — todas las llamadas van a `felcn-base-backend-v2`, en un árbol de código nuevo (`src/application/inteligencia/`, `src/application/interoperabilidad/`) separado del `sunesis/siii` que documenta el archivo 10. `felcn-fase2-backend` existe en el repo pero está desconectado del frontend actual.
+> **Nota de arquitectura**: existe un tercer backend NestJS en el repositorio, `backend/felcn-fase2-backend/`, pero ningún archivo de estos 5 módulos lo referencia — todas las llamadas van a `felcn-base-backend`, en un árbol de código nuevo (`src/application/inteligencia/`, `src/application/interoperabilidad/`) separado del `sunesis/siii` que documenta el archivo 10. `felcn-fase2-backend` existe en el repo pero está desconectado del frontend actual.
 
 ## 0. Bases de datos adicionales (no cubiertas por el documento 10)
 
@@ -14,7 +14,7 @@
 | `DB_SIII` | `felcn_siii` | Misma base del documento 10; consultada en cruce desde Inteligencia/Filiación |
 | `DB_AUTH` | `felcn_auth_v3` | Catálogo canónico `parametro.unidad/distrital/grupo` |
 
-Todas las rutas de este documento son relativas a `felcn-base-backend-v2`, salvo indicación contraria.
+Todas las rutas de este documento son relativas a `felcn-base-backend`, salvo indicación contraria.
 
 ---
 

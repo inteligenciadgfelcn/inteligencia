@@ -13,7 +13,7 @@ Cómo levantar el stack de aplicación con Docker, tal como corre hoy en `server
 
 | Servicio (compose) | Container | Puerto host | env_file |
 |---|---|---|---|
-| `base-backend-v2` | `base-backend-v2` | `3015:3000` | `backend/felcn-base-backend-v2/.env` |
+| `base-backend-v2` | `base-backend-v2` | `3015:3000` | `backend/felcn-base-backend/.env` |
 | `base-auth` | `auth-backend` | `127.0.0.1:3016:4000` | `backend/felcn-auth-backend/.env` |
 | `base-frontend` | `base-frontend` | `127.0.0.1:3017:3000` | `frontend/felcn-base-frontend/.env` |
 
