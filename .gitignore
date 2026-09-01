@@ -35,3 +35,7 @@ deploy/tools/nginx/conf.d/*.conf
 # Credenciales reales del Docker Registry (hashes bcrypt, generadas por
 # crear-htpasswd.sh) — nunca versionar, aunque estén hasheadas.
 deploy/tools/registry/htpasswd
+
+# Credenciales reales del basic auth de /docs/ (mkdocs) — mismo criterio que
+# el htpasswd del registry, nunca versionar.
+deploy/tools/nginx/.htpasswd-docs

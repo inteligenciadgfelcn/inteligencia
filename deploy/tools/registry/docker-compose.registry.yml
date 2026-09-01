@@ -30,13 +30,14 @@ services:
   # htpasswd del registry real y el navegador solo, sin nada que configurar
   # acá, muestra el prompt básico de usuario/contraseña.
   #
-  # Publica el puerto directo al host (8081) en vez de ir por el nginx
-  # principal: esta imagen sirve sus assets con rutas absolutas a la raíz, sin
-  # soporte de sub-path en runtime — sin un subdominio propio (no hay DNS en
-  # este servidor) no hay forma limpia de exponerla vía path bajo `/`. En un
-  # servidor con dominio real, la alternativa correcta es un subdominio propio
-  # (ej. registry-ui.<dominio>) con su propio server block, igual que
-  # registry.conf.template hace para la API del registry.
+  # Esta imagen sirve sus assets con rutas absolutas a la raíz, sin soporte de
+  # sub-path en runtime — no hay forma limpia de exponerla vía path bajo `/`
+  # del dominio principal. Solución real (31/08/2026): puerto dedicado (8081)
+  # con HTTPS propio reutilizando el certificado del dominio, terminado por el
+  # nginx PRINCIPAL de deploy/development/docker-compose.yml (ver
+  # deploy/tools/nginx/conf.d/app.conf.template, bloque `listen 8081 ssl`) —
+  # este contenedor ya NO publica el puerto directo al host, nginx le hace
+  # proxy_pass interno por la red de Docker (registry-ui:80).
   registry-ui:
     image: joxit/docker-registry-ui:main
     container_name: registry-ui
@@ -45,8 +46,6 @@ services:
       - SINGLE_REGISTRY=true
       - REGISTRY_TITLE=FELCN Registry (dev)
       - NGINX_PROXY_PASS_URL=http://registry:5000
-    ports:
-      - "8081:80"
     networks:
       - felcn-network
     depends_on:

@@ -47,10 +47,19 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      # 8081: UI del registry (registry-ui, ver deploy/tools/registry/), 8082:
+      # Swagger/OpenAPI (ver app.conf.template) — ambos con HTTPS propio sobre
+      # el mismo certificado, restringidos por firewall a la red interna de
+      # FELCN (`ufw allow from 172.16.76.0/24 to any port <puerto>`), nunca
+      # expuestos a internet.
+      - "8081:8081"
+      - "8082:8082"
     volumes:
       - ../tools/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ../tools/nginx/conf.d:/etc/nginx/conf.d:ro
       - ../tools/nginx/snippets:/etc/nginx/snippets:ro
+      - ../tools/nginx/.htpasswd-docs:/etc/nginx/.htpasswd-docs:ro
+      - ../../site:/var/www/docs:ro
       - certbot_certs:/etc/letsencrypt
       - certbot_webroot:/var/www/certbot
     networks:

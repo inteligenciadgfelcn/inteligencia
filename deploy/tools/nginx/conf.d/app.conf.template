@@ -6,8 +6,23 @@
 #
 # NO incluye mTLS ni `partner-locations.conf` (`/srv/interop`) — queda fuera de
 # este trabajo, se define después en otro documento si hace falta.
-# NO incluye `/persona/` (consulta-persona) ni `/docs/` (felcn-docs) — son
-# específicos de servertest, no de un servidor nuevo genérico.
+# NO incluye `/persona/` (consulta-persona) — específico de servertest.
+#
+# `/docs/` (mkdocs) SÍ está incluido acá (distinto de servertest, donde vive en
+# snippets/felcn-docs.conf aparte) — protegido con auth_basic contra
+# /etc/nginx/.htpasswd-docs, montado desde deploy/tools/nginx/.htpasswd-docs.
+# El sitio estático (`site/`, generado con deploy/tools/mkdocs/build.sh) se
+# monta en el contenedor de nginx en /var/www/docs (ver
+# deploy/development/docker-compose.yml).
+#
+# Swagger/OpenAPI (`/auth/api/docs`, `/api/docs`, `/fiscalia/docs`,
+# `/lgi/docs`) está bloqueado (404) en este bloque de 443 público — decisión
+# del 01/09/2026: exponer el esquema de la API sin ninguna credencial a
+# internet es un riesgo real, confirmado en `.23` (`/auth/api/docs` respondía
+# 200 público antes de este cambio). Sirve solo por el bloque `listen 8082
+# ssl` más abajo, restringido a la red interna de FELCN a nivel de firewall
+# (`ufw allow from 172.16.76.0/24 to any port 8082`), igual criterio que el
+# 8081 del registry-ui.
 #
 # Reemplazar <DOMINIO> por el dominio real (sunesis-dev.felcn.gob.bo / sunesis-staging.felcn.gob.bo)
 # antes de usar — mismo criterio que <REGISTRY>/<TAG> en docker-compose.prod.yml.
@@ -54,6 +69,40 @@ server {
     location ~ /\. {
         deny all;
         return 404;
+    }
+
+    # ── Swagger/OpenAPI: bloqueado acá, ver bloque `listen 8082 ssl` más abajo ─
+    # (solo red interna FELCN). El prefijo más largo gana sobre /auth/api y
+    # /api de abajo sin importar el orden de declaración (regla estándar de
+    # nginx para location ^~).
+    location ^~ /auth/api/docs {
+        return 404;
+    }
+
+    location ^~ /api/docs {
+        return 404;
+    }
+
+    location ^~ /fiscalia/docs {
+        return 404;
+    }
+
+    location ^~ /lgi/docs {
+        return 404;
+    }
+
+    # ── Documentación técnica (MkDocs) — acceso restringido con basic auth ────
+    location = /docs {
+        return 301 /docs/;
+    }
+
+    location ^~ /docs/ {
+        alias /var/www/docs/;
+        index index.html;
+        auth_basic            "Documentacion FELCN";
+        auth_basic_user_file  /etc/nginx/.htpasswd-docs;
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 20;
     }
 
     # ── Auth backend: /auth/api/* → auth-backend:4000/api/* ──────────────────
@@ -183,5 +232,67 @@ server {
 
     location / {
         return 301 https://$host$request_uri;
+    }
+}
+
+# ── Swagger/OpenAPI — SOLO red interna FELCN, puerto 8082 ───────────────────
+# Restringido a nivel de firewall (`ufw allow from 172.16.76.0/24 to any port
+# 8082`), nunca expuesto a internet — mismo criterio que el 8081 de
+# registry-ui.conf (no versionado hoy, vive directo en el servidor). Reusa el
+# mismo certificado del dominio principal.
+#
+# /api/docs, /fiscalia/docs, /lgi/docs (base-backend-v2) devuelven 404 hoy
+# porque ese servicio corre con NODE_ENV=production (ver docker-compose.yml,
+# nota del servicio base-backend-v2) — quedan acá ya listos para cuando se
+# habilite su Swagger, sin tener que tocar nginx de nuevo.
+server {
+    listen 8082 ssl;
+    listen [::]:8082 ssl;
+    server_name <DOMINIO>;
+
+    ssl_certificate     /etc/letsencrypt/live/<DOMINIO>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<DOMINIO>/privkey.pem;
+
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location ^~ /auth/api/docs {
+        rewrite ^/auth(/api.*) $1 break;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /api/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /fiscalia/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /lgi/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        return 404;
     }
 }
