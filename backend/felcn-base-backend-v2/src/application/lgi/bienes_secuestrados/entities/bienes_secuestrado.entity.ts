@@ -112,13 +112,6 @@ export class BieneSecuestradoLgi {
   cedulaIdentidadVinculo?: string | null
 
   @Column({
-    name: 'autoridad_disposicion',
-    type: 'varchar',
-    nullable: true,
-  })
-  autoridadDisposicion?: string | null
-
-  @Column({
     name: 'pericia',
     type: 'boolean',
     default: false,

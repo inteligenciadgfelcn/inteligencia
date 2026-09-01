@@ -148,7 +148,6 @@ export class CreateBienesSecuestradoDto {
     example:
       '2026-08-30T22:00:00-04:00',
   })
-  @IsOptional()
   @IsDateString()
   fecha?: string
 

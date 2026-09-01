@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   Query,
   UploadedFiles,
+  Res,
 } from '@nestjs/common'
 import { CreateBienesSecuestradoDto } from './dto/create-bienes_secuestrado.dto'
 import { BaseController } from '@/common/base'
@@ -28,8 +29,9 @@ import {
   crearConfiguracionArchivo,
   obtenerRutaRelativa,
 } from '@/common/utils/file-storage.util'
-import { FileFieldsInterceptor } from '@nestjs/platform-express'
+import type { Response } from 'express'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
+import { FileFieldsInterceptor } from '@nestjs/platform-express/multer/interceptors'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -61,8 +63,6 @@ export class BienesSecuestradosController extends BaseController {
       ],
       crearConfiguracionArchivo('lgi', 'bienes-secuestrados', 5)
     ),
-
-    // Después agrega usuario y fechaHoraIngreso
     AuditoriaUsuarioInterceptor
   )
   create(
@@ -142,5 +142,27 @@ export class BienesSecuestradosController extends BaseController {
     id: number
   ) {
     return this.bieneSecuestradoService.eliminar(id)
+  }
+
+  @Get('imagenes/:id')
+  @ApiOperation({
+    summary: 'Obtener las fotografías protegidas del bien',
+  })
+  async obtenerFotografias(
+    @Param('id', ParseIntPipe)
+    id: number,
+
+    @Res({
+      passthrough: true,
+    })
+    response: Response
+  ) {
+    response.set({
+      'Cache-Control': 'private, no-store, max-age=0',
+      Pragma: 'no-cache',
+      'X-Content-Type-Options': 'nosniff',
+    })
+
+    return this.bieneSecuestradoService.obtenerFotografias(id)
   }
 }
