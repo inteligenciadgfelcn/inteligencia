@@ -28,7 +28,15 @@ for nombre in "${!servicios[@]}"; do
   imagen="$registryHost/$nombre:$tag"
 
   echo -e "\n --- Build: $imagen (contexto: $contexto) ---\n"
-  docker build -t "$imagen" "$contexto" || { echo -e "\n\nERROR: Falló el build de $nombre\n\n"; exit 1; }
+  # --provenance=false --sbom=false: Docker moderno (BuildKit) adjunta por
+  # defecto un "attestation manifest" (provenance SLSA) dentro del índice OCI
+  # de la imagen, con platform "unknown/unknown". Incidente real (01/09/2026):
+  # ese manifiesto extra hizo que `docker pull` en staging fallara con
+  # `unexpected media type application/json ... not found` — el cliente lo
+  # confundía con una capa real al descomprimir. Contra un registry simple
+  # (`registry:2`, no Docker Hub) esto no aporta nada y sí rompe el pull, se
+  # desactiva.
+  docker build --provenance=false --sbom=false -t "$imagen" "$contexto" || { echo -e "\n\nERROR: Falló el build de $nombre\n\n"; exit 1; }
 
   echo -e "\nPush: $imagen\n"
   docker push "$imagen" || { echo -e "\n\nERROR: Falló el push de $nombre\n\n"; exit 1; }
