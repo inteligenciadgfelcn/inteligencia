@@ -212,6 +212,37 @@ server {
         proxy_connect_timeout 10s;
     }
 
+    # ── Docker Registry (SOLO en el servidor dev, .23) — path-based, sin
+    # subdominio propio (ver 14-registro-de-imagenes.md §2). Incidente real
+    # (01/09/2026): este bloque vivía SOLO en el archivo materializado del
+    # servidor (agregado a mano siguiendo la doc), nunca en este template —
+    # al regenerar el `.conf` desde el template para el trabajo de swagger/
+    # docs del mismo día, se borró en silencio y rompió el pull de imágenes
+    # en staging. Ahora versionado acá para que no se pierda de nuevo.
+    #
+    # `proxy_pass` con una VARIABLE (no un hostname fijo) es a propósito: en
+    # staging/producción no existe ningún contenedor `registry` en
+    # `felcn-network` (nunca corre ahí) — un hostname fijo lo resolvería una
+    # sola vez al arrancar nginx y, si no existe, nginx directamente no
+    # arranca (`host not found in upstream`, mismo error confirmado
+    # localmente al probar este template). Con la variable, la resolución
+    # queda diferida a cuando llega una request real — nginx arranca bien en
+    # todos los ambientes, y si algún día alguien pega `/v2/...` en
+    # staging/producción, devuelve 502 en vez de tumbar todo el sitio.
+    resolver 127.0.0.11 valid=10s;
+    location /v2/ {
+        client_max_body_size 0;
+        chunked_transfer_encoding on;
+        set $registry_upstream http://registry:5000;
+        proxy_pass         $registry_upstream/v2/;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 900s;
+    }
+
     location = /health {
         include    /etc/nginx/snippets/security-headers.conf;
         access_log off;
