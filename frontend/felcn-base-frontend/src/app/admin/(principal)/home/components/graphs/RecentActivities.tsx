@@ -83,7 +83,7 @@ export default function RecentActivities() {
 
     if (permissions.roles) {
       configs.push({
-        queryKey: ['roles'],
+        queryKey: ['roles', 'todos'],
         queryFn: () =>
           sesionPeticion<RolesResponse>({
             url: `${Constantes.authUrl}/autorizacion/roles/todos`,
