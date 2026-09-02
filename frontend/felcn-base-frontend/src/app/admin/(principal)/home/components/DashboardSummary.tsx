@@ -52,7 +52,7 @@ export default function DashboardSummary() {
   })
 
   const { data: rolesData, isLoading: isLoadingRoles } = useQuery({
-    queryKey: ['roles'],
+    queryKey: ['roles', 'todos'],
     queryFn: () =>
       sesionPeticion<RolesResponse>({
         url: `${Constantes.authUrl}/autorizacion/roles/todos`,

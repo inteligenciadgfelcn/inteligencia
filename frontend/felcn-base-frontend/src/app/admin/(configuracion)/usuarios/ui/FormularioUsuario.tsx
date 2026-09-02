@@ -130,7 +130,7 @@ export const FormularioUsuario = ({
     const respuesta = await sesionPeticion({
       url: `${Constantes.authUrl}/autorizacion/roles`,
     })
-    return respuesta.datos
+    return Array.isArray(respuesta.datos) ? respuesta.datos : []
   }
 
   const obtenerSolicitud = async () => {
