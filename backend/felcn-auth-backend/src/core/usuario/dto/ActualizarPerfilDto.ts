@@ -22,4 +22,10 @@ export class ActualizarPerfilDto {
   @IsNumberString()
   @Validate(IsNumberInRangeConstraint, [60000000, 79999999])
   telefono?: string | null
+
+  @IsOptional()
+  idGrado?: number | null
+
+  @IsOptional()
+  idGrupo?: number | null
 }

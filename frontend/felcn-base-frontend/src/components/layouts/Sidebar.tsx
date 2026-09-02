@@ -21,32 +21,7 @@ const Sidebar = () => {
     setMounted(true)
   }, [])
 
-  /* AGREGADO MANUALMENTE PARA FORMULARIO OPERATIVO */
-  const modulosBackend = mounted ? (rolUsuario?.modulos || []) : []
-  const modulos = [
-    ...modulosBackend,
-    // {
-    //   id: 'operativo-module',
-    //   label: 'Operaciones',
-    //   propiedades: {
-    //     icono: 'widgets',
-    //     descripcion: 'Modulo de Operaciones',
-    //     orden: 99,
-    //   },
-    //   subModulo: [
-    //     {
-    //       id: 'formulario-operativo',
-    //       label: 'Formulario Operativo',
-    //       url: '/admin/operativo',
-    //       propiedades: {
-    //         icono: 'form',
-    //         descripcion: 'Formulario de registro operativo',
-    //         orden: 1,
-    //       },
-    //     },
-    //   ],
-    // },
-  ]
+  const modulos = mounted ? (rolUsuario?.modulos || []) : []
 
   const pathname = usePathname()
   const [currentMenu, setCurrentMenu] = useState<string>('')
