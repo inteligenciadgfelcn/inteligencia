@@ -18,6 +18,10 @@ const C = {
   borderLight: '#eef0f4',
 }
 
+// Todos los correos usan un registro formal (tratamiento de "usted") y un tono
+// institucional/ejecutivo. No emplear voseo ("vos", "debés") ni tuteo informal
+// ("haz clic", "ignora") en ningún texto de estas plantillas.
+
 export class TemplateEmailService {
   // ─── Template 2: Bloqueo por intentos fallidos ────────────────────────────
   // Uso: autenticación → demasiados intentos fallidos
@@ -28,17 +32,18 @@ export class TemplateEmailService {
       <tr>
         <td class="px" style="padding:0 28px 18px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Tu cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong> ha sido
-            <strong style="color:${C.danger};">bloqueada temporalmente</strong> porque se
+            Su cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong> ha sido
+            <strong style="color:${C.danger};">bloqueada temporalmente</strong> debido a que se
             detectaron múltiples intentos fallidos de inicio de sesión.
           </p>
           <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Si fuiste tú, haz clic en el botón para desbloquear tu cuenta de forma segura.
+            Si usted originó estos intentos, utilice el botón a continuación para desbloquear
+            su cuenta de forma segura.
           </p>
         </td>
       </tr>
 
-      ${ctaButton(url, 'Desbloquear mi cuenta', C.danger)}
+      ${ctaButton(url, 'Desbloquear la cuenta', C.danger)}
 
       <!-- Aviso de seguridad -->
       <tr>
@@ -49,12 +54,12 @@ export class TemplateEmailService {
             <tr>
               <td style="padding:16px 18px;">
                 <strong style="display:block;font-size:14px;color:#7b1e1e;margin-bottom:6px;">
-                  ¿No fuiste tú?
+                  ¿No reconoce esta actividad?
                 </strong>
                 <p style="margin:0;font-size:13px;line-height:1.55;color:#8e2410;">
-                  Si no reconoces estos intentos de inicio de sesión, es posible que alguien
-                  esté intentando acceder a tu cuenta. <strong>No hagas clic en el enlace</strong>
-                  y comunícate de inmediato con el administrador del sistema para asegurar tu cuenta.
+                  Si no reconoce estos intentos de inicio de sesión, es posible que un tercero
+                  esté intentando acceder a su cuenta. <strong>No utilice el enlace anterior</strong>
+                  y comuníquese de inmediato con el administrador del sistema para resguardar su cuenta.
                 </p>
               </td>
             </tr>
@@ -76,19 +81,19 @@ export class TemplateEmailService {
       <tr>
         <td class="px" style="padding:0 28px 18px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Recibimos una solicitud para <strong style="color:${C.text};">restablecer la contraseña</strong>
-            de tu cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong>.
+            Hemos recibido una solicitud para <strong style="color:${C.text};">restablecer la contraseña</strong>
+            de su cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong>.
           </p>
           <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Haz clic en el botón para crear una nueva contraseña. El enlace tiene una
-            vigencia limitada por razones de seguridad.
+            Utilice el botón a continuación para definir una nueva contraseña. El enlace tiene
+            una vigencia limitada por razones de seguridad.
           </p>
         </td>
       </tr>
 
-      ${ctaButton(url, 'Restablecer mi contraseña')}
+      ${ctaButton(url, 'Restablecer la contraseña')}
 
-      <!-- Si no fuiste tú -->
+      <!-- Si no fue el titular -->
       <tr>
         <td class="px" style="padding:0 28px 22px;">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
@@ -97,12 +102,12 @@ export class TemplateEmailService {
             <tr>
               <td style="padding:16px 18px;">
                 <strong style="display:block;font-size:14px;color:#7b1e1e;margin-bottom:6px;">
-                  ¿No solicitaste este cambio?
+                  ¿No solicitó este cambio?
                 </strong>
                 <p style="margin:0;font-size:13px;line-height:1.55;color:#8e2410;">
-                  Si tú <u>no</u> solicitaste restablecer tu contraseña, <strong>ignora este
-                  correo</strong> — tu contraseña actual no cambiará. Si crees que tu cuenta
-                  está en riesgo, contacta al administrador del sistema.
+                  Si usted <u>no</u> solicitó restablecer su contraseña, puede ignorar este
+                  correo; su contraseña actual no se modificará. Si considera que su cuenta
+                  podría estar en riesgo, comuníquese con el administrador del sistema.
                 </p>
               </td>
             </tr>
@@ -119,14 +124,14 @@ export class TemplateEmailService {
   // Uso: auto-registro por el usuario / admin activa manualmente
   static armarPlantillaActivacionCuentaManual(url: string): string {
     const content = `
-      ${header('Activa tu cuenta')}
+      ${header('Active su cuenta')}
 
       <tr>
         <td class="px" style="padding:0 28px 18px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Tu cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong> está lista.
-            Para completar el proceso de registro y poder iniciar sesión, debes
-            <strong style="color:${C.text};">activar tu cuenta</strong> haciendo clic en el
+            Su cuenta en el <strong style="color:${C.text};">Sistema FELCN</strong> se encuentra
+            habilitada. Para completar el proceso de registro y poder iniciar sesión, debe
+            <strong style="color:${C.text};">activar su cuenta</strong> utilizando el
             botón a continuación.
           </p>
           <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
@@ -135,7 +140,7 @@ export class TemplateEmailService {
         </td>
       </tr>
 
-      ${ctaButton(url, 'Activar mi cuenta', C.success)}
+      ${ctaButton(url, 'Activar la cuenta', C.success)}
 
       <!-- Nota informativa -->
       <tr>
@@ -146,9 +151,9 @@ export class TemplateEmailService {
             <tr>
               <td style="padding:14px 16px;">
                 <p style="margin:0;font-size:13px;line-height:1.55;color:#155226;">
-                  Una vez activada tu cuenta podrás iniciar sesión con tu usuario y la
-                  contraseña que registraste. Si tienes problemas para activar tu cuenta,
-                  comunícate con el administrador del sistema.
+                  Una vez activada su cuenta, podrá iniciar sesión con su usuario y la
+                  contraseña que registró. Si presenta inconvenientes durante la activación,
+                  comuníquese con el administrador del sistema.
                 </p>
               </td>
             </tr>
@@ -165,21 +170,21 @@ export class TemplateEmailService {
   // Uso: alta de usuario desde el panel de administración
   static armarPlantillaActivacionCuentaPorAdmin(url: string): string {
     const content = `
-      ${header('Activa tu cuenta')}
+      ${header('Active su cuenta')}
 
       <tr>
         <td class="px" style="padding:0 28px 18px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Un administrador creó una cuenta para vos en el
+            Un administrador ha creado una cuenta a su nombre en el
             <strong style="color:${C.text};">Sistema FELCN</strong>.
-            Para poder iniciar sesión, primero debés
-            <strong style="color:${C.text};">activar tu cuenta y definir tu propia
-            contraseña</strong> haciendo clic en el botón a continuación.
+            Para poder iniciar sesión, primero debe
+            <strong style="color:${C.text};">activar su cuenta y definir una
+            contraseña personal</strong> utilizando el botón a continuación.
           </p>
         </td>
       </tr>
 
-      ${ctaButton(url, 'Activar mi cuenta', C.success)}
+      ${ctaButton(url, 'Activar la cuenta', C.success)}
 
       <!-- Nota informativa -->
       <tr>
@@ -190,9 +195,9 @@ export class TemplateEmailService {
             <tr>
               <td style="padding:14px 16px;">
                 <p style="margin:0;font-size:13px;line-height:1.55;color:#155226;">
-                  Una vez activada tu cuenta podrás iniciar sesión con tu usuario y la
-                  contraseña que elijas. Si tienes problemas para activar tu cuenta,
-                  comunícate con el administrador del sistema.
+                  Una vez activada su cuenta, podrá iniciar sesión con su usuario y la
+                  contraseña que defina. Si presenta inconvenientes durante la activación,
+                  comuníquese con el administrador del sistema.
                 </p>
               </td>
             </tr>
@@ -216,7 +221,7 @@ export class TemplateEmailService {
           <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
             Para completar el inicio de sesión en el
             <strong style="color:${C.text};">Sistema FELCN</strong>,
-            introduce el siguiente código de verificación.
+            utilice el siguiente código de verificación.
           </p>
 
           <!-- Bloque de código OTP: un solo nodo de texto, seleccionable/copiable
@@ -251,8 +256,8 @@ export class TemplateEmailService {
                   ⏱ Vigencia: ${expiracionMin} minutos
                 </strong>
                 <p style="margin:0;font-size:12.5px;line-height:1.55;color:#7a5500;">
-                  Este código expirará en ${expiracionMin} minutos. Si no lo solicitaste tú,
-                  ignora este mensaje — tu cuenta permanece segura.
+                  Este código expirará en ${expiracionMin} minutos. Si usted no solicitó este
+                  inicio de sesión, puede ignorar este mensaje; su cuenta permanece segura.
                 </p>
               </td>
             </tr>
@@ -269,13 +274,13 @@ export class TemplateEmailService {
             <tr>
               <td style="padding:14px 16px;">
                 <strong style="display:block;font-size:13px;color:#7b1e1e;margin-bottom:4px;">
-                  ¿No fuiste tú?
+                  ¿No reconoce esta actividad?
                 </strong>
                 <p style="margin:0;font-size:12.5px;line-height:1.55;color:#8e2410;">
-                  Si no iniciaste sesión en el Sistema FELCN, alguien puede estar intentando
-                  acceder a tu cuenta. <strong>No compartas este código con nadie</strong>
-                  — el personal de soporte nunca te lo pedirá. Contacta al administrador
-                  de inmediato.
+                  Si usted no inició sesión en el Sistema FELCN, un tercero podría estar
+                  intentando acceder a su cuenta. <strong>No comparta este código con nadie.</strong>
+                  El personal de soporte nunca se lo solicitará. Comuníquese de inmediato
+                  con el administrador.
                 </p>
               </td>
             </tr>
@@ -293,23 +298,23 @@ export class TemplateEmailService {
   // único correo que revela el link al formulario detallado.
   static armarPlantillaSolicitudAccesoRegistro(url: string, expiracionMin: number): string {
     const content = `
-      ${header('Completa tu preregistro')}
+      ${header('Complete su preregistro')}
 
       <tr>
         <td class="px" style="padding:0 28px 18px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Recibimos una solicitud para iniciar un
+            Hemos recibido una solicitud para iniciar un
             <strong style="color:${C.text};">preregistro</strong> en el
-            <strong style="color:${C.text};">Sistema FELCN</strong> con este correo electrónico.
+            <strong style="color:${C.text};">Sistema FELCN</strong> con esta dirección de correo electrónico.
           </p>
           <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Haz clic en el botón para completar el formulario con tus datos. Tu solicitud
-            quedará pendiente de revisión por un administrador.
+            Utilice el botón a continuación para completar el formulario con sus datos. Su
+            solicitud quedará pendiente de revisión por parte de un administrador.
           </p>
         </td>
       </tr>
 
-      ${ctaButton(url, 'Completar preregistro')}
+      ${ctaButton(url, 'Completar el preregistro')}
 
       <!-- Vigencia -->
       <tr>
@@ -323,8 +328,8 @@ export class TemplateEmailService {
                   ⏱ Vigencia: ${expiracionMin} minutos
                 </strong>
                 <p style="margin:0;font-size:12.5px;line-height:1.55;color:#7a5500;">
-                  Este enlace expirará en ${expiracionMin} minutos. Si no solicitaste este
-                  preregistro, ignora este mensaje.
+                  Este enlace expirará en ${expiracionMin} minutos. Si usted no solicitó este
+                  preregistro, puede ignorar este mensaje.
                 </p>
               </td>
             </tr>
@@ -348,14 +353,14 @@ export class TemplateEmailService {
       <tr>
         <td class="px" style="padding:0 28px 22px;">
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Detectamos que ya existe una cuenta, o una solicitud de registro
+            Hemos detectado que ya existe una cuenta, o una solicitud de registro
             pendiente de revisión, en el
             <strong style="color:${C.text};">Sistema FELCN</strong> asociada a los datos
             ingresados en este preregistro.
           </p>
           <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:${C.textMuted};">
-            Si crees que se trata de un error, o si no reconoces esa cuenta o solicitud,
-            comunícate con el administrador del sistema para que revise tu caso.
+            Si considera que se trata de un error, o si no reconoce dicha cuenta o solicitud,
+            comuníquese con el administrador del sistema para que revise su caso.
           </p>
         </td>
       </tr>
@@ -443,11 +448,11 @@ function buildLayout(content: string): string {
               <tr>
                 <td style="padding:12px 14px;">
                   <strong style="display:block;font-size:13px;margin-bottom:4px;color:${C.text};">
-                    ¿Necesitas ayuda?
+                    ¿Necesita ayuda?
                   </strong>
                   <p style="margin:0;font-size:12.5px;color:${C.textMuted};">
-                    Comunícate con el administrador del sistema o con el área de soporte técnico
-                    de tu unidad.
+                    Comuníquese con el administrador del sistema o con el área de soporte técnico
+                    de su unidad.
                   </p>
                 </td>
               </tr>
@@ -462,7 +467,7 @@ function buildLayout(content: string): string {
                      color:${C.textMuted};font-size:11.5px;line-height:1.55;">
             <p style="margin:0 0 8px;">
               Este es un correo automático generado por el Sistema de Autenticación FELCN.
-              Por favor no respondas a este mensaje.
+              Por favor, no responda a este mensaje.
             </p>
             <p style="margin:0;font-size:11px;color:#7a8298;">
               Fuerza Especial de Lucha Contra el Narcotráfico (FELCN) · Bolivia
@@ -511,7 +516,7 @@ function ctaButton(
         </tr>
       </table>
       <p style="margin:10px 0 0;font-size:12px;color:${C.textMuted};">
-        Si el botón no funciona, copia y pega esta URL en tu navegador:<br>
+        Si el botón no funciona, copie y pegue esta URL en su navegador:<br>
         <a href="${url}" style="color:${color};word-break:break-all;">${url}</a>
       </p>
     </td>
@@ -528,9 +533,9 @@ function securityTips(): string {
       </h2>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
              style="font-size:12.5px;line-height:1.6;color:${C.textMuted};">
-        <tr><td style="padding:3px 0;">✓ &nbsp; Nunca compartas tus credenciales con otras personas.</td></tr>
-        <tr><td style="padding:3px 0;">✓ &nbsp; El personal de soporte <strong>nunca</strong> te pedirá tu contraseña.</td></tr>
-        <tr><td style="padding:3px 0;">✓ &nbsp; Cierra sesión siempre que uses equipos compartidos.</td></tr>
+        <tr><td style="padding:3px 0;">✓ &nbsp; Nunca comparta sus credenciales con otras personas.</td></tr>
+        <tr><td style="padding:3px 0;">✓ &nbsp; El personal de soporte <strong>nunca</strong> le solicitará su contraseña.</td></tr>
+        <tr><td style="padding:3px 0;">✓ &nbsp; Cierre la sesión siempre que utilice equipos compartidos.</td></tr>
       </table>
     </td>
   </tr>`
