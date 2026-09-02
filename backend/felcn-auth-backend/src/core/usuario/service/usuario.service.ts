@@ -1270,8 +1270,15 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
-    const { nombres, primerApellido, segundoApellido, correoElectronico, telefono } =
-      actualizarPerfilDto
+    const {
+      nombres,
+      primerApellido,
+      segundoApellido,
+      correoElectronico,
+      telefono,
+      idGrado,
+      idGrupo,
+    } = actualizarPerfilDto
 
     const op = async (transaction: EntityManager) => {
       if (telefono && telefono !== usuario.persona.telefono) {
@@ -1306,6 +1313,21 @@ export class UsuarioService extends BaseService {
         await this.usuarioRepositorio.actualizar(
           idUsuario,
           { correoElectronico },
+          idUsuario,
+          transaction
+        )
+      }
+
+      // Estructura (Unidad → Distrital → Grupo, y Grado): el usuario puede
+      // autoactualizar su propia ubicación en la estructura de la FELCN
+      // desde su perfil, mismo mecanismo que ya usa el admin al editar un
+      // usuario (idUnidad/idDistrital son solo pasos de la cascada en el
+      // frontend, no columnas propias de Usuario — el dato que se persiste
+      // es idGrupo, del que se deriva distrital/unidad por join).
+      if (idGrado !== undefined || idGrupo !== undefined) {
+        await this.usuarioRepositorio.actualizar(
+          idUsuario,
+          { idGrado, idGrupo },
           idUsuario,
           transaction
         )
