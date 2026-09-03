@@ -3,17 +3,22 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
-import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
+
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { AsignacionLgi } from './entities/asignacion_lgi.entity'
 import { AsignacionLgiRepository } from './repository/asignacion_lgi.repository'
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
+import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
+import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
+import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
 
 @Injectable()
 export class AsignacionLgiService {
   constructor(
     private readonly asignacionLgiRepository: AsignacionLgiRepository,
-    private readonly distritalLgiRepository: DistritalLgiRepository
+
+    private readonly distritalLgiRepository: DistritalLgiRepository,
+    private readonly grupoLgiRepository: GrupoLgiRepository
   ) {}
 
   async create(dto: CreateAsignacionLgiDto) {
@@ -27,7 +32,7 @@ export class AsignacionLgiService {
       )
     }
 
-    const uniAbrev = String(unidad.uniAbrev).trim().toUpperCase()
+    const uniAbrev = String(unidad.uniAbrev).trim()
 
     if (!uniAbrev) {
       throw new BadRequestException(
@@ -41,8 +46,27 @@ export class AsignacionLgiService {
       )
     }
 
+    const grupo = await this.grupoLgiRepository.findOne(dto.idGrupo)
+
+    if (!grupo) {
+      throw new NotFoundException('No se encontró el grupo seleccionado')
+    }
+
+    const descripcionGrupo = String(grupo.descripcion).trim()
+
+    if (!descripcionGrupo) {
+      throw new BadRequestException(
+        'El grupo no tiene una descripción configurada'
+      )
+    }
+
     const asignacionGuardada =
-      await this.asignacionLgiRepository.crearAsignacionDual(dto, uniAbrev)
+      await this.asignacionLgiRepository.crearAsignacionDual(
+        dto,
+        uniAbrev,
+        descripcionGrupo
+      )
+
     return {
       message: 'Datos generales registrados correctamente',
       id: asignacionGuardada.casosId,
@@ -53,11 +77,12 @@ export class AsignacionLgiService {
     const asignacion = await this.asignacionLgiRepository.findOneById(id)
 
     if (!asignacion) {
-      throw new NotFoundException('Asignación no encontrada')
+      throw new NotFoundException(`No existe la asignación con ID ${id}`)
     }
 
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
+    // Actualizar distrital y unidad
     if (disId !== undefined) {
       const unidad =
         await this.distritalLgiRepository.findUnidadByDistrito(disId)
@@ -78,7 +103,7 @@ export class AsignacionLgiService {
 
       if (uniAbrev.length > 3) {
         throw new BadRequestException(
-          'La abreviatura de la unidad no puede superar los 3 caracteres'
+          'La abreviatura no puede superar los 3 caracteres'
         )
       }
 
@@ -86,24 +111,55 @@ export class AsignacionLgiService {
       asignacion.uniAbrev = uniAbrev
     }
 
+    // Actualizar descripción del grupo
+    if (idGrupo !== undefined) {
+      const grupo = await this.grupoLgiRepository.findOne(idGrupo)
+
+      if (!grupo) {
+        throw new NotFoundException('No se encontró el grupo seleccionado')
+      }
+
+      const descripcionGrupo = String(grupo.descripcion).trim()
+
+      if (!descripcionGrupo) {
+        throw new BadRequestException(
+          'El grupo no tiene una descripción configurada'
+        )
+      }
+
+      asignacion.descripcionGrupo = descripcionGrupo
+    }
+
     Object.assign(asignacion, datos)
 
-    await this.asignacionLgiRepository.save(asignacion)
+    await this.asignacionLgiRepository.update(asignacion)
 
     return {
       message: 'Datos generales actualizados correctamente',
     }
   }
 
-  async findAllPaginado(pagination: PaginacionQueryDto) {
-    return await this.asignacionLgiRepository.findAllPaginado(pagination)
+  findAllPaginado(pagination: PaginacionQueryDto) {
+    return this.asignacionLgiRepository.findAllPaginado(pagination)
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} asignacionLgi`
+  async findOne(id: number): Promise<AsignacionLgi> {
+    const asignacion = await this.asignacionLgiRepository.findOneById(id)
+
+    if (!asignacion) {
+      throw new NotFoundException(`No existe la asignación con ID ${id}`)
+    }
+
+    return asignacion
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} asignacionLgi`
+  async remove(id: number): Promise<AsignacionLgi> {
+    const asignacion = await this.asignacionLgiRepository.inactivar(id)
+
+    if (!asignacion) {
+      throw new NotFoundException(`No existe la asignación activa con ID ${id}`)
+    }
+
+    return asignacion
   }
 }

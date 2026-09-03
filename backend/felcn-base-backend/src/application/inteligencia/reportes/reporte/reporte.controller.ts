@@ -1,6 +1,13 @@
-import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Res,
+  UseGuards,
+} from '@nestjs/common'
 import { Response } from 'express'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth,  ApiTags } from '@nestjs/swagger'
 import { ExportService } from '../export/export.service'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { ReporteService } from './reporte.service'
@@ -19,7 +26,10 @@ export class ReporteController {
   async exportPDF(@Param('id_detenido') id: number, @Res() res: Response) {
     const data = await this.reporteService.GenerarPDF(+id)
 
-    const buffer = await this.exportService.generatePDF('tarjeta-prontuaria', data)
+    const buffer = await this.exportService.generatePDF(
+      'tarjeta-prontuaria',
+      data
+    )
 
     res.set({
       'Content-Type': 'application/pdf',
@@ -29,4 +39,27 @@ export class ReporteController {
     res.send(buffer)
   }
 
+  @Get('export/pdf/servicio/:id_servicio')
+  async exportPDFServicio(
+    @Param('id_servicio')
+    idServicio: string,
+
+    @Res()
+    res: Response
+  ) {
+    const data = await this.reporteService.GenerarPDFServicio(idServicio)
+
+    const buffer = await this.exportService.generatePDF(
+      'reporte-servicio',
+      data
+    )
+
+    res.set({
+      'Content-Type': 'application/pdf',
+
+      'Content-Disposition': `attachment; filename=reporte-servicio-${idServicio}.pdf`,
+    })
+
+    res.send(buffer)
+  }
 }

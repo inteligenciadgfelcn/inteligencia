@@ -7,6 +7,7 @@ import { PaisLgiRepository } from './repository/pais.repository'
 import { EstadoCivilLgiRepository } from './repository/estado_civil.repository'
 import { ProfesionLgiRepository } from './repository/profesion.repository'
 import { TipoDocumentoLgiRepository } from './repository/tipo_documento.repository'
+import { TipoInformeLgiRepository } from './repository/tipo_informe.repository'
 
 @Injectable()
 export class ParametricasLgiService {
@@ -18,7 +19,8 @@ export class ParametricasLgiService {
     private readonly situacionJuridicaRepository: SituacionJuridicaRepository,
     private readonly estadoCivilRepository: EstadoCivilLgiRepository,
     private readonly profesionRepository: ProfesionLgiRepository,
-    private readonly tipoDocumentoRepository: TipoDocumentoLgiRepository
+    private readonly tipoDocumentoRepository: TipoDocumentoLgiRepository,
+    private readonly tipoInformeRepository: TipoInformeLgiRepository,
   ) {}
 
   findAllDistrito(idUsuario: number) {
@@ -56,4 +58,9 @@ export class ParametricasLgiService {
   findAllTipoDocumento() {
     return this.tipoDocumentoRepository.findAllGeneral()
   }
+
+  findAllTipoInforme() {
+    return this.tipoInformeRepository.findAllGeneral()
+  }
+
 }

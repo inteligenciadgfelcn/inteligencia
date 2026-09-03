@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
   name: 'calidadbien',
-  schema: 'public',
+  schema: 'parametricas',
 })
 export class CalidadBienLgi {
   @PrimaryGeneratedColumn({

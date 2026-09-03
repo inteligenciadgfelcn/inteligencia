@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as fs from 'fs'
 import { Detenido } from '../../felcn_sii/filiacion/detenido/entities/detenido.entity'
 import { Huella } from '../../felcn_sii/huella/entities/huella.entity'
 import { DB_SII } from '@/core/config/database/database.module'
+import { ReporteServicioRepository } from './repository/reporte_servicio.repository'
 
 @Injectable()
 export class ReporteService {
@@ -13,7 +14,9 @@ export class ReporteService {
     private readonly repoDetenido: Repository<Detenido>,
 
     @InjectRepository(Huella, DB_SII)
-    private readonly huellaRepository: Repository<Huella>
+    private readonly huellaRepository: Repository<Huella>,
+
+    private readonly reporteServicioRepository: ReporteServicioRepository
   ) {}
 
   async GenerarPDF(id: number) {
@@ -331,4 +334,35 @@ export class ReporteService {
       return ''
     }
   }
+
+  async GenerarPDFServicio(
+  idServicio: string,
+) {
+  const servicio =
+    await this.reporteServicioRepository
+      .obtenerServicio(idServicio)
+
+  if (!servicio) {
+    throw new NotFoundException(
+      `No se encontró el servicio con ID ${idServicio}`,
+    )
+  }
+
+  return {
+    idServicio:
+      servicio.idServicio,
+
+    nombreServicio:
+      servicio.nombreServicio || '',
+
+    // Posteriormente agregaremos aquí
+    // todos los operativos del servicio.
+    operativos: [],
+
+    sustancias: {},
+    fabricas: [],
+    personas: {},
+    ubicaciones: [],
+  }
+}
 }

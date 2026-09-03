@@ -23,6 +23,10 @@ import { PersonasImplicadasModule } from './personas_implicadas/personas_implica
 import { SituacionJuridicaModule } from './situacion_juridica/situacion_juridica.module';
 import { InvestigadoresModule } from './investigadores/investigadores.module';
 import { InformacionSiiiModule } from './informacion_siii/informacion_siii.module';
+import { ActuacionesModule } from './actuaciones/actuaciones.module';
+import { BienesSecuestradosModule } from './bienes_secuestrados/bienes_secuestrados.module';
+import { VinculoModule } from './parametro/vinculo/vinculo.module';
+import { TipoVinculoModule } from './parametro/tipo-vinculo/tipo-vinculo.module';
 
 @Module({
   imports: [
@@ -42,12 +46,16 @@ import { InformacionSiiiModule } from './informacion_siii/informacion_siii.modul
     TamanoDocModule,
     ContenidoBienModule,
     CalidadBienModule,
+    VinculoModule,
+    TipoVinculoModule,
     AsignacionLgiModule,
     ParametricasLgiModule,
     PersonasImplicadasModule,
     SituacionJuridicaModule,
     InvestigadoresModule,
     InformacionSiiiModule,
+    ActuacionesModule,
+    BienesSecuestradosModule,
   ],
   controllers: [],
 })

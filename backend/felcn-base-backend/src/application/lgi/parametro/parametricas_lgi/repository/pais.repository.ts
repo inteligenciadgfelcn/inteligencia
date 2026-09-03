@@ -12,7 +12,7 @@ export class PaisLgiRepository {
   
     private readonly baseQuery = `
       SELECT d.*
-      FROM public.pais d
+      FROM parametricas.pais d
     `
   
     private buildQuery(

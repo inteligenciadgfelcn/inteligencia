@@ -18,13 +18,18 @@ export class AsignacionLgiRepository {
     private readonly asignacionCasoRepository: Repository<AsignacionASIG>
   ) {}
 
-  async crearAsignacionDual(dto: CreateAsignacionLgiDto, uniAbrev: string) {
+  async crearAsignacionDual(
+    dto: CreateAsignacionLgiDto,
+    uniAbrev: string,
+    descripcionGrupo: string
+  ): Promise<AsignacionLgi> {
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
     const asignacionLgi = this.repository.create({
       ...datos,
       disId,
       uniAbrev,
+      descripcionGrupo,
     })
 
     const asignacionGuardada = await this.repository.save(asignacionLgi)
@@ -38,18 +43,26 @@ export class AsignacionLgiRepository {
     try {
       const asignacionCaso = this.asignacionCasoRepository.create({
         idCasoSiii: asignacionGuardada.casosId,
+
         nombreCaso: asignacionGuardada.nombreCaso,
+
         nombreSolicitud: asignacionGuardada.conformeA,
+
         fechaOperativo: asignacionGuardada.fechaInicio,
+
         fiscalAsignado: asignacionGuardada.remiteFiscal,
+
         usuario: asignacionGuardada.usuario,
+
         idDepartamento: asignacionGuardada.dptoavId,
+
         nroOperativo: asignacionGuardada.nroCaso,
+
         nroCaso: asignacionGuardada.nroCaso,
       })
 
       await this.asignacionCasoRepository.save(asignacionCaso)
-    } catch (error) {
+    } catch {
       await this.repository.remove(asignacionGuardada)
 
       throw new BadRequestException(
@@ -60,14 +73,6 @@ export class AsignacionLgiRepository {
     return asignacionGuardada
   }
 
-  create(data: Partial<AsignacionLgi>): AsignacionLgi {
-    return this.repository.create(data)
-  }
-
-  saveDatosGenrales(data: AsignacionLgi): Promise<AsignacionLgi> {
-    return this.repository.save(data)
-  }
-
   async findAllPaginado(
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
@@ -75,9 +80,29 @@ export class AsignacionLgiRepository {
 
     const query = this.repository
       .createQueryBuilder('a')
-      .leftJoin('distritales', 'd', 'a.dis_id = d.dis_id')
-      .leftJoin('etapainvest', 'e', 'a.eta_inv = e.eta_inv')
-      .leftJoin('unidades', 'u', 'a.uni_abrev = u.uni_abrev')
+      .leftJoin(
+        `(SELECT * FROM parametricas.distritales
+      )`,
+        'd',
+        'a.dis_id = d.dis_id'
+      )
+      .leftJoin(
+        `(
+        SELECT *
+        FROM parametricas.etapainvest
+      )`,
+        'e',
+        'a.eta_inv = e.eta_inv'
+      )
+      .leftJoin(
+        `(
+        SELECT *
+        FROM parametricas.unidades
+      )`,
+        'u',
+        'a.uni_abrev = u.uni_abrev'
+      )
+      .where('a.estado = :estado', { estado: 'ACTIVO' })
 
     if (filtro?.trim()) {
       const valor = `%${filtro.trim()}%`
@@ -99,9 +124,10 @@ export class AsignacionLgiRepository {
     const data = await query
       .select([
         'a.*',
-        'd.dis_descripcion AS "regional"',
         'e.descripcion AS "etapaInvestigacion"',
         'u.uni_descripcion AS "unidad"',
+        'd.dis_descripcion AS "regional"',
+        'a.descripcion_grupo AS "puesto"',
       ])
       .orderBy('a.casos_id', 'DESC')
       .take(limite)
@@ -115,11 +141,24 @@ export class AsignacionLgiRepository {
     return await this.repository.findOne({
       where: {
         casosId: id,
+        estado: 'ACTIVO',
       },
     })
   }
 
-  save(data: AsignacionLgi): Promise<AsignacionLgi> {
-    return this.repository.save(data)
+  async update(asignacion: AsignacionLgi): Promise<AsignacionLgi> {
+    return this.repository.save(asignacion)
+  }
+
+  async inactivar(id: number): Promise<AsignacionLgi | null> {
+    const asignacion = await this.findOneById(id)
+
+    if (!asignacion) {
+      return null
+    }
+
+    asignacion.estado = 'INACTIVO'
+
+    return this.repository.save(asignacion)
   }
 }

@@ -18,4 +18,9 @@ export class ExportService {
   async generateExcel(sheetName: string, data: any[]): Promise<Buffer> {
     return this.excelService.generate(sheetName, data);
   }
+
+  async generatePDFServicio(templateName: string, data: any): Promise<Buffer> {
+    
+    return this.pdfService.generate(templateName, data);
+  }
 }

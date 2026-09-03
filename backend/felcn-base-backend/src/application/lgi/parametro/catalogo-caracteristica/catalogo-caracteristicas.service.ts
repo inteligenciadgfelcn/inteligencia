@@ -62,4 +62,8 @@ export class CatalogoCaracteristicasLgiService {
     }
   }
 
+  findAllCaracteristicaClase(idClase: number): Promise<any[]> {
+    return this.repository.findAllByCaracteristicaClase(idClase)
+  }
+
 }
