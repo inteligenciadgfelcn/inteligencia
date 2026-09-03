@@ -1,6 +1,11 @@
 .env
 /docker-compose.yml
+
+# Directorios de herramientas de editor / asistentes (config local, no versionar)
 .claude/
+.cursor/
+.aider*
+.windsurf/
 
 # Node.js
 **/node_modules/
@@ -39,3 +44,15 @@ deploy/tools/registry/htpasswd
 # Credenciales reales del basic auth de /docs/ (mkdocs) — mismo criterio que
 # el htpasswd del registry, nunca versionar.
 deploy/tools/nginx/.htpasswd-docs
+
+# Material del informe final: informes fuente (docx/pdf grandes), guion de
+# trabajo y sobre todo el documento de accesos y credenciales — se entrega por
+# Drive con acta, nunca va a git.
+/informefinal/
+
+# Archivos de trabajo sueltos en la raíz (no forman parte del código fuente)
+/*.rar
+/*.jpeg
+/*.jpg
+/informe-producto*.docx
+/manual_usuario_fase1.pdf
