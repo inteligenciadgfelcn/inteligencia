@@ -21,7 +21,7 @@ import { InterpreteMensajes } from '../../../../../utils'
 import { useAlerts } from '../../../../../hooks'
 
 export function ActualizacionDataTable() {
-  const { verificarServicioUsuario } = useAuth()
+  const { codigoIcia } = useAuth()
   const router = useRouter()
   const { Alerta } = useAlerts()
 
@@ -58,8 +58,8 @@ export function ActualizacionDataTable() {
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['casos_registrados', pagina, limite, search, sortStatus],
     queryFn: async () => {
-      const { codigoServicio } = await verificarServicioUsuario()
-      if (!codigoServicio) {
+      // const { codigoServicio } = await verificarServicioUsuario()
+      if (!codigoIcia) {
         throw new Error('No se pudo obtener el código de servicio del usuario')
       }
       return getActualizacionData(
@@ -71,7 +71,7 @@ export function ActualizacionDataTable() {
           ordenar: sortStatus.columnAccessor,
           direccion: sortStatus.direction,
         },
-        codigoServicio
+        codigoIcia
       )
     },
     placeholderData: keepPreviousData,
