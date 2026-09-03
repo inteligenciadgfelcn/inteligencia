@@ -192,15 +192,15 @@ export class AsignacionesRepository {
   }
 
   async obtenerMaxCorrelativo(
-  dpto: string,
-  letra: string,
-  year: string,
-): Promise<number> {
-  const patron = `${dpto}-${letra}-%/${year}`
+    dpto: string,
+    letra: string,
+    year: string,
+  ): Promise<number> {
+    const patron = `${dpto}-${letra}-%/${year}`
 
-  const result: Array<{ max: number | string }> =
-    await this.asignacionAsigRepository.query(
-      `
+    const result: Array<{ max: number | string }> =
+      await this.asignacionAsigRepository.query(
+        `
       SELECT COALESCE(
         MAX(
           SPLIT_PART(
@@ -220,12 +220,26 @@ export class AsignacionesRepository {
           1
         ) ~ '^[0-9]+$'
       `,
-      [patron],
-    )
+        [patron],
+      )
 
-  const maximo = Number(result[0]?.max ?? 0)
-  return maximo + 1
-}
+    const maximo = Number(result[0]?.max ?? 0)
+    return maximo + 1
+  }
+
+  async actualizarFiscalAsignadoDual(
+    idAsignacion: number, fiscalAsignado: string
+  ) {
+    const asignacion = await this.asignacionAsigRepository.findOne({
+      where: { idAsignacion },
+    })
+    if (!asignacion?.idCasoSiii) return
+
+    await this.asignacionRepository.update(
+      { idAsignacion: asignacion.idCasoSiii },
+      { fiscalAsignado }
+    )
+  }
 
   async actualizarNumeroCasoDual(
     nroOperativo: string,
