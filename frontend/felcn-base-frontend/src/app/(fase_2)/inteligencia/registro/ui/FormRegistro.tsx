@@ -113,53 +113,21 @@ export const FormRegistro = ({
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      codigoServicio: asignacion?.codigoServicio || '',
+      codigoServicio: '',
       nroPase: usuario?.numeroPase || '',
-      departamento: asignacion?.departamento
-        ? {
-            value: asignacion.departamento?.idDepartamento,
-            label: asignacion.departamento?.descripcion,
-          }
-        : undefined,
-      // unidad: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.distrital.unidad.idUnidad,
-      //       label: asignacion.grupo.distrital.unidad.descripcion,
-      //     }
-      //   : undefined,
-      // distrital: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.distrital.idDistrital,
-      //       label: asignacion.grupo.distrital.descripcion,
-      //     }
-      //   : undefined,
-      // grupo: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.idGrupo,
-      //       label: asignacion.grupo.descripcion,
-      //     }
-      //   : undefined,
-      nroRegistro: asignacion?.nroOperativo || '',
-      nombreOperativo: asignacion?.nombreCaso || '',
-      fechaHoraOperativo: asignacion?.fechaSolicitud
-        ? dateToStringAmPm(asignacion.fechaSolicitud)
-        : nowDateToString(),
-      quienRealiza: asignacion?.nombreSolicitud
-        ? {
-            value: Number(asignacion.telefonoSolicitud),
-            label: asignacion.nombreSolicitud,
-          }
-        : undefined,
-      asignadoA: asignacion?.asignado
-        ? {
-            value: Number(asignacion.telefonoAsignado),
-            label: asignacion.asignado,
-          }
-        : undefined,
-      fiscalAsignado: asignacion?.fiscalAsignado || '',
-      quienRealizaNum: asignacion?.telefonoSolicitud || '',
-      asignadoANum: asignacion?.telefonoAsignado || '',
-      fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      departamento: undefined,
+      unidad: undefined,
+      distrital: undefined,
+      grupo: undefined,
+      nroRegistro: '',
+      nombreOperativo: '',
+      fechaHoraOperativo: nowDateToString(),
+      quienRealiza: undefined,
+      asignadoA: undefined,
+      fiscalAsignado: '',
+      quienRealizaNum: '',
+      asignadoANum: '',
+      fiscalAsignadoNum: '',
     },
   })
 
@@ -177,31 +145,46 @@ export const FormRegistro = ({
 
   useEffect(() => {
     if (asignacion) {
+      const dept = departamentos?.find(
+        (d) => d.abreviatura === asignacion.departamento?.idDepartamento
+      )
+      const unid = unidades?.find(
+        (u) =>
+          u.abreviaturaIcia?.trim() ===
+          asignacion.unidad?.idUnidad?.trim()
+      )
+
       reset({
         codigoServicio: asignacion?.codigoServicio || '',
         nroPase: usuario?.numeroPase || '',
-        departamento: asignacion?.departamento
+        departamento: dept
+          ? { value: dept.idDepartamento, label: dept.descripcion, original: dept }
+          : asignacion?.departamento
+            ? {
+                value: Number(asignacion.departamento.idDepartamento) || 0,
+                label: asignacion.departamento.descripcion,
+                original: undefined as any,
+              }
+            : undefined,
+        unidad: unid
+          ? { value: unid.id, label: unid.descripcion, original: unid }
+          : asignacion?.unidad
+            ? {
+                value: 0,
+                label: asignacion.unidad.descripcion,
+                original: undefined as any,
+              }
+            : undefined,
+        distrital: asignacion?.siii?.id_distrital
           ? {
-              value: asignacion.departamento?.idDepartamento,
-              label: asignacion.departamento?.descripcion,
+              value: asignacion.siii.id_distrital,
+              label: String(asignacion.siii.id_distrital),
             }
           : undefined,
-        unidad: asignacion?.unidad
+        grupo: asignacion?.siii?.id_grupo
           ? {
-              value: Number(asignacion.unidad.idUnidad),
-              label: asignacion.unidad.descripcion,
-            }
-          : undefined,
-        distrital: asignacion?.grupo?.distrital
-          ? {
-              value: asignacion.grupo.distrital.idDistrital,
-              label: asignacion.grupo.distrital.descripcion,
-            }
-          : undefined,
-        grupo: asignacion?.grupo
-          ? {
-              value: asignacion.grupo.idGrupo,
-              label: asignacion.grupo.descripcion,
+              value: asignacion.siii.id_grupo,
+              label: String(asignacion.siii.id_grupo),
             }
           : undefined,
         nroRegistro: asignacion?.nroOperativo || '',
@@ -211,37 +194,73 @@ export const FormRegistro = ({
           : nowDateToString(),
         quienRealiza: asignacion?.nombreSolicitud
           ? {
-              value: Number(asignacion.telefonoSolicitud),
+              value: Number(asignacion.siii?.telefono_solicitud) || 0,
               label: asignacion.nombreSolicitud,
             }
           : undefined,
-        asignadoA: asignacion?.asignado
+        asignadoA: asignacion?.siii?.asignado_caso
           ? {
-              value: Number(asignacion.telefonoAsignado),
-              label: asignacion.asignado,
+              value: Number(asignacion.siii.telefono_asignado) || 0,
+              label: asignacion.siii.asignado_caso,
             }
           : undefined,
         fiscalAsignado: asignacion?.fiscalAsignado || '',
-        quienRealizaNum: asignacion?.telefonoSolicitud || '',
-        asignadoANum: asignacion?.telefonoAsignado || '',
-        fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+        quienRealizaNum: asignacion?.siii?.telefono_solicitud || '',
+        asignadoANum: asignacion?.siii?.telefono_asignado || '',
+        fiscalAsignadoNum: asignacion?.siii?.telefono_fiscal || '',
       })
     }
-  }, [asignacion])
+  }, [asignacion, departamentos, unidades])
 
   useEffect(() => {
-    resetField('distrital')
-    resetField('grupo')
-  }, [unidadSeleccionada, resetField])
+    if (asignacion?.siii?.id_distrital && distritales?.length) {
+      const dist = distritales.find(
+        (d) => d.id === asignacion.siii.id_distrital
+      )
+      if (dist) {
+        setValue('distrital', {
+          value: dist.id,
+          label: dist.descripcion,
+          original: dist,
+        })
+      }
+    }
+  }, [distritales, asignacion, setValue])
 
   useEffect(() => {
-    resetField('grupo')
-  }, [distritalSeleccionado, resetField])
+    if (asignacion?.siii?.id_grupo && grupos?.length) {
+      const grp = grupos.find(
+        (g) => g.id === asignacion.siii.id_grupo
+      )
+      if (grp) {
+        setValue('grupo', {
+          value: grp.id,
+          label: grp.descripcion,
+          original: grp,
+        })
+      }
+    }
+  }, [grupos, asignacion, setValue])
 
   useEffect(() => {
-    resetField('quienRealiza')
-    resetField('asignadoA')
-  }, [grupoSeleccionado, resetField])
+    if (!asignacion) {
+      resetField('distrital')
+      resetField('grupo')
+    }
+  }, [unidadSeleccionada, resetField, asignacion])
+
+  useEffect(() => {
+    if (!asignacion) {
+      resetField('grupo')
+    }
+  }, [distritalSeleccionado, resetField, asignacion])
+
+  useEffect(() => {
+    if (!asignacion) {
+      resetField('quienRealiza')
+      resetField('asignadoA')
+    }
+  }, [grupoSeleccionado, resetField, asignacion])
 
   useEffect(() => {
     const verificarServicio = async () => {
@@ -287,13 +306,11 @@ export const FormRegistro = ({
 
       if (mode === 'edit' && asignacion?.idAsignacion) {
         const payload = {
-          idDepartamento: values.departamento.original.abreviatura,
-          idUnidad: String(values.unidad.value),
-          numeroOperativo: values.nroRegistro,
-          fechaOperativo: formatDate2ToBackend(values.fechaHoraOperativo),
           nombreCaso: values.nombreOperativo,
-          codigoServicio: values.codigoServicio,
+          telefonoSolicitud: values.quienRealizaNum,
           fiscalAsignado: values.fiscalAsignado,
+          telefonoFiscal: values.fiscalAsignadoNum,
+          fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
         }
 
         await actualizarAsignacion(asignacion.idAsignacion, payload)
@@ -451,6 +468,7 @@ export const FormRegistro = ({
                 prefix="Departamento"
                 error={errors.departamento?.message}
                 originalData={departamentos ?? []}
+                isDisable={mode === 'edit'}
                 mapOption={(item) => ({
                   label: item.descripcion,
                   value: item.idDepartamento,
@@ -466,6 +484,7 @@ export const FormRegistro = ({
                 prefix="Unidad"
                 error={errors.unidad?.message}
                 originalData={unidades ?? []}
+                isDisable={mode === 'edit'}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -482,7 +501,7 @@ export const FormRegistro = ({
                 prefix="Distrital"
                 error={errors.distrital?.message}
                 originalData={distritales ?? []}
-                isDisable={!unidadSeleccionada}
+                isDisable={mode === 'edit' || !unidadSeleccionada}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -499,7 +518,7 @@ export const FormRegistro = ({
                 prefix="Grupo"
                 error={errors.grupo?.message}
                 originalData={grupos ?? []}
-                isDisable={!distritalSeleccionado || !unidadSeleccionada}
+                isDisable={mode === 'edit' || !distritalSeleccionado || !unidadSeleccionada}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -511,21 +530,24 @@ export const FormRegistro = ({
             </div>
             <div className="col-span-12">
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleAsignarNumeroRegistro}
-                  disabled={loading}
-                  className="btn btn-primary self-end whitespace-nowrap h-7 text-sm"
-                >
-                  <span className="text-sm font-normal">
-                    ASIGNAR NUMERO DE REGISTRO
-                  </span>
-                </button>
+                {mode !== 'edit' && (
+                  <button
+                    type="button"
+                    onClick={handleAsignarNumeroRegistro}
+                    disabled={loading}
+                    className="btn btn-primary self-end whitespace-nowrap h-7 text-sm"
+                  >
+                    <span className="text-sm font-normal">
+                      ASIGNAR NUMERO DE REGISTRO
+                    </span>
+                  </button>
+                )}
                 <div className="flex-1">
                   <InputWithPrefix
                     name="nroRegistro"
                     prefix=""
                     register={register}
+                    readOnly={mode === 'edit'}
                     error={errors.nroRegistro?.message as string}
                   />
                 </div>
@@ -554,7 +576,7 @@ export const FormRegistro = ({
                 prefix="Quien realiza la solicitud"
                 error={errors.quienRealiza?.message as string}
                 originalData={usuarios ?? []}
-                isDisable={!grupoSeleccionado}
+                isDisable={mode === 'edit' || !grupoSeleccionado}
                 mapOption={(item) => {
                   return {
                     label: `${item.nombreCompleto}`.toUpperCase(),
@@ -578,7 +600,6 @@ export const FormRegistro = ({
                 icon="phone"
                 register={register}
                 error={errors.quienRealizaNum?.message as string}
-                readOnly
               />
             </div>
             <div className="col-span-8">
@@ -588,7 +609,7 @@ export const FormRegistro = ({
                 prefix="Asignado al caso"
                 error={errors.asignadoA?.message as string}
                 originalData={usuarios ?? []}
-                isDisable={!grupoSeleccionado}
+                isDisable={mode === 'edit' || !grupoSeleccionado}
                 mapOption={(item) => {
                   return {
                     label: `${item.nombreCompleto}`.toUpperCase(),
@@ -611,6 +632,7 @@ export const FormRegistro = ({
                 prefix="Nro. Celular"
                 icon="phone"
                 register={register}
+                readOnly={mode === 'edit'}
                 error={errors.asignadoANum?.message as string}
               />
             </div>

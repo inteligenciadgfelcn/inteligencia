@@ -1,58 +1,65 @@
 export interface AsignacionTable {
   idAsignacion: string
-  letra: null
-  nroCaso: null
-  nroCasoPerDom: null
+  idDepartamento: string
+  idUnidad: string
+  codigoLetra: string | null
+  nroCaso: string | null
   nroOperativo: string
-  codigoServicio: string
-  ianus: null
+  fechaOperativo: string
   nombreCaso: string
   nombreSolicitud: string
-  telefonoSolicitud: string
-  asignado: string
-  telefonoAsignado: string
+  codigoServicio: string
   fiscalAsignado: string
-  telefonoFiscal: string
-  etapaInvestigacion: null
-  resultado: null
-  fechaSolicitud: Date
-  fechaOperativo: Date | null
-  usuario: null
-  departamento?: Departamento
-  grupo?: Grupo
+  idCasoSiii: number | null
+  fechaSolicitud: string
+  usuario: string
+  departamento: {
+    idDepartamento: string
+    descripcion: string
+  }
   unidad: {
     idUnidad: string
     descripcion: string
   }
+  letra: string | null
+  servicio: {
+    codigoServicio: string
+    usuarioPrincipal: string
+    usuarioEmergencia: string
+    fechaIngreso: string
+    fechaSalida: string
+    estado: string
+  }
+  siii: SiiiData
 }
 
-interface Departamento {
-  idDepartamento: number
-  abreviatura: string
-  descripcion: string
-  estado: string
-}
-
-interface Grupo {
-  idGrupo: number
-  descripcion: string
-  estado: string
-  distrital: Distrital
-}
-
-interface Distrital {
-  idDistrital: number
-  descripcion: string
-  estado: string
-  unidad: Unidad
-}
-
-interface Unidad {
-  idUnidad: number
-  abreviatura: string
-  descripcion: string
-  abreviaturaIcia: string
-  es_operativa_admin: boolean
-  abreviaturaReporte: string
-  estado: string
+export interface SiiiData {
+  id_caso: string
+  id_departamento_caso: string
+  abreviatura_unidad: string
+  id_distrital: number
+  id_grupo: number
+  letras: string | null
+  numero_caso: string | null
+  numero_caso_per_dom: string | null
+  numero_operativo: string
+  codigo_servicio: string
+  ianus: string | null
+  nombre_caso: string
+  fiscal_solicitud: string
+  telefono_solicitud: string
+  asignado_caso: string
+  telefono_asignado: string
+  fiscal_asignado_caso: string
+  telefono_fiscal: string
+  id_etapa_investigacion: string | null
+  resultado: string | null
+  fecha_hora_ingreso: string
+  usuario: string
+  _estado: string
+  _transaccion: string
+  _usuario_creacion: string
+  _fecha_creacion: string
+  _usuario_modificacion: string | null
+  _fecha_modificacion: string | null
 }

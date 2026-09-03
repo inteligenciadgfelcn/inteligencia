@@ -78,6 +78,10 @@ export function RegistrosDataTable() {
 
   /* FETCH */
   const obtenerRegistros = async () => {
+    console.log(`Entra aqui ${codigoIcia} ==`);
+
+    if (!codigoIcia) { return [] }
+
     const res = await sesionPeticion({
       url: `${Constantes.baseUrl}/asignaciones/${codigoIcia}`,
       withCredentials: true,
@@ -155,7 +159,7 @@ export function RegistrosDataTable() {
     {
       accessor: 'asignadoA',
       title: 'Asignado al caso',
-      render: (row: AsignacionTable) => row.asignado ?? '-',
+      render: (row: AsignacionTable) => row.siii?.asignado_caso ?? '-',
     },
     {
       accessor: 'fiscalAsignado',
