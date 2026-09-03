@@ -34,4 +34,12 @@ export class CatalogoClaseLgiRepository {
       },
     })
   }
+
+  async findAllByBien(id: number) {
+    return await this.repository.find({
+      where: {
+        bienId: id,
+      },
+    })
+  }
 }

@@ -1,4 +1,11 @@
-import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Request,
+  UseGuards,
+} from '@nestjs/common'
 
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
@@ -6,13 +13,33 @@ import { BaseController } from '@/common/base/base-controller'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 import { ParametricasLgiService } from './parametricas_lgi.service'
+import { EtapaLgiService } from '../etapa/etapa.service'
+import { EstadoLgiService } from '../estado/estado.service'
+import { BienesService } from '../bienes/bienes.service'
+import { CatalogoClaseLgiService } from '../catalogo-clase/catalogo-clase.service'
+import { CatalogoTipoLgiService } from '../catalogo-tipo/catalogo-tipo.service'
+import { CatalogoCaracteristicasLgiService } from '../catalogo-caracteristica/catalogo-caracteristicas.service'
+import { CalidadBienLgiService } from '../calidad-bien/calidad-bien.service'
+import { VinculoService } from '../vinculo/vinculo.service'
+import { TipoVinculoLgiService } from '../tipo-vinculo/tipo-vinculo.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('Paramétricas LGI')
 @Controller('parametricas-lgi')
 export class ParametricasLgiController extends BaseController {
-  constructor(private readonly parametricasLgiService: ParametricasLgiService) {
+  constructor(
+    private readonly parametricasLgiService: ParametricasLgiService,
+    private readonly etapaService: EtapaLgiService,
+    private readonly estadoService: EstadoLgiService,
+    private readonly bienesLgiService: BienesService,
+    private readonly claseBienService: CatalogoClaseLgiService,
+    private readonly tipoService: CatalogoTipoLgiService,
+    private readonly caracteristicaService: CatalogoCaracteristicasLgiService,
+    private readonly situacionLegalService: CalidadBienLgiService,
+    private readonly vinculoService: VinculoService,
+    private readonly tipoVinculoService: TipoVinculoLgiService,
+  ) {
     super()
   }
 
@@ -31,7 +58,9 @@ export class ParametricasLgiController extends BaseController {
   }
 
   @Get('grupo/:idDistrito')
-  @ApiOperation({ summary: 'Listar los grupos de acuerdo con la distrital seleccionada' })
+  @ApiOperation({
+    summary: 'Listar los grupos de acuerdo con la distrital seleccionada',
+  })
   findAllGrupo(
     @Param('idDistrito')
     idDistrito: number
@@ -46,7 +75,7 @@ export class ParametricasLgiController extends BaseController {
   findAllPais() {
     return this.parametricasLgiService.findAllPais()
   }
-  
+
   @Get('allDepartamento')
   @ApiOperation({
     summary: 'Listar los departamentos',
@@ -86,5 +115,88 @@ export class ParametricasLgiController extends BaseController {
   findAllTipoDocumento() {
     return this.parametricasLgiService.findAllTipoDocumento()
   }
-}
 
+  @Get('allEtapa')
+  @ApiOperation({
+    summary: 'Listar las etapas',
+  })
+  findAllEtapa() {
+    return this.etapaService.findAll()
+  }
+
+  @Get('estado/:idEtapa')
+  @ApiOperation({
+    summary: 'Listar detalle etapa',
+  })
+  find(@Param('idEtapa', ParseIntPipe) idEtapa: number) {
+    return this.estadoService.findAllEtapa(idEtapa)
+  }
+
+  @Get('allTipoInforme')
+  @ApiOperation({
+    summary: 'Listar tipos de informe',
+  })
+  findAllTipoInforme() {
+    return this.parametricasLgiService.findAllTipoInforme()
+  }
+
+  @Get('allBienes')
+  @ApiOperation({
+    summary: 'Listar bienes',
+  })
+  findAllBienes() {
+    return this.bienesLgiService.findAll()
+  }
+
+  @Get('allClaseBien/:idBien')
+  @ApiOperation({
+    summary: 'Listar clase del bien',
+  })
+  findAllClaseBien(@Param('idBien', ParseIntPipe) idBien: number) {
+    return this.claseBienService.findAllClaseBien(idBien)
+  }
+
+  @Get('allTipoClase/:idClase')
+  @ApiOperation({
+    summary: 'Listar tipos de una clase',
+  })
+  findAllTipoClase(@Param('idClase', ParseIntPipe) idClase: number) {
+    return this.tipoService.findAllTipoClase(idClase)
+  }
+
+  @Get('allCaracteristicasClase/:idClase')
+  @ApiOperation({
+    summary: 'Listar caracteristicas de una clase del bien',
+  })
+  findAllCaracteristicaClase(@Param('idClase', ParseIntPipe) idClase: number) {
+    return this.caracteristicaService.findAllCaracteristicaClase(idClase)
+  }
+
+  @Get('allSituacionlegalBien')
+  @ApiOperation({
+    summary: 'Listar situacion legal',
+  })
+  findAll() {
+    return this.situacionLegalService.findAll()
+  }
+
+  @Get('allVinculo')
+   @ApiOperation({
+    summary: 'Listar vinculo',
+  })
+  findAllVinculo() {
+    return this.vinculoService.findAll();
+  }
+
+  @Get('tipo/:idVinculo')
+  @ApiOperation({
+    summary: 'Listar bienes secuestrados por tipo de vínculo',
+  })
+  findAllByTipoVinculo(
+    @Param('idVinculo', ParseIntPipe)
+    idVinculo: number
+  ) {
+    return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
+  }
+
+}
