@@ -182,6 +182,7 @@ export function RegistrosDataTable() {
             <button
               onClick={() => {
                 setSelected(row)
+                setOpenForm(true)
               }}
             >
               <IconEdit className="ms-2 h-5 text-primary" />
@@ -234,7 +235,9 @@ export function RegistrosDataTable() {
       <div className="p-1 mb-12 w-full">
         <FormRegistro
           asignacion={selected}
+          mode={selected ? 'edit' : 'create'}
           onSuccess={() => {
+            setSelected(null)
             setOpenForm(false)
             refetch()
           }}

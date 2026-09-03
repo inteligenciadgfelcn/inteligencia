@@ -26,6 +26,7 @@ import { Grupo } from '../services/group.service'
 import {
   getNumeroRegistro,
   verificarServicioUsuario,
+  actualizarAsignacion,
 } from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
@@ -78,11 +79,16 @@ export type FormValues = z.infer<typeof formSchema>
 
 interface Props {
   asignacion?: AsignacionTable | null
+  mode?: 'create' | 'edit'
   onSuccess: () => void
 }
 
 /* ================= COMPONENT ================= */
-export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
+export const FormRegistro = ({
+  asignacion,
+  mode = 'create',
+  onSuccess,
+}: Props) => {
   const [loading, setLoading] = useState(false)
   const [verificandoServicio, setVerificandoServicio] = useState(true)
   const [usuarioConServicio, setUsuarioConServicio] = useState(false)
@@ -171,55 +177,55 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
   useEffect(() => {
     if (asignacion) {
-      // reset({
-      //   codigoServicio: asignacion?.codigoServicio || '',
-      //   nroPase: asignacion?.usuario || '',
-      //   departamento: asignacion?.departamento
-      //     ? {
-      //         value: asignacion.departamento?.idDepartamento,
-      //         label: asignacion.departamento?.descripcion,
-      //       }
-      //     : undefined,
-      //   unidad: asignacion?.unidad
-      //     ? {
-      //         value: asignacion.unidad.idUnidad,
-      //         label: asignacion.unidad.descripcion,
-      //       }
-      //     : undefined,
-      //   distrital: asignacion?.grupo
-      //     ? {
-      //         value: asignacion.grupo.distrital.idDistrital,
-      //         label: asignacion.grupo.distrital.descripcion,
-      //       }
-      //     : undefined,
-      //   grupo: asignacion?.grupo
-      //     ? {
-      //         value: asignacion.grupo.idGrupo,
-      //         label: asignacion.grupo.descripcion,
-      //       }
-      //     : undefined,
-      //   nroRegistro: asignacion?.nroOperativo || '',
-      //   nombreOperativo: asignacion?.nombreCaso || '',
-      //   fechaHoraOperativo: asignacion?.fechaSolicitud
-      //     ? dateUtcToString(asignacion.fechaSolicitud)
-      //     : nowDateToString(),
-      //   quienRealiza: asignacion?.nombreSolicitud
-      //     ? {
-      //         value: Number(asignacion.telefonoSolicitud),
-      //         label: asignacion.nombreSolicitud,
-      //       }
-      //     : undefined,
-      //   asignadoA: asignacion?.asignado
-      //     ? {
-      //         value: Number(asignacion.telefonoAsignado),
-      //         label: asignacion.asignado,
-      //       }
-      //     : undefined,
-      //   fiscalAsignado: asignacion?.fiscalAsignado || '',
-      //   quienRealizaNum: asignacion?.telefonoSolicitud || '',
-      //   asignadoANum: asignacion?.telefonoAsignado || '',
-      //   fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
-      // })
+      reset({
+        codigoServicio: asignacion?.codigoServicio || '',
+        nroPase: usuario?.numeroPase || '',
+        departamento: asignacion?.departamento
+          ? {
+              value: asignacion.departamento?.idDepartamento,
+              label: asignacion.departamento?.descripcion,
+            }
+          : undefined,
+        unidad: asignacion?.unidad
+          ? {
+              value: Number(asignacion.unidad.idUnidad),
+              label: asignacion.unidad.descripcion,
+            }
+          : undefined,
+        distrital: asignacion?.grupo?.distrital
+          ? {
+              value: asignacion.grupo.distrital.idDistrital,
+              label: asignacion.grupo.distrital.descripcion,
+            }
+          : undefined,
+        grupo: asignacion?.grupo
+          ? {
+              value: asignacion.grupo.idGrupo,
+              label: asignacion.grupo.descripcion,
+            }
+          : undefined,
+        nroRegistro: asignacion?.nroOperativo || '',
+        nombreOperativo: asignacion?.nombreCaso || '',
+        fechaHoraOperativo: asignacion?.fechaOperativo
+          ? dateToStringAmPm(asignacion.fechaOperativo)
+          : nowDateToString(),
+        quienRealiza: asignacion?.nombreSolicitud
+          ? {
+              value: Number(asignacion.telefonoSolicitud),
+              label: asignacion.nombreSolicitud,
+            }
+          : undefined,
+        asignadoA: asignacion?.asignado
+          ? {
+              value: Number(asignacion.telefonoAsignado),
+              label: asignacion.asignado,
+            }
+          : undefined,
+        fiscalAsignado: asignacion?.fiscalAsignado || '',
+        quienRealizaNum: asignacion?.telefonoSolicitud || '',
+        asignadoANum: asignacion?.telefonoAsignado || '',
+        fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      })
     }
   }, [asignacion])
 
@@ -278,51 +284,63 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
     try {
       setLoading(true)
-      //     {
-      //   "idDepartamento": 1,
-      //   "idGrupo": 2,
-      //   "nombreCaso": "Operativo Antinarcóticos",
-      //   "fechaSolicitud": "12-05-2025 16:00",
-      //   "nombreSolicitud": "Juan Marquez",
-      //   "telefonoSolicitud": "71234567",
-      //   "asignado": "Juan Pérez",
-      //   "telefonoAsignado": "70000000",
-      //   "fiscalAsignado": "Dra. María López",
-      //   "telefonoFiscal": "72000000"
-      // }
-      const payload = {
-        codigoServicio: values.codigoServicio,
-        usuario: values.nroPase,
-        idDepartamento: values.departamento.original.abreviatura,
-        idGrupo: values.grupo.value,
-        nombreCaso: values.nombreOperativo,
-        fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
-        nombreSolicitud: values.quienRealiza.label,
-        telefonoSolicitud: values.quienRealizaNum,
-        asignado: values.asignadoA.label,
-        telefonoAsignado: values.asignadoANum,
-        fiscalAsignado: values.fiscalAsignado,
-        telefonoFiscal: values.fiscalAsignadoNum,
-        numeroPaseSolicitud: values.quienRealiza.original?.numeroPase,
+
+      if (mode === 'edit' && asignacion?.idAsignacion) {
+        const payload = {
+          idDepartamento: values.departamento.original.abreviatura,
+          idUnidad: String(values.unidad.value),
+          numeroOperativo: values.nroRegistro,
+          fechaOperativo: formatDate2ToBackend(values.fechaHoraOperativo),
+          nombreCaso: values.nombreOperativo,
+          codigoServicio: values.codigoServicio,
+          fiscalAsignado: values.fiscalAsignado,
+        }
+
+        await actualizarAsignacion(asignacion.idAsignacion, payload)
+
+        Alerta({
+          mensaje: InterpreteMensajes({
+            mensaje: 'Caso actualizado correctamente',
+          }),
+          variant: 'success',
+        })
+
+        onSuccess()
+      } else {
+        const payload = {
+          codigoServicio: values.codigoServicio,
+          usuario: values.nroPase,
+          idDepartamento: values.departamento.original.abreviatura,
+          idGrupo: values.grupo.value,
+          nombreCaso: values.nombreOperativo,
+          fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
+          nombreSolicitud: values.quienRealiza.label,
+          telefonoSolicitud: values.quienRealizaNum,
+          asignado: values.asignadoA.label,
+          telefonoAsignado: values.asignadoANum,
+          fiscalAsignado: values.fiscalAsignado,
+          telefonoFiscal: values.fiscalAsignadoNum,
+          numeroPaseSolicitud: values.quienRealiza.original?.numeroPase,
+        }
+
+        await sesionPeticion({
+          url: `${Constantes.baseUrl}/asignaciones`,
+          method: 'post',
+          body: payload,
+        })
+
+        Alerta({
+          mensaje: InterpreteMensajes({
+            mensaje: 'Caso registrado correctamente',
+          }),
+          variant: 'success',
+        })
+
+        const tmpCodigoServicio = values.codigoServicio
+        reset()
+        setValue('codigoServicio', tmpCodigoServicio)
+        onSuccess()
       }
-
-      const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/asignaciones`,
-        method: 'post',
-        body: payload,
-      })
-
-      Alerta({
-        mensaje: InterpreteMensajes({
-          mensaje: 'Caso registrado correctamente',
-        }),
-        variant: 'success',
-      })
-
-      const tmpCodigoServicio = values.codigoServicio
-      reset()
-      setValue('codigoServicio', tmpCodigoServicio)
-      onSuccess()
     } catch (e) {
       imprimir('Error módulo', e)
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
