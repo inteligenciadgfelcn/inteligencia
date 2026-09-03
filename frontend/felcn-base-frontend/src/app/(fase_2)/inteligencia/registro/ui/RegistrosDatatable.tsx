@@ -31,7 +31,7 @@ import IconEdit from '@/components/Icon/IconEdit'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
-  const { permisoUsuario } = useAuth()
+  const { permisoUsuario, codigoIcia } = useAuth()
   const pathname = usePathname()
 
   /* STATES */
@@ -79,7 +79,7 @@ export function RegistrosDataTable() {
   /* FETCH */
   const obtenerRegistros = async () => {
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/asignaciones`,
+      url: `${Constantes.baseUrl}/asignaciones/${codigoIcia}`,
       withCredentials: true,
       params: {
         pagina,
@@ -148,7 +148,8 @@ export function RegistrosDataTable() {
     {
       accessor: 'fechaOperativo',
       title: 'Fecha y hora del Operativo',
-      render: (row: AsignacionTable) => new Date(row.fechaOperativo ?? '').toLocaleString(),
+      render: (row: AsignacionTable) =>
+        new Date(row.fechaOperativo ?? '').toLocaleString(),
     },
     { accessor: 'nombreCaso', title: 'Nombre del caso' },
     {

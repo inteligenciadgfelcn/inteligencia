@@ -37,7 +37,6 @@ interface ContextProps {
   estaAutenticado: boolean
   estaEnServicio: boolean
   codigoIcia: String
-  verificarServicioUsuario: () => Promise<VerificarServicioResponse>
   usuario: UsuarioType | null
   rolUsuario: RoleType | undefined
   setRolUsuario: ({ idRol }: idRolType) => Promise<void>
@@ -158,7 +157,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     imprimir(`Usuarios ✅`, datos)
 
     await obtenerPermisos()
-    // await verificarServicioUsuario(respuesta.datos.numeroPase)
+    await verificarServicioUsuario(datos.numeroPase)
 
     mostrarFullScreen()
     await delay(1000)
@@ -289,18 +288,21 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
   const rolUsuario = () => user?.roles.find((rol) => rol.idRol == user?.idRol)
 
-  const verificarServicioUsuario =
-    async (): Promise<VerificarServicioResponse> => {
-      const response = await sesionPeticion<VerificarServicioResponse>({
-        url: `${Constantes.baseUrl}/servicio/verificar/${user?.numeroPase}`,
-        withCredentials: true,
-      })
+  const verificarServicioUsuario = async (
+    nroPase: String
+  ): Promise<VerificarServicioResponse> => {
+    const response = await sesionPeticion<VerificarServicioResponse>({
+      url: `${Constantes.baseUrl}/servicio/verificar/${nroPase}`,
+      withCredentials: true,
+    })
 
-      setIsVerified(response.enServicio)
-      setCodigoIcia(response.codigoServicio || '')
+    console.log(response)
 
-      return response
-    }
+    setIsVerified(response.enServicio)
+    setCodigoIcia(response.codigoServicio || '')
+
+    return response
+  }
 
   return (
     <AuthContext.Provider
@@ -319,7 +321,6 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         cancelarOtp,
         estaEnServicio: isVerified,
         codigoIcia,
-        verificarServicioUsuario,
         abreviaturaUnidad: user?.grupo?.distrital?.unidad?.abreviatura,
         permisoUsuario: (routerName: string) =>
           interpretarPermiso({ routerName, enforcer, rol: rolUsuario()?.rol }),
