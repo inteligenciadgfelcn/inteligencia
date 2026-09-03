@@ -15,6 +15,15 @@ Backend Base es una plantilla robusta y escalable para el desarrollo de APIs, di
 el [Frontend Base](https://gitlab.felcn.gob.bo/proyectos-base/felcn-base-frontend) creado con
 Next.js.
 
+## Autoría — Fase 1
+
+Sistema Nacional de Inteligencia de la FELCN, Proyecto BOLEU1 (UNODC) — DG-FELCN.
+
+- Ing. Erika Carmiña Camargo Salvatierra · `erikacamargo936@gmail.com`
+- Ing. Eitner Montero · `eitnermontero@gmail.com`
+
+Ver `AUTHORS.md`. La historia de contribuciones se conserva en el control de versiones.
+
 ## 🚀 Características
 
 - 🔐 Sistema de autenticación robusto con JWT y Ciudadanía Digital

@@ -9,6 +9,15 @@ Frontend Base es una plantilla para el desarrollo de aplicaciones web, diseñada
 el [Backend Base](https://gitlab.felcn.gob.bo/proyectos-base/felcn-base-backend) creado con
 NestJS.
 
+## Autoría — Fase 1
+
+Sistema Nacional de Inteligencia de la FELCN, Proyecto BOLEU1 (UNODC) — DG-FELCN.
+
+- Ing. Erika Carmiña Camargo Salvatierra · `erikacamargo936@gmail.com`
+- Ing. Eitner Montero · `eitnermontero@gmail.com`
+
+Ver `AUTHORS.md`. La historia de contribuciones se conserva en el control de versiones.
+
 ## 🚀 Características
 
 - ⚡️ **Next.js 15** con App Router para un rendimiento óptimo

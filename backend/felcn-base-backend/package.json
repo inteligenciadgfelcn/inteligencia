@@ -2,7 +2,11 @@
   "name": "felcn-base-backend",
   "version": "1.18.2-rc",
   "description": "Backend base con Nest.js, TypeORM y TypeScript",
-  "author": "support@felcn.gob.bo",
+  "author": "Ing. Erika Carmiña Camargo Salvatierra <erikacamargo936@gmail.com>",
+  "contributors": [
+    "Ing. Erika Carmiña Camargo Salvatierra <erikacamargo936@gmail.com>",
+    "Ing. Eitner Montero <eitnermontero@gmail.com>"
+  ],
   "private": true,
   "license": "LPG-Bolivia",
   "scripts": {

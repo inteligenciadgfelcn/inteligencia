@@ -2,7 +2,11 @@
   "name": "material-next-app-router-ts",
   "version": "1.0.0",
   "description": "Frontend base de la FELCN",
-  "author": "Imanol",
+  "author": "Ing. Erika Carmiña Camargo Salvatierra <erikacamargo936@gmail.com>",
+  "contributors": [
+    "Ing. Erika Carmiña Camargo Salvatierra <erikacamargo936@gmail.com>",
+    "Ing. Eitner Montero <eitnermontero@gmail.com>"
+  ],
   "private": true,
   "scripts": {
     "dev": "next dev -p 8080",
