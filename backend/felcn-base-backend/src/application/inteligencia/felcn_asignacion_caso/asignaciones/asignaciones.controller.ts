@@ -64,6 +64,18 @@ export class AsignacionesController extends BaseController {
     return this.service.update(id, dto)
   }
 
+  @Get(':codigoIcia')
+  @ApiOperation({
+    summary: 'Listar asignaciones por código ICIA con paginación',
+  })
+  async findByCodigoIcia(
+    @Param('codigoIcia') codigoIcia: string,
+    @Query() pagination: PaginacionQueryDto
+  ) {
+    const result = await this.service.findByCodigoIcia(codigoIcia, pagination)
+    return this.successListRows(result)
+  }
+
   @Get()
   @ApiOperation({ summary: 'Listar asignaciones con paginación' })
   async findAll(@Query() pagination: PaginacionQueryDto) {
