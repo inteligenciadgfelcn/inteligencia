@@ -1,89 +1,184 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
-import { UpdateBieneSecuestradoLgiDto } from './dto/update-bienes_secuestrado.dto'
-import { BieneSecuestradoLgi } from './entities/bienes_secuestrado.entity'
-import { CreateBienesSecuestradoDto } from './dto/create-bienes_secuestrado.dto'
-import { BienSecuestradoLgiRepository } from './repository/bien_secuestrado_lgi.repository'
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { convertirArchivoBase64 } from '@/common/utils/archivo-seguro.util'
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+
+import {
+  PaginacionQueryDto,
+} from '@/common/dto/paginacion-query.dto'
+
+import {
+  CreateBienesSecuestradoDto,
+} from './dto/create-bienes_secuestrado.dto'
+import {
+  UpdateBieneSecuestradoLgiDto,
+} from './dto/update-bienes_secuestrado.dto'
+import {
+  BieneSecuestradoLgi,
+} from './entities/bienes_secuestrado.entity'
+import {
+  BienSecuestradoLgiRepository,
+} from './repository/bien_secuestrado_lgi.repository'
 
 @Injectable()
 export class BieneSecuestradoLgiService {
   constructor(
-    private readonly bieneSecuestradoRepository: BienSecuestradoLgiRepository
+    private readonly repository:
+      BienSecuestradoLgiRepository,
   ) {}
 
-  create(dto: CreateBienesSecuestradoDto): Promise<BieneSecuestradoLgi> {
-    return this.bieneSecuestradoRepository.create(dto)
+  create(
+    dto: CreateBienesSecuestradoDto,
+    archivos: Express.Multer.File[],
+  ): Promise<BieneSecuestradoLgi> {
+    return this.repository.create(
+      dto,
+      archivos,
+    )
   }
 
-  findAll(opId: number): Promise<BieneSecuestradoLgi[]> {
-    return this.bieneSecuestradoRepository.findAll(opId)
+  findAll(
+    opId: number,
+  ): Promise<BieneSecuestradoLgi[]> {
+    return this.repository.findAll(opId)
   }
 
   findAllPaginado(
     opId: number,
-    pagination: PaginacionQueryDto
+    pagination: PaginacionQueryDto,
   ): Promise<[BieneSecuestradoLgi[], number]> {
-    return this.bieneSecuestradoRepository.findAllPaginado(opId, pagination)
+    return this.repository
+      .findAllPaginado(
+        opId,
+        pagination,
+      )
   }
 
-  findAllByOperativo(opId: number): Promise<BieneSecuestradoLgi[]> {
-    return this.bieneSecuestradoRepository.findAllByOperativo(opId)
+  findAllByOperativo(
+    opId: number,
+  ): Promise<BieneSecuestradoLgi[]> {
+    return this.repository
+      .findAllByOperativo(opId)
   }
 
-  findOne(id: number): Promise<BieneSecuestradoLgi> {
-    return this.bieneSecuestradoRepository.findOne(id)
+  findOne(id: number) {
+    return this.repository.findOne(id)
   }
 
   update(
     id: number,
-    dto: UpdateBieneSecuestradoLgiDto
-  ): Promise<BieneSecuestradoLgi> {
-    return this.bieneSecuestradoRepository.update(id, dto)
-  }
-
-  async eliminar(id: number): Promise<{
-    message: string
-  }> {
-    await this.bieneSecuestradoRepository.inactivar(id)
-
-    return {
-      message: 'Bien secuestrado inactivado correctamente',
-    }
-  }
-
-  async obtenerFotografias(
-  id: number,
-) {
-  const item =
-    await this.bieneSecuestradoRepository
-      .findOne(id)
-
-  const [
-    fotografia1,
-    fotografia2,
-  ] = await Promise.all([
-    convertirArchivoBase64(
-      item.rutaFotografia1,
-    ),
-
-    convertirArchivoBase64(
-      item.rutaFotografia2,
-    ),
-  ])
-
-  if (
-    !fotografia1 &&
-    !fotografia2
+    dto: UpdateBieneSecuestradoLgiDto,
   ) {
-    throw new NotFoundException(
-      'El bien no tiene fotografías',
+    return this.repository.update(
+      id,
+      dto,
     )
   }
 
-  return {
-    fotografia1,
-    fotografia2,
+  agregarFotografias(
+    id: number,
+    archivos: Express.Multer.File[],
+  ) {
+    return this.repository
+      .guardarFotografias(
+        id,
+        archivos,
+      )
   }
-}
+
+  async obtenerFotografias(
+    id: number,
+  ) {
+    const fotografias =
+      await this.repository
+        .findFotografias(id)
+
+    if (!fotografias.length) {
+      throw new NotFoundException(
+        'El bien no tiene fotografías',
+      )
+    }
+
+    return fotografias.map(
+      (foto) => {
+        const mimeType =
+          this.detectarMimeType(
+            foto.fotografia,
+          )
+
+        const contenidoBase64 =
+          foto.fotografia
+            .toString('base64')
+
+        return {
+          fotobienId:
+            foto.fotobienId,
+
+          descripcion:
+            foto.descripcion,
+
+          mimeType,
+
+          contenidoBase64,
+
+          dataUrl:
+            `data:${mimeType};base64,${contenidoBase64}`,
+        }
+      },
+    )
+  }
+
+  async eliminarFotografia(
+    fotoId: number,
+  ) {
+    await this.repository
+      .inactivarFotografia(fotoId)
+
+    return {
+      message:
+        'Fotografía inactivada correctamente',
+    }
+  }
+
+  async eliminar(id: number) {
+    await this.repository.inactivar(id)
+
+    return {
+      message:
+        'Bien secuestrado inactivado correctamente',
+    }
+  }
+
+  private detectarMimeType(
+    buffer: Buffer,
+  ): string {
+    if (
+      buffer[0] === 0xff &&
+      buffer[1] === 0xd8
+    ) {
+      return 'image/jpeg'
+    }
+
+    if (
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47
+    ) {
+      return 'image/png'
+    }
+
+    if (
+      buffer
+        .subarray(0, 4)
+        .toString() === 'RIFF' &&
+      buffer
+        .subarray(8, 12)
+        .toString() === 'WEBP'
+    ) {
+      return 'image/webp'
+    }
+
+    return 'application/octet-stream'
+  }
 }

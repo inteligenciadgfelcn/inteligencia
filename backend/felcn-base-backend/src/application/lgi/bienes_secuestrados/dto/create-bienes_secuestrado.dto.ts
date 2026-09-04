@@ -142,18 +142,15 @@ export class CreateBienesSecuestradoDto {
   @IsString()
   resultadoPericia?: string
 
-   @ApiPropertyOptional({
-    description:
-      'Fecha del depósito del bien',
-    example:
-      '2026-08-30T22:00:00-04:00',
+  @ApiPropertyOptional({
+    description: 'Fecha del depósito del bien',
+    example: '2026-08-30T22:00:00-04:00',
   })
   @IsDateString()
   fecha?: string
 
   @ApiPropertyOptional({
-    description:
-      'Nombre completo del depositario',
+    description: 'Nombre completo del depositario',
     example: 'María Quispe Mamani',
   })
   @IsOptional()
@@ -161,8 +158,7 @@ export class CreateBienesSecuestradoDto {
   nombreDepositario?: string
 
   @ApiPropertyOptional({
-    description:
-      'Cédula de identidad del depositario',
+    description: 'Cédula de identidad del depositario',
     example: '7654321 LP',
   })
   @IsOptional()
@@ -170,18 +166,14 @@ export class CreateBienesSecuestradoDto {
   ciDepositario?: string
 
   @ApiPropertyOptional({
+  type: 'array',
+  items: {
     type: 'string',
     format: 'binary',
-    description: 'Primera fotografía del bien',
-  })
-  @IsOptional()
-  rutaFotografia1?: string
-
-  @ApiPropertyOptional({
-    type: 'string',
-    format: 'binary',
-    description: 'Segunda fotografía del bien',
-  })
-  @IsOptional()
-  rutaFotografia2?: string
+  },
+  description:
+    'Fotografías del bien secuestrado',
+})
+@IsOptional()
+fotografias?: unknown[]
 }

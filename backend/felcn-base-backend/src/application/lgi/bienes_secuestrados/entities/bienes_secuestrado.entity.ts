@@ -4,11 +4,14 @@ import {
   Column,
   JoinColumn,
   ManyToOne,
+  OneToMany,
 } from 'typeorm'
 import { OperativoLgi } from '../../actuaciones/entities/operativoLgi.entity'
-import { CatalogoClaseLgi } from '../../parametro/catalogo-clase/entities/catalogo-clase.entity'
 import { TipoVinculoLgi } from '../../parametro/tipo-vinculo/entities/tipo-vinculo.entity'
 import { CatalogoTipoLgi } from '../../parametro/catalogo-tipo/entities/catalogo-tipo.entity'
+import { CaracteristicasBiene } from '../../caracteristicas_bienes/entities/caracteristicas_biene.entity'
+import { SituacionJuridicaBien } from '../../situacion_juridica_bien/entities/situacion_juridica_bien.entity'
+import { FotoBienLgi } from '../../foto_bienes/entities/foto_biene.entity'
 
 @Entity({
   name: 'itembiensecuestrado',
@@ -147,20 +150,6 @@ export class BieneSecuestradoLgi {
   ciDepositario?: string | null
 
   @Column({
-    name: 'ruta_fotografia_1',
-    type: 'character varying',
-    nullable: true,
-  })
-  rutaFotografia1?: string | null
-
-  @Column({
-    name: 'ruta_fotografia_2',
-    type: 'character varying',
-    nullable: true,
-  })
-  rutaFotografia2?: string | null
-
-  @Column({
     name: 'estado',
     type: 'character varying',
     length: 15,
@@ -189,4 +178,19 @@ export class BieneSecuestradoLgi {
     name: 'id_tipo_vinculo',
   })
   tipoVinculo?: TipoVinculoLgi | null
+
+  @OneToMany(
+    () => CaracteristicasBiene,
+    (caracteristica) => caracteristica.bienSecuestrado
+  )
+  caracteristicas: CaracteristicasBiene[]
+
+  @OneToMany(
+    () => SituacionJuridicaBien,
+    (situacionJuridica) => situacionJuridica.bienSecuestrado
+  )
+  situacionesJuridicas: SituacionJuridicaBien[]
+
+  @OneToMany(() => FotoBienLgi, (fotografia) => fotografia.bienSecuestrado)
+  fotografias: FotoBienLgi[]
 }

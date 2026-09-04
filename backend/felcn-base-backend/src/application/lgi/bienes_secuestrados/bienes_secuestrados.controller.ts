@@ -1,68 +1,79 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
   ParseIntPipe,
-  UseGuards,
-  UseInterceptors,
+  Patch,
+  Post,
   Query,
   UploadedFiles,
-  Res,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
-import { CreateBienesSecuestradoDto } from './dto/create-bienes_secuestrado.dto'
-import { BaseController } from '@/common/base'
 import {
   ApiBearerAuth,
   ApiConsumes,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
-import { BieneSecuestradoLgiService } from './bienes_secuestrados.service'
-import { UpdateBieneSecuestradoLgiDto } from './dto/update-bienes_secuestrado.dto'
-import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
+import { FilesInterceptor } from '@nestjs/platform-express'
+import { memoryStorage } from 'multer'
+
+import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import {
-  crearConfiguracionArchivo,
-  obtenerRutaRelativa,
-} from '@/common/utils/file-storage.util'
-import type { Response } from 'express'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
-import { FileFieldsInterceptor } from '@nestjs/platform-express/multer/interceptors'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
+
+import { CreateBienesSecuestradoDto } from './dto/create-bienes_secuestrado.dto'
+import { UpdateBieneSecuestradoLgiDto } from './dto/update-bienes_secuestrado.dto'
+import { BieneSecuestradoLgiService } from './bienes_secuestrados.service'
+
+const configuracionFotografias = {
+  storage: memoryStorage(),
+
+  limits: {
+    /*
+     * Máximo 5 MB por fotografía.
+     */
+    fileSize: 5 * 1024 * 1024,
+  },
+
+  fileFilter: (
+    request: Express.Request,
+    file: Express.Multer.File,
+    callback: (error: Error | null, aceptar: boolean) => void
+  ) => {
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp']
+
+    if (!tiposPermitidos.includes(file.mimetype)) {
+      return callback(
+        new Error('Solo se permiten imágenes JPG, PNG o WEBP'),
+        false
+      )
+    }
+
+    callback(null, true)
+  },
+}
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @ApiTags('LGI - Bienes secuestrados')
 @Controller('bienes-secuestrados')
 export class BienesSecuestradosController extends BaseController {
-  constructor(
-    private readonly bieneSecuestradoService: BieneSecuestradoLgiService
-  ) {
+  constructor(private readonly service: BieneSecuestradoLgiService) {
     super()
   }
 
   @Post()
-  @ApiOperation({
-    summary: 'Registrar un bien secuestrado con fotografías',
-  })
   @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Registrar un bien secuestrado con múltiples fotografías',
+  })
   @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        {
-          name: 'rutaFotografia1',
-          maxCount: 1,
-        },
-        {
-          name: 'rutaFotografia2',
-          maxCount: 1,
-        },
-      ],
-      crearConfiguracionArchivo('lgi', 'bienes-secuestrados', 5)
-    ),
+    FilesInterceptor('fotografias', 20, configuracionFotografias),
     AuditoriaUsuarioInterceptor
   )
   create(
@@ -70,24 +81,27 @@ export class BienesSecuestradosController extends BaseController {
     dto: CreateBienesSecuestradoDto,
 
     @UploadedFiles()
-    archivos: {
-      rutaFotografia1?: Express.Multer.File[]
-      rutaFotografia2?: Express.Multer.File[]
-    }
+    fotografias: Express.Multer.File[]
   ) {
-    const fotografia1 = archivos.rutaFotografia1?.[0]
+    return this.service.create(dto, fotografias ?? [])
+  }
 
-    const fotografia2 = archivos.rutaFotografia2?.[0]
+  @Post(':id/fotografias')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Agregar múltiples fotografías a un bien registrado',
+  })
+  @UseInterceptors(
+    FilesInterceptor('fotografias', 20, configuracionFotografias)
+  )
+  agregarFotografias(
+    @Param('id', ParseIntPipe)
+    id: number,
 
-    if (fotografia1) {
-      dto.rutaFotografia1 = obtenerRutaRelativa(fotografia1.path)
-    }
-
-    if (fotografia2) {
-      dto.rutaFotografia2 = obtenerRutaRelativa(fotografia2.path)
-    }
-
-    return this.bieneSecuestradoService.create(dto)
+    @UploadedFiles()
+    fotografias: Express.Multer.File[]
+  ) {
+    return this.service.agregarFotografias(id, fotografias ?? [])
   }
 
   @Get('operativo/:opId')
@@ -101,68 +115,68 @@ export class BienesSecuestradosController extends BaseController {
     @Query()
     pagination: PaginacionQueryDto
   ) {
-    const result = await this.bieneSecuestradoService.findAllPaginado(
-      opId,
-      pagination
-    )
+    const result = await this.service.findAllPaginado(opId, pagination)
 
     return this.successListRows(result)
   }
 
+  @Get('imagenes/:id')
+  @ApiOperation({
+    summary: 'Obtener las fotografías de un bien',
+  })
+  obtenerFotografias(
+    @Param('id', ParseIntPipe)
+    id: number
+  ) {
+    return this.service.obtenerFotografias(id)
+  }
+
+  @Delete('fotografias/:fotoId')
+  @ApiOperation({
+    summary: 'Inactivar una fotografía',
+  })
+  eliminarFotografia(
+    @Param('fotoId', ParseIntPipe)
+    fotoId: number
+  ) {
+    return this.service.eliminarFotografia(fotoId)
+  }
+
   @Get(':id')
   @ApiOperation({
-    summary: 'Obtener un bien secuestrado por id',
+    summary: 'Obtener un bien secuestrado por ID',
   })
   findOne(
     @Param('id', ParseIntPipe)
     id: number
   ) {
-    return this.bieneSecuestradoService.findOne(id)
+    return this.service.findOne(id)
   }
 
   @Patch(':id')
   @ApiOperation({
     summary: 'Actualizar un bien secuestrado',
   })
+  @UseInterceptors(AuditoriaUsuarioInterceptor)
   update(
     @Param('id', ParseIntPipe)
     id: number,
+
     @Body()
     dto: UpdateBieneSecuestradoLgiDto
   ) {
-    return this.bieneSecuestradoService.update(id, dto)
+    return this.service.update(id, dto)
   }
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Eliminar un bien secuestrado',
+    summary: 'Inactivar un bien secuestrado',
   })
+  @UseInterceptors(AuditoriaUsuarioInterceptor)
   remove(
     @Param('id', ParseIntPipe)
     id: number
   ) {
-    return this.bieneSecuestradoService.eliminar(id)
-  }
-
-  @Get('imagenes/:id')
-  @ApiOperation({
-    summary: 'Obtener las fotografías protegidas del bien',
-  })
-  async obtenerFotografias(
-    @Param('id', ParseIntPipe)
-    id: number,
-
-    @Res({
-      passthrough: true,
-    })
-    response: Response
-  ) {
-    response.set({
-      'Cache-Control': 'private, no-store, max-age=0',
-      Pragma: 'no-cache',
-      'X-Content-Type-Options': 'nosniff',
-    })
-
-    return this.bieneSecuestradoService.obtenerFotografias(id)
+    return this.service.eliminar(id)
   }
 }

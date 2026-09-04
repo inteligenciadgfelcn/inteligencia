@@ -27,6 +27,9 @@ import { ActuacionesModule } from './actuaciones/actuaciones.module';
 import { BienesSecuestradosModule } from './bienes_secuestrados/bienes_secuestrados.module';
 import { VinculoModule } from './parametro/vinculo/vinculo.module';
 import { TipoVinculoModule } from './parametro/tipo-vinculo/tipo-vinculo.module';
+import { CaracteristicasBienesModule } from './caracteristicas_bienes/caracteristicas_bienes.module';
+import { SituacionJuridicaBienModule } from './situacion_juridica_bien/situacion_juridica_bien.module';
+import { FotoBienesModule } from './foto_bienes/foto_bienes.module';
 
 @Module({
   imports: [
@@ -56,6 +59,9 @@ import { TipoVinculoModule } from './parametro/tipo-vinculo/tipo-vinculo.module'
     InformacionSiiiModule,
     ActuacionesModule,
     BienesSecuestradosModule,
+    CaracteristicasBienesModule,
+    SituacionJuridicaBienModule,
+    FotoBienesModule,
   ],
   controllers: [],
 })
