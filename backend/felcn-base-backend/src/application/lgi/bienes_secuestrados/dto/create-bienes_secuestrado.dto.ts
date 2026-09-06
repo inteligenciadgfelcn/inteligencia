@@ -28,16 +28,6 @@ export class CreateBienesSecuestradoDto {
   cattipoId: number
 
   @ApiProperty({
-    description: 'Cantidad del bien secuestrado',
-    example: 1,
-    default: 1,
-  })
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  cantidadBien: number = 1
-
-  @ApiProperty({
     description: 'Costo aproximado del bien',
     example: 1500.5,
   })
@@ -53,7 +43,8 @@ export class CreateBienesSecuestradoDto {
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  costoCuant: number
+  @IsOptional()
+  costoCuant?: number
 
   @ApiPropertyOptional({
     description: 'Latitud del lugar del secuestro',
@@ -107,14 +98,6 @@ export class CreateBienesSecuestradoDto {
   cedulaIdentidadVinculo?: string
 
   @ApiPropertyOptional({
-    description: 'Autoridad que dispuso el secuestro',
-    example: 'Fiscal de Materia',
-  })
-  @IsOptional()
-  @IsString()
-  autoridadDisposicion?: string
-
-  @ApiPropertyOptional({
     description: 'Indica si el bien requiere pericia',
     example: false,
     type: Boolean,
@@ -141,13 +124,6 @@ export class CreateBienesSecuestradoDto {
   @IsOptional()
   @IsString()
   resultadoPericia?: string
-
-  @ApiPropertyOptional({
-    description: 'Fecha del depósito del bien',
-    example: '2026-08-30T22:00:00-04:00',
-  })
-  @IsDateString()
-  fecha?: string
 
   @ApiPropertyOptional({
     description: 'Nombre completo del depositario',

@@ -1,53 +1,44 @@
-import { Injectable } from '@nestjs/common';
-import { CreateSituacionJuridicaBienDto } from './dto/create-situacion_juridica_bien.dto';
-import { UpdateSituacionJuridicaBienDto } from './dto/update-situacion_juridica_bien.dto';
-import { PaginacionQueryDto } from '@/common/dto';
-import { SituacionJuridicaBienRepository } from './repository/situacion-juridica-bien.repository';
+import { Injectable } from '@nestjs/common'
+
+import { CreateSituacionJuridicaBienDto } from './dto/create-principal.dto'
+
+import { UpdateSituacionJuridicaBienDto } from './dto/update-situacion_juridica_bien.dto'
+import { SituacionJuridicaBienRepository } from './repository/situacion-juridica-bien.repository'
 
 @Injectable()
 export class SituacionJuridicaBienService {
-  constructor(
-    private readonly repository:
-      SituacionJuridicaBienRepository,
-  ) {}
+  constructor(private readonly repository: SituacionJuridicaBienRepository) {}
 
-  create(
-    dto: CreateSituacionJuridicaBienDto,
-  ) {
+  create(dto: CreateSituacionJuridicaBienDto) {
     return this.repository.create(dto)
   }
 
   findAll() {
     return this.repository.findAll()
   }
-  
-  findByBien(
-    itembiensecId: number,
-  ) {
-    return this.repository
-      .findByBien(itembiensecId)
+
+
+  findByBien(itembiensecId: number) {
+    return this.repository.findByBien(itembiensecId)
   }
 
-  findOne(id: number) {
-    return this.repository.findOne(id)
+  findOne(itembiensecId: number) {
+    return this.repository.findOne(itembiensecId)
   }
 
   update(
-    id: number,
-    dto: UpdateSituacionJuridicaBienDto,
+    idTipo: number,
+    idRegistro: number,
+    dto: UpdateSituacionJuridicaBienDto
   ) {
-    return this.repository.update(
-      id,
-      dto,
-    )
+    return this.repository.update(idTipo, idRegistro, dto)
   }
 
-  async remove(id: number) {
-    await this.repository.remove(id)
+  async remove(idTipo: number, idRegistro: number) {
+    await this.repository.remove(idTipo, idRegistro)
 
     return {
-      mensaje:
-        'Situación jurídica inactivada correctamente',
+      mensaje: 'Situación jurídica eliminada correctamente',
     }
   }
 }
