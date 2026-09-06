@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { Brackets, DataSource, Repository } from 'typeorm'
 
@@ -7,6 +7,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 import { OperativoLgi } from '../entities/operativoLgi.entity'
 import { formatearFechaBolivia } from '@/common/utils/date.util'
+import { UpdateConclusionCasoDto } from '../dto/update-conclusion-caso.dto'
 
 @Injectable()
 export class OperativoLgiRepository {
@@ -123,5 +124,56 @@ export class OperativoLgiRepository {
 
       fechaActualizacion: formatearFechaBolivia(operativo.fechaActualizacion),
     }
+  }
+
+  async actualizarConclusionCaso(
+    opId: number,
+    dto: UpdateConclusionCasoDto,
+    usuario: string
+  ): Promise<OperativoLgi> {
+    const operativo = await this.repository.findOne({
+      where: {
+        opId,
+        estado: 'ACTIVO',
+      },
+    })
+
+    if (!operativo) {
+      throw new NotFoundException(
+        `No existe el operativo activo con ID ${opId}`
+      )
+    }
+
+    if (dto.tipologiasIdentificadas !== undefined) {
+      operativo.tipologiasIdentificadas = this.normalizarTexto(
+        dto.tipologiasIdentificadas
+      )
+    }
+
+    if (dto.verbosRectores !== undefined) {
+      operativo.verbosRectores = this.normalizarTexto(dto.verbosRectores)
+    }
+
+    if (dto.etapasCicloLgi !== undefined) {
+      operativo.etapasCicloLgi = this.normalizarTexto(dto.etapasCicloLgi)
+    }
+
+    operativo.usuarioActualizacion = usuario
+
+    operativo.fechaActualizacion = new Date()
+
+    await this.repository.save(operativo)
+
+    return this.findOne(opId)
+  }
+
+  private normalizarTexto(valor: string | null): string | null {
+    if (valor === null) {
+      return null
+    }
+
+    const texto = valor.trim()
+
+    return texto.length ? texto : null
   }
 }

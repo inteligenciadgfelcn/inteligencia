@@ -37,6 +37,7 @@ import { ActuacionesService } from './actuaciones.service'
 import { CreateOperativoLgiDto } from './dto/create-operativoLgi.dto'
 import { UpdateOperativoLgiDto } from './dto/update-operativoLgi.dto'
 import { OperativoLgi } from './entities/operativoLgi.entity'
+import { UpdateConclusionCasoDto } from './dto/update-conclusion-caso.dto'
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -162,5 +163,32 @@ export class ActuacionesController extends BaseController {
     const usuario = request.user?.numeroPase ?? 'SISTEMA'
 
     return this.actuacionesService.remove(id, usuario)
+  }
+
+  @Patch(':id/conclusion-caso')
+  @ApiOperation({
+    summary: 'Registrar o actualizar la conclusión del caso',
+  })
+  @ApiBody({
+    type: UpdateConclusionCasoDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Conclusión del caso actualizada correctamente',
+    type: OperativoLgi,
+  })
+  actualizarConclusionCaso(
+    @Param('id', ParseIntPipe)
+    id: number,
+
+    @Body()
+    dto: UpdateConclusionCasoDto,
+
+    @Req()
+    request: AuthenticatedRequest
+  ): Promise<OperativoLgi> {
+    const usuario = request.user?.numeroPase ?? 'SISTEMA'
+
+    return this.actuacionesService.actualizarConclusionCaso(id, dto, usuario)
   }
 }

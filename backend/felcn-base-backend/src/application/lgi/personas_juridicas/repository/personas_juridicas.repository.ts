@@ -4,48 +4,21 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
-import {
-  InjectRepository,
-} from '@nestjs/typeorm'
-import {
-  Brackets,
-  DeepPartial,
-  Repository,
-} from 'typeorm'
-import {
-  promises as fs,
-} from 'fs'
-import {
-  randomUUID,
-} from 'crypto'
-import {
-  extname,
-  resolve,
-  sep,
-} from 'path'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Brackets, DeepPartial, Repository } from 'typeorm'
+import { promises as fs } from 'fs'
+import { randomUUID } from 'crypto'
+import { extname, resolve, sep } from 'path'
 
-import {
-  DB_LGI,
-} from '@/core/config/database/database.module'
-import {
-  PaginacionQueryDto,
-} from '@/common/dto'
-import {
-  crearStreamArchivo,
-} from '@/common/utils/archivo-seguro.util'
+import { DB_LGI } from '@/core/config/database/database.module'
+import { PaginacionQueryDto } from '@/common/dto'
+import { crearStreamArchivo } from '@/common/utils/archivo-seguro.util'
 
-import {
-  CreatePersonasJuridicaDto,
-} from '../dto/create-personas_juridica.dto'
-import {
-  UpdatePersonasJuridicaDto,
-} from '../dto/update-personas_juridica.dto'
-import {
-  PersonasJuridica,
-} from '../entities/personas_juridica.entity'
+import { CreatePersonasJuridicaDto } from '../dto/create-personas_juridica.dto'
+import { UpdatePersonasJuridicaDto } from '../dto/update-personas_juridica.dto'
+import { PersonasJuridica } from '../entities/personas_juridica.entity'
 import { TipoVinculoLgi } from '../../parametro/tipo-vinculo/entities/tipo-vinculo.entity'
 import { VinculoLgi } from '../../parametro/vinculo/entities/vinculo.entity'
-
 
 type DtoConUsuario<T> = T & {
   usuario?: string
@@ -64,12 +37,8 @@ interface DocumentoGuardado {
 @Injectable()
 export class PersonasJuridicasRepository {
   constructor(
-    @InjectRepository(
-      PersonasJuridica,
-      DB_LGI
-    )
-    private readonly repository:
-      Repository<PersonasJuridica>
+    @InjectRepository(PersonasJuridica, DB_LGI)
+    private readonly repository: Repository<PersonasJuridica>
   ) {}
 
   /*
@@ -84,8 +53,7 @@ export class PersonasJuridicasRepository {
     imagen?: Express.Multer.File,
     documento?: Express.Multer.File
   ): Promise<any> {
-    const auditoria =
-      dto as DtoConUsuario<CreatePersonasJuridicaDto>
+    const auditoria = dto as DtoConUsuario<CreatePersonasJuridicaDto>
 
     if (!auditoria.usuario) {
       throw new UnauthorizedException(
@@ -102,66 +70,42 @@ export class PersonasJuridicasRepository {
       ...datosDto
     } = dto
 
-    let documentoGuardado:
-      DocumentoGuardado | null = null
+    let documentoGuardado: DocumentoGuardado | null = null
 
     try {
       if (documento) {
-        documentoGuardado =
-          await this.guardarDocumento(
-            documento
-          )
+        documentoGuardado = await this.guardarDocumento(documento)
       }
 
-      const datosRegistro:
-        DeepPartial<PersonasJuridica> = {
-          ...datosDto,
+      const datosRegistro: DeepPartial<PersonasJuridica> = {
+        ...datosDto,
 
-          opId: String(opId),
+        opId: String(opId),
 
-          idTipoVinculo:
-            idTipoVinculo !== undefined &&
-            idTipoVinculo !== null
-              ? String(idTipoVinculo)
-              : null,
+        idTipoVinculo:
+          idTipoVinculo !== undefined && idTipoVinculo !== null
+            ? String(idTipoVinculo)
+            : null,
 
-          pericia:
-            pericia ?? false,
+        pericia: pericia ?? false,
 
-          imagen:
-            imagen?.buffer?.length
-              ? imagen.buffer
-              : null,
+        imagen: imagen?.buffer?.length ? imagen.buffer : null,
 
-          documento:
-            documentoGuardado?.rutaRelativa ??
-            null,
+        documento: documentoGuardado?.rutaRelativa ?? null,
 
-          usuario:
-            auditoria.usuario,
+        usuario: auditoria.usuario,
 
-          fechaHoraIngreso:
-            new Date(),
-        }
+        fechaHoraIngreso: new Date(),
+      }
 
-      const registro =
-        this.repository.create(
-          datosRegistro
-        )
+      const registro = this.repository.create(datosRegistro)
 
-      const resultado =
-        await this.repository.save(
-          registro
-        )
+      const resultado = await this.repository.save(registro)
 
-      return this.findOne(
-        Number(resultado.empId)
-      )
+      return this.findOne(Number(resultado.empId))
     } catch (error) {
       if (documentoGuardado) {
-        await this.eliminarArchivoFisico(
-          documentoGuardado.rutaCompleta
-        )
+        await this.eliminarArchivoFisico(documentoGuardado.rutaCompleta)
       }
 
       throw error
@@ -172,45 +116,31 @@ export class PersonasJuridicasRepository {
    * Listar todas las empresas.
    */
   async findAll(): Promise<any[]> {
-    const registros =
-      await this.repository.find({
-        order: {
-          empId: 'DESC',
-        },
-      })
+    const registros = await this.repository.find({
+      order: {
+        empId: 'DESC',
+      },
+    })
 
-    return registros.map(
-      (registro) =>
-        this.formatearEmpresa(
-          registro
-        )
-    )
+    return registros.map((registro) => this.formatearEmpresa(registro))
   }
 
   /*
    * Listar empresas sin paginación
    * por operativo.
    */
-  async findByOperativo(
-    opId: number
-  ): Promise<any[]> {
-    const registros =
-      await this.repository.find({
-        where: {
-          opId: String(opId),
-        },
+  async findByOperativo(opId: number): Promise<any[]> {
+    const registros = await this.repository.find({
+      where: {
+        opId: String(opId),
+      },
 
-        order: {
-          empId: 'DESC',
-        },
-      })
+      order: {
+        empId: 'DESC',
+      },
+    })
 
-    return registros.map(
-      (registro) =>
-        this.formatearEmpresa(
-          registro
-        )
-    )
+    return registros.map((registro) => this.formatearEmpresa(registro))
   }
 
   /*
@@ -220,12 +150,9 @@ export class PersonasJuridicasRepository {
     opId: number,
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
-    return this.buscarEmpresasPaginadas(
-      pagination,
-      {
-        opId,
-      }
-    )
+    return this.buscarEmpresasPaginadas(pagination, {
+      opId,
+    })
   }
 
   /*
@@ -235,12 +162,9 @@ export class PersonasJuridicasRepository {
     casosId: number,
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
-    return this.buscarEmpresasPaginadas(
-      pagination,
-      {
-        casosId,
-      }
-    )
+    return this.buscarEmpresasPaginadas(pagination, {
+      casosId,
+    })
   }
 
   /*
@@ -254,45 +178,25 @@ export class PersonasJuridicasRepository {
    * - Historial jurídico.
    * - Última situación jurídica.
    */
-  async findOne(
-    empId: number
-  ): Promise<any> {
-    const empresa =
-      await this.buscarEntidadConImagen(
-        empId
-      )
+  async findOne(empId: number): Promise<any> {
+    const empresa = await this.buscarEntidadConImagen(empId)
 
-    const relaciones =
-      await this.obtenerRelacionesEmpresa(
-        empId
-      )
+    const relaciones = await this.obtenerRelacionesEmpresa(empId)
 
-    const situacionesJuridicas =
-      await this.obtenerSituacionesJuridicas(
-        empId
-      )
+    const situacionesJuridicas = await this.obtenerSituacionesJuridicas(empId)
 
     return {
-      ...this.formatearEmpresa(
-        empresa,
-        true
-      ),
+      ...this.formatearEmpresa(empresa, true),
 
-      operativo:
-        relaciones?.operativo ?? null,
+      operativo: relaciones?.operativo ?? null,
 
-      asignacion:
-        relaciones?.asignacion ?? null,
+      asignacion: relaciones?.asignacion ?? null,
 
-      tipoVinculo:
-        relaciones?.tipoVinculo ??
-        null,
+      tipoVinculo: relaciones?.tipoVinculo ?? null,
 
       situacionesJuridicas,
 
-      ultimaSituacionJuridica:
-        situacionesJuridicas[0] ??
-        null,
+      ultimaSituacionJuridica: situacionesJuridicas[0] ?? null,
     }
   }
 
@@ -305,16 +209,11 @@ export class PersonasJuridicasRepository {
     imagen?: Express.Multer.File,
     documento?: Express.Multer.File
   ): Promise<any> {
-    const registro =
-      await this.buscarEntidadConImagen(
-        empId
-      )
+    const registro = await this.buscarEntidadConImagen(empId)
 
-    const auditoria =
-      dto as DtoConUsuario<UpdatePersonasJuridicaDto>
+    const auditoria = dto as DtoConUsuario<UpdatePersonasJuridicaDto>
 
-    const rutaDocumentoAnterior =
-      registro.documento
+    const rutaDocumentoAnterior = registro.documento
 
     const {
       imagen: imagenDto,
@@ -325,8 +224,7 @@ export class PersonasJuridicasRepository {
       ...datosDto
     } = dto
 
-    let documentoNuevo:
-      DocumentoGuardado | null = null
+    let documentoNuevo: DocumentoGuardado | null = null
 
     try {
       /*
@@ -335,83 +233,54 @@ export class PersonasJuridicasRepository {
        * la entidad bigint está representado
        * como string.
        */
-      this.repository.merge(
-        registro,
-        datosDto as DeepPartial<PersonasJuridica>
-      )
+      this.repository.merge(registro, datosDto as DeepPartial<PersonasJuridica>)
 
       if (opId !== undefined) {
-        registro.opId =
-          String(opId)
+        registro.opId = String(opId)
       }
 
-      if (
-        idTipoVinculo !==
-        undefined
-      ) {
+      if (idTipoVinculo !== undefined) {
         registro.idTipoVinculo =
-          idTipoVinculo !== null
-            ? String(idTipoVinculo)
-            : null
+          idTipoVinculo !== null ? String(idTipoVinculo) : null
       }
 
       if (pericia !== undefined) {
-        registro.pericia =
-          pericia
+        registro.pericia = pericia
       }
 
-      if (
-        imagen?.buffer?.length
-      ) {
-        registro.imagen =
-          imagen.buffer
+      if (imagen?.buffer?.length) {
+        registro.imagen = imagen.buffer
       }
 
       if (documento) {
-        documentoNuevo =
-          await this.guardarDocumento(
-            documento
-          )
+        documentoNuevo = await this.guardarDocumento(documento)
 
-        registro.documento =
-          documentoNuevo.rutaRelativa
+        registro.documento = documentoNuevo.rutaRelativa
       }
 
       if (auditoria.usuario) {
-        registro.usuario =
-          auditoria.usuario
+        registro.usuario = auditoria.usuario
       }
 
-      await this.repository.save(
-        registro
-      )
+      await this.repository.save(registro)
 
       /*
        * El documento anterior solamente
        * se elimina después de guardar
        * correctamente el nuevo registro.
        */
-      if (
-        documentoNuevo &&
-        rutaDocumentoAnterior
-      ) {
-        await this.eliminarDocumentoGuardado(
-          rutaDocumentoAnterior
-        )
+      if (documentoNuevo && rutaDocumentoAnterior) {
+        await this.eliminarDocumentoGuardado(rutaDocumentoAnterior)
       }
 
-      return this.findOne(
-        empId
-      )
+      return this.findOne(empId)
     } catch (error) {
       /*
        * Si falla la actualización, se
        * elimina únicamente el archivo nuevo.
        */
       if (documentoNuevo) {
-        await this.eliminarArchivoFisico(
-          documentoNuevo.rutaCompleta
-        )
+        await this.eliminarArchivoFisico(documentoNuevo.rutaCompleta)
       }
 
       throw error
@@ -424,25 +293,15 @@ export class PersonasJuridicasRepository {
    * Esta operación es física porque
    * la tabla mostrada no tiene estado.
    */
-  async remove(
-    empId: number
-  ): Promise<void> {
-    const registro =
-      await this.buscarEntidadConImagen(
-        empId
-      )
+  async remove(empId: number): Promise<void> {
+    const registro = await this.buscarEntidadConImagen(empId)
 
-    const rutaDocumento =
-      registro.documento
+    const rutaDocumento = registro.documento
 
-    await this.repository.remove(
-      registro
-    )
+    await this.repository.remove(registro)
 
     if (rutaDocumento) {
-      await this.eliminarDocumentoGuardado(
-        rutaDocumento
-      )
+      await this.eliminarDocumentoGuardado(rutaDocumento)
     }
   }
 
@@ -450,25 +309,18 @@ export class PersonasJuridicasRepository {
    * Obtener el documento para visualizar
    * o descargar desde el controller.
    */
-  async obtenerDocumento(
-    empId: number
-  ) {
-    const registro =
-      await this.repository.findOne({
-        where: {
-          empId: String(empId),
-        },
-      })
+  async obtenerDocumento(empId: number) {
+    const registro = await this.repository.findOne({
+      where: {
+        empId: String(empId),
+      },
+    })
 
     if (!registro) {
-      throw new NotFoundException(
-        `No existe la empresa con ID ${empId}`
-      )
+      throw new NotFoundException(`No existe la empresa con ID ${empId}`)
     }
 
-    return crearStreamArchivo(
-      registro.documento
-    )
+    return crearStreamArchivo(registro.documento)
   }
 
   /*
@@ -478,451 +330,404 @@ export class PersonasJuridicasRepository {
     pagination: PaginacionQueryDto,
     filtros: FiltrosEmpresas
   ): Promise<[any[], number]> {
-    const {
-      limite,
-      saltar,
-      filtro,
-    } = pagination
+    const { limite, saltar, filtro } = pagination
 
-    const query =
-      this.repository
-        .createQueryBuilder(
-          'empresa'
-        )
-        .innerJoin(
-          'operativo',
-          'operativo',
-          `
+    const query = this.repository
+      .createQueryBuilder('empresa')
+      .innerJoin(
+        'operativo',
+        'operativo',
+        `
             operativo.op_id =
             empresa.op_id
           `
-        )
-        .leftJoin(
-          'asignacion',
-          'asignacion',
-          `
+      )
+      .leftJoin(
+        'asignacion',
+        'asignacion',
+        `
             asignacion.casos_id =
             operativo.casos_id
           `
-        )
-        .leftJoin(
-          TipoVinculoLgi,
-          'tipo_vinculo',
-          `
+      )
+      .leftJoin(
+        TipoVinculoLgi,
+        'tipo_vinculo',
+        `
             tipo_vinculo
               .id_tipo_vinculo::text =
             empresa.id_tipo_vinculo
           `
-        )
-        .leftJoin(
-          VinculoLgi,
-          'vinculo',
-          `
+      )
+      .leftJoin(
+        VinculoLgi,
+        'vinculo',
+        `
             vinculo.id_vinculo =
             tipo_vinculo.id_vinculo
           `
-        )
-        .leftJoin(
-          (subQuery) =>
-            subQuery
-              .select(
-                'situacion.id_empresa',
-                'id_empresa'
-              )
-              .addSelect(
-                `
+      )
+      .leftJoin(
+        (subQuery) =>
+          subQuery
+            .select('situacion.id_empresa', 'id_empresa')
+            .addSelect(
+              `
                   situacion
                     .id_situacion_juridica_empresa
                 `,
-                'id_situacion_juridica_empresa'
-              )
-              .addSelect(
-                'situacion.fecha',
-                'fecha'
-              )
-              .addSelect(
-                `
+              'id_situacion_juridica_empresa'
+            )
+            .addSelect('situacion.fecha', 'fecha')
+            .addSelect(
+              `
                   situacion.quien_autoriza
                 `,
-                'quien_autoriza'
-              )
-              .addSelect(
-                `
+              'quien_autoriza'
+            )
+            .addSelect(
+              `
                   situacion.a_quien_entregan
                 `,
-                'a_quien_entregan'
-              )
-              .addSelect(
-                `
+              'a_quien_entregan'
+            )
+            .addSelect(
+              `
                   situacion.fechahoraing
                 `,
-                'fechahoraing'
-              )
-              .addSelect(
-                'situacion.usuario',
-                'usuario'
-              )
-              .addSelect(
-                `
+              'fechahoraing'
+            )
+            .addSelect('situacion.usuario', 'usuario')
+            .addSelect(
+              `
                   situacion
                     .id_tipo_situacion_juridica
                 `,
-                'id_tipo_situacion_juridica'
-              )
-              .addSelect(
-                `
+              'id_tipo_situacion_juridica'
+            )
+            .addSelect(
+              `
                   tipo_situacion.descripcion
                 `,
-                'descripcion_tipo'
-              )
-              .distinctOn([
-                'situacion.id_empresa',
-              ])
-              .from(
-                'situacion_juridica_empresa',
-                'situacion'
-              )
-              .leftJoin(
-                'tipo_situacion_juridica',
-                'tipo_situacion',
-                `
+              'descripcion_tipo'
+            )
+            .distinctOn(['situacion.id_empresa'])
+            .from('situacion_juridica_empresa', 'situacion')
+            .leftJoin(
+              'tipo_situacion_juridica',
+              'tipo_situacion',
+              `
                   tipo_situacion
                     .id_tipo_situacion_juridica =
                   situacion
                     .id_tipo_situacion_juridica
                 `
-              )
-              .orderBy(
-                'situacion.id_empresa',
-                'ASC'
-              )
-              .addOrderBy(
-                'situacion.fecha',
-                'DESC',
-                'NULLS LAST'
-              )
-              .addOrderBy(
-                'situacion.fechahoraing',
-                'DESC',
-                'NULLS LAST'
-              )
-              .addOrderBy(
-                `
+            )
+            .orderBy('situacion.id_empresa', 'ASC')
+            .addOrderBy('situacion.fecha', 'DESC', 'NULLS LAST')
+            .addOrderBy('situacion.fechahoraing', 'DESC', 'NULLS LAST')
+            .addOrderBy(
+              `
                   situacion
                     .id_situacion_juridica_empresa
                 `,
-                'DESC'
-              ),
-          'ultima_situacion',
-          `
+              'DESC'
+            ),
+        'ultima_situacion',
+        `
             ultima_situacion
               .id_empresa::bigint =
             empresa.emp_id
           `
-        )
+      )
 
-    if (
-      filtros.opId !==
-      undefined
-    ) {
+    if (filtros.opId !== undefined) {
       query.andWhere(
         `
           empresa.op_id =
           :opId
         `,
         {
-          opId:
-            filtros.opId,
+          opId: filtros.opId,
         }
       )
     }
 
-    if (
-      filtros.casosId !==
-      undefined
-    ) {
+    if (filtros.casosId !== undefined) {
       query.andWhere(
         `
           operativo.casos_id =
           :casosId
         `,
         {
-          casosId:
-            filtros.casosId,
+          casosId: filtros.casosId,
         }
       )
     }
 
     if (filtro?.trim()) {
-      const valor =
-        `%${filtro.trim()}%`
+      const valor = `%${filtro.trim()}%`
 
       query.andWhere(
-        new Brackets(
-          (qb) => {
-            qb.where(
-              `
+        new Brackets((qb) => {
+          qb.where(
+            `
                 empresa.nombre
                 ILIKE :filtro
               `,
+            {
+              filtro: valor,
+            }
+          )
+            .orWhere(
+              `
+                  empresa.nit
+                  ILIKE :filtro
+                `,
               {
                 filtro: valor,
               }
             )
-              .orWhere(
-                `
-                  empresa.nit
-                  ILIKE :filtro
-                `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+            .orWhere(
+              `
                   empresa.matricula
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   empresa.representante
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   empresa.propietario_socio
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   empresa.beneficiarios_finales
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   empresa.direccion
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   operativo.op_nrooper
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.nombrecaso
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.nrocaso
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.nrocasogiaef
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.nrocasofis
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.nrocasoifp
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   asignacion.cudifp
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   tipo_vinculo.descripcion
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   vinculo.descripcion
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-              .orWhere(
-                `
+              {
+                filtro: valor,
+              }
+            )
+            .orWhere(
+              `
                   ultima_situacion
                     .descripcion_tipo
                   ILIKE :filtro
                 `,
-                {
-                  filtro: valor,
-                }
-              )
-          }
-        )
+              {
+                filtro: valor,
+              }
+            )
+        })
       )
     }
 
-    const total =
-      await query
-        .clone()
-        .getCount()
+    const total = await query.clone().getCount()
 
-    const data =
-      await query
-        .select([
-          `
+    const data = await query
+      .select([
+        `
             empresa.emp_id
             AS "empId"
           `,
 
-          `
+        `
             empresa.op_id
             AS "opId"
           `,
 
-          `
+        `
             empresa.nombre
             AS "nombre"
           `,
 
-          `
+        `
             empresa.nit
             AS "nit"
           `,
 
-          `
+        `
             empresa.matricula
             AS "matricula"
           `,
 
-          `
+        `
             empresa.representante
             AS "representante"
           `,
 
-          `
+        `
             empresa.obs
             AS "observaciones"
           `,
 
-          `
+        `
             empresa.propietario_socio
             AS "propietarioSocio"
           `,
 
-          `
+        `
             empresa.beneficiarios_finales
             AS "beneficiariosFinales"
           `,
 
-          `
+        `
             empresa.capital_social
             AS "capitalSocial"
           `,
 
-          `
+        `
             empresa.direccion
             AS "direccion"
           `,
 
-          `
+        `
             empresa.latitud
             AS "latitud"
           `,
 
-          `
+        `
             empresa.longitud
             AS "longitud"
           `,
 
-          `
+        `
             empresa.id_tipo_vinculo
             AS "idTipoVinculo"
           `,
 
-          `
+        `
             empresa.pericia
             AS "pericia"
           `,
 
-          `
+        `
             empresa.resultado
             AS "resultado"
           `,
 
-          `
+        `
             empresa.documento
             AS "documento"
           `,
 
-          `
+        `
             empresa.fechahoraing
             AS "fechaHoraIngreso"
           `,
 
-          `
+        `
             TRIM(empresa.usuario)
             AS "usuario"
           `,
 
-          `
+        `
             CASE
               WHEN empresa.imagen
                 IS NOT NULL
@@ -932,10 +737,10 @@ export class PersonasJuridicasRepository {
             AS "tieneImagen"
           `,
 
-          /*
-           * Operativo.
-           */
-          `
+        /*
+         * Operativo.
+         */
+        `
             jsonb_build_object(
               'opId',
               operativo.op_id,
@@ -961,10 +766,10 @@ export class PersonasJuridicasRepository {
             AS "operativo"
           `,
 
-          /*
-           * Asignación.
-           */
-          `
+        /*
+         * Asignación.
+         */
+        `
             CASE
               WHEN asignacion.casos_id
                 IS NULL
@@ -995,10 +800,10 @@ export class PersonasJuridicasRepository {
             AS "asignacion"
           `,
 
-          /*
-           * Tipo de vínculo y vínculo.
-           */
-          `
+        /*
+         * Tipo de vínculo y vínculo.
+         */
+        `
             CASE
               WHEN tipo_vinculo
                 .id_tipo_vinculo
@@ -1030,10 +835,10 @@ export class PersonasJuridicasRepository {
             AS "tipoVinculo"
           `,
 
-          /*
-           * Última situación jurídica.
-           */
-          `
+        /*
+         * Última situación jurídica.
+         */
+        `
             CASE
               WHEN ultima_situacion
                 .id_situacion_juridica_empresa
@@ -1075,68 +880,57 @@ export class PersonasJuridicasRepository {
             END
             AS "ultimaSituacionJuridica"
           `,
-        ])
-        .orderBy(
-          'empresa.emp_id',
-          'DESC'
-        )
-        .take(limite)
-        .skip(saltar)
-        .getRawMany()
+      ])
+      .orderBy('empresa.emp_id', 'DESC')
+      .take(limite)
+      .skip(saltar)
+      .getRawMany()
 
-    return [
-      data,
-      total,
-    ]
+    return [data, total]
   }
 
   /*
    * Obtener las relaciones principales
    * correspondientes a una empresa.
    */
-  private async obtenerRelacionesEmpresa(
-    empId: number
-  ): Promise<any> {
-    const resultado =
-      await this.repository
-        .createQueryBuilder(
-          'empresa'
-        )
-        .innerJoin(
-          'operativo',
-          'operativo',
-          `
+  private async obtenerRelacionesEmpresa(empId: number): Promise<any> {
+    const resultado = await this.repository
+      .createQueryBuilder('empresa')
+      .innerJoin(
+        'operativo',
+        'operativo',
+        `
             operativo.op_id =
             empresa.op_id
           `
-        )
-        .leftJoin(
-          'asignacion',
-          'asignacion',
-          `
+      )
+      .leftJoin(
+        'asignacion',
+        'asignacion',
+        `
             asignacion.casos_id =
             operativo.casos_id
           `
-        )
-        .leftJoin(
-          TipoVinculoLgi,
-          'tipo_vinculo',
-          `
+      )
+      .leftJoin(
+        TipoVinculoLgi,
+        'tipo_vinculo',
+        `
             tipo_vinculo
               .id_tipo_vinculo::text =
             empresa.id_tipo_vinculo
           `
-        )
-        .leftJoin(
-          VinculoLgi,
-          'vinculo',
-          `
+      )
+      .leftJoin(
+        VinculoLgi,
+        'vinculo',
+        `
             vinculo.id_vinculo =
             tipo_vinculo.id_vinculo
           `
-        )
-        .select([
-          `
+      )
+      .select([
+        `
             jsonb_build_object(
               'opId',
               operativo.op_id,
@@ -1162,7 +956,7 @@ export class PersonasJuridicasRepository {
             AS "operativo"
           `,
 
-          `
+        `
             CASE
               WHEN asignacion.casos_id
                 IS NULL
@@ -1193,7 +987,7 @@ export class PersonasJuridicasRepository {
             AS "asignacion"
           `,
 
-          `
+        `
             CASE
               WHEN tipo_vinculo
                 .id_tipo_vinculo
@@ -1224,31 +1018,22 @@ export class PersonasJuridicasRepository {
             END
             AS "tipoVinculo"
           `,
-        ])
-        .where(
-          `
+      ])
+      .where(
+        `
             empresa.emp_id =
             :empId
           `,
-          {
-            empId,
-          }
-        )
-        .getRawOne()
+        {
+          empId,
+        }
+      )
+      .getRawOne()
 
     return resultado ?? null
   }
 
-  /*
-   * Obtener todo el historial jurídico
-   * de una empresa.
-   *
-   * El primer elemento corresponde
-   * a la situación más reciente.
-   */
-  private async obtenerSituacionesJuridicas(
-    empId: number
-  ): Promise<any[]> {
+  private async obtenerSituacionesJuridicas(empId: number): Promise<any[]> {
     return this.repository.manager
       .createQueryBuilder()
       .select([
@@ -1299,10 +1084,7 @@ export class PersonasJuridicasRepository {
           AS "descripcionTipo"
         `,
       ])
-      .from(
-        'situacion_juridica_empresa',
-        'situacion'
-      )
+      .from('situacion_juridica_empresa', 'situacion')
       .leftJoin(
         'tipo_situacion_juridica',
         'tipo_situacion',
@@ -1322,16 +1104,8 @@ export class PersonasJuridicasRepository {
           empId,
         }
       )
-      .orderBy(
-        'situacion.fecha',
-        'DESC',
-        'NULLS LAST'
-      )
-      .addOrderBy(
-        'situacion.fechahoraing',
-        'DESC',
-        'NULLS LAST'
-      )
+      .orderBy('situacion.fecha', 'DESC', 'NULLS LAST')
+      .addOrderBy('situacion.fechahoraing', 'DESC', 'NULLS LAST')
       .addOrderBy(
         `
           situacion
@@ -1350,29 +1124,22 @@ export class PersonasJuridicasRepository {
   private async buscarEntidadConImagen(
     empId: number
   ): Promise<PersonasJuridica> {
-    const registro =
-      await this.repository
-        .createQueryBuilder(
-          'empresa'
-        )
-        .addSelect(
-          'empresa.imagen'
-        )
-        .where(
-          `
+    const registro = await this.repository
+      .createQueryBuilder('empresa')
+      .addSelect('empresa.imagen')
+      .where(
+        `
             empresa.empId =
             :empId
           `,
-          {
-            empId,
-          }
-        )
-        .getOne()
+        {
+          empId,
+        }
+      )
+      .getOne()
 
     if (!registro) {
-      throw new NotFoundException(
-        `No existe la empresa con ID ${empId}`
-      )
+      throw new NotFoundException(`No existe la empresa con ID ${empId}`)
     }
 
     return registro
@@ -1385,70 +1152,38 @@ export class PersonasJuridicasRepository {
     registro: PersonasJuridica,
     incluirImagen = false
   ): any {
-    const {
-      imagen,
-      ...datos
-    } = registro
+    const { imagen, ...datos } = registro
 
-    let imagenBase64:
-      string | null = null
+    let imagenBase64: string | null = null
 
-    let imagenDataUrl:
-      string | null = null
+    let imagenDataUrl: string | null = null
 
-    let imagenMimeType:
-      string | null = null
+    let imagenMimeType: string | null = null
 
-    if (
-      incluirImagen &&
-      imagen
-    ) {
-      const buffer =
-        Buffer.from(imagen)
+    if (incluirImagen && imagen) {
+      const buffer = Buffer.from(imagen)
 
-      imagenMimeType =
-        this.detectarMimeImagen(
-          buffer
-        )
+      imagenMimeType = this.detectarMimeImagen(buffer)
 
-      imagenBase64 =
-        buffer.toString(
-          'base64'
-        )
+      imagenBase64 = buffer.toString('base64')
 
-      imagenDataUrl =
-        `data:${imagenMimeType};base64,${imagenBase64}`
+      imagenDataUrl = `data:${imagenMimeType};base64,${imagenBase64}`
     }
 
     return {
       ...datos,
 
-      usuario:
-        registro.usuario?.trim() ??
-        null,
+      usuario: registro.usuario?.trim() ?? null,
 
-      tieneImagen:
-        Boolean(imagen),
+      tieneImagen: Boolean(imagen),
 
-      imagenMimeType:
-        incluirImagen
-          ? imagenMimeType
-          : undefined,
+      imagenMimeType: incluirImagen ? imagenMimeType : undefined,
 
-      imagenBase64:
-        incluirImagen
-          ? imagenBase64
-          : undefined,
+      imagenBase64: incluirImagen ? imagenBase64 : undefined,
 
-      imagenDataUrl:
-        incluirImagen
-          ? imagenDataUrl
-          : undefined,
+      imagenDataUrl: incluirImagen ? imagenDataUrl : undefined,
 
-      tieneDocumento:
-        Boolean(
-          registro.documento
-        ),
+      tieneDocumento: Boolean(registro.documento),
     }
   }
 
@@ -1465,11 +1200,7 @@ export class PersonasJuridicasRepository {
       'image/webp',
     ]
 
-    if (
-      !tiposPermitidos.includes(
-        archivo.mimetype
-      )
-    ) {
+    if (!tiposPermitidos.includes(archivo.mimetype)) {
       throw new BadRequestException(
         'El documento debe estar en formato PDF, JPG, PNG o WEBP'
       )
@@ -1481,80 +1212,47 @@ export class PersonasJuridicasRepository {
       )
     }
 
-    const extensionesPermitidas =
-      new Map<string, string>([
-        [
-          'application/pdf',
-          '.pdf',
-        ],
-        [
-          'image/jpeg',
-          '.jpg',
-        ],
-        [
-          'image/png',
-          '.png',
-        ],
-        [
-          'image/webp',
-          '.webp',
-        ],
-      ])
+    const extensionesPermitidas = new Map<string, string>([
+      ['application/pdf', '.pdf'],
+      ['image/jpeg', '.jpg'],
+      ['image/png', '.png'],
+      ['image/webp', '.webp'],
+    ])
 
     const extension =
-      extensionesPermitidas.get(
-        archivo.mimetype
-      ) ??
-      extname(
-        archivo.originalname
-      ).toLowerCase()
+      extensionesPermitidas.get(archivo.mimetype) ??
+      extname(archivo.originalname).toLowerCase()
 
-    const year =
-      new Date()
-        .getFullYear()
-        .toString()
+    const year = new Date().getFullYear().toString()
 
-    const directorio =
-      resolve(
-        process.cwd(),
-        'storage',
-        'lgi',
-        'personas-juridicas',
-        year
-      )
-
-    await fs.mkdir(
-      directorio,
-      {
-        recursive: true,
-      }
+    const directorio = resolve(
+      process.cwd(),
+      'storage',
+      'lgi',
+      'personas-juridicas',
+      year
     )
 
-    const nombreArchivo =
-      `${Date.now()}-${randomUUID()}${extension}`
+    await fs.mkdir(directorio, {
+      recursive: true,
+    })
 
-    const rutaCompleta =
-      resolve(
-        directorio,
-        nombreArchivo
-      )
+    const nombreArchivo = `${Date.now()}-${randomUUID()}${extension}`
 
-    await fs.writeFile(
-      rutaCompleta,
-      archivo.buffer
-    )
+    const rutaCompleta = resolve(directorio, nombreArchivo)
+
+    await fs.writeFile(rutaCompleta, archivo.buffer)
 
     return {
       rutaCompleta,
 
-      rutaRelativa:
-        [
-          'storage',
-          'lgi',
-          'personas-juridicas',
-          year,
-          nombreArchivo,
-        ].join('/'),
+      rutaRelativa: [
+        'storage',
+        'lgi',
+        'personas-juridicas',
+        year,
+        nombreArchivo,
+      ].join('/'),
     }
   }
 
@@ -1562,64 +1260,34 @@ export class PersonasJuridicasRepository {
    * Eliminar un documento registrado
    * mediante una ruta relativa.
    */
-  private async eliminarDocumentoGuardado(
-    rutaRelativa: string
-  ): Promise<void> {
-    const directorioStorage =
-      resolve(
-        process.cwd(),
-        'storage'
-      )
+  private async eliminarDocumentoGuardado(rutaRelativa: string): Promise<void> {
+    const directorioStorage = resolve(process.cwd(), 'storage')
 
-    const rutaNormalizada =
-      rutaRelativa
-        .replace(
-          /\\/g,
-          '/'
-        )
-        .replace(
-          /^\/+/,
-          ''
-        )
-        .replace(
-          /^storage\//,
-          ''
-        )
+    const rutaNormalizada = rutaRelativa
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '')
+      .replace(/^storage\//, '')
 
-    const rutaCompleta =
-      resolve(
-        directorioStorage,
-        rutaNormalizada
-      )
+    const rutaCompleta = resolve(directorioStorage, rutaNormalizada)
 
     /*
      * Impedir que una ruta manipulada
      * elimine archivos fuera de storage.
      */
-    if (
-      !rutaCompleta.startsWith(
-        `${directorioStorage}${sep}`
-      )
-    ) {
+    if (!rutaCompleta.startsWith(`${directorioStorage}${sep}`)) {
       return
     }
 
-    await this.eliminarArchivoFisico(
-      rutaCompleta
-    )
+    await this.eliminarArchivoFisico(rutaCompleta)
   }
 
   /*
    * Eliminar archivo físico sin interrumpir
    * la operación si ya no existe.
    */
-  private async eliminarArchivoFisico(
-    rutaCompleta: string
-  ): Promise<void> {
+  private async eliminarArchivoFisico(rutaCompleta: string): Promise<void> {
     try {
-      await fs.unlink(
-        rutaCompleta
-      )
+      await fs.unlink(rutaCompleta)
     } catch {
       /*
        * El archivo puede haber sido eliminado
@@ -1632,9 +1300,7 @@ export class PersonasJuridicasRepository {
    * Detectar el MIME real de la imagen
    * almacenada en bytea.
    */
-  private detectarMimeImagen(
-    buffer: Buffer
-  ): string {
+  private detectarMimeImagen(buffer: Buffer): string {
     if (
       buffer.length >= 4 &&
       buffer[0] === 0x89 &&
@@ -1656,14 +1322,8 @@ export class PersonasJuridicasRepository {
 
     if (
       buffer.length >= 12 &&
-      buffer
-        .subarray(0, 4)
-        .toString() ===
-        'RIFF' &&
-      buffer
-        .subarray(8, 12)
-        .toString() ===
-        'WEBP'
+      buffer.subarray(0, 4).toString() === 'RIFF' &&
+      buffer.subarray(8, 12).toString() === 'WEBP'
     ) {
       return 'image/webp'
     }
