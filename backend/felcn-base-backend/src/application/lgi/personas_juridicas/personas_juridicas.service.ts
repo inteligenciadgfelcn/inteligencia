@@ -5,6 +5,7 @@ import { CreatePersonasJuridicaDto } from './dto/create-personas_juridica.dto'
 import { UpdatePersonasJuridicaDto } from './dto/update-personas_juridica.dto'
 
 import { PersonasJuridicasRepository } from './repository/personas_juridicas.repository'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @Injectable()
 export class PersonasJuridicasService {
@@ -42,4 +43,26 @@ export class PersonasJuridicasService {
       mensaje: 'Empresa eliminada correctamente',
     }
   }
+
+ findAllPaginadoPorOperativo(
+  opId: number,
+  pagination: PaginacionQueryDto,
+) {
+  return this.repository
+    .findAllPaginadoPorOperativo(
+      opId,
+      pagination,
+    )
+}
+
+findAllPaginadoPorCaso(
+  casosId: number,
+  pagination: PaginacionQueryDto,
+) {
+  return this.repository
+    .findAllPaginadoPorCaso(
+      casosId,
+      pagination,
+    )
+}
 }

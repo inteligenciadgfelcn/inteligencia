@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Res,
   UploadedFiles,
   UseGuards,
@@ -37,6 +38,7 @@ import { CreatePersonasJuridicaDto } from './dto/create-personas_juridica.dto'
 import { UpdatePersonasJuridicaDto } from './dto/update-personas_juridica.dto'
 
 import { PersonasJuridicasService } from './personas_juridicas.service'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 interface ArchivosEmpresa {
   imagen?: Express.Multer.File[]
@@ -92,6 +94,44 @@ export class PersonasJuridicasController extends BaseController {
     this.validarDocumento(documento)
 
     return this.service.create(dto, imagen, documento)
+  }
+
+  @Get('operativo/:opId')
+  @ApiOperation({
+    summary: 'Listar personas jurídicas por operativo',
+  })
+  async findByOperativoPaginado(
+    @Param('opId', ParseIntPipe)
+    opId: number,
+
+    @Query()
+    pagination: PaginacionQueryDto
+  ) {
+    const result = await this.service.findAllPaginadoPorOperativo(
+      opId,
+      pagination
+    )
+
+    return this.successListRows(result)
+  }
+
+  @Get('caso/:casosId')
+  @ApiOperation({
+    summary: 'Listar personas jurídicas por caso',
+  })
+  async findByCaso(
+    @Param('casosId', ParseIntPipe)
+    casosId: number,
+
+    @Query()
+    pagination: PaginacionQueryDto
+  ) {
+    const result = await this.service.findAllPaginadoPorCaso(
+      casosId,
+      pagination
+    )
+
+    return this.successListRows(result)
   }
 
   @Get('operativo/:opId')
