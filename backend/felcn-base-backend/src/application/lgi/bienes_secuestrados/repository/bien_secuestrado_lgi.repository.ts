@@ -115,22 +115,11 @@ export class BienSecuestradoLgiRepository {
         'bien.caracteristicas',
         'caracteristicas',
         `
-            caracteristicas.estado =
-            :estadoCaracteristica
-          `,
+          caracteristicas.estado =
+          :estadoCaracteristica
+        `,
         {
           estadoCaracteristica: 'ACTIVO',
-        }
-      )
-      .leftJoinAndSelect(
-        'bien.situacionesJuridicas',
-        'situacionesJuridicas',
-        `
-            situacionesJuridicas.estado =
-            :estadoSituacion
-          `,
-        {
-          estadoSituacion: 'ACTIVO',
         }
       )
       .where('bien.opId = :opId', {
@@ -147,45 +136,45 @@ export class BienSecuestradoLgiRepository {
         new Brackets((qb) => {
           qb.where(
             `
-              bien.lugarSecuestro
-              ILIKE :filtro
-            `,
+            bien.lugarSecuestro
+            ILIKE :filtro
+          `,
             {
               filtro: valor,
             }
           )
             .orWhere(
               `
-                bien.nombreCompletoVinculo
-                ILIKE :filtro
-              `,
+              bien.nombreCompletoVinculo
+              ILIKE :filtro
+            `,
               {
                 filtro: valor,
               }
             )
             .orWhere(
               `
-                bien.cedulaIdentidadVinculo
-                ILIKE :filtro
-              `,
+              bien.cedulaIdentidadVinculo
+              ILIKE :filtro
+            `,
               {
                 filtro: valor,
               }
             )
             .orWhere(
               `
-                categoriaTipo.descripcion
-                ILIKE :filtro
-              `,
+              categoriaTipo.descripcion
+              ILIKE :filtro
+            `,
               {
                 filtro: valor,
               }
             )
             .orWhere(
               `
-                tipoVinculo.descripcion
-                ILIKE :filtro
-              `,
+              tipoVinculo.descripcion
+              ILIKE :filtro
+            `,
               {
                 filtro: valor,
               }
@@ -194,15 +183,30 @@ export class BienSecuestradoLgiRepository {
       )
     }
 
-    const [data, total] = await query
-      .orderBy('bien.itembiensecId', 'DESC')
-      .take(Number(limite))
-      .skip(Number(saltar))
-      .getManyAndCount()
+    query.orderBy('bien.itembiensecId', 'DESC').take(limite).skip(saltar)
 
-    const resultado = data.map((item) => ({
-      ...item,
-      fechaHoraIngreso: formatearFechaBolivia(item.fechaHoraIngreso),
+    const [bienes, total] = await query.getManyAndCount()
+
+    if (!bienes.length) {
+      return [[], total]
+    }
+
+    const idsBienes = bienes.map((bien) => Number(bien.itembiensecId))
+
+    const ultimasSituaciones = await this.obtenerUltimasSituaciones(idsBienes)
+
+    const mapaSituaciones = new Map<number, any>(
+      ultimasSituaciones.map((situacion) => [
+        Number(situacion.itembiensecId),
+        situacion,
+      ])
+    )
+
+    const resultado = bienes.map((bien) => ({
+      ...bien,
+
+      ultimaSituacionJuridica:
+        mapaSituaciones.get(Number(bien.itembiensecId)) ?? null,
     }))
 
     return [resultado, total]
@@ -211,9 +215,57 @@ export class BienSecuestradoLgiRepository {
   async findOne(id: number): Promise<any> {
     const item = await this.buscarEntidad(id)
 
+    const [fotografias, situacionesJuridicas] = await Promise.all([
+      this.fotoRepository.find({
+        where: {
+          itembiensecId: String(id),
+
+          estado: 'ACTIVO',
+        },
+
+        order: {
+          fotobienId: 'ASC',
+        },
+      }),
+
+      this.obtenerSituacionesPorBien(id),
+    ])
+
+    const fotografiasBase64 = fotografias.map((foto) => {
+      const { fotografia, ...datosFotografia } = foto
+
+      const base64 = fotografia
+        ? Buffer.from(fotografia).toString('base64')
+        : null
+
+      const tipoMime = this.obtenerTipoMime(foto.descripcion)
+
+      return {
+        ...datosFotografia,
+
+        fotografiaBase64: base64,
+
+        fotografiaDataUrl: base64 ? `data:${tipoMime};base64,${base64}` : null,
+      }
+    })
+
+    const caracteristicasActivas =
+      item.caracteristicas?.filter(
+        (caracteristica) => caracteristica.estado === 'ACTIVO'
+      ) ?? []
+
     return {
       ...item,
+
       fechaHoraIngreso: formatearFechaBolivia(item.fechaHoraIngreso),
+
+      caracteristicas: caracteristicasActivas,
+
+      fotografias: fotografiasBase64,
+
+      ultimaSituacionJuridica: situacionesJuridicas[0] ?? null,
+
+      situacionesJuridicas,
     }
   }
 
@@ -359,5 +411,419 @@ export class BienSecuestradoLgiRepository {
     }
 
     return item
+  }
+
+  private async obtenerUltimasSituaciones(idsBienes: number[]): Promise<any[]> {
+    if (!idsBienes.length) {
+      return []
+    }
+
+    const registros = await this.repository.manager.query(
+      `
+        SELECT DISTINCT ON (
+          situacion.itembiensec_id
+        )
+          situacion.itembiensec_id
+            AS "itembiensecId",
+
+          situacion.id_registro
+            AS "idRegistro",
+
+          situacion.id_tipo
+            AS "idTipoSituacionLegalBien",
+
+          situacion.descripcion_tipo
+            AS "descripcionTipo",
+
+          situacion.tabla,
+
+          situacion.fecha_situacion
+            AS "fechaSituacion",
+
+          situacion.fecha_hora_ingreso
+            AS "fechaHoraIngreso"
+
+        FROM (
+          SELECT
+            sec.itembiensec_id,
+            sec.bsec_id
+              AS id_registro,
+            1
+              AS id_tipo,
+            'Secuestrado'
+              AS descripcion_tipo,
+            'bienessecuestados'
+              AS tabla,
+            sec.fechaactsec
+              AS fecha_situacion,
+            sec.fechahoraing
+              AS fecha_hora_ingreso
+
+          FROM bienessecuestados sec
+
+          WHERE sec.itembiensec_id =
+            ANY($1::bigint[])
+
+          UNION ALL
+
+          SELECT
+            inc.itembiensec_id,
+            inc.binc_id
+              AS id_registro,
+            2
+              AS id_tipo,
+            'Incautado'
+              AS descripcion_tipo,
+            'bienesincautados'
+              AS tabla,
+            inc.fechares
+              AS fecha_situacion,
+            inc.fechahoraing
+              AS fecha_hora_ingreso
+
+          FROM bienesincautados inc
+
+          WHERE inc.itembiensec_id =
+            ANY($1::bigint[])
+
+          UNION ALL
+
+          SELECT
+            con.itembiensec_id,
+            con.bconf_id
+              AS id_registro,
+            3
+              AS id_tipo,
+            'Confiscado/Decomisado'
+              AS descripcion_tipo,
+            'bienesconfiscados'
+              AS tabla,
+            con.fechasenjud
+              AS fecha_situacion,
+            con.fechahoraing
+              AS fecha_hora_ingreso
+
+          FROM bienesconfiscados con
+
+          WHERE con.itembiensec_id =
+            ANY($1::bigint[])
+
+          UNION ALL
+
+          SELECT
+            sit.itembiensec_id,
+            sit.sitb_id
+              AS id_registro,
+            4
+              AS id_tipo,
+            'Entrega a DIRCABI'
+              AS descripcion_tipo,
+            'situacionbienes'
+              AS tabla,
+            COALESCE(
+              sit.fechaent,
+              sit.fechareq
+            )
+              AS fecha_situacion,
+            sit.fechahoraing
+              AS fecha_hora_ingreso
+
+          FROM situacionbienes sit
+
+          WHERE sit.itembiensec_id =
+            ANY($1::bigint[])
+        ) situacion
+
+        ORDER BY
+          situacion.itembiensec_id,
+          situacion.fecha_situacion DESC,
+          situacion.fecha_hora_ingreso DESC,
+          situacion.id_registro DESC
+      `,
+      [idsBienes]
+    )
+
+    return registros
+  }
+
+  private async obtenerSituacionesPorBien(
+    itembiensecId: number
+  ): Promise<any[]> {
+    const registros = await this.repository.manager.query(
+      `
+        SELECT
+          situacion.itembiensec_id
+            AS "itembiensecId",
+
+          situacion.id_registro
+            AS "idRegistro",
+
+          situacion.id_tipo
+            AS "idTipoSituacionLegalBien",
+
+          situacion.descripcion_tipo
+            AS "descripcionTipo",
+
+          situacion.tabla,
+
+          situacion.fecha_situacion
+            AS "fechaSituacion",
+
+          situacion.fecha_hora_ingreso
+            AS "fechaHoraIngreso",
+
+          situacion.datos
+
+        FROM (
+          SELECT
+            sec.itembiensec_id,
+
+            sec.bsec_id
+              AS id_registro,
+
+            1
+              AS id_tipo,
+
+            'Secuestrado'
+              AS descripcion_tipo,
+
+            'bienessecuestados'
+              AS tabla,
+
+            sec.fechaactsec
+              AS fecha_situacion,
+
+            sec.fechahoraing
+              AS fecha_hora_ingreso,
+
+            jsonb_build_object(
+              'bsecId',
+                sec.bsec_id,
+
+              'itemBienSecId',
+                sec.itembiensec_id,
+
+              'fiscal',
+                sec.fiscal,
+
+              'fechaActaSecuestro',
+                sec.fechaactsec,
+
+              'investigador',
+                sec.investigador,
+
+              'usuario',
+                sec.usuario
+            )
+              AS datos
+
+          FROM bienessecuestados sec
+
+          WHERE sec.itembiensec_id =
+            $1
+
+          UNION ALL
+
+          SELECT
+            inc.itembiensec_id,
+
+            inc.binc_id
+              AS id_registro,
+
+            2
+              AS id_tipo,
+
+            'Incautado'
+              AS descripcion_tipo,
+
+            'bienesincautados'
+              AS tabla,
+
+            inc.fechares
+              AS fecha_situacion,
+
+            inc.fechahoraing
+              AS fecha_hora_ingreso,
+
+            jsonb_build_object(
+              'bincId',
+                inc.binc_id,
+
+              'itemBienSecId',
+                inc.itembiensec_id,
+
+              'nroResol',
+                inc.nroresol,
+
+              'fechaResolucion',
+                inc.fechares,
+
+              'autoridad',
+                inc.autoridad,
+
+              'usuario',
+                inc.usuario
+            )
+              AS datos
+
+          FROM bienesincautados inc
+
+          WHERE inc.itembiensec_id =
+            $1
+
+          UNION ALL
+
+          SELECT
+            con.itembiensec_id,
+
+            con.bconf_id
+              AS id_registro,
+
+            3
+              AS id_tipo,
+
+            'Confiscado/Decomisado'
+              AS descripcion_tipo,
+
+            'bienesconfiscados'
+              AS tabla,
+
+            con.fechasenjud
+              AS fecha_situacion,
+
+            con.fechahoraing
+              AS fecha_hora_ingreso,
+
+            jsonb_build_object(
+              'bconfId',
+                con.bconf_id,
+
+              'itemBienSecId',
+                con.itembiensec_id,
+
+              'numSentJud',
+                con.numsentjud,
+
+              'fechaSenjud',
+                con.fechasenjud,
+
+              'autoridad',
+                con.autoridad,
+
+              'usuario',
+                con.usuario
+            )
+              AS datos
+
+          FROM bienesconfiscados con
+
+          WHERE con.itembiensec_id =
+            $1
+
+          UNION ALL
+
+          SELECT
+            sit.itembiensec_id,
+
+            sit.sitb_id
+              AS id_registro,
+
+            4
+              AS id_tipo,
+
+            'Entrega a DIRCABI'
+              AS descripcion_tipo,
+
+            'situacionbienes'
+              AS tabla,
+
+            COALESCE(
+              sit.fechaent,
+              sit.fechareq
+            )
+              AS fecha_situacion,
+
+            sit.fechahoraing
+              AS fecha_hora_ingreso,
+
+            jsonb_build_object(
+              'sitbId',
+                sit.sitb_id,
+
+              'itemBienSecId',
+                sit.itembiensec_id,
+
+              'fechaRequerimiento',
+                sit.fechareq,
+
+              'fiscalRequirente',
+                sit.fisreq,
+
+              'calbId',
+                sit.calb_id,
+
+              'fechaEntrega',
+                sit.fechaent,
+
+              'responsableEntrega',
+                sit.responsablee,
+
+              'responsableRecepcion',
+                sit.responsabler,
+
+              'institucion',
+                sit.institucion,
+
+              'ubicacion',
+                sit.ubicacion,
+
+              'usuario',
+                sit.usuario
+            )
+              AS datos
+
+          FROM situacionbienes sit
+
+          WHERE sit.itembiensec_id =
+            $1
+        ) situacion
+
+        ORDER BY
+          situacion.fecha_situacion
+            DESC,
+
+          situacion.fecha_hora_ingreso
+            DESC,
+
+          situacion.id_registro
+            DESC
+      `,
+      [itembiensecId]
+    )
+
+    return registros
+  }
+
+  private obtenerTipoMime(nombre?: string | null): string {
+    const extension = nombre?.split('.').pop()?.toLowerCase()
+
+    switch (extension) {
+      case 'png':
+        return 'image/png'
+
+      case 'webp':
+        return 'image/webp'
+
+      case 'gif':
+        return 'image/gif'
+
+      case 'bmp':
+        return 'image/bmp'
+
+      case 'jpg':
+      case 'jpeg':
+      default:
+        return 'image/jpeg'
+    }
   }
 }

@@ -50,7 +50,7 @@ import { UpdateSituacionBienDto } from './dto/update-situacion-bien.dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Situación jurídica del bien')
+@ApiTags('LGI - Bienes secuestrados')
 @ApiExtraModels(
   CreateBienSecuestadoDto,
   CreateBienIncautadoDto,
