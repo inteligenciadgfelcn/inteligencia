@@ -92,7 +92,6 @@ export class BienSecuestradoLgiRepository {
         categoriaTipo: true,
         tipoVinculo: true,
         caracteristicas: true,
-        situacionesJuridicas: true,
       },
 
       order: {
@@ -203,9 +202,6 @@ export class BienSecuestradoLgiRepository {
 
     const resultado = data.map((item) => ({
       ...item,
-
-      fecha: formatearFechaBolivia(item.fecha),
-
       fechaHoraIngreso: formatearFechaBolivia(item.fechaHoraIngreso),
     }))
 
@@ -217,9 +213,6 @@ export class BienSecuestradoLgiRepository {
 
     return {
       ...item,
-
-      fecha: formatearFechaBolivia(item.fecha),
-
       fechaHoraIngreso: formatearFechaBolivia(item.fechaHoraIngreso),
     }
   }
@@ -236,7 +229,6 @@ export class BienSecuestradoLgiRepository {
         categoriaTipo: true,
         tipoVinculo: true,
         caracteristicas: true,
-        situacionesJuridicas: true,
       },
 
       order: {
@@ -359,7 +351,6 @@ export class BienSecuestradoLgiRepository {
         categoriaTipo: true,
         tipoVinculo: true,
         caracteristicas: true,
-        situacionesJuridicas: true,
       },
     })
 

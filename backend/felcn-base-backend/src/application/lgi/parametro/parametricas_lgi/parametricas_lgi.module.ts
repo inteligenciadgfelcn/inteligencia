@@ -19,6 +19,7 @@ import { CatalogoCaracteristicasModule } from '../catalogo-caracteristica/catalo
 import { CalidadBienModule } from '../calidad-bien/calidad-bien.module'
 import { VinculoModule } from '../vinculo/vinculo.module'
 import { TipoVinculoModule } from '../tipo-vinculo/tipo-vinculo.module'
+import { TipoSituacionLegalBienLgiModule } from '../tipo_situcion_bien/tipo_situcion_bien.module'
 
 @Module({
    imports: [
@@ -31,6 +32,7 @@ import { TipoVinculoModule } from '../tipo-vinculo/tipo-vinculo.module'
     CalidadBienModule,
     VinculoModule,
     TipoVinculoModule,
+    TipoSituacionLegalBienLgiModule
   ],
 
   controllers: [ParametricasLgiController],

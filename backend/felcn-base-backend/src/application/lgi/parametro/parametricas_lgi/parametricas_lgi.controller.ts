@@ -22,6 +22,7 @@ import { CatalogoCaracteristicasLgiService } from '../catalogo-caracteristica/ca
 import { CalidadBienLgiService } from '../calidad-bien/calidad-bien.service'
 import { VinculoService } from '../vinculo/vinculo.service'
 import { TipoVinculoLgiService } from '../tipo-vinculo/tipo-vinculo.service'
+import { TipoSituacionLegalBienLgiService } from '../tipo_situcion_bien/tipo_situcion_bien.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -39,6 +40,7 @@ export class ParametricasLgiController extends BaseController {
     private readonly situacionLegalService: CalidadBienLgiService,
     private readonly vinculoService: VinculoService,
     private readonly tipoVinculoService: TipoVinculoLgiService,
+    private readonly situacionLegalBienService: TipoSituacionLegalBienLgiService
   ) {
     super()
   }
@@ -197,6 +199,11 @@ export class ParametricasLgiController extends BaseController {
     idVinculo: number
   ) {
     return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
+  }
+
+   @Get('allTipoSitucionBien')
+  findAllSituacionLegalBien() {
+    return this.situacionLegalBienService.findAll()
   }
 
 }

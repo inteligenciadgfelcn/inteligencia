@@ -10,7 +10,6 @@ import { OperativoLgi } from '../../actuaciones/entities/operativoLgi.entity'
 import { TipoVinculoLgi } from '../../parametro/tipo-vinculo/entities/tipo-vinculo.entity'
 import { CatalogoTipoLgi } from '../../parametro/catalogo-tipo/entities/catalogo-tipo.entity'
 import { CaracteristicasBiene } from '../../caracteristicas_bienes/entities/caracteristicas_biene.entity'
-import { SituacionJuridicaBien } from '../../situacion_juridica_bien/entities/situacion_juridica_bien.entity'
 import { FotoBienLgi } from '../../foto_bienes/entities/foto_biene.entity'
 
 @Entity({
@@ -129,13 +128,6 @@ export class BieneSecuestradoLgi {
   resultadoPericia?: string | null
 
   @Column({
-    name: 'fecha',
-    type: 'timestamp with time zone',
-    nullable: true,
-  })
-  fecha?: Date | null
-
-  @Column({
     name: 'nombre_depositario',
     type: 'character varying',
     nullable: true,
@@ -184,12 +176,6 @@ export class BieneSecuestradoLgi {
     (caracteristica) => caracteristica.bienSecuestrado
   )
   caracteristicas: CaracteristicasBiene[]
-
-  @OneToMany(
-    () => SituacionJuridicaBien,
-    (situacionJuridica) => situacionJuridica.bienSecuestrado
-  )
-  situacionesJuridicas: SituacionJuridicaBien[]
 
   @OneToMany(() => FotoBienLgi, (fotografia) => fotografia.bienSecuestrado)
   fotografias: FotoBienLgi[]
