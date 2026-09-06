@@ -9,7 +9,7 @@ export class VinculoLgi {
     type: 'bigint',
     name: 'id_vinculo',
   })
-  bienId: number
+  idVinculo: number
 
   @Column()
   descripcion: string

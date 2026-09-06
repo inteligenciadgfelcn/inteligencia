@@ -22,7 +22,7 @@ export class VinculoLgiRepository {
   async findAllOrdered() {
     return await this.repository.find({
       order: {
-        bienId: 'ASC',
+        idVinculo: 'ASC',
       },
     })
   }
@@ -30,7 +30,7 @@ export class VinculoLgiRepository {
   async findActiveById(id: number) {
     return await this.repository.findOne({
       where: {
-        bienId: id,
+        idVinculo: id,
       },
     })
   }
