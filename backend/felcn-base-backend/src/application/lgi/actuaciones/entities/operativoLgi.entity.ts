@@ -126,6 +126,27 @@ export class OperativoLgi {
   rutaArchivo!: string
 
   @Column({
+    name: 'tipologias_identificadas',
+    type: 'text',
+    nullable: true,
+  })
+  tipologiasIdentificadas!: string | null
+
+  @Column({
+    name: 'verbos_rectores',
+    type: 'text',
+    nullable: true,
+  })
+  verbosRectores!: string | null
+
+  @Column({
+    name: 'etapas_ciclo_lgi',
+    type: 'text',
+    nullable: true,
+  })
+  etapasCicloLgi!: string | null
+
+  @Column({
     name: 'estado',
     type: 'varchar',
     length: 10,

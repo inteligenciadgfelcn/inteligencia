@@ -6,6 +6,7 @@ import { OperativoLgi } from './entities/operativoLgi.entity'
 import path from 'path'
 import { obtenerRutaRelativa } from '@/common/utils/file-storage.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import { UpdateConclusionCasoDto } from './dto/update-conclusion-caso.dto'
 
 @Injectable()
 export class ActuacionesService {
@@ -82,5 +83,17 @@ export class ActuacionesService {
     }
 
     return operativo
+  }
+
+  actualizarConclusionCaso(
+    opId: number,
+    dto: UpdateConclusionCasoDto,
+    usuario: string
+  ): Promise<OperativoLgi> {
+    return this.operativoLgiRepository.actualizarConclusionCaso(
+      opId,
+      dto,
+      usuario
+    )
   }
 }
