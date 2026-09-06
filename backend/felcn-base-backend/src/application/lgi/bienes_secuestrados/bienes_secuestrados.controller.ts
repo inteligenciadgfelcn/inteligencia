@@ -34,9 +34,6 @@ const configuracionFotografias = {
   storage: memoryStorage(),
 
   limits: {
-    /*
-     * Máximo 5 MB por fotografía.
-     */
     fileSize: 5 * 1024 * 1024,
   },
 
