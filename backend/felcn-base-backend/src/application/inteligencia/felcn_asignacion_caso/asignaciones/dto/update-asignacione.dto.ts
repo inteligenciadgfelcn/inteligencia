@@ -49,4 +49,9 @@ export class UpdateAsignacionDto {
   @IsString()
   @MaxLength(20)
   telefonoFiscal?: string;
+  
+  @ApiPropertyOptional({ example: '12-05-2025 16:00' })
+  @IsOptional()
+  @IsString()
+  fechaSolicitud!: String;
 }

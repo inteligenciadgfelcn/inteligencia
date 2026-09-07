@@ -136,7 +136,19 @@ export class AsignacionesService {
       throw new NotFoundException('Asignación no encontrada')
     }
     Object.assign(asignacion, dto)
-    return this.asignacionAsig.save(asignacion)
+    const saved = await this.asignacionAsig.save({
+      ...asignacion,
+      fechaOperativo: dto.fechaSolicitud,
+    })
+
+    if (dto.fiscalAsignado !== undefined) {
+      await this.asignacionesRepository.actualizarFiscalAsignadoDual(
+        id,
+        dto.fiscalAsignado,
+      )
+    }
+
+    return saved
   }
 
   async findByCodigoIcia(
@@ -161,7 +173,7 @@ export class AsignacionesService {
     const [items, total] = await query.getManyAndCount()
 
     if (!items.length) return [[], total]
-
+    
     const idsSiii = items
       .map((i) => i.idCasoSiii)
       .filter((id): id is number => id !== null)
@@ -172,9 +184,8 @@ export class AsignacionesService {
         `SELECT * FROM public.asignacion WHERE id_caso = ANY($1)`,
         [idsSiii]
       )
-      siiiMap = new Map(siiiRows.map((r: any) => [r.id_caso, r]))
+      siiiMap = new Map(siiiRows.map((r: any) => [Number(r.id_caso), r]))
     }
-
     const result = items.map((item) => ({
       ...item,
       siii: item.idCasoSiii ? (siiiMap.get(item.idCasoSiii) ?? null) : null,

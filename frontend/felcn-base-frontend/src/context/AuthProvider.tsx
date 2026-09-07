@@ -259,7 +259,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
     guardarCookie('token', respuestaUsuario.datos?.access_token)
     imprimir(`Token ✅: ${respuestaUsuario.datos?.access_token}`)
-
+    
     await obtenerUsuarioRol()
   }
 
@@ -281,6 +281,10 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     }
 
     setUser(respuestaUsuario.datos)
+    console.log(respuestaUsuario);
+    
+    await verificarServicioUsuario(respuestaUsuario.datos.numeroPase)
+
     imprimir(
       `rol definido en obtenerUsuarioRol 👨‍💻: ${respuestaUsuario.datos.idRol}`
     )
