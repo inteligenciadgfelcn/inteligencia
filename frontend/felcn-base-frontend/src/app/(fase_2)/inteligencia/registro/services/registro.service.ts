@@ -1,7 +1,6 @@
 import { sesionPeticion } from '@/utils/peticion'
 import { Constantes } from '@/config/Constantes'
 
-
 export interface VerificarServicioResponse {
   enServicio: boolean
   codigoServicio?: string
