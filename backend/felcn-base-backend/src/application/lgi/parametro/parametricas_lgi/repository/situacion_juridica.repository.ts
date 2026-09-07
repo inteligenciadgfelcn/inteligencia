@@ -10,7 +10,7 @@ export class SituacionJuridicaRepository {
 
   private readonly baseQuery = `
     SELECT s.*
-    FROM tipopersona s
+    FROM parametricas.tipopersona s
   `
 
   private buildQuery(extraWhere = ''): string {

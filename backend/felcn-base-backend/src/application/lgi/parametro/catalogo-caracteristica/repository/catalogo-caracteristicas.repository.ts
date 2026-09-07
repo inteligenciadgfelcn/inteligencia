@@ -34,4 +34,12 @@ export class CatalogoCaracteristicaLgiRepository {
       },
     })
   }
+
+  async findAllByCaracteristicaClase(id: number) {
+    return await this.repository.find({
+      where: {
+        catclasId: id,
+      },
+    })
+  }
 }

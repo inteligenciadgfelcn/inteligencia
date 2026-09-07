@@ -7,7 +7,7 @@ import {
 
 @Entity({
   name: 'catalogoclase',
-  schema: 'public',
+  schema: 'parametricas',
 })
 export class CatalogoClaseLgi {
   @PrimaryGeneratedColumn({

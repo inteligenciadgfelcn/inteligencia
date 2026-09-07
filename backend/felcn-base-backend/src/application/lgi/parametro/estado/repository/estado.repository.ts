@@ -22,6 +22,17 @@ export class EstadoLgiRepository {
   async findAllOrdered() {
     return await this.repository.find({
       order: {
+        estId: 'ASC',
+      },
+    })
+  }
+
+  async findAllEtapa(idEtapa: number) {
+    return  this.repository.find({
+      where: {
+        etId: idEtapa,
+      },
+      order: {
         etId: 'ASC',
       },
     })
