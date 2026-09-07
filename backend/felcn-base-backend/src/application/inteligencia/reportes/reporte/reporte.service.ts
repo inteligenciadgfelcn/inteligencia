@@ -335,34 +335,92 @@ export class ReporteService {
     }
   }
 
-  async GenerarPDFServicio(
+ async GenerarPDFServicio(
   idServicio: string,
 ) {
-  const servicio =
-    await this.reporteServicioRepository
-      .obtenerServicio(idServicio)
+  const codigoServicio =
+    idServicio.trim()
 
-  if (!servicio) {
+  const [
+    resultados,
+    drogas,
+    sustancias,
+    fabricas,
+    personas,
+    operativos,
+  ] = await Promise.all([
+    this.reporteServicioRepository
+      .obtenerResultados(
+        codigoServicio,
+      ),
+
+    this.reporteServicioRepository
+      .obtenerTotalesDrogas(
+        codigoServicio,
+      ),
+
+    this.reporteServicioRepository
+      .obtenerTotalesSustancias(
+        codigoServicio,
+      ),
+
+    this.reporteServicioRepository
+      .obtenerTotalesFabricas(
+        codigoServicio,
+      ),
+
+    this.reporteServicioRepository
+      .obtenerResumenPersonas(
+        codigoServicio,
+      ),
+
+    this.reporteServicioRepository
+      .obtenerOperativosMapa(
+        codigoServicio,
+      ),
+  ])
+
+  if (!resultados.length) {
     throw new NotFoundException(
-      `No se encontró el servicio con ID ${idServicio}`,
+      `No se encontraron resultados para el servicio ${codigoServicio}`,
     )
   }
 
   return {
-    idServicio:
-      servicio.idServicio,
+    servicio: {
+      idServicio:
+        codigoServicio,
+    },
 
-    nombreServicio:
-      servicio.nombreServicio || '',
+    /*
+     * Estos datos ya vienen
+     * formateados del repositorio.
+     */
+    resultados,
 
-    // Posteriormente agregaremos aquí
-    // todos los operativos del servicio.
-    operativos: [],
+    /*
+     * La propiedad cantidad ya contiene
+     * el número y su unidad de medida.
+     */
+    totalesSustancias: [
+      ...drogas,
+      ...sustancias,
+      ...fabricas,
+    ],
 
-    sustancias: {},
-    fabricas: [],
-    personas: {},
-    ubicaciones: [],
+    resumenPersonas: {
+      aprehendidos:
+        Number(
+          personas?.aprehendidos ?? 0,
+        ),
+
+      arrestados:
+        Number(
+          personas?.arrestados ?? 0,
+        ),
+    },
+
+    operativos,
   }
 }
 }
