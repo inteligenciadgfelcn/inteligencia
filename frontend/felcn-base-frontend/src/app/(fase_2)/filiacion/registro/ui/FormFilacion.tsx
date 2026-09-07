@@ -153,6 +153,7 @@ interface FingerData {
   nameFinger: string
   image: string
   calidad: number
+  wsq: string
 }
 
 /* ================= COMPONENT ================= */
@@ -160,19 +161,19 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   const { Alerta } = useAlerts()
 
   const rightFingersData = [
-    { id: 'Derecho_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
-    { id: 'Derecho_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
-    { id: 'Derecho_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
-    { id: 'Derecho_Anular', nameFinger: 'Anular', image: '', calidad: 0 },
-    { id: 'Derecho_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
+    { id: 'Derecho_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0, wsq:'' },
+    { id: 'Derecho_Indice', nameFinger: 'Índice', image: '', calidad: 0, wsq:'' },
+    { id: 'Derecho_Medio', nameFinger: 'Medio', image: '', calidad: 0, wsq:'' },
+    { id: 'Derecho_Anular', nameFinger: 'Anular', image: '', calidad: 0, wsq:'' },
+    { id: 'Derecho_Menique', nameFinger: 'Meñique', image: '', calidad: 0, wsq:'' },
   ]
 
   const leftFingersData = [
-    { id: 'Izquierdo_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0 },
-    { id: 'Izquierdo_Indice', nameFinger: 'Índice', image: '', calidad: 0 },
-    { id: 'Izquierdo_Medio', nameFinger: 'Medio', image: '', calidad: 0 },
-    { id: 'Izquierdo_Anular', nameFinger: 'Anular', image: '', calidad: 0 },
-    { id: 'Izquierdo_Menique', nameFinger: 'Meñique', image: '', calidad: 0 },
+    { id: 'Izquierdo_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0, wsq:'' },
+    { id: 'Izquierdo_Indice', nameFinger: 'Índice', image: '', calidad: 0, wsq:'' },
+    { id: 'Izquierdo_Medio', nameFinger: 'Medio', image: '', calidad: 0, wsq:'' },
+    { id: 'Izquierdo_Anular', nameFinger: 'Anular', image: '', calidad: 0, wsq:'' },
+    { id: 'Izquierdo_Menique', nameFinger: 'Meñique', image: '', calidad: 0, wsq:'' },
   ]
 
   const [rigthFingers, setRightFingers] = useState(rightFingersData)
@@ -310,6 +311,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           imagen: item.image,
           calidad: item.calidad,
           dedo: item.id,
+          wsq:item.wsq,
         })
       )
     )
@@ -862,12 +864,12 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                   key={finger.id}
                   id={finger.id}
                   name_finger={finger.nameFinger}
-                  onChangeImage={(img, calidad) => {
+                  onChangeImage={(img, wsq, calidad) => {
                     imprimir(img, calidad)
                     setRightFingers((prev) =>
                       prev.map((f) =>
                         f.id === finger.id
-                          ? { ...f, image: img ?? '', calidad: calidad }
+                          ? { ...f, image: img ?? '', wsq: wsq ?? '', calidad: calidad }
                           : f
                       )
                     )
@@ -888,11 +890,11 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                   key={finger.id}
                   id={finger.id}
                   name_finger={finger.nameFinger}
-                  onChangeImage={(img, calidad) => {
+                  onChangeImage={(img, wsq, calidad) => {
                     setLeftFingers((prev) =>
                       prev.map((f) =>
                         f.id === finger.id
-                          ? { ...f, image: img ?? '', calidad: calidad }
+                          ? { ...f, image: img ?? '', wsq: wsq ?? '', calidad: calidad }
                           : f
                       )
                     )
