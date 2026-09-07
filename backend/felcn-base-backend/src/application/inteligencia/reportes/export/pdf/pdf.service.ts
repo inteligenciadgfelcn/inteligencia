@@ -65,17 +65,28 @@ export class PdfService implements OnModuleInit, OnModuleDestroy {
     await page.setContent(html, {
       waitUntil: 'domcontentloaded',
     })
+    const esReporteServicio = type === 'reporte-servicio'
+
     const pdfBuffer = await page.pdf({
-      format: 'Letter',
+      format: esReporteServicio ? 'A3' : 'Letter',
+
+      landscape: esReporteServicio,
 
       printBackground: true,
 
-      margin: {
-        top: '12mm',
-        bottom: '12mm',
-        left: '12mm',
-        right: '12mm',
-      },
+      margin: esReporteServicio
+        ? {
+            top: '8mm',
+            bottom: '8mm',
+            left: '8mm',
+            right: '8mm',
+          }
+        : {
+            top: '12mm',
+            bottom: '12mm',
+            left: '12mm',
+            right: '12mm',
+          },
     })
     await page.close()
     return Buffer.from(pdfBuffer)
