@@ -26,60 +26,139 @@ export class HuellaController {
   @Post('guardar')
   @ApiOperation({ summary: 'Guardar huella capturada' })
   async guardar(@Body() data: any) {
-    if (!data.personaId) throw new Error('personaId es requerido')
-    if (!data.imagen) throw new Error('imagen es requerida')
-    if (data.calidad < 40) throw new Error('Calidad muy baja')
-
-    const now = new Date()
-
-    const folder = path.join(
-      process.cwd(),
-      'storage',
-      'inteligencia',
-      'huellas',
-      now.getFullYear().toString(),
-      data.personaId.toString()
-    )
-
-    if (!fs.existsSync(folder)) {
-      fs.mkdirSync(folder, { recursive: true })
-    }
-
-    const fileName = `${data.dedo}.bmp`
-    const filePath = path.join(folder, fileName)
-
-    // LIMPIAR BASE64
-    let base64Data = data.imagen
-    if (base64Data.includes('base64,')) {
-      base64Data = base64Data.split('base64,')[1]
-    }
-
-    console.log('📦 BASE64 LENGTH:', base64Data.length)
-
-    const buffer = Buffer.from(base64Data, 'base64')
-    fs.writeFileSync(filePath, buffer)
-
-    const rutaRelativa = [
-      'storage',
-      'inteligencia',
-      'huellas',
-      now.getFullYear(),
-      data.personaId,
-      fileName,
-    ].join('/')
-
-    await this.service.guardar({
-      idPersona: data.personaId,
-      dedo: data.dedo,
-      rutaArchivo: rutaRelativa,
-      calidad: data.calidad,
-    })
-
-    return {
-      ok: true,
-      ruta: rutaRelativa,
-    }
+  if (!data.personaId) {
+    throw new Error('personaId es requerido')
   }
+
+  if (!data.imagen) {
+    throw new Error('imagen es requerida')
+  }
+
+  if (!data.wsq) {
+    throw new Error('wsq es requerido')
+  }
+
+  if (data.calidad < 40) {
+    throw new Error('Calidad muy baja')
+  }
+
+  const now = new Date()
+
+  const folder = path.join(
+    process.cwd(),
+    'storage',
+    'inteligencia',
+    'huellas',
+    now.getFullYear().toString(),
+    data.personaId.toString()
+  )
+
+  if (!fs.existsSync(folder)) {
+    fs.mkdirSync(folder, {
+      recursive: true,
+    })
+  }
+
+  /*
+   NOMBRES DE ARCHIVOS
+  */
+  const fileNameBmp =
+    `${data.dedo}.bmp`
+
+  const fileNameWsq =
+    `${data.dedo}.wsq`
+
+  const filePathBmp =
+    path.join(folder, fileNameBmp)
+
+  const filePathWsq =
+    path.join(folder, fileNameWsq)
+
+  /*
+   LIMPIAR BMP BASE64
+  */
+  let base64Bmp = data.imagen
+
+  if (base64Bmp.includes('base64,')) {
+    base64Bmp =
+      base64Bmp.split('base64,')[1]
+  }
+
+  /*
+   LIMPIAR WSQ BASE64
+  */
+  let base64Wsq = data.wsq
+
+  if (base64Wsq.includes('base64,')) {
+    base64Wsq =
+      base64Wsq.split('base64,')[1]
+  }
+
+  console.log('📦 BMP BASE64:', base64Bmp.length)
+  console.log('📦 WSQ BASE64:', base64Wsq.length)
+
+  /*
+   CONVERTIR
+  */
+  const bufferBmp =
+    Buffer.from(base64Bmp, 'base64')
+
+  const bufferWsq =
+    Buffer.from(base64Wsq, 'base64')
+
+  /*
+   GUARDAR ARCHIVOS
+  */
+  fs.writeFileSync(
+    filePathBmp,
+    bufferBmp
+  )
+
+  fs.writeFileSync(
+    filePathWsq,
+    bufferWsq
+  )
+
+  /*
+   RUTAS RELATIVAS
+  */
+  const rutaRelativaBmp = [
+    'storage',
+    'inteligencia',
+    'huellas',
+    now.getFullYear(),
+    data.personaId,
+    fileNameBmp,
+  ].join('/')
+
+  const rutaRelativaWsq = [
+    'storage',
+    'inteligencia',
+    'huellas',
+    now.getFullYear(),
+    data.personaId,
+    fileNameWsq,
+  ].join('/')
+
+  /*
+   GUARDAR EN POSTGRESQL
+  */
+  await this.service.guardar({
+    idPersona: data.personaId,
+    dedo: data.dedo,
+    rutaArchivo: rutaRelativaBmp,
+    rutaArchivoWsq: rutaRelativaWsq,
+    calidad: data.calidad,
+  })
+
+  return {
+    ok: true,
+    ruta: rutaRelativaBmp,
+    rutaWsq: rutaRelativaWsq,
+    bmpBytes: bufferBmp.length,
+    wsqBytes: bufferWsq.length,
+  }
+}
 
   /* OBTENER HUELLAS POR PERSONA*/
   @Get('persona/:id')

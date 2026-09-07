@@ -6,6 +6,7 @@ export interface RegisterFingerBody {
   imagen: string
   calidad: number
   dedo: string
+  wsq: string
 }
 
 export interface RegistroFiliacionResponse {
