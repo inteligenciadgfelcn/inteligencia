@@ -138,29 +138,58 @@ export class ScannerGateway
   /*
    RESULTADO
   */
-  @SubscribeMessage('fingerprint-result')
-  async handleFingerprint(client: Socket, payload: any) {
-    const data = Array.isArray(payload) ? payload[0] : payload
+ /*
+ RESULTADO
+*/
+@SubscribeMessage('fingerprint-result')
+async handleFingerprint(
+  client: Socket,
+  payload: any
+) {
+  const data =
+    Array.isArray(payload)
+      ? payload[0]
+      : payload
 
-  //  console.log('🟢 HUELLA RECIBIDA')
+  const longitudBmp =
+    typeof data?.template === 'string'
+      ? data.template.length
+      : 0
 
- //   console.log(data)
+  const longitudWsq =
+    typeof data?.wsq === 'string'
+      ? data.wsq.length
+      : 0
 
-    /*
-     FRONTEND
-    */
-    this.server.emit('fingerprint-preview', {
-      scannerId: data.scannerId,
+  console.log('🟢 HUELLA RECIBIDA:', {
+    scannerId: data?.scannerId,
+    personaId: data?.personaId,
+    dedo: data?.dedo,
+    calidad: data?.calidad,
+    bmpCaracteres: longitudBmp,
+    wsqCaracteres: longitudWsq,
+  })
 
-      personaId: data.personaId,
+  /*
+   ENVIAR AL FRONTEND
 
-      dedo: data.dedo,
+   data.template contiene actualmente
+   la imagen BMP en Base64.
+  */
+  this.server.emit('fingerprint-preview', {
+    scannerId: data.scannerId,
 
-      calidad: data.calidad,
+    personaId: Number(data.personaId),
 
-      imagen: data.template,
-    })
-  }
+    dedo: data.dedo,
+
+    calidad: Number(data.calidad),
+
+    imagen: data.template,
+
+    wsq: data.wsq,
+  })
+}
 
   /*
    ERROR

@@ -33,6 +33,13 @@ export class Huella {
   rutaArchivo: string
 
   @Column({
+    name: 'ruta_archivo_wsq',
+    type: 'text',
+    nullable: true,
+  })
+  rutaArchivoWsq: string
+
+  @Column({
     name: 'calidad',
     type: 'int',
   })
