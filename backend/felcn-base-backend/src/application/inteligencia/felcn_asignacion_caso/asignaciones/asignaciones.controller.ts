@@ -48,6 +48,22 @@ export class AsignacionesController extends BaseController {
   findByCodigo(@Query('codigo') codigo: string) {
     return this.service.findByCodigoResumen(codigo)
   }
+  
+  @Get('operativos')
+  @ApiOperation({ summary: 'Operativos registrados o no registrados' })
+  async operativos(
+    @Query('codigoServicio') codigo: string,
+    @Query('registrados') registrados: boolean,
+    @Query() pagination: PaginacionQueryDto
+  ) {
+    const result = await this.service.findOperativos(
+      codigo,
+      registrados,
+      pagination
+    )
+    return this.successListRows(result)
+  }
+
 
   @Post()
   @ApiOperation({ summary: 'Crear nueva asignación' })
@@ -80,21 +96,6 @@ export class AsignacionesController extends BaseController {
   @ApiOperation({ summary: 'Listar asignaciones con paginación' })
   async findAll(@Query() pagination: PaginacionQueryDto) {
     const result = await this.service.findAllPaginado(pagination)
-    return this.successListRows(result)
-  }
-
-  @Get('operativos')
-  @ApiOperation({ summary: 'Operativos registrados o no registrados' })
-  async operativos(
-    @Query('codigoServicio') codigo: string,
-    @Query('registrados') registrados: boolean,
-    @Query() pagination: PaginacionQueryDto
-  ) {
-    const result = await this.service.findOperativos(
-      codigo,
-      registrados,
-      pagination
-    )
     return this.successListRows(result)
   }
 
