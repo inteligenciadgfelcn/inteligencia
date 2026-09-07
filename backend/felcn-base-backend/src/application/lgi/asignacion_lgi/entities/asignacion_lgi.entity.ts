@@ -143,7 +143,7 @@ export class AsignacionLgi {
 
   @Column({
     name: 'fechainicio',
-    type: 'timestamp without time zone',
+    type: 'timestamptz',
   })
   fechaInicio!: Date
 
