@@ -12,7 +12,7 @@ export class DepartamentoLgiRepository {
   
     private readonly baseQuery = `
       SELECT d.*
-      FROM public.departamentos d
+      FROM parametricas.departamentos d
     `
   
     private buildQuery(

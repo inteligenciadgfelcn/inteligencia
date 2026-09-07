@@ -12,7 +12,7 @@ export class EstadoCivilLgiRepository {
   
     private readonly baseQuery = `
       SELECT d.*
-      FROM public.estadocivil d
+      FROM parametricas.estadocivil d
     `
   
     private buildQuery(

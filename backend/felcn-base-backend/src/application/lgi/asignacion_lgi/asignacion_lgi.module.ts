@@ -8,6 +8,7 @@ import { AsignacionLgiRepository } from './repository/asignacion_lgi.repository'
 import { AsignacionesModule } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/asignaciones.module'
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
 import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
+import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso
     AsignacionLgiService,
     AsignacionLgiRepository,
     DistritalLgiRepository,
+    GrupoLgiRepository
   ],
-  exports: [AsignacionLgiService,AsignacionLgiRepository,DistritalLgiRepository],
+  exports: [AsignacionLgiService,AsignacionLgiRepository,DistritalLgiRepository,GrupoLgiRepository],
 })
 export class AsignacionLgiModule {}

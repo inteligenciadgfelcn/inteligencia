@@ -6,6 +6,7 @@ import { DB_SII } from "@/core/config/database/database.module";
 import { Huella } from "../../felcn_sii/huella/entities/huella.entity";
 import { ReporteController } from "./reporte.controller";
 import { ReporteService } from "./reporte.service";
+import { ReporteServicioRepository } from "./repository/reporte_servicio.repository";
 
 @Module({
     imports: [
@@ -13,6 +14,10 @@ import { ReporteService } from "./reporte.service";
     ExportModule,
   ],
   controllers: [ReporteController],
-  providers: [ReporteService],
+  providers: [ReporteService, ReporteServicioRepository],
+   exports: [
+    ReporteService,
+    ReporteServicioRepository,
+  ],
 })
 export class ReporteModule {}

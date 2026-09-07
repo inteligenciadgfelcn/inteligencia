@@ -12,7 +12,7 @@ export class ProfesionLgiRepository {
   
     private readonly baseQuery = `
       SELECT d.*
-      FROM public.profesion d
+      FROM parametricas.profesion d
     `
   
     private buildQuery(

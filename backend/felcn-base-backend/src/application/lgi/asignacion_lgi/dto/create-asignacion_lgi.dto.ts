@@ -1,13 +1,12 @@
 import { Type } from 'class-transformer'
 import {
+  IsDateString,
   IsInt,
   IsNotEmpty,
   IsString,
   MaxLength,
 } from 'class-validator'
-import {
-  ApiProperty,
-} from '@nestjs/swagger'
+import { ApiProperty } from '@nestjs/swagger'
 
 export class CreateAsignacionLgiDto {
   @ApiProperty({
@@ -95,4 +94,12 @@ export class CreateAsignacionLgiDto {
   @IsNotEmpty()
   @MaxLength(70)
   controlJurisdiccional!: string
+
+  @ApiProperty({
+    description: 'Fecha de inicio de la investigación',
+    example: '2026-09-06',
+  })
+  @IsNotEmpty()
+  @IsDateString()
+  fechaInicio: string
 }

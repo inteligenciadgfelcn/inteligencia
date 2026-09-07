@@ -35,6 +35,12 @@ export class AsignacionLgi {
   disId!: number
 
   @Column({
+    name: 'descripcion_grupo',
+    type: 'varchar',
+  })
+  descripcionGrupo!: string
+
+  @Column({
     name: 'nombrecaso',
     type: 'varchar',
     length: 30,
@@ -137,9 +143,17 @@ export class AsignacionLgi {
 
   @Column({
     name: 'fechainicio',
-    type: 'timestamp without time zone',
+    type: 'timestamptz',
   })
   fechaInicio!: Date
+
+  @Column({
+    name: 'estado',
+    type: 'varchar',
+    length: 10,
+    default: 'ACTIVO',
+  })
+  estado!: string
 
   @CreateDateColumn({
     name: 'fechahoraing',

@@ -9,40 +9,30 @@ export class TipoDocumentoLgiRepository {
     @InjectDataSource(DB_LGI)
     private readonly dataSource: DataSource
   ) {}
-  
-    private readonly baseQuery = `
+
+  private readonly baseQuery = `
       SELECT d.*
-      FROM public.tipodoc d
+      FROM parametricas.tipodoc d
     `
-  
-    private buildQuery(
-      extraWhere = ''
-    ): string {
-      return `
+
+  private buildQuery(extraWhere = ''): string {
+    return `
         ${this.baseQuery}
         ${extraWhere}
         ORDER BY d.descripcion ASC
       `
-    }
-  
-    async findAllGeneral( ){
-      return await this.dataSource.query(
-        this.buildQuery()
-      )
-    }
-  
-    async findOne(
-      id: number
-    ): Promise<any | null> {
-      const result =
-        await this.dataSource.query(
-          this.buildQuery(
-            'AND d.id = $1'
-          ),
-          [id]
-        )
-  
-      return result[0] ?? null
-    }
- 
+  }
+
+  async findAllGeneral() {
+    return await this.dataSource.query(this.buildQuery())
+  }
+
+  async findOne(id: number): Promise<any | null> {
+    const result = await this.dataSource.query(
+      this.buildQuery('AND d.id = $1'),
+      [id]
+    )
+
+    return result[0] ?? null
+  }
 }
