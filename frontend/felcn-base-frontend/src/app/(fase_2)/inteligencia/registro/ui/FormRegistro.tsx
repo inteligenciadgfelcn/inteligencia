@@ -96,10 +96,6 @@ export const FormRegistro = ({
   const { sesionPeticion } = useSession()
   const { usuario, estaEnServicio, codigoIcia } = useAuth()
 
-  imprimir('Usuario en form', usuario)
-  imprimir('esta en servicio', estaEnServicio)
-  imprimir('codigo icia', codigoIcia)
-
   const {
     handleSubmit,
     register,
@@ -135,8 +131,6 @@ export const FormRegistro = ({
   const distritalSeleccionado = useWatch({ control, name: 'distrital' })
   const grupoSeleccionado = useWatch({ control, name: 'grupo' })
 
-  imprimir('form values', watch())
-
   const { data: departamentos } = useDepartments()
   const { data: unidades } = useUnities()
   const { data: distritales } = useDistritales(unidadSeleccionada?.value)
@@ -149,16 +143,18 @@ export const FormRegistro = ({
         (d) => d.abreviatura === asignacion.departamento?.idDepartamento
       )
       const unid = unidades?.find(
-        (u) =>
-          u.abreviaturaIcia?.trim() ===
-          asignacion.unidad?.idUnidad?.trim()
+        (u) => u.abreviaturaIcia?.trim() === asignacion.unidad?.idUnidad?.trim()
       )
 
       reset({
         codigoServicio: asignacion?.codigoServicio || '',
         nroPase: usuario?.numeroPase || '',
         departamento: dept
-          ? { value: dept.idDepartamento, label: dept.descripcion, original: dept }
+          ? {
+              value: dept.idDepartamento,
+              label: dept.descripcion,
+              original: dept,
+            }
           : asignacion?.departamento
             ? {
                 value: Number(asignacion.departamento.idDepartamento) || 0,
@@ -229,9 +225,7 @@ export const FormRegistro = ({
 
   useEffect(() => {
     if (asignacion?.siii?.id_grupo && grupos?.length) {
-      const grp = grupos.find(
-        (g) => g.id === asignacion.siii.id_grupo
-      )
+      const grp = grupos.find((g) => g.id === asignacion.siii.id_grupo)
       if (grp) {
         setValue('grupo', {
           value: grp.id,
@@ -322,6 +316,23 @@ export const FormRegistro = ({
           variant: 'success',
         })
 
+        const tmpCodigoServicio = values.codigoServicio
+        reset({
+          departamento: undefined,
+          unidad: undefined,
+          distrital: undefined,
+          grupo: undefined,
+          nroRegistro: '',
+          nombreOperativo: '',
+          fechaHoraOperativo: nowDateToString(),
+          quienRealiza: undefined,
+          asignadoA: undefined,
+          fiscalAsignado: '',
+          quienRealizaNum: '',
+          asignadoANum: '',
+          fiscalAsignadoNum: '',
+        })
+        setValue('codigoServicio', tmpCodigoServicio)
         onSuccess()
       } else {
         const payload = {
@@ -518,7 +529,11 @@ export const FormRegistro = ({
                 prefix="Grupo"
                 error={errors.grupo?.message}
                 originalData={grupos ?? []}
-                isDisable={mode === 'edit' || !distritalSeleccionado || !unidadSeleccionada}
+                isDisable={
+                  mode === 'edit' ||
+                  !distritalSeleccionado ||
+                  !unidadSeleccionada
+                }
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,

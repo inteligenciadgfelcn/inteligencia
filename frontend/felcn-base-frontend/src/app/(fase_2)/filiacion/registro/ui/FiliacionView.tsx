@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { FormFiliacion } from './FormFilacion'
-import { TablePersonas } from '../../shared/TablePersonas'
 import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
+import { FiliacionPersonas } from '../../shared/FiliacionPersonas'
 
 export const FiliacionView = () => {
   const [personaSelected, setPersonaSelected] = useState<
@@ -13,7 +13,7 @@ export const FiliacionView = () => {
 
   return (
     <>
-      <TablePersonas
+      <FiliacionPersonas
         onSelected={setPersonaSelected}
         refreshKey={refreshKey}
         statusFiliacion={0}

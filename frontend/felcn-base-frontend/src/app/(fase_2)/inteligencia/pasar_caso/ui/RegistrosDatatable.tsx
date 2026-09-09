@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { usePathname } from 'next/navigation'
 
@@ -10,28 +10,28 @@ import { Constantes } from '@/config/Constantes'
 import { CasbinTypes } from '@/types'
 
 import IconEye from '@/components/Icon/IconEye'
-import IconPencil from '@/components/Icon/IconPencil'
 import IconRefresh from '@/components/Icon/IconRefresh'
-import IconPlus from '@/components/Icon/IconPlus'
 
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import { exportToExcel, exportToPrint } from '@/utils/tableExport'
-import IconFile from '@/components/Icon/IconFile'
-import IconTxtFile from '@/components/Icon/IconTxtFile'
 import { DataTableSortStatus } from 'mantine-datatable'
 import React from 'react'
 import { sortBy } from 'lodash'
-import { FormRegistro } from './FormRegistro'
 import { AlertaEstadoRegistro } from './AlertaEstadoRegistro'
 import { RegistroDetalle } from './RegistroDetalle'
 import { AsignacionTable } from '../types/asignacion.table'
 import { imprimir } from '@/utils/imprimir'
-import IconTrash from '@/components/Icon/IconTrash'
 import IconEdit from '@/components/Icon/IconEdit'
+import IconChecks from '../../../../../components/Icon/IconChecks'
+import IconListCheck from '../../../../../components/Icon/IconListCheck'
+import IconCircleCheck from '../../../../../components/Icon/IconCircleCheck'
+import IconArrowForward from '@/components/Icon/IconArrowForward'
+import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
+import FormInputWithPrefix from '@/components/form/FormInputWithPrefix'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
-  const { permisoUsuario, codigoIcia } = useAuth()
+  const { permisoUsuario, codigoIcia, nroPase } = useAuth()
   const pathname = usePathname()
 
   /* STATES */
@@ -53,6 +53,23 @@ export function RegistrosDataTable() {
   })
 
   const [selected, setSelected] = useState<AsignacionTable | null>(null)
+
+  const [numeroRegistro, setNumeroRegistro] = useState('')
+
+  const [asignandoServicio, setAsignandoServicio] = useState(false)
+
+  const [codigoServicioSeleccionado, setCodigoServicioSeleccionado] =
+    useState('')
+  const [listadoFilas, setListadoFilas] = useState<AsignacionTable[]>([])
+  const [listadoTotal, setListadoTotal] = useState(0)
+  const [listadoCargando, setListadoCargando] = useState(false)
+  const [paginaListado, setPaginaListado] = useState(1)
+  const [limiteListado, setLimiteListado] = useState(10)
+  const [searchListado, setSearchListado] = useState('')
+  const [sortListado, setSortListado] = useState<DataTableSortStatus>({
+    columnAccessor: 'idAsignacion',
+    direction: 'asc',
+  })
 
   const [openForm, setOpenForm] = useState(false)
   const [openDetalle, setOpenDetalle] = useState(false)
@@ -118,6 +135,55 @@ export function RegistrosDataTable() {
 
   const filas = useMemo(() => data?.filas ?? [], [data])
   const total = useMemo(() => data?.total ?? 0, [data])
+
+  /* SERVICIOS (codigo icia) */
+  const obtenerServicios = async () => {
+    const res = await sesionPeticion({
+      url: `${Constantes.baseUrl}/servicio/todos`,
+      withCredentials: true,
+    })
+
+    return res ?? []
+  }
+
+  const { data: servicios } = useQuery({
+    queryKey: ['servicios_todos'],
+    queryFn: () => obtenerServicios(),
+  })
+
+  const opcionesServicio = useMemo(() => {
+    const lista = servicios ?? []
+    return Array.isArray(lista)
+      ? lista.map((s: { codigoServicio: string }) => ({
+          value: s.codigoServicio,
+          label: s.codigoServicio,
+        }))
+      : []
+  }, [servicios])
+
+  /* LISTADO POR CODIGO SERVICIO SELECCIONADO */
+  const listarPorCodigoServicio = async () => {
+    if (!codigoServicioSeleccionado) return
+
+    setListadoCargando(true)
+    try {
+      const res = await sesionPeticion({
+        url: `${Constantes.baseUrl}/asignaciones/${codigoServicioSeleccionado}`,
+        withCredentials: true,
+        params: {
+          pagina: paginaListado,
+          limite: limiteListado,
+          filtro: searchListado || undefined,
+          ordenar: sortListado.columnAccessor,
+          direccion: sortListado.direction,
+        },
+      })
+      setListadoFilas(res.datos?.filas ?? [])
+      setListadoTotal(res.datos?.total ?? 0)
+    } finally {
+      setListadoCargando(false)
+    }
+  }
 
   const filasOrdenadas = React.useMemo(() => {
     if (!filas.length) return filas
@@ -194,11 +260,15 @@ export function RegistrosDataTable() {
           {permisos.update && (
             <button
               onClick={() => {
-                setSelected(row)
-                setOpenForm(true)
+                setSelected((prev) => {
+                  const data =
+                    prev?.idAsignacion == row.idAsignacion ? null : row
+                  return data
+                })
+                setNumeroRegistro(row.nroOperativo)
               }}
             >
-              <IconEdit className="ms-2 h-5 text-primary" />
+              <IconCircleCheck className="ms-2 h-5 text-primary" />
             </button>
           )}
 
@@ -240,24 +310,8 @@ export function RegistrosDataTable() {
   /* RENDER */
   return (
     <div>
-      <div className="panel flex items-center p-3 text-primary mb-5">
-        <span className="text-lg font-semibold">
-          Registro de casos en operativos antinarcóticos
-        </span>
-      </div>
-      <div className="p-1 mb-12 w-full">
-        <FormRegistro
-          asignacion={selected}
-          mode={selected ? 'edit' : 'create'}
-          onSuccess={() => {
-            setSelected(null)
-            setOpenForm(false)
-            refetch()
-          }}
-        />
-      </div>
       <VristoDataTable<AsignacionTable>
-        title="Casos operativos"
+        title="Casos del servicio"
         rows={filasOrdenadas}
         total={total}
         page={pagina}
@@ -272,6 +326,11 @@ export function RegistrosDataTable() {
         // onExportPrint={exportPrint}
         sortStatus={sortStatus}
         onSortStatusChange={setSortStatus}
+        rowClassName={(row) =>
+          selected?.idAsignacion === row.idAsignacion
+            ? 'bg-blue-200 dark:bg-blue-900'
+            : ''
+        }
         extraButtons={
           <>
             <button
@@ -284,6 +343,135 @@ export function RegistrosDataTable() {
           </>
         }
       />
+
+      {/* Seccion operativo a pasar */}
+      <div className="panel mt-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div>
+            <FormInputWithPrefix
+              id="numeroRegistro"
+              type="text"
+              prefix="Número de registro a pasar"
+              containerClassName="w-full"
+              value={numeroRegistro}
+              onChange={(e) => setNumeroRegistro(e.target.value)}
+              placeholder="Seleccione un registro del listado"
+            />
+          </div>
+          <div>
+            <FormInputWithPrefix
+              id="codigoServicio"
+              type="text"
+              prefix="Código servicio"
+              containerClassName="w-full"
+              value={String(codigoIcia ?? '')}
+              readOnly
+            />
+          </div>
+          <div>
+            <FormInputWithPrefix
+              id="cuenta"
+              type="text"
+              prefix="Cuenta"
+              containerClassName="w-full"
+              value={String(nroPase ?? '')}
+              readOnly
+            />
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end">
+          <Button
+            variant="primary"
+            disabled={
+              !numeroRegistro || !selected || !codigoServicioSeleccionado
+            }
+            loading={asignandoServicio}
+            onClick={async () => {
+              if (!selected) return
+              setAsignandoServicio(true)
+              try {
+                const res = await sesionPeticion({
+                  method: 'patch',
+                  url: `${Constantes.baseUrl}/asignaciones/${selected.idAsignacion}`,
+                  withCredentials: true,
+                  body: {
+                    codigoServicio: codigoServicioSeleccionado,
+                  },
+                })
+                imprimir('Asignación realizada', res)
+                setSelected(null)
+                await refetch()
+              } finally {
+                setAsignandoServicio(false)
+              }
+            }}
+            icon={<IconArrowForward />}
+          >
+            Asignar al siguiente servicio
+          </Button>
+        </div>
+      </div>
+
+      {/* Seccion listado usando codigo icia */}
+      <div className="panel mt-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end">
+          <div className="w-full md:w-1/2">
+            <label
+              htmlFor="codigoServicioListado"
+              className="mb-1 block text-sm font-medium"
+            >
+              Código Servicio
+            </label>
+            <Select
+              id="codigoServicioListado"
+              className="w-full"
+              placeholder="Seleccione un código de servicio"
+              value={codigoServicioSeleccionado}
+              onChange={(e) => setCodigoServicioSeleccionado(e.target.value)}
+              options={opcionesServicio}
+            />
+          </div>
+          <div>
+            <Button
+              variant="primary"
+              disabled={!codigoServicioSeleccionado}
+              loading={listadoCargando}
+              onClick={() => listarPorCodigoServicio()}
+              icon={<IconListCheck />}
+            >
+              Listar
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <VristoDataTable<AsignacionTable>
+            rows={listadoFilas}
+            total={listadoTotal}
+            page={paginaListado}
+            limit={limiteListado}
+            onPageChange={setPaginaListado}
+            onLimitChange={setLimiteListado}
+            // search={searchListado}
+            // onSearchChange={setSearchListado}
+            columns={columns}
+            loading={listadoCargando}
+            sortStatus={sortListado}
+            onSortStatusChange={setSortListado}
+            extraButtons={
+              <>
+                <button
+                  className="btn btn-outline-primary btn-sm m-1"
+                  onClick={() => listarPorCodigoServicio()}
+                >
+                  <IconRefresh className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                  Actualizar
+                </button>
+              </>
+            }
+          />
+        </div>
+      </div>
 
       {/* MODALES */}
       {openDetalle && (
