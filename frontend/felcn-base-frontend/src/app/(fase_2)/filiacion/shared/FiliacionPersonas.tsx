@@ -14,7 +14,7 @@ interface Props {
   statusFiliacion: 0 | 1
 }
 
-export const TablePersonas = ({
+export const FiliacionPersonas = ({
   onSelected,
   refreshKey,
   statusFiliacion,
@@ -148,8 +148,11 @@ export const TablePersonas = ({
       render: (row: FiliacionPersonaTable) => {
         const isSelected =
           selectedFiliacion?.id_persona_auxiliar == row.id_persona_auxiliar
+        const filiado = row.enviado == 1
 
-        return (
+        return filiado ? (
+          <></>
+        ) : (
           <button
             type="button"
             className={`btn btn-sm m-1 ${

@@ -37,6 +37,7 @@ interface ContextProps {
   estaAutenticado: boolean
   estaEnServicio: boolean
   codigoIcia: String
+  nroPase: String
   usuario: UsuarioType | null
   rolUsuario: RoleType | undefined
   setRolUsuario: ({ idRol }: idRolType) => Promise<void>
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [isVerified, setIsVerified] = useState<boolean>(false)
   const [codigoIcia, setCodigoIcia] = useState<String>('')
+  const [nroPase, setNroPase] = useState<String>('')
   const [otpPendiente, setOtpPendiente] = useState<OtpPendienteType | null>(
     null
   )
@@ -259,7 +261,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
     guardarCookie('token', respuestaUsuario.datos?.access_token)
     imprimir(`Token ✅: ${respuestaUsuario.datos?.access_token}`)
-    
+
     await obtenerUsuarioRol()
   }
 
@@ -281,8 +283,8 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     }
 
     setUser(respuestaUsuario.datos)
-    console.log(respuestaUsuario);
-    
+    console.log(respuestaUsuario)
+
     await verificarServicioUsuario(respuestaUsuario.datos.numeroPase)
 
     imprimir(
@@ -303,6 +305,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     console.log(response)
 
     setIsVerified(response.enServicio)
+    setNroPase(nroPase || '')
     setCodigoIcia(response.codigoServicio || '')
 
     return response
@@ -325,6 +328,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         cancelarOtp,
         estaEnServicio: isVerified,
         codigoIcia,
+        nroPase,
         abreviaturaUnidad: user?.grupo?.distrital?.unidad?.abreviatura,
         permisoUsuario: (routerName: string) =>
           interpretarPermiso({ routerName, enforcer, rol: rolUsuario()?.rol }),

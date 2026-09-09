@@ -40,6 +40,11 @@ import { imprimir } from '@/utils/imprimir'
 import { useAlerts } from '@/hooks'
 import FingerprintCapture from '@/components/finger/FingerprintCapture'
 import { postRegistroHuella } from '../services/finger.service'
+import {
+  DepartamentoExpedido,
+  getDeptExpedidos,
+} from '../services/departamentoexpedido.service'
+import { Departamento } from '../../../../../services/parametricas'
 
 /* ================= VALIDACIÓN ================= */
 const selectSchema = (message: string) =>
@@ -64,10 +69,10 @@ export const formSchema = z.object({
   nacionalidad: selectSchema('La nacionalidad es obligatoria'),
   genero: selectSchema('El género es obligatorio'),
   profesionOcupacion: selectSchema('La profesión u ocupación es obligatoria'),
-  alias: z.string().min(1, 'El alias es obligatorio'),
+  alias: z.string().optional(),
   tipoDocumento: selectSchema('El tipo de documento es obligatorio'),
   numeroDocumento: z.string().optional(),
-  expedidoEn: z.string().min(1, 'El expedido en es obligatorio'),
+  expedidoEn: selectSchema('El lugar de expedición es obligatorio'),
   fechaNacimiento: z.string().min(1, 'La fecha de nacimiento es obligatoria'),
   direccion: z.string().min(1, 'La dirección es obligatoria'),
   estadoCivil: selectSchema('El estado civil es obligatorio'),
@@ -161,19 +166,79 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   const { Alerta } = useAlerts()
 
   const rightFingersData = [
-    { id: 'Derecho_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0, wsq:'' },
-    { id: 'Derecho_Indice', nameFinger: 'Índice', image: '', calidad: 0, wsq:'' },
-    { id: 'Derecho_Medio', nameFinger: 'Medio', image: '', calidad: 0, wsq:'' },
-    { id: 'Derecho_Anular', nameFinger: 'Anular', image: '', calidad: 0, wsq:'' },
-    { id: 'Derecho_Menique', nameFinger: 'Meñique', image: '', calidad: 0, wsq:'' },
+    {
+      id: 'Derecho_Pulgar',
+      nameFinger: 'Pulgar',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Derecho_Indice',
+      nameFinger: 'Índice',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Derecho_Medio',
+      nameFinger: 'Medio',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Derecho_Anular',
+      nameFinger: 'Anular',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Derecho_Menique',
+      nameFinger: 'Meñique',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
   ]
 
   const leftFingersData = [
-    { id: 'Izquierdo_Pulgar', nameFinger: 'Pulgar', image: '', calidad: 0, wsq:'' },
-    { id: 'Izquierdo_Indice', nameFinger: 'Índice', image: '', calidad: 0, wsq:'' },
-    { id: 'Izquierdo_Medio', nameFinger: 'Medio', image: '', calidad: 0, wsq:'' },
-    { id: 'Izquierdo_Anular', nameFinger: 'Anular', image: '', calidad: 0, wsq:'' },
-    { id: 'Izquierdo_Menique', nameFinger: 'Meñique', image: '', calidad: 0, wsq:'' },
+    {
+      id: 'Izquierdo_Pulgar',
+      nameFinger: 'Pulgar',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Izquierdo_Indice',
+      nameFinger: 'Índice',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Izquierdo_Medio',
+      nameFinger: 'Medio',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Izquierdo_Anular',
+      nameFinger: 'Anular',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
+    {
+      id: 'Izquierdo_Menique',
+      nameFinger: 'Meñique',
+      image: '',
+      calidad: 0,
+      wsq: '',
+    },
   ]
 
   const [rigthFingers, setRightFingers] = useState(rightFingersData)
@@ -264,6 +329,12 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     placeholderData: keepPreviousData,
   })
 
+  const { data: deptExpedidos } = useQuery({
+    queryKey: ['filiacion', 'departamento-expedido'],
+    queryFn: getDeptExpedidos,
+    placeholderData: keepPreviousData,
+  })
+
   const {
     handleSubmit,
     register,
@@ -311,7 +382,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           imagen: item.image,
           calidad: item.calidad,
           dedo: item.id,
-          wsq:item.wsq,
+          wsq: item.wsq,
         })
       )
     )
@@ -328,7 +399,6 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
 
     try {
-      
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
           fileToBase64(values.fotoFrontal),
@@ -361,7 +431,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           observacionAdicional: values.observacion ?? '',
         },
         alias: {
-          alias: values.alias,
+          alias: values.alias ?? '',
         },
         profesion: {
           idProfesion: values.profesionOcupacion.value,
@@ -369,7 +439,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
         documento: {
           idTipoDocumento: values.tipoDocumento.value,
           numeroDocumento: values.numeroDocumento ?? '',
-          expedido: values.expedidoEn,
+          expedido: values.expedidoEn.label,
           contrastadoSegip:
             values.contratadoSegip.label == 'Si'
               ? 'CONTRASTADO CON EL SEGIP'
@@ -593,11 +663,17 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
               />
             </div>
             <div className="col-span-4">
-              <InputWithPrefix
+              <AsyncSearchSelect<DepartamentoExpedido>
                 name="expedidoEn"
+                control={control}
                 prefix="Expedido en"
-                register={register}
-                error={errors.expedidoEn?.message as string}
+                error={errors.expedidoEn?.message}
+                originalData={deptExpedidos ?? []}
+                mapOption={(item) => ({
+                  label: item.abreviatura,
+                  value: Number(item.idDepartamento),
+                  original: item,
+                })}
               />
             </div>
             <div className="col-span-4">
@@ -869,7 +945,12 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                     setRightFingers((prev) =>
                       prev.map((f) =>
                         f.id === finger.id
-                          ? { ...f, image: img ?? '', wsq: wsq ?? '', calidad: calidad }
+                          ? {
+                              ...f,
+                              image: img ?? '',
+                              wsq: wsq ?? '',
+                              calidad: calidad,
+                            }
                           : f
                       )
                     )
@@ -894,7 +975,12 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                     setLeftFingers((prev) =>
                       prev.map((f) =>
                         f.id === finger.id
-                          ? { ...f, image: img ?? '', wsq: wsq ?? '', calidad: calidad }
+                          ? {
+                              ...f,
+                              image: img ?? '',
+                              wsq: wsq ?? '',
+                              calidad: calidad,
+                            }
                           : f
                       )
                     )
