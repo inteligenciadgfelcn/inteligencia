@@ -453,8 +453,8 @@ export const FormRegistro = ({
       <div className="">
         {/* FORM */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-12 p-4 gap-4">
-            <div className="col-span-6">
+          <div className="grid grid-cols-1 sm:grid-cols-12 p-4 gap-4">
+            <div className="col-span-1 sm:col-span-6">
               <InputWithPrefix
                 name="codigoServicio"
                 prefix="Código de servicio"
@@ -463,7 +463,7 @@ export const FormRegistro = ({
                 error={errors.codigoServicio?.message as string}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-1 sm:col-span-6">
               <InputWithPrefix
                 name="nroPase"
                 prefix="Numero de Pase"
@@ -472,7 +472,7 @@ export const FormRegistro = ({
                 error={errors.nroPase?.message as string}
               />
             </div>
-            <div className="col-span-8">
+            <div className="col-span-1 sm:col-span-8">
               <AsyncSearchSelect<Departamento>
                 name="departamento"
                 control={control}
@@ -487,8 +487,8 @@ export const FormRegistro = ({
                 })}
               />
             </div>
-            <div className="col-span-4"></div>
-            <div className="col-span-4">
+            <div className="hidden sm:block sm:col-span-4"></div>
+            <div className="col-span-1 sm:col-span-4">
               <AsyncSearchSelect<Unidad>
                 name="unidad"
                 control={control}
@@ -505,7 +505,7 @@ export const FormRegistro = ({
                 }}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               <AsyncSearchSelect<Distrital>
                 name="distrital"
                 control={control}
@@ -522,7 +522,7 @@ export const FormRegistro = ({
                 }}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               <AsyncSearchSelect<Grupo>
                 name="grupo"
                 control={control}
@@ -543,8 +543,8 @@ export const FormRegistro = ({
                 }}
               />
             </div>
-            <div className="col-span-12">
-              <div className="flex gap-3">
+            <div className="col-span-1 sm:col-span-12">
+              <div className="flex flex-col sm:flex-row gap-3">
                 {mode !== 'edit' && (
                   <button
                     type="button"
@@ -568,7 +568,7 @@ export const FormRegistro = ({
                 </div>
               </div>
             </div>
-            <div className="col-span-6">
+            <div className="col-span-1 sm:col-span-6">
               <InputWithPrefix
                 name="nombreOperativo"
                 prefix="Nombre operativo"
@@ -576,7 +576,7 @@ export const FormRegistro = ({
                 error={errors.nombreOperativo?.message as string}
               />
             </div>
-            <div className="col-span-6">
+            <div className="col-span-1 sm:col-span-6">
               <InputWithPrefix
                 name="fechaHoraOperativo"
                 prefix="Fecha y hora del operativo"
@@ -584,7 +584,7 @@ export const FormRegistro = ({
                 error={errors.fechaHoraOperativo?.message as string}
               />
             </div>
-            <div className="col-span-8">
+            <div className="col-span-1 sm:col-span-8">
               <AsyncSearchSelect<Usuario>
                 control={control}
                 name="quienRealiza"
@@ -608,7 +608,7 @@ export const FormRegistro = ({
                 }}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               <InputWithPrefix
                 name="quienRealizaNum"
                 prefix="Nro. Celular"
@@ -617,7 +617,7 @@ export const FormRegistro = ({
                 error={errors.quienRealizaNum?.message as string}
               />
             </div>
-            <div className="col-span-8">
+            <div className="col-span-1 sm:col-span-8">
               <AsyncSearchSelect<Usuario>
                 control={control}
                 name="asignadoA"
@@ -641,7 +641,7 @@ export const FormRegistro = ({
                 }}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               <InputWithPrefix
                 name="asignadoANum"
                 prefix="Nro. Celular"
@@ -651,7 +651,7 @@ export const FormRegistro = ({
                 error={errors.asignadoANum?.message as string}
               />
             </div>
-            <div className="col-span-8">
+            <div className="col-span-1 sm:col-span-8">
               <InputWithPrefix
                 name="fiscalAsignado"
                 prefix="Fiscal asignado"
@@ -659,7 +659,7 @@ export const FormRegistro = ({
                 error={errors.fiscalAsignado?.message as string}
               />
             </div>
-            <div className="col-span-4">
+            <div className="col-span-1 sm:col-span-4">
               <InputWithPrefix
                 name="fiscalAsignadoNum"
                 prefix="Nro. Celular"
@@ -674,7 +674,7 @@ export const FormRegistro = ({
           {/* <ProgresoLineal mostrar={loading} /> */}
 
           {/* FOOTER */}
-          <div className="flex justify-end gap-3 px-5 py-4 border-t dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 px-5 py-4 border-t dark:border-gray-700">
             {/* <button
               type="button"
               onClick={onClose}
@@ -687,7 +687,7 @@ export const FormRegistro = ({
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary"
+              className="btn btn-primary w-full sm:w-auto"
             >
               Guardar
             </button>

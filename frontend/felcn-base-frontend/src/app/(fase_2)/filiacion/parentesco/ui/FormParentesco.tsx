@@ -138,7 +138,7 @@ export function FormParentesco({ idDetenido }: FormParentescoProps) {
                 })}
               />
             </div>
-            <div className="col-span-6"></div>
+            <div className="hidden md:block md:col-span-6"></div>
             <div className="md:col-span-4">
               <InputWithPrefix
                 name="nombres"
@@ -222,13 +222,13 @@ export function FormParentesco({ idDetenido }: FormParentescoProps) {
           </div>
           {/* FOOTER */}
           <div className="col-span-12 mt-6 flex gap-4">
-            <button type="submit" className="btn btn-sm btn-primary col-span-2">
+            <button type="submit" className="btn btn-sm btn-primary w-full md:w-auto">
               Agregar parentesco
             </button>
           </div>
         </form>
         {idDetenido && (
-          <div className=" mt-4">
+          <div className="mt-4 overflow-x-auto">
             <VristoDataTable<DatosFamiliaresItem>
               rows={datosQuery.data ?? []}
               total={datosQuery.data?.length ?? 0}
