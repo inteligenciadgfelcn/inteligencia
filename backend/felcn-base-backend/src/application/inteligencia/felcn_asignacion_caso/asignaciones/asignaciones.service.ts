@@ -139,12 +139,14 @@ export class AsignacionesService {
     const saved = await this.asignacionAsig.save({
       ...asignacion,
       fechaOperativo: dto.fechaSolicitud,
+      codigo_servicio: dto.codigoServicio,
     })
 
-    if (dto.fiscalAsignado !== undefined) {
+    if (dto.fiscalAsignado !== undefined || dto.codigoServicio !== undefined) {
       await this.asignacionesRepository.actualizarFiscalAsignadoDual(
         id,
-        dto.fiscalAsignado,
+        dto.fiscalAsignado ?? asignacion.fiscalAsignado,
+        dto.codigoServicio ?? asignacion.codigoServicio
       )
     }
 

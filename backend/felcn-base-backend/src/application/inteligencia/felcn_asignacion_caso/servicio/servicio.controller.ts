@@ -81,6 +81,13 @@ export class ServicioController extends BaseController {
     return this.successListRows(result)
   }
 
+  @Get('todos')
+  @ApiOperation({ summary: 'Listar todos los servicios (activos e inactivos)' })
+  @ApiResponse({ status: 200, description: 'Lista de servicios obtenida' })
+  listarTodos() {
+    return this.servicioService.listarTodos()
+  }
+
   @Get('info/:codigoServicio')
   @ApiOperation({ summary: 'Obtener información de un servicio' })
   @ApiParam({ name: 'codigoServicio', description: 'Código del servicio' })

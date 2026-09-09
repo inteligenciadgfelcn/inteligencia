@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsOptional,
   IsString,
@@ -9,6 +9,12 @@ import {
 import { Type } from 'class-transformer';
 
 export class UpdateAsignacionDto {
+  @ApiProperty({ example: 'Codigo de servicio' })
+  @IsString()
+  @IsOptional()
+  @MaxLength(30)
+  codigoServicio!: string;
+
   @ApiPropertyOptional({ example: '12345678' })
   @IsOptional()
   @IsString()

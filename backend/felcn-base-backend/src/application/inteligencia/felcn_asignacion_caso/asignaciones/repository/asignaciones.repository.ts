@@ -228,16 +228,20 @@ export class AsignacionesRepository {
   }
 
   async actualizarFiscalAsignadoDual(
-    idAsignacion: number, fiscalAsignado: string
+    idAsignacion: number, fiscalAsignado: string, codigoServicio: string
   ) {
     const asignacion = await this.asignacionAsigRepository.findOne({
       where: { idAsignacion },
     })
+    console.log(idAsignacion);
     if (!asignacion?.idCasoSiii) return
+
+    console.log(codigoServicio);
+    
 
     await this.asignacionRepository.update(
       { idAsignacion: asignacion.idCasoSiii },
-      { fiscalAsignado }
+      { fiscalAsignado, codigoServicio }
     )
   }
 
