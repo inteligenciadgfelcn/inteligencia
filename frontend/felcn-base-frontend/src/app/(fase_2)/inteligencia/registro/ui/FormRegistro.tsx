@@ -26,6 +26,7 @@ import { Grupo } from '../services/group.service'
 import {
   getNumeroRegistro,
   verificarServicioUsuario,
+  actualizarAsignacion,
 } from '../services/registro.service'
 import { useUsers } from '../hooks/use.users'
 import { Usuario } from '../services/users.service'
@@ -78,11 +79,16 @@ export type FormValues = z.infer<typeof formSchema>
 
 interface Props {
   asignacion?: AsignacionTable | null
+  mode?: 'create' | 'edit'
   onSuccess: () => void
 }
 
 /* ================= COMPONENT ================= */
-export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
+export const FormRegistro = ({
+  asignacion,
+  mode = 'create',
+  onSuccess,
+}: Props) => {
   const [loading, setLoading] = useState(false)
   const [verificandoServicio, setVerificandoServicio] = useState(true)
   const [usuarioConServicio, setUsuarioConServicio] = useState(false)
@@ -107,53 +113,21 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      codigoServicio: asignacion?.codigoServicio || '',
+      codigoServicio: '',
       nroPase: usuario?.numeroPase || '',
-      departamento: asignacion?.departamento
-        ? {
-            value: asignacion.departamento?.idDepartamento,
-            label: asignacion.departamento?.descripcion,
-          }
-        : undefined,
-      // unidad: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.distrital.unidad.idUnidad,
-      //       label: asignacion.grupo.distrital.unidad.descripcion,
-      //     }
-      //   : undefined,
-      // distrital: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.distrital.idDistrital,
-      //       label: asignacion.grupo.distrital.descripcion,
-      //     }
-      //   : undefined,
-      // grupo: asignacion?.grupo
-      //   ? {
-      //       value: asignacion.grupo.idGrupo,
-      //       label: asignacion.grupo.descripcion,
-      //     }
-      //   : undefined,
-      nroRegistro: asignacion?.nroOperativo || '',
-      nombreOperativo: asignacion?.nombreCaso || '',
-      fechaHoraOperativo: asignacion?.fechaSolicitud
-        ? dateToStringAmPm(asignacion.fechaSolicitud)
-        : nowDateToString(),
-      quienRealiza: asignacion?.nombreSolicitud
-        ? {
-            value: Number(asignacion.telefonoSolicitud),
-            label: asignacion.nombreSolicitud,
-          }
-        : undefined,
-      asignadoA: asignacion?.asignado
-        ? {
-            value: Number(asignacion.telefonoAsignado),
-            label: asignacion.asignado,
-          }
-        : undefined,
-      fiscalAsignado: asignacion?.fiscalAsignado || '',
-      quienRealizaNum: asignacion?.telefonoSolicitud || '',
-      asignadoANum: asignacion?.telefonoAsignado || '',
-      fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
+      departamento: undefined,
+      unidad: undefined,
+      distrital: undefined,
+      grupo: undefined,
+      nroRegistro: '',
+      nombreOperativo: '',
+      fechaHoraOperativo: nowDateToString(),
+      quienRealiza: undefined,
+      asignadoA: undefined,
+      fiscalAsignado: '',
+      quienRealizaNum: '',
+      asignadoANum: '',
+      fiscalAsignadoNum: '',
     },
   })
 
@@ -171,71 +145,122 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
   useEffect(() => {
     if (asignacion) {
-      // reset({
-      //   codigoServicio: asignacion?.codigoServicio || '',
-      //   nroPase: asignacion?.usuario || '',
-      //   departamento: asignacion?.departamento
-      //     ? {
-      //         value: asignacion.departamento?.idDepartamento,
-      //         label: asignacion.departamento?.descripcion,
-      //       }
-      //     : undefined,
-      //   unidad: asignacion?.unidad
-      //     ? {
-      //         value: asignacion.unidad.idUnidad,
-      //         label: asignacion.unidad.descripcion,
-      //       }
-      //     : undefined,
-      //   distrital: asignacion?.grupo
-      //     ? {
-      //         value: asignacion.grupo.distrital.idDistrital,
-      //         label: asignacion.grupo.distrital.descripcion,
-      //       }
-      //     : undefined,
-      //   grupo: asignacion?.grupo
-      //     ? {
-      //         value: asignacion.grupo.idGrupo,
-      //         label: asignacion.grupo.descripcion,
-      //       }
-      //     : undefined,
-      //   nroRegistro: asignacion?.nroOperativo || '',
-      //   nombreOperativo: asignacion?.nombreCaso || '',
-      //   fechaHoraOperativo: asignacion?.fechaSolicitud
-      //     ? dateUtcToString(asignacion.fechaSolicitud)
-      //     : nowDateToString(),
-      //   quienRealiza: asignacion?.nombreSolicitud
-      //     ? {
-      //         value: Number(asignacion.telefonoSolicitud),
-      //         label: asignacion.nombreSolicitud,
-      //       }
-      //     : undefined,
-      //   asignadoA: asignacion?.asignado
-      //     ? {
-      //         value: Number(asignacion.telefonoAsignado),
-      //         label: asignacion.asignado,
-      //       }
-      //     : undefined,
-      //   fiscalAsignado: asignacion?.fiscalAsignado || '',
-      //   quienRealizaNum: asignacion?.telefonoSolicitud || '',
-      //   asignadoANum: asignacion?.telefonoAsignado || '',
-      //   fiscalAsignadoNum: asignacion?.telefonoFiscal || '',
-      // })
+      const dept = departamentos?.find(
+        (d) => d.abreviatura === asignacion.departamento?.idDepartamento
+      )
+      const unid = unidades?.find(
+        (u) =>
+          u.abreviaturaIcia?.trim() ===
+          asignacion.unidad?.idUnidad?.trim()
+      )
+
+      reset({
+        codigoServicio: asignacion?.codigoServicio || '',
+        nroPase: usuario?.numeroPase || '',
+        departamento: dept
+          ? { value: dept.idDepartamento, label: dept.descripcion, original: dept }
+          : asignacion?.departamento
+            ? {
+                value: Number(asignacion.departamento.idDepartamento) || 0,
+                label: asignacion.departamento.descripcion,
+                original: undefined as any,
+              }
+            : undefined,
+        unidad: unid
+          ? { value: unid.id, label: unid.descripcion, original: unid }
+          : asignacion?.unidad
+            ? {
+                value: 0,
+                label: asignacion.unidad.descripcion,
+                original: undefined as any,
+              }
+            : undefined,
+        distrital: asignacion?.siii?.id_distrital
+          ? {
+              value: asignacion.siii.id_distrital,
+              label: String(asignacion.siii.id_distrital),
+            }
+          : undefined,
+        grupo: asignacion?.siii?.id_grupo
+          ? {
+              value: asignacion.siii.id_grupo,
+              label: String(asignacion.siii.id_grupo),
+            }
+          : undefined,
+        nroRegistro: asignacion?.nroOperativo || '',
+        nombreOperativo: asignacion?.nombreCaso || '',
+        fechaHoraOperativo: asignacion?.fechaOperativo
+          ? dateToStringAmPm(asignacion.fechaOperativo)
+          : nowDateToString(),
+        quienRealiza: asignacion?.nombreSolicitud
+          ? {
+              value: Number(asignacion.siii?.telefono_solicitud) || 0,
+              label: asignacion.nombreSolicitud,
+            }
+          : undefined,
+        asignadoA: asignacion?.siii?.asignado_caso
+          ? {
+              value: Number(asignacion.siii.telefono_asignado) || 0,
+              label: asignacion.siii.asignado_caso,
+            }
+          : undefined,
+        fiscalAsignado: asignacion?.fiscalAsignado || '',
+        quienRealizaNum: asignacion?.siii?.telefono_solicitud || '',
+        asignadoANum: asignacion?.siii?.telefono_asignado || '',
+        fiscalAsignadoNum: asignacion?.siii?.telefono_fiscal || '',
+      })
     }
-  }, [asignacion])
+  }, [asignacion, departamentos, unidades])
 
   useEffect(() => {
-    resetField('distrital')
-    resetField('grupo')
-  }, [unidadSeleccionada, resetField])
+    if (asignacion?.siii?.id_distrital && distritales?.length) {
+      const dist = distritales.find(
+        (d) => d.id === asignacion.siii.id_distrital
+      )
+      if (dist) {
+        setValue('distrital', {
+          value: dist.id,
+          label: dist.descripcion,
+          original: dist,
+        })
+      }
+    }
+  }, [distritales, asignacion, setValue])
 
   useEffect(() => {
-    resetField('grupo')
-  }, [distritalSeleccionado, resetField])
+    if (asignacion?.siii?.id_grupo && grupos?.length) {
+      const grp = grupos.find(
+        (g) => g.id === asignacion.siii.id_grupo
+      )
+      if (grp) {
+        setValue('grupo', {
+          value: grp.id,
+          label: grp.descripcion,
+          original: grp,
+        })
+      }
+    }
+  }, [grupos, asignacion, setValue])
 
   useEffect(() => {
-    resetField('quienRealiza')
-    resetField('asignadoA')
-  }, [grupoSeleccionado, resetField])
+    if (!asignacion) {
+      resetField('distrital')
+      resetField('grupo')
+    }
+  }, [unidadSeleccionada, resetField, asignacion])
+
+  useEffect(() => {
+    if (!asignacion) {
+      resetField('grupo')
+    }
+  }, [distritalSeleccionado, resetField, asignacion])
+
+  useEffect(() => {
+    if (!asignacion) {
+      resetField('quienRealiza')
+      resetField('asignadoA')
+    }
+  }, [grupoSeleccionado, resetField, asignacion])
 
   useEffect(() => {
     const verificarServicio = async () => {
@@ -278,51 +303,61 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
 
     try {
       setLoading(true)
-      //     {
-      //   "idDepartamento": 1,
-      //   "idGrupo": 2,
-      //   "nombreCaso": "Operativo Antinarcóticos",
-      //   "fechaSolicitud": "12-05-2025 16:00",
-      //   "nombreSolicitud": "Juan Marquez",
-      //   "telefonoSolicitud": "71234567",
-      //   "asignado": "Juan Pérez",
-      //   "telefonoAsignado": "70000000",
-      //   "fiscalAsignado": "Dra. María López",
-      //   "telefonoFiscal": "72000000"
-      // }
-      const payload = {
-        codigoServicio: values.codigoServicio,
-        usuario: values.nroPase,
-        idDepartamento: values.departamento.original.abreviatura,
-        idGrupo: values.grupo.value,
-        nombreCaso: values.nombreOperativo,
-        fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
-        nombreSolicitud: values.quienRealiza.label,
-        telefonoSolicitud: values.quienRealizaNum,
-        asignado: values.asignadoA.label,
-        telefonoAsignado: values.asignadoANum,
-        fiscalAsignado: values.fiscalAsignado,
-        telefonoFiscal: values.fiscalAsignadoNum,
-        numeroPaseSolicitud: values.quienRealiza.original?.numeroPase,
+
+      if (mode === 'edit' && asignacion?.idAsignacion) {
+        const payload = {
+          nombreCaso: values.nombreOperativo,
+          telefonoSolicitud: values.quienRealizaNum,
+          fiscalAsignado: values.fiscalAsignado,
+          telefonoFiscal: values.fiscalAsignadoNum,
+          fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
+        }
+
+        await actualizarAsignacion(asignacion.idAsignacion, payload)
+
+        Alerta({
+          mensaje: InterpreteMensajes({
+            mensaje: 'Caso actualizado correctamente',
+          }),
+          variant: 'success',
+        })
+
+        onSuccess()
+      } else {
+        const payload = {
+          codigoServicio: values.codigoServicio,
+          usuario: values.nroPase,
+          idDepartamento: values.departamento.original.abreviatura,
+          idGrupo: values.grupo.value,
+          nombreCaso: values.nombreOperativo,
+          fechaSolicitud: formatDate2ToBackend(values.fechaHoraOperativo),
+          nombreSolicitud: values.quienRealiza.label,
+          telefonoSolicitud: values.quienRealizaNum,
+          asignado: values.asignadoA.label,
+          telefonoAsignado: values.asignadoANum,
+          fiscalAsignado: values.fiscalAsignado,
+          telefonoFiscal: values.fiscalAsignadoNum,
+          numeroPaseSolicitud: values.quienRealiza.original?.numeroPase,
+        }
+
+        await sesionPeticion({
+          url: `${Constantes.baseUrl}/asignaciones`,
+          method: 'post',
+          body: payload,
+        })
+
+        Alerta({
+          mensaje: InterpreteMensajes({
+            mensaje: 'Caso registrado correctamente',
+          }),
+          variant: 'success',
+        })
+
+        const tmpCodigoServicio = values.codigoServicio
+        reset()
+        setValue('codigoServicio', tmpCodigoServicio)
+        onSuccess()
       }
-
-      const resp = await sesionPeticion({
-        url: `${Constantes.baseUrl}/asignaciones`,
-        method: 'post',
-        body: payload,
-      })
-
-      Alerta({
-        mensaje: InterpreteMensajes({
-          mensaje: 'Caso registrado correctamente',
-        }),
-        variant: 'success',
-      })
-
-      const tmpCodigoServicio = values.codigoServicio
-      reset()
-      setValue('codigoServicio', tmpCodigoServicio)
-      onSuccess()
     } catch (e) {
       imprimir('Error módulo', e)
       Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
@@ -433,6 +468,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Departamento"
                 error={errors.departamento?.message}
                 originalData={departamentos ?? []}
+                isDisable={mode === 'edit'}
                 mapOption={(item) => ({
                   label: item.descripcion,
                   value: item.idDepartamento,
@@ -448,6 +484,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Unidad"
                 error={errors.unidad?.message}
                 originalData={unidades ?? []}
+                isDisable={mode === 'edit'}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -464,7 +501,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Distrital"
                 error={errors.distrital?.message}
                 originalData={distritales ?? []}
-                isDisable={!unidadSeleccionada}
+                isDisable={mode === 'edit' || !unidadSeleccionada}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -481,7 +518,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Grupo"
                 error={errors.grupo?.message}
                 originalData={grupos ?? []}
-                isDisable={!distritalSeleccionado || !unidadSeleccionada}
+                isDisable={mode === 'edit' || !distritalSeleccionado || !unidadSeleccionada}
                 mapOption={(item) => {
                   return {
                     label: item.descripcion,
@@ -493,21 +530,24 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
             </div>
             <div className="col-span-12">
               <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleAsignarNumeroRegistro}
-                  disabled={loading}
-                  className="btn btn-primary self-end whitespace-nowrap h-7 text-sm"
-                >
-                  <span className="text-sm font-normal">
-                    ASIGNAR NUMERO DE REGISTRO
-                  </span>
-                </button>
+                {mode !== 'edit' && (
+                  <button
+                    type="button"
+                    onClick={handleAsignarNumeroRegistro}
+                    disabled={loading}
+                    className="btn btn-primary self-end whitespace-nowrap h-7 text-sm"
+                  >
+                    <span className="text-sm font-normal">
+                      ASIGNAR NUMERO DE REGISTRO
+                    </span>
+                  </button>
+                )}
                 <div className="flex-1">
                   <InputWithPrefix
                     name="nroRegistro"
                     prefix=""
                     register={register}
+                    readOnly={mode === 'edit'}
                     error={errors.nroRegistro?.message as string}
                   />
                 </div>
@@ -536,7 +576,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Quien realiza la solicitud"
                 error={errors.quienRealiza?.message as string}
                 originalData={usuarios ?? []}
-                isDisable={!grupoSeleccionado}
+                isDisable={mode === 'edit' || !grupoSeleccionado}
                 mapOption={(item) => {
                   return {
                     label: `${item.nombreCompleto}`.toUpperCase(),
@@ -560,7 +600,6 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 icon="phone"
                 register={register}
                 error={errors.quienRealizaNum?.message as string}
-                readOnly
               />
             </div>
             <div className="col-span-8">
@@ -570,7 +609,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Asignado al caso"
                 error={errors.asignadoA?.message as string}
                 originalData={usuarios ?? []}
-                isDisable={!grupoSeleccionado}
+                isDisable={mode === 'edit' || !grupoSeleccionado}
                 mapOption={(item) => {
                   return {
                     label: `${item.nombreCompleto}`.toUpperCase(),
@@ -593,6 +632,7 @@ export const FormRegistro = ({ asignacion, onSuccess }: Props) => {
                 prefix="Nro. Celular"
                 icon="phone"
                 register={register}
+                readOnly={mode === 'edit'}
                 error={errors.asignadoANum?.message as string}
               />
             </div>

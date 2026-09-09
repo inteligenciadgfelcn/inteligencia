@@ -137,6 +137,8 @@ export class OperativoService {
   }
 
   async verificarAntecedentes(dto: BuscarAntecedenteDto) {
+    console.log(`Buscar antecedentes`);
+    
     const personas = await this.siiiRepo.buscarPersonaDetenida(dto)
 
     if (!personas.length) {
@@ -147,6 +149,9 @@ export class OperativoService {
       }
     }
 
+    console.log(`Personas encontradas:`);
+    console.log(personas);
+
     return {
       encontrado: true,
       data: personas.map((p) => ({
@@ -154,6 +159,7 @@ export class OperativoService {
         ci: p.nro_documento,
         cantidadOperativos: p.cantidad_operativos,
         tieneAntecedentes: p.cantidad_operativos >= 1,
+        operativos: p.operativos,
       })),
     }
   }
