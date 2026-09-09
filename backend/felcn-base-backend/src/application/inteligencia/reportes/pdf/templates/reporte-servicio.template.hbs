@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <title>
+    Reporte de servicio
+  </title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      color: #333333;
+      background: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9px;
+    }
+
+    .encabezado {
+      min-height: 105px;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      color: #ffffff;
+      background: #496f9d;
+    }
+
+    .encabezado-logo {
+      width: 90px;
+      height: 90px;
+      object-fit: contain;
+    }
+
+    .encabezado-titulos {
+      flex: 1;
+    }
+
+    .titulo-institucion {
+      margin: 0 0 15px;
+      font-size: 25px;
+      font-weight: 700;
+    }
+
+    .titulo-reporte {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .contenido {
+      padding: 20px 28px;
+    }
+
+    .identificador {
+      margin-bottom: 12px;
+      color: #555555;
+      font-size: 10px;
+      text-align: right;
+    }
+
+    .barra-seccion {
+      margin: 0 0 12px;
+      padding: 11px 16px;
+      color: #ffffff;
+      background: #496f9d;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .barra-seccion.secundaria {
+      margin-top: 22px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th {
+      padding: 9px 6px;
+      color: #ffffff;
+      background: #496f9d;
+      border: 1px solid #345579;
+      font-size: 8px;
+      line-height: 1.35;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    td {
+      padding: 7px 5px;
+      border: 1px solid #d1d5da;
+      font-size: 7.4px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      vertical-align: middle;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f7f8fa;
+    }
+
+    tbody tr.destacado {
+      background: #fff900;
+      font-weight: 700;
+    }
+
+    .col-fecha {
+      width: 6%;
+    }
+
+    .col-caso {
+      width: 5%;
+    }
+
+    .col-unidad {
+      width: 9%;
+    }
+
+    .col-lugar {
+      width: 10%;
+    }
+
+    .col-asignados {
+      width: 9%;
+    }
+
+    .col-personas {
+      width: 9%;
+    }
+
+    .col-droga {
+      width: 14%;
+    }
+
+    .col-solidas {
+      width: 6%;
+    }
+
+    .col-liquidas {
+      width: 6%;
+    }
+
+    .col-laboratorio {
+      width: 6%;
+    }
+
+    .col-bienes {
+      width: 7%;
+    }
+
+    .col-tipo {
+      width: 6%;
+    }
+
+    .col-relevancia {
+      width: 6%;
+    }
+
+    .col-costos {
+      width: 6%;
+    }
+
+    .tabla-totales th {
+      padding: 9px;
+      font-size: 9px;
+    }
+
+    .tabla-totales td {
+      padding: 7px 8px;
+      font-size: 8px;
+    }
+
+    .tabla-totales .descripcion {
+      width: 32%;
+    }
+
+    .sin-registros {
+      padding: 25px;
+      color: #777777;
+      text-align: center;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="encabezado">
+    <img
+      class="encabezado-logo"
+      src="{{institucional}}"
+      alt="Logotipo institucional"
+    >
+
+    <div class="encabezado-titulos">
+      <h1 class="titulo-institucion">
+        DEPARTAMENTO NACIONAL DE INTELIGENCIA
+      </h1>
+
+      <h2 class="titulo-reporte">
+        REGISTRO DE OPERACIONES CON RESULTADOS
+        A NIVEL NACIONAL
+      </h2>
+    </div>
+  </header>
+
+  <main class="contenido">
+    <div class="identificador">
+      Servicio:
+      <strong>
+        {{servicio.idServicio}}
+      </strong>
+    </div>
+
+    <section>
+      <div class="barra-seccion">
+        &#128203;&nbsp;&nbsp;Cuadro de Resultados
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="col-fecha">
+              Fecha y Hora del Operativo
+            </th>
+
+            <th class="col-caso">
+              Número de Caso
+            </th>
+
+            <th class="col-unidad">
+              Unidad
+            </th>
+
+            <th class="col-lugar">
+              Lugar del Operativo
+            </th>
+
+            <th class="col-asignados">
+              Asignados al Caso
+            </th>
+
+            <th class="col-personas">
+              Personas - Estado
+            </th>
+
+            <th class="col-droga">
+              Droga
+            </th>
+
+            <th class="col-solidas">
+              Sustancias Sólidas
+            </th>
+
+            <th class="col-liquidas">
+              Sustancias Líquidas
+            </th>
+
+            <th class="col-laboratorio">
+              Laboratorio y Fábricas
+            </th>
+
+            <th class="col-bienes">
+              Bienes Secuestrados
+            </th>
+
+            <th class="col-tipo">
+              Tipo del Operativo
+            </th>
+
+            <th class="col-relevancia">
+              Relevancia
+            </th>
+
+            <th class="col-costos">
+              Costos en Bs
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{#each resultados}}
+            <tr class="{{#if @first}}destacado{{/if}}">
+              <td>
+                {{fechaHora}}
+              </td>
+
+              <td>
+                {{numeroCaso}}
+              </td>
+
+              <td>
+                {{unidad}}
+              </td>
+
+              <td>
+                {{lugarOperativo}}
+              </td>
+
+              <td>
+                {{asignados}}
+              </td>
+
+              <td>
+                {{personas}}
+              </td>
+
+              <td>
+                {{droga}}
+              </td>
+
+              <td>
+                {{sustanciasSolidas}}
+              </td>
+
+              <td>
+                {{sustanciasLiquidas}}
+              </td>
+
+              <td>
+                {{laboratoriosFabricas}}
+              </td>
+
+              <td>
+                {{bienesSecuestrados}}
+              </td>
+
+              <td>
+                {{tipoOperativo}}
+              </td>
+
+              <td>
+                {{relevancia}}
+              </td>
+
+              <td>
+                {{costo}}
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td
+                class="sin-registros"
+                colspan="14"
+              >
+                No se encontraron resultados para el servicio.
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <div class="barra-seccion secundaria">
+        &#9716;&nbsp;&nbsp;Total de Sustancia Secuestrada
+      </div>
+
+      <table class="tabla-totales">
+        <thead>
+          <tr>
+            <th class="descripcion">
+              Descripción
+            </th>
+
+            <th>
+              Cantidad
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{#each totalesSustancias}}
+            <tr>
+              <td>
+                {{descripcion}}
+              </td>
+
+              <td>
+                {{cantidad}}
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td
+                class="sin-registros"
+                colspan="2"
+              >
+                No existen totales registrados.
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

@@ -131,7 +131,9 @@ export default function BuscarOperativoPage() {
       </div>
       {/* End breadcum */}
       <div className="panel">
-        <h5 className="font-semibold text-lg mb-4">Buscar operativo</h5>
+        <h5 className="font-semibold text-lg mb-4">
+          Buscar por numero de caso
+        </h5>
 
         <form onSubmit={handleSubmit(onBuscar)}>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">

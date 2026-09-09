@@ -37,7 +37,7 @@ interface ContextProps {
   estaAutenticado: boolean
   estaEnServicio: boolean
   codigoIcia: String
-  verificarServicioUsuario: () => Promise<VerificarServicioResponse>
+  nroPase: String
   usuario: UsuarioType | null
   rolUsuario: RoleType | undefined
   setRolUsuario: ({ idRol }: idRolType) => Promise<void>
@@ -62,6 +62,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
   const [loading, setLoading] = useState<boolean>(false)
   const [isVerified, setIsVerified] = useState<boolean>(false)
   const [codigoIcia, setCodigoIcia] = useState<String>('')
+  const [nroPase, setNroPase] = useState<String>('')
   const [otpPendiente, setOtpPendiente] = useState<OtpPendienteType | null>(
     null
   )
@@ -158,7 +159,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     imprimir(`Usuarios ✅`, datos)
 
     await obtenerPermisos()
-    // await verificarServicioUsuario(respuesta.datos.numeroPase)
+    await verificarServicioUsuario(datos.numeroPase)
 
     mostrarFullScreen()
     await delay(1000)
@@ -282,6 +283,10 @@ export const AuthProvider = ({ children }: AuthContextType) => {
     }
 
     setUser(respuestaUsuario.datos)
+    console.log(respuestaUsuario)
+
+    await verificarServicioUsuario(respuestaUsuario.datos.numeroPase)
+
     imprimir(
       `rol definido en obtenerUsuarioRol 👨‍💻: ${respuestaUsuario.datos.idRol}`
     )
@@ -289,18 +294,22 @@ export const AuthProvider = ({ children }: AuthContextType) => {
 
   const rolUsuario = () => user?.roles.find((rol) => rol.idRol == user?.idRol)
 
-  const verificarServicioUsuario =
-    async (): Promise<VerificarServicioResponse> => {
-      const response = await sesionPeticion<VerificarServicioResponse>({
-        url: `${Constantes.baseUrl}/servicio/verificar/${user?.numeroPase}`,
-        withCredentials: true,
-      })
+  const verificarServicioUsuario = async (
+    nroPase: String
+  ): Promise<VerificarServicioResponse> => {
+    const response = await sesionPeticion<VerificarServicioResponse>({
+      url: `${Constantes.baseUrl}/servicio/verificar/${nroPase}`,
+      withCredentials: true,
+    })
 
-      setIsVerified(response.enServicio)
-      setCodigoIcia(response.codigoServicio || '')
+    console.log(response)
 
-      return response
-    }
+    setIsVerified(response.enServicio)
+    setNroPase(nroPase || '')
+    setCodigoIcia(response.codigoServicio || '')
+
+    return response
+  }
 
   return (
     <AuthContext.Provider
@@ -319,7 +328,7 @@ export const AuthProvider = ({ children }: AuthContextType) => {
         cancelarOtp,
         estaEnServicio: isVerified,
         codigoIcia,
-        verificarServicioUsuario,
+        nroPase,
         abreviaturaUnidad: user?.grupo?.distrital?.unidad?.abreviatura,
         permisoUsuario: (routerName: string) =>
           interpretarPermiso({ routerName, enforcer, rol: rolUsuario()?.rol }),

@@ -31,7 +31,7 @@ import IconEdit from '@/components/Icon/IconEdit'
 
 export function RegistrosDataTable() {
   const { sesionPeticion } = useSession()
-  const { permisoUsuario } = useAuth()
+  const { permisoUsuario, codigoIcia } = useAuth()
   const pathname = usePathname()
 
   /* STATES */
@@ -78,8 +78,14 @@ export function RegistrosDataTable() {
 
   /* FETCH */
   const obtenerRegistros = async () => {
+    console.log(`Entra aqui ${codigoIcia} ==`)
+
+    if (!codigoIcia) {
+      return []
+    }
+
     const res = await sesionPeticion({
-      url: `${Constantes.baseUrl}/asignaciones`,
+      url: `${Constantes.baseUrl}/asignaciones/${codigoIcia}`,
       withCredentials: true,
       params: {
         pagina,
@@ -98,7 +104,14 @@ export function RegistrosDataTable() {
   }
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['solicitud_registros', pagina, limite, search, sortStatus],
+    queryKey: [
+      'solicitud_registros',
+      pagina,
+      limite,
+      search,
+      sortStatus,
+      codigoIcia,
+    ],
     queryFn: () => obtenerRegistros(),
     placeholderData: keepPreviousData,
   })
@@ -148,13 +161,14 @@ export function RegistrosDataTable() {
     {
       accessor: 'fechaOperativo',
       title: 'Fecha y hora del Operativo',
-      render: (row: AsignacionTable) => new Date(row.fechaOperativo ?? '').toLocaleString(),
+      render: (row: AsignacionTable) =>
+        new Date(row.fechaOperativo ?? '').toLocaleString(),
     },
     { accessor: 'nombreCaso', title: 'Nombre del caso' },
     {
       accessor: 'asignadoA',
       title: 'Asignado al caso',
-      render: (row: AsignacionTable) => row.asignado ?? '-',
+      render: (row: AsignacionTable) => row.siii?.asignado_caso ?? '-',
     },
     {
       accessor: 'fiscalAsignado',
@@ -181,6 +195,7 @@ export function RegistrosDataTable() {
             <button
               onClick={() => {
                 setSelected(row)
+                setOpenForm(true)
               }}
             >
               <IconEdit className="ms-2 h-5 text-primary" />
@@ -249,7 +264,9 @@ export function RegistrosDataTable() {
       <div className="p-1 mb-12 w-full">
         <FormRegistro
           asignacion={selected}
+          mode={selected ? 'edit' : 'create'}
           onSuccess={() => {
+            setSelected(null)
             setOpenForm(false)
             refetch()
           }}

@@ -7,6 +7,13 @@ import { useAlerts } from '@/hooks'
 import { InterpreteMensajes } from '@/utils'
 import InputWithPrefix from '@/components/form/FormInputWithPrefix'
 import { Column, VristoDataTable } from '@/components/datatable/VristoDataTable'
+import { IconoTooltip } from '@/components/botones/IconoTooltip'
+import { Constantes } from '@/config/Constantes'
+import {
+  PreviewOperativoData,
+  ReportesOperativoService,
+} from '@/services/reportes/ReportesOperativoService'
+import { VistaPreviaOperativo } from '@/app/reportes/components/VistaPreviaOperativo'
 
 import { getAntecedentes } from '../services/antecedentes.service'
 import {
@@ -28,6 +35,12 @@ export function AntecedentesPage() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [rows, setRows] = useState<AntecedenteItem[]>([])
+  const [expandedRows, setExpandedRows] = useState<(string | number)[]>([])
+  const [modalOperativoOpen, setModalOperativoOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(
+    null
+  )
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const { Alerta } = useAlerts()
 
@@ -39,6 +52,22 @@ export function AntecedentesPage() {
   } = useForm<AntecedentesSearchFormValues>({
     defaultValues,
   })
+
+  const abrirPreview = async (numeroOperativo: string) => {
+    setPreviewData(null)
+    setPreviewUrl(
+      `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`
+    )
+    setModalOperativoOpen(true)
+    try {
+      const res =
+        await ReportesOperativoService.verPreviewOperativo(numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOperativoOpen(false)
+    }
+  }
 
   const paginatedRows = useMemo(() => {
     const from = (page - 1) * limit
@@ -75,6 +104,28 @@ export function AntecedentesPage() {
         </span>
       ),
     },
+    // {
+    //   accessor: 'acciones',
+    //   title: 'Acciones',
+    //   render: (row) => (
+    //     <div className="flex gap-2">
+    //       <IconoTooltip
+    //         id={`ver-operativos-${row.ci}`}
+    //         titulo="Ver operativos"
+    //         color="info"
+    //         icono="visibility"
+    //         name="Ver operativos"
+    //         accion={() => {
+    //           setExpandedRows((prev) =>
+    //             prev.includes(row.ci)
+    //               ? prev.filter((id) => id !== row.ci)
+    //               : [...prev, row.ci]
+    //           )
+    //         }}
+    //       />
+    //     </div>
+    //   ),
+    // },
   ]
 
   const onBuscar = async (values: AntecedentesSearchFormValues) => {
@@ -225,8 +276,69 @@ export function AntecedentesPage() {
           }}
           columns={columns}
           loading={loading}
+          rowExpansion={{
+            idField: 'ci',
+            expandedIds: expandedRows,
+            onExpandChange: setExpandedRows,
+            renderContent: (row) => (
+              <div className="w-full">
+                <h6 className="font-semibold text-sm mb-3">
+                  Operativos de {row.nombreCompleto}
+                </h6>
+                {row.operativos && row.operativos.length > 0 ? (
+                  <div className="table-responsive">
+                    <table className="table-hover whitespace-nowrap">
+                      <thead>
+                        <tr>
+                          <th>Nro Operativo</th>
+                          <th>Nombre Caso</th>
+                          <th>Asignado al Caso</th>
+                          <th>Telefono</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {row.operativos.map((op, idx) => (
+                          <tr key={idx}>
+                            <td>{op.numero_operativo}</td>
+                            <td>{op.nombre_caso}</td>
+                            <td>{op.asignado_caso}</td>
+                            <td>{op.telefono_asignado}</td>
+                            <td>
+                              <IconoTooltip
+                                id={`preview-${op.numero_operativo}`}
+                                titulo="Vista Previa del Reporte"
+                                color="info"
+                                icono="visibility"
+                                name="Vista Previa del Reporte"
+                                accion={() =>
+                                  void abrirPreview(op.numero_operativo)
+                                }
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    No se encontraron operativos.
+                  </p>
+                )}
+              </div>
+            ),
+          }}
         />
       )}
+
+      <VistaPreviaOperativo
+        open={modalOperativoOpen}
+        onClose={() => setModalOperativoOpen(false)}
+        data={previewData}
+        tipo="operativo"
+        urlPdf={previewUrl}
+      />
     </div>
   )
 }

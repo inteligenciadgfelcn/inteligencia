@@ -41,7 +41,7 @@ const formSchema = z.object({
   apMaterno: z.string().min(1, 'El apellido materno es requerido'),
   edad: z.string().min(1, 'La edad es requerida'),
   direccion: z.string().min(1, 'La dirección es requerida'),
-  telefono: z.string().min(1, 'El teléfono es requerido'),
+  telefono: z.string().optional(),
   estado: selectSchema('El estado es requerido'),
   implicado: selectSchema('El campo implicado es requerido'),
 })

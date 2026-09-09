@@ -116,12 +116,31 @@ export const TablePersonas = ({
       title: 'Número Documento',
     },
     {
+      accessor: 'estado',
+      title: 'Estado',
+    },
+    {
       accessor: 'fecha_nacimiento',
       title: 'Fecha Nacimiento',
     },
     {
       accessor: 'direccion',
       title: 'Dirección',
+    },
+    {
+      accessor: 'enviado',
+      title: 'Estado filiacion',
+      render: (row: FiliacionPersonaTable) => {
+        const filiado = row.enviado == 1
+
+        return (
+          <span
+            className={`badge ${filiado ? 'badge-outline-success' : 'badge-outline-warning'}`}
+          >
+            {filiado ? 'Filiado' : 'Pendiente'}
+          </span>
+        )
+      },
     },
     {
       accessor: 'acciones',

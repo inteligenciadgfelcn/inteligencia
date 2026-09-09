@@ -1,0 +1,331 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
+import { UpdateServicioDto } from './dto/update-servicio.dto'
+import { DB_ASIG_CASOS, DB_AUTH } from '@/core/config/database/database.module'
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm'
+import { Servicio } from './entities/servicio.entity'
+import { DataSource, Repository } from 'typeorm'
+import { CreateServicioDto } from './dto/create-servicio.dto'
+import { validarRangoFechas } from './utils/fecha.util'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
+import {
+  buscarServicioPorFecha,
+  cerrarServiciosVencidos,
+  generarCodigoServicio,
+  validarCruceServicios,
+} from './utils/servicio.util'
+import { Estado } from '../../felcn_siii/estado.enum'
+import { formatearFecha } from '@/common/utils/date.util'
+
+type UsuarioAuth = {
+  usuario: string
+  nombreCompleto: string
+  numero_pase: string
+  abreviatura: string
+}
+
+@Injectable()
+export class ServicioService {
+  constructor(
+    @InjectRepository(Servicio, DB_ASIG_CASOS)
+    private readonly servicioRepository: Repository<Servicio>,
+
+    @InjectDataSource(DB_AUTH)
+    private readonly dataSourceAuth: DataSource
+  ) {}
+
+  async generarCodigoServicio(fechaIngreso: Date, fechaSalida: Date) {
+    const ahora = new Date()
+    return generarCodigoServicio(fechaIngreso, fechaSalida, ahora)
+  }
+
+  async create(dto: CreateServicioDto) {
+    const fechaIngreso = new Date(dto.fechaIngreso)
+    const fechaSalida = new Date(dto.fechaSalida)
+    const ahora = new Date()
+
+    validarRangoFechas(fechaIngreso, fechaSalida)
+
+    await cerrarServiciosVencidos(this.servicioRepository, ahora)
+
+    await validarCruceServicios(
+      this.servicioRepository,
+      fechaIngreso,
+      fechaSalida
+    )
+
+    const codigoServicio = generarCodigoServicio(
+      fechaIngreso,
+      fechaSalida,
+      ahora
+    )
+
+    const servicio = this.servicioRepository.create({
+      codigoServicio,
+      usuarioPrincipal: dto.usuarioPrincipal,
+      usuarioEmergencia: dto.usuarioEmergencia,
+      fechaIngreso,
+      fechaSalida,
+      estado: Estado.ACTIVO,
+    })
+
+    const servicioGuardado = await this.servicioRepository.save(servicio)
+
+    return {
+      codigoServicio: servicioGuardado.codigoServicio,
+      usuarioPrincipal: servicioGuardado.usuarioPrincipal,
+      usuarioEmergencia: servicioGuardado.usuarioEmergencia,
+      fechaIngreso: formatearFecha(servicioGuardado.fechaIngreso),
+      fechaSalida: formatearFecha(servicioGuardado.fechaSalida),
+      estado: Estado.ACTIVO,
+    }
+  }
+
+  async verificarServicio(usuario: string) {
+    const ahora = new Date()
+
+    const servicio = await this.servicioRepository
+      .createQueryBuilder('s')
+      .where(
+        '(s.usuarioPrincipal = :usuario OR s.usuarioEmergencia = :usuario)',
+        { usuario }
+      )
+      .andWhere('s.estado = :estado', { estado: Estado.ACTIVO })
+      .andWhere('s.fechaIngreso <= :ahora', { ahora })
+      .andWhere('s.fechaSalida >= :ahora', { ahora })
+      .getOne()
+
+    if (!servicio) {
+      return {
+        enServicio: false,
+        mensaje: 'Usuario sin servicio asignado',
+      }
+    }
+
+    return {
+      enServicio: true,
+      codigoServicio: servicio.codigoServicio,
+      usuario,
+      desde: formatearFecha(servicio.fechaIngreso),
+      hasta: formatearFecha(servicio.fechaSalida),
+    }
+  }
+
+  async infoServicio(codigoServicio: string) {
+    const servicio = await this.servicioRepository.findOne({
+      where: { codigoServicio },
+    })
+
+    if (!servicio) {
+      throw new NotFoundException('Servicio no encontrado')
+    }
+
+    return servicio
+  }
+
+  async update(codigoServicio: string, dto: UpdateServicioDto) {
+    const servicio = await this.servicioRepository.findOne({
+      where: { codigoServicio },
+    })
+
+    if (!servicio) {
+      throw new NotFoundException('Servicio no encontrado')
+    }
+
+    const ahora = new Date()
+
+    if (servicio.fechaIngreso <= ahora) {
+      throw new BadRequestException(
+        'No se puede modificar un servicio que ya inició'
+      )
+    }
+
+    const fechaIngreso = dto.fechaIngreso ? new Date(dto.fechaIngreso) : servicio.fechaIngreso
+    const fechaSalida = dto.fechaSalida ?  new Date(dto.fechaSalida) : servicio.fechaSalida
+
+    validarRangoFechas(fechaIngreso, fechaSalida)
+
+    await validarCruceServicios(
+      this.servicioRepository,
+      fechaIngreso,
+      fechaSalida,
+      codigoServicio
+    )
+
+    if (dto.usuarioPrincipal !== undefined) {
+      servicio.usuarioPrincipal = dto.usuarioPrincipal
+    }
+
+    if (dto.usuarioEmergencia !== undefined) {
+      servicio.usuarioEmergencia = dto.usuarioEmergencia
+    }
+
+    servicio.fechaIngreso = fechaIngreso
+    servicio.fechaSalida = fechaSalida
+
+    const actualizado = await this.servicioRepository.save(servicio)
+
+    return {
+      codigoServicio: actualizado.codigoServicio,
+      usuarioPrincipal: actualizado.usuarioPrincipal,
+      usuarioEmergencia: actualizado.usuarioEmergencia,
+      fechaIngreso: formatearFecha(actualizado.fechaIngreso),
+      fechaSalida: formatearFecha(actualizado.fechaSalida),
+      estado: actualizado.estado,
+    }
+  }
+
+  async findAllPaginado(
+    pagination: PaginacionQueryDto
+  ): Promise<[any[], number]> {
+    const { limite, saltar, filtro } = pagination
+
+    const query = this.servicioRepository
+      .createQueryBuilder('servicio')
+      .take(limite)
+      .skip(saltar)
+      .orderBy('servicio.fechaIngreso', 'DESC')
+
+    if (filtro) {
+      query.andWhere(
+        '(servicio.usuarioPrincipal ILIKE :filtro OR servicio.usuarioEmergencia ILIKE :filtro OR servicio.codigoServicio ILIKE :filtro)',
+        { filtro: `%${filtro}%` }
+      )
+    }
+
+    const [servicios, total] = await query.getManyAndCount()
+
+    const usuariosIds = Array.from(
+      new Set(
+        [
+          ...servicios.map((s) => s.usuarioPrincipal),
+          ...servicios.map((s) => s.usuarioEmergencia),
+        ].filter(Boolean)
+      )
+    )
+    console.log('usuariosIds:', usuariosIds)
+
+    const usuarios: UsuarioAuth[] = await this.dataSourceAuth.query(
+      `
+  SELECT 
+    u.usuario,
+    u.numero_pase,
+    u.id as "idUsuario",
+    TRIM(CONCAT(
+      gr.abreviatura, ' ',
+      p.nombres, ' ',
+      p.primer_apellido, ' ',
+      COALESCE(p.segundo_apellido, '')
+    )) as "nombreCompleto",
+    gr.abreviatura
+  FROM usuario.usuario u
+  LEFT JOIN usuario.persona p ON p.id = u.id_persona
+  LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+  WHERE u.numero_pase = ANY($1::text[])
+  `,
+      [usuariosIds]
+    )
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.numero_pase, u]))
+
+    const resultado = servicios.map((servicio) => {
+      const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
+      const usuarioEmergencia = usuariosMap.get(servicio.usuarioEmergencia)
+
+      return {
+        ...servicio,
+        fechaIngreso: formatearFecha(servicio.fechaIngreso),
+        fechaSalida: formatearFecha(servicio.fechaSalida),
+
+        nombreUsuarioPrincipal: usuarioPrincipal
+          ? usuarioPrincipal.nombreCompleto
+          : null,
+
+        nombreUsuarioEmergencia: usuarioEmergencia
+          ? usuarioEmergencia.nombreCompleto
+          : null,
+      }
+    })
+
+    return [resultado, total]
+  }
+
+  async listarTodos() {
+    const servicios = await this.servicioRepository.find({
+      order: { fechaIngreso: 'DESC' },
+    })
+
+    const usuariosIds = Array.from(
+      new Set(
+        [
+          ...servicios.map((s) => s.usuarioPrincipal),
+          ...servicios.map((s) => s.usuarioEmergencia),
+        ].filter(Boolean)
+      )
+    )
+
+    const usuarios: UsuarioAuth[] = usuariosIds.length
+      ? await this.dataSourceAuth.query(
+          `
+  SELECT 
+    u.usuario,
+    u.numero_pase,
+    u.id as "idUsuario",
+    TRIM(CONCAT(
+      gr.abreviatura, ' ',
+      p.nombres, ' ',
+      p.primer_apellido, ' ',
+      COALESCE(p.segundo_apellido, '')
+    )) as "nombreCompleto",
+    gr.abreviatura
+  FROM usuario.usuario u
+  LEFT JOIN usuario.persona p ON p.id = u.id_persona
+  LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+  WHERE u.numero_pase = ANY($1::text[])
+  `,
+          [usuariosIds]
+        )
+      : []
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.numero_pase, u]))
+
+    return servicios.map((servicio) => {
+      const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
+      const usuarioEmergencia = usuariosMap.get(servicio.usuarioEmergencia)
+
+      return {
+        ...servicio,
+        fechaIngreso: formatearFecha(servicio.fechaIngreso),
+        fechaSalida: formatearFecha(servicio.fechaSalida),
+        nombreUsuarioPrincipal: usuarioPrincipal
+          ? usuarioPrincipal.nombreCompleto
+          : null,
+        nombreUsuarioEmergencia: usuarioEmergencia
+          ? usuarioEmergencia.nombreCompleto
+          : null,
+      }
+    })
+  }
+
+  async findOne(codigoServicio: string) {
+    const servicio = await this.servicioRepository.findOne({
+      where: { codigoServicio },
+    })
+
+    if (!servicio) {
+      throw new NotFoundException('Servicio no encontrado')
+    }
+
+    return {
+      codigoServicio: servicio.codigoServicio,
+      usuarioPrincipal: servicio.usuarioPrincipal,
+      usuarioEmergencia: servicio.usuarioEmergencia,
+      fechaIngreso: formatearFecha(servicio.fechaIngreso),
+      fechaSalida: formatearFecha(servicio.fechaSalida),
+      estado: servicio.estado,
+    }
+  }
+}

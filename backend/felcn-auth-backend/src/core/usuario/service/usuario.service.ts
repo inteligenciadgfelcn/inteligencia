@@ -33,6 +33,7 @@ import { UsuarioRolRepository } from '@/core/authorization/repository/usuario-ro
 import { MensajeriaService } from '@/core/external-services/mensajeria/mensajeria.service'
 import { UsuarioEstado } from '@/core/usuario/constant'
 import { UsuarioRolEstado } from '@/core/authorization/constant'
+import { RolEnum } from '@/core/authorization/rol.enum'
 import { ActualizarPerfilDto } from '@/core/usuario/dto/ActualizarPerfilDto'
 import { FileValidationService } from '@/common/lib/file-validation.service'
 import { RefreshTokensRepository } from '@/core/authentication/repository/refreshTokens.repository'
@@ -327,6 +328,16 @@ export class UsuarioService extends BaseService {
 
     if (!usuario) {
       this.logger.error('Usuario no encontrado')
+      return 'Búsqueda terminada'
+    }
+
+    // Un usuario que no está ACTIVE (preregistro/PENDING/CREATE, o INACTIVE)
+    // no puede recuperar contraseña — antes esto permitía a una cuenta en
+    // preregistro saltarse la activación por correo y quedar ACTIVE directo
+    // por esta vía. Misma respuesta genérica que el caso "no encontrado" para
+    // no filtrar si el correo existe o en qué estado está.
+    if (usuario.estado !== UsuarioEstado.ACTIVE) {
+      this.logger.error('Usuario no está activo, no se envía recuperación')
       return 'Búsqueda terminada'
     }
 
@@ -1158,24 +1169,34 @@ export class UsuarioService extends BaseService {
       grado: usuario.grado ?? null,
       grupo: usuario.grupo ?? null,
       numeroPase: usuario.numeroPase ?? null,
-      roles: await Promise.all(
-        usuario.usuarioRol
-          .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)
-          .map(async (usuarioRol) => {
-            const { id, rol, nombre, descripcion } = usuarioRol.rol
-            const modulos =
-              await this.authorizationService.obtenerPermisosPorRol(
+      // El rol USUARIO (genérico, sin permisos operativos) siempre va al
+      // final — tanto para el selector de "cambiar rol" en el frontend como
+      // para el rol que queda activo por defecto al loguear (obtenerRolActual
+      // toma el primero de este array cuando el usuario todavía no eligió
+      // ninguno). Sin esto, un usuario con USUARIO + un rol operativo podía
+      // arrancar la sesión en USUARIO según el orden crudo de la BD.
+      roles: (
+        await Promise.all(
+          usuario.usuarioRol
+            .filter((value) => value.estado === UsuarioRolEstado.ACTIVE)
+            .map(async (usuarioRol) => {
+              const { id, rol, nombre, descripcion } = usuarioRol.rol
+              const modulos =
+                await this.authorizationService.obtenerPermisosPorRol(
+                  rol,
+                  usuarioRol.id
+                )
+              return {
+                idRol: id,
                 rol,
-                usuarioRol.id
-              )
-            return {
-              idRol: id,
-              rol,
-              nombre,
-              descripcion,
-              modulos,
-            }
-          })
+                nombre,
+                descripcion,
+                modulos,
+              }
+            })
+        )
+      ).sort((a, b) =>
+        Number(a.rol === RolEnum.USUARIO) - Number(b.rol === RolEnum.USUARIO)
       ),
       persona: usuario.persona,
     }
@@ -1249,8 +1270,15 @@ export class UsuarioService extends BaseService {
       throw new NotFoundException(Messages.INVALID_USER)
     }
 
-    const { nombres, primerApellido, segundoApellido, correoElectronico, telefono } =
-      actualizarPerfilDto
+    const {
+      nombres,
+      primerApellido,
+      segundoApellido,
+      correoElectronico,
+      telefono,
+      idGrado,
+      idGrupo,
+    } = actualizarPerfilDto
 
     const op = async (transaction: EntityManager) => {
       if (telefono && telefono !== usuario.persona.telefono) {
@@ -1285,6 +1313,21 @@ export class UsuarioService extends BaseService {
         await this.usuarioRepositorio.actualizar(
           idUsuario,
           { correoElectronico },
+          idUsuario,
+          transaction
+        )
+      }
+
+      // Estructura (Unidad → Distrital → Grupo, y Grado): el usuario puede
+      // autoactualizar su propia ubicación en la estructura de la FELCN
+      // desde su perfil, mismo mecanismo que ya usa el admin al editar un
+      // usuario (idUnidad/idDistrital son solo pasos de la cascada en el
+      // frontend, no columnas propias de Usuario — el dato que se persiste
+      // es idGrupo, del que se deriva distrital/unidad por join).
+      if (idGrado !== undefined || idGrupo !== undefined) {
+        await this.usuarioRepositorio.actualizar(
+          idUsuario,
+          { idGrado, idGrupo },
           idUsuario,
           transaction
         )

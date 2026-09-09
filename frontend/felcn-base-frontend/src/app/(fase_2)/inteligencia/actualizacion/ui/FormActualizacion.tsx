@@ -240,22 +240,39 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
           </div>
 
           <div className="col-span-12 md:col-span-4">
-            <InputWithPrefix
-              name="newCode"
-              prefix="Nro Caso"
-              register={register}
-              error={errors.newCode?.message as string}
-            />
+            <div className="flex items-center gap-2 h-7">
+              <InputWithPrefix
+                name="cud"
+                prefix="CUD"
+                register={register}
+                error={errors.newCode?.message as string}
+              />
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={loading}
+              >
+                Generar
+              </button>
+            </div>
           </div>
 
-          <div className="col-span-12 md:col-span-4 flex md:justify-start">
-            <button
-              type="submit"
-              className="btn btn-primary btn-sm"
-              disabled={loading}
-            >
-              Actualizar
-            </button>
+          <div className="col-span-12 md:col-span-4">
+            <div className="flex items-center gap-2 h-7">
+              <InputWithPrefix
+                name="newCode"
+                prefix="Nro Caso"
+                register={register}
+                error={errors.newCode?.message as string}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm"
+                disabled={loading}
+              >
+                Actualizar
+              </button>
+            </div>
           </div>
         </div>
       </form>

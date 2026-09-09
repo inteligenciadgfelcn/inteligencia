@@ -8,7 +8,7 @@ import { socket } from '@/services/socket'
 interface Props {
   id: string
   name_finger: string
-  onChangeImage: (image: string | null, calidad: number) => void
+  onChangeImage: (image: string | null, wsq: string | null, calidad: number) => void
 }
 
 export default function FingerprintCapture({
@@ -52,7 +52,7 @@ export default function FingerprintCapture({
 
       setImagen(img)
       setPreview(data)
-      onChangeImage(data.imagen, data.calidad)
+      onChangeImage(data.imagen, data.wsq, data.calidad)
       setEstado('listo')
     }
 
@@ -84,7 +84,7 @@ export default function FingerprintCapture({
     }
 
     setEstado('capturando')
-    onChangeImage('', -1)
+    onChangeImage('', null, -1)
 
     await sesionPeticion({
       url: `${Constantes.baseUrl}/scanner/capturar`,
