@@ -179,6 +179,7 @@ export class DepartamentoService {
 > {
   return this.departamentoRepository.find({
     select: {
+      idDepartamento: true,
       abreviatura: true,
     },
   })
