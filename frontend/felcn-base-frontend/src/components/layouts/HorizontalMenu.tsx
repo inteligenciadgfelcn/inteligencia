@@ -13,30 +13,10 @@ const AppMenuHorizontal = () => {
   const [openMenu, setOpenMenu] = useState<string>('')
 
   const modulos = rolUsuario?.modulos || []
-  const modulosConAsignaciones = [
-    ...modulos,
-    {
-      id: 'temporal-operaciones',
-      label: 'Operaciones',
-      propiedades: {
-        icono: 'task',
-      },
-      subModulo: [
-        {
-          id: 'temporal-asignaciones',
-          label: 'Asignaciones',
-          url: '/operativos/asignaciones',
-          propiedades: {
-            icono: 'grid_on',
-          },
-        },
-      ],
-    },
-  ]
 
   return (
     <>
-      {modulosConAsignaciones.map((modulo: any) => {
+      {modulos.map((modulo: any) => {
         const Icon =
           menuIconMap[modulo.propiedades?.icono] || menuIconMap.default
 

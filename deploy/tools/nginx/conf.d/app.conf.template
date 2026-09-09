@@ -1,0 +1,337 @@
+# Plantilla de sitio para UN servidor dockerizado dedicado a UN solo ambiente
+# (sunesis-dev.felcn.gob.bo → .23, sunesis-staging.felcn.gob.bo → .24, o
+# producción cuando exista). A diferencia de `desarrollo.felcn.gob.bo` (real,
+# servertest/.20), acá no hay upstreams "_staging" en el mismo archivo — cada
+# servidor nuevo es un solo ambiente, no dos compartiendo dominio.
+#
+# NO incluye mTLS ni `partner-locations.conf` (`/srv/interop`) — queda fuera de
+# este trabajo, se define después en otro documento si hace falta.
+# NO incluye `/persona/` (consulta-persona) — específico de servertest.
+#
+# `/docs/` (mkdocs) SÍ está incluido acá (distinto de servertest, donde vive en
+# snippets/felcn-docs.conf aparte) — protegido con auth_basic contra
+# /etc/nginx/.htpasswd-docs, montado desde deploy/tools/nginx/.htpasswd-docs.
+# El sitio estático (`site/`, generado con deploy/tools/mkdocs/build.sh) se
+# monta en el contenedor de nginx en /var/www/docs (ver
+# deploy/development/docker-compose.yml).
+#
+# Swagger/OpenAPI (`/auth/api/docs`, `/api/docs`, `/fiscalia/docs`,
+# `/lgi/docs`) está bloqueado (404) en este bloque de 443 público — decisión
+# del 01/09/2026: exponer el esquema de la API sin ninguna credencial a
+# internet es un riesgo real, confirmado en `.23` (`/auth/api/docs` respondía
+# 200 público antes de este cambio). Sirve solo por el bloque `listen 8082
+# ssl` más abajo, restringido a la red interna de FELCN a nivel de firewall
+# (`ufw allow from 172.16.76.0/24 to any port 8082`), igual criterio que el
+# 8081 del registry-ui.
+#
+# Reemplazar <DOMINIO> por el dominio real (sunesis-dev.felcn.gob.bo / sunesis-staging.felcn.gob.bo)
+# antes de usar — mismo criterio que <REGISTRY>/<TAG> en docker-compose.prod.yml.
+#
+# Los upstreams apuntan al nombre del servicio Docker (misma red `felcn-network`
+# que nginx), no a 127.0.0.1:puerto — las apps ya no necesitan publicar sus
+# puertos al host en absoluto.
+
+upstream backend_v2 {
+    server base-backend-v2:3000;
+    keepalive 32;
+}
+
+upstream backend_auth {
+    server auth-backend:4000;
+    keepalive 32;
+}
+
+upstream frontend {
+    server base-frontend:3000;
+    keepalive 32;
+}
+
+# ── HTTPS principal ──────────────────────────────────────────────────────────
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl ipv6only=on;
+    server_name <DOMINIO>;
+
+    ssl_certificate     /etc/letsencrypt/live/<DOMINIO>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<DOMINIO>/privkey.pem;
+    # NO se incluye options-ssl-nginx.conf/ssl-dhparams.pem de certbot a propósito:
+    # esos archivos los crea el PLUGIN nginx de certbot (`certbot --nginx`), nunca
+    # `certonly --webroot` (el modo que usamos, porque certbot corre en un
+    # contenedor aparte, no dentro del de nginx) — confirmado en el código fuente
+    # de certbot (certbot/_internal/constants.py: "Path to the nginx ssl_dhparams
+    # file", solo se despliega vía ese plugin). Sin esto, nginx fallaría al
+    # arrancar buscando un archivo que jamás se crea. `ssl_protocols`/
+    # `ssl_prefer_server_ciphers` ya están seteados a nivel `http` en nginx.conf,
+    # que alcanza (TLS 1.3 no necesita dhparam; ECDHE de TLS 1.2 tampoco).
+
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location ~ /\. {
+        deny all;
+        return 404;
+    }
+
+    # ── Swagger/OpenAPI: bloqueado acá, ver bloque `listen 8082 ssl` más abajo ─
+    # (solo red interna FELCN). El prefijo más largo gana sobre /auth/api y
+    # /api de abajo sin importar el orden de declaración (regla estándar de
+    # nginx para location ^~).
+    location ^~ /auth/api/docs {
+        return 404;
+    }
+
+    location ^~ /api/docs {
+        return 404;
+    }
+
+    location ^~ /fiscalia/docs {
+        return 404;
+    }
+
+    location ^~ /lgi/docs {
+        return 404;
+    }
+
+    # ── Documentación técnica (MkDocs) — acceso restringido con basic auth ────
+    location = /docs {
+        return 301 /docs/;
+    }
+
+    location ^~ /docs/ {
+        alias /var/www/docs/;
+        index index.html;
+        auth_basic            "Documentacion FELCN";
+        auth_basic_user_file  /etc/nginx/.htpasswd-docs;
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 20;
+    }
+
+    # ── Auth backend: /auth/api/* → auth-backend:4000/api/* ──────────────────
+    location ^~ /auth/api {
+        limit_req zone=login burst=10 nodelay;
+        rewrite ^/auth(/api.*) $1 break;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    # ── WhatsApp Webhook (Meta Cloud API) → auth-backend ──────────────────────
+    location ^~ /api/whatsapp {
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 20;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    10s;
+        proxy_connect_timeout 5s;
+    }
+
+    # ── Main backend: /api/* → base-backend-v2:3000/api/* ─────────────────────
+    location ^~ /api {
+        limit_req  zone=general burst=50 nodelay;
+        limit_conn conn_limit 30;
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    # ── Callback OIDC Ciudadanía Digital (AGETIC) → frontend ──────────────────
+    # El redirect_uri registrado ante AGETIC para este dominio debe apuntar acá.
+    location = /login/ciudadania {
+        proxy_pass         http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection        "";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    location /socket.io/ {
+        proxy_pass http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_buffering off;
+        proxy_cache off;
+        client_max_body_size 20M;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location ^~ /_next/static/ {
+        # `add_header` en una location resetea TODOS los add_header heredados
+        # del server block (comportamiento real de nginx, no un typo) — hay
+        # que re-incluir los headers de seguridad acá explícitamente. El
+        # nginx real de servertest tiene este mismo bug (no lo corrige este
+        # trabajo, es una instancia distinta, ver docs/05-nginx-y-tls.md).
+        include      /etc/nginx/snippets/security-headers.conf;
+        proxy_pass   http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        add_header   Cache-Control "public, max-age=31536000, immutable";
+        access_log   off;
+    }
+
+    location = / {
+        return 301 /login/;
+    }
+
+    location / {
+        proxy_pass         http://frontend;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade           $http_upgrade;
+        proxy_set_header   Connection        "upgrade";
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout    60s;
+        proxy_connect_timeout 10s;
+    }
+
+    # ── Docker Registry (SOLO en el servidor dev, .23) — path-based, sin
+    # subdominio propio (ver 14-registro-de-imagenes.md §2). Incidente real
+    # (01/09/2026): este bloque vivía SOLO en el archivo materializado del
+    # servidor (agregado a mano siguiendo la doc), nunca en este template —
+    # al regenerar el `.conf` desde el template para el trabajo de swagger/
+    # docs del mismo día, se borró en silencio y rompió el pull de imágenes
+    # en staging. Ahora versionado acá para que no se pierda de nuevo.
+    #
+    # `proxy_pass` con una VARIABLE (no un hostname fijo) es a propósito: en
+    # staging/producción no existe ningún contenedor `registry` en
+    # `felcn-network` (nunca corre ahí) — un hostname fijo lo resolvería una
+    # sola vez al arrancar nginx y, si no existe, nginx directamente no
+    # arranca (`host not found in upstream`, mismo error confirmado
+    # localmente al probar este template). Con la variable, la resolución
+    # queda diferida a cuando llega una request real — nginx arranca bien en
+    # todos los ambientes, y si algún día alguien pega `/v2/...` en
+    # staging/producción, devuelve 502 en vez de tumbar todo el sitio.
+    #
+    # `proxy_pass` SIN URI (solo la variable, sin `/v2/` al final): con
+    # variables, si se especifica un URI nginx lo manda LITERAL y descarta el
+    # resto del path — `GET /v2/felcn-auth-backend/tags/list` llegaba al
+    # registry como `/v2/` a secas y devolvía `{}` (incidente 02/09/2026, pull
+    # de imágenes roto en staging). Sin URI, nginx pasa el request URI
+    # normalizado completo — que ya empieza con `/v2/` porque el `location` lo
+    # exige — y el registry lo recibe intacto.
+    resolver 127.0.0.11 valid=10s;
+    location /v2/ {
+        client_max_body_size 0;
+        chunked_transfer_encoding on;
+        set $registry_upstream http://registry:5000;
+        proxy_pass         $registry_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_read_timeout 900s;
+    }
+
+    location = /health {
+        include    /etc/nginx/snippets/security-headers.conf;
+        access_log off;
+        return 200 "OK\n";
+        add_header Content-Type text/plain;
+    }
+}
+
+# ── HTTP: challenge ACME + redirect a HTTPS ──────────────────────────────────
+server {
+    listen 80;
+    listen [::]:80;
+    server_name <DOMINIO>;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# ── Swagger/OpenAPI — SOLO red interna FELCN, puerto 8082 ───────────────────
+# Restringido a nivel de firewall (`ufw allow from 172.16.76.0/24 to any port
+# 8082`), nunca expuesto a internet — mismo criterio que el 8081 de
+# registry-ui.conf (no versionado hoy, vive directo en el servidor). Reusa el
+# mismo certificado del dominio principal.
+#
+# /api/docs, /fiscalia/docs, /lgi/docs (base-backend-v2) devuelven 404 hoy
+# porque ese servicio corre con NODE_ENV=production (ver docker-compose.yml,
+# nota del servicio base-backend-v2) — quedan acá ya listos para cuando se
+# habilite su Swagger, sin tener que tocar nginx de nuevo.
+server {
+    listen 8082 ssl;
+    listen [::]:8082 ssl;
+    server_name <DOMINIO>;
+
+    ssl_certificate     /etc/letsencrypt/live/<DOMINIO>/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/<DOMINIO>/privkey.pem;
+
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location ^~ /auth/api/docs {
+        rewrite ^/auth(/api.*) $1 break;
+        proxy_pass         http://backend_auth;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /api/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /fiscalia/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /lgi/docs {
+        proxy_pass         http://backend_v2;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        return 404;
+    }
+}

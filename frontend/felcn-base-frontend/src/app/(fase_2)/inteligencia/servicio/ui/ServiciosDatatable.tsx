@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { usePathname } from 'next/navigation'
 
-import { useSession } from '@/hooks'
+import { useAlerts, useSession } from '@/hooks'
 import { useAuth } from '@/context/AuthProvider'
 import { Constantes } from '@/config/Constantes'
 import { CasbinTypes } from '@/types'
@@ -24,6 +24,7 @@ export function ServiciosDatatable() {
   const { sesionPeticion } = useSession()
   const { permisoUsuario } = useAuth()
   const pathname = usePathname()
+  const { Alerta } = useAlerts()
 
   /* STATES */
   const [pagina, setPagina] = useState(1)
@@ -47,10 +48,10 @@ export function ServiciosDatatable() {
     direction: 'asc',
   })
 
-  async function openPdfInNewTab() {
+  async function openPdfInNewTab(codigoServicio: string) {
     try {
       const response = await sesionPeticion({
-        url: `${Constantes.baseUrl}/prueba/export/pdf`,
+        url: `${Constantes.baseUrl}/reporte/export/pdf/servicio/${codigoServicio}`,
         withCredentials: true,
         responseType: 'arraybuffer',
       })
@@ -68,7 +69,11 @@ export function ServiciosDatatable() {
 
       URL.revokeObjectURL(url)
     } catch (error) {
-      console.error('Error al intentar abrir el PDF:', error)
+      // console.error('Error al intentar abrir el PDF:', error)
+      Alerta({
+        variant: 'error',
+        mensaje: 'No se pudo abrir el PDF. Intente nuevamente.',
+      })
     }
   }
 
@@ -153,7 +158,7 @@ export function ServiciosDatatable() {
             onClick={() => {
               // setSelected(row)
               // setOpenDetalle(true)
-              openPdfInNewTab()
+              openPdfInNewTab(row.codigoServicio)
             }}
           >
             <IconFile className="h-5 text-primary" />

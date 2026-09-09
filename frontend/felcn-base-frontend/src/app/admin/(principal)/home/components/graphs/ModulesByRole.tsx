@@ -45,6 +45,12 @@ export default function ModulesByRole() {
         const role = p.sujeto
         const moduleName = p.objeto.split('/')[2]
 
+        // Política con una ruta malformada (sin al menos 2 niveles, ej. un
+        // nombre de archivo suelto en vez de "/seccion/modulo") — se omite
+        // en vez de romper el gráfico completo para cualquier admin que
+        // entre a este panel.
+        if (!moduleName) return
+
         if (!roleMap[role]) roleMap[role] = {}
         roleMap[role][moduleName] = (roleMap[role][moduleName] || 0) + 1
 

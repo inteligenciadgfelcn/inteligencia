@@ -1,3 +1,8 @@
+/**
+ * Sistema Nacional de Inteligencia de la FELCN — Fase 1
+ * Autoría: Ing. Erika Carmiña Camargo Salvatierra · Ing. Eitner Montero
+ * Proyecto BOLEU1 (UNODC) — DG-FELCN
+ */
 import { Modulo, Propiedades } from '@/core/authorization/entity/modulo.entity'
 import { MigrationInterface, QueryRunner } from 'typeorm'
 import { USUARIO_SISTEMA } from '@/common/constants'
