@@ -223,8 +223,21 @@ export class SiiiRepository {
       pa.nombres,
       pa.apellido_paterno,
       pa.apellido_materno,
-      COUNT(DISTINCT pa.id_operativo)::int as cantidad_operativos
+      COUNT(DISTINCT pa.id_operativo)::int as cantidad_operativos,
+      COALESCE(
+        json_agg(
+          json_build_object(
+            'numero_operativo', a.numero_operativo,
+            'nombre_caso', a.nombre_caso,
+            'asignado_caso', a.asignado_caso,
+            'telefono_asignado', a.telefono_asignado
+          )
+        ) FILTER (WHERE a.numero_operativo IS NOT NULL),
+        '[]'
+      ) AS operativos
     FROM public.persona_auxiliar pa
+    INNER JOIN operativo o ON pa.id_operativo = o.id_operativo
+    INNER JOIN asignacion a ON o.id_caso = a.id_caso
     ${where}
     GROUP BY 
       pa.nro_documento,

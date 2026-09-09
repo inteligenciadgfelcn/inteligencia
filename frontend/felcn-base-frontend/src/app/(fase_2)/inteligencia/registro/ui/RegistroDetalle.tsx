@@ -93,7 +93,7 @@ export const RegistroDetalle = ({
 
                     <div className="col-span-4 font-semibold">Unidad:</div>
                     <div className="col-span-8">
-                      {registro?.grupo?.distrital?.unidad?.descripcion ?? '-'}
+                      {registro?.unidad?.descripcion ?? '-'}
                     </div>
 
                     <div className="col-span-4 font-semibold">
@@ -123,19 +123,19 @@ export const RegistroDetalle = ({
                       Telefono solicitante:
                     </div>
                     <div className="col-span-8">
-                      {registro?.telefonoSolicitud ?? '-'}
+                      {registro?.siii?.telefono_solicitud ?? '-'}
                     </div>
 
                     <div className="col-span-4 font-semibold">Asignado a:</div>
                     <div className="col-span-8">
-                      {registro?.asignado ?? '-'}
+                      {registro?.siii?.asignado_caso ?? '-'}
                     </div>
 
                     <div className="col-span-4 font-semibold">
                       Telefono asignado:
                     </div>
                     <div className="col-span-8">
-                      {registro?.telefonoAsignado ?? '-'}
+                      {registro?.siii?.telefono_asignado ?? '-'}
                     </div>
 
                     <div className="col-span-4 font-semibold">
@@ -149,7 +149,7 @@ export const RegistroDetalle = ({
                       Telefono fiscal:
                     </div>
                     <div className="col-span-8">
-                      {registro?.telefonoFiscal ?? '-'}
+                      {registro?.siii?.telefono_fiscal ?? '-'}
                     </div>
                   </div>
                 </div>

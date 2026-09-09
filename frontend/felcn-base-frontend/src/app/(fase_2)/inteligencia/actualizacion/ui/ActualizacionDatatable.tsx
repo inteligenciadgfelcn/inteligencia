@@ -16,10 +16,27 @@ import { useAuth } from '@/context/AuthProvider'
 import { IconoTooltip } from '@/components/botones/IconoTooltip'
 import { useRouter } from 'next/navigation'
 import { Constantes } from '@/config/Constantes'
+import { sesionPeticion } from '../../../../../utils/peticion'
+import { InterpreteMensajes } from '../../../../../utils'
+import { useAlerts } from '../../../../../hooks'
+import {
+  PreviewOperativoData,
+  ReportesOperativoService,
+} from '../../../../../services/reportes/ReportesOperativoService'
+import IconEye from '../../../../../components/Icon/IconEye'
+import { VistaPreviaOperativo } from '../../../../reportes/components/VistaPreviaOperativo'
 
 export function ActualizacionDataTable() {
-  const { verificarServicioUsuario } = useAuth()
+  const { codigoIcia } = useAuth()
   const router = useRouter()
+  const { Alerta } = useAlerts()
+
+  // ── Modal vista previa operativo ─────────────────────────────────────────────────────
+  const [modalOperativoOpen, setModalOperativoOpen] = useState(false)
+  const [previewData, setPreviewData] = useState<PreviewOperativoData | null>(
+    null
+  )
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   const [pagina, setPagina] = useState(1)
   const [limite, setLimite] = useState(10)
@@ -54,8 +71,9 @@ export function ActualizacionDataTable() {
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['casos_registrados', pagina, limite, search, sortStatus],
     queryFn: async () => {
-      const { codigoServicio } = await verificarServicioUsuario()
-      if (!codigoServicio) {
+      // const { codigoServicio } = await verificarServicioUsuario()
+      if (!codigoIcia) {
+        console.error('No se pudo obtener el código de servicio del usuario')
         throw new Error('No se pudo obtener el código de servicio del usuario')
       }
       return getActualizacionData(
@@ -67,11 +85,27 @@ export function ActualizacionDataTable() {
           ordenar: sortStatus.columnAccessor,
           direccion: sortStatus.direction,
         },
-        codigoServicio
+        codigoIcia
       )
     },
     placeholderData: keepPreviousData,
   })
+
+  const abrirPreview = async (numeroOperativo: string) => {
+    setPreviewData(null)
+    setPreviewUrl(
+      `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(numeroOperativo)}`
+    )
+    setModalOperativoOpen(true)
+    try {
+      const res =
+        await ReportesOperativoService.verPreviewOperativo(numeroOperativo)
+      if (res?.finalizado) setPreviewData(res.datos)
+    } catch (e) {
+      Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+      setModalOperativoOpen(false)
+    }
+  }
 
   const filas = useMemo(() => data?.datos.filas ?? [], [data])
   const total = useMemo(() => data?.datos.total ?? 0, [data])
@@ -183,22 +217,48 @@ export function ActualizacionDataTable() {
               color={'info'}
               accion={() => {
                 // redirect to http://localhost:8080/operativos/gestion-operativo/registro/?id=36 using router
-                router.push(
-                  `/operativos/registro/?id=${row.idCaso}`
-                )
+                router.push(`/operativos/registro/?id=${row.idCaso}`)
               }}
               icono={'edit'}
               name={'Editar caso'}
             />
             <IconoTooltip
+              id="2"
+              titulo={'Vista Previa del Reporte'}
+              color={'info'}
+              icono={'visibility'}
+              name={'Vista Previa del Reporte'}
+              accion={() =>
+                row.numeroOperativo && void abrirPreview(row.numeroOperativo)
+              }
+            />
+            <IconoTooltip
               id="1"
               titulo={'Generar reporte'}
               color={'info'}
-              accion={() => {
-                window.open(
-                  `${Constantes.baseUrl}/reportes/operativos/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`,
-                  '_blank'
-                )
+              accion={async () => {
+                try {
+                  Alerta({
+                    autoHideDuration: 3000,
+                    mensaje: 'Generando reporte...',
+                    variant: 'success',
+                  })
+                  const url = `${Constantes.baseUrl}/reportes/operativo/pdf?numero=${encodeURIComponent(row.numeroOperativo)}`
+                  const blob = await sesionPeticion<Blob>({
+                    url,
+                    responseType: 'blob',
+                  })
+                  const objectUrl = URL.createObjectURL(blob)
+                  const enlace = document.createElement('a')
+                  enlace.href = objectUrl
+                  enlace.download = `formulario-operativo-${row.numeroOperativo}.pdf`
+                  document.body.appendChild(enlace)
+                  enlace.click()
+                  enlace.remove()
+                  URL.revokeObjectURL(objectUrl)
+                } catch (e) {
+                  Alerta({ mensaje: InterpreteMensajes(e), variant: 'error' })
+                }
               }}
               icono={'download'}
               name={'Generar reporte'}
@@ -214,8 +274,9 @@ export function ActualizacionDataTable() {
             /> */}
             <button
               type="button"
-              className={`btn btn-sm m-1 ${isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
-                }`}
+              className={`btn btn-sm m-1 ${
+                isSelected ? 'btn-outline-danger' : 'btn-outline-primary'
+              }`}
               onClick={() => toggleSelected(row)}
             >
               {isSelected ? 'Deseleccionar' : 'Seleccionar'}
@@ -267,6 +328,14 @@ export function ActualizacionDataTable() {
           setSelectedCaso(null)
           refetch()
         }}
+      />
+
+      <VistaPreviaOperativo
+        open={modalOperativoOpen}
+        onClose={() => setModalOperativoOpen(false)}
+        data={previewData}
+        tipo="operativo"
+        urlPdf={previewUrl}
       />
     </div>
   )
