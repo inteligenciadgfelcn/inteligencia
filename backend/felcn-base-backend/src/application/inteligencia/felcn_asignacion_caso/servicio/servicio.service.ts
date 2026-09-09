@@ -253,6 +253,63 @@ export class ServicioService {
     return [resultado, total]
   }
 
+  async listarTodos() {
+    const servicios = await this.servicioRepository.find({
+      order: { fechaIngreso: 'DESC' },
+    })
+
+    const usuariosIds = Array.from(
+      new Set(
+        [
+          ...servicios.map((s) => s.usuarioPrincipal),
+          ...servicios.map((s) => s.usuarioEmergencia),
+        ].filter(Boolean)
+      )
+    )
+
+    const usuarios: UsuarioAuth[] = usuariosIds.length
+      ? await this.dataSourceAuth.query(
+          `
+  SELECT 
+    u.usuario,
+    u.numero_pase,
+    u.id as "idUsuario",
+    TRIM(CONCAT(
+      gr.abreviatura, ' ',
+      p.nombres, ' ',
+      p.primer_apellido, ' ',
+      COALESCE(p.segundo_apellido, '')
+    )) as "nombreCompleto",
+    gr.abreviatura
+  FROM usuario.usuario u
+  LEFT JOIN usuario.persona p ON p.id = u.id_persona
+  LEFT JOIN parametro.grado gr ON gr.id = u.id_grado
+  WHERE u.numero_pase = ANY($1::text[])
+  `,
+          [usuariosIds]
+        )
+      : []
+
+    const usuariosMap = new Map(usuarios.map((u) => [u.numero_pase, u]))
+
+    return servicios.map((servicio) => {
+      const usuarioPrincipal = usuariosMap.get(servicio.usuarioPrincipal)
+      const usuarioEmergencia = usuariosMap.get(servicio.usuarioEmergencia)
+
+      return {
+        ...servicio,
+        fechaIngreso: formatearFecha(servicio.fechaIngreso),
+        fechaSalida: formatearFecha(servicio.fechaSalida),
+        nombreUsuarioPrincipal: usuarioPrincipal
+          ? usuarioPrincipal.nombreCompleto
+          : null,
+        nombreUsuarioEmergencia: usuarioEmergencia
+          ? usuarioEmergencia.nombreCompleto
+          : null,
+      }
+    })
+  }
+
   async findOne(codigoServicio: string) {
     const servicio = await this.servicioRepository.findOne({
       where: { codigoServicio },
