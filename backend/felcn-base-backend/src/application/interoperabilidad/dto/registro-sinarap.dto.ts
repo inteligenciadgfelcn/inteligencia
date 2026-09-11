@@ -9,17 +9,6 @@ import {
 } from '@/common/validation'
 import { ApiProperty } from '@nestjs/swagger'
 
-import { Type } from 'class-transformer'
-import {
-  IsArray,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from '@/common/validation'
-import { ApiProperty } from '@nestjs/swagger'
-
 export class AntecedenteSinarapDto {
   @ApiProperty({ example: 1 })
   @IsNumber()
