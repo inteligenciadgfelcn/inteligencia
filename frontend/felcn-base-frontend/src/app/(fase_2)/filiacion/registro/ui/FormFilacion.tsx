@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -40,6 +40,10 @@ import { imprimir } from '@/utils/imprimir'
 import { useAlerts } from '@/hooks'
 import FingerprintCapture from '@/components/finger/FingerprintCapture'
 import { postRegistroHuella } from '../services/finger.service'
+import { postRegistroSinarap, PayloadSinarap } from '../services/sinarap.service'
+import { mapearPayloadSinarap } from '../sinarap.mapper'
+import { DialogoConfirmacionSinarap } from './DialogoConfirmacionSinarap'
+import { useAuth } from '@/context/AuthProvider'
 import {
   DepartamentoExpedido,
   getDeptExpedidos,
@@ -164,6 +168,20 @@ interface FingerData {
 /* ================= COMPONENT ================= */
 export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   const { Alerta } = useAlerts()
+  const { usuario } = useAuth()
+
+  const [dialogoSinarap, setDialogoSinarap] = useState<{
+    isOpen: boolean
+    payload?: PayloadSinarap
+    camposFaltantes: string[]
+    enviando: boolean
+  }>({
+    isOpen: false,
+    camposFaltantes: [],
+    enviando: false,
+  })
+
+  const valoresConfirmados = useRef<FormValues | null>(null)
 
   const rightFingersData = [
     {
@@ -399,6 +417,55 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
 
     try {
+      await Promise.all([
+        fileToBase64(values.fotoFrontal),
+        fileToBase64(values.fotoPerfilDerecho),
+        fileToBase64(values.fotoPerfilIzquierdo),
+      ])
+
+      const { payload, camposFaltantes } = mapearPayloadSinarap(
+        { ...values, numeroCaso: persona.numero_caso },
+        persona,
+        usuario
+      )
+
+      valoresConfirmados.current = values
+
+      setDialogoSinarap({
+        isOpen: true,
+        payload,
+        camposFaltantes,
+        enviando: false,
+      })
+    } catch (error: any) {
+      imprimir('Error al preparar filiacion', error)
+      Alerta({
+        mensaje:
+          error?.mensaje ?? error?.message ?? 'No se pudo preparar la filiacion',
+        variant: 'error',
+      })
+    }
+  }
+
+  const confirmarEnvioSinarap = async () => {
+    if (!persona) return
+
+    const payload = dialogoSinarap.payload
+    const values = valoresConfirmados.current
+
+    if (!payload || !values) {
+      Alerta({
+        mensaje: 'No se pudo preparar el payload de SINARAP',
+        variant: 'error',
+      })
+      return
+    }
+
+    setDialogoSinarap((prev) => ({ ...prev, enviando: true }))
+
+    try {
+      await postRegistroSinarap(payload)
+
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
           fileToBase64(values.fotoFrontal),
@@ -469,6 +536,8 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
 
       await sendFingers(response.idDetenido)
 
+      setDialogoSinarap((prev) => ({ ...prev, isOpen: false }))
+
       Alerta({
         mensaje: 'Registro de filiacion guardado correctamente',
         variant: 'success',
@@ -481,6 +550,8 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           error?.mensaje ?? error?.message ?? 'No se pudo guardar la filiacion',
         variant: 'error',
       })
+    } finally {
+      setDialogoSinarap((prev) => ({ ...prev, enviando: false }))
     }
   }
 
@@ -946,11 +1017,11 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                       prev.map((f) =>
                         f.id === finger.id
                           ? {
-                              ...f,
-                              image: img ?? '',
-                              wsq: wsq ?? '',
-                              calidad: calidad,
-                            }
+                            ...f,
+                            image: img ?? '',
+                            wsq: wsq ?? '',
+                            calidad: calidad,
+                          }
                           : f
                       )
                     )
@@ -976,11 +1047,11 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                       prev.map((f) =>
                         f.id === finger.id
                           ? {
-                              ...f,
-                              image: img ?? '',
-                              wsq: wsq ?? '',
-                              calidad: calidad,
-                            }
+                            ...f,
+                            image: img ?? '',
+                            wsq: wsq ?? '',
+                            calidad: calidad,
+                          }
                           : f
                       )
                     )
@@ -998,6 +1069,24 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           </div>
         </form>
       </div>
+
+      {dialogoSinarap.isOpen && (
+        <DialogoConfirmacionSinarap
+          isOpen={dialogoSinarap.isOpen}
+          onClose={() =>
+            setDialogoSinarap({
+              isOpen: false,
+              camposFaltantes: [],
+              enviando: false,
+            })
+          }
+
+          payload={dialogoSinarap.payload as PayloadSinarap}
+          camposFaltantes={dialogoSinarap.camposFaltantes}
+          enviando={dialogoSinarap.enviando}
+          onConfirmar={confirmarEnvioSinarap}
+        />
+      )}
     </div>
   )
 }
