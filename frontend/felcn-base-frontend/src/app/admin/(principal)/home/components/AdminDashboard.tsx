@@ -12,7 +12,7 @@ import RecentActivities from './graphs/RecentActivities'
 import { imprimir } from '@/utils/imprimir'
 
 export default function AdminDashboard() {
-  const { usuario, permisoAccion, verificarServicioUsuario } = useAuth()
+  const { usuario, permisoAccion } = useAuth()
 
   const [tab, setTab] = useState<'charts' | 'activity'>('charts')
 
