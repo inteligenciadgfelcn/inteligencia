@@ -1,9 +1,15 @@
 import { HttpService } from '@nestjs/axios'
-import { BadGatewayException, Injectable, InternalServerErrorException } from '@nestjs/common'
+import {
+  BadGatewayException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common'
 import { firstValueFrom } from 'rxjs'
 import { ConsultarItvDto } from '../dto/consultar-itv.dto'
 import { SinConsultaContribuyenteDto } from '../dto/sin-consulta-contribuyente.dto'
+import { RegistroSinarapDto } from '../dto/registro-sinarap.dto'
 import { contribuyentes } from './fake.sin.service'
+import { respuestaFakeSinarap } from './fake.sinarap.service'
 
 @Injectable()
 export class InteroperabilidadService {
@@ -17,6 +23,8 @@ export class InteroperabilidadService {
     process.env.IOP_INRA_NRO_IDENTIFICACION_TOKEN || ''
   private readonly sinUrl = process.env.IOP_SIN_URL || ''
   private readonly sinToken = process.env.IOP_SIN_TOKEN || ''
+  private readonly sinarapUrl = process.env.IOP_SINARAP_URL || ''
+  private readonly sinarapToken = process.env.IOP_SINARAP_TOKEN || ''
 
   constructor(private readonly httpService: HttpService) {}
 
@@ -123,10 +131,11 @@ export class InteroperabilidadService {
     try {
       const data = contribuyentes.find(
         (contribuyente) =>
-          contribuyente.datosContribuyente.nit.toString() === payload.nitConsulta
+          contribuyente.datosContribuyente.nit.toString() ===
+          payload.nitConsulta
       )
 
-      if(!data) {
+      if (!data) {
         throw new BadGatewayException(
           'No se encontró un contribuyente que coincida con los datos proporcionados'
         )
@@ -170,6 +179,31 @@ export class InteroperabilidadService {
     } catch (error) {
       throw new BadGatewayException(
         'No se pudo obtener una respuesta valida del servicio SIN (verificarComunicacionMinGob)'
+      )
+    }
+  }
+
+  async registrarSinarap(payload: RegistroSinarapDto) {
+    if (!this.sinarapUrl || !this.sinarapToken) {
+      return respuestaFakeSinarap()
+    }
+
+    const url = `${this.sinarapUrl.replace(/\/$/, '')}/registro`
+
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(url, payload, {
+          headers: {
+            Authorization: this.authHeader(this.sinarapToken, 'Token'),
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+        })
+      )
+      return response.data
+    } catch (error) {
+      throw new BadGatewayException(
+        'No se pudo obtener una respuesta valida del servicio SINARAP (registro)'
       )
     }
   }
