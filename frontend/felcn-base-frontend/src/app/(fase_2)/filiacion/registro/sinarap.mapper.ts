@@ -16,7 +16,7 @@ export interface DatosFormularioSinarap {
   nacionalidad: { value: number; label: string }
   genero: { value: number; label: string }
   profesionOcupacion: { value: number; label: string }
-  alias: string
+  alias?: string
   tipoDocumento: { value: number; label: string }
   fechaNacimiento: string
   direccion: string
@@ -81,7 +81,7 @@ export const mapearPayloadSinarap = (
     domicilio: valores.direccion,
     peso: String(valores.pesoCorporal),
     altura: String(valores.estatura),
-    aliasDenunciado: valores.alias,
+    aliasDenunciado: valores.alias ?? '',
   }
 
   const fechaActual = new Date()
