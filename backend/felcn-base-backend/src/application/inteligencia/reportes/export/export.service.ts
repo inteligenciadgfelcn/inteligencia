@@ -1,21 +1,25 @@
 // export.service.ts
-import { Injectable } from '@nestjs/common';
-import { PdfService } from './pdf/pdf.service';
-import { ExcelService } from './excel/excel.service';
+import { Injectable } from '@nestjs/common'
+import { PdfService } from './pdf/pdf.service'
+import { ExcelService } from './excel/excel.service'
+import { PDFOptions } from 'puppeteer'
 
 @Injectable()
 export class ExportService {
   constructor(
     private readonly pdfService: PdfService,
-    private readonly excelService: ExcelService,
+    private readonly excelService: ExcelService
   ) {}
 
-  async generatePDF(templateName: string, data: any): Promise<Buffer> {
-    
-    return this.pdfService.generate(templateName, data);
+  async generatePDF(
+    templateName: string,
+    data: any,
+    options: PDFOptions = {}
+  ): Promise<Buffer> {
+    return this.pdfService.generate(templateName, data, options)
   }
 
   async generateExcel(sheetName: string, data: any[]): Promise<Buffer> {
-    return this.excelService.generate(sheetName, data);
+    return this.excelService.generate(sheetName, data)
   }
 }

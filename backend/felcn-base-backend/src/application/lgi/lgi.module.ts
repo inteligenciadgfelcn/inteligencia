@@ -30,6 +30,7 @@ import { SituacionJuridicaBienModule } from './situacion_juridica_bien/situacion
 import { FotoBienesModule } from './foto_bienes/foto_bienes.module'
 import { PersonasJuridicasModule } from './personas_juridicas/personas_juridicas.module'
 import { SituacionJuridicaEmpresaModule } from './situacion_jurica_empresa/situacion_jurica_empresa.module'
+import { ReportesLgiModule } from './reportes_lgi/reportes_lgi.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { SituacionJuridicaEmpresaModule } from './situacion_jurica_empresa/situa
     FotoBienesModule,
     PersonasJuridicasModule,
     SituacionJuridicaEmpresaModule,
+    ReportesLgiModule,
   ],
   controllers: [],
 })
