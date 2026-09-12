@@ -36,7 +36,15 @@ for nombre in "${!servicios[@]}"; do
   # confundía con una capa real al descomprimir. Contra un registry simple
   # (`registry:2`, no Docker Hub) esto no aporta nada y sí rompe el pull, se
   # desactiva.
-  docker build --provenance=false --sbom=false -t "$imagen" "$contexto" || { echo -e "\n\nERROR: Falló el build de $nombre\n\n"; exit 1; }
+  #
+  # --build-arg NEXT_PUBLIC_APP_VERSION solo aplica al frontend (los otros dos
+  # Dockerfiles no declaran ese ARG, Docker lo ignora sin error) — hornea el
+  # tag real en el footer de la UI, así cualquiera puede ver desde el
+  # navegador qué versión está desplegada en cada ambiente sin tener que
+  # preguntarle a quien hizo el deploy.
+  docker build --provenance=false --sbom=false \
+    --build-arg NEXT_PUBLIC_APP_VERSION="$tag" \
+    -t "$imagen" "$contexto" || { echo -e "\n\nERROR: Falló el build de $nombre\n\n"; exit 1; }
 
   echo -e "\nPush: $imagen\n"
   docker push "$imagen" || { echo -e "\n\nERROR: Falló el push de $nombre\n\n"; exit 1; }

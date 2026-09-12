@@ -10,8 +10,16 @@ RUN npm ci --progress=false --no-audit --ignore-scripts --legacy-peer-deps
 COPY . .
 
 ARG NEXT_PUBLIC_PATH=""
+# Tag de la imagen (mismo valor que build-and-push.sh usa para el push al
+# registry, ej. "1.0.5") — se hornea acá porque las variables NEXT_PUBLIC_*
+# se inlinean en el bundle en tiempo de build, no se pueden inyectar después
+# via `environment:` del compose. Sin esto, el footer mostraba siempre la
+# version fija de package.json (nunca se actualizaba), y no habia forma de
+# saber desde la UI que tag esta realmente corriendo en cada ambiente.
+ARG NEXT_PUBLIC_APP_VERSION=""
 ENV NEXT_TELEMETRY_DISABLED=1 \
-    NEXT_PUBLIC_PATH=${NEXT_PUBLIC_PATH}
+    NEXT_PUBLIC_PATH=${NEXT_PUBLIC_PATH} \
+    NEXT_PUBLIC_APP_VERSION=${NEXT_PUBLIC_APP_VERSION}
 
 RUN node --run build
 
