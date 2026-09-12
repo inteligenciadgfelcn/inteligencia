@@ -31,4 +31,13 @@ export TAG="$tag"
 docker compose pull || { echo -e "\n\nERROR: Falló el pull de las imágenes\n\n"; exit 1; }
 docker compose up -d || { echo -e "\n\nERROR: Falló el 'up' del compose\n\n"; exit 1; }
 
+# Hallazgo real (repetido varias veces, sep/2026): tras recrear contenedores,
+# nginx sigue resolviendo las IPs viejas de Docker para los servicios
+# recreados (backend/frontend) hasta que se lo reinicia — sin esto, el sitio
+# queda respondiendo 502 en /api/estado aunque los contenedores ya estén Up.
+docker restart nginx >/dev/null 2>&1 || echo "AVISO: no se pudo reiniciar nginx (¿no corre en este compose?)"
+
+sleep 5
 echo -e "\n >>> ¡Desplegado! (.env actualizado a TAG=$tag) :)\n"
+echo " --- Estado de los contenedores ---"
+docker compose ps --format "table {{.Name}}\t{{.Image}}\t{{.Status}}"
