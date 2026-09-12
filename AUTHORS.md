@@ -20,3 +20,10 @@ Cada `package.json` y `README.md` de los tres proyectos (`felcn-auth-backend`,
 `felcn-base-backend`, `felcn-base-frontend`) refleja esta misma autoría para la
 Fase 1. La historia de contribuciones detallada se conserva en el control de
 versiones (`git log`, `git shortlog`).
+
+## Fase 2 — Sistema Nacional de Inteligencia de la FELCN
+
+
+**Autores:**
+
+- **Ing. Sergio Torrejon** &nbsp;·&nbsp; ``
