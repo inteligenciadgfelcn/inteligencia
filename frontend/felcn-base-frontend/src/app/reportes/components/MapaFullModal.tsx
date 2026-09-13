@@ -127,8 +127,8 @@ function generateMapaOperativosSrcDoc(coordenadas: CoordenadaBase[], origin: str
         const boundsMarcadores = markersData.map(m => [m.lat, m.lng]);
         const map = L.map('map').fitBounds(boliviaBounds);
 
-        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           crossOrigin: true
         }).addTo(map);
 
@@ -213,8 +213,8 @@ function generateMapaCalorSrcDoc(coordenadas: CoordenadaBase[], origin: string) 
         const boundsPuntos = pointsData.map(p => [p[0], p[1]]);
         const map = L.map('map').fitBounds(boliviaBounds);
 
-        const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
           crossOrigin: true
         }).addTo(map);
 

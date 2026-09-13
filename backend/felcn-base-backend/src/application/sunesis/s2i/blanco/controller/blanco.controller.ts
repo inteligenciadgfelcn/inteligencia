@@ -380,7 +380,8 @@ export class BlancoController extends BaseController {
       idBlanco,
       dto,
       archivo,
-      idUsuario
+      idUsuario,
+      file?.originalname
     )
     return this.successCreate(resultado)
   }
@@ -404,9 +405,14 @@ export class BlancoController extends BaseController {
     @Param('idActivo') idActivo: string,
     @Res() res: Response
   ) {
-    const archivo = await this.service.descargarActivoPatrimonial(idActivo)
+    const { data, nombreArchivo } =
+      await this.service.descargarActivoPatrimonial(idActivo)
+    res.set(
+      'Content-Disposition',
+      `attachment; filename="${nombreArchivo || `activo-patrimonial-${idActivo}`}"`
+    )
     res.set('Content-Type', 'application/octet-stream')
-    res.send(archivo)
+    res.send(data)
   }
 
   @ApiOperation({ summary: 'Eliminar activo patrimonial por ID' })
@@ -442,7 +448,8 @@ export class BlancoController extends BaseController {
       idBlanco,
       dto,
       idUsuario,
-      file?.buffer
+      file?.buffer,
+      file?.originalname
     )
     return this.successCreate(ovise)
   }
@@ -461,9 +468,13 @@ export class BlancoController extends BaseController {
     @Param('idOvise') idOvise: string,
     @Res() res: Response
   ) {
-    const archivo = await this.service.descargarOvise(idOvise)
+    const { data, nombreArchivo } = await this.service.descargarOvise(idOvise)
+    res.set(
+      'Content-Disposition',
+      `attachment; filename="${nombreArchivo || `ovise-${idOvise}`}"`
+    )
     res.set('Content-Type', 'application/octet-stream')
-    res.send(archivo)
+    res.send(data)
   }
 
   @ApiOperation({ summary: 'Eliminar reporte OVISE por ID' })

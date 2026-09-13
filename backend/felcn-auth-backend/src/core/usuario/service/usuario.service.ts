@@ -42,6 +42,13 @@ import { Configurations } from '@/common/params'
 import path from 'path'
 import fs from 'node:fs/promises'
 
+// Roles que un usuario con el rol OPERATIVO_USUARIO puede asignar al crear o
+// editar otros usuarios — control adicional pedido tras detectar que se
+// estaban otorgando roles sin ninguna consideración. Se valida acá (no solo
+// en el combo del frontend) porque el filtro de la UI es evitable llamando
+// a la API directo.
+const ROLES_ASIGNABLES_OPERATIVO_USUARIO = [RolEnum.USUARIO, RolEnum.OPERATIVO]
+
 @Injectable()
 export class UsuarioService extends BaseService {
   constructor(
@@ -140,7 +147,13 @@ export class UsuarioService extends BaseService {
     return url
   }
 
-  async crear(usuarioDto: CrearUsuarioDto, usuarioAuditoria: string) {
+  async crear(
+    usuarioDto: CrearUsuarioDto,
+    usuarioAuditoria: string,
+    rolActor?: string
+  ) {
+    await this.validarRolesAsignables(rolActor, usuarioDto.roles ?? [])
+
     // verificar si el usuario ya fue registrado
     const usuario = await this.usuarioRepositorio.buscarUsuarioPorCI(
       usuarioDto.persona.nroDocumento
@@ -874,8 +887,11 @@ export class UsuarioService extends BaseService {
   async actualizarDatos(
     id: string,
     usuarioDto: ActualizarUsuarioRolDto,
-    usuarioAuditoria: string
+    usuarioAuditoria: string,
+    rolActor?: string
   ) {
+    await this.validarRolesAsignables(rolActor, usuarioDto.roles ?? [])
+
     const { persona } = usuarioDto
 
     // 1. verificar que exista el usuario
@@ -1056,6 +1072,36 @@ export class UsuarioService extends BaseService {
         nuevos,
         usuarioAuditoria,
         transaccion
+      )
+    }
+  }
+
+  /**
+   * Si quien realiza la acción tiene el rol OPERATIVO_USUARIO (rol activo),
+   * solo puede asignar los roles listados en ROLES_ASIGNABLES_OPERATIVO_USUARIO
+   * — cualquier otro rol en la lista solicitada rechaza la operación entera.
+   * Para cualquier otro rol actor (ADMINISTRADOR, etc.) no aplica ninguna
+   * restricción.
+   */
+  private async validarRolesAsignables(
+    rolActor: string | undefined,
+    rolesIds: Array<string>
+  ) {
+    if (rolActor !== RolEnum.OPERATIVO_USUARIO || rolesIds.length === 0) {
+      return
+    }
+
+    const roles = await Promise.all(
+      rolesIds.map((id) => this.rolRepositorio.buscarPorId(id))
+    )
+
+    const rolNoPermitido = roles.find(
+      (rol) => !rol || !ROLES_ASIGNABLES_OPERATIVO_USUARIO.includes(rol.rol as RolEnum)
+    )
+
+    if (rolNoPermitido) {
+      throw new ForbiddenException(
+        `Un usuario con el rol ${RolEnum.OPERATIVO_USUARIO} solo puede asignar los roles: ${ROLES_ASIGNABLES_OPERATIVO_USUARIO.join(', ')}.`
       )
     }
   }

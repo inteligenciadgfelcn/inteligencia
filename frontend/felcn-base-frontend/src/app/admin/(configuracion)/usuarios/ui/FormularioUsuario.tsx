@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { RolType } from '../types/usuariosCRUDTypes'
 import { useAlerts, useSession, useConfirmDialog } from '@/hooks'
+import { useAuth } from '@/context/AuthProvider'
 import { InterpreteMensajes } from '@/utils'
 import { trimPayload } from '@/utils/trimPayload'
 import { Constantes } from '@/config/Constantes'
@@ -116,6 +117,7 @@ export const FormularioUsuario = ({
   const { Alerta } = useAlerts()
   const { sesionPeticion } = useSession()
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { rolUsuario } = useAuth()
   const router = useRouter()
 
   const obtenerUsuario = async () => {
@@ -157,6 +159,18 @@ export const FormularioUsuario = ({
     queryKey: ['roles'],
     queryFn: obtenerRoles,
   })
+
+  // Control adicional (rol OPERATIVO_USUARIO): solo puede asignar los roles
+  // USUARIO y OPERATIVO — el backend rechaza igual cualquier otro rol, este
+  // filtro es para que ni aparezcan como opción. Ver
+  // ROLES_ASIGNABLES_OPERATIVO_USUARIO en usuario.service.ts (fuente de verdad).
+  const ROLES_ASIGNABLES_OPERATIVO_USUARIO = ['USUARIO', 'OPERATIVO']
+  const rolesAsignables =
+    rolUsuario?.rol === 'OPERATIVO_USUARIO'
+      ? roles.filter((rol: RolType) =>
+          ROLES_ASIGNABLES_OPERATIVO_USUARIO.includes(rol.rol)
+        )
+      : roles
 
   // idRol -> idUsuarioRol (solo existe en edición; en alta el usuario_rol
   // todavía no se creó, RecursosPorRol lo maneja como catálogo sin excepciones)
@@ -626,7 +640,7 @@ export const FormularioUsuario = ({
                   render={({ field }) => (
                     <MultiSelect
                       label="Roles *"
-                      options={roles.map((rol: RolType) => ({
+                      options={rolesAsignables.map((rol: RolType) => ({
                         value: rol.id,
                         label: rol.nombre,
                       }))}

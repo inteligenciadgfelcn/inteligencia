@@ -81,7 +81,8 @@ export function ActivoPatrimonialPanel({ blanco }: Props) {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `activo-patrimonial-${a.idActivoPatrimonial}`
+      link.download =
+        a.nombreArchivo || `activo-patrimonial-${a.idActivoPatrimonial}`
       link.click()
       URL.revokeObjectURL(url)
     } catch (e) {

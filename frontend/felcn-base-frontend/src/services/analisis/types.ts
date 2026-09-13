@@ -216,6 +216,7 @@ export interface ActivoPatrimonial {
   gestion: string
   contenido: string
   descripcionTipoActivo?: string
+  nombreArchivo?: string
 }
 
 export interface CreateActivoPatrimonialPayload {
@@ -235,6 +236,7 @@ export interface Ovise {
   reporte: string
   accion: string
   tieneArchivo?: boolean
+  nombreArchivo?: string
 }
 
 export interface CreateOvisePayload {
