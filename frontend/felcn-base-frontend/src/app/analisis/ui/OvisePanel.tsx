@@ -73,6 +73,18 @@ export function OvisePanel({ blanco }: Props) {
 
   useEffect(() => { void cargar() }, [cargar])
 
+  // Bug real: mientras se escribe un valor negativo, el string pasa por
+  // estados intermedios ("-", "-1", etc.) que son truthy pero parseFloat()
+  // devuelve NaN — Leaflet crashea el frontend entero con "Invalid LatLng
+  // object" si se le pasa (NaN, x). Se valida con Number.isFinite() en vez
+  // de solo chequear que el string no esté vacío.
+  const latitudNum = parseFloat(latitud)
+  const longitudNum = parseFloat(longitud)
+  const coordenadasValidas: [number, number] | null =
+    Number.isFinite(latitudNum) && Number.isFinite(longitudNum)
+      ? [latitudNum, longitudNum]
+      : null
+
   const errorLugar = !lugar.trim() && submitted
   const errorReporte = !reporte.trim() && submitted
   const errorAccion = !accion.trim() && submitted
@@ -225,7 +237,7 @@ export function OvisePanel({ blanco }: Props) {
         zoom={13}
         height={900}
         onClick={handleMapClick}
-        coordenadas={latitud && longitud ? [parseFloat(latitud), parseFloat(longitud)] : null}
+        coordenadas={coordenadasValidas}
         tileUrl={TILES_MAPA[tipoMapa].url}
         tileUrlOverlay={TILES_MAPA[tipoMapa].overlay}
       />
