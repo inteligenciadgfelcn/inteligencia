@@ -710,8 +710,12 @@ export const FormularioUsuario = ({
             </div>
           </div>
 
-          {/* Sección: Recursos por rol */}
-          {rolesSeleccionados.length > 0 && (
+          {/* Sección: Recursos por rol — oculta para OPERATIVO_USUARIO: es una
+              personalización fina de permisos fuera de su alcance (ni tiene
+              acceso a /api/autorizacion/recursos, daba 403 en consola sin
+              romper el formulario, pero no tiene sentido mostrársela). */}
+          {rolesSeleccionados.length > 0 &&
+            rolUsuario?.rol !== 'OPERATIVO_USUARIO' && (
             <div className="border-t border-[#ebedf2] dark:border-[#1b2e4b] pt-6">
               <h5 className="text-lg font-semibold mb-1 text-dark dark:text-white-light">
                 Recursos por rol

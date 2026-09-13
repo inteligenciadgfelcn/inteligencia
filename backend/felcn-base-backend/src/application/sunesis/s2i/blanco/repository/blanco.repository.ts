@@ -263,6 +263,7 @@ export class BlancoRepository {
         'idTipoActivo',
         'gestion',
         'contenido',
+        'nombreArchivo',
       ],
       where: { idBlanco },
       relations: ['tipoActivo'],
@@ -300,6 +301,7 @@ export class BlancoRepository {
         'reporte',
         'accion',
         'archivo',
+        'nombreArchivo',
       ],
       where: { idBlanco },
     })
