@@ -316,7 +316,8 @@ export class BlancoService {
     idBlanco: string,
     dto: CreateActivoPatrimonialDto,
     archivo: Buffer,
-    idUsuario: string
+    idUsuario: string,
+    nombreArchivo?: string
   ): Promise<any> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
@@ -327,6 +328,7 @@ export class BlancoService {
       gestion: dto.gestion.trim(),
       contenido: dto.contenido.trim(),
       archivo,
+      nombreArchivo,
       usuarioCreacion: idUsuario,
     })
     const saved = await this.repo.crearActivoPatrimonial(activo)
@@ -344,13 +346,13 @@ export class BlancoService {
 
   async descargarActivoPatrimonial(
     idActivoPatrimonial: string
-  ): Promise<Buffer> {
+  ): Promise<{ data: Buffer; nombreArchivo?: string }> {
     const activo = await this.repo.buscarActivoPorId(idActivoPatrimonial)
     if (!activo)
       throw new NotFoundException(
         `Activo patrimonial ${idActivoPatrimonial} no encontrado`
       )
-    return activo.archivo
+    return { data: activo.archivo, nombreArchivo: activo.nombreArchivo }
   }
 
   async eliminarActivoPatrimonial(idActivoPatrimonial: string): Promise<void> {
@@ -363,11 +365,13 @@ export class BlancoService {
     idBlanco: string,
     dto: CreateOviseDto,
     idUsuario: string,
-    archivo?: Buffer
+    archivo?: Buffer,
+    nombreArchivo?: string
   ): Promise<any> {
     const existe = await this.repo.buscarPorId(idBlanco)
     if (!existe) throw new NotFoundException(`Blanco ${idBlanco} no encontrado`)
 
+    const tieneArchivo = !!archivo && archivo.length > 0
     const ovise = new S2iOvise({
       idBlanco,
       lugar: dto.lugar.trim().toUpperCase(),
@@ -375,7 +379,8 @@ export class BlancoService {
       longitud: dto.longitud,
       reporte: dto.reporte.trim(),
       accion: dto.accion.trim().toUpperCase(),
-      archivo: archivo && archivo.length > 0 ? archivo : undefined,
+      archivo: tieneArchivo ? archivo : undefined,
+      nombreArchivo: tieneArchivo ? nombreArchivo : undefined,
       usuarioCreacion: idUsuario,
     })
     const saved = await this.repo.crearOvise(ovise)
@@ -391,7 +396,9 @@ export class BlancoService {
     }))
   }
 
-  async descargarOvise(idOvise: string): Promise<Buffer> {
+  async descargarOvise(
+    idOvise: string
+  ): Promise<{ data: Buffer; nombreArchivo?: string }> {
     const ovise = await this.repo.buscarOvisePorId(idOvise)
     if (!ovise)
       throw new NotFoundException(`Reporte OVISE ${idOvise} no encontrado`)
@@ -399,7 +406,7 @@ export class BlancoService {
       throw new NotFoundException(
         `El reporte OVISE ${idOvise} no tiene archivo adjunto`
       )
-    return ovise.archivo
+    return { data: ovise.archivo, nombreArchivo: ovise.nombreArchivo }
   }
 
   async eliminarOvise(idOvise: string): Promise<void> {

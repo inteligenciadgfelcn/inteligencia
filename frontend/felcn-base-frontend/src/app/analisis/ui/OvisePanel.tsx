@@ -115,7 +115,7 @@ export function OvisePanel({ blanco }: Props) {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `ovise-${o.idOvise}`
+      link.download = o.nombreArchivo || `ovise-${o.idOvise}`
       link.click()
       URL.revokeObjectURL(url)
     } catch (e) {

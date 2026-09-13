@@ -30,6 +30,10 @@ export class S2iActivoPatrimonial extends AuditoriaEntity {
   @Column({ name: 'archivo', type: 'bytea' })
   archivo: Buffer
 
+  /** Nombre original del archivo (con extensión) — ver database/scripts/nombre-archivo-ovise-activo-patrimonial.sql */
+  @Column({ name: 'nombre_archivo', type: 'varchar', length: 150, nullable: true })
+  nombreArchivo?: string
+
   @ManyToOne(() => S2iBlanco)
   @JoinColumn({ name: 'id_blanco' })
   blanco?: S2iBlanco
