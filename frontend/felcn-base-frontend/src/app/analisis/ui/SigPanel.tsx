@@ -86,6 +86,18 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
     else setCoordY(num.toFixed(6))
   }
 
+  // Bug real: mientras se escribe un valor negativo, el string pasa por
+  // estados intermedios ("-", "-1", etc.) que son truthy pero parseFloat()
+  // devuelve NaN — Leaflet crashea el frontend entero con "Invalid LatLng
+  // object" si se le pasa (NaN, x). Se valida con Number.isFinite() en vez
+  // de solo chequear que el string no esté vacío.
+  const coordXNum = parseFloat(coordX)
+  const coordYNum = parseFloat(coordY)
+  const coordenadasValidas: [number, number] | null =
+    Number.isFinite(coordXNum) && Number.isFinite(coordYNum)
+      ? [coordXNum, coordYNum]
+      : null
+
   const guardar = async () => {
     setSubmitted(true)
     if (!descripcion.trim() || !coordX || !coordY || !contenido.trim()) return
@@ -208,7 +220,7 @@ export function SIGPanel({ idEntidad, service, idField }: SigPanelProps) {
         zoom={13}
         height={900}
         onClick={handleMapClick}
-        coordenadas={coordX && coordY ? [parseFloat(coordX), parseFloat(coordY)] : null}
+        coordenadas={coordenadasValidas}
         tileUrl={TILES_MAPA[tipoMapa].url}
         tileUrlOverlay={TILES_MAPA[tipoMapa].overlay}
       />

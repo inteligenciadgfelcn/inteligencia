@@ -648,7 +648,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   // ── Campos del formulario ─────────────────────────────────────────────────
   const [idTipoDroga, setIdTipoDroga] = useState('')
   const [idEstadoDroga, setIdEstadoDroga] = useState('')
-  const [cantidadUnidades, setCantidadUnidades] = useState('1')
+  const [cantidadUnidades, setCantidadUnidades] = useState('0')
   const [cantidadTn, setCantidadTn] = useState('0')
   const [cantidadKg, setCantidadKg] = useState('0')
   const [cantidadG, setCantidadG] = useState('0')
@@ -771,7 +771,7 @@ export function SeccionDrogasFotografiaLogotiposForm({
   const resetForm = useCallback(() => {
     setIdTipoDroga('')
     setIdEstadoDroga('')
-    setCantidadUnidades('1')
+    setCantidadUnidades('0')
     setCantidadTn('0')
     setCantidadKg('0')
     setCantidadG('0')
@@ -907,12 +907,12 @@ export function SeccionDrogasFotografiaLogotiposForm({
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Cantidad de Unidades
+              Nro. Pastillas, Cápsulas (Tragones)/Ampollas etc.
             </label>
             <Input
               id="cantidadUnidades"
               type="text"
-              placeholder="1"
+              placeholder="0"
               className="w-full"
               value={cantidadUnidades}
               onChange={(e) => {

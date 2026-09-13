@@ -323,6 +323,17 @@ export function DatosGeneralesForm({
 
   const coordX = watch('coordX')
   const coordY = watch('coordY')
+  // Bug real: mientras se escribe un valor negativo, el string pasa por
+  // estados intermedios ("-", "-1", etc.) que son truthy pero Number()
+  // devuelve NaN — Leaflet crashea el frontend entero con "Invalid LatLng
+  // object" si se le pasa (NaN, x). Se valida con Number.isFinite() en vez
+  // de solo chequear que el valor no esté vacío.
+  const coordXNum = Number(coordX)
+  const coordYNum = Number(coordY)
+  const coordenadasValidas: [number, number] | null =
+    Number.isFinite(coordXNum) && Number.isFinite(coordYNum)
+      ? [coordXNum, coordYNum]
+      : null
   const categoriaOperativoSeleccionada = watch('idCategoriaOperativo')
   const departamentoSeleccionado = watch('idDepartamento')
   const provinciaSeleccionada = watch('idProvincia')
@@ -1562,9 +1573,7 @@ export function DatosGeneralesForm({
               zoom={15.63}
               height={800}
               onClick={handleMapClick}
-              coordenadas={
-                coordX && coordY ? [Number(coordX), Number(coordY)] : null
-              }
+              coordenadas={coordenadasValidas}
             />
           </div>
 

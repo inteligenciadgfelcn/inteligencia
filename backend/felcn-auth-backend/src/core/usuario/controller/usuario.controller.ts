@@ -116,7 +116,11 @@ export class UsuarioController extends BaseController {
   @Post()
   async crear(@Req() req: Request, @Body() usuarioDto: CrearUsuarioDto) {
     const usuarioAuditoria = this.getUser(req)
-    const result = await this.usuarioService.crear(usuarioDto, usuarioAuditoria)
+    const result = await this.usuarioService.crear(
+      usuarioDto,
+      usuarioAuditoria,
+      req.user?.rol
+    )
     return this.successCreate(result)
   }
 
@@ -452,7 +456,8 @@ export class UsuarioController extends BaseController {
     const result = await this.usuarioService.actualizarDatos(
       idUsuario,
       usuarioDto,
-      usuarioAuditoria
+      usuarioAuditoria,
+      req.user?.rol
     )
     return this.successUpdate(result)
   }
