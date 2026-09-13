@@ -22,7 +22,7 @@ export class rolOperativoUsuario1789000000000 implements MigrationInterface {
     await queryRunner.manager.save(
       new Rol({
         rol: RolEnum.OPERATIVO_USUARIO,
-        nombre: 'OPERATIVO DE USUARIOS',
+        nombre: 'OPERATIVO-USUARIO',
         descripcion:
           'Puede crear y editar usuarios, restringido a asignar únicamente los roles USUARIO y OPERATIVO.',
         estado: 'ACTIVO',
