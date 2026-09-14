@@ -581,13 +581,12 @@ export class OperativoService extends BaseService {
 
   async agregarLogotipo(
     idOperativo: string,
-    idDroga: string,
     data: CreateLogotipoDto,
     fotografia: Buffer,
     usuario: string
   ): Promise<any> {
     const logotipoEntity = new Logotipo({
-      idDroga,
+      idOperativo,
       imagen: data.imagen,
       descripcionLogo: data.descripcionLogo,
       organizacion: data.organizacion,
@@ -601,17 +600,17 @@ export class OperativoService extends BaseService {
     return {
       ...resto,
       urlFotografia: foto?.length
-        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${logotipo.id}/foto`
+        ? `/api/operativos/${idOperativo}/logotipos/${logotipo.id}/foto`
         : null,
     }
   }
 
-  async listarLogotipos(idOperativo: string, idDroga: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
-    const [logotipos, total] = await this.operativoRepository.listarLogotiposPorDroga(idDroga, paginacion)
-    const filas = logotipos.map(({ fotografia, droga, ...l }) => ({
+  async listarLogotipos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
+    const [logotipos, total] = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo, paginacion)
+    const filas = logotipos.map(({ fotografia, operativo, ...l }) => ({
       ...l,
       urlFotografia: fotografia?.length
-        ? `/api/operativos/${idOperativo}/drogas/${idDroga}/logotipos/${l.id}/foto`
+        ? `/api/operativos/${idOperativo}/logotipos/${l.id}/foto`
         : null,
     }))
     return [filas, total]
@@ -687,9 +686,9 @@ export class OperativoService extends BaseService {
     return bien.fotoBien || Buffer.alloc(0)
   }
 
-  async obtenerFotoLogotipo(idDroga: string, idLogotipo: string): Promise<Buffer> {
+  async obtenerFotoLogotipo(idOperativo: string, idLogotipo: string): Promise<Buffer> {
     const logotipo = await this.operativoRepository.buscarLogotipoPorId(idLogotipo)
-    if (!logotipo || logotipo.idDroga !== idDroga) {
+    if (!logotipo || logotipo.idOperativo !== idOperativo) {
       throw new NotFoundException(`Logotipo con ID ${idLogotipo} no encontrado`)
     }
     return logotipo.fotografia || Buffer.alloc(0)

@@ -1,14 +1,15 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
-  LogotipoCasoPayload,
+  LogotipoPayload,
+  LogotipoResponse,
   RespuestaApi,
   RespuestaApiPaginada,
 } from './types'
 
 const BASE_OPERATIVOS = `${Constantes.baseUrl}/operativos`
 
-const buildFormData = (payload: LogotipoCasoPayload) => {
+const buildFormData = (payload: LogotipoPayload) => {
   const formData = new FormData()
 
   formData.append('imagen', payload.imagen)
@@ -31,24 +32,22 @@ const buildFormData = (payload: LogotipoCasoPayload) => {
 
 export const LogotiposService = {
   listar(
-    idCaso: number,
-    idDroga: number,
+    idOperativo: number,
     pagina: number = 1,
     limite: number = 10
-  ): Promise<RespuestaApi<RespuestaApiPaginada<unknown>>> {
+  ): Promise<RespuestaApi<RespuestaApiPaginada<LogotipoResponse>>> {
     return sesionPeticion({
-      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos?pagina=${pagina}&limite=${limite}`,
+      url: `${BASE_OPERATIVOS}/${idOperativo}/logotipos?pagina=${pagina}&limite=${limite}`,
       withCredentials: true,
     })
   },
 
   crear(
-    idCaso: number,
-    idDroga: number,
-    payload: LogotipoCasoPayload
-  ): Promise<RespuestaApi<unknown>> {
+    idOperativo: number,
+    payload: LogotipoPayload
+  ): Promise<RespuestaApi<LogotipoResponse>> {
     return sesionPeticion({
-      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos`,
+      url: `${BASE_OPERATIVOS}/${idOperativo}/logotipos`,
       method: 'POST',
       body: buildFormData(payload),
       headers: {
@@ -59,18 +58,18 @@ export const LogotiposService = {
   },
 
   eliminar(
-    idCaso: number,
-    idDroga: number,
+    idOperativo: number,
     idLogotipo: number
   ): Promise<RespuestaApi<unknown>> {
     return sesionPeticion({
-      url: `${BASE_OPERATIVOS}/${idCaso}/drogas/${idDroga}/logotipos/${idLogotipo}`,
+      url: `${BASE_OPERATIVOS}/${idOperativo}/logotipos/${idLogotipo}`,
       method: 'DELETE',
       withCredentials: true,
     })
   },
 
   obtenerFoto(path: string): Promise<Blob> {
+    if (!path) return Promise.reject(new Error('Path no proporcionado'))
     const pathNormalizado = path.replace(/^\/api/, '')
     return sesionPeticion<Blob>({
       url: `${Constantes.baseUrl}${pathNormalizado}`,

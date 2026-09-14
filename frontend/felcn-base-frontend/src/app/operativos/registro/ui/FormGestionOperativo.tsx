@@ -12,6 +12,7 @@ import { Laboratorio } from './secciones/Laboratorio'
 import { Persona } from './secciones/Persona'
 import { SeccionBienesForm } from './secciones/BienesForm'
 import { Galeria } from './secciones/Galeria'
+import { Logotipos } from './secciones/Logotipos'
 import {
   useGestionOperativoForm,
   type SeccionKey,
@@ -41,6 +42,7 @@ interface SeccionDef {
 const SECCIONES: SeccionDef[] = [
   { key: 'seccion-1', label: 'Datos Generales', icon: 'description' },
   { key: 'seccion-2', label: 'Drogas', icon: 'science' },
+  { key: 'seccion-9', label: 'Logotipos', icon: 'flag' },
   { key: 'seccion-3', label: 'Sust. Sólidas', icon: 'grain' },
   { key: 'seccion-4', label: 'Sust. Líquidas', icon: 'water_drop' },
   { key: 'seccion-5', label: 'Laboratorios', icon: 'biotech' },
@@ -145,6 +147,15 @@ export function FormGestionOperativo({
           onGuardar={seccion2.mutation.mutateAsync}
           onRecuperar={() => seccion2.query.refetch()}
           cargando={seccion2.mutation.isPending || seccion2.query.isFetching}
+          idoperativo={idOperativo}
+        />
+      )
+    }
+
+    if (key === 'seccion-9') {
+      return (
+        <Logotipos
+          titulo="LOGOTIPOS DETECTADOS"
           idoperativo={idOperativo}
         />
       )
@@ -257,6 +268,7 @@ export function FormGestionOperativo({
         />
       )
     }
+
   }
 
   return (

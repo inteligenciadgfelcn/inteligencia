@@ -76,6 +76,16 @@ export interface PreviewGaleria {
   descripcion: string | null
 }
 
+export interface PreviewLogotipo {
+  id: string
+  imagen: string | null
+  descripcionLogo: string | null
+  organizacion: string | null
+  blanco: string | null
+  observacion: string | null
+  urlFotografia: string | null
+}
+
 export interface PreviewOperativoData {
   caso: PreviewCaso
   operativo: PreviewOperativo
@@ -86,6 +96,7 @@ export interface PreviewOperativoData {
   personas: PreviewPersona[]
   bienes: PreviewBien[]
   galerias: PreviewGaleria[]
+  logotipos: PreviewLogotipo[]
   mapaCoords: { lat: number; lon: number } | null
 }
 
