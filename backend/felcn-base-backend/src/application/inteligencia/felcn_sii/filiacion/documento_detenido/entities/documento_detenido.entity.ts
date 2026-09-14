@@ -22,12 +22,12 @@ export class DocumentoDetenido {
   detenido: Detenido
 
   @Column({
-    name: 'id_operativo',
+    name: 'id_detenido',
     type: 'int',
     nullable: true,
     comment: 'Identificador del operativo relacionado',
   })
-  idOperativo: number
+  idDetenido: number
 
   @ManyToOne(() => TipoDocumento)
   @JoinColumn({ name: 'id_tipo_documento' })
