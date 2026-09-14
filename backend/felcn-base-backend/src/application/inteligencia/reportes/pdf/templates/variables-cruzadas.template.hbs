@@ -1,0 +1,639 @@
+<html lang='es'>
+  <head>
+    <meta charset='UTF-8' />
+
+    <style>
+      @page {
+        size: A3 landscape;
+        margin: 8mm;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        color: #1f2937;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 7px;
+        background: #ffffff;
+      }
+
+      .encabezado {
+        position: relative;
+        min-height: 64px;
+        margin-bottom: 8px;
+        border-bottom: 2px solid #176b3a;
+      }
+
+      .logo-izquierdo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 58px;
+        height: 58px;
+        object-fit: contain;
+      }
+
+      .logo-derecho {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 58px;
+        height: 58px;
+        object-fit: contain;
+      }
+
+      .encabezado-centro {
+        padding: 2px 75px;
+        text-align: center;
+      }
+
+      .institucion {
+        margin: 0 0 3px;
+        font-size: 9px;
+        font-weight: bold;
+      }
+
+      .titulo {
+        margin: 0;
+        color: #176b3a;
+        font-size: 15px;
+        font-weight: bold;
+      }
+
+      .fecha-generacion {
+        margin-top: 4px;
+        font-size: 7px;
+      }
+
+      .seccion-titulo {
+        margin: 8px 0 4px;
+        padding: 4px 6px;
+        color: #ffffff;
+        font-size: 8px;
+        font-weight: bold;
+        background: #176b3a;
+      }
+
+      .resumen {
+        display: flex;
+        align-items: stretch;
+        gap: 6px;
+        margin-bottom: 7px;
+      }
+
+      .resumen-item {
+        min-width: 100px;
+        padding: 5px 8px;
+        border: 1px solid #176b3a;
+        border-radius: 2px;
+        text-align: center;
+        background: #f3faf6;
+      }
+
+      .resumen-valor {
+        display: block;
+        margin-bottom: 2px;
+        color: #176b3a;
+        font-size: 13px;
+        font-weight: bold;
+      }
+
+      .resumen-etiqueta {
+        display: block;
+        font-size: 7px;
+        font-weight: bold;
+      }
+
+      .filtros {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px 8px;
+        margin-bottom: 7px;
+        padding: 6px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+      }
+
+      .filtro {
+        min-height: 15px;
+      }
+
+      .filtro-etiqueta {
+        font-weight: bold;
+      }
+
+      .sin-filtros {
+        grid-column: 1 / -1;
+        color: #64748b;
+        font-style: italic;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tr {
+        page-break-inside: avoid;
+      }
+
+      th,
+      td {
+        overflow-wrap: anywhere;
+        border: 1px solid #94a3b8;
+        padding: 3px 2px;
+        vertical-align: top;
+      }
+
+      th {
+        color: #ffffff;
+        font-size: 6.5px;
+        font-weight: bold;
+        text-align: center;
+        background: #176b3a;
+      }
+
+      td {
+        font-size: 6.5px;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #f1f5f3;
+      }
+
+      .centrado {
+        text-align: center;
+      }
+
+      .filiado {
+        color: #116530;
+        font-weight: bold;
+      }
+
+      .sin-filiar {
+        color: #9b2c2c;
+        font-weight: bold;
+      }
+
+      .sin-resultados {
+        padding: 15px;
+        color: #64748b;
+        text-align: center;
+      }
+
+      .pie {
+        margin-top: 6px;
+        color: #64748b;
+        font-size: 6px;
+        text-align: right;
+      }
+
+      .col-nro {
+        width: 2.5%;
+      }
+
+      .col-caso {
+        width: 7%;
+      }
+
+      .col-cud {
+        width: 6%;
+      }
+
+      .col-operativo {
+        width: 6%;
+      }
+
+      .col-fecha {
+        width: 5.5%;
+      }
+
+      .col-lugar {
+        width: 7%;
+      }
+
+      .col-unidad {
+        width: 5%;
+      }
+
+      .col-persona {
+        width: 13%;
+      }
+
+      .col-genero {
+        width: 5%;
+      }
+
+      .col-nacimiento {
+        width: 5.5%;
+      }
+
+      .col-documento {
+        width: 7%;
+      }
+
+      .col-estado {
+        width: 6%;
+      }
+
+      .col-filiacion {
+        width: 5%;
+      }
+
+      .col-detenido {
+        width: 4%;
+      }
+
+      .col-ingreso {
+        width: 7%;
+      }
+
+      .col-civil {
+        width: 6%;
+      }
+
+      .col-vivo {
+        width: 3%;
+      }
+
+      .col-nombre-caso {
+        width: 9%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ENCABEZADO -->
+    <div class='encabezado'>
+      {{#if institucional}}
+        <img class='logo-izquierdo' src='{{{institucional}}}' alt='' />
+      {{/if}}
+
+      {{#if escudo}}
+        <img class='logo-derecho' src='{{{escudo}}}' alt='' />
+      {{/if}}
+
+      <div class='encabezado-centro'>
+        <p class='institucion'>
+          FUERZA ESPECIAL DE LUCHA CONTRA EL NARCOTRÁFICO
+        </p>
+
+        <h1 class='titulo'>
+          {{titulo}}
+        </h1>
+
+        <div class='fecha-generacion'>
+          Fecha de generación:
+          {{fechaGeneracion}}
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class='seccion-titulo'>
+      RESUMEN
+    </div>
+
+    <div class='resumen'>
+      <div class='resumen-item'>
+        <span class='resumen-valor'>
+          {{resumen.total}}
+        </span>
+
+        <span class='resumen-etiqueta'>
+          Total
+        </span>
+      </div>
+
+      <div class='resumen-item'>
+        <span class='resumen-valor'>
+          {{resumen.filiados}}
+        </span>
+
+        <span class='resumen-etiqueta'>
+          Filiados
+        </span>
+      </div>
+
+      <div class='resumen-item'>
+        <span class='resumen-valor'>
+          {{resumen.sinFiliar}}
+        </span>
+
+        <span class='resumen-etiqueta'>
+          Sin filiar
+        </span>
+      </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class='seccion-titulo'>
+      FILTROS APLICADOS
+    </div>
+
+    <div class='filtros'>
+      {{#if filtros.numeroCaso}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Número de caso:
+          </span>
+          {{filtros.numeroCaso}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.nombreCaso}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Nombre del caso:
+          </span>
+          {{filtros.nombreCaso}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.cud}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            CUD:
+          </span>
+          {{filtros.cud}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.nombres}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Nombres:
+          </span>
+          {{filtros.nombres}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.apellidoPaterno}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Apellido paterno:
+          </span>
+          {{filtros.apellidoPaterno}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.apellidoMaterno}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Apellido materno:
+          </span>
+          {{filtros.apellidoMaterno}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.numeroDocumento}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Documento:
+          </span>
+          {{filtros.numeroDocumento}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.estadoPersona}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Estado:
+          </span>
+          {{filtros.estadoPersona}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.fechaOperativoDesde}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Operativo desde:
+          </span>
+          {{filtros.fechaOperativoDesde}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.fechaOperativoHasta}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Operativo hasta:
+          </span>
+          {{filtros.fechaOperativoHasta}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.fechaIngresoSiiDesde}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Ingreso SII desde:
+          </span>
+          {{filtros.fechaIngresoSiiDesde}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.fechaIngresoSiiHasta}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Ingreso SII hasta:
+          </span>
+          {{filtros.fechaIngresoSiiHasta}}
+        </div>
+      {{/if}}
+
+      {{#if filtros.filiacion}}
+        <div class='filtro'>
+          <span class='filtro-etiqueta'>
+            Filiación:
+          </span>
+          {{filtros.filiacion}}
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class='seccion-titulo'>
+      RESULTADOS
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class='col-nro'>
+            N.º
+          </th>
+
+          <th class='col-caso'>
+            Caso
+          </th>
+
+          <th class='col-nombre-caso'>
+            Nombre del caso
+          </th>
+
+          <th class='col-cud'>
+            CUD
+          </th>
+
+          <th class='col-operativo'>
+            Operativo
+          </th>
+
+          <th class='col-fecha'>
+            Fecha operativo
+          </th>
+
+          <th class='col-lugar'>
+            Lugar
+          </th>
+
+          <th class='col-unidad'>
+            Unidad
+          </th>
+
+          <th class='col-persona'>
+            Persona
+          </th>
+
+          <th class='col-genero'>
+            Género
+          </th>
+
+          <th class='col-nacimiento'>
+            F. nacimiento
+          </th>
+
+          <th class='col-documento'>
+            Documento
+          </th>
+
+          <th class='col-estado'>
+            Estado
+          </th>
+
+          <th class='col-filiacion'>
+            Filiación
+          </th>
+
+          <th class='col-detenido'>
+            ID SII
+          </th>
+
+          <th class='col-ingreso'>
+            Ingreso SII
+          </th>
+
+          <th class='col-civil'>
+            Estado civil
+          </th>
+
+          <th class='col-vivo'>
+            Vivo
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each filas}}
+          <tr>
+            <td class='centrado'>
+              {{numero}}
+            </td>
+
+            <td>
+              {{numeroCaso}}
+            </td>
+
+            <td>
+              {{nombreCaso}}
+            </td>
+
+            <td>
+              {{cud}}
+            </td>
+
+            <td>
+              {{numeroOperativo}}
+            </td>
+
+            <td>
+              {{numeroOperativo}}
+            </td>
+
+            <td class='centrado'>
+              {{fechaOperativo}}
+            </td>
+
+            <td>
+              {{lugar}}
+            </td>
+
+            <td>
+              {{unidad}}
+            </td>
+
+            <td>
+              {{persona}}
+            </td>
+
+            <td class='centrado'>
+              {{genero}}
+            </td>
+
+            <td class='centrado'>
+              {{fechaNacimiento}}
+            </td>
+
+            <td>
+              {{documento}}
+            </td>
+
+            <td>
+              {{estado}}
+            </td>
+
+            <td class='centrado'>
+              {{filiacion}}
+            </td>
+
+            <td class='centrado'>
+              {{idDetenido}}
+            </td>
+
+            <td class='centrado'>
+              {{fechaIngresoSii}}
+            </td>
+
+            <td>
+              {{estadoCivil}}
+            </td>
+
+            <td class='centrado'>
+              {{estaVivo}}
+            </td>
+          </tr>
+
+        {{else}}
+          <tr>
+            <td class='sin-resultados' colspan='17'>
+              No se encontraron registros para los filtros seleccionados.
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <div class='pie'>
+      Total de registros:
+      {{resumen.total}}
+    </div>
+  </body>
+</html>

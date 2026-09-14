@@ -148,14 +148,6 @@ export class Detenido {
   direccion: string
 
   @Column({
-    name: 'lugar_operativo',
-    type: 'text',
-    nullable: true,
-    comment: 'Dirección del detenido',
-  })
-  lugarOperativo: string
-
-  @Column({
     name: 'observaciones',
     type: 'text',
     nullable: true,
@@ -254,4 +246,5 @@ export class Detenido {
 
   @OneToMany(() => NombresSupuesto, (ns) => ns.detenido)
   nombresSupuestos: NombresSupuesto[]
+  
 }

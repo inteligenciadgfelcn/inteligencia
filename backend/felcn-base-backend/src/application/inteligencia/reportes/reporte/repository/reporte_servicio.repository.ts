@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
-
 import { DB_SIII } from '@/core/config/database/database.module'
 
 @Injectable()
@@ -10,11 +9,6 @@ export class ReporteServicioRepository {
     @InjectDataSource(DB_SIII)
     private readonly dataSource: DataSource
   ) {}
-
-  /*
-   * Obtiene una fila por cada operativo
-   * perteneciente al código de servicio.
-   */
   async obtenerResultados(idServicio: string): Promise<any[]> {
     return this.dataSource.query(
       `
@@ -242,19 +236,15 @@ export class ReporteServicioRepository {
                 )
 
               FROM public.droga dr
-
               LEFT JOIN public.estado_droga ed
                 ON ed.id_estado_droga =
                    dr.id_estado_droga
-
               LEFT JOIN parametricas.tipo_droga td
                 ON td.id_tipo_droga =
                    ed.id_tipo_droga
-
               LEFT JOIN parametricas.forma_transporte ft
                 ON ft.id_forma_transporte =
                    dr.id_forma_transporte
-
               WHERE
                 dr.id_operativo =
                 o.id_operativo
@@ -695,10 +685,6 @@ export class ReporteServicioRepository {
   /*
    * Totales de droga por código
    * de servicio.
-   *
-   * Conserva los identificadores
-   * utilizados por el sistema anterior:
-   *
    * 1 = pasta base de cocaína
    * 2 = clorhidrato de cocaína
    * 4 = marihuana
@@ -1182,10 +1168,6 @@ export class ReporteServicioRepository {
     )
   }
 
-  /*
-   * Totales agrupados por tipo
-   * de fábrica.
-   */
   async obtenerTotalesFabricas(idServicio: string): Promise<any[]> {
     return this.dataSource.query(
       `
@@ -1253,10 +1235,6 @@ export class ReporteServicioRepository {
     )
   }
 
-  /*
-   * Cantidad de personas aprehendidas
-   * y arrestadas en el servicio.
-   */
   async obtenerResumenPersonas(idServicio: string): Promise<any> {
     const resultado = await this.dataSource.query(
       `
@@ -1322,10 +1300,6 @@ export class ReporteServicioRepository {
     )
   }
 
-  /*
-   * Coordenadas y enlaces de los
-   * operativos del servicio.
-   */
   async obtenerOperativosMapa(idServicio: string): Promise<any[]> {
     return this.dataSource.query(
       `
