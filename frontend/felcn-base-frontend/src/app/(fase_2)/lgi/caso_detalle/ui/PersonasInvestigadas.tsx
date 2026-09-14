@@ -222,7 +222,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
   }
 
   const columns: Column<PersonaImplicadaRow>[] = [
-    { accessor: 'deId', title: 'ID' },
+    // { accessor: 'deId', title: 'ID' },
     {
       accessor: 'nombres',
       title: 'Nombre completo',

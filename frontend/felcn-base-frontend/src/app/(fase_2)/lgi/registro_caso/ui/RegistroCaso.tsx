@@ -36,6 +36,7 @@ import {
 import type {
   CatalogOption,
 } from '../types/registro-caso.types'
+import type { AsignacionCasoListadoRow } from '../../listado_casos/types/listado-casos.types'
 import {
   createDefaultDatosGeneralesValues,
   leerCasoDeStorage,
@@ -100,8 +101,14 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const queryClient = useQueryClient()
 
   const isLectura = modo === 'ver'
-  const casoInicial = useMemo(() => leerCasoDeStorage(), [])
+  const [casoInicial, setCasoInicial] = useState<AsignacionCasoListadoRow | null>(
+    null
+  )
   const casoActivo = casoId ? Number(casoId) : null
+
+  useEffect(() => {
+    setCasoInicial(leerCasoDeStorage())
+  }, [])
 
   const [activeTab, setActiveTab] = useState<TabKey>('datos-generales')
   const [casoActivoId, setCasoActivoId] = useState<number | null>(null)
@@ -142,21 +149,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
 
   const datosForm = useForm<DatosGeneralesSchemaValues>({
     resolver: zodResolver(datosGeneralesSchema),
-    defaultValues: {
-      ...createDefaultDatosGeneralesValues(),
-      ...(casoInicial && casoId
-        ? {
-          disId: disIdInicial,
-          nombreCaso: casoInicial.nombreCaso ?? '',
-          nroCaso: casoInicial.nroCaso ?? '',
-          cudIfp: casoInicial.cudIfp ?? '',
-          remiteFiscal: casoInicial.remiteFiscal ?? '',
-          conformeA: casoInicial.conformeA ?? '',
-          controlJurisdiccional:
-            (casoInicial.controlJurisdiccional as string | undefined) ?? '',
-        }
-        : {}),
-    },
+    defaultValues: createDefaultDatosGeneralesValues(),
   })
 
   const {
@@ -166,8 +159,24 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     getValues,
     setValue,
     resetField,
+    reset,
     formState: { errors },
   } = datosForm
+
+  useEffect(() => {
+    if (!casoInicial || !casoId) return
+    reset({
+      ...createDefaultDatosGeneralesValues(),
+      disId: disIdInicial,
+      nombreCaso: casoInicial.nombreCaso ?? '',
+      nroCaso: casoInicial.nroCaso ?? '',
+      cudIfp: casoInicial.cudIfp ?? '',
+      remiteFiscal: casoInicial.remiteFiscal ?? '',
+      conformeA: casoInicial.conformeA ?? '',
+      controlJurisdiccional:
+        (casoInicial.controlJurisdiccional as string | undefined) ?? '',
+    })
+  }, [casoInicial, casoId, disIdInicial, reset])
 
   const disIdSeleccionado = useWatch({
     control,
