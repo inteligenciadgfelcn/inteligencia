@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -30,6 +31,7 @@ import { FiltrosVariablesCruzadasDto } from './dto/filtros-variables-cruzadas.dt
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { BaseController } from '@/common/base/base-controller'
 import { DetenidoReporteService } from './services/detenido-reporte.service'
+import { VariablesCruzadasExportService } from './services/variables-cruzadas-export.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -39,7 +41,8 @@ export class ReporteController extends BaseController {
   constructor(
     private readonly reporteService: ReporteService,
     private readonly exportService: ExportService,
-    private readonly detenidoReporteService: DetenidoReporteService
+    private readonly detenidoReporteService: DetenidoReporteService,
+    private readonly variablesCruzadasExportService: VariablesCruzadasExportService
   ) {
     super()
   }
@@ -150,5 +153,138 @@ export class ReporteController extends BaseController {
     idDetenido: number
   ) {
     return this.detenidoReporteService.obtenerDetalle(idDetenido)
+  }
+
+  @Post('variables-cruzadas/export/:formato')
+  @ApiOperation({
+    summary: 'Exportar variables cruzadas en PDF, CSV, Excel o JSON',
+  })
+  @ApiParam({
+    name: 'formato',
+
+    description: 'Formato del archivo que se generará',
+
+    enum: ['pdf', 'csv', 'excel', 'json'],
+
+    example: 'json',
+  })
+  @ApiBody({
+    type: FiltrosVariablesCruzadasDto,
+
+    required: false,
+  })
+  async exportarVariablesCruzadas(
+    @Param('formato')
+    formato: string,
+
+    @Body()
+    filtros: FiltrosVariablesCruzadasDto,
+
+    @Res()
+    res: Response
+  ) {
+    const tipo = formato.trim().toLowerCase()
+
+    const fechaArchivo = this.obtenerFechaArchivo()
+
+    let buffer: Buffer
+    let contentType: string
+    let extension: string
+
+    switch (tipo) {
+      case 'json':
+        buffer = await this.variablesCruzadasExportService.generarJson(
+          filtros ?? {}
+        )
+
+        contentType = 'application/json; charset=utf-8'
+
+        extension = 'json'
+
+        break
+
+      case 'csv':
+        buffer = await this.variablesCruzadasExportService.generarCsv(
+          filtros ?? {}
+        )
+
+        contentType = 'text/csv; charset=utf-8'
+
+        extension = 'csv'
+
+        break
+
+      case 'excel':
+        buffer = await this.variablesCruzadasExportService.generarExcel(
+          filtros ?? {}
+        )
+
+        contentType =
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+        extension = 'xlsx'
+
+        break
+
+      case 'pdf':
+        buffer = await this.variablesCruzadasExportService.generarPdf(
+          filtros ?? {}
+        )
+
+        contentType = 'application/pdf'
+
+        extension = 'pdf'
+
+        break
+
+      default:
+        throw new BadRequestException(
+          'Formato inválido. Use pdf, csv, excel o json.'
+        )
+    }
+
+    const nombreArchivo = `variables-cruzadas-${fechaArchivo}.${extension}`
+
+    res.set({
+      'Content-Type': contentType,
+
+      'Content-Disposition': `attachment; filename="${nombreArchivo}"`,
+
+      'Content-Length': buffer.length,
+    })
+
+    return res.send(buffer)
+  }
+
+  private obtenerFechaArchivo(): string {
+    const partes = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/La_Paz',
+
+      year: 'numeric',
+
+      month: '2-digit',
+
+      day: '2-digit',
+
+      hour: '2-digit',
+
+      minute: '2-digit',
+
+      second: '2-digit',
+
+      hourCycle: 'h23',
+    }).formatToParts(new Date())
+
+    const obtener = (tipo: Intl.DateTimeFormatPartTypes) =>
+      partes.find((parte) => parte.type === tipo)?.value ?? ''
+
+    return (
+      `${obtener('year')}` +
+      `${obtener('month')}` +
+      `${obtener('day')}-` +
+      `${obtener('hour')}` +
+      `${obtener('minute')}` +
+      `${obtener('second')}`
+    )
   }
 }

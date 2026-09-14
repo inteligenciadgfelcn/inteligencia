@@ -14,6 +14,7 @@ import { ReporteServicioRepository } from './repository/reporte_servicio.reposit
 import { VariablesCruzadasRepository } from './repository/variables-cruzadas.repository'
 import { DetenidoReporteRepository } from './repository/detenido-reporte.repository'
 import { DetenidoReporteService } from './services/detenido-reporte.service'
+import { VariablesCruzadasExportService } from './services/variables-cruzadas-export.service'
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DetenidoReporteService } from './services/detenido-reporte.service'
     ReporteServicioService,
     VariablesCruzadasService,
     DetenidoReporteService,
+    VariablesCruzadasExportService,
 
     TarjetaProntuariaRepository,
     ReporteServicioRepository,
@@ -41,10 +43,13 @@ import { DetenidoReporteService } from './services/detenido-reporte.service'
 
   exports: [
     ReporteService,
+
     TarjetaProntuariaService,
     ReporteServicioService,
     VariablesCruzadasService,
     DetenidoReporteService,
+    VariablesCruzadasExportService,
+
     TarjetaProntuariaRepository,
     ReporteServicioRepository,
     VariablesCruzadasRepository,

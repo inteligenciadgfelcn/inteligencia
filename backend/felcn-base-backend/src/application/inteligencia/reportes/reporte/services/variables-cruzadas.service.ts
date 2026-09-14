@@ -13,7 +13,8 @@ export class VariablesCruzadasService {
 
   async buscar(
     filtros: FiltrosVariablesCruzadasDto,
-    pagination: PaginacionQueryDto
+    pagination: PaginacionQueryDto,
+    exportarTodos = false
   ): Promise<[any[], number]> {
     const filtrosConsulta = filtros ?? {}
     const limite = Math.min(Math.max(Number(pagination?.limite ?? 10), 1), 100)
@@ -58,7 +59,6 @@ export class VariablesCruzadasService {
     }
 
     const personasCompletas = personas.map((persona) => {
-
       if (Number(persona.enviado) !== 1) {
         return {
           ...persona,
@@ -173,8 +173,9 @@ export class VariablesCruzadasService {
       })
     }
     const total = resultado.length
-
-    const filas = resultado.slice(saltar, saltar + limite)
+    const filas = exportarTodos
+      ? resultado
+      : resultado.slice(saltar, saltar + limite)
 
     return [filas, total]
   }
@@ -580,5 +581,20 @@ export class VariablesCruzadasService {
     }
 
     return [String(valor)]
+  }
+
+  async obtenerTodosParaExportar(
+    filtros: FiltrosVariablesCruzadasDto
+  ): Promise<any[]> {
+    const [filas] = await this.buscar(
+      filtros ?? {},
+      {
+        limite: 10,
+        saltar: 0,
+      } as PaginacionQueryDto,
+      true
+    )
+
+    return filas
   }
 }
