@@ -11,8 +11,19 @@ trap "echo -e '\n\nERROR: Ocurrió un error mientras se ejecutaba el script :(\n
 # registry propio. Requiere haber hecho `docker login <registryHost>` una vez
 # antes, con las credenciales de htpasswd (ver crear-htpasswd.sh) — quedan en
 # ~/.docker/config.json, no se pasan por acá.
-
-registryHost="${REGISTRY_HOST:-registry.sunesis-dev.felcn.gob.bo}"
+#
+# El default apuntaba a un subdominio (`registry.sunesis-dev.felcn.gob.bo`)
+# que nunca se llegó a usar: la implementación real (ver
+# docs/14-registro-de-imagenes.md §"Opción por defecto") expone el registry
+# por path (`/v2/`) sobre el dominio principal, reutilizando su certificado
+# — que cubre `*.felcn.gob.bo`/`felcn.gob.bo` pero NO un subdominio de dos
+# niveles como `registry.sunesis-dev...`. Bug real (13/09/2026): con el
+# default viejo, `docker push` fallaba con
+# "x509: certificate is valid for *.felcn.gob.bo, felcn.gob.bo" — y aunque el
+# TLS hubiera pasado, quedaba subiendo a un host que staging/producción ni
+# siquiera consultan (sus `docker-compose.yml` referencian
+# `sunesis-dev.felcn.gob.bo/felcn-*`, sin subdominio).
+registryHost="${REGISTRY_HOST:-sunesis-dev.felcn.gob.bo}"
 tag="${1:-$(git rev-parse --short HEAD)}"
 
 echo -e "\n\n >>> Build y push de las imágenes con tag '$tag' hacia '$registryHost'...\n"
