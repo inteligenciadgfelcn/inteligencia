@@ -83,14 +83,26 @@ export interface OperativoPayload {
   clanFamiliar: string
 }
 
-export interface LogotipoCasoPayload {
-  id: number
+export interface LogotipoPayload {
   imagen: string
   descripcionLogo: string
   organizacion: string
   blanco?: string
   observacion?: string
   fotografia?: File
+}
+
+export interface LogotipoResponse {
+  id: number
+  idOperativo: string
+  imagen: string
+  descripcionLogo: string
+  organizacion: string
+  blanco?: string
+  observacion?: string
+  urlFotografia: string | null
+  fechaHoraIngreso?: string
+  usuario?: string
 }
 export interface DrogaCasoPayload {
   id: number

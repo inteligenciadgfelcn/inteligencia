@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import IconPrinter from '@/components/Icon/IconPrinter'
 import { sesionPeticion } from '@/utils/peticion'
 import { imprimir } from '@/utils/imprimir'
-import { GaleriaService } from '@/services/operativos'
+import { GaleriaService, LogotiposService } from '@/services/operativos'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
 
 function FotoGaleriaThumb({
@@ -50,6 +50,53 @@ function FotoGaleriaThumb({
       <img
         src={src}
         alt="Miniatura de galería"
+        className="h-full max-w-full cursor-zoom-in object-contain"
+        onClick={() => onClick(src)}
+      />
+    </div>
+  )
+}
+
+function FotoLogotipoThumb({
+  path,
+  onClick,
+}: {
+  path: string
+  onClick: (src: string) => void
+}) {
+  const [src, setSrc] = useState<string | null>(null)
+  const [cargandoFoto, setCargandoFoto] = useState(true)
+
+  useEffect(() => {
+    let objectUrl: string
+    LogotiposService.obtenerFoto(path)
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob)
+        setSrc(objectUrl)
+      })
+      .catch(() => setSrc(null))
+      .finally(() => setCargandoFoto(false))
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+    }
+  }, [path])
+
+  if (cargandoFoto) {
+    return <div className="h-16 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
+  }
+  if (!src) {
+    return (
+      <div className="flex h-16 w-24 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+        <span className="text-[10px] text-gray-400">Sin foto</span>
+      </div>
+    )
+  }
+  return (
+    <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt="Miniatura de logotipo"
         className="h-full max-w-full cursor-zoom-in object-contain"
         onClick={() => onClick(src)}
       />
@@ -175,6 +222,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
     personas,
     bienes,
     galerias,
+    logotipos,
     mapaCoords,
   } = data ?? {
     caso: null,
@@ -186,6 +234,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
     personas: [],
     bienes: [],
     galerias: [],
+    logotipos: [],
     mapaCoords: null,
   }
 
@@ -307,6 +356,41 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                         ])}
                         vacio="Sin drogas registradas"
                       />
+
+                      {/* Logotipos */}
+                      <TituloSeccion>Logotipos Detectados</TituloSeccion>
+                      <div className="mb-4 overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-white">
+                              {['Logo/Imagen', 'Descripción', 'Organización', 'Implicados', 'Fotografía'].map((h) => (
+                                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {logotipos.length === 0 ? (
+                              <tr><td colSpan={5} className="py-2 text-center italic text-gray-400">Sin logotipos registrados</td></tr>
+                            ) : (
+                              logotipos.map((l, i) => (
+                                <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.imagen ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.descripcionLogo ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.organizacion ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.blanco ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">
+                                    {l.urlFotografia ? (
+                                      <FotoLogotipoThumb path={l.urlFotografia} onClick={setImagenAmpliada} />
+                                    ) : (
+                                      <span className="italic text-gray-400">Sin foto</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
 
                       {/* Sustancias sólidas */}
                       <TituloSeccion>Sustancias Químicas Sólidas</TituloSeccion>

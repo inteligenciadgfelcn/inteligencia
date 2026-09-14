@@ -124,9 +124,9 @@ export class ConsultaOperativoRepository {
     })
   }
 
-  async listarLogotipos(idDroga: string): Promise<Logotipo[]> {
+  async listarLogotipos(idOperativo: string): Promise<Logotipo[]> {
     return this.dataSource.getRepository(Logotipo).find({
-      where: { idDroga },
+      where: { idOperativo },
       select: {
         id: true,
         imagen: true,

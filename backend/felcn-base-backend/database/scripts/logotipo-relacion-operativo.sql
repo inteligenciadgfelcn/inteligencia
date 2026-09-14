@@ -9,10 +9,11 @@
 -- existentes.
 --
 -- Idempotente (columnas/constraints con IF EXISTS / IF NOT EXISTS).
--- Correr a mano contra felcn_siii en cada ambiente (dev, staging, producción)
--- — este proyecto no tiene runner de migraciones para las bases del módulo
--- SIII, los cambios de schema se aplican así (ver database/scripts/README.md
--- y el precedente en nombre-archivo-ovise-activo-patrimonial.sql).
+-- Correr a mano contra felcn_siii en staging y producción — este proyecto
+-- no tiene runner de migraciones para las bases del módulo SIII, los
+-- cambios de schema se aplican así (ver database/scripts/README.md y el
+-- precedente en nombre-archivo-ovise-activo-patrimonial.sql). En dev ya
+-- se aplicó.
 
 BEGIN;
 

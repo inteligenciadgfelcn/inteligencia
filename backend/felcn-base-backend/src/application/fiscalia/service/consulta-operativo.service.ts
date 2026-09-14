@@ -75,7 +75,7 @@ export class ConsultaOperativoService {
   private async armarDetalle(operativo: OperativoConAsignacion) {
     const idOperativo = operativo.id
 
-    const [drogas, sustanciasSolidas, sustanciasLiquidas, fabricas, personas, bienes, galeria] =
+    const [drogas, sustanciasSolidas, sustanciasLiquidas, fabricas, personas, bienes, galeria, logotipos] =
       await Promise.all([
         this.repository.listarDrogas(idOperativo),
         this.repository.listarSustanciasSolidas(idOperativo),
@@ -84,29 +84,20 @@ export class ConsultaOperativoService {
         this.repository.listarPersonasAuxiliares(idOperativo),
         this.repository.listarBienes(idOperativo),
         this.repository.listarGaleria(idOperativo),
+        this.repository.listarLogotipos(idOperativo),
       ])
 
-    const drogasConLogotipos = await Promise.all(
-      drogas.map(async (d) => ({
-        id_droga: d.id,
-        cantidad_gramos: d.cantidadGramos,
-        cantidad_unidades: d.cantidadUnidades,
-        costo: d.costo,
-        fecha_hora_ingreso: formatearFecha(d.fechaHoraIngreso),
-        descripcion_estado_droga: d.estadoDroga?.descripcion ?? null,
-        descripcion_forma_transporte: d.formaTransporte?.descripcion ?? null,
-        descripcion_pais_procedencia: d.paisProcedencia?.descripcion ?? null,
-        descripcion_pais_destino: d.paisDestino?.descripcion ?? null,
-        logotipos: (await this.repository.listarLogotipos(d.id)).map((l) => ({
-          id_logotipo: l.id,
-          imagen: l.imagen,
-          descripcion_logo: l.descripcionLogo,
-          organizacion: l.organizacion,
-          blanco: l.blanco,
-          observacion: l.observacion,
-        })),
-      }))
-    )
+    const drogasMapeadas = drogas.map((d) => ({
+      id_droga: d.id,
+      cantidad_gramos: d.cantidadGramos,
+      cantidad_unidades: d.cantidadUnidades,
+      costo: d.costo,
+      fecha_hora_ingreso: formatearFecha(d.fechaHoraIngreso),
+      descripcion_estado_droga: d.estadoDroga?.descripcion ?? null,
+      descripcion_forma_transporte: d.formaTransporte?.descripcion ?? null,
+      descripcion_pais_procedencia: d.paisProcedencia?.descripcion ?? null,
+      descripcion_pais_destino: d.paisDestino?.descripcion ?? null,
+    }))
 
     const bienesConCaracteristicas = await Promise.all(
       bienes.map(async (b) => ({
@@ -127,7 +118,7 @@ export class ConsultaOperativoService {
 
     return {
       ...this.mapCabecera(operativo),
-      drogas: drogasConLogotipos,
+      drogas: drogasMapeadas,
       sustancias_solidas: sustanciasSolidas.map((s) => ({
         id_sustancia_solida: s.id,
         cantidad: s.cantidad,
@@ -167,6 +158,14 @@ export class ConsultaOperativoService {
       galeria: galeria.map((g) => ({
         id_galeria: g.id,
         descripcion: g.descripcion,
+      })),
+      logotipos: logotipos.map((l) => ({
+        id_logotipo: l.id,
+        imagen: l.imagen,
+        descripcion_logo: l.descripcionLogo,
+        organizacion: l.organizacion,
+        blanco: l.blanco,
+        observacion: l.observacion,
       })),
     }
   }

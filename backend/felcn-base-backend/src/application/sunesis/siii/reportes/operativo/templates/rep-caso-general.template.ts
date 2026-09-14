@@ -71,6 +71,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             [bienesRaw],
             [personasRaw],
             [galeriasRaw],
+            [logotiposRaw],
             mapaCoords,
         ] = await Promise.all([
             operativoService.getOrInit(operativo.idCaso),
@@ -81,6 +82,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             operativoService.listarBienes(idOperativo, fullLimit),
             operativoService.listarPersonasAuxiliares(idOperativo, fullLimit),
             operativoService.listarGaleria(idOperativo, fullLimit),
+            operativoService.listarLogotipos(idOperativo, fullLimit),
             (() => {
                 if (operativo.coordX && operativo.coordY) {
                     console.log(`[Mapa] Coords: lat=${operativo.coordX}, lon=${operativo.coordY} — se renderizará con Leaflet en el HTML`)
@@ -91,28 +93,11 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             })(),
         ])
 
-        const [drogas, personas, galerias, bienes] = await Promise.all([
+        const [drogas, personas, galerias, bienes, logotipos] = await Promise.all([
             Promise.all(
                 drogasRaw.map(async (d) => {
-                    const [logosRaw] = await operativoService.listarLogotipos(
-                        d.idOperativo,
-                        d.id,
-                        fullLimit
-                    )
-                    const [logotipos, urlFotoPruebaCampo, urlFotoPesaje] =
+                    const [urlFotoPruebaCampo, urlFotoPesaje] =
                         await Promise.all([
-                            Promise.all(
-                                logosRaw.map(async (l) => ({
-                                    ...l,
-                                    descripcionTipoDroga: d.descripcionTipoDroga,
-                                    descripcionPaisOrigen: d.descripcionPaisProcedencia,
-                                    descripcionPaisDestino: d.descripcionPaisDestino,
-                                    urlFotografia: await bufferToBase64Compressed(
-                                        await operativoService.obtenerFotoLogotipo(d.id, l.id),
-                                        { width: 100, height: 75, quality: 75 }
-                                    ),
-                                }))
-                            ),
                             bufferToBase64Compressed(
                                 await operativoService.obtenerFotoDroga(
                                     idOperativo,
@@ -135,7 +120,6 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                         ...d,
                         urlFotoPruebaCampo,
                         urlFotoPesaje,
-                        logotipos,
                     }
                 })
             ),
@@ -208,9 +192,16 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                     }
                 })
             ),
+            Promise.all(
+                logotiposRaw.map(async (l) => ({
+                    ...l,
+                    urlFotografia: await bufferToBase64Compressed(
+                        await operativoService.obtenerFotoLogotipo(idOperativo, l.id),
+                        { width: 100, height: 75, quality: 75 }
+                    ),
+                }))
+            ),
         ])
-
-        const logotipos = drogas.flatMap((d) => d.logotipos)
 
         return {
             caso,
@@ -239,6 +230,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             personas,
             bienes,
             galerias,
+            logotipos,
             mapaCoords,
         } = data
 
@@ -252,7 +244,6 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
 
         const drogaRows = drogas
             .map((droga) => {
-                const hasLogos = droga.logotipos && droga.logotipos.length > 0
                 const hasImages = droga.urlFotoPruebaCampo || droga.urlFotoPesaje
                 return `
             <tr>
@@ -264,13 +255,11 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                 <td>${droga.descripcionPaisProcedencia || 'N/A'}</td>
                 <td>${droga.descripcionPaisDestino || 'N/A'}</td>
             </tr>
-            ${hasLogos || hasImages
+            ${hasImages
                         ? `
             <tr>
                 <td colspan="7" style="padding: 0; background-color: #f8fafc;">
                     <div style="padding: 10px 20px;">
-                        ${hasImages
-                            ? `
                         <div style="display: flex; gap: 20px; margin-bottom: 15px; justify-content: center; border-bottom: 0px dashed #cbd5e1; padding-bottom: 10px;">
                             ${droga.urlFotoPruebaCampo
                                 ? `
@@ -289,46 +278,6 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                                 : ''
                             }
                         </div>
-                        `
-                            : ''
-                        }
-
-                        ${hasLogos
-                            ? `
-                        <div style="font-weight: bold; color: #1e3a8a; font-size: 10px; margin-bottom: 5px; text-transform: uppercase;">
-                            Logotipos Detectados:
-                        </div>
-                        <table style="width: 100%; border: 1px solid #cbd5e1; background: white; margin: 0;">
-                            <thead>
-                                <tr style="background-color: #f1f5f9;">
-                                    <th style="font-size: 9px; color: #475569; padding: 4px;">Logo/Imagen</th>
-                                    <th style="font-size: 9px; color: #475569; padding: 4px;">Descripción</th>
-                                    <th style="font-size: 9px; color: #475569; padding: 4px;">Organización</th>
-                                    <th style="font-size: 9px; color: #475569; padding: 4px;">Implicados</th>
-                                    <th style="font-size: 9px; color: #475569; padding: 4px; text-align: center;">Fotografía</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${droga.logotipos
-                                .map(
-                                    (logo) => `
-                                    <tr>
-                                        <td style="font-size: 9px; padding: 4px;">${logo.imagen || 'N/A'}</td>
-                                        <td style="font-size: 9px; padding: 4px;">${logo.descripcionLogo || 'N/A'}</td>
-                                        <td style="font-size: 9px; padding: 4px;">${logo.organizacion || 'N/A'}</td>
-                                        <td style="font-size: 9px; padding: 4px;">${logo.blanco || 'N/A'}</td>
-                                        <td style="text-align: center; padding: 4px;">
-                                            ${logo.urlFotografia ? `<img src="${logo.urlFotografia}" class="img-standard img-logo-small" />` : 'N/A'}
-                                        </td>
-                                    </tr>
-                                `
-                                )
-                                .join('')}
-                            </tbody>
-                        </table>
-                        `
-                            : ''
-                        }
                     </div>
                 </td>
             </tr>
@@ -337,6 +286,20 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                     }
             `
             })
+            .join('')
+
+        const logotipoRows = logotipos
+            .map(
+                (logo) => `
+            <tr>
+                <td>${logo.imagen || 'N/A'}</td>
+                <td>${logo.descripcionLogo || 'N/A'}</td>
+                <td>${logo.organizacion || 'N/A'}</td>
+                <td>${logo.blanco || 'N/A'}</td>
+                <td style="text-align: center;">${logo.urlFotografia ? `<img src="${logo.urlFotografia}" class="img-standard img-logo-small" />` : 'N/A'}</td>
+            </tr>
+        `
+            )
             .join('')
 
         const sustanciaSolidaRows = sustanciasSolidas
@@ -613,6 +576,13 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                         <table>
                             <thead><tr><th>Tipo de Droga</th><th>Estado</th><th>Cantidad (g)</th><th>Costo (Bs)</th><th>Transporte</th><th>Procedencia</th><th>Destino</th></tr></thead>
                             <tbody>${drogaRows}</tbody>
+                        </table>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-title">LOGOTIPOS DETECTADOS</div>
+                        <table>
+                            <thead><tr><th>Logo/Imagen</th><th>Descripción</th><th>Organización</th><th>Implicados</th><th>Fotografía</th></tr></thead>
+                            <tbody>${logotipoRows}</tbody>
                         </table>
                     </div>
                     <div class="timeline-item">

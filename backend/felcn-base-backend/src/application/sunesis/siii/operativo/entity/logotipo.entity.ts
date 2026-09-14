@@ -8,11 +8,12 @@ import {
 } from 'typeorm'
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { AuditoriaEntity } from '@/common/entity'
-import { Droga } from './droga.entity'
+import { Operativo } from './operativo.entity'
 
 /**
  * Entidad Logotipo
- * Logos asociados a una droga del operativo
+ * Logos asociados directamente al operativo (sección independiente,
+ * igual que Bienes o Galería)
  * Base de datos: felcn_iii
  * Schema: public
  * Tabla: logotipo
@@ -22,8 +23,8 @@ export class Logotipo extends AuditoriaEntity {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'id_logotipo' })
   id: string
 
-  @Column({ name: 'id_droga', type: 'bigint' })
-  idDroga: string
+  @Column({ name: 'id_operativo', type: 'bigint' })
+  idOperativo: string
 
   @Column({ name: 'imagen', type: 'varchar', length: 50 })
   imagen: string
@@ -49,9 +50,9 @@ export class Logotipo extends AuditoriaEntity {
   @Column({ name: 'usuario', type: 'varchar', length: 15 })
   usuario: string
 
-  @ManyToOne(() => Droga)
-  @JoinColumn({ name: 'id_droga' })
-  droga?: Droga
+  @ManyToOne(() => Operativo)
+  @JoinColumn({ name: 'id_operativo' })
+  operativo?: Operativo
 
   @BeforeInsert()
   insertarFechaIngreso() {

@@ -3,22 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
-import IconEye from '@/components/Icon/IconEye'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { InputDecimal } from '@/components/ui/InputDecimal'
 import { Select } from '@/components/ui/Select'
-import { Textarea } from '@/components/ui/Textarea'
 import { formatDecimal } from '@/utils/formatDecimal'
-import {
-  DrogasService,
-  LogotiposService,
-} from '@/services/operativos'
-import type {
-  EstadoDroga,
-  LogotipoCasoPayload,
-  ResponseDroga,
-} from '@/services/operativos'
+import { DrogasService } from '@/services/operativos'
+import type { EstadoDroga, ResponseDroga } from '@/services/operativos'
 import { useConfirmDialog, useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
@@ -164,382 +155,17 @@ function FotoSlot({
   )
 }
 
-// ─── LogotiposPanel ───────────────────────────────────────────────────────────
-function LogotiposPanel({
-  idoperativo,
-  idDroga,
-  onZoom,
-  onEliminarConfirm,
-}: {
-  idoperativo: number
-  idDroga: number
-  onZoom: (src: string) => void
-  onEliminarConfirm: (texto: string, onConfirm: () => Promise<void>) => void
-}) {
-  const { Alerta } = useAlerts()
-  const [imagen, setImagen] = useState('')
-  const [descripcionLogo, setDescripcionLogo] = useState('')
-  const [organizacion, setOrganizacion] = useState('')
-  const [blanco, setBlanco] = useState('')
-  const [observacion, setObservacion] = useState('')
-  const [fotografia, setFotografia] = useState<File | null>(null)
-  const [dropzoneToken, setDropzoneToken] = useState(0)
-  const [submitted, setSubmitted] = useState(false)
-
-  // ── Thumbnail de foto con estado de carga ─────────────────────────────────
-  function FotoLogotipoThumb({
-    path,
-    onClick,
-  }: {
-    path: string
-    onClick: (src: string) => void
-  }) {
-    const [src, setSrc] = useState<string | null>(null)
-    const [cargandoFoto, setCargandoFoto] = useState(true)
-
-    useEffect(() => {
-      let objectUrl: string
-      LogotiposService.obtenerFoto(path)
-        .then((blob) => {
-          objectUrl = URL.createObjectURL(blob)
-          setSrc(objectUrl)
-        })
-        .catch(() => setSrc(null))
-        .finally(() => setCargandoFoto(false))
-      return () => {
-        if (objectUrl) URL.revokeObjectURL(objectUrl)
-      }
-    }, [path])
-
-    if (cargandoFoto) {
-      return (
-        <div className="h-24 w-32 mx-auto animate-pulse rounded-lg bg-gray-200 dark:bg-gray-700" />
-      )
-    }
-    if (!src) {
-      return (
-        <div className="flex h-24 w-32 mx-auto items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-          <span className="text-[10px] font-medium text-gray-400">Sin foto</span>
-        </div>
-      )
-    }
-    // eslint-disable-next-line @next/next/no-img-element
-    return (
-      <div className="flex h-24 w-32 mx-auto items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 shadow-md hover:scale-105 transition-transform">
-        <img
-          src={src}
-          alt="Logotipo"
-          className="h-full max-w-full cursor-zoom-in object-contain"
-          onClick={() => onClick(src)}
-        />
-      </div>
-    )
-  }
-
-  const [logotiposItems, setLogotiposItems] = useState<LogotipoCasoPayload[]>(
-    []
-  )
-  const [cargando, setCargando] = useState(false)
-  const [observacionDetalle, setObservacionDetalle] = useState<string | null>(null)
-
-  const cargar = async () => {
-    setCargando(true)
-    try {
-      const res = await LogotiposService.listar(
-        idoperativo,
-        idDroga
-      )
-      if (res?.finalizado) {
-        setLogotiposItems(
-          (res.datos?.filas as unknown as LogotipoCasoPayload[]) ?? []
-        )
-      }
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  useEffect(() => {
-    void cargar()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const resetForm = () => {
-    setImagen('')
-    setDescripcionLogo('')
-    setOrganizacion('')
-    setBlanco('')
-    setObservacion('')
-    setFotografia(null)
-    setDropzoneToken((t) => t + 1)
-    setSubmitted(false)
-  }
-
-  const guardar = async () => {
-    setSubmitted(true)
-    if (!imagen || !descripcionLogo || !organizacion || !blanco || !fotografia || !observacion) {
-      return
-    }
-
-    setCargando(true)
-    try {
-      const res = await LogotiposService.crear(
-        idoperativo,
-        idDroga,
-        {
-          id: 0,
-          imagen: imagen.trim(),
-          descripcionLogo: descripcionLogo.trim(),
-          organizacion: organizacion.trim(),
-          blanco: blanco.trim() || undefined,
-          observacion: observacion.trim() || undefined,
-          fotografia: fotografia ?? undefined,
-        }
-      )
-      if (res?.finalizado) {
-        await cargar()
-        resetForm()
-      }
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  const eliminar = async (id: number) => {
-    onEliminarConfirm('¿Está seguro de eliminar este logotipo?', async () => {
-      await LogotiposService.eliminar(idoperativo, idDroga, id)
-      await cargar()
-    })
-  }
-
-  return (
-    <div className="mt-4 border-t border-[#e0e6ed] pt-4 dark:border-gray-700">
-      <LoadingDialog show={cargando} />
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-primary">
-        Logotipos
-      </p>
-
-      {/* Formulario siempre visible */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <label className="mb-1 block text-sm font-medium">Imagen <span className="text-danger">*</span></label>
-          <Input
-            type="text"
-            uppercase
-            className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
-            value={imagen}
-            onChange={(e) => setImagen(e.target.value)}
-          />
-          {!imagen && submitted && (
-            <div className="mt-1">
-              <span className="text-danger text-xs block">Este campo es obligatorio</span>
-            </div>
-          )}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">
-            Descripción del Logo <span className="text-danger">*</span>
-          </label>
-          <Input
-            type="text"
-            uppercase
-            className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
-            value={descripcionLogo}
-            onChange={(e) => setDescripcionLogo(e.target.value)}
-          />
-          {!descripcionLogo && submitted && (
-            <div className="mt-1">
-              <span className="text-danger text-xs block">Este campo es obligatorio</span>
-            </div>
-          )}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">
-            Organización Criminal <span className="text-danger">*</span>
-          </label>
-          <Input
-            type="text"
-            uppercase
-            className={`w-full ${!organizacion && submitted ? 'border-danger' : ''}`}
-            value={organizacion}
-            onChange={(e) => setOrganizacion(e.target.value)}
-          />
-          {!organizacion && submitted && (
-            <div className="mt-1">
-              <span className="text-danger text-xs block">Este campo es obligatorio</span>
-            </div>
-          )}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">
-            Posibles Blancos <span className="text-danger">*</span>
-          </label>
-          <Input
-            value={blanco}
-            onChange={(e) => setBlanco(e.target.value)}
-            uppercase
-            className={`w-full ${!blanco && submitted ? 'border-danger' : ''}`}
-          />
-          {!blanco && submitted && (
-            <div className="mt-1">
-              <span className="text-danger text-xs block">Este campo es obligatorio</span>
-            </div>
-          )}
-        </div>
-        <div className="col-span-1 md:col-span-2 lg:col-span-2">
-          <label className="mb-1 block text-sm font-medium">Observación <span className="text-danger">*</span></label>
-          <Textarea
-            value={observacion}
-            onChange={(e) => setObservacion(e.target.value)}
-            rows={2}
-            uppercase
-            className={`w-full ${!observacion && submitted ? 'border-danger' : ''}`}
-          />
-          {!observacion && submitted && (
-            <div className="mt-1">
-              <span className="text-danger text-xs block">Este campo es obligatorio</span>
-            </div>
-          )}
-        </div>
-        <div className="col-span-1 lg:col-span-3">
-          <DropzoneFoto
-            key={`logo-foto-${dropzoneToken}`}
-            label="Fotografía del Logo"
-            archivo={fotografia}
-            onChange={setFotografia}
-            error={!fotografia && submitted}
-          />
-        </div>
-        <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
-          <Button
-            type="button"
-            variant="success"
-            size="sm"
-            onClick={() => void guardar()}
-            disabled={cargando}
-          >
-            Guardar
-          </Button>
-        </div>
-      </div>
-
-      {/* Grilla de logotipos */}
-      <div className="mt-4 datatables">
-        <VristoDataTable<LogotipoCasoPayload>
-          loading={cargando}
-          rows={logotiposItems}
-          total={logotiposItems.length}
-          page={1}
-          limit={logotiposItems.length || 10}
-          onPageChange={() => { }}
-          onLimitChange={() => { }}
-          columns={[
-            { accessor: 'id', title: '#' },
-            {
-              accessor: 'descripcionLogo',
-              title: 'Descripción',
-              render: (row) => String(row.descripcionLogo ?? ''),
-            },
-            {
-              accessor: 'organizacion',
-              title: 'Organización',
-              render: (row) => String(row.organizacion ?? ''),
-            },
-            {
-              accessor: 'blanco',
-              title: 'Blancos',
-              render: (row) => String(row.blanco ?? ''),
-            },
-            {
-              accessor: 'urlFotografia',
-              title: 'Foto',
-              render: (row) => {
-                const fotoUrl = (row as unknown as Record<string, unknown>)
-                  .urlFotografia
-                return typeof fotoUrl === 'string' && fotoUrl.length > 0 ? (
-                  <FotoLogotipoThumb path={fotoUrl} onClick={onZoom} />
-                ) : (
-                  <div className="flex h-24 w-32 mx-auto items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-                    <span className="text-[10px] font-medium text-gray-400">Sin foto</span>
-                  </div>
-                )
-              },
-            },
-            {
-              accessor: 'actions',
-              title: '',
-              render: (row) => (
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className="text-primary hover:text-primary/80"
-                    title="Ver observación"
-                    onClick={() => setObservacionDetalle(row.observacion ?? '')}
-                  >
-                    <IconEye className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    className="text-danger hover:text-danger/80"
-                    title="Eliminar"
-                    disabled={cargando}
-                    onClick={() => void eliminar(row.id)}
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </button>
-                </div>
-              ),
-            },
-          ]}
-        />
-      </div>
-
-      {/* ── Modal de detalle de observación ── */}
-      {observacionDetalle !== null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm"
-          onClick={() => setObservacionDetalle(null)}
-        >
-          <div
-            className="relative w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl dark:bg-[#0e1726]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-primary">
-              Observación
-            </p>
-            <p className="whitespace-pre-wrap text-sm">
-              {observacionDetalle || 'Sin observación registrada'}
-            </p>
-            <Button
-              type="button"
-              variant="dark"
-              size="sm"
-              className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
-              onClick={() => setObservacionDetalle(null)}
-            >
-              ✕
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ─── ExpansionContenidoDroga ──────────────────────────────────────────────────
 function ExpansionContenidoDroga({
   droga,
-  idoperativo,
   cache,
   onCacheLoad,
   onZoom,
-  onEliminarConfirm,
 }: {
   droga: ResponseDroga
-  idoperativo: number
   cache: FotosCacheDroga | undefined
   onCacheLoad: (id: number, fotos: FotosCacheDroga) => void
   onZoom: (src: string) => void
-  onEliminarConfirm: (texto: string, onConfirm: () => Promise<void>) => void
 }) {
   useEffect(() => {
     if (cache) return
@@ -586,14 +212,6 @@ function ExpansionContenidoDroga({
           />
         </div>
       )}
-
-      {/* Logotipos anidados */}
-      <LogotiposPanel
-        idoperativo={idoperativo}
-        idDroga={droga.id}
-        onZoom={onZoom}
-        onEliminarConfirm={onEliminarConfirm}
-      />
     </div>
   )
 }
@@ -848,10 +466,6 @@ export function SeccionDrogasFotografiaLogotiposForm({
         }
       },
     })
-  }
-
-  const handleEliminarConfirm = (texto: string, onConfirm: () => Promise<void>) => {
-    confirm({ texto, onConfirm })
   }
 
   const handleCambioPagina = (nuevaPagina: number) => {
@@ -1279,11 +893,9 @@ export function SeccionDrogasFotografiaLogotiposForm({
                 renderContent: (row) => (
                   <ExpansionContenidoDroga
                     droga={row}
-                    idoperativo={idoperativo}
                     cache={fotosCache[row.id]}
                     onCacheLoad={actualizarCache}
                     onZoom={setImagenAmpliada}
-                    onEliminarConfirm={handleEliminarConfirm}
                   />
                 ),
               }}

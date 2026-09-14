@@ -43,6 +43,7 @@ export class OperativeReportController extends BaseController {
       [bienesRaw],
       [personas],
       [galerias],
+      [logotipos],
     ] = await Promise.all([
       this.operativoService.getOrInit(operativo.idCaso),
       this.operativoService.listarDrogas(idOperativo, fullLimit),
@@ -52,6 +53,7 @@ export class OperativeReportController extends BaseController {
       this.operativoService.listarBienes(idOperativo, fullLimit),
       this.operativoService.listarPersonasAuxiliares(idOperativo, fullLimit),
       this.operativoService.listarGaleria(idOperativo, fullLimit),
+      this.operativoService.listarLogotipos(idOperativo, fullLimit),
     ])
 
     const bienes = await Promise.all(
@@ -95,6 +97,7 @@ export class OperativeReportController extends BaseController {
       bienes,
       personas,
       galerias,
+      logotipos,
       mapaCoords:
         operativo.coordX && operativo.coordY
           ? { lat: operativo.coordX, lon: operativo.coordY }
