@@ -321,7 +321,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
-          <div>
+          <div className="col-span-1 md:col-span-2">
             <label className="mb-1 block text-sm font-medium">
               Descripción del Logo <span className="text-danger">*</span>
             </label>
@@ -434,7 +434,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
-          <div className="col-span-1 lg:col-span-4">
+          <div className="col-span-1 md:col-span-2">
             <DropzoneFoto
               key={`logo-foto-${dropzoneToken}`}
               label="Fotografía del Logo"
