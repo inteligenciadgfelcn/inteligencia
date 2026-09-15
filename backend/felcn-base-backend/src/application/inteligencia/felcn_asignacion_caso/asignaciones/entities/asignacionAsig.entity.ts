@@ -56,7 +56,7 @@ export class AsignacionASIG {
 
   @Column({
     name: 'fecha_operativo',
-    type: 'timestamp',
+    type: 'timestamptz',
     nullable: true,
     comment: 'Fecha del operativo',
   })
@@ -104,7 +104,7 @@ export class AsignacionASIG {
 
   @Column({
     name: 'fecha_hora_registro',
-    type: 'timestamp',
+    type: 'timestamptz',
     nullable: true,
     comment: 'Fecha en la que se realizó la solicitud',
   })

@@ -173,8 +173,11 @@ export class Detenido {
   })
   esRevisionIcia: boolean
 
-  @IsOptional()
-  @IsBoolean()
+  @Column({
+    name: 'tiene_tarjeta',
+    type: 'boolean',
+    comment: 'Indica si el detenido se encuentra con vida',
+  })
   tieneTarjeta: boolean = false
 
   @Column({
