@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 import {
   IsNotEmpty,
+  IsNumber,
   IsString,
   MaxLength,
 } from 'class-validator'
@@ -16,6 +18,24 @@ export class CreateLogotipoDto {
   @IsNotEmpty()
   @IsString()
   descripcionLogo: string
+
+  @ApiProperty({ description: 'ID tipo de droga', example: 1 })
+  @Type(() => Number)
+  @IsNotEmpty()
+  @IsNumber()
+  idTipoDroga: number
+
+  @ApiProperty({ description: 'ID país de origen', example: 70 })
+  @Type(() => Number)
+  @IsNotEmpty()
+  @IsNumber()
+  idPaisOrigen: number
+
+  @ApiProperty({ description: 'ID país de destino', example: 70 })
+  @Type(() => Number)
+  @IsNotEmpty()
+  @IsNumber()
+  idPaisDestino: number
 
   @ApiProperty({ description: 'Organización', example: 'Cartel X' })
   @IsNotEmpty()

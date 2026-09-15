@@ -86,6 +86,9 @@ export interface OperativoPayload {
 export interface LogotipoPayload {
   imagen: string
   descripcionLogo: string
+  idTipoDroga: number
+  idPaisOrigen: number
+  idPaisDestino: number
   organizacion: string
   blanco?: string
   observacion?: string
@@ -97,6 +100,12 @@ export interface LogotipoResponse {
   idOperativo: string
   imagen: string
   descripcionLogo: string
+  idTipoDroga?: number
+  descripcionTipoDroga?: string
+  idPaisOrigen?: number
+  descripcionPaisOrigen?: string
+  idPaisDestino?: number
+  descripcionPaisDestino?: string
   organizacion: string
   blanco?: string
   observacion?: string

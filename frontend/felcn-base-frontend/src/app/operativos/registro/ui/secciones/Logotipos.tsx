@@ -7,9 +7,10 @@ import IconEye from '@/components/Icon/IconEye'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { Select } from '@/components/ui/Select'
 import { LogotiposService } from '@/services/operativos'
 import type { LogotipoResponse } from '@/services/operativos'
-import { useConfirmDialog } from '@/hooks'
+import { useConfirmDialog, useParametricas } from '@/hooks'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
 // ── DropzoneFoto ─────────────────────────────────────────────────────────────
@@ -169,9 +170,19 @@ interface Props {
 
 export function Logotipos({ titulo, idoperativo }: Props) {
   const { confirm, ConfirmDialog } = useConfirmDialog()
+  const { paises, tiposDroga, cargarPaises, cargarTiposDroga } =
+    useParametricas()
+
+  useEffect(() => {
+    cargarPaises()
+    cargarTiposDroga()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [imagen, setImagen] = useState('')
   const [descripcionLogo, setDescripcionLogo] = useState('')
+  const [idTipoDroga, setIdTipoDroga] = useState('')
+  const [idPaisOrigen, setIdPaisOrigen] = useState('')
+  const [idPaisDestino, setIdPaisDestino] = useState('')
   const [organizacion, setOrganizacion] = useState('')
   const [blanco, setBlanco] = useState('')
   const [observacion, setObservacion] = useState('')
@@ -216,6 +227,9 @@ export function Logotipos({ titulo, idoperativo }: Props) {
   const resetForm = () => {
     setImagen('')
     setDescripcionLogo('')
+    setIdTipoDroga('')
+    setIdPaisOrigen('')
+    setIdPaisDestino('')
     setOrganizacion('')
     setBlanco('')
     setObservacion('')
@@ -226,7 +240,17 @@ export function Logotipos({ titulo, idoperativo }: Props) {
 
   const handleGuardar = async () => {
     setSubmitted(true)
-    if (!imagen || !descripcionLogo || !organizacion || !blanco || !fotografia || !observacion) {
+    if (
+      !imagen ||
+      !descripcionLogo ||
+      !idTipoDroga ||
+      !idPaisOrigen ||
+      !idPaisDestino ||
+      !organizacion ||
+      !blanco ||
+      !fotografia ||
+      !observacion
+    ) {
       return
     }
 
@@ -235,6 +259,9 @@ export function Logotipos({ titulo, idoperativo }: Props) {
       const res = await LogotiposService.crear(idoperativo, {
         imagen: imagen.trim(),
         descripcionLogo: descripcionLogo.trim(),
+        idTipoDroga: Number(idTipoDroga),
+        idPaisOrigen: Number(idPaisOrigen),
+        idPaisDestino: Number(idPaisDestino),
         organizacion: organizacion.trim(),
         blanco: blanco.trim() || undefined,
         observacion: observacion.trim() || undefined,
@@ -306,6 +333,60 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               onChange={(e) => setDescripcionLogo(e.target.value)}
             />
             {!descripcionLogo && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Tipo de Droga <span className="text-danger">*</span>
+            </label>
+            <Select
+              options={tiposDroga.map((t) => ({
+                value: String(t.id),
+                label: t.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idTipoDroga}
+              onChange={(e) => setIdTipoDroga(e.target.value)}
+              className={`w-full ${!idTipoDroga && submitted ? 'border-danger' : ''}`}
+            />
+            {!idTipoDroga && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              País de Origen <span className="text-danger">*</span>
+            </label>
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idPaisOrigen}
+              onChange={(e) => setIdPaisOrigen(e.target.value)}
+              className={`w-full ${!idPaisOrigen && submitted ? 'border-danger' : ''}`}
+            />
+            {!idPaisOrigen && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              País de Destino <span className="text-danger">*</span>
+            </label>
+            <Select
+              options={paises.map((p) => ({
+                value: String(p.id),
+                label: p.descripcion,
+              }))}
+              placeholder="Seleccione un dato"
+              value={idPaisDestino}
+              onChange={(e) => setIdPaisDestino(e.target.value)}
+              className={`w-full ${!idPaisDestino && submitted ? 'border-danger' : ''}`}
+            />
+            {!idPaisDestino && submitted && (
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
@@ -396,6 +477,24 @@ export function Logotipos({ titulo, idoperativo }: Props) {
                   accessor: 'descripcionLogo',
                   title: 'Descripción',
                   render: (row) => String(row.descripcionLogo ?? ''),
+                },
+                {
+                  accessor: 'descripcionTipoDroga',
+                  title: 'Tipo de Droga',
+                  render: (row) =>
+                    row.descripcionTipoDroga ?? String(row.idTipoDroga ?? '—'),
+                },
+                {
+                  accessor: 'descripcionPaisOrigen',
+                  title: 'País de Origen',
+                  render: (row) =>
+                    row.descripcionPaisOrigen ?? String(row.idPaisOrigen ?? '—'),
+                },
+                {
+                  accessor: 'descripcionPaisDestino',
+                  title: 'País de Destino',
+                  render: (row) =>
+                    row.descripcionPaisDestino ?? String(row.idPaisDestino ?? '—'),
                 },
                 {
                   accessor: 'organizacion',
