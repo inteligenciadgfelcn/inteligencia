@@ -308,36 +308,6 @@ export function Logotipos({ titulo, idoperativo }: Props) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Imagen <span className="text-danger">*</span>
-            </label>
-            <Input
-              type="text"
-              uppercase
-              className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
-              value={imagen}
-              onChange={(e) => setImagen(e.target.value)}
-            />
-            {!imagen && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Descripción del Logo <span className="text-danger">*</span>
-            </label>
-            <Input
-              type="text"
-              uppercase
-              className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
-              value={descripcionLogo}
-              onChange={(e) => setDescripcionLogo(e.target.value)}
-            />
-            {!descripcionLogo && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
               Tipo de Droga <span className="text-danger">*</span>
             </label>
             <Select
@@ -387,6 +357,36 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               className={`w-full ${!idPaisDestino && submitted ? 'border-danger' : ''}`}
             />
             {!idPaisDestino && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Imagen <span className="text-danger">*</span>
+            </label>
+            <Input
+              type="text"
+              uppercase
+              className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
+              value={imagen}
+              onChange={(e) => setImagen(e.target.value)}
+            />
+            {!imagen && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Descripción del Logo <span className="text-danger">*</span>
+            </label>
+            <Input
+              type="text"
+              uppercase
+              className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
+              value={descripcionLogo}
+              onChange={(e) => setDescripcionLogo(e.target.value)}
+            />
+            {!descripcionLogo && submitted && (
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
@@ -472,12 +472,6 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               onPageChange={handleCambioPagina}
               onLimitChange={() => { }}
               columns={[
-                { accessor: 'id', title: '#' },
-                {
-                  accessor: 'descripcionLogo',
-                  title: 'Descripción',
-                  render: (row) => String(row.descripcionLogo ?? ''),
-                },
                 {
                   accessor: 'descripcionTipoDroga',
                   title: 'Tipo de Droga',
@@ -495,6 +489,12 @@ export function Logotipos({ titulo, idoperativo }: Props) {
                   title: 'País de Destino',
                   render: (row) =>
                     row.descripcionPaisDestino ?? String(row.idPaisDestino ?? '—'),
+                },
+                { accessor: 'id', title: '#' },
+                {
+                  accessor: 'descripcionLogo',
+                  title: 'Descripción',
+                  render: (row) => String(row.descripcionLogo ?? ''),
                 },
                 {
                   accessor: 'organizacion',

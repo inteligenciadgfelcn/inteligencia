@@ -363,17 +363,20 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="text-white">
-                              {['Logo/Imagen', 'Descripción', 'Organización', 'Implicados', 'Fotografía'].map((h) => (
+                              {['Tipo de Droga', 'País de Origen', 'País de Destino', 'Logo/Imagen', 'Descripción', 'Organización', 'Implicados', 'Fotografía'].map((h) => (
                                 <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody>
                             {logotipos.length === 0 ? (
-                              <tr><td colSpan={5} className="py-2 text-center italic text-gray-400">Sin logotipos registrados</td></tr>
+                              <tr><td colSpan={8} className="py-2 text-center italic text-gray-400">Sin logotipos registrados</td></tr>
                             ) : (
                               logotipos.map((l, i) => (
                                 <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.descripcionTipoDroga ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.descripcionPaisOrigen ?? '—'}</td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.descripcionPaisDestino ?? '—'}</td>
                                   <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.imagen ?? '—'}</td>
                                   <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.descripcionLogo ?? '—'}</td>
                                   <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.organizacion ?? '—'}</td>
