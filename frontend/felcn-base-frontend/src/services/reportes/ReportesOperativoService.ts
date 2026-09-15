@@ -78,11 +78,11 @@ export interface PreviewGaleria {
 
 export interface PreviewLogotipo {
   id: string
+  imagen: string | null
+  descripcionLogo: string | null
   descripcionTipoDroga: string | null
   descripcionPaisOrigen: string | null
   descripcionPaisDestino: string | null
-  imagen: string | null
-  descripcionLogo: string | null
   organizacion: string | null
   blanco: string | null
   observacion: string | null

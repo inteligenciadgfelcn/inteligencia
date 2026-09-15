@@ -305,7 +305,37 @@ export function Logotipos({ titulo, idoperativo }: Props) {
         <h4 className="mb-4 text-sm font-semibold">{titulo}</h4>
 
         {/* Formulario */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Imagen <span className="text-danger">*</span>
+            </label>
+            <Input
+              type="text"
+              uppercase
+              className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
+              value={imagen}
+              onChange={(e) => setImagen(e.target.value)}
+            />
+            {!imagen && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Descripción del Logo <span className="text-danger">*</span>
+            </label>
+            <Input
+              type="text"
+              uppercase
+              className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
+              value={descripcionLogo}
+              onChange={(e) => setDescripcionLogo(e.target.value)}
+            />
+            {!descripcionLogo && submitted && (
+              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
+            )}
+          </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
               Tipo de Droga <span className="text-danger">*</span>
@@ -362,36 +392,6 @@ export function Logotipos({ titulo, idoperativo }: Props) {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Imagen <span className="text-danger">*</span>
-            </label>
-            <Input
-              type="text"
-              uppercase
-              className={`w-full ${!imagen && submitted ? 'border-danger' : ''}`}
-              value={imagen}
-              onChange={(e) => setImagen(e.target.value)}
-            />
-            {!imagen && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
-              Descripción del Logo <span className="text-danger">*</span>
-            </label>
-            <Input
-              type="text"
-              uppercase
-              className={`w-full ${!descripcionLogo && submitted ? 'border-danger' : ''}`}
-              value={descripcionLogo}
-              onChange={(e) => setDescripcionLogo(e.target.value)}
-            />
-            {!descripcionLogo && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">
               Organización Criminal <span className="text-danger">*</span>
             </label>
             <Input
@@ -434,7 +434,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>
-          <div className="col-span-1 lg:col-span-3">
+          <div className="col-span-1 lg:col-span-4">
             <DropzoneFoto
               key={`logo-foto-${dropzoneToken}`}
               label="Fotografía del Logo"
@@ -447,7 +447,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
             )}
           </div>
 
-          <div className="col-span-1 mt-2 lg:col-span-3 flex justify-end">
+          <div className="col-span-1 mt-2 lg:col-span-4 flex justify-end">
             <Button
               type="button"
               variant="success"
@@ -473,6 +473,11 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               onLimitChange={() => { }}
               columns={[
                 {
+                  accessor: 'descripcionLogo',
+                  title: 'Descripción',
+                  render: (row) => String(row.descripcionLogo ?? ''),
+                },
+                {
                   accessor: 'descripcionTipoDroga',
                   title: 'Tipo de Droga',
                   render: (row) =>
@@ -489,12 +494,6 @@ export function Logotipos({ titulo, idoperativo }: Props) {
                   title: 'País de Destino',
                   render: (row) =>
                     row.descripcionPaisDestino ?? String(row.idPaisDestino ?? '—'),
-                },
-                { accessor: 'id', title: '#' },
-                {
-                  accessor: 'descripcionLogo',
-                  title: 'Descripción',
-                  render: (row) => String(row.descripcionLogo ?? ''),
                 },
                 {
                   accessor: 'organizacion',

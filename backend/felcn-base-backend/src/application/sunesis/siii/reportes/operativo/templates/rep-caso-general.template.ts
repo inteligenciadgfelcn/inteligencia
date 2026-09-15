@@ -292,13 +292,14 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             .map(
                 (logo) => `
             <tr>
+                <td>${logo.imagen || 'N/A'}</td>
+                <td>${logo.descripcionLogo || 'N/A'}</td>
                 <td>${logo.descripcionTipoDroga || 'N/A'}</td>
                 <td>${logo.descripcionPaisOrigen || 'N/A'}</td>
                 <td>${logo.descripcionPaisDestino || 'N/A'}</td>
-                <td>${logo.imagen || 'N/A'}</td>
-                <td>${logo.descripcionLogo || 'N/A'}</td>
                 <td>${logo.organizacion || 'N/A'}</td>
                 <td>${logo.blanco || 'N/A'}</td>
+                <td>${logo.observacion || 'N/A'}</td>
                 <td style="text-align: center;">${logo.urlFotografia ? `<img src="${logo.urlFotografia}" class="img-standard img-logo-small" />` : 'N/A'}</td>
             </tr>
         `
@@ -584,7 +585,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                     <div class="timeline-item">
                         <div class="timeline-title">LOGOTIPOS DETECTADOS</div>
                         <table>
-                            <thead><tr><th>Tipo de Droga</th><th>País de Origen</th><th>País de Destino</th><th>Logo/Imagen</th><th>Descripción</th><th>Organización</th><th>Implicados</th><th>Fotografía</th></tr></thead>
+                            <thead><tr><th>Logo/Imagen</th><th>Descripción</th><th>Tipo de Droga</th><th>País de Origen</th><th>País de Destino</th><th>Organización</th><th>Implicados</th><th>Observación</th><th>Fotografía</th></tr></thead>
                             <tbody>${logotipoRows}</tbody>
                         </table>
                     </div>
