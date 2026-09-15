@@ -33,6 +33,8 @@ import { TipoOjos, getTiposOjos } from '../services/tipo.ojos.service'
 import { postRegistroFiliacion } from '../services/filiacion.service'
 
 import FileInputWithPreview from '@/components/form/FormInputFileWithPrefix'
+import WebcamCapture from '@/components/form/WebcamCapture'
+import { Icono } from '@/components/Icono'
 import { CasbinTypes } from '@/types'
 import { getPaises, Pais } from '../services/pais.service'
 import { FiliacionPersonaTable } from '../type/filiacion.persona.table'
@@ -182,6 +184,10 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
   })
 
   const valoresConfirmados = useRef<FormValues | null>(null)
+
+  const [campoCamara, setCampoCamara] = useState<
+    'fotoFrontal' | 'fotoPerfilIzquierdo' | 'fotoPerfilDerecho' | null
+  >(null)
 
   const rightFingersData = [
     {
@@ -975,6 +981,13 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                 prefix="Foto Frontal"
                 error={errors.fotoFrontal?.message}
               />
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm mt-2 w-full"
+                onClick={() => setCampoCamara('fotoFrontal')}
+              >
+                <Icono fontSize="small">camera</Icono> Tomar foto
+              </button>
             </div>
             <div className="col-span-4">
               <FileInputWithPreview
@@ -986,6 +999,13 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                 error={errors.fotoPerfilIzquierdo?.message}
                 showPreview
               />
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm mt-2 w-full"
+                onClick={() => setCampoCamara('fotoPerfilIzquierdo')}
+              >
+                <Icono fontSize="small">camera</Icono> Tomar foto
+              </button>
             </div>
             <div className="col-span-4">
               <FileInputWithPreview
@@ -997,6 +1017,13 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
                 prefix="Foto Perfil Derecho"
                 error={errors.fotoPerfilDerecho?.message}
               />
+              <button
+                type="button"
+                className="btn btn-outline-primary btn-sm mt-2 w-full"
+                onClick={() => setCampoCamara('fotoPerfilDerecho')}
+              >
+                <Icono fontSize="small">camera</Icono> Tomar foto
+              </button>
             </div>
           </div>
 
@@ -1087,6 +1114,26 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           onConfirmar={confirmarEnvioSinarap}
         />
       )}
+
+      <WebcamCapture
+        open={campoCamara !== null}
+        titulo={
+          campoCamara === 'fotoFrontal'
+            ? 'Foto Frontal'
+            : campoCamara === 'fotoPerfilIzquierdo'
+              ? 'Foto Perfil Izquierdo'
+              : campoCamara === 'fotoPerfilDerecho'
+                ? 'Foto Perfil Derecho'
+                : 'Tomar fotografía'
+        }
+        onClose={() => setCampoCamara(null)}
+        onCapture={(file) => {
+          if (campoCamara) {
+            setValue(campoCamara, file, { shouldValidate: true })
+          }
+          setCampoCamara(null)
+        }}
+      />
     </div>
   )
 }

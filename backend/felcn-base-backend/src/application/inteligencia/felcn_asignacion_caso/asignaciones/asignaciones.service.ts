@@ -136,6 +136,9 @@ export class AsignacionesService {
       throw new NotFoundException('Asignación no encontrada')
     }
     Object.assign(asignacion, dto)
+    console.log('Asignación actualizada:')
+    console.log(dto);
+    
     const saved = await this.asignacionAsig.save({
       ...asignacion,
       fechaOperativo: dto.fechaSolicitud,
