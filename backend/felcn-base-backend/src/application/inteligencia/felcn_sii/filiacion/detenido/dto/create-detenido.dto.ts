@@ -1,12 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer';
 import {
   IsString,
   MaxLength,
   IsBoolean,
   IsOptional,
+  IsInt,
 } from 'class-validator'
 
 export class CreateDetenidoDto {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  idOperativo?: number;
+  
   @ApiProperty({
     example: '*',
     description: 'Solo en caso de ser licencia de conducir',
@@ -14,7 +21,7 @@ export class CreateDetenidoDto {
   @IsString()
   @IsOptional()
   @MaxLength(20)
-  serie?: string
+  serie?: string = '*';
 
   @ApiProperty({
     example: '*',
@@ -23,7 +30,7 @@ export class CreateDetenidoDto {
   @IsString()
   @IsOptional()
   @MaxLength(20)
-  seccion?: string
+  seccion?: string = '*';
 
   @ApiProperty({ example: true })
   @IsBoolean()
@@ -54,4 +61,9 @@ export class CreateDetenidoDto {
   @IsString()
   @IsOptional()
   observacionAdicional?: string
+
+  @ApiProperty({ example: 'Ninguna', description: 'Observacion de huellas' })
+  @IsString()
+  @IsOptional()
+  observacionHuella?: string
 }

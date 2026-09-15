@@ -15,6 +15,7 @@ import { DocumentoDetenido } from '../../documento_detenido/entities/documento_d
 import { FenotipoDetenido } from '../../fenotipo_detenido/entities/fenotipo_detenido.entity'
 import { ProfesionDetenido } from '../../profesion_detenido/entities/profesion_detenido.entity'
 import { NombresSupuesto } from '../../../nombres_supuestos/entities/nombres_supuesto.entity'
+import { IsBoolean, IsOptional } from '@/common/validation'
 
 @Entity({ name: 'detenido', schema: 'public' })
 export class Detenido {
@@ -101,6 +102,7 @@ export class Detenido {
     name: 'serie',
     type: 'varchar',
     length: 50,
+    default: '*',
     nullable: false,
     comment: 'Serie de licencia de conducir',
   })
@@ -171,13 +173,9 @@ export class Detenido {
   })
   esRevisionIcia: boolean
 
-  @Column({
-    name: 'tiene_tarjeta',
-    type: 'boolean',
-    nullable: true,
-    comment: 'Indica si tiene tarjeta de registro',
-  })
-  tieneTarjeta: boolean
+  @IsOptional()
+  @IsBoolean()
+  tieneTarjeta: boolean = false
 
   @Column({
     name: 'esta_vivo',
@@ -194,6 +192,14 @@ export class Detenido {
     comment: 'Observaciones adicionales del registro',
   })
   observacionesAdicionales: string
+
+  @Column({
+    name: 'observacion_huella',
+    type: 'text',
+    nullable: true,
+    comment: 'Observacion para las huellas',
+  })
+  observacionHuella: string
 
   @Column({
     name: 'fecha_hora_ingreso',
@@ -246,5 +252,4 @@ export class Detenido {
 
   @OneToMany(() => NombresSupuesto, (ns) => ns.detenido)
   nombresSupuestos: NombresSupuesto[]
-  
 }

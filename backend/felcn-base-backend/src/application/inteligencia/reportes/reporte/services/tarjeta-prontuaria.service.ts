@@ -178,6 +178,7 @@ export class TarjetaProntuariaService {
       constitucionCorporal: fenotipo?.constitucionCorporal?.descripcion || '',
       seniasParticulares,
       tatuajes: fenotipo?.tatuaje || '',
+      observacionHuella:detenido.observacionHuella ?? 'Sin observaciones',
     }
   }
   private async medirTiempo<T>(

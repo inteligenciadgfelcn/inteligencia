@@ -36,9 +36,9 @@ export function mapDetenidoAuxiliarEntity(
   }
   return {
     idOperativo:
-      arrestado?.idOperativo !== null && arrestado?.idOperativo !== undefined
-        ? String(arrestado.idOperativo)
-        : undefined,
+  detenido?.idOperativo !== null && detenido?.idOperativo !== undefined
+    ? String(detenido.idOperativo)
+    : undefined,
 
     idPais,
     idEstadoCivil,
@@ -57,8 +57,8 @@ export function mapDetenidoAuxiliarEntity(
     serie: detenido?.serie,
     seccion: detenido?.seccion,
 
-    tieneTarjeta: detenido?.tieneTarjeta,
-    estaVivo: detenido?.estaVivo,
+    tieneTarjeta: detenido?.tieneTarjeta??false,
+    estaVivo: detenido?.estaVivo??false,
 
     fotoFrente: convertirImagenABuffer(detenido?.fotoFrente),
 

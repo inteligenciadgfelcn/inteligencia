@@ -1,7 +1,7 @@
 <style>
   @page {
-    size: Letter;
-    margin: 10mm;
+    size: 216mm 330mm;
+    margin: 6mm;
   }
 
   * {
@@ -9,20 +9,22 @@
   }
 
   .inline-label {
-  font-weight: bold;
-  font-size: 11px;
-  color: #111;
-}
+    font-weight: bold;
+    font-size: 9px;
+    color: #111;
+  }
 
- body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #eef3ef;
-  margin: 0;
-  color: #111;
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #eef3ef;
+    margin: 0;
+    color: #111;
 
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 9px;
+    line-height: 1.15;
+  }
 
   /* CONTENEDOR */
   .container {
@@ -34,7 +36,7 @@
   .header {
     position: relative;
     background: #ffffff;
-    padding: 12px 15px 10px;
+    padding: 6px 10px 5px;
   }
 
   .header::before {
@@ -60,7 +62,9 @@
   }
 
   .logo {
-    width: 100px;
+    width: 72px;
+    max-height: 54px;
+    object-fit: contain;
   }
 
   .header-center {
@@ -69,13 +73,13 @@
   }
 
   .title-main {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
     color: #1f3f2b;
   }
 
   .title-sub {
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
     color: #2e5e3e;
     margin-top: 2px;
@@ -84,46 +88,46 @@
   .header-doc {
     background: #2e5e3e;
     color: white;
-    padding: 7px 10px;
-    font-size: 13px;
+    padding: 4px 8px;
+    font-size: 11px;
     font-weight: bold;
   }
 
   /* CARD */
   .card {
-  background: #fff;
-  border: 1px solid #d6e2da;
-  width: 100%;
+    background: #fff;
+    border: 1px solid #d6e2da;
+    width: 100%;
 
-  display: block;
-}
+    display: block;
+  }
 
   /* SECCIONES */
   .section {
     border-top: 1px solid #e3ebe5;
-    break-inside: avoid;
+    break-inside: auto;
   }
 
   .section-title {
     background: #f3f8f5;
     color: #2e5e3e;
     font-weight: bold;
-    font-size: 11px;
-    padding: 6px 10px;
+    font-size: 9px;
+    padding: 3px 7px;
     border-left: 4px solid #2e5e3e;
   }
 
   /* IDENTIFICACION */
   .identificacion {
-    padding: 10px;
+    padding: 6px;
   }
 
   /* FILAS */
   .row,
   .info-row {
     display: flex;
-    gap: 12px;
-    padding: 4px 0;
+    gap: 8px;
+    padding: 2px 0;
     border-bottom: 1px solid #eef2ef;
   }
 
@@ -131,7 +135,7 @@
   .cell,
   .info-col {
     flex: 1;
-    font-size: 11px;
+    font-size: 9px;
     word-break: break-word;
   }
 
@@ -143,16 +147,16 @@
   .photos-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 6px;
   }
 
   /* GRID HUELLAS */
   .fingerprints-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    padding: 14px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    padding: 6px;
   }
 
   /* WRAPPERS */
@@ -188,10 +192,10 @@
   /* HUELLAS */
   .finger-box {
     width: 100%;
-    height: 150px;
+    height: 112px;
 
-    border: 2px solid #2e5e3e;
-    border-radius: 10px;
+    border: 1px solid #2e5e3e;
+    border-radius: 4px;
 
     background: #fff;
 
@@ -201,7 +205,7 @@
     align-items: center;
     justify-content: center;
 
-    padding: 10px;
+    padding: 4px;
   }
 
   .finger-box img {
@@ -215,55 +219,55 @@
   /* LABELS */
   .finger-label {
     text-align: center;
-    font-size: 11px;
-    margin-top: 6px;
+    font-size: 8px;
+    margin-top: 2px;
     color: #2e5e3e;
     font-weight: bold;
   }
 
   /* INFORMACION */
   .info-final {
-    padding: 14px;
+    padding: 6px;
   }
 
   /* BLOQUES */
   .info-block {
-    margin-bottom: 16px;
+    margin-bottom: 6px;
   }
 
   /* TEXTO */
   .textarea-box {
-    margin-top: 6px;
+    margin-top: 3px;
 
     border: 1px solid #d6d6d6;
     background: #fafafa;
 
-    padding: 8px 10px;
+    padding: 4px 6px;
 
-    line-height: 1.4;
+    line-height: 1.2;
 
-    min-height: 40px;
+    min-height: 26px;
 
-    font-size: 11px;
+    font-size: 9px;
   }
 
   /* TABLAS */
   .family-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 8px;
-    font-size: 11px;
+    margin-top: 4px;
+    font-size: 8px;
   }
 
   .family-table th {
     background: #f3f8f5;
     border: 1px solid #ccc;
-    padding: 6px;
+    padding: 3px;
   }
 
   .family-table td {
     border: 1px solid #ddd;
-    padding: 6px;
+    padding: 3px;
   }
 
   .photo-wrapper,
@@ -272,7 +276,52 @@
   .row {
     break-inside: avoid;
   }
+
+  .watermark-grid {
+  position: fixed;
+  inset: 2mm;
+  z-index: 9999;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+
+  align-items: center;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.watermark-grid img {
+  width: 145px;
+  height: auto;
+  opacity: 0.28;
+  transform: rotate(-22deg);
+}
+
+  /* Compacta espacios escritos directamente en el HTML. */
+  .section .row[style*='margin-top:10px'] {
+    margin-top: 4px !important;
+  }
+
+  .section .info-block[style*='margin-top:15px'] {
+    margin-top: 6px !important;
+  }
+
+  .section .row[style*='margin-top:70px'] {
+    margin-top: 32px !important;
+  }
+  .observacion-huella {
+    min-height: 38px;
+    font-size: 10px;
+    line-height: 1.25;
+  }
 </style>
+
+<div class='watermark-grid'>
+  {{#each marcasAgua}}
+    <img src='{{{this}}}' alt='' />
+  {{/each}}
+</div>
 
 <div class='container'>
 
@@ -286,7 +335,7 @@
       <div class='header-center'>
 
         <div class='title-main'>
-          DEPARTAMENTO NACIONAL DE INTELIGENCIA
+          DEPARTAMENTO NACIONAL DE INTELIGENCIA ANTINARCÓTICOS
         </div>
 
         <div class='title-sub'>
@@ -753,7 +802,24 @@
 
     </div>
 
-     <div class='section'>
+    <!-- OBSERVACIÓN DE HUELLAS -->
+    <div class='section'>
+      <div class='section-title'>
+        OBSERVACIÓN DE HUELLAS
+      </div>
+
+      <div class='info-final'>
+        <div class='textarea-box observacion-huella'>
+          {{#if observacionHuella}}
+            {{observacionHuella}}
+          {{else}}
+            Sin observaciones
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class='section'>
 
       <div class='section-title'>
         INFORMACIÓN COMPLEMENTARIA
@@ -761,173 +827,143 @@
 
       <div class='info-block'>
 
-  <div class='row'>
+        <div class='row'>
 
-    <div class='cell'>
+          <div class='cell'>
 
-      <span class='inline-label'>
-        Motivo:
-      </span>
+            <span class='inline-label'>
+              Motivo:
+            </span>
 
-      {{motivo}}
+            {{motivo}}
 
+          </div>
+
+          <div class='cell'>
+
+            <span class='inline-label'>
+              Fecha Aprehensión:
+            </span>
+
+            {{fechaAprehension}}
+
+          </div>
+
+        </div>
+
+        <div class='row' style='margin-top:10px;'>
+
+          <div class='cell'>
+
+            <span class='inline-label'>
+              Remitido MP:
+            </span>
+
+            {{remitidoMP}}
+
+          </div>
+
+          <div class='cell'>
+
+            <span class='inline-label'>
+              Puesto en Libertad:
+            </span>
+
+            {{puestoLibertad}}
+
+          </div>
+
+          <div class='cell'>
+
+            <span class='inline-label'>
+              Fecha Remisión:
+            </span>
+
+            {{fechaRemision}}
+
+          </div>
+
+        </div>
+
+        <div style='margin-top:10px;'>
+
+          <span class='inline-label'>
+            Autoridad que dispuso libertad:
+          </span>
+
+          <div class='textarea-box'>
+            {{autoridadLibertad}}
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- 🔥 OBSERVACIONES -->
+      <!-- ===================================================== -->
+
+      <div class='section-title'>
+        OBSERVACIONES COMPLEMENTARIAS
+      </div>
+
+      <div class='textarea-box'>
+        {{observaciones}}
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- 🔥 REGISTRO -->
+      <!-- ===================================================== -->
+
+      <div class='info-block' style='margin-top:15px;'>
+
+        <span class='inline-label'>
+          Lugar y Fecha de Registro:
+        </span>
+
+        <div class='textarea-box'>
+          {{lugarRegistro}}
+        </div>
+
+      </div>
+
+      <!-- ===================================================== -->
+      <!-- 🔥 FIRMAS -->
+      <!-- ===================================================== -->
+
+      <div class='row' style='margin-top:70px;'>
+
+        <div class='cell' style='text-align:center;'>
+
+          ___________________________
+
+          <br />
+
+          Firma del Registrado
+
+        </div>
+
+        <div class='cell' style='text-align:center;'>
+
+          ___________________________
+
+          <br />
+
+          Firma del responsable del caso
+        </div>
+
+        <div class='cell' style='text-align:center;'>
+
+          ___________________________
+
+          <br />
+
+          Firma
+
+        </div>
+
+      </div>
     </div>
-
-    <div class='cell'>
-
-      <span class='inline-label'>
-        Fecha Aprehensión:
-      </span>
-
-      {{fechaAprehension}}
-
-    </div>
-
-  </div>
-
-  <div
-    class='row'
-    style='margin-top:10px;'
-  >
-
-    <div class='cell'>
-
-      <span class='inline-label'>
-        Remitido MP:
-      </span>
-
-      {{remitidoMP}}
-
-    </div>
-
-    <div class='cell'>
-
-      <span class='inline-label'>
-        Puesto en Libertad:
-      </span>
-
-      {{puestoLibertad}}
-
-    </div>
-
-    <div class='cell'>
-
-      <span class='inline-label'>
-        Fecha Remisión:
-      </span>
-
-      {{fechaRemision}}
-
-    </div>
-
-  </div>
-
-  <div
-    style='margin-top:10px;'
-  >
-
-    <span class='inline-label'>
-      Autoridad que dispuso libertad:
-    </span>
-
-    <div class='textarea-box'>
-      {{autoridadLibertad}}
-    </div>
-
-  </div>
-
-</div>
-
-<!-- ===================================================== -->
-<!-- 🔥 OBSERVACIONES -->
-<!-- ===================================================== -->
-
-<div class='section-title'>
-  OBSERVACIONES COMPLEMENTARIAS
-</div>
-
-<div class='textarea-box'>
-  {{observaciones}}
-</div>
-
-<!-- ===================================================== -->
-<!-- 🔥 REGISTRO -->
-<!-- ===================================================== -->
-
-<div
-  class='info-block'
-  style='margin-top:15px;'
->
-
-  <span class='inline-label'>
-    Lugar y Fecha de Registro:
-  </span>
-
-  <div class='textarea-box'>
-    {{lugarRegistro}}
-  </div>
-
-</div>
-
-<!-- ===================================================== -->
-<!-- 🔥 FIRMAS -->
-<!-- ===================================================== -->
-
-<div
-  class='row'
-  style='margin-top:70px;'
->
-
-  <div
-    class='cell'
-    style='text-align:center;'
-  >
-
-    ___________________________
-
-    <br /><br />
-
-    Firma del Registrado
-
-  </div>
-
-  <div
-    class='cell'
-    style='text-align:center;'
-  >
-
-    ___________________________
-
-    <br /><br />
-
-    Firma
-    <br />
-
-    Grado y Nombre del
-    <br />
-
-    Asignado al Caso
-
-  </div>
-
-  <div
-    class='cell'
-    style='text-align:center;'
-  >
-
-    ___________________________
-
-    <br /><br />
-
-    Firma
-    <br />
-
-    Grado y Nombre del Filiador
-
-  </div>
-
-</div>
-     </div>
 
   </div>
 

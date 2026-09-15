@@ -1,37 +1,23 @@
-import {
-  Injectable,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common'
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 
 import * as fs from 'fs'
 import * as path from 'path'
 import * as Handlebars from 'handlebars'
 
-import puppeteer, {
-  Browser,
-  PDFOptions,
-} from 'puppeteer'
+import puppeteer, { Browser, PDFOptions } from 'puppeteer'
 
-import {
-  pdfImages,
-} from '../../images'
+import { pdfImages } from '../../images'
 
-import {
-  TemplatePaths,
-} from '../../template-paths'
+import { TemplatePaths } from '../../template-paths'
 
 @Injectable()
-export class PdfService
-  implements
-    OnModuleInit,
-    OnModuleDestroy
-{
+export class PdfService implements OnModuleInit, OnModuleDestroy {
   private browser!: Browser
 
   private institucional!: string
 
   private escudo!: string
+  private marcaAgua!: string
 
   /*
    * Caché de templates compilados.
@@ -39,49 +25,36 @@ export class PdfService
    * Evita leer y compilar nuevamente
    * el mismo archivo Handlebars.
    */
-  private readonly templates =
-    new Map<
-      string,
-      HandlebarsTemplateDelegate
-    >()
+  private readonly templates = new Map<string, HandlebarsTemplateDelegate>()
 
   // =====================================================
   // INICIAR PUPPETEER
   // =====================================================
 
   async onModuleInit() {
-    console.time(
-      'PUPPETEER INIT',
-    )
+    console.time('PUPPETEER INIT')
 
-    this.browser =
-      await puppeteer.launch({
-        headless: true,
+    this.browser = await puppeteer.launch({
+      headless: true,
 
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-        ],
-      })
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+      ],
+    })
 
     /*
      * Los logos se convierten una sola vez
      * cuando inicia la aplicación.
      */
-    this.institucional =
-      this.imageToBase64(
-        pdfImages.institucional,
-      )
+    this.institucional = this.imageToBase64(pdfImages.institucional)
 
-    this.escudo =
-      this.imageToBase64(
-        pdfImages.escudo,
-      )
+    this.escudo = this.imageToBase64(pdfImages.escudo)
 
-    console.timeEnd(
-      'PUPPETEER INIT',
-    )
+    this.marcaAgua = this.imageToBase64(pdfImages.marcaAgua)
+
+    console.timeEnd('PUPPETEER INIT')
   }
 
   // =====================================================
@@ -106,114 +79,81 @@ export class PdfService
   // desde ExportService.
   // =====================================================
 
- async generate(
-  type: string,
-  data: any,
-  options: PDFOptions = {},
-): Promise<Buffer> {
-  const templateData = {
-    ...data,
+  async generate(
+    type: string,
+    data: any,
+    options: PDFOptions = {}
+  ): Promise<Buffer> {
+    const templateData = {
+      ...data,
 
-    institucional:
-      this.institucional,
+      institucional: this.institucional,
 
-    escudo:
-      this.escudo,
-  }
+      escudo: this.escudo,
+      marcaAgua: this.marcaAgua,
+      marcasAgua: Array(24).fill(this.marcaAgua),
+    }
 
-  const template =
-    this.obtenerTemplate(
-      type,
-    )
+    const template = this.obtenerTemplate(type)
 
-  const html =
-    template(
-      templateData,
-    )
+    const html = template(templateData)
 
-  const page =
-    await this.browser.newPage()
+    const page = await this.browser.newPage()
 
-  try {
-    await page.setContent(
-      html,
-      {
-        waitUntil:
-          'domcontentloaded',
+    try {
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
 
-        timeout:
-          15000,
-      },
-    )
+        timeout: 15000,
+      })
 
-    /*
-     * Carta vertical por defecto.
-     */
-    const opcionesPredeterminadas:
-      PDFOptions = {
-        format:
-          'Letter',
+      /*
+       * Carta vertical por defecto.
+       */
+      const opcionesPredeterminadas: PDFOptions = {
+        format: 'Letter',
 
-        landscape:
-          false,
+        landscape: false,
 
-        printBackground:
-          true,
+        printBackground: true,
 
         margin: {
-          top:
-            '12mm',
+          top: '12mm',
 
-          bottom:
-            '12mm',
+          bottom: '12mm',
 
-          left:
-            '12mm',
+          left: '12mm',
 
-          right:
-            '12mm',
+          right: '12mm',
         },
       }
 
-    const tieneTamanoEspecial =
-      Boolean(
-        options.format ||
-        options.width ||
-        options.height,
+      const tieneTamanoEspecial = Boolean(
+        options.format || options.width || options.height
       )
 
-    const opcionesFinales:
-      PDFOptions = {
+      const opcionesFinales: PDFOptions = {
         ...opcionesPredeterminadas,
         ...options,
 
         margin: {
-          ...opcionesPredeterminadas
-            .margin,
+          ...opcionesPredeterminadas.margin,
 
           ...(options.margin || {}),
         },
       }
-     
-    if (
-      tieneTamanoEspecial &&
-      !options.format
-    ) {
-      delete opcionesFinales.format
+
+      if (tieneTamanoEspecial && !options.format) {
+        delete opcionesFinales.format
+      }
+
+      const pdfBuffer = await page.pdf(opcionesFinales)
+
+      return Buffer.from(pdfBuffer)
+    } finally {
+      await page.close()
     }
-
-    const pdfBuffer =
-      await page.pdf(
-        opcionesFinales,
-      )
-
-    return Buffer.from(
-      pdfBuffer,
-    )
-  } finally {
-    await page.close()
   }
-}
 
   // =====================================================
   // CONFIGURACIÓN GENERAL
@@ -226,61 +166,45 @@ export class PdfService
   // Se utiliza Letter automáticamente.
   // =====================================================
 
-  private construirOpcionesPDF(
-    options: PDFOptions,
-  ): PDFOptions {
-    const tieneTamanoPersonalizado =
-      Boolean(
-        options.format ||
-        options.width ||
-        options.height,
-      )
+  private construirOpcionesPDF(options: PDFOptions): PDFOptions {
+    const tieneTamanoPersonalizado = Boolean(
+      options.format || options.width || options.height
+    )
 
     const margenPredeterminado = {
-      top:
-        '12mm',
+      top: '12mm',
 
-      bottom:
-        '12mm',
+      bottom: '12mm',
 
-      left:
-        '12mm',
+      left: '12mm',
 
-      right:
-        '12mm',
+      right: '12mm',
     }
 
-    const opcionesPDF:
-      PDFOptions = {
-        landscape:
-          false,
+    const opcionesPDF: PDFOptions = {
+      landscape: false,
 
-        printBackground:
-          true,
+      printBackground: true,
 
-        preferCSSPageSize:
-          false,
+      preferCSSPageSize: false,
 
-        ...options,
+      ...options,
 
-        /*
-         * Permite modificar uno o varios
-         * márgenes sin perder los demás.
-         */
-        margin: {
-          ...margenPredeterminado,
-          ...(options.margin || {}),
-        },
-      }
+      /*
+       * Permite modificar uno o varios
+       * márgenes sin perder los demás.
+       */
+      margin: {
+        ...margenPredeterminado,
+        ...(options.margin || {}),
+      },
+    }
 
     /*
      * Carta vertical por defecto.
      */
-    if (
-      !tieneTamanoPersonalizado
-    ) {
-      opcionesPDF.format =
-        'Letter'
+    if (!tieneTamanoPersonalizado) {
+      opcionesPDF.format = 'Letter'
     }
 
     return opcionesPDF
@@ -290,49 +214,27 @@ export class PdfService
   // OBTENER Y CACHEAR TEMPLATE
   // =====================================================
 
-  private obtenerTemplate(
-    type: string,
-  ): HandlebarsTemplateDelegate {
-    const templateCache =
-      this.templates.get(
-        type,
-      )
+  private obtenerTemplate(type: string): HandlebarsTemplateDelegate {
+    const templateCache = this.templates.get(type)
 
     if (templateCache) {
       return templateCache
     }
 
-    const templatePath =
-      path.join(
-        TemplatePaths.pdfTemplates,
-        `${type}.template.hbs`,
-      )
+    const templatePath = path.join(
+      TemplatePaths.pdfTemplates,
+      `${type}.template.hbs`
+    )
 
-    if (
-      !fs.existsSync(
-        templatePath,
-      )
-    ) {
-      throw new Error(
-        `No se encontró el template PDF: ${templatePath}`,
-      )
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`No se encontró el template PDF: ${templatePath}`)
     }
 
-    const templateString =
-      fs.readFileSync(
-        templatePath,
-        'utf8',
-      )
+    const templateString = fs.readFileSync(templatePath, 'utf8')
 
-    const template =
-      Handlebars.compile(
-        templateString,
-      )
+    const template = Handlebars.compile(templateString)
 
-    this.templates.set(
-      type,
-      template,
-    )
+    this.templates.set(type, template)
 
     return template
   }
@@ -341,47 +243,21 @@ export class PdfService
   // CONVERTIR LOGO A BASE64
   // =====================================================
 
-  private imageToBase64(
-    filePath: string,
-  ): string {
+  private imageToBase64(filePath: string): string {
     try {
-      if (
-        !filePath ||
-        !fs.existsSync(
-          filePath,
-        )
-      ) {
+      if (!filePath || !fs.existsSync(filePath)) {
         return ''
       }
 
-      const file =
-        fs.readFileSync(
-          filePath,
-        )
+      const file = fs.readFileSync(filePath)
 
-      const extension =
-        path.extname(
-          filePath,
-        )
-          .substring(1)
-          .toLowerCase()
+      const extension = path.extname(filePath).substring(1).toLowerCase()
 
-      const mime =
-        this.obtenerMimePorExtension(
-          extension,
-        )
+      const mime = this.obtenerMimePorExtension(extension)
 
-      return (
-        `data:${mime};base64,` +
-        file.toString(
-          'base64',
-        )
-      )
+      return `data:${mime};base64,` + file.toString('base64')
     } catch (error) {
-      console.error(
-        `ERROR CONVIRTIENDO LOGO: ${filePath}`,
-        error,
-      )
+      console.error(`ERROR CONVIRTIENDO LOGO: ${filePath}`, error)
 
       return ''
     }
@@ -391,9 +267,7 @@ export class PdfService
   // CONVERTIR BUFFER A BASE64
   // =====================================================
 
-  public bufferToBase64(
-    buffer: any,
-  ): string {
+  public bufferToBase64(buffer: any): string {
     try {
       if (!buffer) {
         return ''
@@ -403,33 +277,17 @@ export class PdfService
        * Si ya viene como data URI,
        * se devuelve directamente.
        */
-      if (
-        typeof buffer ===
-          'string' &&
-        buffer.startsWith(
-          'data:image',
-        )
-      ) {
+      if (typeof buffer === 'string' && buffer.startsWith('data:image')) {
         return buffer
       }
 
-      const buf =
-        Buffer.isBuffer(
-          buffer,
-        )
-          ? buffer
-          : Buffer.from(
-              buffer,
-            )
+      const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer)
 
-      if (
-        buf.length < 2
-      ) {
+      if (buf.length < 2) {
         return ''
       }
 
-      let mime =
-        'image/jpeg'
+      let mime = 'image/jpeg'
 
       const esPNG =
         buf.length >= 4 &&
@@ -438,52 +296,28 @@ export class PdfService
         buf[2] === 0x4e &&
         buf[3] === 0x47
 
-      const esBMP =
-        buf[0] === 0x42 &&
-        buf[1] === 0x4d
+      const esBMP = buf[0] === 0x42 && buf[1] === 0x4d
 
-      const esJPEG =
-        buf[0] === 0xff &&
-        buf[1] === 0xd8
+      const esJPEG = buf[0] === 0xff && buf[1] === 0xd8
 
       const esWEBP =
         buf.length >= 12 &&
-        buf.toString(
-          'ascii',
-          0,
-          4,
-        ) === 'RIFF' &&
-        buf.toString(
-          'ascii',
-          8,
-          12,
-        ) === 'WEBP'
+        buf.toString('ascii', 0, 4) === 'RIFF' &&
+        buf.toString('ascii', 8, 12) === 'WEBP'
 
       if (esPNG) {
-        mime =
-          'image/png'
+        mime = 'image/png'
       } else if (esBMP) {
-        mime =
-          'image/bmp'
+        mime = 'image/bmp'
       } else if (esJPEG) {
-        mime =
-          'image/jpeg'
+        mime = 'image/jpeg'
       } else if (esWEBP) {
-        mime =
-          'image/webp'
+        mime = 'image/webp'
       }
 
-      return (
-        `data:${mime};base64,` +
-        buf.toString(
-          'base64',
-        )
-      )
+      return `data:${mime};base64,` + buf.toString('base64')
     } catch (error) {
-      console.error(
-        'ERROR BUFFER BASE64',
-        error,
-      )
+      console.error('ERROR BUFFER BASE64', error)
 
       return ''
     }
@@ -493,64 +327,31 @@ export class PdfService
   // CONVERTIR ARCHIVO A BASE64
   // =====================================================
 
-  public async fileToBase64(
-    filePath: string,
-  ): Promise<string> {
+  public async fileToBase64(filePath: string): Promise<string> {
     try {
       if (!filePath) {
         return ''
       }
 
-      const rutaAbsoluta =
-        path.isAbsolute(
-          filePath,
-        )
-          ? filePath
-          : path.resolve(
-              process.cwd(),
-              filePath,
-            )
+      const rutaAbsoluta = path.isAbsolute(filePath)
+        ? filePath
+        : path.resolve(process.cwd(), filePath)
 
-      if (
-        !fs.existsSync(
-          rutaAbsoluta,
-        )
-      ) {
-        console.error(
-          `NO EXISTE EL ARCHIVO: ${rutaAbsoluta}`,
-        )
+      if (!fs.existsSync(rutaAbsoluta)) {
+        console.error(`NO EXISTE EL ARCHIVO: ${rutaAbsoluta}`)
 
         return ''
       }
 
-      const file =
-        await fs.promises.readFile(
-          rutaAbsoluta,
-        )
+      const file = await fs.promises.readFile(rutaAbsoluta)
 
-      const extension =
-        path.extname(
-          rutaAbsoluta,
-        )
-          .substring(1)
-          .toLowerCase()
+      const extension = path.extname(rutaAbsoluta).substring(1).toLowerCase()
 
-      const mime =
-        this.obtenerMimePorExtension(
-          extension,
-        )
+      const mime = this.obtenerMimePorExtension(extension)
 
-      return (
-        `data:${mime};base64,` +
-        file.toString(
-          'base64',
-        )
-      )
+      return `data:${mime};base64,` + file.toString('base64')
     } catch (error) {
-      console.error(
-        `ERROR FILE BASE64: ${filePath}`,
-        error,
-      )
+      console.error(`ERROR FILE BASE64: ${filePath}`, error)
 
       return ''
     }
@@ -560,12 +361,8 @@ export class PdfService
   // OBTENER MIME SEGÚN EXTENSIÓN
   // =====================================================
 
-  private obtenerMimePorExtension(
-    extension: string,
-  ): string {
-    switch (
-      extension.toLowerCase()
-    ) {
+  private obtenerMimePorExtension(extension: string): string {
+    switch (extension.toLowerCase()) {
       case 'png':
         return 'image/png'
 

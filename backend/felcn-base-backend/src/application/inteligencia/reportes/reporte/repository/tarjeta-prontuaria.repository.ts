@@ -37,6 +37,7 @@ export class TarjetaProntuariaRepository {
         'estadoCivil',
         'profesiones',
         'profesion',
+        'detenido.observacionHuella'
       ])
       .where('detenido.idDetenido = :id', { id })
       .getOne()

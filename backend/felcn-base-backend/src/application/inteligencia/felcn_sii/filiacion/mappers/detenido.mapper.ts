@@ -41,7 +41,7 @@ const auditoria = dto as CreateFiliacionDto & {
     seccion: detenido?.seccion,
 
     tieneTarjeta: detenido?.tieneTarjeta,
-    estaVivo: detenido?.estaVivo,
+    estaVivo: detenido?.estaVivo??false,
 
     fotoFrente: detenido?.fotoFrente,
     fotoPerfilDerecho: detenido?.fotoPerfilDerecho,
@@ -50,6 +50,7 @@ const auditoria = dto as CreateFiliacionDto & {
     pais: idPais ? { idPais } : undefined,
 
     estadoCivil: idEstadoCivil ? { idEstadoCivil } : undefined,
+    observacionHuella:detenido?.observacionHuella,
 
     usuario: auditoria.usuario ?? 'SISTEMA',
     fechaHoraIngreso:
