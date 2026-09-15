@@ -473,6 +473,11 @@ export function Logotipos({ titulo, idoperativo }: Props) {
               onLimitChange={() => { }}
               columns={[
                 {
+                  accessor: 'imagen',
+                  title: 'Imagen',
+                  render: (row) => String(row.imagen ?? ''),
+                },
+                {
                   accessor: 'descripcionLogo',
                   title: 'Descripción',
                   render: (row) => String(row.descripcionLogo ?? ''),
