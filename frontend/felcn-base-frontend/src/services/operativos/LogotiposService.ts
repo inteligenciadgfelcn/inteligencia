@@ -14,6 +14,9 @@ const buildFormData = (payload: LogotipoPayload) => {
 
   formData.append('imagen', payload.imagen)
   formData.append('descripcionLogo', payload.descripcionLogo)
+  formData.append('idTipoDroga', String(payload.idTipoDroga))
+  formData.append('idPaisOrigen', String(payload.idPaisOrigen))
+  formData.append('idPaisDestino', String(payload.idPaisDestino))
   formData.append('organizacion', payload.organizacion)
   if (payload.fotografia) {
     formData.append('fotografia', payload.fotografia)

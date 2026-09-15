@@ -589,6 +589,9 @@ export class OperativoService extends BaseService {
       idOperativo,
       imagen: data.imagen,
       descripcionLogo: data.descripcionLogo,
+      idTipoDroga: data.idTipoDroga,
+      idPaisOrigen: data.idPaisOrigen,
+      idPaisDestino: data.idPaisDestino,
       organizacion: data.organizacion,
       blanco: data.blanco,
       observacion: data.observacion,
@@ -607,8 +610,11 @@ export class OperativoService extends BaseService {
 
   async listarLogotipos(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[any[], number]> {
     const [logotipos, total] = await this.operativoRepository.listarLogotiposPorOperativo(idOperativo, paginacion)
-    const filas = logotipos.map(({ fotografia, operativo, ...l }) => ({
+    const filas = logotipos.map(({ fotografia, operativo, tipoDroga, paisOrigen, paisDestino, ...l }) => ({
       ...l,
+      descripcionTipoDroga: tipoDroga?.descripcion ?? null,
+      descripcionPaisOrigen: paisOrigen?.descripcion ?? null,
+      descripcionPaisDestino: paisDestino?.descripcion ?? null,
       urlFotografia: fotografia?.length
         ? `/api/operativos/${idOperativo}/logotipos/${l.id}/foto`
         : null,

@@ -407,6 +407,7 @@ export class OperativoRepository {
   async listarLogotiposPorOperativo(idOperativo: string, paginacion: PaginacionQueryDto): Promise<[Logotipo[], number]> {
     return this.logotipoRepo.findAndCount({
       where: { idOperativo },
+      relations: ['tipoDroga', 'paisOrigen', 'paisDestino'],
       skip: paginacion.saltar,
       take: paginacion.limite,
     })

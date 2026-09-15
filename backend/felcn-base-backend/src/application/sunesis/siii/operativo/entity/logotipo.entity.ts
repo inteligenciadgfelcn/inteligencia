@@ -9,6 +9,8 @@ import {
 import { SCHEMA_PUBLIC } from '../../../shared/constants'
 import { AuditoriaEntity } from '@/common/entity'
 import { Operativo } from './operativo.entity'
+import { TipoDroga } from '../../parametrica/entity/tipo/tipo-droga.entity'
+import { Pais } from '../../parametrica/entity/geografia/pais.entity'
 
 /**
  * Entidad Logotipo
@@ -32,6 +34,15 @@ export class Logotipo extends AuditoriaEntity {
   @Column({ name: 'descripcion_logo', type: 'text' })
   descripcionLogo: string
 
+  @Column({ name: 'id_tipo_droga', type: 'integer', nullable: true })
+  idTipoDroga?: number
+
+  @Column({ name: 'id_pais_origen', type: 'integer', nullable: true })
+  idPaisOrigen?: number
+
+  @Column({ name: 'id_pais_destino', type: 'integer', nullable: true })
+  idPaisDestino?: number
+
   @Column({ name: 'organizacion', type: 'varchar', length: 50 })
   organizacion: string
 
@@ -53,6 +64,18 @@ export class Logotipo extends AuditoriaEntity {
   @ManyToOne(() => Operativo)
   @JoinColumn({ name: 'id_operativo' })
   operativo?: Operativo
+
+  @ManyToOne(() => TipoDroga)
+  @JoinColumn({ name: 'id_tipo_droga' })
+  tipoDroga?: TipoDroga
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais_origen' })
+  paisOrigen?: Pais
+
+  @ManyToOne(() => Pais)
+  @JoinColumn({ name: 'id_pais_destino' })
+  paisDestino?: Pais
 
   @BeforeInsert()
   insertarFechaIngreso() {
