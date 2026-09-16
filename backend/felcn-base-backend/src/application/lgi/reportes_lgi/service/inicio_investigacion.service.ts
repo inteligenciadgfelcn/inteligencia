@@ -1,8 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
+import { InicioInvestigacionRepository } from '../repository/Inicio-investigacion.repository'
 
 @Injectable()
-export class ReportesLgiService {
-  async GenerarPDFGiaef(id: number) {
+export class InicioInvestigacionService {
+  constructor(
+    private readonly inicioRepository: InicioInvestigacionRepository
+  ) {}
+
+
+  async GenerarPDFInicio(id: number) {
     if (!id) {
       throw new NotFoundException(
         'No se proporcionó el identificador del reporte'
