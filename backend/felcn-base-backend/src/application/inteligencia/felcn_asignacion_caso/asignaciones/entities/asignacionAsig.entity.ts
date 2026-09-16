@@ -69,7 +69,7 @@ export class AsignacionASIG {
     nullable: true,
     comment: 'Nombre descriptivo del caso',
   })
-  nombreCaso!: string
+  nombreCaso?: string
 
   @Column({
     name: 'asignacion_caso',

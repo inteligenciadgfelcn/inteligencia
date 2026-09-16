@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsOptional } from '@/common/validation';
 
 export class CreateAsignacionDto {
   @ApiProperty({ example: 'Codigo de servicio' })
@@ -27,11 +28,14 @@ export class CreateAsignacionDto {
   @IsNotEmpty()
   idGrupo!: number;
 
-  @ApiProperty({ example: 'Operativo Antinarcóticos' })
+  @ApiProperty({
+    example: 'Operativo Antinarcóticos',
+    required: false,
+  })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @MaxLength(30)
-  nombreCaso!: string;
+  nombreCaso?: string
 
   @ApiProperty({ example: '12-05-2025 16:00' })
   @IsNotEmpty()
@@ -43,7 +47,7 @@ export class CreateAsignacionDto {
   @MaxLength(150)
   nombreSolicitud!: string;
 
-  @ApiProperty({ example: 'ICIA-12345'  })
+  @ApiProperty({ example: 'ICIA-12345' })
   @IsString()
   @IsNotEmpty()
   numeroPaseSolicitud!: string;
