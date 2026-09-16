@@ -105,7 +105,7 @@ export function InvestigadoresDataTable({ casoId }: Props) {
           >
             <IconEdit className="h-4 w-4" />
           </button>
-          {row.estadoInvestigador !== 'SEPARADO' && (
+          {/* {row.estadoInvestigador !== 'SEPARADO' && (
             <button
               type="button"
               className="btn btn-outline-danger btn-sm !p-1.5"
@@ -114,7 +114,7 @@ export function InvestigadoresDataTable({ casoId }: Props) {
             >
               <IconTrash className="h-4 w-4" />
             </button>
-          )}
+          )} */}
         </div>
       ),
     },

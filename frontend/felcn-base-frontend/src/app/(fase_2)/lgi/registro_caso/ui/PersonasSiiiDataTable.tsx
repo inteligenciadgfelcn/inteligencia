@@ -70,7 +70,7 @@ export function PersonasSiiiDataTable({ idOperativo }: Props) {
               onClick={() => window.open(row.urlFotoFrente, '_blank')}
               title="Ver foto frente"
             >
-              <IconEye className="h-4 w-4" />
+              <IconGallery className="h-4 w-4" />
             </button>
           )}
           {row.urlFotoDocumento && (
@@ -90,7 +90,7 @@ export function PersonasSiiiDataTable({ idOperativo }: Props) {
               onClick={() => window.open(row.urlFotoPerfilIzquierdo, '_blank')}
               title="Ver foto perfil izquierdo"
             >
-              <IconEye className="h-4 w-4" />
+              <IconGallery className="h-4 w-4" />
             </button>
           )}
         </div>

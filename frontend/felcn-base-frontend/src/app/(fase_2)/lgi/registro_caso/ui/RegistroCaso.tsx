@@ -598,7 +598,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                         disabled={isLectura}
                         error={!!errorsInformacion.nroCasoFelcn}
                         className="w-full"
-                        placeholder="Número de caso FELCN"
+                        placeholder="EJ. LP-O-1/26"
                       />
                       {!isLectura && (
                         <Button

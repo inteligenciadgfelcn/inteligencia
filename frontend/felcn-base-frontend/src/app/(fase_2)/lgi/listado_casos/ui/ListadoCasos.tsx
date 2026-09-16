@@ -14,6 +14,7 @@ import IconEye from '@/components/Icon/IconEye'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconSearch from '@/components/Icon/IconSearch'
 import IconTrash from '@/components/Icon/IconTrash'
+import { Badge } from '@/components/ui/Badge'
 
 import { ListadoCasosApi } from '../api/listado-casos.api'
 import {
@@ -22,6 +23,7 @@ import {
 } from '../mappers/listado-casos.mappers'
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
 import { guardarCasoEnStorage } from '../../registro_caso/utils/registro-caso.utils'
+import { calcularDiasTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
 
 export function ListadoCasos() {
   const router = useRouter()
@@ -78,17 +80,27 @@ export function ListadoCasos() {
       title: 'Nombre del caso',
       render: (row) => <span className="font-medium">{row.nombreCaso}</span>,
     },
-    { accessor: 'nroCaso', title: 'Nro Caso FELCN' },
-    { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
-    { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
+    { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
+    // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
+    // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
     { accessor: 'cudIfp', title: 'CUD/IFP' },
     { accessor: 'remiteFiscal', title: 'Fiscal que remite' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'remiteFecha',
-      title: 'Fecha remisión',
-      render: (row) => formatFecha(row.remiteFecha),
+      accessor: 'fechaHoraIng',
+      title: 'Fecha inicio',
+      render: (row) => formatFecha(row.fechahoraing),
+    },
+    {
+      accessor: 'fechaHoraIng',
+      title: 'Días transcurridos',
+      render: (row) => {
+        const dias = calcularDiasTranscurridos(row.fechahoraing)
+        if (dias === null) return <span>-</span>
+        const variant = dias <= 5 ? 'success' : dias <= 10 ? 'warning' : 'danger'
+        return <Badge variant={variant} rounded>{dias} dias</Badge>
+      },
     },
     {
       accessor: 'acciones',

@@ -7,6 +7,7 @@ import { SiiiApi } from '../api/siii.api';
 import { formatFecha } from '../../utils/fechas';
 import type { BienSiiiRow } from '../types/siii.types';
 import IconEye from '@/components/Icon/IconEye';
+import IconGallery from '@/components/Icon/IconGallery';
 
 interface Props {
   idOperativo: string | number;
@@ -69,7 +70,7 @@ export function BienesSiiiDataTable({ idOperativo }: Props) {
               onClick={() => window.open(row.urlFotoBien, '_blank')}
               title="Ver foto bien"
             >
-              <IconEye className="h-4 w-4" />
+              <IconGallery className="h-4 w-4" />
             </button>
           )}
         </div>
