@@ -46,6 +46,7 @@ import {
 import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 import { CasoSiiiDialog } from './CasoSiiiDialog'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
+import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
 
 type TabKey =
   | 'datos-generales'
@@ -119,6 +120,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [generandoNumero, setGenerandoNumero] = useState(false)
   const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
     useState(false)
+  const [conformeAValue, setConformeAValue] = useState('')
 
   const casoIdEfectivo = casoActivo ?? casoActivoId
 
@@ -181,6 +183,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         (casoInicial.fechaInicio as string | undefined) ??
         dayjs().format('YYYY-MM-DD'),
     })
+    setConformeAValue(casoInicial.conformeA ?? '')
   }, [casoInicial, casoId, disIdInicial, reset])
 
   const disIdSeleccionado = useWatch({
@@ -368,12 +371,21 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
                       Responsable del llenado
                     </label>
-                    <Input
-                      {...register('conformeA')}
+                    <InvestigadorCombobox
+                      id="conformeA"
+                      value={conformeAValue}
                       disabled={isLectura}
-                      error={!!errors.conformeA}
-                      className="w-full"
-                      placeholder="Responsable del llenado"
+                      placeholder="Busque un investigador..."
+                      error={errors.conformeA?.message as string | undefined}
+                      onInputChange={(value) => {
+                        setConformeAValue(value)
+                        setValue('conformeA', value, { shouldValidate: true })
+                      }}
+                      onSelect={(inv) => {
+                        const nombre = inv.investigador
+                        setConformeAValue(nombre)
+                        setValue('conformeA', nombre, { shouldValidate: true })
+                      }}
                     />
                     {errors.conformeA && (
                       <p className="mt-1 text-xs text-danger">

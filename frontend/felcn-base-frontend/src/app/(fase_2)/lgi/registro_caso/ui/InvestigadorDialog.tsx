@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { CustomDialog } from '@/components/modales/CustomDialog';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { RHFDate } from '@/components/form/RHFDate';
 import { InvestigadoresApi } from '../api/investigadores.api';
+import { InvestigadorCombobox } from '../../components/InvestigadorCombobox';
 import { formatFecha } from '../../utils/fechas';
 import type {
   InvestigadorCasoRow,
@@ -43,13 +43,6 @@ export function InvestigadorDialog({
   onSuccess,
 }: Props) {
   const [guardando, setGuardando] = useState(false);
-  const [searchResults, setSearchResults] = useState<InvestigadorGeneralRow[]>(
-    []
-  );
-  const [showDropdown, setShowDropdown] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const isEditing = Boolean(initialData);
 
@@ -62,32 +55,11 @@ export function InvestigadorDialog({
   const selectedInvestigador = form.watch('selectedInvestigador');
   const estado = form.watch('estado');
 
-  const { data: searchData, isLoading: isSearching } = useQuery({
-    queryKey: ['investigadores-buscar', filtroBusqueda],
-    enabled: Boolean(filtroBusqueda && filtroBusqueda.length >= 3 && !isEditing),
-    queryFn: () =>
-      InvestigadoresApi.buscarGenerales({
-        pagina: 1,
-        limite: 10,
-        filtro: filtroBusqueda,
-      }),
-    staleTime: 5000,
-  });
-
-  useEffect(() => {
-    if (searchData?.datos?.filas && !isEditing) {
-      setSearchResults(searchData.datos.filas);
-      setShowDropdown(searchData.datos.filas.length > 0);
-    }
-  }, [searchData, isEditing]);
-
   const prevOpenRef = useRef(open);
 
   useEffect(() => {
     if (!open && prevOpenRef.current) {
       form.reset(createDefaultInvestigadorValues());
-      setSearchResults([]);
-      setShowDropdown(false);
     }
     if (open && initialData) {
       const fechaAsignacion = initialData.fechaAsignacion
@@ -114,51 +86,17 @@ export function InvestigadorDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      form.setValue('filtroBusqueda', value);
-      form.setValue('numeroPase', '');
-      form.setValue('selectedInvestigador', null);
-
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-
-      if (value.length >= 3 && !isEditing) {
-        debounceRef.current = setTimeout(() => {
-          setShowDropdown(true);
-        }, 300);
-      } else {
-        setShowDropdown(false);
-        setSearchResults([]);
-      }
-    },
-    [form, isEditing]
-  );
+  const handleInputChange = (value: string) => {
+    form.setValue('filtroBusqueda', value);
+    form.setValue('numeroPase', '');
+    form.setValue('selectedInvestigador', null);
+  };
 
   const handleInvestigadorSelect = (inv: InvestigadorGeneralRow) => {
     form.setValue('selectedInvestigador', inv);
     form.setValue('numeroPase', inv.numeroPase.trim());
-    form.setValue('filtroBusqueda', inv.investigador);
-    setShowDropdown(false);
-    setSearchResults([]);
+    form.setValue('filtroBusqueda', `${inv.investigador} - ${inv.numeroPase.trim()}`);
   };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const onSubmitForm = async (values: InvestigadorFormValues) => {
     setGuardando(true);
@@ -227,53 +165,20 @@ export function InvestigadorDialog({
           <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
             Buscar por nro de pase
           </label>
-          <div className="relative">
-            <Input
-              ref={searchInputRef}
-              className="w-full"
-              placeholder="Escriba el nro de pase para buscar..."
-              value={filtroBusqueda || ''}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              disabled={isEditing}
-            />
-            {isSearching && !isEditing && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
-              </div>
-            )}
-          </div>
-
-          {showDropdown && searchResults.length > 0 && !isEditing && (
-            <div
-              ref={dropdownRef}
-              className="absolute z-50 mt-1 w-full border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 max-h-60 overflow-auto shadow-lg"
-            >
-              {searchResults.map((inv, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between text-sm"
-                  onClick={() => handleInvestigadorSelect(inv)}
-                >
-                  <span>{inv.investigador}</span>
-                  <span className="text-xs text-gray-500">
-                    {inv.numeroPase.trim()}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-
+          <InvestigadorCombobox
+            id="buscar-investigador"
+            value={filtroBusqueda || ''}
+            placeholder="Escriba el nro de pase para buscar..."
+            disabled={isEditing}
+            showSelected
+            error={errors.numeroPase?.message}
+            onInputChange={handleInputChange}
+            onSelect={handleInvestigadorSelect}
+          />
           {selectedInvestigador && !isEditing && (
             <p className="mt-1 text-xs text-green-600 dark:text-green-400">
               Seleccionado: {selectedInvestigador.investigador} (
               {selectedInvestigador.numeroPase.trim()})
-            </p>
-          )}
-
-          {errors.numeroPase && (
-            <p className="mt-1 text-xs text-danger">
-              {errors.numeroPase.message}
             </p>
           )}
         </div>
