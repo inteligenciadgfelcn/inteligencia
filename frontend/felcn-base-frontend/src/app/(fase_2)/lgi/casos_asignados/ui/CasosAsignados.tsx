@@ -94,15 +94,15 @@ export function CasosAsignados() {
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'fechaHoraIng',
+      accessor: 'fechahoraing',
       title: 'Fecha inicio',
-      render: (row) => formatFecha(row.fechaHoraIng),
+      render: (row) => formatFecha(row.fechahoraing),
     },
     {
-      accessor: 'fechaHoraIng',
+      accessor: 'fechahoraing',
       title: 'Días transcurridos',
       render: (row) => {
-        const dias = calcularDiasTranscurridos(row.fechaHoraIng)
+        const dias = calcularDiasTranscurridos(row.fechahoraing)
         if (dias === null) return <span>-</span>
         const variant = dias <= 5 ? 'success' : dias <= 10 ? 'warning' : 'danger'
         return <Badge variant={variant} rounded>{dias} dias</Badge>

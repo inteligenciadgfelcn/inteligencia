@@ -15,10 +15,7 @@ import IconUsers from '@/components/Icon/IconUsers'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 
 import { Constantes } from '@/config/Constantes'
-import {
-  ActuacionesApi,
-  ETAPAS,
-} from '../api/actuaciones.api'
+import { ActuacionesApi, ETAPAS } from '../api/actuaciones.api'
 import type {
   ActuacionRow,
   DetalleEtapa,
@@ -26,6 +23,7 @@ import type {
 } from '../types/actuaciones.types'
 import type { MenuOption } from './MenuVertical'
 import { formatFecha } from '../../utils/fechas'
+import { PdfVistaPreviaDialog } from '../../components/PdfVistaPreviaDialog'
 
 type Props = {
   casoId: number
@@ -68,6 +66,9 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   const [sintesis, setSintesis] = useState('')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [guardando, setGuardando] = useState(false)
+
+  const [reporteSeleccionado, setReporteSeleccionado] =
+    useState<ActuacionRow | null>(null)
 
   const { data: actuacionesData, isLoading } = useQuery({
     queryKey: ['lgi-actuaciones', casoId, page, limit],
@@ -204,21 +205,34 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
     {
       accessor: 'rutaArchivo',
       title: 'Archivo',
-      render: (row) =>
-        row.rutaArchivo ? (
+      render: (row) => (
+        <div className="flex items-center gap-1.5">
+          {row.rutaArchivo ? (
+            <Button
+              type="button"
+              variant="outline-secondary"
+              size="sm"
+              className="!p-1.5"
+              title="Ver archivo"
+              onClick={() => abrirArchivo(row.rutaArchivo!)}
+            >
+              <IconDownload className="h-4 w-4" />
+            </Button>
+          ) : (
+            '-'
+          )}
           <Button
             type="button"
-            variant="outline-secondary"
+            variant="outline-primary"
             size="sm"
             className="!p-1.5"
-            title="Ver archivo"
-            onClick={() => abrirArchivo(row.rutaArchivo!)}
+            title="Ver reporte PDF"
+            onClick={() => setReporteSeleccionado(row)}
           >
-            <IconDownload className="h-4 w-4" />
+            <IconFile className="h-4 w-4" />
           </Button>
-        ) : (
-          '-'
-        ),
+        </div>
+      ),
     },
   ]
 
@@ -305,7 +319,10 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
             </div>
             <div className="max-h-[70vh] overflow-y-auto p-5">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <DetalleCampo label="Nro Informe" value={detalleModal.opNrooper} />
+                <DetalleCampo
+                  label="Nro Informe"
+                  value={detalleModal.opNrooper}
+                />
                 <DetalleCampo
                   label="Fecha Informe"
                   value={formatFecha(detalleModal.opFechainf)}
@@ -313,8 +330,9 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                 <DetalleCampo
                   label="Tipo Informe"
                   value={
-                    tiposInforme.find((t) => t.id === detalleModal.idTipoInforme)
-                      ?.descripcion ?? String(detalleModal.idTipoInforme)
+                    tiposInforme.find(
+                      (t) => t.id === detalleModal.idTipoInforme
+                    )?.descripcion ?? String(detalleModal.idTipoInforme)
                   }
                 />
                 <DetalleCampo
@@ -520,9 +538,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                       className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 hover:border-primary hover:bg-primary/5 dark:border-[#1b2e4b] dark:text-gray-400"
                     >
                       <IconFile className="h-4 w-4" />
-                      {archivo
-                        ? archivo.name
-                        : 'Seleccionar archivo PDF...'}
+                      {archivo ? archivo.name : 'Seleccionar archivo PDF...'}
                     </label>
                   </div>
                 </div>
@@ -550,6 +566,15 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
           </div>
         </div>
       )}
+
+      <PdfVistaPreviaDialog
+        isOpen={Boolean(reporteSeleccionado)}
+        onClose={() => setReporteSeleccionado(null)}
+        title="Reporte de actuación"
+        obtenerBlob={() =>
+          ActuacionesApi.exportarActuacionPdf(Number(reporteSeleccionado!.opId))
+        }
+      />
     </div>
   )
 }

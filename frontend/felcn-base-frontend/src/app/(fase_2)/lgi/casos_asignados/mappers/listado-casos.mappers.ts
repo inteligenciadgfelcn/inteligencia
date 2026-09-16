@@ -28,7 +28,7 @@ export const mapAsignacionCasoRow = (
   remiteFecha: row.remitefecha,
   conformeA: row.conformea,
   fechaInicio: row.fechainicio,
-  fechaHoraIng: row.fechahoraing,
+  fechahoraing: row.fechahoraing,
   regional: row.regional,
   etapaInvestigacion: row.etapaInvestigacion,
 })

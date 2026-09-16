@@ -47,7 +47,7 @@ export interface AsignacionCasoListadoRow {
   remiteFecha: string | null
   conformeA: string
   fechaInicio: string | null
-  fechaHoraIng: string | null
+  fechahoraing: string | null
   regional: string
   etapaInvestigacion: string
   [key: string]: unknown

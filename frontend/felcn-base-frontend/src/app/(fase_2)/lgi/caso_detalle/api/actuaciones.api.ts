@@ -29,9 +29,7 @@ export const ActuacionesApi = {
     casoId: number,
     params: { pagina: number; limite: number }
   ): Promise<{ total: number; filas: ActuacionRow[] }> {
-    const respuesta = await sesionPeticion<
-      RespuestaPaginada<ActuacionRow>
-    >({
+    const respuesta = await sesionPeticion<RespuestaPaginada<ActuacionRow>>({
       url: `${BASE}/caso/${casoId}`,
       method: 'get',
       params,
@@ -83,6 +81,26 @@ export const ActuacionesApi = {
     return sesionPeticion<ActuacionRow>({
       url: `${BASE}/${opId}`,
       method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  exportarActuacionPdf(opId: number): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/actuacion/${opId}`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
+
+  exportarBienesPdf(): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/bienes/10`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
       withCredentials: true,
     })
   },

@@ -123,4 +123,14 @@ export const RegistroCasoApi = {
       withCredentials: true,
     })
   },
+
+  exportarInicioPdf(): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/inicio/10`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
 }

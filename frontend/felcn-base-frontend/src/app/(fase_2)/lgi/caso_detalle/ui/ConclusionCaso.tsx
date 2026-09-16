@@ -5,11 +5,11 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
 import IconDownload from '@/components/Icon/IconDownload'
-import IconInfoTriangle from '@/components/Icon/IconInfoTriangle'
 
 import { ActuacionesApi } from '../api/actuaciones.api'
 import type { ActuacionRow } from '../types/actuaciones.types'
 import { formatFecha } from '../../utils/fechas'
+import { PdfVistaPreviaDialog } from '../../components/PdfVistaPreviaDialog'
 
 type Props = {
   casoId: number
@@ -21,7 +21,7 @@ export function ConclusionCaso({ casoId }: Props) {
   const [tipologias, setTipologias] = useState('')
   const [verbosRectores, setVerbosRectores] = useState('')
   const [etapasCiclo, setEtapasCiclo] = useState('')
-  const [modalPermisoOpen, setModalPermisoOpen] = useState(false)
+  const [reporteVistaPreviaOpen, setReporteVistaPreviaOpen] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState<string | null>(null)
 
@@ -182,7 +182,7 @@ export function ConclusionCaso({ casoId }: Props) {
             type="button"
             variant="outline-primary"
             className="w-full gap-2"
-            onClick={() => setModalPermisoOpen(true)}
+            onClick={() => setReporteVistaPreviaOpen(true)}
           >
             <IconDownload className="h-4 w-4" />
             Descargar Reporte
@@ -190,32 +190,12 @@ export function ConclusionCaso({ casoId }: Props) {
         </div>
       </div>
 
-      {modalPermisoOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
-            <div className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-warning/10">
-                <IconInfoTriangle className="h-7 w-7 text-warning" />
-              </div>
-              <h3 className="text-lg font-bold text-dark dark:text-white-light">
-                Sin Permisos
-              </h3>
-              <p className="mt-2 text-sm text-gray-500">
-                No se tiene permisos para descargar el reporte.
-              </p>
-            </div>
-            <div className="flex justify-center border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
-              <Button
-                type="button"
-                variant="primary"
-                onClick={() => setModalPermisoOpen(false)}
-              >
-                Cerrar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PdfVistaPreviaDialog
+        isOpen={reporteVistaPreviaOpen}
+        onClose={() => setReporteVistaPreviaOpen(false)}
+        title="Reporte de conclusión del caso"
+        obtenerBlob={() => ActuacionesApi.exportarBienesPdf()}
+      />
     </div>
   )
 }
