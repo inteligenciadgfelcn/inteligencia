@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { VristoDataTable, type Column } from '@/components/datatable/VristoDataTable';
 import { SiiiApi } from '../api/siii.api';
+import { formatFecha } from '../../utils/fechas';
 import type { PersonaSiiiRow } from '../types/siii.types';
 import IconEye from '@/components/Icon/IconEye';
 import IconGallery from '@/components/Icon/IconGallery';
@@ -55,7 +56,7 @@ export function PersonasSiiiDataTable({ idOperativo }: Props) {
       accessor: 'fechaHoraIngreso',
       title: 'Fecha Ingreso',
       sortable: true,
-      render: (row) => new Date(row.fechaHoraIngreso).toLocaleString(),
+      render: (row) => formatFecha(row.fechaHoraIngreso, 'dd/MM/yyyy'),
     },
     {
       accessor: 'acciones',

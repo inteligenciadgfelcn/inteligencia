@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { RHFDate } from '@/components/form/RHFDate';
 import { InvestigadoresApi } from '../api/investigadores.api';
+import { formatFecha } from '../../utils/fechas';
 import type {
   InvestigadorCasoRow,
   InvestigadorGeneralRow,
@@ -90,10 +91,10 @@ export function InvestigadorDialog({
     }
     if (open && initialData) {
       const fechaAsignacion = initialData.fechaAsignacion
-        ? new Date(initialData.fechaAsignacion).toLocaleDateString('es-BO')
+        ? formatFecha(initialData.fechaAsignacion, 'dd/MM/yyyy')
         : '';
       const fechaSeparacion = initialData.fechaSeparacion
-        ? new Date(initialData.fechaSeparacion).toLocaleDateString('es-BO')
+        ? formatFecha(initialData.fechaSeparacion, 'dd/MM/yyyy')
         : '';
 
       form.reset({

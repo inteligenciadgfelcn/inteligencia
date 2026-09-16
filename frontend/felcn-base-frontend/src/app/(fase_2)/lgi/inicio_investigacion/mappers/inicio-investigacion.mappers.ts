@@ -1,9 +1,8 @@
-import dayjs from 'dayjs'
+import { formatFecha } from '../../utils/fechas'
 
 import type { InicioInvestigacionItem } from '../types/inicio-investigacion.types'
 
-export const formatFechaRemision = (fecha: string) =>
-  fecha ? dayjs(fecha).format('DD/MM/YYYY') : '-'
+export const formatFechaRemision = (fecha: string) => formatFecha(fecha)
 
 export const mapInvestigacionDetalle = (item: InicioInvestigacionItem) => ({
   ...item,

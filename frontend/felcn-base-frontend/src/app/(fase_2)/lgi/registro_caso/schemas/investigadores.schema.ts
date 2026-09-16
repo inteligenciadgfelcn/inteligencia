@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { validarFechaFormato } from '@/utils/fechas';
+import { formatFecha } from '../../utils/fechas';
 
 const dateSchema = (message: string) =>
   z
@@ -53,10 +54,5 @@ export const toISOWithTimezone = (dateStr: string): string => {
 
 export const toDisplayFormat = (isoStr: string): string => {
   if (!isoStr) return '';
-  const date = new Date(isoStr);
-  return date.toLocaleDateString('es-BO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  return formatFecha(isoStr, 'dd/MM/yyyy');
 };

@@ -6,6 +6,7 @@ import { VristoDataTable, type Column } from '@/components/datatable/VristoDataT
 import { AlertDialog } from '@/components/modales/AlertDialog';
 import { Button } from '@/components/ui/Button';
 import { InvestigadoresApi } from '../api/investigadores.api';
+import { formatFecha } from '../../utils/fechas';
 import type {
   InvestigadorCasoRow,
 } from '../types/investigadores.types';
@@ -62,8 +63,7 @@ export function InvestigadoresDataTable({ casoId }: Props) {
       accessor: 'fechaAsignacion',
       title: 'Fecha Asignación',
       sortable: true,
-      render: (row) =>
-        new Date(row.fechaAsignacion).toLocaleDateString('es-BO'),
+      render: (row) => formatFecha(row.fechaAsignacion, 'dd/MM/yyyy'),
     },
     {
       accessor: 'estadoInvestigador',
@@ -87,10 +87,7 @@ export function InvestigadoresDataTable({ casoId }: Props) {
       accessor: 'fechaSeparacion',
       title: 'Fecha Separación',
       sortable: true,
-      render: (row) =>
-        row.fechaSeparacion
-          ? new Date(row.fechaSeparacion).toLocaleDateString('es-BO')
-          : '-',
+      render: (row) => formatFecha(row.fechaSeparacion, 'dd/MM/yyyy'),
     },
     {
       accessor: 'acciones',

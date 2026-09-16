@@ -19,6 +19,7 @@ import {
   VINCULOS_INVESTIGACION,
   VALORES_POR_DEFECTO_PJ,
 } from '../types/personas-juridicas.types'
+import { formatFecha } from '../../utils/fechas'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -30,13 +31,6 @@ type Props = {
 }
 
 let nextId = 200
-
-function formatFecha(fecha: string | null | undefined): string {
-  if (!fecha) return '-'
-  const date = new Date(fecha)
-  if (Number.isNaN(date.getTime())) return fecha
-  return date.toLocaleDateString('es-BO')
-}
 
 function formatMoney(valor: number): string {
   return valor.toLocaleString('es-BO', {

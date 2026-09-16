@@ -10,6 +10,7 @@ import type { Column } from '@/components/datatable/VristoDataTable'
 import { RegistroCasoApi } from '../../registro_caso/api/registro-caso.api'
 import { formatNombreCompleto } from '../../registro_caso/mappers/registro-caso.mappers'
 import type { PersonaImplicadaRow } from '../../registro_caso/types/registro-caso.types'
+import { formatFecha } from '../../utils/fechas'
 import { PersonasInvestigadasApi } from '../api/personas-investigadas.api'
 import { obtenerUltimaSituacionJuridica } from '../mappers/personas-investigadas.mappers'
 import type { SituacionJuridicaRow } from '../types/personas-investigadas.types'
@@ -18,13 +19,6 @@ interface SituacionesJuridicasDialogProps {
   open: boolean
   persona: PersonaImplicadaRow | null
   onClose: () => void
-}
-
-function formatFecha(fecha?: string): string {
-  if (!fecha) return '-'
-  const date = new Date(fecha)
-  if (Number.isNaN(date.getTime())) return fecha
-  return date.toLocaleDateString('es-BO')
 }
 
 export function SituacionesJuridicasDialog({
@@ -65,7 +59,7 @@ export function SituacionesJuridicasDialog({
     {
       accessor: 'fecha',
       title: 'Fecha',
-      render: (row) => formatFecha(row.fecha),
+      render: (row) => formatFecha(row.fecha, 'dd/MM/yyyy'),
     },
   ]
 

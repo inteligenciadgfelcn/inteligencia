@@ -97,11 +97,17 @@ export class PersonasImplicadasLgiRepository {
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.situacionesJuridicas', 's')
       .leftJoinAndMapOne(
-        's.tipoPersona',
-        'tipopersona',
-        'tp',
-        'tp.tp_id = s.sl_id'
+        's.situacionLegal',
+        'situacionlegal',
+        'sl',
+        'sl.sl_id = s.sl_id'
       )
+      // .leftJoinAndMapOne(
+      //   's.tipoPersona',
+      //   'tipopersona',
+      //   'tp',
+      //   'tp.tp_id = s.sl_id'
+      // )
       .where('p.de_id = :deId', {
         deId,
       })

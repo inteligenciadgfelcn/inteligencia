@@ -2,6 +2,7 @@ import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
   DatosGeneralesPayload,
+  PersonaDetalle,
   PersonaImplicadaPayload,
   PersonaImplicadaRow,
   RespuestaCrud,
@@ -65,6 +66,14 @@ export const RegistroCasoApi = {
       withCredentials: true,
     })
     return respuesta.datos
+  },
+
+  obtenerPersona(deId: string | number): Promise<PersonaDetalle> {
+    return sesionPeticion({
+      url: `${BASE_PERSONAS}/${deId}`,
+      method: 'get',
+      withCredentials: true,
+    })
   },
 
   crearPersona(dto: PersonaImplicadaPayload): Promise<RespuestaCrud> {

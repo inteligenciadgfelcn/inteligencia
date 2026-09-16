@@ -3,9 +3,10 @@
 import { useMemo, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import dayjs from 'dayjs'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
+
+import { formatFecha } from '../../../utils/fechas'
 
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -229,7 +230,7 @@ export function DataTablePersonasNaturales() {
     {
       accessor: 'fechaOperativo',
       title: 'Fecha operativo',
-      render: (row) => dayjs(row.fechaOperativo).format('DD/MM/YYYY'),
+      render: (row) => formatFecha(row.fechaOperativo, 'dd/MM/yyyy'),
     },
     { accessor: 'lugarOperativo', title: 'Lugar operativo' },
     { accessor: 'unidad', title: 'Unidad' },

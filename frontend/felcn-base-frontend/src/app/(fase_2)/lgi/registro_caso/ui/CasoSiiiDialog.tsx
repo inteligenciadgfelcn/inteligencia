@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CustomDialog } from '@/components/modales/CustomDialog';
 import { SiiiApi } from '../api/siii.api';
+import { formatFecha } from '../../utils/fechas';
 import type { CasoSiiiRow } from '../types/siii.types';
 import { PersonasSiiiDataTable } from './PersonasSiiiDataTable';
 import { BienesSiiiDataTable } from './BienesSiiiDataTable';
@@ -31,19 +32,7 @@ export function CasoSiiiDialog({ nroCaso, isOpen, onClose }: Props) {
     queryFn: () => SiiiApi.obtenerCaso(nroCaso),
   });
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleString('es-BO', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr: string) => formatFecha(dateStr);
 
   return (
     <CustomDialog

@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useWatch } from 'react-hook-form'
+import dayjs from 'dayjs'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { RHFSelect } from '@/components/form/RHFSelect'
+import { RHFDate } from '@/components/form/RHFDate'
 
 import { PersonasInvestigadas } from '../../caso_detalle/ui/PersonasInvestigadas'
 
@@ -175,6 +177,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       conformeA: casoInicial.conformeA ?? '',
       controlJurisdiccional:
         (casoInicial.controlJurisdiccional as string | undefined) ?? '',
+      fechaInicio:
+        (casoInicial.fechaInicio as string | undefined) ??
+        dayjs().format('YYYY-MM-DD'),
     })
   }, [casoInicial, casoId, disIdInicial, reset])
 
@@ -479,6 +484,14 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                       </p>
                     )}
                   </div>
+
+                  <RHFDate
+                    id="fechaInicio"
+                    name="fechaInicio"
+                    control={control}
+                    label="Fecha de inicio"
+                    disabled={isLectura}
+                  />
                 </div>
               </Card>
 
