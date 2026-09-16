@@ -3,8 +3,6 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import dayjs from 'dayjs'
-
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
@@ -30,6 +28,7 @@ import {
   mockInvestigaciones,
   regionalOptions,
 } from '../utils/inicio-investigacion.utils'
+import { formatFecha } from '../../utils/fechas'
 
 const topSearchOptions: SelectOption[] = [
   { value: 'investigador', label: 'Investigador' },
@@ -110,8 +109,7 @@ export function InicioInvestigacionListado() {
     {
       accessor: 'fechaRemision',
       title: 'Fecha remisión',
-      render: (row) =>
-        row.fechaRemision ? dayjs(row.fechaRemision).format('DD/MM/YYYY') : '-',
+      render: (row) => formatFecha(row.fechaRemision, 'dd/MM/yyyy'),
     },
     { accessor: 'conformeA', title: 'Conforme a' },
     {

@@ -128,6 +128,7 @@ export const buildDatosGeneralesPayload = (values: {
   cudIfp: string
   remiteFiscal: string
   controlJurisdiccional: string
+  fechaInicio: string
 }): DatosGeneralesPayload => ({
   disId: Number(values.disId?.value ?? 0),
   idGrupo: Number(values.idGrupo?.value ?? 0),
@@ -138,6 +139,7 @@ export const buildDatosGeneralesPayload = (values: {
   cudIfp: values.cudIfp,
   remiteFiscal: values.remiteFiscal,
   controlJurisdiccional: values.controlJurisdiccional,
+  fechaInicio: values.fechaInicio,
 })
 
 export const buildPersonaPayload = (

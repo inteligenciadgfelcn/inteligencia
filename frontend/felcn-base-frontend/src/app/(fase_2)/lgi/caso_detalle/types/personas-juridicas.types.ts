@@ -1,46 +1,86 @@
-export interface PersonaJuridica {
-  id: number
-  casosId: number
-  nombreRazonSocial: string
-  nit: string
-  matricula: string
-  propietarioSocios: string
-  representanteLegal: string
-  beneficiariosFinales: string
-  capitalSocial: number
-  direccion: string
-  latitud: number | null
-  longitud: number | null
-  vinculoInvestigacion: string
-  situacionJuridica: string
-  fechaSituacionJuridica: string
-  pericia: boolean
-  resultadoPericia: string
-  fechaHoraIng: string
-  usuario: string
+export interface Vinculo {
+  idVinculo: number
+  descripcion: string
 }
 
-export const VINCULOS_INVESTIGACION = [
-  'Identificada',
-  'Investigada con responsabilidad',
-] as const
+export interface TipoVinculo {
+  idTipoVinculo: number
+  idVinculo: number
+  descripcion: string
+}
 
-export const VALORES_POR_DEFECTO_PJ: Omit<PersonaJuridica, 'id' | 'casosId'> = {
-  nombreRazonSocial: '',
+export interface TipoSituacionJuridicaEmpresa {
+  idTipoSituacionJuridica: string
+  descripcion: string
+}
+
+export interface UltimaSituacionJuridicaEmpresa {
+  idSituacionJuridicaEmpresa?: string
+  idEmpresa?: string
+  fecha?: string
+  quienAutoriza?: string
+  aQuienEntregan?: string
+  fechaHoraIngreso?: string
+  usuario?: string
+  idTipoSituacionJuridica?: string
+  descripcionTipo?: string
+}
+
+export interface PersonaJuridicaRow {
+  empId: string
+  opId: string
+  nombre: string
+  nit: string
+  matricula: string
+  representante: string
+  observaciones?: string | null
+  propietarioSocio?: string | null
+  beneficiariosFinales?: string | null
+  capitalSocial?: string | null
+  direccion?: string | null
+  latitud?: string | null
+  longitud?: string | null
+  idTipoVinculo?: string | null
+  pericia: boolean
+  resultado?: string | null
+  documento?: string | null
+  fechaHoraIngreso?: string
+  usuario?: string | null
+  tieneImagen?: boolean
+  tieneDocumento?: boolean
+  tipoVinculo?: (TipoVinculo & { vinculo?: Vinculo | null }) | null
+  ultimaSituacionJuridica?: UltimaSituacionJuridicaEmpresa | null
+  [key: string]: unknown
+}
+
+export interface SituacionJuridicaEmpresaPayload {
+  idEmpresa: number
+  fecha: string
+  quienAutoriza: string
+  aQuienEntregan: string
+  idTipoSituacionJuridica: number
+}
+
+export const VALORES_POR_DEFECTO = {
+  nombre: '',
   nit: '',
   matricula: '',
-  propietarioSocios: '',
-  representanteLegal: '',
+  representante: '',
+  observaciones: '',
+  propietarioSocio: '',
   beneficiariosFinales: '',
-  capitalSocial: 0,
+  capitalSocial: '',
   direccion: '',
-  latitud: null,
-  longitud: null,
-  vinculoInvestigacion: '',
-  situacionJuridica: '',
-  fechaSituacionJuridica: '',
+  latitud: null as number | null,
+  longitud: null as number | null,
+  idVinculo: 0,
+  idTipoVinculo: 0,
   pericia: false,
-  resultadoPericia: '',
-  fechaHoraIng: '',
-  usuario: '_usuario_actual',
+  resultado: '',
+  fecha: '',
+  quienAutoriza: '',
+  aQuienEntregan: '',
+  idTipoSituacionJuridica: 0,
+  imagen: null as File | null,
+  documento: null as File | null,
 }

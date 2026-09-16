@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useWatch } from 'react-hook-form'
+import dayjs from 'dayjs'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { RHFSelect } from '@/components/form/RHFSelect'
+import { RHFDate } from '@/components/form/RHFDate'
 
 import { PersonasInvestigadas } from '../../caso_detalle/ui/PersonasInvestigadas'
 
@@ -44,6 +46,7 @@ import {
 import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 import { CasoSiiiDialog } from './CasoSiiiDialog'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
+import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
 
 type TabKey =
   | 'datos-generales'
@@ -117,6 +120,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [generandoNumero, setGenerandoNumero] = useState(false)
   const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
     useState(false)
+  const [conformeAValue, setConformeAValue] = useState('')
 
   const casoIdEfectivo = casoActivo ?? casoActivoId
 
@@ -175,7 +179,11 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       conformeA: casoInicial.conformeA ?? '',
       controlJurisdiccional:
         (casoInicial.controlJurisdiccional as string | undefined) ?? '',
+      fechaInicio:
+        (casoInicial.fechaInicio as string | undefined) ??
+        dayjs().format('YYYY-MM-DD'),
     })
+    setConformeAValue(casoInicial.conformeA ?? '')
   }, [casoInicial, casoId, disIdInicial, reset])
 
   const disIdSeleccionado = useWatch({
@@ -363,12 +371,21 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
                       Responsable del llenado
                     </label>
-                    <Input
-                      {...register('conformeA')}
+                    <InvestigadorCombobox
+                      id="conformeA"
+                      value={conformeAValue}
                       disabled={isLectura}
-                      error={!!errors.conformeA}
-                      className="w-full"
-                      placeholder="Responsable del llenado"
+                      placeholder="Busque un investigador..."
+                      error={errors.conformeA?.message as string | undefined}
+                      onInputChange={(value) => {
+                        setConformeAValue(value)
+                        setValue('conformeA', value, { shouldValidate: true })
+                      }}
+                      onSelect={(inv) => {
+                        const nombre = inv.investigador
+                        setConformeAValue(nombre)
+                        setValue('conformeA', nombre, { shouldValidate: true })
+                      }}
                     />
                     {errors.conformeA && (
                       <p className="mt-1 text-xs text-danger">
@@ -479,6 +496,14 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                       </p>
                     )}
                   </div>
+
+                  <RHFDate
+                    id="fechaInicio"
+                    name="fechaInicio"
+                    control={control}
+                    label="Fecha de inicio"
+                    disabled={isLectura}
+                  />
                 </div>
               </Card>
 
@@ -573,7 +598,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                         disabled={isLectura}
                         error={!!errorsInformacion.nroCasoFelcn}
                         className="w-full"
-                        placeholder="Número de caso FELCN"
+                        placeholder="EJ. LP-O-1/26"
                       />
                       {!isLectura && (
                         <Button

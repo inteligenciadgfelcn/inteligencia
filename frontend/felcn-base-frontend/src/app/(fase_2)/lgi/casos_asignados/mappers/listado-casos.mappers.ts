@@ -1,5 +1,7 @@
 import dayjs from 'dayjs'
 
+import { formatFecha as formatFechaUtil } from '../../utils/fechas'
+
 import type {
   AsignacionCasoApiRow,
   AsignacionCasoListadoRow,
@@ -26,9 +28,19 @@ export const mapAsignacionCasoRow = (
   remiteFecha: row.remitefecha,
   conformeA: row.conformea,
   fechaInicio: row.fechainicio,
+  fechaHoraIng: row.fechahoraing,
   regional: row.regional,
   etapaInvestigacion: row.etapaInvestigacion,
 })
 
 export const formatFecha = (fecha: string | null | undefined): string =>
-  fecha ? dayjs(fecha).format('DD/MM/YYYY') : '-'
+  formatFechaUtil(fecha, 'dd/MM/yyyy')
+
+export const calcularDiasTranscurridos = (
+  fecha: string | null | undefined
+): number | null => {
+  if (!fecha) return null
+  const d = dayjs(fecha)
+  if (!d.isValid()) return null
+  return dayjs().startOf('day').diff(d.startOf('day'), 'day')
+}

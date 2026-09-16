@@ -2,10 +2,9 @@
 
 import { useMemo, useState } from 'react'
 
-import dayjs from 'dayjs'
-
 import { Button } from '@/components/ui/Button'
 
+import { formatFecha } from '../../../utils/fechas'
 import type { InicioInvestigacionItem } from '../../types/inicio-investigacion.types'
 import { getEstadoBadgeClass } from '../../utils/inicio-investigacion.utils'
 import { DataTableCasosPrecedentes } from '../components/DataTableCasosPrecedentes'
@@ -137,7 +136,7 @@ export function InicioInvestigacionDetalle({ item }: Props) {
               Fecha remisión
             </p>
             <p className="mt-1 text-sm font-semibold text-dark dark:text-white-light">
-              {dayjs(item.fechaRemision).format('DD/MM/YYYY')}
+              {formatFecha(item.fechaRemision)}
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a]">

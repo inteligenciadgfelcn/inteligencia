@@ -1,4 +1,4 @@
-import dayjs from 'dayjs'
+import { formatFecha as formatFechaUtil } from '../../utils/fechas'
 
 import type {
   AsignacionCasoApiRow,
@@ -31,4 +31,4 @@ export const mapAsignacionCasoRow = (
 })
 
 export const formatFecha = (fecha: string | null | undefined): string =>
-  fecha ? dayjs(fecha).format('DD/MM/YYYY') : '-'
+  formatFechaUtil(fecha, 'dd/MM/yyyy')

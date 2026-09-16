@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { AlertDialog } from '@/components/modales/AlertDialog'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
@@ -17,6 +18,7 @@ import IconTrash from '@/components/Icon/IconTrash'
 
 import { ListadoCasosApi } from '../api/listado-casos.api'
 import {
+  calcularDiasTranscurridos,
   formatFecha,
   mapAsignacionCasoRow,
 } from '../mappers/listado-casos.mappers'
@@ -84,17 +86,27 @@ export function CasosAsignados() {
       title: 'Nombre del caso',
       render: (row) => <span className="font-medium">{row.nombreCaso}</span>,
     },
-    { accessor: 'nroCaso', title: 'Nro Caso FELCN' },
-    { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
-    { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
+    { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
+    // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
+    // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
     { accessor: 'cudIfp', title: 'CUD/IFP' },
     { accessor: 'remiteFiscal', title: 'Fiscal que remite' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'remiteFecha',
-      title: 'Fecha remisión',
-      render: (row) => formatFecha(row.remiteFecha),
+      accessor: 'fechaHoraIng',
+      title: 'Fecha inicio',
+      render: (row) => formatFecha(row.fechaHoraIng),
+    },
+    {
+      accessor: 'fechaHoraIng',
+      title: 'Días transcurridos',
+      render: (row) => {
+        const dias = calcularDiasTranscurridos(row.fechaHoraIng)
+        if (dias === null) return <span>-</span>
+        const variant = dias <= 5 ? 'success' : dias <= 10 ? 'warning' : 'danger'
+        return <Badge variant={variant} rounded>{dias} dias</Badge>
+      },
     },
     {
       accessor: 'acciones',
@@ -112,7 +124,7 @@ export function CasosAsignados() {
           >
             <IconEye className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             type="button"
             variant="outline-primary"
             size="sm"
@@ -120,7 +132,7 @@ export function CasosAsignados() {
             title="Agregar info"
           >
             <IconListCheck className="h-4 w-4" />
-          </Button>
+          </Button> */}
         </div>
       ),
     },

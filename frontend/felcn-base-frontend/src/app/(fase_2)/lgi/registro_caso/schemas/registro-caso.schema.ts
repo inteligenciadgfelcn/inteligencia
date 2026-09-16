@@ -47,6 +47,7 @@ export const datosGeneralesSchema = z
     controlJurisdiccional: requiredText(
       'El control jurisdiccional es obligatorio'
     ).max(70, 'Máximo 70 caracteres'),
+    fechaInicio: dateSchema('La fecha de inicio es obligatoria'),
   })
   .superRefine((values, context) => {
     if (!values.disId) {
@@ -84,10 +85,7 @@ export const personaImplicadaSchema = z
       50,
       'Máximo 50 caracteres'
     ),
-    materno: requiredText('El apellido materno es obligatorio').max(
-      50,
-      'Máximo 50 caracteres'
-    ),
+    materno: z.string().optional(),
     esposo: z.string().trim().max(50, 'Máximo 50 caracteres').optional(),
     paisId: optionSchema.nullable(),
     estadoCivilId: optionSchema.nullable(),

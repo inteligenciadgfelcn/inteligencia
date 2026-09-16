@@ -42,6 +42,7 @@ export const createDefaultDatosGeneralesValues =
     remiteFiscal: '',
     conformeA: '',
     controlJurisdiccional: '',
+    fechaInicio: dayjs().format('YYYY-MM-DD'),
   })
 
 export const createDefaultPersonaValues = (): PersonaImplicadaFormValues => ({

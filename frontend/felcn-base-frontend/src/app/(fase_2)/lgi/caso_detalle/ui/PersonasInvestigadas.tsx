@@ -14,6 +14,7 @@ import IconEdit from '@/components/Icon/IconEdit'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconTrash from '@/components/Icon/IconTrash'
 import IconClipboardText from '@/components/Icon/IconClipboardText'
+import IconListCheck from '@/components/Icon/IconListCheck'
 
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import type {
@@ -39,9 +40,11 @@ import {
 import type {
   PersonaImplicadaRow,
   PersonaImplicadaPayload,
+  PersonaDetalle,
   SituacionLegalCatalogo,
 } from '../../registro_caso/types/registro-caso.types'
 import { createDefaultPersonaValues } from '../../registro_caso/utils/registro-caso.utils'
+import { formatFecha } from '../../utils/fechas'
 
 type Props = {
   casoId: number
@@ -76,6 +79,16 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
   const [situacionLegalId, setSituacionLegalId] = useState<string>('')
   const [fechaSituacion, setFechaSituacion] = useState<string>('')
   const [guardandoSituacion, setGuardandoSituacion] = useState(false)
+  const [historialPersona, setHistorialPersona] =
+    useState<PersonaImplicadaRow | null>(null)
+
+  const { data: historialData, isLoading: historialLoading } =
+    useQuery<PersonaDetalle>({
+      queryKey: ['lgi-personas-investigadas', 'historial', historialPersona?.deId],
+      enabled: Boolean(historialPersona?.deId),
+      queryFn: () =>
+        RegistroCasoApi.obtenerPersona(historialPersona!.deId),
+    })
 
   const { data: personasData, isLoading } = useQuery({
     queryKey: ['lgi-personas-investigadas', casoId, page, limit],
@@ -233,7 +246,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     { accessor: 'numeroDocumento', title: 'Nro documento' },
     {
       accessor: 'tipoDocumentoId',
-      title: 'Tipo doc.',
+      title: 'Tipo documento',
       render: (row) => buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
     },
     {
@@ -269,6 +282,16 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   onClick={() => abrirSituacionesModal(row)}
                 >
                   <IconClipboardText className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  className="!p-1.5"
+                  title="Historial de situaciones jurídicas"
+                  onClick={() => setHistorialPersona(row)}
+                >
+                  <IconListCheck className="h-4 w-4" />
                 </Button>
                 <Button
                   type="button"
@@ -596,6 +619,84 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 onClick={onSubmitSituacion}
               >
                 Registrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    {historialPersona && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <h3 className="text-lg font-bold text-dark dark:text-white-light">
+                Historial de situaciones jurídicas
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setHistorialPersona(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto p-5">
+              <p className="mb-4 text-sm text-gray-500">
+                Persona:{' '}
+                <span className="font-semibold text-dark dark:text-white-light">
+                  {formatNombreCompleto(historialPersona)}
+                </span>
+              </p>
+              {historialLoading ? (
+                <p className="text-sm text-gray-500">
+                  Cargando historial...
+                </p>
+              ) : historialData?.situacionesJuridicas?.length ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-[#1b2e4b]">
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        #
+                      </th>
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        Situación legal
+                      </th>
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        Fecha
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialData.situacionesJuridicas.map((sj, idx) => (
+                      <tr
+                        key={sj.situacionId}
+                        className="border-b border-gray-100 dark:border-[#1b2e4b]/50"
+                      >
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {sj.situacionLegal?.descripcion?.trim() ?? '-'}
+                        </td>
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {formatFecha(sj.fecha)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No tiene situaciones jurídicas registradas.
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                onClick={() => setHistorialPersona(null)}
+              >
+                Cerrar
               </Button>
             </div>
           </div>

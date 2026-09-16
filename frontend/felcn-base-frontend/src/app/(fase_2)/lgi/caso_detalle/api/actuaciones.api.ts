@@ -4,6 +4,7 @@ import { sesionPeticion } from '@/utils/peticion'
 import type {
   ActuacionPayload,
   ActuacionRow,
+  ConclusionCasoPayload,
   DetalleEtapa,
   TipoInforme,
 } from '../types/actuaciones.types'
@@ -74,6 +75,26 @@ export const ActuacionesApi = {
     return sesionPeticion<DetalleEtapa[]>({
       url: `${BASE_PARAMETRICAS}/estado/${idEtapa}`,
       method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  obtenerActuacion(opId: number): Promise<ActuacionRow> {
+    return sesionPeticion<ActuacionRow>({
+      url: `${BASE}/${opId}`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  actualizarConclusionCaso(
+    opId: number,
+    payload: ConclusionCasoPayload
+  ): Promise<unknown> {
+    return sesionPeticion({
+      url: `${BASE}/${opId}/conclusion-caso`,
+      method: 'patch',
+      body: payload,
       withCredentials: true,
     })
   },

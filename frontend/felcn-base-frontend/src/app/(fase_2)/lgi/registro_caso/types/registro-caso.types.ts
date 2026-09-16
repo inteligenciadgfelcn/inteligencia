@@ -24,6 +24,7 @@ export interface DatosGeneralesFormValues {
   remiteFiscal: string
   conformeA: string
   controlJurisdiccional: string
+  fechaInicio: string
 }
 
 export interface DatosGeneralesPayload {
@@ -36,6 +37,7 @@ export interface DatosGeneralesPayload {
   cudIfp: string
   remiteFiscal: string
   controlJurisdiccional: string
+  fechaInicio: string
 }
 
 export interface UltimaSituacionJuridica {
@@ -46,6 +48,27 @@ export interface UltimaSituacionJuridica {
     slId: number
     descripcion: string
   }
+}
+
+export interface SituacionJuridicaDetalle {
+  situacionId: string
+  detenidoId: string
+  fecha: string
+  situacionLegal?: {
+    slId: number
+    descripcion: string
+  }
+}
+
+export interface PersonaDetalle {
+  deId: string
+  casosId: string
+  nombres: string
+  paterno: string
+  materno: string
+  numeroDocumento?: string
+  situacionesJuridicas?: SituacionJuridicaDetalle[]
+  [key: string]: unknown
 }
 
 export interface PersonaImplicadaRow {

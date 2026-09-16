@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { VristoDataTable, type Column } from '@/components/datatable/VristoDataTable';
 import { SiiiApi } from '../api/siii.api';
+import { formatFecha } from '../../utils/fechas';
 import type { BienSiiiRow } from '../types/siii.types';
 import IconEye from '@/components/Icon/IconEye';
+import IconGallery from '@/components/Icon/IconGallery';
 
 interface Props {
   idOperativo: string | number;
@@ -54,7 +56,7 @@ export function BienesSiiiDataTable({ idOperativo }: Props) {
       accessor: 'fechaHoraIngreso',
       title: 'Fecha Ingreso',
       sortable: true,
-      render: (row) => new Date(row.fechaHoraIngreso).toLocaleString(),
+      render: (row) => formatFecha(row.fechaHoraIngreso, 'dd/MM/yyyy'),
     },
     {
       accessor: 'acciones',
@@ -68,7 +70,7 @@ export function BienesSiiiDataTable({ idOperativo }: Props) {
               onClick={() => window.open(row.urlFotoBien, '_blank')}
               title="Ver foto bien"
             >
-              <IconEye className="h-4 w-4" />
+              <IconGallery className="h-4 w-4" />
             </button>
           )}
         </div>

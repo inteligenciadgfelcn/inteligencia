@@ -1,106 +1,176 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { Select } from '@/components/ui/Select'
 import IconDownload from '@/components/Icon/IconDownload'
 import IconInfoTriangle from '@/components/Icon/IconInfoTriangle'
+
+import { ActuacionesApi } from '../api/actuaciones.api'
+import type { ActuacionRow } from '../types/actuaciones.types'
+import { formatFecha } from '../../utils/fechas'
 
 type Props = {
   casoId: number
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function ConclusionCaso({ casoId }: Props) {
+  const [actuaciones, setActuaciones] = useState<ActuacionRow[]>([])
+  const [opId, setOpId] = useState<number | null>(null)
   const [tipologias, setTipologias] = useState('')
   const [verbosRectores, setVerbosRectores] = useState('')
   const [etapasCiclo, setEtapasCiclo] = useState('')
   const [modalPermisoOpen, setModalPermisoOpen] = useState(false)
   const [guardando, setGuardando] = useState(false)
-  const [guardado, setGuardado] = useState(false)
+  const [mensaje, setMensaje] = useState<string | null>(null)
+
+  useEffect(() => {
+    let activo = true
+    ActuacionesApi.listarActuaciones(casoId, { pagina: 1, limite: 50 })
+      .then((res) => {
+        if (activo) setActuaciones(res.filas ?? [])
+      })
+      .catch(() => undefined)
+    return () => {
+      activo = false
+    }
+  }, [casoId])
+
+  useEffect(() => {
+    if (opId == null) {
+      setTipologias('')
+      setVerbosRectores('')
+      setEtapasCiclo('')
+      setMensaje(null)
+      return
+    }
+    const actuacion = actuaciones.find((a) => String(a.opId) === String(opId))
+    setTipologias(actuacion?.tipologiasIdentificadas ?? '')
+    setVerbosRectores(actuacion?.verbosRectores ?? '')
+    setEtapasCiclo(actuacion?.etapasCicloLgi ?? '')
+    setMensaje(null)
+  }, [opId, actuaciones])
 
   const isFormValid =
+    opId != null &&
     tipologias.trim() !== '' &&
     verbosRectores.trim() !== '' &&
     etapasCiclo.trim() !== ''
 
   const guardar = async () => {
-    if (!isFormValid) return
+    if (!isFormValid || opId == null) return
     setGuardando(true)
-    await new Promise((r) => setTimeout(r, 800))
-    setGuardando(false)
-    setGuardado(true)
-    setTimeout(() => setGuardado(false), 3000)
+    setMensaje(null)
+    try {
+      await ActuacionesApi.actualizarConclusionCaso(opId, {
+        tipologiasIdentificadas: tipologias,
+        verbosRectores: verbosRectores,
+        etapasCicloLgi: etapasCiclo,
+      })
+      setMensaje('Conclusión del caso guardada correctamente')
+    } catch {
+      setMensaje('Error al guardar la conclusión del caso. Intente nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
   }
 
   return (
     <div className="space-y-4">
+      <div className="panel p-4">
+        <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+          Actuación realizada *
+        </label>
+        <Select
+          options={actuaciones.map((a) => ({
+            value: String(a.opId),
+            label: `${a.opNrooper} (${formatFecha(a.opFechainf, 'dd/MM/yyyy')})`,
+          }))}
+          placeholder="Seleccione la actuación"
+          value={opId != null ? String(opId) : ''}
+          onChange={(e) => setOpId(Number(e.target.value) || null)}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Seleccione la actuación para registrar la conclusión del caso.
+        </p>
+      </div>
+
+      {mensaje && (
+        <div className="rounded-md border border-success/30 bg-success/5 px-4 py-3 text-sm text-success">
+          {mensaje}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
         <div className="panel space-y-5 p-5">
-          <div>
-            <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-              Tipologías Identificadas
-            </h6>
-            <p className="mb-2 text-xs text-gray-500">
-              Tipos de delitos o patrones criminales identificados en el caso.
+          {opId == null ? (
+            <p className="text-sm text-gray-500">
+              Seleccione una actuación para registrar la conclusión.
             </p>
-            <textarea
-              className="form-textarea w-full"
-              rows={4}
-              value={tipologias}
-              onChange={(e) => setTipologias(e.target.value)}
-              placeholder="Ej: Lavado de activos, Financiamiento del terrorismo, Corrupción..."
-            />
-          </div>
+          ) : (
+            <>
+              <div>
+                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
+                  Tipologías Identificadas
+                </h6>
+                <p className="mb-2 text-xs text-gray-500">
+                  Tipos de delitos o patrones criminales identificados en el caso.
+                </p>
+                <textarea
+                  className="form-textarea w-full"
+                  rows={4}
+                  value={tipologias}
+                  onChange={(e) => setTipologias(e.target.value)}
+                  placeholder="Ej: Lavado de activos, Financiamiento del terrorismo, Corrupción..."
+                />
+              </div>
 
-          <div>
-            <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-              Verbos Rectores
-            </h6>
-            <p className="mb-2 text-xs text-gray-500">
-              Acciones legales que definen el delito investigado.
-            </p>
-            <textarea
-              className="form-textarea w-full"
-              rows={4}
-              value={verbosRectores}
-              onChange={(e) => setVerbosRectores(e.target.value)}
-              placeholder="Ej: Lavado, Financiamiento, Cohecha, Extorsión..."
-            />
-          </div>
+              <div>
+                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
+                  Verbos Rectores
+                </h6>
+                <p className="mb-2 text-xs text-gray-500">
+                  Acciones legales que definen el delito investigado.
+                </p>
+                <textarea
+                  className="form-textarea w-full"
+                  rows={4}
+                  value={verbosRectores}
+                  onChange={(e) => setVerbosRectores(e.target.value)}
+                  placeholder="Ej: Lavado, Financiamiento, Cohecha, Extorsión..."
+                />
+              </div>
 
-          <div>
-            <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-              Etapas / Ciclo de LGI
-            </h6>
-            <p className="mb-2 text-xs text-gray-500">
-              Etapas del ciclo de lavado de activos identificadas.
-            </p>
-            <textarea
-              className="form-textarea w-full"
-              rows={4}
-              value={etapasCiclo}
-              onChange={(e) => setEtapasCiclo(e.target.value)}
-              placeholder="Ej: Colocación, Integración, Ocultamiento..."
-            />
-          </div>
+              <div>
+                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
+                  Etapas / Ciclo de LGI
+                </h6>
+                <p className="mb-2 text-xs text-gray-500">
+                  Etapas del ciclo de lavado de activos identificadas.
+                </p>
+                <textarea
+                  className="form-textarea w-full"
+                  rows={4}
+                  value={etapasCiclo}
+                  onChange={(e) => setEtapasCiclo(e.target.value)}
+                  placeholder="Ej: Colocación, Integración, Ocultamiento..."
+                />
+              </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <Button
-              type="button"
-              variant="primary"
-              loading={guardando}
-              disabled={!isFormValid || guardando}
-              onClick={guardar}
-            >
-              Guardar
-            </Button>
-            {guardado && (
-              <span className="text-sm font-medium text-success">
-                Guardado correctamente
-              </span>
-            )}
-          </div>
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  loading={guardando}
+                  disabled={!isFormValid || guardando}
+                  onClick={guardar}
+                >
+                  Guardar
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="panel flex flex-col items-center justify-center gap-4 p-5 lg:sticky lg:top-4 lg:self-start">

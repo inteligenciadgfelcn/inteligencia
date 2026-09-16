@@ -25,17 +25,11 @@ import type {
   TipoInforme,
 } from '../types/actuaciones.types'
 import type { MenuOption } from './MenuVertical'
+import { formatFecha } from '../../utils/fechas'
 
 type Props = {
   casoId: number
   onSelect?: (option: MenuOption) => void
-}
-
-function formatFecha(fecha: string | null | undefined): string {
-  if (!fecha) return '-'
-  const date = new Date(fecha)
-  if (Number.isNaN(date.getTime())) return fecha
-  return date.toLocaleDateString('es-BO')
 }
 
 function DetalleCampo({
@@ -163,7 +157,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
     {
       accessor: 'opFechainf',
       title: 'Fecha informe',
-      render: (row) => formatFecha(row.opFechainf),
+      render: (row) => formatFecha(row.opFechainf, 'dd/MM/yyyy'),
     },
     {
       accessor: 'idTipoInforme',
@@ -190,23 +184,23 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
     {
       accessor: 'fechaRecepcionFiscalia',
       title: 'Fec. recepción',
-      render: (row) => formatFecha(row.fechaRecepcionFiscalia),
+      render: (row) => formatFecha(row.fechaRecepcionFiscalia, 'dd/MM/yyyy'),
     },
-    {
-      accessor: 'estado',
-      title: 'Estado',
-      render: (row) => (
-        <span
-          className={`badge ${
-            row.estado === 'ACTIVO'
-              ? 'badge-outline-success'
-              : 'badge-outline-danger'
-          }`}
-        >
-          {row.estado}
-        </span>
-      ),
-    },
+    // {
+    //   accessor: 'estado',
+    //   title: 'Estado',
+    //   render: (row) => (
+    //     <span
+    //       className={`badge ${
+    //         row.estado === 'ACTIVO'
+    //           ? 'badge-outline-success'
+    //           : 'badge-outline-danger'
+    //       }`}
+    //     >
+    //       {row.estado}
+    //     </span>
+    //   ),
+    // },
     {
       accessor: 'rutaArchivo',
       title: 'Archivo',
