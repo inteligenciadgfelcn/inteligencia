@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import type { Map as LeafletMap } from 'leaflet'
 
@@ -14,11 +15,16 @@ import IconEdit from '@/components/Icon/IconEdit'
 import IconTrash from '@/components/Icon/IconTrash'
 import IconEye from '@/components/Icon/IconEye'
 
-import type { PersonaJuridica } from '../types/personas-juridicas.types'
-import {
-  VINCULOS_INVESTIGACION,
-  VALORES_POR_DEFECTO_PJ,
+import { PersonasJuridicasApi } from '../api/personas-juridicas.api'
+import { ActuacionesApi } from '../api/actuaciones.api'
+import type { ActuacionRow } from '../types/actuaciones.types'
+import type {
+  PersonaJuridicaRow,
+  TipoSituacionJuridicaEmpresa,
+  TipoVinculo,
+  Vinculo,
 } from '../types/personas-juridicas.types'
+import { VALORES_POR_DEFECTO } from '../types/personas-juridicas.types'
 import { formatFecha } from '../../utils/fechas'
 
 const MapaConMarcador = dynamic(
@@ -30,73 +36,70 @@ type Props = {
   casoId: number
 }
 
-let nextId = 200
-
-function formatMoney(valor: number): string {
-  return valor.toLocaleString('es-BO', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-}
+type FormState = typeof VALORES_POR_DEFECTO
 
 export function PersonasJuridicas({ casoId }: Props) {
-  const [personas, setPersonas] = useState<PersonaJuridica[]>(() => [
-    {
-      id: 1,
-      casosId: casoId,
-      nombreRazonSocial: 'Transportes Bolívar S.R.L.',
-      nit: '1234567890',
-      matricula: 'MAT-2020-001234',
-      propietarioSocios: 'Juan Pérez (60%), María López (40%)',
-      representanteLegal: 'Juan Pérez García',
-      beneficiariosFinales: 'Juan Pérez García, María López de RAMIREZ',
-      capitalSocial: 500000,
-      direccion: 'Av. Industrial #456, Zona Industrial',
-      latitud: -17.401,
-      longitud: -66.162,
-      vinculoInvestigacion: 'Investigada con responsabilidad',
-      situacionJuridica: 'Vinculada al delito de lavado de activos',
-      fechaSituacionJuridica: '2026-05-10',
-      pericia: true,
-      resultadoPericia: 'Se encontraron transferencias irregulares por Bs. 2.3M',
-      fechaHoraIng: '2026-05-10T09:00:00',
-      usuario: 'admin',
-    },
-    {
-      id: 2,
-      casosId: casoId,
-      nombreRazonSocial: 'Minera San Cristóbal S.A.',
-      nit: '9876543210',
-      matricula: 'MAT-2018-005678',
-      propietarioSocios: 'Grupo Inversor SAC (100%)',
-      representanteLegal: 'Carlos Mendoza López',
-      beneficiariosFinales: 'Grupo Inversor SAC',
-      capitalSocial: 12000000,
-      direccion: 'Calle Comercio #789, Centro',
-      latitud: -17.395,
-      longitud: -66.153,
-      vinculoInvestigacion: 'Identificada',
-      situacionJuridica: 'Relación con la investigación por funcionario investigado',
-      fechaSituacionJuridica: '2026-06-15',
-      pericia: false,
-      resultadoPericia: '',
-      fechaHoraIng: '2026-06-15T11:30:00',
-      usuario: 'admin',
-    },
-  ])
-
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
-  const [personaEditando, setPersonaEditando] = useState<PersonaJuridica | null>(null)
-  const [personaDetalle, setPersonaDetalle] = useState<PersonaJuridica | null>(null)
-  const [personaEliminar, setPersonaEliminar] = useState<PersonaJuridica | null>(null)
+  const [personaEditando, setPersonaEditando] =
+    useState<PersonaJuridicaRow | null>(null)
+  const [personaDetalle, setPersonaDetalle] =
+    useState<PersonaJuridicaRow | null>(null)
+  const [personaEliminar, setPersonaEliminar] =
+    useState<PersonaJuridicaRow | null>(null)
   const [mapaOpen, setMapaOpen] = useState(false)
   const [coordenadas, setCoordenadas] = useState<[number, number] | null>(null)
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState<string | null>(null)
 
-  const [form, setForm] = useState<Omit<PersonaJuridica, 'id' | 'casosId'>>(
-    VALORES_POR_DEFECTO_PJ
-  )
+  const [opId, setOpId] = useState<number | null>(null)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
+  const [form, setForm] = useState<FormState>({ ...VALORES_POR_DEFECTO })
 
   const mapRef = useRef<LeafletMap | null>(null)
+
+  const [actuaciones, setActuaciones] = useState<ActuacionRow[]>([])
+
+  useEffect(() => {
+    let activo = true
+    ActuacionesApi.listarActuaciones(casoId, { pagina: 1, limite: 50 })
+      .then((res) => {
+        if (activo) setActuaciones(res.filas ?? [])
+      })
+      .catch(() => undefined)
+    return () => {
+      activo = false
+    }
+  }, [casoId])
+
+  const { data: empresasData, isLoading: empresasLoading } = useQuery({
+    queryKey: ['lgi-personas-juridicas', opId, page, limit],
+    enabled: Boolean(opId),
+    queryFn: () =>
+      PersonasJuridicasApi.listarPorOperativo(opId!, {
+        pagina: page,
+        limite: limit,
+      }),
+  })
+
+  const { data: vinculos = [] } = useQuery<Vinculo[]>({
+    queryKey: ['lgi-personas-juridicas', 'vinculos'],
+    queryFn: () => PersonasJuridicasApi.listarVinculos(),
+  })
+
+  const { data: tiposSituacion = [] } = useQuery<
+    TipoSituacionJuridicaEmpresa[]
+  >({
+    queryKey: ['lgi-personas-juridicas', 'tipos-situacion'],
+    queryFn: () => PersonasJuridicasApi.listarTiposSituacionJuridicaEmpresa(),
+  })
+
+  const { data: tiposVinculo = [] } = useQuery<TipoVinculo[]>({
+    queryKey: ['lgi-personas-juridicas', 'tipos-vinculo', form.idVinculo],
+    enabled: Boolean(form.idVinculo),
+    queryFn: () => PersonasJuridicasApi.listarTiposVinculo(form.idVinculo),
+  })
 
   useEffect(() => {
     if (coordenadas) {
@@ -108,75 +111,44 @@ export function PersonasJuridicas({ casoId }: Props) {
     }
   }, [coordenadas])
 
-  const setField = <K extends keyof typeof form>(
-    key: K,
-    value: (typeof form)[K]
-  ) => {
+  const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const abrirCrear = () => {
     setPersonaEditando(null)
-    setForm({ ...VALORES_POR_DEFECTO_PJ })
+    setForm({ ...VALORES_POR_DEFECTO })
     setCoordenadas(null)
+    setMensaje(null)
     setVista('formulario')
   }
 
-  const abrirEditar = (persona: PersonaJuridica) => {
+  const abrirEditar = (persona: PersonaJuridicaRow) => {
     setPersonaEditando(persona)
     setForm({
-      nombreRazonSocial: persona.nombreRazonSocial,
+      ...VALORES_POR_DEFECTO,
+      nombre: persona.nombre,
       nit: persona.nit,
       matricula: persona.matricula,
-      propietarioSocios: persona.propietarioSocios,
-      representanteLegal: persona.representanteLegal,
-      beneficiariosFinales: persona.beneficiariosFinales,
-      capitalSocial: persona.capitalSocial,
-      direccion: persona.direccion,
-      latitud: persona.latitud,
-      longitud: persona.longitud,
-      vinculoInvestigacion: persona.vinculoInvestigacion,
-      situacionJuridica: persona.situacionJuridica,
-      fechaSituacionJuridica: persona.fechaSituacionJuridica,
+      representante: persona.representante,
+      observaciones: persona.observaciones ?? '',
+      propietarioSocio: persona.propietarioSocio ?? '',
+      beneficiariosFinales: persona.beneficiariosFinales ?? '',
+      capitalSocial: persona.capitalSocial ?? '',
+      direccion: persona.direccion ?? '',
+      latitud: persona.latitud != null ? Number(persona.latitud) : null,
+      longitud: persona.longitud != null ? Number(persona.longitud) : null,
+      idVinculo: persona.tipoVinculo?.vinculo?.idVinculo ?? 0,
+      idTipoVinculo: persona.idTipoVinculo != null ? Number(persona.idTipoVinculo) : 0,
       pericia: persona.pericia,
-      resultadoPericia: persona.resultadoPericia,
-      fechaHoraIng: persona.fechaHoraIng,
-      usuario: persona.usuario,
+      resultado: persona.resultado ?? '',
     })
     setCoordenadas(
       persona.latitud != null && persona.longitud != null
-        ? [persona.latitud, persona.longitud]
+        ? [Number(persona.latitud), Number(persona.longitud)]
         : null
     )
     setVista('formulario')
-  }
-
-  const eliminarPersona = (persona: PersonaJuridica) => {
-    setPersonas((prev) => prev.filter((p) => p.id !== persona.id))
-    setPersonaEliminar(null)
-  }
-
-  const guardar = () => {
-    const now = new Date().toISOString()
-    if (personaEditando) {
-      setPersonas((prev) =>
-        prev.map((p) =>
-          p.id === personaEditando.id
-            ? { ...p, ...form, fechaActualizacion: now }
-            : p
-        )
-      )
-    } else {
-      const nueva: PersonaJuridica = {
-        id: nextId++,
-        casosId: casoId,
-        ...form,
-        fechaHoraIng: now,
-        usuario: '_usuario_actual',
-      }
-      setPersonas((prev) => [...prev, nueva])
-    }
-    setVista('lista')
   }
 
   const abrirMapa = () => {
@@ -196,46 +168,114 @@ export function PersonasJuridicas({ casoId }: Props) {
   }
 
   const isFormValid =
-    form.nombreRazonSocial.trim() !== '' &&
+    Boolean(opId) &&
+    form.nombre.trim() !== '' &&
     form.nit.trim() !== '' &&
     form.matricula.trim() !== '' &&
-    form.representanteLegal.trim() !== '' &&
-    form.capitalSocial > 0 &&
+    form.representante.trim() !== '' &&
     form.direccion.trim() !== '' &&
     form.latitud != null &&
     form.longitud != null &&
-    form.vinculoInvestigacion !== '' &&
-    form.situacionJuridica.trim() !== '' &&
-    form.fechaSituacionJuridica !== '' &&
-    (!form.pericia || form.resultadoPericia.trim() !== '')
+    form.idVinculo > 0 &&
+    form.idTipoVinculo > 0 &&
+    form.idTipoSituacionJuridica > 0 &&
+    form.fecha !== '' &&
+    form.quienAutoriza.trim() !== '' &&
+    form.aQuienEntregan.trim() !== '' &&
+    (!form.pericia || form.resultado.trim() !== '')
 
-  const columns: Column<PersonaJuridica>[] = [
-    { accessor: 'nombreRazonSocial', title: 'Nombre / Razón Social' },
+  const construirFormData = (): FormData => {
+    const fd = new FormData()
+    fd.append('opId', String(opId))
+    fd.append('nombre', form.nombre)
+    fd.append('nit', form.nit)
+    fd.append('matricula', form.matricula)
+    fd.append('representante', form.representante)
+    if (form.observaciones) fd.append('observaciones', form.observaciones)
+    if (form.propietarioSocio) fd.append('propietarioSocio', form.propietarioSocio)
+    if (form.beneficiariosFinales)
+      fd.append('beneficiariosFinales', form.beneficiariosFinales)
+    if (form.capitalSocial) fd.append('capitalSocial', String(form.capitalSocial))
+    fd.append('direccion', form.direccion)
+    if (form.latitud != null) fd.append('latitud', String(form.latitud))
+    if (form.longitud != null) fd.append('longitud', String(form.longitud))
+    fd.append('idTipoVinculo', String(form.idTipoVinculo))
+    fd.append('pericia', String(form.pericia))
+    if (form.resultado) fd.append('resultado', form.resultado)
+    if (form.imagen) fd.append('imagen', form.imagen)
+    if (form.documento) fd.append('documento', form.documento)
+    return fd
+  }
+
+  const onSubmit = async () => {
+    if (!isFormValid || !opId) return
+    setGuardando(true)
+    setMensaje(null)
+    try {
+      const fd = construirFormData()
+      const empresa = personaEditando
+        ? await PersonasJuridicasApi.actualizarPersonaJuridica(
+            Number(personaEditando.empId),
+            fd
+          )
+        : await PersonasJuridicasApi.crearPersonaJuridica(fd)
+
+      const empId = Number(empresa?.empId)
+
+      await PersonasJuridicasApi.registrarSituacionJuridicaEmpresa({
+        idEmpresa: empId,
+        fecha: form.fecha,
+        quienAutoriza: form.quienAutoriza,
+        aQuienEntregan: form.aQuienEntregan,
+        idTipoSituacionJuridica: form.idTipoSituacionJuridica,
+      })
+
+      setVista('lista')
+      setPersonaEditando(null)
+      setMensaje(
+        personaEditando
+          ? 'Persona jurídica actualizada correctamente'
+          : 'Persona jurídica registrada correctamente'
+      )
+      setPage(1)
+    } catch {
+      setMensaje('Error al guardar la persona jurídica. Intente nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const confirmarEliminar = async () => {
+    if (!personaEliminar) return
+    try {
+      await PersonasJuridicasApi.eliminarPersonaJuridica(
+        Number(personaEliminar.empId)
+      )
+      setPersonaEliminar(null)
+      setMensaje('Persona jurídica eliminada correctamente')
+    } catch {
+      setMensaje('Error al eliminar la persona jurídica.')
+    }
+  }
+
+  const option = (value: string | number, label: string) => ({
+    value: String(value),
+    label,
+  })
+
+  const columns: Column<PersonaJuridicaRow>[] = [
+    { accessor: 'nombre', title: 'Nombre / Razón Social' },
     { accessor: 'nit', title: 'NIT' },
     { accessor: 'matricula', title: 'Matrícula' },
     {
-      accessor: 'vinculoInvestigacion',
+      accessor: 'tipoVinculo',
       title: 'Vínculo',
-      render: (row) => (
-        <span
-          className={`badge ${
-            row.vinculoInvestigacion === 'Investigada con responsabilidad'
-              ? 'badge-outline-danger'
-              : 'badge-outline-info'
-          }`}
-        >
-          {row.vinculoInvestigacion}
-        </span>
-      ),
+      render: (row) => row.tipoVinculo?.descripcion ?? '-',
     },
     {
-      accessor: 'situacionJuridica',
+      accessor: 'ultimaSituacionJuridica',
       title: 'Situación Jurídica',
-      render: (row) => (
-        <span className="max-w-[200px] truncate block" title={row.situacionJuridica}>
-          {row.situacionJuridica}
-        </span>
-      ),
+      render: (row) => row.ultimaSituacionJuridica?.descripcionTipo ?? '-',
     },
     {
       accessor: 'pericia',
@@ -243,7 +283,7 @@ export function PersonasJuridicas({ casoId }: Props) {
       render: (row) => (row.pericia ? 'Sí' : 'No'),
     },
     {
-      accessor: 'id',
+      accessor: 'empId',
       title: 'Acciones',
       render: (row) => (
         <div className="flex gap-1">
@@ -290,6 +330,7 @@ export function PersonasJuridicas({ casoId }: Props) {
             type="button"
             variant="outline-secondary"
             onClick={() => setVista('lista')}
+            disabled={guardando}
           >
             ← Volver
           </Button>
@@ -300,6 +341,13 @@ export function PersonasJuridicas({ casoId }: Props) {
           </h6>
         </div>
 
+        <div className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <span className="font-semibold">Actuación seleccionada: </span>
+          {actuaciones.find((a) => String(a.opId) === String(opId))?.opNrooper ??
+            'Sin seleccionar'}
+          {opId ? ` (opId ${opId})` : ''}
+        </div>
+
         <div className="panel space-y-6 p-5">
           <Fieldset title="Datos Generales">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -308,8 +356,8 @@ export function PersonasJuridicas({ casoId }: Props) {
                   Nombre o Razón Social *
                 </label>
                 <Input
-                  value={form.nombreRazonSocial}
-                  onChange={(e) => setField('nombreRazonSocial', e.target.value)}
+                  value={form.nombre}
+                  onChange={(e) => setField('nombre', e.target.value)}
                   placeholder="Nombre completo o razón social"
                 />
               </div>
@@ -324,14 +372,38 @@ export function PersonasJuridicas({ casoId }: Props) {
                 />
               </div>
             </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Matrícula *
+                </label>
+                <Input
+                  value={form.matricula}
+                  onChange={(e) => setField('matricula', e.target.value)}
+                  placeholder="MAT-2020-001234"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Representante Legal *
+                </label>
+                <Input
+                  value={form.representante}
+                  onChange={(e) => setField('representante', e.target.value)}
+                  placeholder="Nombre del representante legal"
+                />
+              </div>
+            </div>
             <div className="mt-4">
               <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                Matrícula *
+                Observaciones
               </label>
-              <Input
-                value={form.matricula}
-                onChange={(e) => setField('matricula', e.target.value)}
-                placeholder="MAT-2020-001234"
+              <textarea
+                className="form-textarea w-full"
+                rows={2}
+                value={form.observaciones}
+                onChange={(e) => setField('observaciones', e.target.value)}
+                placeholder="Observaciones..."
               />
             </div>
           </Fieldset>
@@ -345,45 +417,37 @@ export function PersonasJuridicas({ casoId }: Props) {
                 <textarea
                   className="form-textarea w-full"
                   rows={2}
-                  value={form.propietarioSocios}
-                  onChange={(e) => setField('propietarioSocios', e.target.value)}
+                  value={form.propietarioSocio}
+                  onChange={(e) => setField('propietarioSocio', e.target.value)}
                   placeholder="Nombre y porcentaje de participación..."
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Representante Legal *
+                  Beneficiario(s) Final(es)
                 </label>
-                <Input
-                  value={form.representanteLegal}
-                  onChange={(e) => setField('representanteLegal', e.target.value)}
-                  placeholder="Nombre del representante legal"
+                <textarea
+                  className="form-textarea w-full"
+                  rows={2}
+                  value={form.beneficiariosFinales}
+                  onChange={(e) =>
+                    setField('beneficiariosFinales', e.target.value)
+                  }
+                  placeholder="Beneficiarios finales de la empresa..."
                 />
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                Beneficiario(s) Final(es)
-              </label>
-              <textarea
-                className="form-textarea w-full"
-                rows={2}
-                value={form.beneficiariosFinales}
-                onChange={(e) => setField('beneficiariosFinales', e.target.value)}
-                placeholder="Beneficiarios finales de la empresa..."
-              />
             </div>
           </Fieldset>
 
           <Fieldset title="Capital Social">
             <div className="max-w-xs">
               <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                Capital Social (BOB) *
+                Capital Social (BOB)
               </label>
               <Input
                 type="number"
                 value={form.capitalSocial || ''}
-                onChange={(e) => setField('capitalSocial', Number(e.target.value))}
+                onChange={(e) => setField('capitalSocial', e.target.value)}
                 placeholder="0.00"
                 min="0"
               />
@@ -441,53 +505,47 @@ export function PersonasJuridicas({ casoId }: Props) {
                   📍 Seleccionar en mapa
                 </Button>
               </div>
-              {form.latitud != null && form.longitud != null && (
-                <p className="mt-2 text-xs text-gray-500">
-                  Coordenadas seleccionadas: {form.latitud.toFixed(6)},{' '}
-                  {form.longitud.toFixed(6)}
-                </p>
-              )}
             </div>
           </Fieldset>
 
-          <Fieldset title="Vinculación con la Investigación">
+          <Fieldset title="Vínculo">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Vínculo con la Investigación *
+                  Vínculo *
                 </label>
                 <Select
-                  options={VINCULOS_INVESTIGACION.map((v) => ({
-                    value: v,
-                    label: v,
-                  }))}
+                  options={vinculos.map((v) => option(v.idVinculo, v.descripcion))}
                   placeholder="Seleccione vínculo"
-                  value={form.vinculoInvestigacion}
-                  onChange={(e) => setField('vinculoInvestigacion', e.target.value)}
+                  value={form.idVinculo ? String(form.idVinculo) : ''}
+                  onChange={(e) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      idVinculo: Number(e.target.value),
+                      idTipoVinculo: 0,
+                    }))
+                  }}
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Fecha Situación Jurídica *
+                  Tipo de vínculo *
                 </label>
-                <Input
-                  type="date"
-                  value={form.fechaSituacionJuridica}
-                  onChange={(e) => setField('fechaSituacionJuridica', e.target.value)}
+                <Select
+                  options={tiposVinculo.map((t) =>
+                    option(t.idTipoVinculo, t.descripcion)
+                  )}
+                  placeholder="Seleccione tipo"
+                  value={form.idTipoVinculo ? String(form.idTipoVinculo) : ''}
+                  disabled={!form.idVinculo}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      idTipoVinculo: Number(e.target.value),
+                    }))
+                  }
                 />
               </div>
-            </div>
-            <div className="mt-4">
-              <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                Situación Jurídica (Relación con la investigación o investigados) *
-              </label>
-              <textarea
-                className="form-textarea w-full"
-                rows={3}
-                value={form.situacionJuridica}
-                onChange={(e) => setField('situacionJuridica', e.target.value)}
-                placeholder="Describa la relación con la investigación..."
-              />
             </div>
           </Fieldset>
 
@@ -509,7 +567,7 @@ export function PersonasJuridicas({ casoId }: Props) {
                     setForm((prev) => ({
                       ...prev,
                       pericia: val,
-                      resultadoPericia: val ? prev.resultadoPericia : '',
+                      resultado: val ? prev.resultado : '',
                     }))
                   }}
                 />
@@ -522,12 +580,97 @@ export function PersonasJuridicas({ casoId }: Props) {
                   <textarea
                     className="form-textarea w-full"
                     rows={3}
-                    value={form.resultadoPericia}
-                    onChange={(e) => setField('resultadoPericia', e.target.value)}
+                    value={form.resultado}
+                    onChange={(e) => setField('resultado', e.target.value)}
                     placeholder="Describa el resultado de la pericia..."
                   />
                 </div>
               )}
+            </div>
+          </Fieldset>
+
+          <Fieldset title="Situación jurídica">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Tipo de situación *
+                </label>
+                <Select
+                  options={tiposSituacion.map((t) =>
+                    option(t.idTipoSituacionJuridica, t.descripcion)
+                  )}
+                  placeholder="Seleccione tipo de situación"
+                  value={
+                    form.idTipoSituacionJuridica
+                      ? String(form.idTipoSituacionJuridica)
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setField('idTipoSituacionJuridica', Number(e.target.value))
+                  }
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Fecha *
+                </label>
+                <Input
+                  type="date"
+                  value={form.fecha}
+                  onChange={(e) => setField('fecha', e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Quién autoriza *
+                </label>
+                <Input
+                  value={form.quienAutoriza}
+                  onChange={(e) => setField('quienAutoriza', e.target.value)}
+                  placeholder="Persona o autoridad que autoriza"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  A quién entregan *
+                </label>
+                <Input
+                  value={form.aQuienEntregan}
+                  onChange={(e) => setField('aQuienEntregan', e.target.value)}
+                  placeholder="Persona o institución a quien se entrega"
+                />
+              </div>
+            </div>
+          </Fieldset>
+
+          <Fieldset title="Archivos">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Imagen (JPG/PNG/WEBP)
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="block w-full text-sm"
+                  onChange={(e) =>
+                    setField('imagen', e.target.files?.[0] ?? null)
+                  }
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Documento (PDF/JPG/PNG/WEBP)
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf,image/jpeg,image/png,image/webp"
+                  className="block w-full text-sm"
+                  onChange={(e) =>
+                    setField('documento', e.target.files?.[0] ?? null)
+                  }
+                />
+              </div>
             </div>
           </Fieldset>
         </div>
@@ -537,14 +680,16 @@ export function PersonasJuridicas({ casoId }: Props) {
             type="button"
             variant="outline-secondary"
             onClick={() => setVista('lista')}
+            disabled={guardando}
           >
             Cancelar
           </Button>
           <Button
             type="button"
             variant="primary"
+            loading={guardando}
             disabled={!isFormValid}
-            onClick={guardar}
+            onClick={onSubmit}
           >
             {personaEditando ? 'Actualizar' : 'Guardar'}
           </Button>
@@ -614,23 +759,62 @@ export function PersonasJuridicas({ casoId }: Props) {
           variant="primary"
           className="gap-2"
           onClick={abrirCrear}
+          disabled={!opId}
         >
           <IconPlus className="h-4 w-4" />
           Nueva Persona Jurídica
         </Button>
       </div>
 
-      <VristoDataTable<PersonaJuridica>
-        title="Personas Jurídicas"
-        rows={personas}
-        total={personas.length}
-        page={1}
-        limit={10}
-        onPageChange={() => {}}
-        onLimitChange={() => {}}
-        columns={columns}
-        loading={false}
-      />
+      {mensaje && (
+        <div className="rounded-md border border-success/30 bg-success/5 px-4 py-3 text-sm text-success">
+          {mensaje}
+        </div>
+      )}
+
+      <div className="panel p-4">
+        <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+          Actuación realizada *
+        </label>
+        <Select
+          options={actuaciones.map((a) =>
+            option(
+              a.opId,
+              `${a.opNrooper} (${formatFecha(a.opFechainf, 'dd/MM/yyyy')})`
+            )
+          )}
+          placeholder="Seleccione la actuación"
+          value={opId != null ? String(opId) : ''}
+          onChange={(e) => {
+            setOpId(Number(e.target.value) || null)
+            setPage(1)
+          }}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Seleccione la actuación para listar o registrar las personas jurídicas
+          asociadas.
+        </p>
+      </div>
+
+      {opId == null ? (
+        <div className="panel p-8 text-center">
+          <p className="text-sm text-gray-500">
+            Seleccione una actuación para ver sus personas jurídicas.
+          </p>
+        </div>
+      ) : (
+        <VristoDataTable<PersonaJuridicaRow>
+          title="Personas Jurídicas"
+          rows={empresasData?.filas ?? []}
+          total={empresasData?.total ?? 0}
+          page={page}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+          columns={columns}
+          loading={empresasLoading}
+        />
+      )}
 
       {personaDetalle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -649,21 +833,11 @@ export function PersonasJuridicas({ casoId }: Props) {
             </div>
             <div className="max-h-[70vh] overflow-y-auto p-5">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <DetalleCampo
-                  label="Nombre / Razón Social"
-                  value={personaDetalle.nombreRazonSocial}
-                  full
-                />
+                <DetalleCampo label="Nombre / Razón Social" value={personaDetalle.nombre} full />
                 <DetalleCampo label="NIT" value={personaDetalle.nit} />
                 <DetalleCampo label="Matrícula" value={personaDetalle.matricula} />
-                <DetalleCampo
-                  label="Capital Social (BOB)"
-                  value={formatMoney(personaDetalle.capitalSocial)}
-                />
-                <DetalleCampo
-                  label="Representante Legal"
-                  value={personaDetalle.representanteLegal}
-                />
+                <DetalleCampo label="Representante Legal" value={personaDetalle.representante} />
+                <DetalleCampo label="Capital Social" value={personaDetalle.capitalSocial} />
                 <DetalleCampo label="Dirección" value={personaDetalle.direccion} full />
                 <DetalleCampo
                   label="Latitud"
@@ -682,40 +856,42 @@ export function PersonasJuridicas({ casoId }: Props) {
                   }
                 />
                 <DetalleCampo
-                  label="Propietario(s) / Socio(s)"
-                  value={personaDetalle.propietarioSocios}
-                  full
+                  label="Vínculo"
+                  value={personaDetalle.tipoVinculo?.descripcion}
                 />
-                <DetalleCampo
-                  label="Beneficiario(s) Final(es)"
-                  value={personaDetalle.beneficiariosFinales}
-                  full
-                />
-                <DetalleCampo
-                  label="Vínculo con la Investigación"
-                  value={personaDetalle.vinculoInvestigacion}
-                />
-                <DetalleCampo
-                  label="Fecha Situación Jurídica"
-                  value={formatFecha(personaDetalle.fechaSituacionJuridica)}
-                />
+                <DetalleCampo label="Pericia" value={personaDetalle.pericia ? 'Sí' : 'No'} />
+                {personaDetalle.pericia && (
+                  <DetalleCampo label="Resultado Pericia" value={personaDetalle.resultado} full />
+                )}
                 <DetalleCampo
                   label="Situación Jurídica"
-                  value={personaDetalle.situacionJuridica}
-                  full
+                  value={personaDetalle.ultimaSituacionJuridica?.descripcionTipo}
                 />
                 <DetalleCampo
-                  label="Pericia"
-                  value={personaDetalle.pericia ? 'Sí' : 'No'}
+                  label="Fecha Situación"
+                  value={formatFecha(personaDetalle.ultimaSituacionJuridica?.fecha, 'dd/MM/yyyy')}
                 />
-                {personaDetalle.pericia && (
-                  <DetalleCampo
-                    label="Resultado Pericia"
-                    value={personaDetalle.resultadoPericia}
-                    full
-                  />
-                )}
               </div>
+              {personaDetalle.propietarioSocio && (
+                <div className="mt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase text-gray-500">
+                    Propietario(s) / Socio(s)
+                  </p>
+                  <p className="text-sm text-dark dark:text-white-light">
+                    {personaDetalle.propietarioSocio}
+                  </p>
+                </div>
+              )}
+              {personaDetalle.beneficiariosFinales && (
+                <div className="mt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase text-gray-500">
+                    Beneficiario(s) Final(es)
+                  </p>
+                  <p className="text-sm text-dark dark:text-white-light">
+                    {personaDetalle.beneficiariosFinales}
+                  </p>
+                </div>
+              )}
             </div>
             <div className="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <Button
@@ -742,8 +918,8 @@ export function PersonasJuridicas({ casoId }: Props) {
               </h3>
               <p className="mt-2 text-sm text-gray-500">
                 ¿Está seguro que desea eliminar{' '}
-                <strong>{personaEliminar.nombreRazonSocial}</strong>? Esta acción
-                no se puede deshacer.
+                <strong>{personaEliminar.nombre}</strong>? Esta acción no se puede
+                deshacer.
               </p>
             </div>
             <div className="flex justify-center gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
@@ -757,7 +933,7 @@ export function PersonasJuridicas({ casoId }: Props) {
               <Button
                 type="button"
                 variant="danger"
-                onClick={() => eliminarPersona(personaEliminar)}
+                onClick={confirmarEliminar}
               >
                 Eliminar
               </Button>

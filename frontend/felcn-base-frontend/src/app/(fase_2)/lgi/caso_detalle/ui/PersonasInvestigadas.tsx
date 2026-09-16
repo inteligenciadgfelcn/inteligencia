@@ -246,7 +246,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     { accessor: 'numeroDocumento', title: 'Nro documento' },
     {
       accessor: 'tipoDocumentoId',
-      title: 'Tipo doc.',
+      title: 'Tipo documento',
       render: (row) => buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
     },
     {
