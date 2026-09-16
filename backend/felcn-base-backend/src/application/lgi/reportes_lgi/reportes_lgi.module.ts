@@ -5,25 +5,35 @@ import { ActuacionReporteRepository } from './repository/actuacion.repository';
 import { ActuacionLgiService } from './service/actuacion.service';
 import { InicioInvestigacionRepository } from './repository/Inicio-investigacion.repository';
 import { InicioInvestigacionService } from './service/inicio_investigacion.service';
+import { BienesLgiReporteRepository } from './repository/bienes-lgi.repository';
+import { BienesLgiService } from './service/bienes_lgi.service';
+import { ConclusionCasoService } from './service/conclusion.service';
 
 @Module({
-   imports: [
+  imports: [
     ExportModule,
   ],
   controllers: [ReportesLgiController],
-   providers: [
+  providers: [
     ActuacionLgiService,
     ActuacionReporteRepository,
     InicioInvestigacionRepository,
-    InicioInvestigacionService
+    InicioInvestigacionService,
+    BienesLgiReporteRepository,
+    BienesLgiService,
+    ConclusionCasoService,
+  
   ],
 
   exports: [
     ActuacionLgiService,
     ActuacionReporteRepository,
     InicioInvestigacionRepository,
-    InicioInvestigacionService
+    InicioInvestigacionService, 
+    BienesLgiReporteRepository,
+    BienesLgiService,
+    ConclusionCasoService,
   ],
 
 })
-export class ReportesLgiModule {}
+export class ReportesLgiModule { }

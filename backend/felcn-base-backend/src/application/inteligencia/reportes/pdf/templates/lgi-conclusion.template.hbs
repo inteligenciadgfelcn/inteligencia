@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang='es'>
+
+<head>
+  <meta charset='UTF-8' />
+
+  <title>
+    Conclusión de Caso - GIAEF
+  </title>
+
+  <style>
+    :root {
+      --verde: #4f6b43;
+      --verde-oscuro: #3d5633;
+      --verde-fondo: #faf8ed;
+
+      --azul: #5279aa;
+      --azul-claro: #6f91ba;
+
+      --naranja: #d58d55;
+      --amarillo: #e2c317;
+
+      --texto: #181818;
+      --gris: #777777;
+      --blanco: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: 216mm 330mm;
+      margin: 0;
+    }
+
+    html,
+    body {
+      width: 216mm;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      color: var(--texto);
+      background: var(--blanco);
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      font-size: 9px;
+    }
+
+    /*
+     * ================================================
+     * PÁGINA
+     * ================================================
+     */
+
+    .pagina {
+      position: relative;
+
+      width: 216mm;
+      min-height: 330mm;
+
+      padding:
+        8mm
+        10mm
+        8mm;
+
+      overflow: hidden;
+
+      background:
+        var(--blanco);
+    }
+
+    /*
+     * ================================================
+     * ENCABEZADO
+     * ================================================
+     */
+
+    .encabezado {
+      display: grid;
+
+      grid-template-columns:
+        40mm
+        1fr;
+
+      align-items: center;
+
+      min-height: 23mm;
+
+      background:
+        var(--verde-fondo);
+    }
+
+    .logos {
+      display: flex;
+
+      align-items: center;
+
+      gap: 2mm;
+
+      padding-left: 2mm;
+    }
+
+    .logo {
+      width: 17mm;
+      height: 17mm;
+
+      object-fit: contain;
+    }
+
+    .separador-logo {
+      width: 1px;
+      height: 17mm;
+
+      background:
+        var(--verde);
+    }
+
+    .encabezado-texto {
+      padding:
+        0
+        3mm;
+
+      text-align: center;
+    }
+
+    .titulo-institucion {
+      margin: 0;
+
+      color:
+        var(--azul);
+
+      font-size: 15px;
+
+      font-weight: 500;
+
+      line-height: 1.1;
+    }
+
+    .titulo-reporte {
+      margin:
+        2mm
+        0
+        0;
+
+      font-size: 9.5px;
+    }
+
+    /*
+     * ================================================
+     * CUERPO
+     * ================================================
+     */
+
+    .cuerpo {
+      display: grid;
+
+      grid-template-columns:
+        36%
+        64%;
+
+      min-height: 288mm;
+    }
+
+    /*
+     * ================================================
+     * COLUMNA IZQUIERDA
+     * ================================================
+     */
+
+    .columna-izquierda {
+      min-height: 288mm;
+
+      padding:
+        3mm
+        2mm
+        5mm;
+
+      background:
+        var(--verde-fondo);
+
+      border-right:
+        1.5px
+        solid
+        var(--azul);
+    }
+
+    /*
+     * ================================================
+     * COLUMNA DERECHA
+     * ================================================
+     */
+
+    .columna-derecha {
+      position: relative;
+
+      min-height: 288mm;
+
+      padding:
+        3mm
+        0
+        12mm
+        3mm;
+    }
+
+    /*
+     * ================================================
+     * TÍTULO
+     * ================================================
+     */
+
+    .titulo-tipo {
+      margin-bottom: 3mm;
+
+      color:
+        var(--verde);
+
+      font-size: 12px;
+
+      font-weight: 700;
+
+      text-align: center;
+    }
+
+    /*
+     * ================================================
+     * CAMPOS
+     * ================================================
+     */
+
+    .fila-doble {
+      display: grid;
+
+      grid-template-columns:
+        1fr
+        1fr;
+
+      gap: 4mm;
+
+      margin-bottom: 2mm;
+    }
+
+    .campo {
+      min-width: 0;
+
+      text-align: center;
+    }
+
+    .campo-completo {
+      margin-bottom: 2mm;
+
+      text-align: center;
+    }
+
+    .campo-valor {
+      min-height: 5mm;
+
+      padding:
+        0
+        1mm
+        0.7mm;
+
+      border-bottom:
+        1px
+        solid
+        var(--naranja);
+
+      font-size: 9px;
+
+      font-weight: 500;
+
+      line-height: 1.15;
+
+      overflow-wrap: break-word;
+    }
+
+    .campo-etiqueta {
+      padding-top: 0.5mm;
+
+      color:
+        var(--azul);
+
+      font-size: 6px;
+
+      font-weight: 600;
+
+      line-height: 1;
+
+      text-transform: uppercase;
+    }
+
+    /*
+     * ================================================
+     * SECCIONES
+     * ================================================
+     */
+
+    .seccion {
+      margin-bottom: 4mm;
+    }
+
+    .titulo-seccion {
+      margin:
+        0
+        0
+        1.5mm;
+
+      color:
+        var(--azul);
+
+      font-size: 8.5px;
+
+      font-weight: 700;
+
+      line-height: 1.1;
+
+      text-transform: uppercase;
+    }
+
+    .texto {
+      margin: 0;
+
+      font-size: 9px;
+
+      line-height: 1.3;
+
+      text-align: justify;
+
+      white-space: pre-line;
+    }
+
+    .dato {
+      margin-bottom: 0.8mm;
+
+      font-size: 8.5px;
+
+      line-height: 1.2;
+    }
+
+    .dato strong {
+      font-weight: 700;
+    }
+
+    .sin-registros {
+      color:
+        var(--gris);
+
+      font-size: 8px;
+
+      font-style: italic;
+    }
+
+    /*
+     * ================================================
+     * CABECERA CONCLUSIÓN
+     * ================================================
+     */
+
+    .cabecera-conclusion {
+      padding:
+        0
+        2mm
+        3mm;
+
+      border-bottom:
+        2px
+        solid
+        var(--azul);
+    }
+
+    .conclusion-grid {
+      display: grid;
+
+      grid-template-columns:
+        1.5fr
+        0.8fr
+        0.9fr;
+
+      gap: 4mm;
+    }
+
+    /*
+     * ================================================
+     * AFECTACIÓN
+     * ================================================
+     */
+
+    .afectacion {
+      margin-top: 3mm;
+
+      text-align: center;
+    }
+
+    .afectacion-valor {
+      padding-bottom: 1mm;
+
+      border-bottom:
+        1px
+        solid
+        var(--naranja);
+
+      font-size: 10px;
+
+      line-height: 1.25;
+    }
+
+    .afectacion-etiqueta {
+      margin-top: 0.5mm;
+
+      color:
+        var(--azul);
+
+      font-size: 6px;
+
+      font-weight: 600;
+
+      text-transform: uppercase;
+    }
+
+    /*
+     * ================================================
+     * CONCLUSIÓN
+     * ================================================
+     */
+
+    .contenido-conclusion {
+      min-height: 65mm;
+
+      padding:
+        3mm
+        2mm;
+
+      border-bottom:
+        1px
+        solid
+        #dddddd;
+    }
+
+    /*
+     * ================================================
+     * RESULTADO FINAL
+     * ================================================
+     */
+
+    .resultado {
+      padding:
+        3mm
+        2mm;
+
+      border-bottom:
+        1px
+        solid
+        #dddddd;
+    }
+
+    .resultado-box {
+      padding: 2mm;
+
+      background:
+        var(--verde-fondo);
+
+      border-left:
+        2px
+        solid
+        var(--azul);
+
+      font-size: 9px;
+
+      line-height: 1.3;
+    }
+
+    /*
+     * ================================================
+     * PERSONAS
+     * ================================================
+     */
+
+    .personas {
+      margin:
+        3mm
+        -2mm
+        5mm;
+
+      padding: 2mm;
+
+      border-top:
+        1.5px
+        solid
+        var(--azul);
+    }
+
+    .persona {
+      display: grid;
+
+      grid-template-columns:
+        5mm
+        1fr;
+
+      gap: 1mm;
+
+      margin-bottom: 1.2mm;
+
+      font-size: 8.4px;
+
+      line-height: 1.2;
+    }
+
+    .persona-numero {
+      font-weight: 700;
+    }
+
+    .persona-documento {
+      display: block;
+
+      margin-top: 0.3mm;
+    }
+
+    /*
+     * ================================================
+     * BIENES
+     * ================================================
+     */
+
+    .bienes {
+      padding:
+        3mm
+        2mm;
+    }
+
+    .lista-bienes {
+      margin: 0;
+
+      padding-left: 5mm;
+    }
+
+    .lista-bienes li {
+      margin-bottom: 1mm;
+
+      font-size: 8.7px;
+
+      line-height: 1.25;
+    }
+
+    .bien-fila {
+      display: flex;
+
+      justify-content:
+        space-between;
+
+      gap: 3mm;
+    }
+
+    .bien-descripcion {
+      flex: 1;
+    }
+
+    .bien-valor {
+      flex-shrink: 0;
+
+      font-weight: 700;
+    }
+
+    /*
+     * ================================================
+     * FOTOGRAFÍAS
+     * ================================================
+     */
+
+    .muestrario {
+      padding:
+        3mm
+        2mm;
+
+      page-break-inside: avoid;
+    }
+
+    .fotografias {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 2mm;
+
+      margin-top: 2mm;
+    }
+
+    .fotografia {
+      position: relative;
+
+      height: 36mm;
+
+      overflow: hidden;
+
+      background: #f3f3f3;
+
+      border:
+        1px
+        solid
+        #dddddd;
+    }
+
+    .fotografia img {
+      display: block;
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+    }
+
+    .numero-fotografia {
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      z-index: 2;
+
+      min-width: 7mm;
+
+      padding: 1.5mm;
+
+      background:
+        var(--amarillo);
+
+      font-size: 8px;
+
+      font-weight: 700;
+
+      text-align: center;
+    }
+
+    .foto-vacia {
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      width: 100%;
+      height: 100%;
+
+      color:
+        var(--gris);
+
+      font-size: 7px;
+    }
+
+    /*
+     * ================================================
+     * PIE
+     * ================================================
+     */
+
+    .pie {
+      position: absolute;
+
+      right: 5mm;
+      bottom: 3mm;
+      left: 10mm;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 2mm;
+    }
+
+    .pie-linea {
+      flex: 1;
+
+      border-top:
+        1px
+        dashed
+        var(--naranja);
+    }
+
+    .pie-texto {
+      font-size: 8px;
+
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+
+<body>
+
+  <main class='pagina'>
+
+    <!-- ===========================================
+         ENCABEZADO
+         =========================================== -->
+
+    <header class='encabezado'>
+
+      <div class='logos'>
+
+        <img
+          class='logo'
+          src='{{institucional}}'
+          alt='Logotipo institucional'
+        />
+
+        <span class='separador-logo'></span>
+
+        <img
+          class='logo'
+          src='{{escudo}}'
+          alt='Escudo institucional'
+        />
+
+      </div>
+
+
+      <div class='encabezado-texto'>
+
+        <h1 class='titulo-institucion'>
+          Grupo de Investigación y Análisis Económico Financiero
+        </h1>
+
+        <p class='titulo-reporte'>
+
+          Reporte N.º
+
+          <strong>
+            {{reporte.numero}}/{{reporte.gestion}}
+          </strong>
+
+          – División Regional del
+
+          {{reporte.divisionRegional}}
+
+        </p>
+
+      </div>
+
+    </header>
+
+
+    <!-- ===========================================
+         CUERPO
+         =========================================== -->
+
+    <section class='cuerpo'>
+
+
+      <!-- =========================================
+           COLUMNA IZQUIERDA
+           ========================================= -->
+
+      <aside class='columna-izquierda'>
+
+        <div class='titulo-tipo'>
+          CONCLUSIÓN DE CASO
+        </div>
+
+
+        <!-- NOMBRE / FECHA -->
+
+        <div class='fila-doble'>
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.nombreCaso}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              Nombre del caso
+            </div>
+
+          </div>
+
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.fechaInicio}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              Fecha inicio
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CASOS -->
+
+        <div class='fila-doble'>
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.numeroCasoFiscalia}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              N.º caso Fiscalía
+            </div>
+
+          </div>
+
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.numeroCasoGiaef}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              N.º caso GIAEF
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- INVESTIGADORES -->
+
+        <div class='campo-completo'>
+
+          <div class='campo-valor'>
+
+            {{#each caso.investigadores}}
+
+              <div>
+                {{this}}
+              </div>
+
+            {{else}}
+
+              <div class='sin-registros'>
+                Sin investigadores asignados
+              </div>
+
+            {{/each}}
+
+          </div>
+
+          <div class='campo-etiqueta'>
+            Investigadores asignados al caso
+          </div>
+
+        </div>
+
+
+        <!-- FISCAL -->
+
+        <div class='campo-completo'>
+
+          <div class='campo-valor'>
+            {{caso.fiscalAsignado}}
+          </div>
+
+          <div class='campo-etiqueta'>
+            Fiscal asignado al caso
+          </div>
+
+        </div>
+
+
+        <!-- FORMA INICIO -->
+
+        <div class='campo-completo'>
+
+          <div class='campo-valor'>
+            {{caso.formaInicio}}
+          </div>
+
+          <div class='campo-etiqueta'>
+            Forma de inicio del caso
+          </div>
+
+        </div>
+
+
+        <!-- LUGAR -->
+
+        <div class='campo-completo'>
+
+          <div class='campo-valor'>
+            {{caso.lugarInvestigacion}}
+          </div>
+
+          <div class='campo-etiqueta'>
+            Lugar donde se investiga el caso
+          </div>
+
+        </div>
+
+
+        <!-- CONTROL -->
+
+        <div class='campo-completo'>
+
+          <div class='campo-valor'>
+            {{caso.controlJurisdiccional}}
+          </div>
+
+          <div class='campo-etiqueta'>
+            Control jurisdiccional
+          </div>
+
+        </div>
+
+
+        <!-- ETAPA -->
+
+        <div class='fila-doble'>
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.etapa}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              Etapa
+            </div>
+
+          </div>
+
+
+          <div class='campo'>
+
+            <div class='campo-valor'>
+              {{caso.investigacionFinancieraParalela}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              Inv. fin. paralela
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PERSONAS INVESTIGADAS -->
+
+        <section class='personas'>
+
+          <h2 class='titulo-seccion'>
+            Personas investigadas:
+          </h2>
+
+
+          {{#each personasInvestigadas}}
+
+            <div class='persona'>
+
+              <div class='persona-numero'>
+                {{numero}}.
+              </div>
+
+
+              <div>
+
+                {{nombre}}
+
+                {{#if documento}}
+
+                  <span class='persona-documento'>
+                    {{documento}}
+                  </span>
+
+                {{/if}}
+
+              </div>
+
+            </div>
+
+
+          {{else}}
+
+            <div class='sin-registros'>
+              Sin personas investigadas registradas.
+            </div>
+
+          {{/each}}
+
+        </section>
+
+
+        <!-- DELITO PRECEDENTE -->
+
+        <section class='seccion'>
+
+          <h2 class='titulo-seccion'>
+            Síntesis del caso delito precedente:
+          </h2>
+
+
+          <div class='dato'>
+            <strong>Caso:</strong>
+            {{delitoPrecedente.numeroCaso}}
+          </div>
+
+
+          <div class='dato'>
+            <strong>Fecha:</strong>
+            {{delitoPrecedente.fecha}}
+          </div>
+
+
+          <div class='dato'>
+            <strong>Unidad:</strong>
+            {{delitoPrecedente.unidad}}
+          </div>
+
+
+          <div class='dato'>
+            <strong>Lugar:</strong>
+            {{delitoPrecedente.lugar}}
+          </div>
+
+
+          <div class='dato'>
+            <strong>Aprehendidos:</strong>
+            {{delitoPrecedente.aprehendidos}}
+          </div>
+
+
+          {{#if delitoPrecedente.secuestros}}
+
+            <div class='dato'>
+
+              <strong>
+                Secuestros:
+              </strong>
+
+              {{delitoPrecedente.secuestros}}
+
+            </div>
+
+          {{/if}}
+
+        </section>
+
+      </aside>
+
+
+      <!-- =========================================
+           COLUMNA DERECHA
+           ========================================= -->
+
+      <article class='columna-derecha'>
+
+
+        <!-- CABECERA CONCLUSIÓN -->
+
+        <section class='cabecera-conclusion'>
+
+          <div class='conclusion-grid'>
+
+
+            <div class='campo'>
+
+              <div class='campo-valor'>
+                {{conclusion.tipoConclusion}}
+              </div>
+
+              <div class='campo-etiqueta'>
+                Conclusión
+              </div>
+
+            </div>
+
+
+            <div class='campo'>
+
+              <div class='campo-valor'>
+                {{conclusion.numero}}
+              </div>
+
+              <div class='campo-etiqueta'>
+                N.º conclusión
+              </div>
+
+            </div>
+
+
+            <div class='campo'>
+
+              <div class='campo-valor'>
+                {{conclusion.fecha}}
+              </div>
+
+              <div class='campo-etiqueta'>
+                Fecha
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- AFECTACIÓN -->
+
+          <div class='afectacion'>
+
+            <div class='afectacion-valor'>
+
+              <strong>
+                {{conclusion.afectacionEstimadaNumero}}
+              </strong>
+
+
+              {{#if conclusion.afectacionEstimadaLiteral}}
+
+                <br />
+
+                (
+                {{conclusion.afectacionEstimadaLiteral}}
+                )
+
+              {{/if}}
+
+            </div>
+
+
+            <div class='afectacion-etiqueta'>
+              Afectación estimada
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- CONCLUSIÓN -->
+
+        <section class='contenido-conclusion'>
+
+          <h2 class='titulo-seccion'>
+            Conclusión del caso:
+          </h2>
+
+
+          <p class='texto'>
+            {{conclusion.descripcion}}
+          </p>
+
+        </section>
+
+
+        <!-- RESULTADO FINAL -->
+
+        <section class='resultado'>
+
+          <h2 class='titulo-seccion'>
+            Resultado final:
+          </h2>
+
+
+          <div class='resultado-box'>
+            {{conclusion.resultadoFinal}}
+          </div>
+
+        </section>
+
+
+        <!-- BIENES -->
+
+        <section class='bienes'>
+
+          <h2 class='titulo-seccion'>
+            Bienes con afectación estimada del caso:
+          </h2>
+
+
+          <ol class='lista-bienes'>
+
+            {{#each bienesAfectados}}
+
+              <li>
+
+                <div class='bien-fila'>
+
+                  <span class='bien-descripcion'>
+                    {{descripcion}}
+                  </span>
+
+
+                  <span class='bien-valor'>
+                    {{valor}}
+                  </span>
+
+                </div>
+
+              </li>
+
+
+            {{else}}
+
+              <li class='sin-registros'>
+                Sin bienes registrados.
+              </li>
+
+            {{/each}}
+
+          </ol>
+
+        </section>
+
+
+        <!-- FOTOGRAFÍAS -->
+
+        <section class='muestrario'>
+
+          <h2 class='titulo-seccion'>
+            Muestrario fotográfico del caso:
+          </h2>
+
+
+          <div class='fotografias'>
+
+
+            {{#each fotografias}}
+
+              <div class='fotografia'>
+
+
+                <div class='numero-fotografia'>
+                  {{numero}}
+                </div>
+
+
+                {{#if imagen}}
+
+                  <img
+                    src='{{{imagen}}}'
+                    alt='Fotografía {{numero}}'
+                  />
+
+                {{else}}
+
+                  <div class='foto-vacia'>
+                    Sin fotografía
+                  </div>
+
+                {{/if}}
+
+              </div>
+
+
+            {{else}}
+
+              <div class='sin-registros'>
+                No existen fotografías registradas.
+              </div>
+
+            {{/each}}
+
+          </div>
+
+        </section>
+
+
+        <!-- PIE -->
+
+        <footer class='pie'>
+
+          <div class='pie-linea'></div>
+
+          <div class='pie-texto'>
+            Fin de la transmisión
+          </div>
+
+        </footer>
+
+      </article>
+
+    </section>
+
+  </main>
+
+</body>
+
+</html>

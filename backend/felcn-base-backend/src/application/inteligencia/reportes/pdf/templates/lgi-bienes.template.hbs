@@ -355,6 +355,88 @@
         white-space: nowrap;
       }
 
+
+      /* DETALLE DEL BIEN */
+
+      .detalle-bien {
+        min-height: 35mm;
+        padding: 3mm 2mm 2mm;
+        border-bottom: 1px solid var(--verde);
+      }
+
+      .descripcion-bien {
+        font-size: 9.2px;
+        line-height: 1.3;
+      }
+
+      /* INFORMACIÓN DEL BIEN */
+
+      .informacion-bien {
+        padding: 3mm 2mm;
+        border-bottom: 1px solid var(--verde);
+      }
+
+      .detalle-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2mm 4mm;
+      }
+
+      .detalle-item {
+        min-width: 0;
+        padding-bottom: 1mm;
+        border-bottom: 1px solid #dddddd;
+        font-size: 8.8px;
+        line-height: 1.25;
+      }
+
+      .detalle-completo {
+        grid-column: 1 / -1;
+      }
+
+      .detalle-label {
+        margin-right: 1mm;
+        color: var(--verde-oscuro);
+        font-weight: 700;
+      }
+
+      /* SITUACIÓN JURÍDICA */
+
+      .situacion-juridica {
+        padding: 3mm 2mm;
+      }
+
+      .situacion-item {
+        margin-bottom: 2.5mm;
+        padding: 2mm;
+        background: var(--verde-fondo);
+        border-left: 2px solid var(--verde);
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .situacion-cabecera {
+        display: flex;
+        justify-content: space-between;
+        gap: 3mm;
+        margin-bottom: 1mm;
+        color: var(--verde-oscuro);
+        font-size: 9px;
+      }
+
+      .situacion-detalle {
+        margin-bottom: 1mm;
+        font-size: 8.7px;
+        line-height: 1.25;
+        text-align: justify;
+      }
+
+      .situacion-dato {
+        margin-top: 0.7mm;
+        font-size: 8.5px;
+        line-height: 1.2;
+      }
+
       /* FOTOGRAFÍAS */
 
       .muestrario {
@@ -470,7 +552,7 @@
       </header>
 
       <div class='titulo-accion'>
-        {{accion.tipo}}
+        BIENES SECUESTRADO
       </div>
 
       <section class='cuerpo'>
@@ -773,33 +855,33 @@
         <!-- COLUMNA DERECHA -->
 
         <article class='columna-derecha'>
+
+          <!-- CABECERA DEL BIEN -->
+
           <section class='cabecera-novedad'>
             <div class='novedad-grid'>
               <div class='campo'>
                 <div class='campo-valor'>
-                  {{novedad.tipo}}
+                  {{bien.tipoBien}}
                 </div>
-
                 <div class='campo-etiqueta'>
-                  Novedad
+                  Tipo de bien
                 </div>
               </div>
 
               <div class='campo'>
                 <div class='campo-valor'>
-                  {{novedad.numero}}
+                  {{bien.numero}}
                 </div>
-
                 <div class='campo-etiqueta'>
-                  N.º novedad
+                  N.º bien
                 </div>
               </div>
 
               <div class='campo'>
                 <div class='campo-valor'>
-                  {{novedad.fecha}}
+                  {{bien.fechaRegistro}}
                 </div>
-
                 <div class='campo-etiqueta'>
                   Fecha
                 </div>
@@ -809,11 +891,11 @@
             <div class='afectacion'>
               <div class='afectacion-valor'>
                 <strong>
-                  {{novedad.afectacionEstimadaNumero}}
+                  {{bien.valorEstimado}}
                 </strong>
 
-                {{#if novedad.afectacionEstimadaLiteral}}
-                  ({{novedad.afectacionEstimadaLiteral}})
+                {{#if bien.valorLiteral}}
+                  ({{bien.valorLiteral}})
                 {{/if}}
               </div>
 
@@ -823,51 +905,158 @@
             </div>
           </section>
 
-          <!-- SÍNTESIS DE NOVEDAD -->
+          <!-- DESCRIPCIÓN DEL BIEN -->
 
-          <section class='sintesis-novedad'>
+          <section class='detalle-bien'>
             <h2 class='titulo-seccion'>
-              Síntesis de la novedad:
+              Descripción del bien:
             </h2>
 
-            <p class='texto'>
-              {{novedad.sintesis}}
+            <p class='texto descripcion-bien'>
+              {{bien.descripcion}}
             </p>
           </section>
 
-          <!-- BIENES -->
+          <!-- INFORMACIÓN DEL BIEN -->
 
-          <section class='bienes'>
+          <section class='informacion-bien'>
             <h2 class='titulo-seccion'>
-              Desglose de bienes con afectación estimada del caso:
+              Información del bien:
             </h2>
 
-            <ol class='lista-bienes'>
-              {{#each bienesAfectados}}
-                <li>
-                  <div class='bien-fila'>
-                    <span class='bien-descripcion'>
-                      {{descripcion}}
-                    </span>
+            <div class='detalle-grid'>
+              {{#if bien.clase}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Clase:</span>
+                  <span>{{bien.clase}}</span>
+                </div>
+              {{/if}}
 
-                    <span class='bien-valor'>
-                      {{valor}}
+              {{#if bien.tipo}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Tipo:</span>
+                  <span>{{bien.tipo}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.marca}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Marca:</span>
+                  <span>{{bien.marca}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.modelo}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Modelo:</span>
+                  <span>{{bien.modelo}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.color}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Color:</span>
+                  <span>{{bien.color}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.placa}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Placa:</span>
+                  <span>{{bien.placa}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.chasis}}
+                <div class='detalle-item detalle-completo'>
+                  <span class='detalle-label'>Chasis:</span>
+                  <span>{{bien.chasis}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.motor}}
+                <div class='detalle-item detalle-completo'>
+                  <span class='detalle-label'>Motor:</span>
+                  <span>{{bien.motor}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.ubicacion}}
+                <div class='detalle-item detalle-completo'>
+                  <span class='detalle-label'>Ubicación:</span>
+                  <span>{{bien.ubicacion}}</span>
+                </div>
+              {{/if}}
+
+              {{#if bien.superficie}}
+                <div class='detalle-item'>
+                  <span class='detalle-label'>Superficie:</span>
+                  <span>{{bien.superficie}}</span>
+                </div>
+              {{/if}}
+            </div>
+          </section>
+
+          <!-- SITUACIÓN JURÍDICA DEL BIEN -->
+
+          <section class='situacion-juridica'>
+            <h2 class='titulo-seccion'>
+              Situación jurídica del bien:
+            </h2>
+
+            {{#each situacionesLegales}}
+              <div class='situacion-item'>
+                <div class='situacion-cabecera'>
+                  <strong>
+                    {{situacion}}
+                  </strong>
+
+                  {{#if fecha}}
+                    <span>
+                      {{fecha}}
                     </span>
+                  {{/if}}
+                </div>
+
+                {{#if detalle}}
+                  <div class='situacion-detalle'>
+                    {{detalle}}
                   </div>
-                </li>
-              {{else}}
-                <li class='sin-registros'>
-                  Sin bienes registrados.
-                </li>
-              {{/each}}
-            </ol>
+                {{/if}}
+
+                {{#if autoridad}}
+                  <div class='situacion-dato'>
+                    <strong>Autoridad:</strong>
+                    {{autoridad}}
+                  </div>
+                {{/if}}
+
+                {{#if responsable}}
+                  <div class='situacion-dato'>
+                    <strong>Responsable:</strong>
+                    {{responsable}}
+                  </div>
+                {{/if}}
+
+                {{#if institucion}}
+                  <div class='situacion-dato'>
+                    <strong>Institución:</strong>
+                    {{institucion}}
+                  </div>
+                {{/if}}
+              </div>
+            {{else}}
+              <div class='sin-registros'>
+                Sin situaciones jurídicas registradas.
+              </div>
+            {{/each}}
           </section>
 
           <!-- MUESTRARIO FOTOGRÁFICO -->
 
           <section class='muestrario'>
             <h2 class='titulo-seccion'>
-              Muestrario fotográfico del caso:
+              Muestrario fotográfico del bien:
             </h2>
 
             <div class='fotografias'>
@@ -878,7 +1067,10 @@
                   </div>
 
                   {{#if imagen}}
-                    <img src='{{{imagen}}}' alt='Fotografía {{numero}}' />
+                    <img
+                      src='{{{imagen}}}'
+                      alt='Fotografía {{numero}}'
+                    />
                   {{else}}
                     <div class='foto-vacia'>
                       Sin fotografía
