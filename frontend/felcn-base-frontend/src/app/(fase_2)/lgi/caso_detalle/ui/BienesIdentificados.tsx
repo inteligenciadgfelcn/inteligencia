@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import type { Map as LeafletMap } from 'leaflet'
 
@@ -10,22 +11,24 @@ import { Select } from '@/components/ui/Select'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import type { Column } from '@/components/datatable/VristoDataTable'
 import IconPlus from '@/components/Icon/IconPlus'
-import IconEdit from '@/components/Icon/IconEdit'
-import IconTrash from '@/components/Icon/IconTrash'
 import IconEye from '@/components/Icon/IconEye'
+import IconTrash from '@/components/Icon/IconTrash'
 
+import { BienesApi } from '../api/bienes.api'
+import { ActuacionesApi } from '../api/actuaciones.api'
+import type { ActuacionRow } from '../types/actuaciones.types'
 import type {
-  BienIdentificado,
+  BienCatalogo,
+  BienSecuestradoRow,
+  CalidadBien,
+  CaracteristicaCatalogo,
   ClaseBien,
   TipoBien,
+  TipoSituacionBien,
+  TipoVinculo,
+  Vinculo,
 } from '../types/bienes.types'
-import {
-  CATALOGO_BIENES,
-  TIPOS_VINCULO,
-  SITUACIONES_LEGALES,
-  CARACTERISTICAS_POR_BIEN,
-  VALORES_POR_DEFECTO,
-} from '../types/bienes.types'
+import { VALORES_POR_DEFECTO } from '../types/bienes.types'
 import { formatFecha } from '../../utils/fechas'
 
 const MapaConMarcador = dynamic(
@@ -37,8 +40,6 @@ type Props = {
   casoId: number
 }
 
-let nextId = 100
-
 function formatMoney(valor: number): string {
   return valor.toLocaleString('es-BO', {
     minimumFractionDigits: 2,
@@ -46,94 +47,87 @@ function formatMoney(valor: number): string {
   })
 }
 
-const initialBien: Omit<BienIdentificado, 'id' | 'casosId'> = {
-  ...VALORES_POR_DEFECTO,
-}
+type FormState = typeof VALORES_POR_DEFECTO
 
 export function BienesIdentificados({ casoId }: Props) {
-  const [bienes, setBienes] = useState<BienIdentificado[]>(() => [
-    {
-      id: 1,
-      casosId: casoId,
-      bienId: 1,
-      claseId: 11,
-      tipoId: 111,
-      caracteristicas: [
-        { id: 'c1', nombreCaracteristica: 'Color', descripcion: 'Blanco' },
-        { id: 'c2', nombreCaracteristica: 'Metros cuadrados', descripcion: '120' },
-      ],
-      direccion: 'Av. Libertador #1234, Zona Sur',
-      latitud: -17.413,
-      longitud: -66.165,
-      tipoVinculo: 'Titular',
-      nombre: 'Juan Pérez',
-      ci: '1234567',
-      nombreDepositario: 'María López',
-      ciDepositario: '7654321',
-      situacionLegal: 'Secuestrado',
-      fechaSituacionLegal: '2026-03-15',
-      cuantiaPresunta: 250000,
-      valorComercial: 280000,
-      pericia: true,
-      resultadoPericia: 'Inmueble apto para secuestro, sin gravámenes',
-      autoridadDispuso: 'Fiscalía Deptal. de Cochabamba',
-      fechaHoraIng: '2026-03-15T10:30:00',
-      usuario: 'admin',
-    },
-    {
-      id: 2,
-      casosId: casoId,
-      bienId: 2,
-      claseId: 21,
-      tipoId: 211,
-      caracteristicas: [
-        { id: 'c3', nombreCaracteristica: 'Marca', descripcion: 'Toyota' },
-        { id: 'c4', nombreCaracteristica: 'Modelo', descripcion: 'Hilux' },
-        { id: 'c5', nombreCaracteristica: 'Año', descripcion: '2022' },
-        { id: 'c6', nombreCaracteristica: 'Nro placa', descripcion: '1234ABC' },
-      ],
-      direccion: 'Calle Bolívar #567',
-      latitud: -17.399,
-      longitud: -66.157,
-      tipoVinculo: 'Poseedor',
-      nombre: 'Carlos Mendoza',
-      ci: '9876543',
-      nombreDepositario: '',
-      ciDepositario: '',
-      situacionLegal: 'Incautado',
-      fechaSituacionLegal: '2026-04-20',
-      cuantiaPresunta: 180000,
-      valorComercial: 195000,
-      pericia: false,
-      resultadoPericia: '',
-      autoridadDispuso: 'Fiscalía del Distrito 8',
-      fechaHoraIng: '2026-04-20T14:15:00',
-      usuario: 'admin',
-    },
-  ])
-
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
-  const [bienEditando, setBienEditando] = useState<BienIdentificado | null>(null)
-  const [bienDetalle, setBienDetalle] = useState<BienIdentificado | null>(null)
-  const [bienEliminar, setBienEliminar] = useState<BienIdentificado | null>(null)
+  const [bienDetalle, setBienDetalle] = useState<BienSecuestradoRow | null>(null)
+  const [bienEliminar, setBienEliminar] = useState<BienSecuestradoRow | null>(null)
   const [mapaOpen, setMapaOpen] = useState(false)
   const [coordenadas, setCoordenadas] = useState<[number, number] | null>(null)
+  const [guardando, setGuardando] = useState(false)
+  const [mensaje, setMensaje] = useState<string | null>(null)
 
-  const [form, setForm] = useState<Omit<BienIdentificado, 'id' | 'casosId'>>(initialBien)
+  const [opId, setOpId] = useState<number | null>(null)
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+
+  const [form, setForm] = useState<FormState>({ ...VALORES_POR_DEFECTO })
 
   const mapRef = useRef<LeafletMap | null>(null)
 
-  const clases: ClaseBien[] = form.bienId
-    ? CATALOGO_BIENES.find((b) => b.id === form.bienId)?.clases ?? []
-    : []
+  const [actuaciones, setActuaciones] = useState<ActuacionRow[]>([])
 
-  const tipos: TipoBien[] = form.claseId
-    ? clases.find((c) => c.id === form.claseId)?.tipos ?? []
-    : []
+  useEffect(() => {
+    let activo = true
+    ActuacionesApi.listarActuaciones(casoId, { pagina: 1, limite: 50 })
+      .then((res) => {
+        if (activo) setActuaciones(res.filas ?? [])
+      })
+      .catch(() => undefined)
+    return () => {
+      activo = false
+    }
+  }, [casoId])
 
-  const nombresCaracteristicas = form.bienId
-    ? CARACTERISTICAS_POR_BIEN[form.bienId] ?? CARACTERISTICAS_POR_BIEN[13]
-    : []
+  const { data: bienesData, isLoading: bienesLoading } = useQuery({
+    queryKey: ['lgi-bienes', opId, page, limit],
+    enabled: Boolean(opId),
+    queryFn: () =>
+      BienesApi.listarPorOperativo(opId!, {
+        pagina: page,
+        limite: limit,
+      }),
+  })
+
+  const { data: bienesCatalogo = [] } = useQuery<BienCatalogo[]>({
+    queryKey: ['lgi-bienes', 'catalogo-bienes'],
+    queryFn: () => BienesApi.listarBienes(),
+  })
+  const { data: vinculos = [] } = useQuery<Vinculo[]>({
+    queryKey: ['lgi-bienes', 'vinculos'],
+    queryFn: () => BienesApi.listarVinculos(),
+  })
+  const { data: tiposSituacion = [] } = useQuery<TipoSituacionBien[]>({
+    queryKey: ['lgi-bienes', 'tipos-situacion'],
+    queryFn: () => BienesApi.listarTiposSituacionBien(),
+  })
+  const { data: calidades = [] } = useQuery<CalidadBien[]>({
+    queryKey: ['lgi-bienes', 'calidades'],
+    queryFn: () => BienesApi.listarSituacionesLegalesBien(),
+  })
+
+  const { data: clases = [] } = useQuery<ClaseBien[]>({
+    queryKey: ['lgi-bienes', 'clases', form.bienId],
+    enabled: Boolean(form.bienId),
+    queryFn: () => BienesApi.listarClasesBien(form.bienId),
+  })
+  const { data: tipos = [] } = useQuery<TipoBien[]>({
+    queryKey: ['lgi-bienes', 'tipos', form.claseId],
+    enabled: Boolean(form.claseId),
+    queryFn: () => BienesApi.listarTiposClase(form.claseId),
+  })
+  const { data: caracteristicasCatalogo = [] } =
+    useQuery<CaracteristicaCatalogo[]>({
+      queryKey: ['lgi-bienes', 'caracteristicas', form.claseId],
+      enabled: Boolean(form.claseId),
+      queryFn: () => BienesApi.listarCaracteristicasClase(form.claseId),
+    })
+  const { data: tiposVinculo = [] } = useQuery<TipoVinculo[]>({
+    queryKey: ['lgi-bienes', 'tipos-vinculo', form.idVinculo],
+    enabled: Boolean(form.idVinculo),
+    queryFn: () => BienesApi.listarTiposVinculo(form.idVinculo),
+  })
 
   useEffect(() => {
     if (coordenadas) {
@@ -145,79 +139,18 @@ export function BienesIdentificados({ casoId }: Props) {
     }
   }, [coordenadas])
 
-  const setField = <K extends keyof typeof form>(
+  const setField = <K extends keyof FormState>(
     key: K,
-    value: (typeof form)[K]
+    value: FormState[K]
   ) => {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const abrirCrear = () => {
-    setBienEditando(null)
-    setForm({ ...initialBien, caracteristicas: [] })
+    setForm({ ...VALORES_POR_DEFECTO })
     setCoordenadas(null)
+    setMensaje(null)
     setVista('formulario')
-  }
-
-  const abrirEditar = (bien: BienIdentificado) => {
-    setBienEditando(bien)
-    setForm({
-      bienId: bien.bienId,
-      claseId: bien.claseId,
-      tipoId: bien.tipoId,
-      caracteristicas: bien.caracteristicas.map((c) => ({ ...c })),
-      direccion: bien.direccion,
-      latitud: bien.latitud,
-      longitud: bien.longitud,
-      tipoVinculo: bien.tipoVinculo,
-      nombre: bien.nombre,
-      ci: bien.ci,
-      nombreDepositario: bien.nombreDepositario,
-      ciDepositario: bien.ciDepositario,
-      situacionLegal: bien.situacionLegal,
-      fechaSituacionLegal: bien.fechaSituacionLegal,
-      cuantiaPresunta: bien.cuantiaPresunta,
-      valorComercial: bien.valorComercial,
-      pericia: bien.pericia,
-      resultadoPericia: bien.resultadoPericia,
-      autoridadDispuso: bien.autoridadDispuso,
-      fechaHoraIng: bien.fechaHoraIng,
-      usuario: bien.usuario,
-    })
-    setCoordenadas(
-      bien.latitud != null && bien.longitud != null
-        ? [bien.latitud, bien.longitud]
-        : null
-    )
-    setVista('formulario')
-  }
-
-  const eliminarBien = (bien: BienIdentificado) => {
-    setBienes((prev) => prev.filter((b) => b.id !== bien.id))
-    setBienEliminar(null)
-  }
-
-  const guardar = () => {
-    const now = new Date().toISOString()
-    if (bienEditando) {
-      setBienes((prev) =>
-        prev.map((b) =>
-          b.id === bienEditando.id
-            ? { ...b, ...form, fechaActualizacion: now }
-            : b
-        )
-      )
-    } else {
-      const nuevo: BienIdentificado = {
-        id: nextId++,
-        casosId: casoId,
-        ...form,
-        fechaHoraIng: now,
-        usuario: '_usuario_actual',
-      }
-      setBienes((prev) => [...prev, nuevo])
-    }
-    setVista('lista')
   }
 
   const abrirMapa = () => {
@@ -237,17 +170,16 @@ export function BienesIdentificados({ casoId }: Props) {
   }
 
   const agregarCaracteristica = () => {
-    const nombresUsados = form.caracteristicas.map((c) => c.nombreCaracteristica)
-    const disponible = nombresCaracteristicas.find(
-      (n) => !nombresUsados.includes(n)
+    const usados = form.caracteristicas.map((c) => c.catcaracId)
+    const disponible = caracteristicasCatalogo.find(
+      (c) => !usados.includes(c.catcaracId)
     )
     setForm((prev) => ({
       ...prev,
       caracteristicas: [
         ...prev.caracteristicas,
         {
-          id: `new_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          nombreCaracteristica: disponible ?? nombresCaracteristicas[0] ?? '',
+          catcaracId: disponible?.catcaracId ?? 0,
           descripcion: '',
         },
       ],
@@ -255,91 +187,214 @@ export function BienesIdentificados({ casoId }: Props) {
   }
 
   const actualizarCaracteristica = (
-    id: string,
-    campo: 'nombreCaracteristica' | 'descripcion',
-    valor: string
+    index: number,
+    campo: 'catcaracId' | 'descripcion',
+    valor: string | number
   ) => {
     setForm((prev) => ({
       ...prev,
-      caracteristicas: prev.caracteristicas.map((c) =>
-        c.id === id ? { ...c, [campo]: valor } : c
+      caracteristicas: prev.caracteristicas.map((c, i) =>
+        i === index ? { ...c, [campo]: valor } : c
       ),
     }))
   }
 
-  const eliminarCaracteristica = (id: string) => {
+  const eliminarCaracteristica = (index: number) => {
     setForm((prev) => ({
       ...prev,
-      caracteristicas: prev.caracteristicas.filter((c) => c.id !== id),
+      caracteristicas: prev.caracteristicas.filter((_, i) => i !== index),
     }))
   }
 
+  const agregarFotografias = (files: FileList | null) => {
+    if (!files) return
+    const nuevos = Array.from(files)
+    setForm((prev) => ({
+      ...prev,
+      fotografias: [...prev.fotografias, ...nuevos].slice(0, 20),
+    }))
+  }
+
+  const quitarFotografia = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      fotografias: prev.fotografias.filter((_, i) => i !== index),
+    }))
+  }
+
+  const situacionValida = () => {
+    const tipo = form.idTipoSituacionLegalBien
+    if (tipo === 1) return Boolean(form.fechaActaSecuestro)
+    if (tipo === 2) return Boolean(form.fechaResolucion)
+    if (tipo === 3) return Boolean(form.fechaSenjud)
+    if (tipo === 4 || tipo === 5)
+      return Boolean(
+        form.fechaRequerimiento &&
+          form.responsableEntrega &&
+          form.responsableRecepcion &&
+          form.institucion
+      )
+    return false
+  }
+
   const isFormValid =
+    Boolean(opId) &&
     form.bienId > 0 &&
     form.claseId > 0 &&
     form.tipoId > 0 &&
     form.direccion.trim() !== '' &&
     form.latitud != null &&
     form.longitud != null &&
-    form.tipoVinculo !== '' &&
-    form.nombre.trim() !== '' &&
-    form.ci.trim() !== '' &&
-    form.situacionLegal !== '' &&
-    form.fechaSituacionLegal !== '' &&
-    form.autoridadDispuso.trim() !== '' &&
-    (!form.pericia || form.resultadoPericia.trim() !== '')
+    form.idVinculo > 0 &&
+    form.idTipoVinculo > 0 &&
+    form.nombreCompletoVinculo.trim() !== '' &&
+    form.cedulaIdentidadVinculo.trim() !== '' &&
+    form.costoAprox >= 0 &&
+    form.idTipoSituacionLegalBien > 0 &&
+    situacionValida() &&
+    (!form.pericia || form.resultadoPericia.trim() !== '') &&
+    form.caracteristicas.every(
+      (c) => c.catcaracId > 0 && c.descripcion.trim() !== ''
+    )
 
-  const columns: Column<BienIdentificado>[] = [
+  const construirDatosSituacion = () => {
+    const tipo = form.idTipoSituacionLegalBien
+    if (tipo === 1) {
+      return {
+        fiscal: form.fiscal || null,
+        fechaActaSecuestro: form.fechaActaSecuestro,
+        investigador: form.investigador || null,
+      }
+    }
+    if (tipo === 2) {
+      return {
+        nroResol: form.nroResol || null,
+        fechaResolucion: form.fechaResolucion,
+        autoridad: form.autoridad || null,
+      }
+    }
+    if (tipo === 3) {
+      return {
+        numSentJud: form.numSentJud || null,
+        fechaSenjud: form.fechaSenjud,
+        autoridad: form.autoridad || null,
+      }
+    }
+    return {
+      fechaRequerimiento: form.fechaRequerimiento,
+      fiscalRequirente: form.fiscalRequirente || null,
+      calbId: form.calbId || null,
+      fechaEntrega: form.fechaEntrega || null,
+      responsableEntrega: form.responsableEntrega,
+      responsableRecepcion: form.responsableRecepcion,
+      institucion: form.institucion,
+      ubicacion: form.ubicacion || null,
+    }
+  }
+
+  const onSubmit = async () => {
+    if (!isFormValid || !opId) return
+    setGuardando(true)
+    setMensaje(null)
+    try {
+      const fd = new FormData()
+      fd.append('opId', String(opId))
+      fd.append('cattipoId', String(form.tipoId))
+      fd.append('costoAprox', String(form.costoAprox))
+      if (form.costoCuant > 0) fd.append('costoCuant', String(form.costoCuant))
+      if (form.latitud != null) fd.append('latitud', String(form.latitud))
+      if (form.longitud != null) fd.append('longitud', String(form.longitud))
+      fd.append('lugarSecuestro', form.direccion)
+      fd.append('idTipoVinculo', String(form.idTipoVinculo))
+      fd.append('nombreCompletoVinculo', form.nombreCompletoVinculo)
+      fd.append('cedulaIdentidadVinculo', form.cedulaIdentidadVinculo)
+      fd.append('pericia', String(form.pericia))
+      if (form.resultadoPericia) fd.append('resultadoPericia', form.resultadoPericia)
+      if (form.nombreDepositario) fd.append('nombreDepositario', form.nombreDepositario)
+      if (form.ciDepositario) fd.append('ciDepositario', form.ciDepositario)
+      form.fotografias.forEach((foto) => fd.append('fotografias', foto))
+
+      const bien = await BienesApi.crearBien(fd)
+      const itembiensecId = Number(
+        bien?.itembiensecId ?? (bien as Record<string, unknown>)?.casosId
+      )
+
+      await BienesApi.registrarSituacionJuridica({
+        itembiensecId,
+        idTipoSituacionLegalBien: form.idTipoSituacionLegalBien,
+        datos: construirDatosSituacion(),
+      })
+
+      for (const caracteristica of form.caracteristicas) {
+        await BienesApi.registrarCaracteristica({
+          itembiensecId,
+          catcaracId: caracteristica.catcaracId,
+          descripcion: caracteristica.descripcion,
+        })
+      }
+
+      setVista('lista')
+      setMensaje('Bien registrado correctamente')
+      setPage(1)
+    } catch {
+      setMensaje('Error al registrar el bien. Intente nuevamente.')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  const confirmarEliminar = async () => {
+    if (!bienEliminar) return
+    try {
+      await BienesApi.eliminarBien(Number(bienEliminar.itembiensecId))
+      setBienEliminar(null)
+      setMensaje('Bien eliminado correctamente')
+    } catch {
+      setMensaje('Error al eliminar el bien.')
+    }
+  }
+
+  const option = (value: string | number, label: string) => ({
+    value: String(value),
+    label,
+  })
+
+  const columns: Column<BienSecuestradoRow>[] = [
     {
-      accessor: 'bienId',
-      title: 'Bien',
-      render: (row) =>
-        CATALOGO_BIENES.find((b) => b.id === row.bienId)?.descripcion ?? '-',
-    },
-    {
-      accessor: 'claseId',
-      title: 'Clase',
-      render: (row) => {
-        const bien = CATALOGO_BIENES.find((b) => b.id === row.bienId)
-        return bien?.clases.find((c) => c.id === row.claseId)?.descripcion ?? '-'
-      },
-    },
-    {
-      accessor: 'tipoId',
+      accessor: 'cattipoId',
       title: 'Tipo',
-      render: (row) => {
-        const bien = CATALOGO_BIENES.find((b) => b.id === row.bienId)
-        const clase = bien?.clases.find((c) => c.id === row.claseId)
-        return clase?.tipos.find((t) => t.id === row.tipoId)?.descripcion ?? '-'
-      },
+      render: (row) =>
+        tipos.find((t) => String(t.cattipoId) === String(row.cattipoId))
+          ?.descripcion ?? String(row.cattipoId),
     },
-    { accessor: 'direccion', title: 'Dirección' },
+    { accessor: 'lugarSecuestro', title: 'Lugar' },
     {
-      accessor: 'situacionLegal',
-      title: 'Sit. Legal',
-      render: (row) => (
-        <span
-          className={`badge ${
-            row.situacionLegal === 'Secuestrado'
-              ? 'badge-outline-success'
-              : row.situacionLegal === 'Incautado'
-                ? 'badge-outline-warning'
-                : 'badge-outline-info'
-          }`}
-        >
-          {row.situacionLegal}
-        </span>
-      ),
+      accessor: 'idTipoVinculo',
+      title: 'Vínculo',
+      render: (row) => row.tipoVinculo?.descripcion ?? '-',
     },
-    { accessor: 'tipoVinculo', title: 'Vínculo' },
-    { accessor: 'nombre', title: 'Nombre' },
+    { accessor: 'nombreCompletoVinculo', title: 'Vinculado' },
+    {
+      accessor: 'costoAprox',
+      title: 'Costo aprox.',
+      render: (row) => formatMoney(row.costoAprox ?? 0),
+    },
     {
       accessor: 'pericia',
       title: 'Pericia',
       render: (row) => (row.pericia ? 'Sí' : 'No'),
     },
     {
-      accessor: 'id',
+      accessor: 'ultimaSituacionJuridica',
+      title: 'Situación',
+      render: (row) =>
+        (
+          (row.ultimaSituacionJuridica as { descripcionTipo?: string } | null)
+            ?.descripcionTipo ?? '-'
+        ),
+    },
+    {
+      accessor: 'itembiensecId',
       title: 'Acciones',
       render: (row) => (
         <div className="flex gap-1">
@@ -352,16 +407,6 @@ export function BienesIdentificados({ casoId }: Props) {
             onClick={() => setBienDetalle(row)}
           >
             <IconEye className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline-secondary"
-            size="sm"
-            className="!p-1.5"
-            title="Editar"
-            onClick={() => abrirEditar(row)}
-          >
-            <IconEdit className="h-4 w-4" />
           </Button>
           <Button
             type="button"
@@ -390,8 +435,15 @@ export function BienesIdentificados({ casoId }: Props) {
             ← Volver
           </Button>
           <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-            {bienEditando ? 'Editar Bien Identificado' : 'Registrar Bien Identificado'}
+            Registrar Bien Identificado
           </h6>
+        </div>
+
+        <div className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          <span className="font-semibold">Actuación seleccionada: </span>
+          {actuaciones.find((a) => String(a.opId) === String(opId))?.opNrooper ??
+            'Sin seleccionar'}
+          {opId ? ` (opId ${opId})` : ''}
         </div>
 
         <div className="panel space-y-6 p-5">
@@ -402,19 +454,16 @@ export function BienesIdentificados({ casoId }: Props) {
                   Bien *
                 </label>
                 <Select
-                  options={CATALOGO_BIENES.map((b) => ({
-                    value: String(b.id),
-                    label: b.descripcion,
-                  }))}
+                  options={bienesCatalogo.map((b) => option(b.bienId, b.descripcion))}
                   placeholder="Seleccione bien"
                   value={form.bienId ? String(form.bienId) : ''}
                   onChange={(e) => {
-                    const val = Number(e.target.value)
                     setForm((prev) => ({
                       ...prev,
-                      bienId: val,
+                      bienId: Number(e.target.value),
                       claseId: 0,
                       tipoId: 0,
+                      caracteristicas: [],
                     }))
                   }}
                 />
@@ -424,16 +473,17 @@ export function BienesIdentificados({ casoId }: Props) {
                   Clase *
                 </label>
                 <Select
-                  options={clases.map((c) => ({
-                    value: String(c.id),
-                    label: c.descripcion,
-                  }))}
+                  options={clases.map((c) => option(c.catClasId, c.descripcion))}
                   placeholder="Seleccione clase"
                   value={form.claseId ? String(form.claseId) : ''}
                   disabled={!form.bienId}
                   onChange={(e) => {
-                    const val = Number(e.target.value)
-                    setForm((prev) => ({ ...prev, claseId: val, tipoId: 0 }))
+                    setForm((prev) => ({
+                      ...prev,
+                      claseId: Number(e.target.value),
+                      tipoId: 0,
+                      caracteristicas: [],
+                    }))
                   }}
                 />
               </div>
@@ -442,10 +492,7 @@ export function BienesIdentificados({ casoId }: Props) {
                   Tipo *
                 </label>
                 <Select
-                  options={tipos.map((t) => ({
-                    value: String(t.id),
-                    label: t.descripcion,
-                  }))}
+                  options={tipos.map((t) => option(t.cattipoId, t.descripcion))}
                   placeholder="Seleccione tipo"
                   value={form.tipoId ? String(form.tipoId) : ''}
                   disabled={!form.claseId}
@@ -461,7 +508,7 @@ export function BienesIdentificados({ casoId }: Props) {
             <Input
               value={form.direccion}
               onChange={(e) => setField('direccion', e.target.value)}
-              placeholder="Dirección completa del bien"
+              placeholder="Lugar / dirección del bien"
             />
           </Fieldset>
 
@@ -502,50 +549,70 @@ export function BienesIdentificados({ casoId }: Props) {
                 📍 Seleccionar en mapa
               </Button>
             </div>
-            {form.latitud != null && form.longitud != null && (
-              <p className="mt-2 text-xs text-gray-500">
-                Coordenadas seleccionadas: {form.latitud.toFixed(6)}, {form.longitud.toFixed(6)}
-              </p>
-            )}
           </Fieldset>
 
-          <Fieldset title="Datos del Vínculo">
+          <Fieldset title="Vínculo">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Tipo Vínculo *
+                  Vínculo *
                 </label>
                 <Select
-                  options={TIPOS_VINCULO.map((v) => ({ value: v, label: v }))}
+                  options={vinculos.map((v) => option(v.idVinculo, v.descripcion))}
                   placeholder="Seleccione vínculo"
-                  value={form.tipoVinculo}
-                  onChange={(e) => setField('tipoVinculo', e.target.value)}
+                  value={form.idVinculo ? String(form.idVinculo) : ''}
+                  onChange={(e) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      idVinculo: Number(e.target.value),
+                      idTipoVinculo: 0,
+                    }))
+                  }}
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Nombre *
+                  Tipo de vínculo *
+                </label>
+                <Select
+                  options={tiposVinculo.map((t) => option(t.idTipoVinculo, t.descripcion))}
+                  placeholder="Seleccione tipo"
+                  value={form.idTipoVinculo ? String(form.idTipoVinculo) : ''}
+                  disabled={!form.idVinculo}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      idTipoVinculo: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Nombre vinculado *
                 </label>
                 <Input
-                  value={form.nombre}
-                  onChange={(e) => setField('nombre', e.target.value)}
+                  value={form.nombreCompletoVinculo}
+                  onChange={(e) => setField('nombreCompletoVinculo', e.target.value)}
                   placeholder="Nombre completo"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  CI *
+                  CI vinculado *
                 </label>
                 <Input
-                  value={form.ci}
-                  onChange={(e) => setField('ci', e.target.value)}
+                  value={form.cedulaIdentidadVinculo}
+                  onChange={(e) => setField('cedulaIdentidadVinculo', e.target.value)}
                   placeholder="Carnet de identidad"
                 />
               </div>
             </div>
           </Fieldset>
 
-          <Fieldset title="Datos del Depositario">
+          <Fieldset title="Depositario">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
@@ -570,58 +637,28 @@ export function BienesIdentificados({ casoId }: Props) {
             </div>
           </Fieldset>
 
-          <Fieldset title="Situación Legal">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Situación Legal *
-                </label>
-                <Select
-                  options={SITUACIONES_LEGALES.map((s) => ({ value: s, label: s }))}
-                  placeholder="Seleccione situación"
-                  value={form.situacionLegal}
-                  onChange={(e) => setField('situacionLegal', e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Fecha Situación Legal *
-                </label>
-                <Input
-                  type="date"
-                  value={form.fechaSituacionLegal}
-                  onChange={(e) => setField('fechaSituacionLegal', e.target.value)}
-                />
-              </div>
-            </div>
-          </Fieldset>
-
           <Fieldset title="Valores">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Cuantía Presuntamente Ilegal (BOB) *
+                  Valor comercial aprox. (BOB) *
                 </label>
                 <Input
                   type="number"
-                  value={form.cuantiaPresunta || ''}
-                  onChange={(e) =>
-                    setField('cuantiaPresunta', Number(e.target.value))
-                  }
+                  value={form.costoAprox || ''}
+                  onChange={(e) => setField('costoAprox', Number(e.target.value))}
                   placeholder="0.00"
                   min="0"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Valor Comercial Aproximado (BOB) *
+                  Cuantía presuntamente ilegal (BOB)
                 </label>
                 <Input
                   type="number"
-                  value={form.valorComercial || ''}
-                  onChange={(e) =>
-                    setField('valorComercial', Number(e.target.value))
-                  }
+                  value={form.costoCuant || ''}
+                  onChange={(e) => setField('costoCuant', Number(e.target.value))}
                   placeholder="0.00"
                   min="0"
                 />
@@ -669,39 +706,247 @@ export function BienesIdentificados({ casoId }: Props) {
             </div>
           </Fieldset>
 
-          <Fieldset title="Autoridad que Dispuso">
-            <Input
-              value={form.autoridadDispuso}
-              onChange={(e) => setField('autoridadDispuso', e.target.value)}
-              placeholder="Nombre de la autoridad que dispuso la medida"
-            />
+          <Fieldset title="Situación legal del bien">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                  Tipo de situación *
+                </label>
+                <Select
+                  options={tiposSituacion.map((t) => option(t.etId, t.descripcion))}
+                  placeholder="Seleccione tipo de situación"
+                  value={
+                    form.idTipoSituacionLegalBien
+                      ? String(form.idTipoSituacionLegalBien)
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setField('idTipoSituacionLegalBien', Number(e.target.value))
+                  }
+                />
+              </div>
+            </div>
+
+            {form.idTipoSituacionLegalBien === 1 && (
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fiscal
+                  </label>
+                  <Input
+                    value={form.fiscal}
+                    onChange={(e) => setField('fiscal', e.target.value)}
+                    placeholder="Nombre del fiscal"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha acta de secuestro *
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.fechaActaSecuestro}
+                    onChange={(e) => setField('fechaActaSecuestro', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Investigador
+                  </label>
+                  <Input
+                    value={form.investigador}
+                    onChange={(e) => setField('investigador', e.target.value)}
+                    placeholder="Nombre del investigador"
+                  />
+                </div>
+              </div>
+            )}
+
+            {form.idTipoSituacionLegalBien === 2 && (
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Nro resolución
+                  </label>
+                  <Input
+                    value={form.nroResol}
+                    onChange={(e) => setField('nroResol', e.target.value)}
+                    placeholder="RES-123/2026"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha de resolución *
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.fechaResolucion}
+                    onChange={(e) => setField('fechaResolucion', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    value={form.autoridad}
+                    onChange={(e) => setField('autoridad', e.target.value)}
+                    placeholder="Autoridad que emitió la resolución"
+                  />
+                </div>
+              </div>
+            )}
+
+            {form.idTipoSituacionLegalBien === 3 && (
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Nro sentencia judicial
+                  </label>
+                  <Input
+                    value={form.numSentJud}
+                    onChange={(e) => setField('numSentJud', e.target.value)}
+                    placeholder="SENT-123/2026"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha de sentencia *
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.fechaSenjud}
+                    onChange={(e) => setField('fechaSenjud', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    value={form.autoridad}
+                    onChange={(e) => setField('autoridad', e.target.value)}
+                    placeholder="Autoridad que emitió la sentencia"
+                  />
+                </div>
+              </div>
+            )}
+
+            {(form.idTipoSituacionLegalBien === 4 ||
+              form.idTipoSituacionLegalBien === 5) && (
+              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha requerimiento *
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.fechaRequerimiento}
+                    onChange={(e) => setField('fechaRequerimiento', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fiscal requirente
+                  </label>
+                  <Input
+                    value={form.fiscalRequirente}
+                    onChange={(e) => setField('fiscalRequirente', e.target.value)}
+                    placeholder="Nombre del fiscal"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Calidad del bien
+                  </label>
+                  <Select
+                    options={calidades.map((c) => option(c.calbId, c.descripcion))}
+                    placeholder="Seleccione calidad"
+                    value={form.calbId ? String(form.calbId) : ''}
+                    onChange={(e) =>
+                      setField('calbId', Number(e.target.value) || null)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha de entrega
+                  </label>
+                  <Input
+                    type="date"
+                    value={form.fechaEntrega}
+                    onChange={(e) => setField('fechaEntrega', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Responsable entrega *
+                  </label>
+                  <Input
+                    value={form.responsableEntrega}
+                    onChange={(e) => setField('responsableEntrega', e.target.value)}
+                    placeholder="Responsable de la entrega"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Responsable recepción *
+                  </label>
+                  <Input
+                    value={form.responsableRecepcion}
+                    onChange={(e) => setField('responsableRecepcion', e.target.value)}
+                    placeholder="Responsable de la recepción"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Institución *
+                  </label>
+                  <Input
+                    value={form.institucion}
+                    onChange={(e) => setField('institucion', e.target.value)}
+                    placeholder="Institución que recibe el bien"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Ubicación
+                  </label>
+                  <Input
+                    value={form.ubicacion}
+                    onChange={(e) => setField('ubicacion', e.target.value)}
+                    placeholder="Ubicación actual del bien"
+                  />
+                </div>
+              </div>
+            )}
           </Fieldset>
 
           <Fieldset title="Características">
             <div className="space-y-3">
               {form.caracteristicas.length === 0 && (
                 <p className="text-xs text-gray-500">
-                  No hay características registradas. Haga clic en &quot;Agregar&quot; para añadir una.
+                  No hay características registradas. Haga clic en &quot;Agregar&quot;
+                  para añadir una.
                 </p>
               )}
-              {form.caracteristicas.map((car) => (
-                <div key={car.id} className="flex items-end gap-2">
+              {form.caracteristicas.map((car, index) => (
+                <div key={index} className="flex items-end gap-2">
                   <div className="w-48 shrink-0">
                     <label className="mb-1 block text-xs font-semibold text-gray-500">
                       Característica
                     </label>
                     <Select
-                      options={nombresCaracteristicas.map((n) => ({
-                        value: n,
-                        label: n,
-                      }))}
+                      options={caracteristicasCatalogo.map((c) =>
+                        option(c.catcaracId, c.descripcion)
+                      )}
                       placeholder="Seleccione"
-                      value={car.nombreCaracteristica}
+                      value={car.catcaracId ? String(car.catcaracId) : ''}
                       onChange={(e) =>
                         actualizarCaracteristica(
-                          car.id,
-                          'nombreCaracteristica',
-                          e.target.value
+                          index,
+                          'catcaracId',
+                          Number(e.target.value)
                         )
                       }
                     />
@@ -713,11 +958,7 @@ export function BienesIdentificados({ casoId }: Props) {
                     <Input
                       value={car.descripcion}
                       onChange={(e) =>
-                        actualizarCaracteristica(
-                          car.id,
-                          'descripcion',
-                          e.target.value
-                        )
+                        actualizarCaracteristica(index, 'descripcion', e.target.value)
                       }
                       placeholder="Descripción"
                     />
@@ -727,7 +968,7 @@ export function BienesIdentificados({ casoId }: Props) {
                     variant="outline-danger"
                     size="sm"
                     className="!p-1.5 shrink-0 mb-0.5"
-                    onClick={() => eliminarCaracteristica(car.id)}
+                    onClick={() => eliminarCaracteristica(index)}
                   >
                     <IconTrash className="h-4 w-4" />
                   </Button>
@@ -739,10 +980,52 @@ export function BienesIdentificados({ casoId }: Props) {
                 size="sm"
                 className="gap-2"
                 onClick={agregarCaracteristica}
+                disabled={!form.claseId || caracteristicasCatalogo.length === 0}
               >
                 <IconPlus className="h-4 w-4" />
                 Agregar característica
               </Button>
+            </div>
+          </Fieldset>
+
+          <Fieldset title="Fotografías">
+            <div className="flex flex-col gap-3">
+              <div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  id="fotos-bien"
+                  onChange={(e) => agregarFotografias(e.target.files)}
+                />
+                <label
+                  htmlFor="fotos-bien"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 hover:border-primary hover:bg-primary/5 dark:border-[#1b2e4b] dark:text-gray-400"
+                >
+                  <IconPlus className="h-4 w-4" />
+                  Seleccionar fotografías (JPG/PNG/WEBP, máx. 20)
+                </label>
+              </div>
+              {form.fotografias.length > 0 && (
+                <ul className="flex flex-wrap gap-2">
+                  {form.fotografias.map((foto, index) => (
+                    <li
+                      key={`${foto.name}-${index}`}
+                      className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-1.5 text-xs dark:border-[#1b2e4b]"
+                    >
+                      <span className="max-w-[180px] truncate">{foto.name}</span>
+                      <button
+                        type="button"
+                        className="text-danger hover:text-danger/70"
+                        onClick={() => quitarFotografia(index)}
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </Fieldset>
         </div>
@@ -752,16 +1035,18 @@ export function BienesIdentificados({ casoId }: Props) {
             type="button"
             variant="outline-secondary"
             onClick={() => setVista('lista')}
+            disabled={guardando}
           >
             Cancelar
           </Button>
           <Button
             type="button"
             variant="primary"
+            loading={guardando}
             disabled={!isFormValid}
-            onClick={guardar}
+            onClick={onSubmit}
           >
-            {bienEditando ? 'Actualizar' : 'Guardar'}
+            Guardar
           </Button>
         </div>
 
@@ -829,23 +1114,56 @@ export function BienesIdentificados({ casoId }: Props) {
           variant="primary"
           className="gap-2"
           onClick={abrirCrear}
+          disabled={!opId}
         >
           <IconPlus className="h-4 w-4" />
           Nuevo Bien
         </Button>
       </div>
 
-      <VristoDataTable<BienIdentificado>
-        title="Bienes"
-        rows={bienes}
-        total={bienes.length}
-        page={1}
-        limit={10}
-        onPageChange={() => {}}
-        onLimitChange={() => {}}
-        columns={columns}
-        loading={false}
-      />
+      {mensaje && (
+        <div className="rounded-md border border-success/30 bg-success/5 px-4 py-3 text-sm text-success">
+          {mensaje}
+        </div>
+      )}
+
+      <div className="panel p-4">
+        <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+          Actuación realizada *
+        </label>
+        <Select
+          options={actuaciones.map((a) => option(a.opId, `${a.opNrooper} (${formatFecha(a.opFechainf, 'dd/MM/yyyy')})`))}
+          placeholder="Seleccione la actuación"
+          value={opId != null ? String(opId) : ''}
+          onChange={(e) => {
+            setOpId(Number(e.target.value) || null)
+            setPage(1)
+          }}
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Seleccione la actuación para listar o registrar los bienes asociados.
+        </p>
+      </div>
+
+      {opId == null ? (
+        <div className="panel p-8 text-center">
+          <p className="text-sm text-gray-500">
+            Seleccione una actuación para ver sus bienes.
+          </p>
+        </div>
+      ) : (
+        <VristoDataTable<BienSecuestradoRow>
+          title="Bienes"
+          rows={bienesData?.filas ?? []}
+          total={bienesData?.total ?? 0}
+          page={page}
+          limit={limit}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
+          columns={columns}
+          loading={bienesLoading}
+        />
+      )}
 
       {bienDetalle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -865,30 +1183,14 @@ export function BienesIdentificados({ casoId }: Props) {
             <div className="max-h-[70vh] overflow-y-auto p-5">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <DetalleCampo
-                  label="Bien"
-                  value={
-                    CATALOGO_BIENES.find((b) => b.id === bienDetalle.bienId)
-                      ?.descripcion
-                  }
-                />
-                <DetalleCampo
-                  label="Clase"
-                  value={
-                    CATALOGO_BIENES.find((b) => b.id === bienDetalle.bienId)
-                      ?.clases.find((c) => c.id === bienDetalle.claseId)
-                      ?.descripcion
-                  }
-                />
-                <DetalleCampo
                   label="Tipo"
                   value={
-                    CATALOGO_BIENES.find((b) => b.id === bienDetalle.bienId)
-                      ?.clases.find((c) => c.id === bienDetalle.claseId)
-                      ?.tipos.find((t) => t.id === bienDetalle.tipoId)
-                      ?.descripcion
+                    tipos.find(
+                      (t) => String(t.cattipoId) === String(bienDetalle.cattipoId)
+                    )?.descripcion ?? String(bienDetalle.cattipoId)
                   }
                 />
-                <DetalleCampo label="Dirección" value={bienDetalle.direccion} />
+                <DetalleCampo label="Lugar" value={bienDetalle.lugarSecuestro} />
                 <DetalleCampo
                   label="Latitud"
                   value={
@@ -905,9 +1207,18 @@ export function BienesIdentificados({ casoId }: Props) {
                       : null
                   }
                 />
-                <DetalleCampo label="Tipo Vínculo" value={bienDetalle.tipoVinculo} />
-                <DetalleCampo label="Nombre" value={bienDetalle.nombre} />
-                <DetalleCampo label="CI" value={bienDetalle.ci} />
+                <DetalleCampo
+                  label="Vínculo"
+                  value={bienDetalle.tipoVinculo?.descripcion}
+                />
+                <DetalleCampo
+                  label="Vinculado"
+                  value={bienDetalle.nombreCompletoVinculo}
+                />
+                <DetalleCampo
+                  label="CI Vinculado"
+                  value={bienDetalle.cedulaIdentidadVinculo}
+                />
                 <DetalleCampo
                   label="Nombre Depositario"
                   value={bienDetalle.nombreDepositario}
@@ -917,41 +1228,44 @@ export function BienesIdentificados({ casoId }: Props) {
                   value={bienDetalle.ciDepositario}
                 />
                 <DetalleCampo
-                  label="Situación Legal"
-                  value={bienDetalle.situacionLegal}
+                  label="Costo aprox. (BOB)"
+                  value={formatMoney(bienDetalle.costoAprox ?? 0)}
                 />
                 <DetalleCampo
-                  label="Fecha Sit. Legal"
-                  value={formatFecha(bienDetalle.fechaSituacionLegal)}
-                />
-                <DetalleCampo
-                  label="Cuantía Presunta (BOB)"
-                  value={formatMoney(bienDetalle.cuantiaPresunta)}
-                />
-                <DetalleCampo
-                  label="Valor Comercial (BOB)"
-                  value={formatMoney(bienDetalle.valorComercial)}
+                  label="Cuantía (BOB)"
+                  value={
+                    bienDetalle.costoCuant != null
+                      ? formatMoney(bienDetalle.costoCuant)
+                      : null
+                  }
                 />
                 <DetalleCampo
                   label="Pericia"
                   value={bienDetalle.pericia ? 'Sí' : 'No'}
                 />
                 {bienDetalle.pericia && (
-                  <div className="md:col-span-2">
-                    <DetalleCampo
-                      label="Resultado Pericia"
-                      value={bienDetalle.resultadoPericia}
-                      full
-                    />
-                  </div>
+                  <DetalleCampo
+                    label="Resultado Pericia"
+                    value={bienDetalle.resultadoPericia}
+                    full
+                  />
                 )}
                 <DetalleCampo
-                  label="Autoridad que Dispuso"
-                  value={bienDetalle.autoridadDispuso}
+                  label="Situación"
+                  value={
+                    (
+                      bienDetalle.ultimaSituacionJuridica as {
+                        descripcionTipo?: string
+                      } | null
+                    )?.descripcionTipo ?? '-'
+                  }
+                />
+                <DetalleCampo
+                  label="Fecha Ingreso"
+                  value={formatFecha(bienDetalle.fechaHoraIngreso)}
                 />
               </div>
-
-              {bienDetalle.caracteristicas.length > 0 && (
+              {bienDetalle.caracteristicas?.length ? (
                 <div className="mt-4">
                   <p className="mb-2 text-xs font-semibold uppercase text-gray-500">
                     Características
@@ -968,13 +1282,15 @@ export function BienesIdentificados({ casoId }: Props) {
                       </tr>
                     </thead>
                     <tbody>
-                      {bienDetalle.caracteristicas.map((c) => (
+                      {bienDetalle.caracteristicas.map((c, i) => (
                         <tr
-                          key={c.id}
+                          key={i}
                           className="border-b border-gray-100 dark:border-[#1b2e4b]/50"
                         >
                           <td className="py-1.5 text-dark dark:text-white-light">
-                            {c.nombreCaracteristica}
+                            {caracteristicasCatalogo.find(
+                              (cc) => cc.catcaracId === c.catcaracId
+                            )?.descripcion ?? String(c.catcaracId)}
                           </td>
                           <td className="py-1.5 text-dark dark:text-white-light">
                             {c.descripcion}
@@ -984,7 +1300,7 @@ export function BienesIdentificados({ casoId }: Props) {
                     </tbody>
                   </table>
                 </div>
-              )}
+              ) : null}
             </div>
             <div className="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <Button
@@ -1010,8 +1326,8 @@ export function BienesIdentificados({ casoId }: Props) {
                 Eliminar Bien
               </h3>
               <p className="mt-2 text-sm text-gray-500">
-                ¿Está seguro que desea eliminar este bien? Esta acción no se
-                puede deshacer.
+                ¿Está seguro que desea eliminar este bien? Esta acción no se puede
+                deshacer.
               </p>
             </div>
             <div className="flex justify-center gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
@@ -1025,7 +1341,7 @@ export function BienesIdentificados({ casoId }: Props) {
               <Button
                 type="button"
                 variant="danger"
-                onClick={() => eliminarBien(bienEliminar)}
+                onClick={confirmarEliminar}
               >
                 Eliminar
               </Button>
