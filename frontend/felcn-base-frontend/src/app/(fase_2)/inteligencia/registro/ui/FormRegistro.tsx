@@ -55,7 +55,7 @@ export const formSchema = z.object({
   distrital: selectSchema('Distrital obligatoria'),
   grupo: selectSchema('Grupo obligatorio'),
   nroRegistro: z.string().min(1, 'Número de registro obligatorio'),
-  nombreOperativo: z.string().min(1, 'Nombre del operativo obligatorio'),
+  nombreOperativo: z.string().optional(),
   fechaHoraOperativo: z
     .string()
     .min(1, 'Fecha y hora del operativo obligatoria'),

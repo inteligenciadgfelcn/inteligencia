@@ -453,24 +453,24 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     }
   }
 
-  const confirmarEnvioSinarap = async () => {
+  const confirmarEnvioSinarap = async (values: FormValues) => {
     if (!persona) return
 
-    const payload = dialogoSinarap.payload
-    const values = valoresConfirmados.current
+    // const payload = dialogoSinarap.payload
+    // const values = valoresConfirmados.current
 
-    if (!payload || !values) {
-      Alerta({
-        mensaje: 'No se pudo preparar el payload de SINARAP',
-        variant: 'error',
-      })
-      return
-    }
+    // if (!payload || !values) {
+    //   Alerta({
+    //     mensaje: 'No se pudo preparar el payload de SINARAP',
+    //     variant: 'error',
+    //   })
+    //   return
+    // }
 
-    setDialogoSinarap((prev) => ({ ...prev, enviando: true }))
+    // setDialogoSinarap((prev) => ({ ...prev, enviando: true }))
 
     try {
-      await postRegistroSinarap(payload)
+      // await postRegistroSinarap(payload)
 
       const [fotoFrente, fotoPerfilDerecho, fotoPerfilIzquierdo] =
         await Promise.all([
@@ -494,6 +494,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
         direccion: values.direccion,
         observacion: values.observacion ?? '',
         detenido: {
+          idOperativo: Number(persona.id_operativo),
           serie: '*',
           seccion: '*',
           tieneTarjeta: values.tarjetaProntuario.value === 1,
@@ -542,7 +543,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
 
       await sendFingers(response.idDetenido)
 
-      setDialogoSinarap((prev) => ({ ...prev, isOpen: false }))
+      // setDialogoSinarap((prev) => ({ ...prev, isOpen: false }))
 
       Alerta({
         mensaje: 'Registro de filiacion guardado correctamente',
@@ -557,7 +558,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
         variant: 'error',
       })
     } finally {
-      setDialogoSinarap((prev) => ({ ...prev, enviando: false }))
+      // setDialogoSinarap((prev) => ({ ...prev, enviando: false }))
     }
   }
 
@@ -605,7 +606,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
     <div className="">
       <div className="">
         {/* FORM */}
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(confirmarEnvioSinarap)}>
           <div className="panel grid grid-cols-1 md:grid-cols-12 p-4 gap-4">
             <div className="pt-4 col-span-12">
               <h2 className="font-bold text-lg text-primary">
@@ -1097,7 +1098,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
         </form>
       </div>
 
-      {dialogoSinarap.isOpen && (
+      {/* {dialogoSinarap.isOpen && (
         <DialogoConfirmacionSinarap
           isOpen={dialogoSinarap.isOpen}
           onClose={() =>
@@ -1113,7 +1114,7 @@ export const FormFiliacion = ({ persona, onSuccess }: Props) => {
           enviando={dialogoSinarap.enviando}
           onConfirmar={confirmarEnvioSinarap}
         />
-      )}
+      )} */}
 
       <WebcamCapture
         open={campoCamara !== null}

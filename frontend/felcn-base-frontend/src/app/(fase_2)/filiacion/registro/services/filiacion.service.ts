@@ -27,6 +27,7 @@ export interface RegistroFiliacionBody {
   direccion: string
   observacion: string
   detenido: {
+    idOperativo: number
     serie: string
     seccion: string
     tieneTarjeta: boolean
