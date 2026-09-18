@@ -17,6 +17,11 @@
         "include": "**/assets/**/*.png",
         "outDir": "dist/src",
         "watchAssets": true
+      },
+      {
+        "include": "**/pdf/templates/*.hbs",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ]
   }
