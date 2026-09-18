@@ -20,11 +20,11 @@ export class ReporteServicioService {
         this.reporteServicioRepository.obtenerOperativosMapa(codigoServicio),
       ])
 
-    if (!resultados.length) {
-      throw new NotFoundException(
-        `No se encontraron resultados para el servicio ${codigoServicio}`
-      )
-    }
+    // if (!resultados.length) {
+    //   throw new NotFoundException(
+    //     `No se encontraron resultados para el servicio ${codigoServicio}`
+    //   )
+    // }
 
     return {
       servicio: {
