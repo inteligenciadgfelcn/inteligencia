@@ -47,15 +47,15 @@ export class ServicioService {
     const fechaSalida = new Date(dto.fechaSalida)
     const ahora = new Date()
 
-    validarRangoFechas(fechaIngreso, fechaSalida)
+   // validarRangoFechas(fechaIngreso, fechaSalida)
 
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
-    await validarCruceServicios(
-      this.servicioRepository,
-      fechaIngreso,
-      fechaSalida
-    )
+    // await validarCruceServicios(
+    //   this.servicioRepository,
+    //   fechaIngreso,
+    //   fechaSalida
+    // )
 
     const codigoServicio = generarCodigoServicio(
       fechaIngreso,

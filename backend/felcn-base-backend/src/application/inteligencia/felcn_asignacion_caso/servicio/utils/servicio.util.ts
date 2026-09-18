@@ -1,8 +1,6 @@
-
-import { Repository } from "typeorm"
-import { Servicio } from "../entities/servicio.entity"
-import { Estado } from "@/application/inteligencia/felcn_siii/estado.enum"
-
+import { Repository } from 'typeorm'
+import { Servicio } from '../entities/servicio.entity'
+import { Estado } from '@/application/inteligencia/felcn_siii/estado.enum'
 
 export function generarCodigoServicio(
   fechaIngreso: Date,
@@ -17,12 +15,11 @@ export function generarCodigoServicio(
   )
 }
 
-
 export async function cerrarServiciosVencidos(
   servicioRepository: Repository<Servicio>,
   ahora: Date
 ) {
-const resultado=   await servicioRepository
+  const resultado = await servicioRepository
     .createQueryBuilder()
     .update()
     .set({ estado: Estado.INACTIVO })
@@ -30,10 +27,9 @@ const resultado=   await servicioRepository
     .andWhere('estado = :estado', { estado: Estado.ACTIVO })
     .execute()
 
-    console.log('Servicios cerrados:', resultado.affected)
-console.log('Registros:', resultado.raw)
+  //     console.log('Servicios cerrados:', resultado.affected)
+  // console.log('Registros:', resultado.raw)
 }
-
 
 export async function validarCruceServicios(
   servicioRepository: Repository<Servicio>,
@@ -50,9 +46,7 @@ export async function validarCruceServicios(
   if (codigoExcluir) {
     query.andWhere('s.codigoServicio != :codigoExcluir', { codigoExcluir })
   }
-
 }
-
 
 export async function buscarServicioPorFecha(
   servicioRepository: Repository<Servicio>,
