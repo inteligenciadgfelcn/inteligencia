@@ -7,22 +7,65 @@ import { Button } from '@/components/ui/Button'
 import IconPrinter from '@/components/Icon/IconPrinter'
 import { sesionPeticion } from '@/utils/peticion'
 import { imprimir } from '@/utils/imprimir'
-import { GaleriaService, LogotiposService } from '@/services/operativos'
+import {
+  BienesService,
+  DrogasService,
+  GaleriaService,
+  LogotiposService,
+  PersonasService,
+} from '@/services/operativos'
 import type { PreviewOperativoData } from '@/services/reportes/ReportesOperativoService'
 
-function FotoGaleriaThumb({
+type ObtenerFoto = (path: string) => Promise<Blob>
+
+/**
+ * Miniatura autenticada: descarga la imagen como blob solo cuando entra en el
+ * viewport, para no lanzar decenas de peticiones al abrir un operativo grande.
+ */
+function FotoThumb({
   path,
+  obtenerFoto,
+  etiqueta,
+  alt,
   onClick,
+  className = 'h-16 w-24',
 }: {
-  path: string
+  path: string | null | undefined
+  obtenerFoto: ObtenerFoto
+  etiqueta?: string
+  alt: string
   onClick: (src: string) => void
+  className?: string
 }) {
+  const contenedorRef = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
   const [src, setSrc] = useState<string | null>(null)
-  const [cargandoFoto, setCargandoFoto] = useState(true)
+  const [cargandoFoto, setCargandoFoto] = useState(!!path)
 
   useEffect(() => {
+    const el = contenedorRef.current
+    if (!path || !el) return
+    if (typeof IntersectionObserver === 'undefined') {
+      setVisible(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      ([entrada]) => {
+        if (entrada.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [path])
+
+  useEffect(() => {
+    if (!path || !visible) return
     let objectUrl: string
-    GaleriaService.obtenerFoto(path)
+    obtenerFoto(path)
       .then((blob) => {
         objectUrl = URL.createObjectURL(blob)
         setSrc(objectUrl)
@@ -32,74 +75,38 @@ function FotoGaleriaThumb({
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl)
     }
-  }, [path])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path, visible])
 
-  if (cargandoFoto) {
-    return <div className="h-16 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-  }
-  if (!src) {
-    return (
-      <div className="flex h-16 w-24 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+  let contenido: React.ReactNode
+  if (path && cargandoFoto) {
+    contenido = <div className={`${className} animate-pulse rounded bg-gray-200 dark:bg-gray-700`} />
+  } else if (!path || !src) {
+    contenido = (
+      <div className={`${className} flex items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800`}>
         <span className="text-[10px] text-gray-400">Sin foto</span>
       </div>
     )
-  }
-  return (
-    <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt="Miniatura de galería"
-        className="h-full max-w-full cursor-zoom-in object-contain"
-        onClick={() => onClick(src)}
-      />
-    </div>
-  )
-}
-
-function FotoLogotipoThumb({
-  path,
-  onClick,
-}: {
-  path: string
-  onClick: (src: string) => void
-}) {
-  const [src, setSrc] = useState<string | null>(null)
-  const [cargandoFoto, setCargandoFoto] = useState(true)
-
-  useEffect(() => {
-    let objectUrl: string
-    LogotiposService.obtenerFoto(path)
-      .then((blob) => {
-        objectUrl = URL.createObjectURL(blob)
-        setSrc(objectUrl)
-      })
-      .catch(() => setSrc(null))
-      .finally(() => setCargandoFoto(false))
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl)
-    }
-  }, [path])
-
-  if (cargandoFoto) {
-    return <div className="h-16 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700" />
-  }
-  if (!src) {
-    return (
-      <div className="flex h-16 w-24 items-center justify-center rounded border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
-        <span className="text-[10px] text-gray-400">Sin foto</span>
+  } else {
+    contenido = (
+      <div className={`${className} flex items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={alt}
+          className="h-full max-w-full cursor-zoom-in object-contain"
+          onClick={() => onClick(src)}
+        />
       </div>
     )
   }
+
   return (
-    <div className="flex h-16 w-24 items-center justify-center overflow-hidden rounded border border-gray-200 bg-gray-50 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt="Miniatura de logotipo"
-        className="h-full max-w-full cursor-zoom-in object-contain"
-        onClick={() => onClick(src)}
-      />
+    <div ref={contenedorRef} className="flex flex-col items-center gap-1">
+      {etiqueta && (
+        <span className="text-[9px] font-bold uppercase text-[#3e5f8a]">{etiqueta}</span>
+      )}
+      {contenido}
     </div>
   )
 }
@@ -343,19 +350,68 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
 
                       {/* Drogas */}
                       <TituloSeccion>Drogas, Psicotrópicos y Estupefacientes</TituloSeccion>
-                      <TablaSimple
-                        headers={['Tipo de Droga', 'Estado', 'Cantidad (g)', 'Costo (Bs)', 'Transporte', 'Procedencia', 'Destino']}
-                        rows={drogas.map((d) => [
-                          d.descripcionTipoDroga,
-                          d.descripcionEstadoDroga,
-                          fmt(d.cantidadGramos ?? d.cantidad),
-                          fmt(d.costo),
-                          d.descripcionFormaTransporte,
-                          d.descripcionPaisProcedencia,
-                          d.descripcionPaisDestino,
-                        ])}
-                        vacio="Sin drogas registradas"
-                      />
+<div className="mb-4 overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-white">
+                              {['Tipo de Droga', 'Estado', 'Cantidad (g)', 'Costo (Bs)', 'Transporte', 'Procedencia', 'Destino'].map((h) => (
+                                <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {drogas.length === 0 ? (
+                              <tr><td colSpan={7} className="py-2 text-center italic text-gray-400">Sin drogas registradas</td></tr>
+                            ) : (
+                              drogas.map((d, i) => (
+                                <Fragment key={i}>
+                                  <tr className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
+                                    {[
+                                      d.descripcionTipoDroga,
+                                      d.descripcionEstadoDroga,
+                                      fmt(d.cantidadGramos ?? d.cantidad),
+                                      fmt(d.costo),
+                                      d.descripcionFormaTransporte,
+                                      d.descripcionPaisProcedencia,
+                                      d.descripcionPaisDestino,
+                                    ].map((c, j) => (
+                                      <td key={j} className="border border-[#e5e7eb] px-2 py-1 align-top">{c ?? '—'}</td>
+                                    ))}
+                                  </tr>
+                                  {(d.urlFotoPruebaCampo || d.urlFotoPesaje) && (
+                                    <tr>
+                                      <td colSpan={7} className="border border-[#e5e7eb] bg-[#f8fafc] px-2 py-2 dark:bg-[#0e1726]/50">
+                                        <div className="flex flex-wrap justify-center gap-6">
+                                          {d.urlFotoPruebaCampo && (
+                                            <FotoThumb
+                                              path={d.urlFotoPruebaCampo}
+                                              obtenerFoto={DrogasService.obtenerFoto}
+                                              etiqueta="Prueba de campo"
+                                              alt="Foto de prueba de campo"
+                                              onClick={setImagenAmpliada}
+                                              className="h-24 w-32"
+                                            />
+                                          )}
+                                          {d.urlFotoPesaje && (
+                                            <FotoThumb
+                                              path={d.urlFotoPesaje}
+                                              obtenerFoto={DrogasService.obtenerFoto}
+                                              etiqueta="Pesaje"
+                                              alt="Foto de pesaje"
+                                              onClick={setImagenAmpliada}
+                                              className="h-24 w-32"
+                                            />
+                                          )}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Fragment>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
 
                       {/* Logotipos */}
                       <TituloSeccion>Logotipos Detectados</TituloSeccion>
@@ -384,7 +440,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                                   <td className="border border-[#e5e7eb] px-2 py-1 align-top">{l.observacion ?? '—'}</td>
                                   <td className="border border-[#e5e7eb] px-2 py-1 align-top">
                                     {l.urlFotografia ? (
-                                      <FotoLogotipoThumb path={l.urlFotografia} onClick={setImagenAmpliada} />
+                                      <FotoThumb path={l.urlFotografia} obtenerFoto={LogotiposService.obtenerFoto} alt="Miniatura de logotipo" onClick={setImagenAmpliada} />
                                     ) : (
                                       <span className="italic text-gray-400">Sin foto</span>
                                     )}
@@ -431,6 +487,19 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                               <p className="mb-1 text-sm font-bold text-dark dark:text-white">
                                 {[p.nombres, p.apellidoPaterno, p.apellidoMaterno].filter(Boolean).join(' ') || 'N/A'}
                               </p>
+                              {(p.urlFotoFrente || p.urlFotoPerfilIzquierdo || p.urlFotoDocumento) && (
+                                <div className="mb-3 flex flex-wrap justify-center gap-6">
+                                  {p.urlFotoFrente && (
+                                    <FotoThumb path={p.urlFotoFrente} obtenerFoto={PersonasService.obtenerFoto} etiqueta="Frente" alt="Foto de frente" onClick={setImagenAmpliada} className="h-24 w-32" />
+                                  )}
+                                  {p.urlFotoPerfilIzquierdo && (
+                                    <FotoThumb path={p.urlFotoPerfilIzquierdo} obtenerFoto={PersonasService.obtenerFoto} etiqueta="Perfil izquierdo" alt="Foto de perfil izquierdo" onClick={setImagenAmpliada} className="h-24 w-32" />
+                                  )}
+                                  {p.urlFotoDocumento && (
+                                    <FotoThumb path={p.urlFotoDocumento} obtenerFoto={PersonasService.obtenerFoto} etiqueta="Documento" alt="Foto del documento" onClick={setImagenAmpliada} className="h-24 w-32" />
+                                  )}
+                                </div>
+                              )}
                               <dl className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-3">
                                 {[
                                   ['Nacionalidad', p.descripcionPais],
@@ -459,14 +528,14 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="text-white">
-                              {['Catálogo Bien', 'Clase', 'Tipo', 'Cant.', 'Características'].map((h) => (
+                              {['Catálogo Bien', 'Clase', 'Tipo', 'Cant.', 'Características', 'Fotografía'].map((h) => (
                                 <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody>
                             {bienes.length === 0 ? (
-                              <tr><td colSpan={5} className="py-2 text-center italic text-gray-400">Sin bienes registrados</td></tr>
+                              <tr><td colSpan={6} className="py-2 text-center italic text-gray-400">Sin bienes registrados</td></tr>
                             ) : (
                               bienes.map((b, i) => (
                                 <tr key={i} className={i % 2 === 0 ? '' : 'bg-[#f7f6f3] dark:bg-[#0e1726]/30'}>
@@ -483,6 +552,9 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                                       </ul>
                                     )}
                                   </td>
+                                  <td className="border border-[#e5e7eb] px-2 py-1 align-top">
+                                    <FotoThumb path={b.urlFotoBien} obtenerFoto={BienesService.obtenerFoto} alt="Miniatura de bien" onClick={setImagenAmpliada} />
+                                  </td>
                                 </tr>
                               ))
                             )}
@@ -498,7 +570,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                         <ul className="mb-2 flex flex-wrap gap-3 text-xs">
                           {galerias.map((g, i) => (
                             <li key={i} className="flex flex-col items-center gap-1">
-                              <FotoGaleriaThumb path={g.urlFotoThumbnail} onClick={setImagenAmpliada} />
+                              <FotoThumb path={g.urlFotoThumbnail} obtenerFoto={GaleriaService.obtenerFoto} alt="Miniatura de galería" onClick={setImagenAmpliada} />
                               <span className="text-center text-gray-600 dark:text-gray-300">
                                 #{i + 1} {g.descripcion || 'Sin descripción'}
                               </span>
