@@ -35,6 +35,8 @@ export interface PreviewDroga {
   descripcionFormaTransporte: string | null
   descripcionPaisProcedencia: string | null
   descripcionPaisDestino: string | null
+  urlFotoPruebaCampo: string | null
+  urlFotoPesaje: string | null
 }
 
 export interface PreviewSustancia {
@@ -61,6 +63,9 @@ export interface PreviewPersona {
   nroDocumento: string | null
   direccion: string | null
   estado: string | null
+  urlFotoFrente: string | null
+  urlFotoDocumento: string | null
+  urlFotoPerfilIzquierdo: string | null
 }
 
 export interface PreviewBien {
@@ -69,11 +74,15 @@ export interface PreviewBien {
   descripcionCatalogoTipo: string | null
   cantidadBien: number | null
   caracteristicas: { label: string | null; value: string }[]
+  urlFotoBien: string | null
 }
 
 export interface PreviewGaleria {
   id: string
   descripcion: string | null
+  urlFotoThumbnail: string
+  urlFotoMedium: string
+  urlFotoFull: string
 }
 
 export interface PreviewLogotipo {
