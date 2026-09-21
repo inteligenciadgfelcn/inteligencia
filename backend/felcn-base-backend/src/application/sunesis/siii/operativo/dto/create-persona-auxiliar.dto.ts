@@ -17,11 +17,11 @@ export class CreatePersonaAuxiliarDto {
   @MaxLength(50)
   nombres: string
 
-  @ApiProperty({ description: 'Apellido paterno', example: 'PEREZ' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: 'Apellido paterno', example: 'PEREZ' })
+  @IsOptional()
   @IsString()
   @MaxLength(50)
-  apellidoPaterno: string
+  apellidoPaterno?: string
 
   @ApiPropertyOptional({ description: 'Apellido materno', example: 'GARCIA' })
   @IsOptional()
