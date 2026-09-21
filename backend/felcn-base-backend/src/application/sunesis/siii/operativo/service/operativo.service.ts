@@ -360,7 +360,9 @@ export class OperativoService extends BaseService {
       descripcionCatalogoTipo: catalogoTipo?.descripcion ?? null,
       descripcionCatalogoClase: catalogoTipo?.catalogoClase?.descripcion ?? null,
       descripcionBien: catalogoTipo?.catalogoClase?.bien?.descripcion ?? null,
-      urlFotoBien: `/api/operativos/${idOperativo}/bienes/${b.id}/foto`,
+      urlFotoBien: fotoBien?.length
+        ? `/api/operativos/${idOperativo}/bienes/${b.id}/foto`
+        : null,
     }))
     return [filas, total]
   }
@@ -459,7 +461,7 @@ export class OperativoService extends BaseService {
       idPais: data.idPais,
       idTipoDocumento: data.idTipoDocumento,
       nombres: data.nombres,
-      apellidoPaterno: data.apellidoPaterno,
+      apellidoPaterno: data.apellidoPaterno ?? '',
       apellidoMaterno: data.apellidoMaterno ?? '',
       apellidoEsposo: data.apellidoEsposo ?? '',
       nroDocumento: data.nroDocumento,

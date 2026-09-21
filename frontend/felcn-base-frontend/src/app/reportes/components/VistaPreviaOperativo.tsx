@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useRef, useState } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, Portal, Transition } from '@headlessui/react'
 import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/Button'
 import IconPrinter from '@/components/Icon/IconPrinter'
@@ -192,6 +192,23 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
   const mapRef = useRef<any>(null)
   const [descargando, setDescargando] = useState(false)
   const [imagenAmpliada, setImagenAmpliada] = useState<string | null>(null)
+
+  // La ampliación vive dentro del <Dialog>; Esc debe cerrar primero la imagen, no toda la vista previa.
+  useEffect(() => {
+    if (!imagenAmpliada) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.preventDefault()
+      e.stopPropagation()
+      setImagenAmpliada(null)
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [imagenAmpliada])
+
+  useEffect(() => {
+    if (!open) setImagenAmpliada(null)
+  }, [open])
 
   const descargarPdf = async () => {
     if (!urlPdf) return
@@ -503,7 +520,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                               <dl className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs sm:grid-cols-3">
                                 {[
                                   ['Nacionalidad', p.descripcionPais],
-                                  ['Género', p.genero],
+                                  ['Género', p.generoTexto],
                                   ['F. Nacimiento', p.fechaNacimiento ? new Date(p.fechaNacimiento).toLocaleDateString('es-BO') : null],
                                   ['Estado Civil', p.descripcionEstadoCivil],
                                   ['Tipo Doc.', p.descripcionTipoDocumento],
@@ -604,32 +621,34 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
             </Transition.Child>
           </div>
         </div>
+        {imagenAmpliada && (
+          <Portal>
+            <div
+              className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-sm"
+              onClick={() => setImagenAmpliada(null)}
+            >
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imagenAmpliada}
+                  alt="Vista ampliada"
+                  className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+                />
+                <Button
+                  type="button"
+                  variant="dark"
+                  size="sm"
+                  className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
+                  onClick={() => setImagenAmpliada(null)}
+                >
+                  ✕
+                </Button>
+              </div>
+            </div>
+          </Portal>
+        )}
       </Dialog>
     </Transition>
-    {imagenAmpliada && (
-      <div
-        className="fixed inset-0 z-[250] flex items-center justify-center bg-black/75 backdrop-blur-sm"
-        onClick={() => setImagenAmpliada(null)}
-      >
-        <div className="relative" onClick={(e) => e.stopPropagation()}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imagenAmpliada}
-            alt="Vista ampliada"
-            className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-          />
-          <Button
-            type="button"
-            variant="dark"
-            size="sm"
-            className="absolute -right-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-gray-800 shadow-lg hover:bg-gray-100"
-            onClick={() => setImagenAmpliada(null)}
-          >
-            ✕
-          </Button>
-        </div>
-      </div>
-    )}
     </>
   )
 }

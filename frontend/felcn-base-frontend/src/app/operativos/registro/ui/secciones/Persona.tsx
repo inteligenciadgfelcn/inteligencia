@@ -408,7 +408,6 @@ export function Persona({ titulo, idoperativo }: Props) {
 
     if (
       !nombres ||
-      !primerApellido ||
       !idEstadoSujeto ||
       !genero ||
       !idTipoDocumento ||
@@ -507,18 +506,15 @@ export function Persona({ titulo, idoperativo }: Props) {
               htmlFor="primerApellido"
               className="mb-1 block text-sm font-medium"
             >
-              Primer Apellido <span className="text-danger">*</span>
+              Primer Apellido
             </label>
             <Input
               id="primerApellido"
               type="text"
-              className={`w-full ${!primerApellido && submitted ? 'border-danger' : ''}`}
+              className="w-full"
               value={primerApellido}
               onChange={(e) => setPrimerApellido(e.target.value.toUpperCase())}
             />
-            {!primerApellido && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
           </div>
           <div>
             <label

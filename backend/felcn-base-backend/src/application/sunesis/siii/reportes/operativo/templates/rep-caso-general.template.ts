@@ -381,7 +381,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                         <div class="info-label-cell" style="justify-content: center; margin-bottom: 15px;">
                             <strong>Género</strong>
                         </div>
-                        <div class="info-value-cell" style="font-size: 13px;">${persona.genero || 'N/A'}</div>
+                        <div class="info-value-cell" style="font-size: 13px;">${persona.generoTexto || 'N/A'}</div>
                     </td>
                 </tr>
                 <tr>

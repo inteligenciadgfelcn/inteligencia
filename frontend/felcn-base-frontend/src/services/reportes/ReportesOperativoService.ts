@@ -56,7 +56,9 @@ export interface PreviewPersona {
   apellidoPaterno: string | null
   apellidoMaterno: string | null
   descripcionPais: string | null
-  genero: string | null
+  /** true = Masculino, false = Femenino; para mostrar usar `generoTexto`. */
+  genero: boolean | null
+  generoTexto: string | null
   fechaNacimiento: string | null
   descripcionEstadoCivil: string | null
   descripcionTipoDocumento: string | null
