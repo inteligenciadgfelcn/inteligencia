@@ -92,18 +92,18 @@ export function AntecedentesPage() {
       title: 'Cantidad operativos',
       sortable: true,
     },
-    {
-      accessor: 'tieneAntecedentes',
-      title: 'Tiene antecedentes',
-      sortable: true,
-      render: (row) => (
-        <span
-          className={row.tieneAntecedentes ? 'text-danger' : 'text-success'}
-        >
-          {row.tieneAntecedentes ? 'Si' : 'No'}
-        </span>
-      ),
-    },
+    // {
+    //   accessor: 'tieneAntecedentes',
+    //   title: 'Tiene antecedentes',
+    //   sortable: true,
+    //   render: (row) => (
+    //     <span
+    //       className={row.tieneAntecedentes ? 'text-danger' : 'text-success'}
+    //     >
+    //       {row.tieneAntecedentes ? 'Si' : 'No'}
+    //     </span>
+    //   ),
+    // },
     // {
     //   accessor: 'acciones',
     //   title: 'Acciones',
