@@ -41,28 +41,25 @@ export class AsignacionLgiRepository {
     }
 
     try {
+      console.log('Asignacion Guardada');
+      console.log(asignacionGuardada);
+      
       const asignacionCaso = this.asignacionCasoRepository.create({
         idCasoSiii: asignacionGuardada.casosId,
-
         nombreCaso: asignacionGuardada.nombreCaso,
-
         nombreSolicitud: asignacionGuardada.conformeA,
-
         fechaOperativo: asignacionGuardada.fechaInicio,
-
         fiscalAsignado: asignacionGuardada.remiteFiscal,
-
         usuario: asignacionGuardada.usuario,
-
         idDepartamento: asignacionGuardada.dptoavId,
-
         nroOperativo: asignacionGuardada.nroCaso,
-
         nroCaso: asignacionGuardada.nroCaso,
       })
 
       await this.asignacionCasoRepository.save(asignacionCaso)
-    } catch {
+    } catch (error) {
+      console.log(error);
+      
       await this.repository.remove(asignacionGuardada)
 
       throw new BadRequestException(

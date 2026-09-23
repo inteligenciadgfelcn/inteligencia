@@ -23,7 +23,8 @@ import {
 } from '../mappers/listado-casos.mappers'
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
 import { guardarCasoEnStorage } from '../../registro_caso/utils/registro-caso.utils'
-import { calcularDiasTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
+import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
+import dayjs from 'dayjs'
 
 export function ListadoCasos() {
   const router = useRouter()
@@ -84,9 +85,9 @@ export function ListadoCasos() {
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
     { accessor: 'cudIfp', title: 'CUD/IFP' },
-    { accessor: 'remiteFiscal', title: 'Fiscal que remite' },
+    { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
-    { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
+    // { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
       accessor: 'fechaHoraIng',
       title: 'Fecha inicio',
@@ -94,12 +95,27 @@ export function ListadoCasos() {
     },
     {
       accessor: 'fechaHoraIng',
-      title: 'Días transcurridos',
+      title: 'Tiempo transcurrido',
       render: (row) => {
-        const dias = calcularDiasTranscurridos(row.fechahoraing)
-        if (dias === null) return <span>-</span>
-        const variant = dias <= 5 ? 'success' : dias <= 10 ? 'warning' : 'danger'
-        return <Badge variant={variant} rounded>{dias} dias</Badge>
+        const tiempo = calcularTiempoTranscurridos(row.fechahoraing)
+        if (tiempo === null) return <span>-</span>
+
+        // Calculamos el total de días aproximado o usamos el campo de días para evaluar la variante del badge
+        const totalDiasAprox = (tiempo.anos * 365) + (tiempo.meses * 30) + tiempo.dias; // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
+
+        // Si prefieres evaluar el color estrictamente por los días totales de diferencia:
+        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechahoraing).startOf('day'), 'day')
+        const variant = diasTotales <= 5 ? 'success' : diasTotales <= 10 ? 'warning' : 'danger'
+
+        // Construimos el texto dinámicamente solo mostrando lo que sea mayor a 0 (opcional, para que se vea más limpio)
+        const partes: string[] = []
+        partes.push(`${tiempo.anos} ${tiempo.anos === 1 ? 'año' : 'años'}`)
+        partes.push(`${tiempo.meses} ${tiempo.meses === 1 ? 'mes' : 'meses'}`)
+        partes.push(`${tiempo.dias} ${tiempo.dias === 1 ? 'día' : 'días'}`)
+
+        const textoFormateado = partes.join(', ')
+
+        return <Badge variant={variant} rounded>{textoFormateado}</Badge>
       },
     },
     {
