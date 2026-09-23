@@ -13,7 +13,7 @@ export class CreateAsignacionDto {
   @ApiProperty({ example: 'ICIA-2' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(10)
+  @MaxLength(15)
   usuario!: string;
 
   @ApiProperty({ example: 'LP' })
