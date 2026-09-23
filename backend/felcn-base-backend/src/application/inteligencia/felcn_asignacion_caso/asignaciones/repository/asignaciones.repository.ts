@@ -82,10 +82,13 @@ export class AsignacionesRepository {
       telefonoFiscal: dto.telefonoFiscal,
       usuario: dto.numeroPaseSolicitud,
     })
-    console.log('Asignación SIII guardada con ID:', asignacion)
+    console.log('Asignación SIII guardada:', asignacion)
     const saved = await this.asignacionRepository.save(asignacion)
 
+    console.log('Asignación SIII guardada con ID:', saved)
     const abreviaturaIcia = await this.codigoUnidad(grupoData.abreviaturaUnidad)
+
+    console.log('Abrevitura ICIA', abreviaturaIcia)
 
     const asignacionS2I = this.asignacionAsigRepository.create({
       idDepartamento: dto.idDepartamento,
@@ -106,16 +109,16 @@ export class AsignacionesRepository {
   }
 
   async codigoUnidad(codUnid: string): Promise<string> {
-    const result = await this.siiiDataSource.query(
+    const result = await this.authDataSource.query(
       `
-      SELECT u.abreviatura_icia
-      FROM unidad u
+      SELECT u.abreviatura
+      FROM parametro.unidad u
       WHERE u.abreviatura = $1
       `,
       [codUnid.trim()],
     );
 
-    return result.length > 0 ? result[0].abreviatura_icia : '';
+    return result.length > 0 ? result[0].abreviatura : '';
   }
 
   async findOperativos(

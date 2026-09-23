@@ -20,7 +20,7 @@ export interface AsignacionTable {
   unidad: {
     idUnidad: string
     descripcion: string
-  }
+  } | null,
   letra: string | null
   servicio: {
     codigoServicio: string
