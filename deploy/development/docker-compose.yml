@@ -35,10 +35,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../tools/postgres/01-crear-bases.sh:/docker-entrypoint-initdb.d/01-crear-bases.sh:ro
+    # Publicado al host para administración puntual (DBeaver/psql) — restringido
+    # por ufw a los segmentos autorizados (ver docs/03-base-de-datos.md), nunca
+    # abierto a todo internet. Las apps de este compose lo siguen alcanzando por
+    # nombre de servicio (DB_HOST=postgres) en la red interna de Docker, no
+    # dependen de este puerto publicado.
+    ports:
+      - '5432:5432'
     networks:
       - felcn-network
-    # Sin puertos publicados al host — solo lo alcanzan las apps de este mismo compose,
-    # por nombre de servicio (DB_HOST=postgres), en la red interna de Docker.
 
   nginx:
     image: nginx:1.26-alpine
