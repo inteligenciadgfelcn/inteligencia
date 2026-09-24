@@ -4,6 +4,7 @@ import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { BaseController } from '@/common/base/base-controller'
 import { OperativoService } from '@/application/sunesis/siii/operativo/service/operativo.service'
 import { InformacionSiiiService } from './informacion_siii.service'
+import { ConsultaSiiiQueryDto } from './dto/consulta_siii.dto'
 
 @Controller('informacion-siii')
 export class InformacionSiiiController extends BaseController {
@@ -87,4 +88,13 @@ export class InformacionSiiiController extends BaseController {
     )
     return this.successPagedRows(resultado, paginacion)
   }
+
+    @ApiOperation({
+      summary: 'Búsqueda avanzada de SIII',
+    })
+    @Get('avanzado')
+    async avanzado(@Query() filtro: ConsultaSiiiQueryDto) {
+      const result = await this.informacionSiiiService.buscarAvanzado(filtro)
+      return this.successList(result)
+    }
 }

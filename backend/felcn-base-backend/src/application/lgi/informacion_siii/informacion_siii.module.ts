@@ -5,11 +5,12 @@ import { SiiiModule } from '@/application/sunesis/siii/siii.module'
 import { AsignacionSiii } from '@/application/sunesis/siii/asignacion/entity/asignacion-siii.entity'
 import { InformacionSiiiService } from './informacion_siii.service'
 import { InformacionSiiiController } from './informacion_siii.controller'
+import { ConsultaSiiiRepository } from './repository/consulta.repository'
 
 @Module({
   imports: [TypeOrmModule.forFeature([AsignacionSiii], DB_SIII), SiiiModule],
   controllers: [InformacionSiiiController],
-  providers: [InformacionSiiiService],
-  exports: [InformacionSiiiService],
+  providers: [InformacionSiiiService, ConsultaSiiiRepository],
+  exports: [InformacionSiiiService,ConsultaSiiiRepository],
 })
 export class InformacionSiiiModule {}
