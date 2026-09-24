@@ -3,12 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { DB_SIII } from '@/application/sunesis/shared/constants'
 import { AsignacionSiii } from '@/application/sunesis/siii/asignacion/entity/asignacion-siii.entity'
+import { ConsultaSiiiQueryDto, RespuestaAvanzadaCompleta } from './dto/consulta_siii.dto'
+import { ConsultaSiiiRepository } from './repository/consulta.repository'
 
 @Injectable()
 export class InformacionSiiiService {
   constructor(
     @InjectRepository(AsignacionSiii, DB_SIII)
-    private readonly asignacionRepository: Repository<AsignacionSiii>
+    private readonly asignacionRepository: Repository<AsignacionSiii>,
+      private readonly consultaRepository: ConsultaSiiiRepository,
   ) {}
 
   async obtenerInformacionPorNumeroCaso(numeroCaso: string) {
@@ -43,4 +46,8 @@ export class InformacionSiiiService {
 
     return resultados
   }
+
+  buscarAvanzado(filtro: ConsultaSiiiQueryDto): Promise<RespuestaAvanzadaCompleta> {
+      return this.consultaRepository.buscarAvanzado(filtro)
+    }
 }
