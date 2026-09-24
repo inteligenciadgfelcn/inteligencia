@@ -578,7 +578,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                     <div class="timeline-item">
                         <div class="timeline-title">DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES</div>
                         <table>
-                            <thead><tr><th>Tipo de Droga</th><th>Estado</th><th>Cantidad (g)</th><th>Costo (Bs)</th><th>Transporte</th><th>Procedencia</th><th>Destino</th></tr></thead>
+                            <thead><tr><th>Tipo de Droga</th><th>Estado</th><th>Cantidad (gramos)/Litro</th><th>Costo (Bs)</th><th>Transporte</th><th>Procedencia</th><th>Destino</th></tr></thead>
                             <tbody>${drogaRows}</tbody>
                         </table>
                     </div>

@@ -371,7 +371,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="text-white">
-                              {['Tipo de Droga', 'Estado', 'Cantidad (g)', 'Costo (Bs)', 'Transporte', 'Procedencia', 'Destino'].map((h) => (
+                              {['Tipo de Droga', 'Estado', 'Cantidad (gramos)/Litro', 'Costo (Bs)', 'Transporte', 'Procedencia', 'Destino'].map((h) => (
                                 <th key={h} className="bg-[#5D7B9D] px-2 py-1 text-left">{h}</th>
                               ))}
                             </tr>
