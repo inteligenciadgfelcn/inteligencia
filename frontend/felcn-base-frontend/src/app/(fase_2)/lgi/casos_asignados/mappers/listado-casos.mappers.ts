@@ -36,11 +36,33 @@ export const mapAsignacionCasoRow = (
 export const formatFecha = (fecha: string | null | undefined): string =>
   formatFechaUtil(fecha, 'dd/MM/yyyy')
 
-export const calcularDiasTranscurridos = (
+export interface TiempoTranscurrido {
+  anos: number
+  meses: number
+  dias: number
+}
+
+export const calcularTiempoTranscurridos = (
   fecha: string | null | undefined
-): number | null => {
+): TiempoTranscurrido | null => {
   if (!fecha) return null
-  const d = dayjs(fecha)
-  if (!d.isValid()) return null
-  return dayjs().startOf('day').diff(d.startOf('day'), 'day')
+  
+  const start = dayjs(fecha)
+  if (!start.isValid()) return null
+
+  const now = dayjs().startOf('day')
+  const startDate = start.startOf('day')
+
+  // 1. Calcular años transcurridos
+  const anos = now.diff(startDate, 'year')
+  const afterYears = startDate.add(anos, 'year')
+
+  // 2. Calcular meses restantes después de los años
+  const meses = now.diff(afterYears, 'month')
+  const afterMonths = afterYears.add(meses, 'month')
+
+  // 3. Calcular días restantes después de los meses
+  const dias = now.diff(afterMonths, 'day')
+
+  return { anos, meses, dias }
 }
