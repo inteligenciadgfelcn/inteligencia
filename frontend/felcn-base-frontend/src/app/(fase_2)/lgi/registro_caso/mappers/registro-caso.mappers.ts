@@ -83,6 +83,18 @@ export const CODIGO_DEPARTAMENTO: Record<string, string> = {
   PANDO: 'PN',
 }
 
+export const DEPARTAMENTO_POR_CODIGO: Record<string, string> = {
+  LP: 'La Paz',
+  CB: 'Cochabamba',
+  SC: 'Santa Cruz',
+  BN: 'Beni',
+  PT: 'Potosí',
+  OR: 'Oruro',
+  CH: 'Chuquisaca',
+  TJ: 'Tarija',
+  PN: 'Pando',
+}
+
 export const codigoDepartamento = (item: DepartamentoLgi): string =>
   CODIGO_DEPARTAMENTO[item.descripcion.trim().toUpperCase()] ??
   item.descripcion.trim().toUpperCase()

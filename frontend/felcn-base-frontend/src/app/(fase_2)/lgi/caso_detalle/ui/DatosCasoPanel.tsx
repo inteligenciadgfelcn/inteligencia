@@ -1,3 +1,4 @@
+import { DEPARTAMENTO_POR_CODIGO } from '../../registro_caso/mappers/registro-caso.mappers';
 import type { CasoDetalle } from '../types/caso-detalle.types'
 
 type Props = {
@@ -7,7 +8,7 @@ type Props = {
 const campos: Array<{ label: string; key: keyof CasoDetalle }> = [
   { label: 'Nombre del Caso', key: 'nombreCaso' },
   { label: 'Regional', key: 'dptoavId' },
-  { label: 'Nro Caso GIAEF', key: 'nroCasoGlaef' },
+  { label: 'Nro Caso GIAEF', key: 'nroCaso' },
   { label: 'CUD', key: 'cudIfp' },
   { label: 'Fiscal Asignado', key: 'remiteFiscal' },
   { label: 'Fecha Inicio', key: 'fechaInicio' },
@@ -28,9 +29,15 @@ export function DatosCasoPanel({ caso }: Props) {
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
               {label}
             </p>
-            <p className="mt-0.5 text-sm font-semibold text-dark dark:text-white-light">
-              {caso[key] ?? '-'}
-            </p>
+            {key == 'dptoavId' ?
+              <p className="mt-0.5 text-sm font-semibold text-dark dark:text-white-light">
+                {DEPARTAMENTO_POR_CODIGO[caso['dptoavId']] ?? '-'}
+              </p>
+              :
+              <p className="mt-0.5 text-sm font-semibold text-dark dark:text-white-light">
+                {caso[key] ?? '-'}
+              </p>
+            }
           </div>
         ))}
       </div>
