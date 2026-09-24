@@ -7,6 +7,7 @@ const BASE = `${Constantes.baseUrl}/reportes`
 
 export interface PreviewCaso {
   nombreCaso: string
+  numeroCaso: string | null
   numeroOperativo: string
   asignadoCaso: string
   fiscalAsignadoCaso: string
@@ -14,7 +15,6 @@ export interface PreviewCaso {
 
 export interface PreviewOperativo {
   id: string
-  numeroOperativo: string
   fechaOperativo: string | null
   lugar: string
   descripcionUnidad: string | null

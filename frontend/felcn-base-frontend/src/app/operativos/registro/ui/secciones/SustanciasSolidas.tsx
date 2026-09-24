@@ -44,10 +44,8 @@ export function SustanciasSolidas({
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const { Alerta } = useAlerts()
   const [tipoSustancia, setTipoSustancia] = useState('')
-  const [toneladas, setToneladas] = useState('0')
   const [kilos, setKilos] = useState('0')
   const [gramos, setGramos] = useState('0')
-  const [miligramos, setMiligramos] = useState('0')
   const [costo, setCosto] = useState<number | null>(0)
   const [opciones, setOpciones] = useState<
     { id: string; label: string; value: string }[]
@@ -83,15 +81,12 @@ export function SustanciasSolidas({
     if (!tipoSustancia) {
       return
     }
-    if (!toneladas && !kilos && !gramos && !miligramos) {
+    if (!kilos && !gramos) {
       return
     }
 
     const totalKilos =
-      parseFloat(toneladas || '0') * 1000 +
-      parseFloat(kilos || '0') +
-      parseFloat(gramos || '0') / 1000 +
-      parseFloat(miligramos || '0') / 1000000
+      parseFloat(kilos || '0') + parseFloat(gramos || '0') / 1000
 
     if (totalKilos < 0.001) {
       return
@@ -110,10 +105,8 @@ export function SustanciasSolidas({
     await onGuardar(nuevaSustancia)
 
     setTipoSustancia('')
-    setToneladas('0')
     setKilos('0')
     setGramos('0')
-    setMiligramos('0')
     setCosto(0)
     setSubmitted(false)
   }
@@ -128,10 +121,7 @@ export function SustanciasSolidas({
   }
 
   const totalCantidad =
-    parseFloat(toneladas || '0') * 1000 +
-    parseFloat(kilos || '0') +
-    parseFloat(gramos || '0') / 1000 +
-    parseFloat(miligramos || '0') / 1000000
+    parseFloat(kilos || '0') + parseFloat(gramos || '0') / 1000
 
   return (
     <div>
@@ -184,31 +174,6 @@ export function SustanciasSolidas({
             )}
           </div>
 
-          <div className="hidden lg:block"></div>
-          <div className="hidden lg:block"></div>
-
-          <div>
-            <label
-              htmlFor="sustanciaQuimicaSolidaToneladas"
-              className="mb-1 block text-sm font-medium"
-            >
-              Toneladas (Tn)
-            </label>
-            <Input
-              id="sustanciaQuimicaSolidaToneladas"
-              type="text"
-              value={toneladas}
-              onChange={(e) => {
-                const val = e.target.value
-                if (val === '' || /^\d*$/.test(val)) {
-                  setToneladas(val)
-                }
-              }}
-              placeholder="0"
-              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
-            />
-          </div>
-
           <div>
             <label
               htmlFor="sustanciaQuimicaSolidaKilos"
@@ -222,10 +187,7 @@ export function SustanciasSolidas({
               value={kilos}
               onChange={(e) => {
                 const val = e.target.value
-                if (
-                  val === '' ||
-                  (parseInt(val) >= 0 && parseInt(val) <= 999)
-                ) {
+                if (val === '' || /^\d*$/.test(val)) {
                   setKilos(val)
                 }
               }}
@@ -252,31 +214,6 @@ export function SustanciasSolidas({
                   (parseInt(val) >= 0 && parseInt(val) <= 999)
                 ) {
                   setGramos(val)
-                }
-              }}
-              placeholder="0"
-              className={totalCantidad < 0.001 && submitted ? 'border-danger' : ''}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="sustanciaQuimicaSolidaMiligramos"
-              className="mb-1 block text-sm font-medium"
-            >
-              Miligramos (Mg)
-            </label>
-            <Input
-              id="sustanciaQuimicaSolidaMiligramos"
-              type="text"
-              value={miligramos}
-              onChange={(e) => {
-                const val = e.target.value
-                if (
-                  val === '' ||
-                  (parseInt(val) >= 0 && parseInt(val) <= 999)
-                ) {
-                  setMiligramos(val)
                 }
               }}
               placeholder="0"

@@ -10,6 +10,8 @@ export interface GestionOperativoItem {
   asignadoCaso: string
   fiscalAsignadoCaso: string
   ianus?: string
+  /** true cuando existe la fila en la tabla operativo (solo en el listado de no aprobados) */
+  tieneOperativo?: boolean
   id?: number | string
   idOperativo?: number | string
   departamento?: string

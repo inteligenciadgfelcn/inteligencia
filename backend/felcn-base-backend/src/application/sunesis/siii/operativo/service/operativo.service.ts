@@ -20,6 +20,7 @@ import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entit
 import { PersonaAuxiliar } from '../entity/persona-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
+import { parsearFechaPura } from '@/common/utils/date.util'
 
 // DTOs
 import {
@@ -465,7 +466,7 @@ export class OperativoService extends BaseService {
       apellidoMaterno: data.apellidoMaterno ?? '',
       apellidoEsposo: data.apellidoEsposo ?? '',
       nroDocumento: data.nroDocumento,
-      fechaNacimiento: data.fechaNacimiento ? new Date(data.fechaNacimiento) : undefined,
+      fechaNacimiento: data.fechaNacimiento ? parsearFechaPura(data.fechaNacimiento) : undefined,
       genero: data.genero,
       direccion: data.direccion,
       estado: data.estado,

@@ -114,7 +114,10 @@ export class AsignacionSiiiRepository {
         a.numero_operativo AS "numeroOperativo",
         a.nombre_caso AS "nombreCaso",
         a.asignado_caso AS "asignadoCaso",
-        a.fiscal_asignado_caso AS "fiscalAsignadoCaso"
+        a.fiscal_asignado_caso AS "fiscalAsignadoCaso",
+        EXISTS (
+          SELECT 1 FROM public.operativo o WHERE o.id_caso = a.id_caso
+        ) AS "tieneOperativo"
       FROM public.asignacion a
       LEFT JOIN auth_fdw.unidad u ON a.abreviatura_unidad = u.abreviatura
       LEFT JOIN auth_fdw.distrital d ON a.id_distrital = d.id

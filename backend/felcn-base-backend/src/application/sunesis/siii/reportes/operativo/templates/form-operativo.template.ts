@@ -248,11 +248,11 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
             mapaCoords,
         } = data
 
-        const formatNumber = (num: any) => {
+        const formatNumber = (num: any, decimales = 2) => {
             const val = typeof num === 'string' ? parseFloat(num) : num
             return (val || 0).toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
+                minimumFractionDigits: decimales,
+                maximumFractionDigits: decimales,
             })
         }
 
@@ -263,7 +263,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
             <tr>
                 <td>${droga.descripcionTipoDroga || 'N/A'}</td>
                 <td>${droga.descripcionEstadoDroga || 'N/A'}</td>
-                <td>${formatNumber(droga.cantidadGramos || droga.cantidad)}</td>
+                <td>${formatNumber(droga.cantidadGramos || droga.cantidad, 3)}</td>
                 <td>${formatNumber(droga.costo)}</td>
                 <td>${droga.descripcionFormaTransporte || 'N/A'}</td>
                 <td>${droga.descripcionPaisProcedencia || 'N/A'}</td>
@@ -325,7 +325,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 (sustanciaSolida) => `
             <tr>
                 <td>${sustanciaSolida.descripcionSustancia || 'N/A'}</td>
-                <td>${formatNumber(sustanciaSolida.cantidad)}</td>
+                <td>${formatNumber(sustanciaSolida.cantidad, 3)}</td>
                 <td>${formatNumber(sustanciaSolida.costo)}</td>
             </tr>
         `
@@ -337,7 +337,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                 (sustanciaLiquida) => `
             <tr>
                 <td>${sustanciaLiquida.descripcionSustancia || 'N/A'}</td>
-                <td>${formatNumber(sustanciaLiquida.cantidad)}</td>
+                <td>${formatNumber(sustanciaLiquida.cantidad, 3)}</td>
                 <td>${formatNumber(sustanciaLiquida.costo)}</td>
             </tr>
         `
@@ -578,7 +578,7 @@ export class OperativeReportTemplate implements ReportTemplate<any> {
                     <div class="timeline-item">
                         <div class="timeline-title">DROGAS, PSICOTROPICOS Y ESTUPEFACIENTES</div>
                         <table>
-                            <thead><tr><th>Tipo de Droga</th><th>Estado</th><th>Cantidad (g)</th><th>Costo (Bs)</th><th>Transporte</th><th>Procedencia</th><th>Destino</th></tr></thead>
+                            <thead><tr><th>Tipo de Droga</th><th>Estado</th><th>Cantidad (gramos)/Litro</th><th>Costo (Bs)</th><th>Transporte</th><th>Procedencia</th><th>Destino</th></tr></thead>
                             <tbody>${drogaRows}</tbody>
                         </table>
                     </div>

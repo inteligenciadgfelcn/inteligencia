@@ -284,3 +284,24 @@ function formatearPartesBolivia(date: Date): {
     horaTexto: `${horas}:${minutos}`,
   }
 }
+/**
+ * Convierte una fecha pura (yyyy-MM-dd) a un Date a medianoche en hora local.
+ *
+ * new Date('yyyy-MM-dd') se interpreta como UTC; al guardarlo en una columna
+ * `timestamp` (sin zona) el driver lo convierte a hora local y la fecha se
+ * corre un día atrás. Construirlo con componentes locales lo evita.
+ *
+ * Si el valor no es una fecha pura (por ejemplo un ISO con hora), se
+ * interpreta con new Date() como hasta ahora.
+ */
+export function parsearFechaPura(valor: string): Date {
+  const coincidencia = valor.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+
+  if (!coincidencia) {
+    return new Date(valor)
+  }
+
+  const [, anio, mes, dia] = coincidencia
+
+  return new Date(Number(anio), Number(mes) - 1, Number(dia))
+}
