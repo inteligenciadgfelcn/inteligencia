@@ -132,8 +132,8 @@ interface Props {
   urlPdf: string | null
 }
 
-const fmt = (n: any) =>
-  (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt = (n: any, decimales = 2) =>
+  (parseFloat(n) || 0).toLocaleString('en-US', { minimumFractionDigits: decimales, maximumFractionDigits: decimales })
 
 const fmtFecha = (f: string | null | undefined) => {
   if (!f) return 'N/A'
@@ -386,7 +386,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                                     {[
                                       d.descripcionTipoDroga,
                                       d.descripcionEstadoDroga,
-                                      fmt(d.cantidadGramos ?? d.cantidad),
+                                      fmt(d.cantidadGramos ?? d.cantidad, 3),
                                       fmt(d.costo),
                                       d.descripcionFormaTransporte,
                                       d.descripcionPaisProcedencia,
@@ -473,7 +473,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       <TituloSeccion>Sustancias Químicas Sólidas</TituloSeccion>
                       <TablaSimple
                         headers={['Nombre', 'Kilos', 'Costo (Bs)']}
-                        rows={sustanciasSolidas.map((s) => [s.descripcionSustancia, fmt(s.cantidad), fmt(s.costo)])}
+                        rows={sustanciasSolidas.map((s) => [s.descripcionSustancia, fmt(s.cantidad, 3), fmt(s.costo)])}
                         vacio="Sin sustancias sólidas registradas"
                       />
 
@@ -481,7 +481,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       <TituloSeccion>Sustancias Químicas Líquidas</TituloSeccion>
                       <TablaSimple
                         headers={['Nombre', 'Litros', 'Costo (Bs)']}
-                        rows={sustanciasLiquidas.map((s) => [s.descripcionSustancia, fmt(s.cantidad), fmt(s.costo)])}
+                        rows={sustanciasLiquidas.map((s) => [s.descripcionSustancia, fmt(s.cantidad, 3), fmt(s.costo)])}
                         vacio="Sin sustancias líquidas registradas"
                       />
 

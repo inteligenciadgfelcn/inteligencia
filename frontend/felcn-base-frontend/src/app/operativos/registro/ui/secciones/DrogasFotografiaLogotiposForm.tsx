@@ -821,18 +821,14 @@ export function SeccionDrogasFotografiaLogotiposForm({
                   render: (r) => {
                     if (r.cantidadGramos == null) return formatDecimal(0, 3)
                     // El total se guarda en gramos (sólido) o litros (líquido, ya en su unidad base).
-                    // Se muestra en Kg/Lts, igual que en los tabs de Sustancias Sólidas/Líquidas.
-                    const valor =
-                      r.unidadMedida === 'Litros'
-                        ? Number(r.cantidadGramos)
-                        : Number(r.cantidadGramos) / 1000
-                    return formatDecimal(valor, 3)
+                    // Se muestra tal cual, con 3 decimales, igual que el PDF del operativo.
+                    return formatDecimal(Number(r.cantidadGramos), 3)
                   },
                 },
                 {
                   accessor: 'unidadMedida',
                   title: 'Unidad de Medida',
-                  render: (r) => (r.unidadMedida === 'Litros' ? 'Lts' : 'Kg'),
+                  render: (r) => (r.unidadMedida === 'Litros' ? 'Lts' : 'g'),
                 },
                 {
                   accessor: 'costo',
