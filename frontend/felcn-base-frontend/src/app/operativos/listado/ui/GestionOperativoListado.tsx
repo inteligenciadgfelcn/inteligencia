@@ -320,7 +320,7 @@ export function GestionOperativoListado({
         onClose={() => setModalOpen(false)}
         data={previewData}
         tipo="operativo"
-        urlPdf={previewUrl}
+        urlPdf={tipo === 'no-aprobado' ? null : previewUrl}
       />
       <CustomDialog
         isOpen={fiscaliaModalOpen}
