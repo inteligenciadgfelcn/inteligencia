@@ -75,12 +75,12 @@ export const CODIGO_DEPARTAMENTO: Record<string, string> = {
   'LA PAZ': 'LP',
   COCHABAMBA: 'CB',
   'SANTA CRUZ': 'SC',
-  BENI: 'BE',
-  POTOSÍ: 'PO',
+  BENI: 'BN',
+  POTOSÍ: 'PT',
   ORURO: 'OR',
   CHUQUISACA: 'CH',
-  TARIJA: 'TA',
-  PANDO: 'PA',
+  TARIJA: 'TJ',
+  PANDO: 'PN',
 }
 
 export const codigoDepartamento = (item: DepartamentoLgi): string =>

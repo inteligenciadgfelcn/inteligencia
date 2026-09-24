@@ -116,6 +116,18 @@ export const RegistroCasoApi = {
     })
   },
 
+  actualizarSituacionJuridica(
+    id: string | number,
+    dto: SituacionJuridicaPayload
+  ): Promise<RespuestaCrud> {
+    return sesionPeticion({
+      url: `${BASE_SITUACION_JURIDICA}/${id}`,
+      method: 'patch',
+      body: dto,
+      withCredentials: true,
+    })
+  },
+
   listarSituacionesLegales(): Promise<SituacionLegalCatalogo[]> {
     return sesionPeticion({
       url: BASE_SITUACION_LEGAL,

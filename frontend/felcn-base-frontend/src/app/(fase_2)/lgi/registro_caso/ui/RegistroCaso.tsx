@@ -47,7 +47,7 @@ import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 import { CasoSiiiDialog } from './CasoSiiiDialog'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
 import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
-import { PdfVistaPreviaDialog } from '../../components/PdfVistaPreviaDialog'
+import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
 
 type TabKey =
   | 'datos-generales'
@@ -77,7 +77,7 @@ const formaInicioToOption = (value: string): CatalogOption<string> => ({
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: 'datos-generales', label: 'Datos generales del caso' },
   { key: 'personas', label: 'Personas investigadas' },
-  { key: 'informacion-caso', label: 'Información del caso' },
+  { key: 'informacion-caso', label: 'Antecedentes del caso' },
   { key: 'investigadores', label: 'Investigadores asignados' },
 ]
 
@@ -121,7 +121,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [generandoNumero, setGenerandoNumero] = useState(false)
   const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
     useState(false)
-  const [vistaPreviaOpen, setVistaPreviaOpen] = useState(false)
   const [conformeAValue, setConformeAValue] = useState('')
 
   const casoIdEfectivo = casoActivo ?? casoActivoId
@@ -301,7 +300,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
               <Button
                 type="button"
                 variant="outline-primary"
-                onClick={() => setVistaPreviaOpen(true)}
+                onClick={() =>
+                  void abrirPdfEnNuevaPestana(RegistroCasoApi.exportarInicioPdf)
+                }
               >
                 Vista previa
               </Button>
@@ -660,14 +661,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       <CasoSiiiDialog isOpen={solicitarInteligenciaOpen} nroCaso={informacionForm.getValues('nroCasoFelcn')} onClose={() => {
         setSolicitarInteligenciaOpen(false)
       }} />
-
-      <PdfVistaPreviaDialog
-        isOpen={vistaPreviaOpen}
-        onClose={() => setVistaPreviaOpen(false)}
-        title="Vista previa del reporte"
-        obtenerBlob={() => RegistroCasoApi.exportarInicioPdf()}
-        nombreDescarga="lgi-inicio-investigacion-10.pdf"
-      />
     </div>
   )
 }

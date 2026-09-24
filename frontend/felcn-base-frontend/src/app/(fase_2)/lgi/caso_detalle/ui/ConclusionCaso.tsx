@@ -9,7 +9,7 @@ import IconDownload from '@/components/Icon/IconDownload'
 import { ActuacionesApi } from '../api/actuaciones.api'
 import type { ActuacionRow } from '../types/actuaciones.types'
 import { formatFecha } from '../../utils/fechas'
-import { PdfVistaPreviaDialog } from '../../components/PdfVistaPreviaDialog'
+import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
 
 type Props = {
   casoId: number
@@ -21,7 +21,6 @@ export function ConclusionCaso({ casoId }: Props) {
   const [tipologias, setTipologias] = useState('')
   const [verbosRectores, setVerbosRectores] = useState('')
   const [etapasCiclo, setEtapasCiclo] = useState('')
-  const [reporteVistaPreviaOpen, setReporteVistaPreviaOpen] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState<string | null>(null)
 
@@ -73,6 +72,17 @@ export function ConclusionCaso({ casoId }: Props) {
       setMensaje('Error al guardar la conclusión del caso. Intente nuevamente.')
     } finally {
       setGuardando(false)
+    }
+  }
+
+  const abrirReporte = async () => {
+    setMensaje(null)
+    try {
+      await abrirPdfEnNuevaPestana(ActuacionesApi.exportarBienesPdf)
+    } catch {
+      setMensaje(
+        'No se pudo abrir el reporte. Verifique que su navegador permita pestañas emergentes.'
+      )
     }
   }
 
@@ -182,20 +192,13 @@ export function ConclusionCaso({ casoId }: Props) {
             type="button"
             variant="outline-primary"
             className="w-full gap-2"
-            onClick={() => setReporteVistaPreviaOpen(true)}
+            onClick={abrirReporte}
           >
             <IconDownload className="h-4 w-4" />
             Descargar Reporte
           </Button>
         </div>
       </div>
-
-      <PdfVistaPreviaDialog
-        isOpen={reporteVistaPreviaOpen}
-        onClose={() => setReporteVistaPreviaOpen(false)}
-        title="Reporte de conclusión del caso"
-        obtenerBlob={() => ActuacionesApi.exportarBienesPdf()}
-      />
     </div>
   )
 }

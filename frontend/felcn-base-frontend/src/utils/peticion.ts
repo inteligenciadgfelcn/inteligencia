@@ -98,3 +98,20 @@ export const descargarArchivoAutenticado = async (url: string, nombreArchivo: st
   enlace.remove()
   URL.revokeObjectURL(objectUrl)
 }
+
+/**
+ * Abre un archivo protegido por sesión (ej. PDF de reporte) en una pestaña nueva.
+ * A diferencia del preview en iframe con `blob:`, la navegación de pestaña no está
+ * restringida por el CSP `frame-src`, por lo que funciona también en producción.
+ * `window.open()` se ejecuta dentro de la "transient user activation" de Chrome
+ * (~5s tras el clic), así que no lo bloquea el popup blocker.
+ */
+export const abrirPdfEnNuevaPestana = async (
+  obtenerBlob: () => Promise<Blob>
+): Promise<void> => {
+  const blob = await obtenerBlob()
+  const objectUrl = URL.createObjectURL(blob)
+  const ventana = window.open()
+  if (!ventana) throw new Error('No se pudo abrir una nueva pestaña')
+  ventana.location.href = objectUrl
+}

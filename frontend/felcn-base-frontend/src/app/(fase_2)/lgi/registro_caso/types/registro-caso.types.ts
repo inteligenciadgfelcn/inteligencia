@@ -44,6 +44,7 @@ export interface UltimaSituacionJuridica {
   situacionId: string
   detenidoId: string
   situacionLegalId: string
+  fecha?: string
   situacionLegal: {
     slId: number
     descripcion: string
