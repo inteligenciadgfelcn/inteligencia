@@ -4,6 +4,10 @@ import type {
   ResumenEstadoCaso,
   ResumenOperativos,
   ResumenBienes,
+  ResumenSituacionLegal,
+  ResumenPersonasInvestigadas,
+  ResumenPersonasJuridicas,
+  ResumenOtrosDatos,
   ItemCategoriaBien,
 } from '../estadisticas-lgi.interfaces'
 
@@ -12,6 +16,14 @@ const ETIQUETA_CATEGORIA: Record<string, string> = {
   inmuebles: 'Inmuebles',
   dineros: 'Dineros',
   otros: 'Otros',
+}
+
+const ORDEN_TIPO_SITUACION: Record<number, number> = {
+  1: 1,
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
 }
 
 /**
@@ -166,6 +178,129 @@ export class EstadisticasLgiService {
       porCategoria,
       porBienCatalogo,
       serie: { meses, porCategoria: seriePorCategoria },
+    }
+  }
+
+  async resumenOtrosDatos(
+    fechaInicio?: string,
+    fechaFin?: string,
+    gestion?: number,
+  ): Promise<ResumenOtrosDatos> {
+    const [desde, hasta] = this.resolverRango(fechaInicio, fechaFin, gestion)
+
+    const [kpi, porTipologia, porVerboRector, porEtapaCiclo] =
+      await Promise.all([
+        this.repository.kpiOtrosDatos(desde, hasta),
+        this.repository.otrosDatosTokens('tipologias_identificadas', desde, hasta),
+        this.repository.otrosDatosTokens('verbos_rectores', desde, hasta),
+        this.repository.otrosDatosTokens('etapas_ciclo_lgi', desde, hasta),
+      ])
+
+    return { kpi, porTipologia, porVerboRector, porEtapaCiclo }
+  }
+
+  async resumenPersonasJuridicas(
+    fechaInicio?: string,
+    fechaFin?: string,
+    gestion?: number,
+  ): Promise<ResumenPersonasJuridicas> {
+    const [desde, hasta] = this.resolverRango(fechaInicio, fechaFin, gestion)
+
+    const meses = this.listarMeses(desde, hasta)
+
+    const [kpi, porTipoSociedad, porSituacionJuridica, porVinculo, topBeneficiarios, serie] =
+      await Promise.all([
+        this.repository.kpiPersonasJuridicas(desde, hasta),
+        this.repository.personasJuridicasPorTipoSociedad(desde, hasta),
+        this.repository.personasJuridicasPorSituacionJuridica(desde, hasta),
+        this.repository.personasJuridicasPorVinculo(desde, hasta),
+        this.repository.personasJuridicasTopBeneficiarios(desde, hasta),
+        this.repository.personasJuridicasSerie(desde, hasta),
+      ])
+
+    const porMes = new Map(serie.map((f) => [f.yy, Number(f.n)]))
+
+    return {
+      kpi,
+      porTipoSociedad,
+      porSituacionJuridica,
+      porVinculo,
+      topBeneficiarios,
+      serie: {
+        meses,
+        total: meses.map((m) => porMes.get(m) ?? 0),
+      },
+    }
+  }
+
+  async resumenPersonasInvestigadas(
+    fechaInicio?: string,
+    fechaFin?: string,
+    gestion?: number,
+  ): Promise<ResumenPersonasInvestigadas> {
+    const [desde, hasta] = this.resolverRango(fechaInicio, fechaFin, gestion)
+
+    const meses = this.listarMeses(desde, hasta)
+
+    const [kpi, porSituacionLegal, serie] = await Promise.all([
+      this.repository.kpiPersonasInvestigadas(desde, hasta),
+      this.repository.personasInvestigadasPorSituacionLegal(desde, hasta),
+      this.repository.personasInvestigadasSerie(desde, hasta),
+    ])
+
+    const porMes = new Map(serie.map((f) => [`${f.situacion}|${f.yy}`, Number(f.cantidad)]))
+    const orden = porSituacionLegal.map((s) => s.descripcion)
+
+    return {
+      kpi,
+      porSituacionLegal,
+      serie: {
+        meses,
+        porSituacion: orden.map((situacion) => ({
+          situacion,
+          data: meses.map((mes) => porMes.get(`${situacion}|${mes}`) ?? 0),
+        })),
+      },
+    }
+  }
+
+  async resumenSituacionLegal(
+    fechaInicio?: string,
+    fechaFin?: string,
+    gestion?: number,
+  ): Promise<ResumenSituacionLegal> {
+    const [desde, hasta] = this.resolverRango(fechaInicio, fechaFin, gestion)
+
+    const meses = this.listarMeses(desde, hasta)
+
+    const [kpi, porTipo, serie] = await Promise.all([
+      this.repository.kpiSituacionLegal(desde, hasta),
+      this.repository.situacionLegalPorTipo(desde, hasta),
+      this.repository.situacionLegalSerie(desde, hasta),
+    ])
+
+    const seriesPorTipo = new Map(porTipo.map((p) => [p.tipoId, p.tipo]))
+
+    const porTipoSerializado = porTipo.map((p) => ({
+      ...p,
+      costo: Number(p.costo),
+    }))
+
+    const porTipoGrafico = Array.from(seriesPorTipo.entries())
+      .sort((a, b) => (ORDEN_TIPO_SITUACION[a[0]] ?? 99) - (ORDEN_TIPO_SITUACION[b[0]] ?? 99))
+      .map(([tipoId, tipo]) => ({
+        tipoId,
+        tipo,
+        cantidad: meses.map((mes) => {
+          const match = serie.find((f) => f.yy === mes && f.tipoId === tipoId)
+          return match?.cantidad ?? 0
+        }),
+      }))
+
+    return {
+      kpi,
+      porTipoSituacion: porTipoSerializado,
+      serie: { meses, porTipo: porTipoGrafico },
     }
   }
 

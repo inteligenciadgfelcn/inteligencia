@@ -93,4 +93,96 @@ export class EstadisticasLgiController extends BaseController {
     )
     return this.success(result)
   }
+
+  @Get('situacion-legal')
+  @ApiOperation({
+    summary: 'Reporte de situación legal de bienes',
+    description:
+      'Bienes por situación legal (Secuestrado, Incautado, Confiscado/Decomisado, ' +
+      'Entrega a DIRCABI y Devolución) con cantidades, costos y serie mensual.',
+  })
+  @ApiQuery({ name: 'fechaInicio', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'fechaFin', required: false, example: '2026-12-31' })
+  @ApiQuery({ name: 'gestion', required: false, example: 2026 })
+  async situacionLegal(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('gestion') gestion?: string,
+  ) {
+    const result = await this.estadisticasService.resumenSituacionLegal(
+      fechaInicio,
+      fechaFin,
+      gestion ? Number(gestion) : undefined,
+    )
+    return this.success(result)
+  }
+
+  @Get('personas-investigadas')
+  @ApiOperation({
+    summary: 'Reporte de personas investigadas LGI',
+    description:
+      'Personas investigadas por su situación jurídica vigente (investigado, imputado, ' +
+      'acusado, rechazado, sobreseído, absuelto, condenado) con serie mensual.',
+  })
+  @ApiQuery({ name: 'fechaInicio', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'fechaFin', required: false, example: '2026-12-31' })
+  @ApiQuery({ name: 'gestion', required: false, example: 2026 })
+  async personasInvestigadas(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('gestion') gestion?: string,
+  ) {
+    const result = await this.estadisticasService.resumenPersonasInvestigadas(
+      fechaInicio,
+      fechaFin,
+      gestion ? Number(gestion) : undefined,
+    )
+    return this.success(result)
+  }
+
+  @Get('personas-juridicas')
+  @ApiOperation({
+    summary: 'Reporte de personas jurídicas',
+    description:
+      'Empresas por tipo de sociedad (deducido de la razón social), situación jurídica, ' +
+      'vínculo, empresas investigadas vs intervenidas, beneficiarios finales y serie mensual.',
+  })
+  @ApiQuery({ name: 'fechaInicio', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'fechaFin', required: false, example: '2026-12-31' })
+  @ApiQuery({ name: 'gestion', required: false, example: 2026 })
+  async personasJuridicas(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('gestion') gestion?: string,
+  ) {
+    const result = await this.estadisticasService.resumenPersonasJuridicas(
+      fechaInicio,
+      fechaFin,
+      gestion ? Number(gestion) : undefined,
+    )
+    return this.success(result)
+  }
+
+  @Get('otros-datos')
+  @ApiOperation({
+    summary: 'Reporte de otros datos LGI',
+    description:
+      'Tipologías identificadas, verbos rectores y etapas/ciclo de LGI registrados en los ' +
+      'operativos (texto libre normalizado por frecuencia).',
+  })
+  @ApiQuery({ name: 'fechaInicio', required: false, example: '2026-01-01' })
+  @ApiQuery({ name: 'fechaFin', required: false, example: '2026-12-31' })
+  @ApiQuery({ name: 'gestion', required: false, example: 2026 })
+  async otrosDatos(
+    @Query('fechaInicio') fechaInicio?: string,
+    @Query('fechaFin') fechaFin?: string,
+    @Query('gestion') gestion?: string,
+  ) {
+    const result = await this.estadisticasService.resumenOtrosDatos(
+      fechaInicio,
+      fechaFin,
+      gestion ? Number(gestion) : undefined,
+    )
+    return this.success(result)
+  }
 }

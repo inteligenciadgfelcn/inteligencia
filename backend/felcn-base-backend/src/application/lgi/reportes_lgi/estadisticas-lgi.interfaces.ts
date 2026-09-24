@@ -138,3 +138,94 @@ export interface ResumenBienes {
   porBienCatalogo: ItemBienCatalogo[]
   serie: SerieBienes
 }
+
+// ─── Situación legal de bienes ───────────────────────────────────────────────
+
+export interface ItemTipoSituacionLegal {
+  tipoId: number
+  tipo: string
+  registros: number
+  items: number
+  cantidad: number
+  costo: number
+}
+
+export interface SerieSituacionLegalPorTipo {
+  tipoId: number
+  tipo: string
+  cantidad: number[]
+}
+
+export interface ResumenSituacionLegal {
+  kpi: {
+    totalItems: number
+    cantidadTotal: number
+    costoTotal: number
+    casosImplicados: number
+    operativosImplicados: number
+  }
+  porTipoSituacion: ItemTipoSituacionLegal[]
+  serie: {
+    meses: string[]
+    porTipo: SerieSituacionLegalPorTipo[]
+  }
+}
+
+// ─── Personas investigadas ───────────────────────────────────────────────────
+
+export interface SerieSituacionPersona {
+  situacion: string
+  data: number[]
+}
+
+export interface ResumenPersonasInvestigadas {
+  kpi: {
+    totalPersonas: number
+    casosImplicados: number
+    conSituacionJuridica: number
+    sinSituacionJuridica: number
+  }
+  porSituacionLegal: ItemEtiqueta[]
+  serie: {
+    meses: string[]
+    porSituacion: SerieSituacionPersona[]
+  }
+}
+
+// ─── Personas jurídicas ──────────────────────────────────────────────────────
+
+export interface ItemTopBeneficiario {
+  empresa: string
+  beneficiarios: number
+}
+
+export interface ResumenPersonasJuridicas {
+  kpi: {
+    totalEmpresas: number
+    identificadasIntervenidas: number
+    casosImplicados: number
+    totalBeneficiarios: number
+  }
+  porTipoSociedad: ItemEtiqueta[]
+  porSituacionJuridica: ItemEtiqueta[]
+  porVinculo: ItemEtiqueta[]
+  topBeneficiarios: ItemTopBeneficiario[]
+  serie: {
+    meses: string[]
+    total: number[]
+  }
+}
+
+// ─── Otros datos (tipologías, verbos rectores, etapas/ciclo) ─────────────────
+
+export interface ResumenOtrosDatos {
+  kpi: {
+    totalOperativos: number
+    conTipologia: number
+    conVerboRector: number
+    conEtapaCiclo: number
+  }
+  porTipologia: ItemEtiqueta[]
+  porVerboRector: ItemEtiqueta[]
+  porEtapaCiclo: ItemEtiqueta[]
+}

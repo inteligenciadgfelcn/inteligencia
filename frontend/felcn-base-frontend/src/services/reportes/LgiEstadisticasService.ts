@@ -122,6 +122,93 @@ export interface ResumenBienes {
   }
 }
 
+// ─── Situación legal de bienes ───────────────────────────────────────────────
+
+export interface TipoSituacionLegalRow {
+  tipoId: number
+  tipo: string
+  registros: number
+  items: number
+  cantidad: number
+  costo: number
+}
+
+export interface ResumenSituacionLegal {
+  kpi: {
+    totalItems: number
+    cantidadTotal: number
+    costoTotal: number
+    casosImplicados: number
+    operativosImplicados: number
+  }
+  porTipoSituacion: TipoSituacionLegalRow[]
+  serie: {
+    meses: string[]
+    porTipo: {
+      tipoId: number
+      tipo: string
+      cantidad: number[]
+    }[]
+  }
+}
+
+// ─── Personas investigadas ───────────────────────────────────────────────────
+
+export interface ResumenPersonasInvestigadas {
+  kpi: {
+    totalPersonas: number
+    casosImplicados: number
+    conSituacionJuridica: number
+    sinSituacionJuridica: number
+  }
+  porSituacionLegal: ItemEtiqueta[]
+  serie: {
+    meses: string[]
+    porSituacion: {
+      situacion: string
+      data: number[]
+    }[]
+  }
+}
+
+// ─── Personas jurídicas ──────────────────────────────────────────────────────
+
+export interface TopBeneficiarioRow {
+  empresa: string
+  beneficiarios: number
+}
+
+export interface ResumenPersonasJuridicas {
+  kpi: {
+    totalEmpresas: number
+    identificadasIntervenidas: number
+    casosImplicados: number
+    totalBeneficiarios: number
+  }
+  porTipoSociedad: ItemEtiqueta[]
+  porSituacionJuridica: ItemEtiqueta[]
+  porVinculo: ItemEtiqueta[]
+  topBeneficiarios: TopBeneficiarioRow[]
+  serie: {
+    meses: string[]
+    total: number[]
+  }
+}
+
+// ─── Otros datos (tipologías, verbos rectores, etapas/ciclo) ─────────────────
+
+export interface ResumenOtrosDatos {
+  kpi: {
+    totalOperativos: number
+    conTipologia: number
+    conVerboRector: number
+    conEtapaCiclo: number
+  }
+  porTipologia: ItemEtiqueta[]
+  porVerboRector: ItemEtiqueta[]
+  porEtapaCiclo: ItemEtiqueta[]
+}
+
 // ─── Respuesta API ───────────────────────────────────────────────────────────
 
 interface RespuestaApi<T> {
@@ -160,6 +247,42 @@ export const LgiEstadisticasService = {
   bienes(filtros: FiltrosEstadisticosLgi) {
     return sesionPeticion<RespuestaApi<ResumenBienes>>({
       url: `${BASE}/bienes`,
+      method: 'get',
+      params: filtros,
+      withCredentials: true,
+    })
+  },
+
+  situacionLegal(filtros: FiltrosEstadisticosLgi) {
+    return sesionPeticion<RespuestaApi<ResumenSituacionLegal>>({
+      url: `${BASE}/situacion-legal`,
+      method: 'get',
+      params: filtros,
+      withCredentials: true,
+    })
+  },
+
+  personasInvestigadas(filtros: FiltrosEstadisticosLgi) {
+    return sesionPeticion<RespuestaApi<ResumenPersonasInvestigadas>>({
+      url: `${BASE}/personas-investigadas`,
+      method: 'get',
+      params: filtros,
+      withCredentials: true,
+    })
+  },
+
+  personasJuridicas(filtros: FiltrosEstadisticosLgi) {
+    return sesionPeticion<RespuestaApi<ResumenPersonasJuridicas>>({
+      url: `${BASE}/personas-juridicas`,
+      method: 'get',
+      params: filtros,
+      withCredentials: true,
+    })
+  },
+
+  otrosDatos(filtros: FiltrosEstadisticosLgi) {
+    return sesionPeticion<RespuestaApi<ResumenOtrosDatos>>({
+      url: `${BASE}/otros-datos`,
       method: 'get',
       params: filtros,
       withCredentials: true,

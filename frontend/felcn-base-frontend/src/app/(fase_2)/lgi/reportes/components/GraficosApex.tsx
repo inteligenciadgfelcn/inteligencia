@@ -68,8 +68,13 @@ export function GraficoDonut({
 }
 
 export function GraficoBarras({
-  title, subtitle, categories, series, stacked, height = 320, className,
-}: PanelProps & { categories: string[]; series: SerieData[]; stacked?: boolean }) {
+  title, subtitle, categories, series, stacked, horizontal, height = 320, className,
+}: PanelProps & {
+  categories: string[]
+  series: SerieData[]
+  stacked?: boolean
+  horizontal?: boolean
+}) {
   const opciones: any = {
     chart: {
       type: 'bar',
@@ -80,13 +85,18 @@ export function GraficoBarras({
     },
     plotOptions: {
       bar: {
-        columnWidth: '55%',
+        horizontal: !!horizontal,
+        columnWidth: horizontal ? '55%' : '55%',
         borderRadius: 2,
+        barHeight: horizontal ? '60%' : undefined,
       },
     },
     dataLabels: { enabled: false },
     stroke: { show: true, width: 2, colors: ['transparent'] },
-    xaxis: { categories, labels: { rotate: -45 } },
+    xaxis: {
+      categories,
+      labels: horizontal ? { rotate: 0 } : { rotate: -45 },
+    },
     legend: { position: 'bottom', fontSize: '12px' },
     fill: { opacity: 1 },
     grid: { borderColor: '#e0e6ed' },
@@ -131,6 +141,46 @@ export function GraficoLineas({
         <SinDatos height={height} />
       ) : (
         <ReactApexChart series={series} options={opciones} type="line" height={height} width="100%" />
+      )}
+    </PanelBasico>
+  )
+}
+
+export function GraficoArea({
+  title, subtitle, categories, series, stacked = false, height = 320, className,
+}: PanelProps & {
+  categories: string[]
+  series: SerieData[]
+  stacked?: boolean
+}) {
+  const opciones: any = {
+    chart: {
+      type: 'area',
+      fontFamily: 'Nunito, sans-serif',
+      stacked,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+    },
+    stroke: { curve: 'smooth', width: 2 },
+    fill: {
+      type: 'gradient',
+      gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 },
+    },
+    dataLabels: { enabled: false },
+    xaxis: { categories, labels: { rotate: -45 } },
+    legend: { position: 'bottom', fontSize: '12px' },
+    grid: { borderColor: '#e0e6ed' },
+    tooltip: { theme: 'light' },
+  }
+
+  const hayDatos = series.some((s) => s.data.some((n) => n > 0))
+
+  return (
+    <PanelBasico title={title} subtitle={subtitle} className={className}>
+      {!hayDatos ? (
+        <SinDatos height={height} />
+      ) : (
+        <ReactApexChart series={series} options={opciones} type="area" height={height} width="100%" />
       )}
     </PanelBasico>
   )

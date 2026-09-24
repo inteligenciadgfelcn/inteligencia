@@ -53,3 +53,11 @@ export const ETIQUETA_BUCKETS: Record<string, string> = {
   dineros: 'Dineros',
   otros: 'Otros',
 }
+
+export const COLOR_TIPO_SITUACION: Record<number, string> = {
+  1: '#4361ee',
+  2: '#00ab55',
+  3: '#e7515a',
+  4: '#e2a03f',
+  5: '#805dca',
+}
