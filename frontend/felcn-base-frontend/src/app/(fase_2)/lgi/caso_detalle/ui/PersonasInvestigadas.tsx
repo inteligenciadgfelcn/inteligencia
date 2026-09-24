@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import dayjs from 'dayjs'
 
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -31,11 +32,12 @@ import {
   mapPaisToOption,
   mapEstadoCivilToOption,
   mapProfesionToOption,
+  mapSituacionLegalToOption,
   buildPersonaPayload,
 } from '../../registro_caso/mappers/registro-caso.mappers'
 import {
-  personaImplicadaSchema,
-  type PersonaImplicadaSchemaValues,
+  personaConSituacionSchema,
+  type PersonaConSituacionSchemaValues,
 } from '../../registro_caso/schemas/registro-caso.schema'
 import type {
   PersonaImplicadaRow,
@@ -43,7 +45,10 @@ import type {
   PersonaDetalle,
   SituacionLegalCatalogo,
 } from '../../registro_caso/types/registro-caso.types'
-import { createDefaultPersonaValues } from '../../registro_caso/utils/registro-caso.utils'
+import {
+  createDefaultPersonaValues,
+  createDefaultSituacionJuridicaValues,
+} from '../../registro_caso/utils/registro-caso.utils'
 import { formatFecha } from '../../utils/fechas'
 
 type Props = {
@@ -129,20 +134,37 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     setValue,
     watch,
     formState: { errors },
-  } = useForm<PersonaImplicadaSchemaValues>({
-    resolver: zodResolver(personaImplicadaSchema),
-    defaultValues: createDefaultPersonaValues(),
+  } = useForm<PersonaConSituacionSchemaValues>({
+    resolver: zodResolver(personaConSituacionSchema),
+    defaultValues: {
+      ...createDefaultPersonaValues(),
+      ...createDefaultSituacionJuridicaValues(),
+    },
   })
 
   const tipoDocValue = watch('tipoDocumentoId')
   const paisValue = watch('paisId')
   const estadoCivilValue = watch('estadoCivilId')
   const profesionValue = watch('profesionId')
+  const situacionLegalValue = watch('situacionLegalId')
 
   const abrirModal = (row?: PersonaImplicadaRow) => {
     if (row) {
       setPersonaEditando(row)
+      const ultima = row.ultimaSituacionJuridica
+      const situacionLegalOpt = ultima
+        ? situacionesLegales.find(
+            (s) => String(s.slId) === String(ultima.situacionLegalId)
+          ) ?? null
+        : null
       reset({
+        ...createDefaultSituacionJuridicaValues(),
+        situacionLegalId: situacionLegalOpt
+          ? mapSituacionLegalToOption(situacionLegalOpt)
+          : null,
+        fecha: ultima?.fecha
+          ? dayjs(ultima.fecha).format('YYYY-MM-DD')
+          : createDefaultSituacionJuridicaValues().fecha,
         nombres: row.nombres,
         paterno: row.paterno,
         materno: row.materno,
@@ -177,17 +199,38 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       })
     } else {
       setPersonaEditando(null)
-      reset(createDefaultPersonaValues())
+      reset({
+        ...createDefaultPersonaValues(),
+        ...createDefaultSituacionJuridicaValues(),
+      })
     }
     setModalOpen(true)
   }
 
-  const onSubmit = async (values: PersonaImplicadaSchemaValues) => {
+  const onSubmit = async (values: PersonaConSituacionSchemaValues) => {
     const payload: PersonaImplicadaPayload = buildPersonaPayload(casoId, values)
+    let detenidoId: number
     if (personaEditando) {
       await RegistroCasoApi.actualizarPersona(personaEditando.deId, payload)
+      detenidoId = personaEditando.deId
     } else {
-      await RegistroCasoApi.crearPersona(payload)
+      const respuesta = await RegistroCasoApi.crearPersona(payload)
+      detenidoId = respuesta.id
+    }
+    if (values.situacionLegalId) {
+      const situacionPayload = {
+        detenidoId,
+        situacionLegalId: Number(values.situacionLegalId.value),
+        fecha: values.fecha,
+      }
+      if (personaEditando?.ultimaSituacionJuridica) {
+        await RegistroCasoApi.actualizarSituacionJuridica(
+          personaEditando.ultimaSituacionJuridica.situacionId,
+          situacionPayload
+        )
+      } else {
+        await RegistroCasoApi.registrarSituacionJuridica(situacionPayload)
+      }
     }
     setModalOpen(false)
     queryClient.invalidateQueries({
@@ -254,6 +297,12 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       title: 'Última situación jurídica',
       render: (row) =>
         row.ultimaSituacionJuridica?.situacionLegal?.descripcion ?? '-',
+    },
+    {
+      accessor: 'fechaUltimaSituacionJuridica',
+      title: 'Fecha última situación jurídica',
+      render: (row) =>
+        formatFecha(row.ultimaSituacionJuridica?.fecha, 'dd/MM/yyyy'),
     },
     ...(isLectura
       ? []
@@ -503,6 +552,40 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   />
                 </div>
               </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Situación legal
+                    </label>
+                    <Select
+                      options={situacionesLegales.map(mapSituacionLegalToOption)}
+                      placeholder="Seleccione situación legal"
+                      value={situacionLegalValue?.value ?? ''}
+                      onChange={(e) => {
+                        const opt = situacionesLegales
+                          .map(mapSituacionLegalToOption)
+                          .find((o) => o.value === e.target.value)
+                        setValue('situacionLegalId', opt ?? null, {
+                          shouldValidate: true,
+                        })
+                      }}
+                    />
+                    {errors.situacionLegalId && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.situacionLegalId.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Fecha de la situación jurídica
+                    </label>
+                    <Input type="date" {...register('fecha')} />
+                    {errors.fecha && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.fecha.message}
+                      </p>
+                    )}
+                  </div>
               <div className="mt-5 flex justify-end gap-3">
                 <Button
                   type="button"

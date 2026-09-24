@@ -15,6 +15,7 @@ import IconUsers from '@/components/Icon/IconUsers'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 
 import { Constantes } from '@/config/Constantes'
+import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
 import { ActuacionesApi, ETAPAS } from '../api/actuaciones.api'
 import type {
   ActuacionRow,
@@ -23,7 +24,6 @@ import type {
 } from '../types/actuaciones.types'
 import type { MenuOption } from './MenuVertical'
 import { formatFecha } from '../../utils/fechas'
-import { PdfVistaPreviaDialog } from '../../components/PdfVistaPreviaDialog'
 
 type Props = {
   casoId: number
@@ -66,9 +66,6 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   const [sintesis, setSintesis] = useState('')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [guardando, setGuardando] = useState(false)
-
-  const [reporteSeleccionado, setReporteSeleccionado] =
-    useState<ActuacionRow | null>(null)
 
   const { data: actuacionesData, isLoading } = useQuery({
     queryKey: ['lgi-actuaciones', casoId, page, limit],
@@ -227,7 +224,11 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
             size="sm"
             className="!p-1.5"
             title="Ver reporte PDF"
-            onClick={() => setReporteSeleccionado(row)}
+            onClick={() => {
+              void abrirPdfEnNuevaPestana(() =>
+                ActuacionesApi.exportarActuacionPdf(Number(row.opId))
+              )
+            }}
           >
             <IconFile className="h-4 w-4" />
           </Button>
@@ -566,15 +567,6 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
           </div>
         </div>
       )}
-
-      <PdfVistaPreviaDialog
-        isOpen={Boolean(reporteSeleccionado)}
-        onClose={() => setReporteSeleccionado(null)}
-        title="Reporte de actuación"
-        obtenerBlob={() =>
-          ActuacionesApi.exportarActuacionPdf(Number(reporteSeleccionado!.opId))
-        }
-      />
     </div>
   )
 }

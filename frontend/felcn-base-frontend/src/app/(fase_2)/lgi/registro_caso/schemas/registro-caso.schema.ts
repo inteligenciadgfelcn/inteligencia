@@ -121,6 +121,18 @@ export const situacionJuridicaSchema = z
     }
   })
 
+export const personaConSituacionSchema = personaImplicadaSchema
+  .and(situacionJuridicaSchema)
+  .superRefine((values, context) => {
+    if (values.situacionLegalId && !values.fecha) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La fecha de la situación jurídica es obligatoria',
+        path: ['fecha'],
+      })
+    }
+  })
+
 export const informacionCasoSchema = z
   .object({
     formaInicio: optionSchema.nullable(),
@@ -145,6 +157,9 @@ export type PersonaImplicadaSchemaValues = z.infer<
 >
 export type SituacionJuridicaSchemaValues = z.infer<
   typeof situacionJuridicaSchema
+>
+export type PersonaConSituacionSchemaValues = z.infer<
+  typeof personaConSituacionSchema
 >
 export type InformacionCasoSchemaValues = z.infer<
   typeof informacionCasoSchema
