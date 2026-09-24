@@ -247,18 +247,30 @@ export function GestionOperativoListado({
         render: (row) => (
           <div className="flex items-center justify-center gap-2">
             {tipo === 'no-aprobado' && (
-              <button
-                type="button"
-                className="text-primary hover:text-primary/70 transition-colors"
-                onClick={() =>
-                  router.push(
-                    `/operativos/registro?id=${row.idCaso}`
-                  )
-                }
-                title="Ver / Editar"
-              >
-                <IconPencil className="h-5 w-5" />
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="text-primary hover:text-primary/70 transition-colors"
+                  onClick={() =>
+                    router.push(
+                      `/operativos/registro?id=${row.idCaso}`
+                    )
+                  }
+                  title="Ver / Editar"
+                >
+                  <IconPencil className="h-5 w-5" />
+                </button>
+                {row.numeroOperativo && (
+                  <button
+                    type="button"
+                    className="text-info hover:text-info/70 transition-colors"
+                    onClick={() => void abrirPreview(row.numeroOperativo)}
+                    title="Vista Previa del Reporte"
+                  >
+                    <IconEye className="h-5 w-5" />
+                  </button>
+                )}
+              </>
             )}
             {(tipo === 'aprobado' ||
               tipo === 'con-cud' ||
