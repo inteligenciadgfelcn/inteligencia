@@ -260,7 +260,7 @@ export function GestionOperativoListado({
                 >
                   <IconPencil className="h-5 w-5" />
                 </button>
-                {row.numeroOperativo && (
+                {row.numeroOperativo && row.tieneOperativo && (
                   <button
                     type="button"
                     className="text-info hover:text-info/70 transition-colors"
