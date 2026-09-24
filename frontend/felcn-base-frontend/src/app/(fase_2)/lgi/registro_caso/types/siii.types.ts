@@ -110,3 +110,76 @@ export interface RespuestaCasoSiii {
     filas: CasoSiiiRow;
   };
 }
+
+export interface ConsultaSiiiQueryDto {
+  codigoServicio?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  numeroCaso?: string;
+  nombreCaso?: string;
+  nombresPersona?: string;
+  apellidoPaterno?: string;
+  apellidoMaterno?: string;
+  nroDocumento?: string;
+}
+
+export interface BienDetalleAvanzado {
+  idItemBienSecuestrado: string;
+  tipoBien: string;
+  cantidad: number;
+  costoAproximado: number;
+  costoCuantificado: number;
+  enInvestigacion: boolean;
+  caracteristicas: Array<{
+    idCatalogoCaracteristica: number;
+    descripcion: string;
+  }>;
+  esSecuestrado: boolean;
+  esIncautado: boolean;
+  esConfiscado: boolean;
+}
+
+export interface ResultadoBusquedaAvanzada {
+  idOperativo: string;
+  fechaOperativo: string;
+  numeroCaso: string;
+  numeroOperativo: string;
+  numeroInforme: string;
+  ubicacionInstitucional: string;
+  ubicacionGeografica: string;
+  nombreCaso: string;
+  ianus: string;
+  fiscalSolicitud: string;
+  asignado: string;
+  asignadoFiscal: string;
+  tipoOperativo: string;
+  tipoRelevancia: string;
+  colorRelevancia: string;
+  categoriaOperativo: string;
+  planOperacion: string;
+  tipoDenuncia: string | null;
+  tipoPenal: string | null;
+  organizacion: string;
+  alMandoDe: string;
+  clanFamiliar: string | null;
+  esPositivo: boolean;
+  esAprehendido: boolean;
+  esArrestado: boolean;
+  esIcia: boolean;
+  esParteDiario: boolean;
+  esRevisado: boolean;
+  coordX: number;
+  coordY: number;
+  personasImplicadas: string;
+  detalleBienes: BienDetalleAvanzado[];
+  costoTotalAproximadoBienes: number;
+  costoTotalCuantificadoBienes: number;
+}
+
+export interface RespuestaBusquedaAvanzada {
+  finalizado: boolean;
+  mensaje: string;
+  datos: {
+    filas: ResultadoBusquedaAvanzada[];
+  };
+}

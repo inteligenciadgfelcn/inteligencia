@@ -38,12 +38,12 @@ import {
 import type {
   CatalogOption,
 } from '../types/registro-caso.types'
+import type { ConsultaSiiiQueryDto } from '../types/siii.types'
 import type { AsignacionCasoListadoRow } from '../../listado_casos/types/listado-casos.types'
 import {
   createDefaultDatosGeneralesValues,
   leerCasoDeStorage,
 } from '../utils/registro-caso.utils'
-import { SolicitarInteligenciaDialog } from './SolicitarInteligenciaDialog'
 import { CasoSiiiDialog } from './CasoSiiiDialog'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
 import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
@@ -56,6 +56,16 @@ type TabKey =
   | 'investigadores'
 
 type Modo = 'nuevo' | 'editar' | 'ver'
+
+interface BusquedaSiiiFiltros {
+  fechaInicio: string
+  fechaFin: string
+  nombreCaso: string
+  nombresPersona: string
+  apellidoPaterno: string
+  apellidoMaterno: string
+  nroDocumento: string
+}
 
 interface Props {
   casoId?: string | null
@@ -81,25 +91,6 @@ const tabs: Array<{ key: TabKey; label: string }> = [
   { key: 'investigadores', label: 'Investigadores asignados' },
 ]
 
-const placeholderCards: Record<
-  TabKey,
-  Array<{ label: string; value: string }>
-> = {
-  'datos-generales': [],
-  personas: [],
-  'informacion-caso': [],
-  investigadores: [
-    {
-      label: 'Registros',
-      value: 'Sin investigadores asignados todavía',
-    },
-    {
-      label: 'Acción',
-      value: 'Pendiente de integración con el backend',
-    },
-  ],
-}
-
 export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -122,6 +113,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
     useState(false)
   const [conformeAValue, setConformeAValue] = useState('')
+  const [filtroSiii, setFiltroSiii] = useState<ConsultaSiiiQueryDto | null>(
+    null
+  )
 
   const casoIdEfectivo = casoActivo ?? casoActivoId
 
@@ -246,6 +240,39 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     setActiveTab('investigadores')
   }
 
+  // ── Búsqueda avanzada SIII ─────────────────────────────────────────────────
+  const filtroSiiiForm = useForm<BusquedaSiiiFiltros>({
+    defaultValues: {
+      fechaInicio: '',
+      fechaFin: '',
+      nombreCaso: '',
+      nombresPersona: '',
+      apellidoPaterno: '',
+      apellidoMaterno: '',
+      nroDocumento: '',
+    },
+  })
+
+  const {
+    register: registerFiltroSiii,
+    control: controlFiltroSiii,
+  } = filtroSiiiForm
+
+  const onBuscarSiii = () => {
+    const valores = filtroSiiiForm.getValues()
+    setFiltroSiii({
+      numeroCaso: informacionForm.getValues('nroCasoFelcn') || undefined,
+      fechaInicio: valores.fechaInicio || undefined,
+      fechaFin: valores.fechaFin || undefined,
+      nombreCaso: valores.nombreCaso || undefined,
+      nombresPersona: valores.nombresPersona || undefined,
+      apellidoPaterno: valores.apellidoPaterno || undefined,
+      apellidoMaterno: valores.apellidoMaterno || undefined,
+      nroDocumento: valores.nroDocumento || undefined,
+    })
+    setSolicitarInteligenciaOpen(true)
+  }
+
   const onSubmitDatosGenerales = async (values: DatosGeneralesSchemaValues) => {
     setIsSaving(true)
     setMensaje(null)
@@ -265,8 +292,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       setIsSaving(false)
     }
   }
-
-  const currentCards = useMemo(() => placeholderCards[activeTab], [activeTab])
 
   return (
     <div className="space-y-4">
@@ -581,74 +606,168 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
           )}
 
           {activeTab === 'informacion-caso' && (
-            <form
-              onSubmit={handleSubmitInformacion(onSubmitInformacion)}
-              className="space-y-4"
-            >
-              <Card title="Información del caso">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <RHFSelect<string>
-                    id="formaInicio"
-                    name="formaInicio"
-                    control={controlInformacion}
-                    label="Forma de inicio del caso"
-                    error={
-                      errorsInformacion.formaInicio?.message as
-                      | string
-                      | undefined
-                    }
-                    isDisable={isLectura}
-                    originalData={FORMAS_INICIO}
-                    mapOption={formaInicioToOption}
+            <div className="space-y-4">
+              <Card title="Búsqueda avanzada en SIII">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <RHFDate
+                    id="filtroFechaInicio"
+                    name="fechaInicio"
+                    control={controlFiltroSiii}
+                    label="Fecha operativo desde"
+                    disabled={isLectura}
+                  />
+
+                  <RHFDate
+                    id="filtroFechaFin"
+                    name="fechaFin"
+                    control={controlFiltroSiii}
+                    label="Fecha operativo hasta"
+                    disabled={isLectura}
                   />
 
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      Nro Caso FELCN
+                      Nombre del caso
                     </label>
-                    <div className="flex gap-2">
-                      <Input
-                        {...registerInformacion('nroCasoFelcn')}
-                        disabled={isLectura}
-                        error={!!errorsInformacion.nroCasoFelcn}
-                        className="w-full"
-                        placeholder="EJ. LP-O-1/26"
-                      />
-                      {!isLectura && (
-                        <Button
-                          type="button"
-                          variant="outline-primary"
-                          size="sm"
-                          onClick={() => setSolicitarInteligenciaOpen(true)}
-                        >
-                          Buscar
-                        </Button>
-                      )}
-                    </div>
-                    {errorsInformacion.nroCasoFelcn && (
-                      <p className="mt-1 text-xs text-danger">
-                        {errorsInformacion.nroCasoFelcn.message}
-                      </p>
-                    )}
+                    <Input
+                      {...registerFiltroSiii('nombreCaso')}
+                      disabled={isLectura}
+                      className="w-full"
+                      placeholder="Nombre del caso"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Nombres persona
+                    </label>
+                    <Input
+                      {...registerFiltroSiii('nombresPersona')}
+                      disabled={isLectura}
+                      className="w-full"
+                      placeholder="Nombres de la persona implicada"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Apellido paterno
+                    </label>
+                    <Input
+                      {...registerFiltroSiii('apellidoPaterno')}
+                      disabled={isLectura}
+                      className="w-full"
+                      placeholder="Apellido paterno"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Apellido materno
+                    </label>
+                    <Input
+                      {...registerFiltroSiii('apellidoMaterno')}
+                      disabled={isLectura}
+                      className="w-full"
+                      placeholder="Apellido materno"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Nro documento
+                    </label>
+                    <Input
+                      {...registerFiltroSiii('nroDocumento')}
+                      disabled={isLectura}
+                      className="w-full"
+                      placeholder="Nro de documento"
+                    />
                   </div>
                 </div>
+
+                {!isLectura && (
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={onBuscarSiii}
+                    >
+                      Buscar
+                    </Button>
+                  </div>
+                )}
               </Card>
 
-              {!isLectura && (
-                <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline-secondary"
-                    onClick={() => setActiveTab('personas')}
-                  >
-                    Volver
-                  </Button>
-                  <Button type="submit" variant="primary">
-                    Siguiente
-                  </Button>
-                </div>
-              )}
-            </form>
+              <form
+                onSubmit={handleSubmitInformacion(onSubmitInformacion)}
+                className="space-y-4"
+              >
+                <Card title="Información del caso">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <RHFSelect<string>
+                      id="formaInicio"
+                      name="formaInicio"
+                      control={controlInformacion}
+                      label="Forma de inicio del caso"
+                      error={
+                        errorsInformacion.formaInicio?.message as
+                        | string
+                        | undefined
+                      }
+                      isDisable={isLectura}
+                      originalData={FORMAS_INICIO}
+                      mapOption={formaInicioToOption}
+                    />
+
+                    <div>
+                      <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                        Nro Caso FELCN
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          {...registerInformacion('nroCasoFelcn')}
+                          disabled={isLectura}
+                          error={!!errorsInformacion.nroCasoFelcn}
+                          className="w-full"
+                          placeholder="EJ. LP-O-1/26"
+                        />
+                        {!isLectura && (
+                          <Button
+                            type="button"
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={onBuscarSiii}
+                          >
+                            Buscar
+                          </Button>
+                        )}
+                      </div>
+                      {errorsInformacion.nroCasoFelcn && (
+                        <p className="mt-1 text-xs text-danger">
+                          {errorsInformacion.nroCasoFelcn.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+
+                {!isLectura && (
+                  <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline-secondary"
+                      onClick={() => setActiveTab('personas')}
+                    >
+                      Volver
+                    </Button>
+                    <Button type="submit" variant="primary">
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+              </form>
+            </div>
           )}
 
           {activeTab === 'investigadores' && (
@@ -658,9 +777,13 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       </div>
 
       {/* Dialog solicitar info de inteligencia */}
-      <CasoSiiiDialog isOpen={solicitarInteligenciaOpen} nroCaso={informacionForm.getValues('nroCasoFelcn')} onClose={() => {
-        setSolicitarInteligenciaOpen(false)
-      }} />
+      <CasoSiiiDialog
+        filtro={filtroSiii}
+        isOpen={solicitarInteligenciaOpen}
+        onClose={() => {
+          setSolicitarInteligenciaOpen(false)
+        }}
+      />
     </div>
   )
 }
