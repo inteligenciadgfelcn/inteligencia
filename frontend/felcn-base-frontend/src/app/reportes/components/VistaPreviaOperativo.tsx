@@ -294,7 +294,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       {caso && (
                         <>
                           <p className="text-sm">Nombre del Caso: <strong>{caso.nombreCaso}</strong></p>
-                          <p className="text-sm">Número: <strong>{caso.numeroOperativo}</strong></p>
+                          <p className="text-sm">Número de Caso: <strong>{caso.numeroCaso?.trim() || 'N/A'}</strong></p>
                         </>
                       )}
                     </div>
@@ -320,7 +320,7 @@ export function VistaPreviaOperativo({ open, onClose, data, tipo, urlPdf }: Prop
                       <div className="mb-5 rounded border border-[#3e5f8a]/20 p-3">
                         <dl className="grid grid-cols-1 gap-y-1 text-xs sm:grid-cols-2">
                           {[
-                            ['Número de Operativo', operativo?.numeroOperativo],
+                            ['Número de Operativo', caso?.numeroOperativo],
                             ['Asignado al Caso', caso?.asignadoCaso],
                             ['Fiscal Asignado', caso?.fiscalAsignadoCaso],
                             ['Fecha y Hora', fmtFecha(operativo?.fechaOperativo)],
