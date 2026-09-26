@@ -251,4 +251,200 @@ COALESCE((
 
     return { filas }
   }
+
+  async buscarPorNumerosCaso(
+  numerosCaso: string[]
+): Promise<ResultadoConsultaAvanzada[]> {
+  const numeros = [
+    ...new Set(
+      numerosCaso
+        .map((numero) => numero.trim().toUpperCase())
+        .filter(Boolean)
+    ),
+  ]
+
+  if (numeros.length === 0) {
+    return []
+  }
+
+  const sql = `
+    SELECT
+      o.id_operativo::text AS "idOperativo",
+      TO_CHAR(o.fecha_operativo, 'DD/MM/YYYY HH24:MI')
+        AS "fechaOperativo",
+      a.numero_caso AS "numeroCaso",
+      a.numero_operativo AS "numeroOperativo",
+      o.numero_informe AS "numeroInforme",
+
+      COALESCE(TRIM(uni.abreviatura), '')
+        || ' - ' || COALESCE(TRIM(dis.descripcion), '')
+        AS "ubicacionInstitucional",
+
+      COALESCE(dep.descripcion, '')
+        || ' - ' || COALESCE(prov.descripcion, '')
+        || ' - ' || COALESCE(UPPER(loc.descripcion), '')
+        || ' - ' || COALESCE(UPPER(TRIM(o.lugar)), '')
+        AS "ubicacionGeografica",
+
+      a.nombre_caso AS "nombreCaso",
+      a.ianus AS "ianus",
+      TRIM(a.fiscal_solicitud) AS "fiscalSolicitud",
+      TRIM(a.asignado_caso) AS "asignado",
+      TRIM(a.fiscal_asignado_caso) AS "asignadoFiscal",
+      top.descripcion AS "tipoOperativo",
+      tr.descripcion AS "tipoRelevancia",
+      COALESCE(tr.color, '') AS "colorRelevancia",
+      cat.descripcion AS "categoriaOperativo",
+      po.nombre AS "planOperacion",
+      tden.descripcion AS "tipoDenuncia",
+      tpen.descripcion AS "tipoPenal",
+      TRIM(o.organizacion) AS "organizacion",
+      TRIM(o.mando) AS "alMandoDe",
+      TRIM(o.clan_familiar) AS "clanFamiliar",
+      o.es_positivo AS "esPositivo",
+      o.es_aprehendido AS "esAprehendido",
+      o.es_arrestado AS "esArrestado",
+      o.es_icia AS "esIcia",
+      o.es_parte_diario AS "esParteDiario",
+      o.es_revisado AS "esRevisado",
+      o.coord_x AS "coordX",
+      o.coord_y AS "coordY",
+
+      COALESCE((
+        SELECT STRING_AGG(
+          CONCAT_WS(
+            ' ',
+            NULLIF(TRIM(per.nombres), ''),
+            NULLIF(TRIM(per.apellido_paterno), ''),
+            NULLIF(TRIM(per.apellido_materno), ''),
+            NULLIF(TRIM(per.apellido_esposo), '')
+          )
+            || E'\\n   Doc.: '
+            || COALESCE(TRIM(per.nro_documento), '')
+            || E'\\n   Nac.: '
+            || COALESCE(pa_per.descripcion, '')
+            || E'\\n   Estado: '
+            || COALESCE(per.estado, ''),
+          ' | '
+          ORDER BY CASE UPPER(TRIM(per.estado))
+            WHEN 'PRINCIPAL IMPLICADO' THEN 1
+            WHEN 'APREHENDIDO' THEN 2
+            WHEN 'ARRESTADO' THEN 3
+            ELSE 4
+          END
+        )
+        FROM public.persona_auxiliar per
+        LEFT JOIN parametricas.pais pa_per
+          ON per.id_pais = pa_per.id_pais
+        WHERE per.id_operativo = o.id_operativo
+      ), '') AS "personasImplicadas",
+
+      COALESCE((
+        SELECT JSONB_AGG(
+          JSONB_BUILD_OBJECT(
+            'idItemBienSecuestrado',
+              ibs.id_item_bien_secuestrado::text,
+            'tipoBien',
+              ct.descripcion,
+            'cantidad',
+              ibs.cantidad_bien,
+            'costoAproximado',
+              ibs.costo_aproximado,
+            'costoCuantificado',
+              ibs.costo_cuantificado,
+            'enInvestigacion',
+              ibs.en_investigacion,
+            'caracteristicas',
+              COALESCE((
+                SELECT JSONB_AGG(
+                  JSONB_BUILD_OBJECT(
+                    'idCatalogoCaracteristica',
+                      ibc.id_catalogo_caracteristica,
+                    'descripcion',
+                      ibc.descripcion
+                  )
+                  ORDER BY ibc.id_item_bien_caracteristica
+                )
+                FROM public.item_bien_caracteristica ibc
+                WHERE ibc.id_item_bien_secuestrado =
+                  ibs.id_item_bien_secuestrado
+              ), '[]'::jsonb),
+            'esSecuestrado',
+              EXISTS (
+                SELECT 1
+                FROM public.bien_secuestrado bs
+                WHERE bs.id_item_bien_secuestrado =
+                  ibs.id_item_bien_secuestrado
+              ),
+            'esIncautado',
+              EXISTS (
+                SELECT 1
+                FROM public.bien_incautado bi
+                WHERE bi.id_item_bien_secuestrado =
+                  ibs.id_item_bien_secuestrado
+              ),
+            'esConfiscado',
+              EXISTS (
+                SELECT 1
+                FROM public.bien_confiscado bc
+                WHERE bc.id_item_bien_secuestrado =
+                  ibs.id_item_bien_secuestrado
+              )
+          )
+          ORDER BY ibs.id_item_bien_secuestrado
+        )
+        FROM public.item_bien_secuestrado ibs
+        LEFT JOIN public.catalogo_tipo ct
+          ON ct.id_catalogo_tipo = ibs.id_catalogo_tipo
+        WHERE ibs.id_operativo = o.id_operativo
+      ), '[]'::jsonb) AS "detalleBienes",
+
+      COALESCE((
+        SELECT SUM(COALESCE(ibs.costo_aproximado, 0))
+        FROM public.item_bien_secuestrado ibs
+        WHERE ibs.id_operativo = o.id_operativo
+      ), 0) AS "costoTotalAproximadoBienes",
+
+      COALESCE((
+        SELECT SUM(COALESCE(ibs.costo_cuantificado, 0))
+        FROM public.item_bien_secuestrado ibs
+        WHERE ibs.id_operativo = o.id_operativo
+      ), 0) AS "costoTotalCuantificadoBienes"
+
+    FROM public.asignacion a
+    JOIN public.operativo o
+      ON o.id_caso = a.id_caso
+
+    LEFT JOIN parametricas.departamento dep
+      ON o.id_departamento = dep.id_departamento
+    LEFT JOIN parametricas.provincia prov
+      ON o.id_provincia = prov.id_provincia
+    LEFT JOIN parametricas.localidad loc
+      ON o.id_localidad = loc.id_localidad
+    LEFT JOIN parametricas.tipo_operacion top
+      ON o.id_tipo_operacion = top.id_tipo_operacion
+    LEFT JOIN parametricas.tipo_relevancia tr
+      ON o.id_tipo_relevancia = tr.id_tipo_relevancia
+    LEFT JOIN parametricas.plan_operaciones po
+      ON o.id_plan_operacion = po.id_plan_operacion
+    LEFT JOIN parametricas.categoria_operativo cat
+      ON o.id_categoria_operativo = cat.id_categoria_operativo
+    LEFT JOIN auth_fdw.unidad uni
+      ON o.id_unidad = uni.id
+    LEFT JOIN auth_fdw.distrital dis
+      ON o.id_distrital = dis.id
+    LEFT JOIN parametricas.tipo_denuncia tden
+      ON o.id_tipo_denuncia = tden.id_tipo_denuncia
+    LEFT JOIN parametricas.tipo_penal tpen
+      ON o.id_tipo_penal = tpen.id_tipo_penal
+
+    WHERE UPPER(TRIM(a.numero_caso)) = ANY($1::text[])
+    ORDER BY o.fecha_operativo DESC, o.id_operativo DESC
+  `
+
+  return this.dataSource.query<ResultadoConsultaAvanzada[]>(
+    sql,
+    [numeros]
+  )
+}
 }

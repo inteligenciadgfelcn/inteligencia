@@ -13,6 +13,8 @@ export class AuditoriaUsuarioInterceptor implements NestInterceptor {
     const usuario = request.user?.numeroPase || 'SISTEMA'
     const fechaActual = new Date()
 
+      request.usuarioAuditoria = usuario
+
     if (request.method === 'POST') {
       request.body.usuario = usuario;
       request.body.fechaHoraIngreso = fechaActual;

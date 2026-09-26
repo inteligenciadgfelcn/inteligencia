@@ -1,11 +1,15 @@
-import { Controller, Get, Param, Query } from '@nestjs/common'
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common'
 import { PaginacionQueryDto } from '@/common/dto'
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base/base-controller'
 import { OperativoService } from '@/application/sunesis/siii/operativo/service/operativo.service'
 import { InformacionSiiiService } from './informacion_siii.service'
 import { ConsultaSiiiQueryDto } from './dto/consulta_siii.dto'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiTags('LGI - Presedencia')
 @Controller('informacion-siii')
 export class InformacionSiiiController extends BaseController {
   constructor(
