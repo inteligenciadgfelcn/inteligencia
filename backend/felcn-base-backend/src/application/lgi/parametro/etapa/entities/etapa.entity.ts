@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
-  name: 'etapa',
+  name: 'etapainvest',
   schema: 'parametricas',
 })
 export class EtapaLgi {
@@ -16,4 +16,5 @@ export class EtapaLgi {
     length: 255,
   })
   descripcion: string;
+  
 }

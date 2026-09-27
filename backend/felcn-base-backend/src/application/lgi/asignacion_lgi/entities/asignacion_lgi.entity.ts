@@ -47,19 +47,19 @@ export class AsignacionLgi {
   })
   nombreCaso!: string
 
-  @Column({
-    name: 'tipocaso',
-    type: 'varchar',
-    length: 30,
-  })
-  tipoCaso!: string
+  // @Column({
+  //   name: 'tipocaso',
+  //   type: 'varchar',
+  //   length: 30,
+  // })
+  // tipoCaso!: string
 
   @Column({
     name: 'nrocasogiaef',
     type: 'varchar',
     length: 20,
   })
-  nroCasoGlaef!: string
+  nroCasoGiaef!: string
 
   @Column({
     name: 'nrocaso',
@@ -76,26 +76,6 @@ export class AsignacionLgi {
   nroCasoFis!: string
 
   @Column({
-    name: 'ti_pen_id',
-    type: 'bigint',
-  })
-  tiPenId!: string
-
-  @Column({
-    name: 'nrocasoifp',
-    type: 'varchar',
-    length: 20,
-  })
-  nroCasoIfp!: string
-
-  @Column({
-    name: 'cudifp',
-    type: 'varchar',
-    length: 20,
-  })
-  cudIfp!: string
-
-  @Column({
     name: 'perddom',
     type: 'boolean',
   })
@@ -108,18 +88,18 @@ export class AsignacionLgi {
   })
   nroCasoPerdom!: string
 
-  @Column({
-    name: 'ianus',
-    type: 'varchar',
-    length: 15,
-  })
-  ianus!: string
+  // @Column({
+  //   name: 'ianus',
+  //   type: 'varchar',
+  //   length: 15,
+  // })
+  // ianus!: string
 
   @Column({
     name: 'eta_inv',
-    type: 'bigint',
+    type: 'int',
   })
-  etaInv!: string
+  idEtapa!: number
 
   @Column({
     name: 'remitefiscal',
@@ -135,11 +115,25 @@ export class AsignacionLgi {
   remiteFecha!: Date
 
   @Column({
-    name: 'conformea',
+    name: 'responsable_llenado',
     type: 'varchar',
     length: 70,
   })
   conformeA!: string
+
+  @Column({
+    name: 'conformea',
+    type: 'varchar',
+    length: 70,
+  })
+  inicioCaso!: string
+
+  @Column({
+    name: 'codigo_servicio',
+    type: 'varchar',
+    length: 70,
+  })
+  codigoServicio!: string
 
   @Column({
     name: 'fechainicio',

@@ -64,7 +64,7 @@ export class AsignacionLgiService {
       await this.asignacionLgiRepository.crearAsignacionDual(
         dto,
         uniAbrev,
-        descripcionGrupo
+        descripcionGrupo,
       )
 
     return {

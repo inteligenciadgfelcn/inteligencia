@@ -41,11 +41,6 @@ export class CreateOperativoLgiDto {
   @MaxLength(255)
   otroInforme?: string
 
-  @ApiProperty({ example: 1 })
-  @Type(() => Number)
-  @IsInt()
-  idEtapa!: number
-
   @ApiPropertyOptional({
     example: 1,
   })

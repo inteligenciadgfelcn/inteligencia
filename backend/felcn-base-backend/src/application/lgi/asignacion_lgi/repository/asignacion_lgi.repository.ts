@@ -21,12 +21,13 @@ export class AsignacionLgiRepository {
   async crearAsignacionDual(
     dto: CreateAsignacionLgiDto,
     uniAbrev: string,
-    descripcionGrupo: string
+    descripcionGrupo: string,
   ): Promise<AsignacionLgi> {
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
     const asignacionLgi = this.repository.create({
       ...datos,
+      nroCasoGiaef: dto.nroCaso,
       disId,
       uniAbrev,
       descripcionGrupo,
@@ -42,31 +43,28 @@ export class AsignacionLgiRepository {
 
     try {
       const asignacionCaso = this.asignacionCasoRepository.create({
-        idCasoSiii: asignacionGuardada.casosId,
-
         nombreCaso: asignacionGuardada.nombreCaso,
-
         nombreSolicitud: asignacionGuardada.conformeA,
-
         fechaOperativo: asignacionGuardada.fechaInicio,
-
         fiscalAsignado: asignacionGuardada.remiteFiscal,
-
         usuario: asignacionGuardada.usuario,
-
         idDepartamento: asignacionGuardada.dptoavId,
-
         nroOperativo: asignacionGuardada.nroCaso,
-
         nroCaso: asignacionGuardada.nroCaso,
+        codigoServicio:asignacionGuardada.codigoServicio,
+        idUnidad:uniAbrev,
       })
 
       await this.asignacionCasoRepository.save(asignacionCaso)
-    } catch {
+    } catch (error) {
+
+       console.error('Error real al guardar AsignacionCaso:', error)
       await this.repository.remove(asignacionGuardada)
 
       throw new BadRequestException(
-        'No se pudo registrar la asignación del caso LGI'
+         error instanceof Error
+      ? `No se pudo registrar AsignacionCaso: ${error.message}`
+      : 'No se pudo registrar AsignacionCaso'
       )
     }
 

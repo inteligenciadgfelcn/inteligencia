@@ -73,7 +73,7 @@ export class CreateAsignacionLgiDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(20)
-  cudIfp!: string
+  nroCasoFis!: string
 
   @ApiProperty({
     description: 'Nombre del fiscal asignado',
@@ -101,5 +101,30 @@ export class CreateAsignacionLgiDto {
   })
   @IsNotEmpty()
   @IsDateString()
-  fechaInicio: string
+  fechaInicio!: string
+
+  @ApiProperty({ example: 1 })
+  @Type(() => Number)
+  @IsInt()
+  idEtapa!: number
+
+  @ApiProperty({
+    description: 'Forma inicio caso',
+    example: 'Remision fiscalia',
+    maxLength: 70,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(70)
+  inicioCaso!: string
+
+  @ApiProperty({
+    description: 'Codigo servicio',
+    example: 'ICIA-1619092026',
+    maxLength: 50,
+  })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(50)
+  codigoServicio!: string
 }

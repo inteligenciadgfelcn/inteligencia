@@ -102,4 +102,11 @@ export class ServicioController extends BaseController {
   ) {
     return this.servicioService.update(codigoServicio, updateServicioDto)
   }
+
+  @Get('activos')
+  @ApiOperation({ summary: 'Listar servicios vigentes según sus fechas' })
+  @ApiResponse({ status: 200, description: 'Servicios activos obtenidos' })
+  listarActivos() {
+    return this.servicioService.listarActivos()
+  }
 }

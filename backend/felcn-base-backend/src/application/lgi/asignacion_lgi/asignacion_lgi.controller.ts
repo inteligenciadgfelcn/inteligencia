@@ -33,7 +33,6 @@ import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
 export class AsignacionLgiController extends BaseController {
   constructor(
     private readonly asignacionLgiService: AsignacionLgiService,
-
     private readonly asignacionesService: AsignacionesService
   ) {
     super()
