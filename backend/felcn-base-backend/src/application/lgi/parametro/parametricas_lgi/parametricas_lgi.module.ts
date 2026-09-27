@@ -20,6 +20,7 @@ import { CalidadBienModule } from '../calidad-bien/calidad-bien.module'
 import { VinculoModule } from '../vinculo/vinculo.module'
 import { TipoVinculoModule } from '../tipo-vinculo/tipo-vinculo.module'
 import { TipoSituacionLegalBienLgiModule } from '../tipo_situcion_bien/tipo_situcion_bien.module'
+import { InicioCasoRepository } from './repository/inicio_caso.repository'
 
 @Module({
    imports: [
@@ -46,7 +47,8 @@ import { TipoSituacionLegalBienLgiModule } from '../tipo_situcion_bien/tipo_situ
     EstadoCivilLgiRepository,
     ProfesionLgiRepository,
     TipoDocumentoLgiRepository,
-    TipoInformeLgiRepository
+    TipoInformeLgiRepository,
+    InicioCasoRepository
   ],
   exports: [
     ParametricasLgiService,
@@ -58,7 +60,8 @@ import { TipoSituacionLegalBienLgiModule } from '../tipo_situcion_bien/tipo_situ
     EstadoCivilLgiRepository,
     ProfesionLgiRepository,
     TipoDocumentoLgiRepository,
-    TipoInformeLgiRepository
+    TipoInformeLgiRepository,
+    InicioCasoRepository
   ],
 })
 export class ParametricasLgiModule {}

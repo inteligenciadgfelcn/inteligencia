@@ -86,16 +86,79 @@ export class InvestigadorLgiRepository {
     })
   }
 
-  findHistorialByCaso(casoId: number): Promise<InvestigadorLgi[]> {
-    return this.repository.find({
-      where: {
-        casoId,
-      },
-      order: {
-        fechaAsignacion: 'DESC',
-      },
-    })
+ async findHistorialByCaso(
+  casoId: number
+): Promise<Array<InvestigadorLgi & { investigador: string }>> {
+  const historial = await this.repository.find({
+    where: { casoId },
+    order: { fechaAsignacion: 'DESC' },
+  })
+
+  if (historial.length === 0) {
+    return []
   }
+
+  const normalizar = (valor: string) => valor.trim().toUpperCase()
+
+  const numerosPase = [
+    ...new Set(
+      historial
+        .map((item) => normalizar(item.numeroPase))
+        .filter(Boolean)
+    ),
+  ]
+
+  // Diagnóstico temporal: identifica la base AUTH utilizada por Nest.
+  const [conexionAuth] = await this.dataSourceAuth.query(`
+    SELECT
+      current_database() AS "baseDatos",
+      inet_server_addr()::text AS "servidor",
+      inet_server_port() AS "puerto",
+      current_user AS "usuario"
+  `)
+
+  const personas: Array<{
+    numeroPase: string
+    investigador: string
+  }> = await this.dataSourceAuth.query(
+    `
+    SELECT
+      UPPER(TRIM(u.numero_pase)) AS "numeroPase",
+      CONCAT_WS(
+        ' ',
+        NULLIF(TRIM(gr.abreviatura), ''),
+        NULLIF(TRIM(p.nombres), ''),
+        NULLIF(TRIM(p.primer_apellido), ''),
+        NULLIF(TRIM(p.segundo_apellido), '')
+      ) AS "investigador"
+    FROM usuario.usuario u
+    LEFT JOIN usuario.persona p
+      ON p.id = u.id_persona
+    LEFT JOIN parametro.grado gr
+      ON gr.id = u.id_grado
+    WHERE UPPER(TRIM(u.numero_pase)) = ANY($1::text[])
+    `,
+    [numerosPase]
+  )
+
+  // Retira estos tres mensajes cuando resolvamos la conexión.
+  console.log('Conexión AUTH de Nest:', conexionAuth)
+  console.log('Pases buscados:', numerosPase)
+  console.log('Personas devueltas por AUTH:', personas)
+
+  const nombrePorPase = new Map(
+    personas.map((persona) => [
+      normalizar(persona.numeroPase),
+      persona.investigador,
+    ])
+  )
+
+  return historial.map((item) => ({
+    ...item,
+    investigador:
+      nombrePorPase.get(normalizar(item.numeroPase)) ?? '',
+  }))
+}
 
   async findAllGeneralInvestigador(
     pagination: PaginacionQueryDto

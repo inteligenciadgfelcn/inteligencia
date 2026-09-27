@@ -70,13 +70,7 @@ export class ParametricasLgiController extends BaseController {
     return this.parametricasLgiService.findAllGrupo(idDistrito)
   }
 
-  @Get('allPais')
-  @ApiOperation({
-    summary: 'Listar los países',
-  })
-  findAllPais() {
-    return this.parametricasLgiService.findAllPais()
-  }
+  
 
   @Get('allDepartamento')
   @ApiOperation({
@@ -204,6 +198,14 @@ export class ParametricasLgiController extends BaseController {
    @Get('allTipoSitucionBien')
   findAllSituacionLegalBien() {
     return this.situacionLegalBienService.findAll()
+  }
+
+  @Get('allIncioCaso')
+  @ApiOperation({
+    summary: 'Listar inicio de caso',
+  })
+  findAllIncioCaso() {
+    return this.parametricasLgiService.findAllIncioCaso()
   }
 
 }
