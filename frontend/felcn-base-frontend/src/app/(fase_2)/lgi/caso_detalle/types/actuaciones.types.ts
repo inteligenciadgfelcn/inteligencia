@@ -10,12 +10,8 @@ export interface ActuacionRow {
   uniId: string | null
   disId: string | null
   opDescripcion: string
-  idEtapa: number
-  idEstado: number
-  diasOtorgados: number
   idTipoInforme: number
   otroInforme: string
-  fechaRecepcionFiscalia: string
   rutaArchivo: string | null
   estado: string
   fechaHoraIng: string
@@ -39,25 +35,12 @@ export interface TipoInforme {
   descripcion: string
 }
 
-export interface Etapa {
-  et_id: number
-  descripcion: string
-}
-
-export interface DetalleEtapa {
-  estId: number
-  etId: string
-  descripcion: string
-}
-
 export interface ActuacionPayload {
   casosId: number
   opNrooper: string
   idTipoInforme: number
-  idEtapa: number
-  idEstado: number
-  diasOtorgados: number
-  fechaRecepcionFiscalia: string
+  otroInforme?: string
+  opLugar: string
   opDescripcion: string
   archivo?: File
 }

@@ -16,7 +16,7 @@ interface RespuestaListado {
 export const ListadoCasosApi = {
   async listarCasos(params: ListadoCasosParams): Promise<ListadoCasosResponse> {
     const respuesta = await sesionPeticion<RespuestaListado>({
-      url: BASE,
+      url: `${BASE}/caso/investigador`,
       method: 'get',
       params,
       withCredentials: true,

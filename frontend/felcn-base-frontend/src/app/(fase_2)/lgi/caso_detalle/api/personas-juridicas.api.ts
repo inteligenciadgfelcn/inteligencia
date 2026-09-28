@@ -28,6 +28,14 @@ export const PersonasJuridicasApi = {
     })
   },
 
+  listarVinculosPersonaJuridica(): Promise<Vinculo[]> {
+    return sesionPeticion({
+      url: `${BASE_PARAMETRICAS}/allVinculoPersonaJuridica`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
   listarTiposVinculo(idVinculo: number): Promise<TipoVinculo[]> {
     return sesionPeticion({
       url: `${BASE_PARAMETRICAS}/tipo/${idVinculo}`,

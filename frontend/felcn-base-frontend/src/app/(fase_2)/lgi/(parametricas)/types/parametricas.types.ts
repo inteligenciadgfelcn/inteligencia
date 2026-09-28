@@ -47,3 +47,8 @@ export interface ProfesionLgi {
   descripcion: string
   prof_ocup: boolean
 }
+
+export interface InicioCasoLgi {
+  idInicioCaso: number
+  descripcion: string
+}

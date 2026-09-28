@@ -26,3 +26,20 @@ export async function getServicios(
 
   return response
 }
+
+export async function getServiciosActivos(): Promise<ServicioTable[]> {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/servicio/activos`,
+    method: 'GET',
+    withCredentials: true,
+  })
+
+  return Array.isArray(response) ? response : []
+}
+
+export async function obtenerUltimoCodigoServicioActivo(): Promise<string> {
+  const activos = await getServiciosActivos()
+  const ultimo = activos.at(-1)
+
+  return ultimo?.codigoServicio ?? ''
+}

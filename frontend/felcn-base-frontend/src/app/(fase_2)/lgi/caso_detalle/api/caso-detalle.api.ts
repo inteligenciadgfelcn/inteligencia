@@ -47,6 +47,12 @@ function mapCasoDetalleRaw(row: CasoDetalleApiRow): CasoDetalle {
     etaInv: row.etaInv ?? row.eta_inv ?? null,
     remiteFiscal: row.remiteFiscal ?? row.remitefiscal ?? '',
     remiteFecha: row.remiteFecha ?? row.remitefecha ?? null,
+    fechaRecepcionFiscalia:
+      row.fechaRecepcionFiscalia ?? row.fecha_recepcion_fiscalia ?? null,
+    diasOtorgados: row.diasOtorgados ?? row.dias_otorgados ?? null,
+    idEstado: row.idEstado ?? row.id_estado ?? null,
+    inicioCaso: row.inicioCaso ?? row.inicio_caso ?? null,
+    codigoServicio: row.codigoServicio ?? row.codigo_servicio ?? null,
     conformeA: row.conformeA ?? row.conformea ?? '',
     fechaInicio: row.fechaInicio ?? row.fechainicio ?? null,
     estado: row.estado ?? '',

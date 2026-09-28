@@ -35,6 +35,16 @@ export interface CasoDetalleApiRow {
   remitefiscal?: string
   remiteFecha?: string | null
   remitefecha?: string | null
+  fechaRecepcionFiscalia?: string | null
+  fecha_recepcion_fiscalia?: string | null
+  diasOtorgados?: number | null
+  dias_otorgados?: number | null
+  idEstado?: number | null
+  id_estado?: number | null
+  inicioCaso?: string | null
+  inicio_caso?: string | null
+  codigoServicio?: string | null
+  codigo_servicio?: string | null
   conformeA?: string
   conformea?: string
   fechaInicio?: string | null
@@ -70,6 +80,11 @@ export interface CasoDetalle {
   etaInv: string | null
   remiteFiscal: string
   remiteFecha: string | null
+  fechaRecepcionFiscalia: string | null
+  diasOtorgados: number | null
+  idEstado: number | null
+  inicioCaso: string | null
+  codigoServicio: string | null
   conformeA: string
   fechaInicio: string | null
   estado: string

@@ -2,6 +2,7 @@ export interface InvestigadorCasoRow {
   investigadorId: string;
   casoId: string;
   numeroPase: string;
+  investigador?: string;
   memo: string;
   fechaAsignacion: string;
   actual: boolean;

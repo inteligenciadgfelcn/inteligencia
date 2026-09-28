@@ -85,7 +85,7 @@ export function PersonasJuridicas({ casoId }: Props) {
 
   const { data: vinculos = [] } = useQuery<Vinculo[]>({
     queryKey: ['lgi-personas-juridicas', 'vinculos'],
-    queryFn: () => PersonasJuridicasApi.listarVinculos(),
+    queryFn: () => PersonasJuridicasApi.listarVinculosPersonaJuridica(),
   })
 
   const { data: tiposSituacion = [] } = useQuery<

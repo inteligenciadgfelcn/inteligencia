@@ -32,10 +32,9 @@ export const datosGeneralesSchema = z
       20,
       'Máximo 20 caracteres'
     ),
-    cudIfp: requiredText('El CUD o número de fiscalía es obligatorio').max(
-      20,
-      'Máximo 20 caracteres'
-    ),
+    nroCasoFis: requiredText(
+      'El CUD o número de fiscalía es obligatorio'
+    ).max(20, 'Máximo 20 caracteres'),
     remiteFiscal: requiredText('El fiscal que remite es obligatorio').max(
       70,
       'Máximo 70 caracteres'
@@ -48,6 +47,11 @@ export const datosGeneralesSchema = z
       'El control jurisdiccional es obligatorio'
     ).max(70, 'Máximo 70 caracteres'),
     fechaInicio: dateSchema('La fecha de inicio es obligatoria'),
+    inicioCaso: optionSchema.nullable(),
+    codigoServicio: requiredText('El código de servicio es obligatorio').max(
+      50,
+      'Máximo 50 caracteres'
+    ),
   })
   .superRefine((values, context) => {
     if (!values.disId) {
@@ -71,6 +75,14 @@ export const datosGeneralesSchema = z
         code: z.ZodIssueCode.custom,
         message: 'El departamento es obligatorio',
         path: ['departamento'],
+      })
+    }
+
+    if (!values.inicioCaso) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'La forma de inicio del caso es obligatoria',
+        path: ['inicioCaso'],
       })
     }
   })
@@ -110,6 +122,22 @@ export const situacionJuridicaSchema = z
   .object({
     situacionLegalId: optionSchema.nullable(),
     fecha: dateSchema('La fecha de la situación jurídica es obligatoria'),
+    numeroResolucion: z
+      .string()
+      .trim()
+      .max(50, 'Máximo 50 caracteres')
+      .optional(),
+    lugar: z
+      .string()
+      .trim()
+      .max(100, 'Máximo 100 caracteres')
+      .optional(),
+    autoridad: z
+      .string()
+      .trim()
+      .max(150, 'Máximo 150 caracteres')
+      .optional(),
+    fjt: z.string().trim().max(100, 'Máximo 100 caracteres').optional(),
   })
   .superRefine((values, context) => {
     if (!values.situacionLegalId) {
@@ -118,6 +146,24 @@ export const situacionJuridicaSchema = z
         message: 'La situación legal es obligatoria',
         path: ['situacionLegalId'],
       })
+      return
+    }
+
+    const campos: Array<['numeroResolucion' | 'lugar' | 'autoridad' | 'fjt', string]> = [
+      ['numeroResolucion', 'El número de resolución es obligatorio'],
+      ['lugar', 'El lugar es obligatorio'],
+      ['autoridad', 'La autoridad es obligatoria'],
+      ['fjt', 'El juzgado es obligatorio'],
+    ]
+
+    for (const [campo, mensaje] of campos) {
+      if (!values[campo]?.trim()) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: mensaje,
+          path: [campo],
+        })
+      }
     }
   })
 

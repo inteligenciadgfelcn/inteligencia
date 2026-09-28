@@ -1,12 +1,15 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { notFound } from 'next/navigation'
 
 import { Button } from '@/components/ui/Button'
 
 import { formatFecha } from '../../../utils/fechas'
 import type { InicioInvestigacionItem } from '../../types/inicio-investigacion.types'
 import { getEstadoBadgeClass } from '../../utils/inicio-investigacion.utils'
+import { InicioInvestigacionApi } from '../../api/inicio-investigacion.api'
 import { DataTableCasosPrecedentes } from '../components/DataTableCasosPrecedentes'
 import { DataTablePersonasNaturales } from '../components/DataTablePersonasNaturales'
 import { DataTablePersonasJuridicas } from '../components/DataTablePersonasJuridicas'
@@ -19,7 +22,7 @@ type TabKey =
   | 'personas-juridicas'
 
 type Props = {
-  item: InicioInvestigacionItem
+  id: string
 }
 
 const tabs: Array<{ key: TabKey; label: string }> = [
@@ -51,10 +54,27 @@ const placeholderCards: Record<
   ],
 }
 
-export function InicioInvestigacionDetalle({ item }: Props) {
+export function InicioInvestigacionDetalle({ id }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('caso-precedente')
 
+  const { data: item, isLoading } = useQuery<InicioInvestigacionItem | null>({
+    queryKey: ['lgi-inicio-investigacion', 'detalle', id],
+    queryFn: () => InicioInvestigacionApi.obtenerInvestigacion(id),
+  })
+
   const currentCards = useMemo(() => placeholderCards[activeTab], [activeTab])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-sm text-gray-500">Cargando investigación...</p>
+      </div>
+    )
+  }
+
+  if (!item) {
+    notFound()
+  }
 
   return (
     <div className="space-y-4">
@@ -184,7 +204,7 @@ export function InicioInvestigacionDetalle({ item }: Props) {
 
         <div className="p-5">
           {activeTab === 'caso-precedente' ? (
-            <DataTableCasosPrecedentes />
+            <DataTableCasosPrecedentes casosId={item.id} />
           ) : activeTab === 'personas-naturales' ? (
             <DataTablePersonasNaturales />
           ) : activeTab === 'personas-juridicas' ? (

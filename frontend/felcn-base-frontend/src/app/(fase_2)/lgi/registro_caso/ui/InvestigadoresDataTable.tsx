@@ -57,7 +57,17 @@ export function InvestigadoresDataTable({ casoId }: Props) {
 
   const columns: Column<InvestigadorCasoRow>[] = [
     { accessor: 'investigadorId', title: 'ID', sortable: true },
-    { accessor: 'numeroPase', title: 'Nro Pase', sortable: true },
+    {
+      accessor: 'numeroPase',
+      title: 'Nro Pase',
+      sortable: true,
+    },
+    {
+      accessor: 'investigador',
+      title: 'Investigador',
+      sortable: true,
+      render: (row) => row.investigador || row.numeroPase,
+    },
     { accessor: 'memo', title: 'Memorándum', sortable: true },
     {
       accessor: 'fechaAsignacion',

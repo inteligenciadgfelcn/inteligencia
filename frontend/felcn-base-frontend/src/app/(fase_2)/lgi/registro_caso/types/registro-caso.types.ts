@@ -3,6 +3,7 @@ import type {
   DistritalLgi,
   EstadoCivilLgi,
   GrupoLgi,
+  InicioCasoLgi,
   PaisLgi,
   ProfesionLgi,
   TipoDocumentoLgi,
@@ -20,11 +21,13 @@ export interface DatosGeneralesFormValues {
   departamento: CatalogOption<DepartamentoLgi> | null
   nombreCaso: string
   nroCaso: string
-  cudIfp: string
+  nroCasoFis: string
   remiteFiscal: string
   conformeA: string
   controlJurisdiccional: string
   fechaInicio: string
+  inicioCaso: CatalogOption<InicioCasoLgi> | null
+  codigoServicio: string
 }
 
 export interface DatosGeneralesPayload {
@@ -34,10 +37,12 @@ export interface DatosGeneralesPayload {
   conformeA: string
   nombreCaso: string
   nroCaso: string
-  cudIfp: string
+  nroCasoFis: string
   remiteFiscal: string
   controlJurisdiccional: string
   fechaInicio: string
+  inicioCaso: string
+  codigoServicio: string
 }
 
 export interface UltimaSituacionJuridica {
@@ -136,12 +141,20 @@ export interface SituacionLegalCatalogo {
 export interface SituacionJuridicaFormValues {
   situacionLegalId: CatalogOption<SituacionLegalCatalogo> | null
   fecha: string
+  numeroResolucion: string
+  lugar: string
+  autoridad: string
+  fjt: string
 }
 
 export interface SituacionJuridicaPayload {
   detenidoId: number
   situacionLegalId: number
   fecha: string
+  numeroResolucion: string
+  lugar: string
+  autoridad: string
+  fjt: string
 }
 
 export interface RespuestaCrud {

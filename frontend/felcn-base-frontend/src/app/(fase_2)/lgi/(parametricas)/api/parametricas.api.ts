@@ -6,6 +6,7 @@ import type {
   DistritalLgi,
   EstadoCivilLgi,
   GrupoLgi,
+  InicioCasoLgi,
   PaisLgi,
   ProfesionLgi,
   TipoDocumentoLgi,
@@ -38,12 +39,21 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarPaises(): Promise<PaisLgi[]> {
-    return sesionPeticion({
-      url: `${BASE}/allPais`,
+  async listarPaises(): Promise<PaisLgi[]> {
+    const respuesta = await sesionPeticion<{
+      finalizado: boolean
+      datos?: Array<{ id: number | string; descripcion: string }>
+    }>({
+      url: `${Constantes.baseUrl}/s2i/lookups/paises`,
       method: 'get',
       withCredentials: true,
     })
+
+    return (respuesta.datos ?? []).map((pais) => ({
+      pa_id: String(pais.id),
+      cont_id: '',
+      descripcion: pais.descripcion,
+    }))
   },
 
   listarDepartamentos(): Promise<DepartamentoLgi[]> {
@@ -81,6 +91,14 @@ export const ParametricasLgiApi = {
   listarTiposDocumento(): Promise<TipoDocumentoLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allTipoDocumento`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarIniciosCaso(): Promise<InicioCasoLgi[]> {
+    return sesionPeticion({
+      url: `${BASE}/allIncioCaso`,
       method: 'get',
       withCredentials: true,
     })

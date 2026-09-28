@@ -38,11 +38,13 @@ export const createDefaultDatosGeneralesValues =
     departamento: null,
     nombreCaso: '',
     nroCaso: '',
-    cudIfp: '',
+    nroCasoFis: '',
     remiteFiscal: '',
     conformeA: '',
     controlJurisdiccional: '',
     fechaInicio: dayjs().format('YYYY-MM-DD'),
+    inicioCaso: null,
+    codigoServicio: '',
   })
 
 export const createDefaultPersonaValues = (): PersonaImplicadaFormValues => ({
@@ -61,4 +63,8 @@ export const createDefaultSituacionJuridicaValues =
   (): SituacionJuridicaFormValues => ({
     situacionLegalId: null,
     fecha: dayjs().format('YYYY-MM-DD'),
+    numeroResolucion: '',
+    lugar: '',
+    autoridad: '',
+    fjt: '',
   })

@@ -3,10 +3,12 @@ import IconClipboardText from '@/components/Icon/IconClipboardText'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 import IconUsersGroup from '@/components/Icon/IconUsersGroup'
 import IconChecks from '@/components/Icon/IconChecks'
+import IconOpenBook from '@/components/Icon/IconOpenBook'
 
 export type MenuOption =
   | 'personas-investigadas'
   | 'actuaciones-realizadas'
+  | 'etapa-procesal'
   | 'bienes-identificados'
   | 'personas-juridicas'
   | 'conclusion-caso'
@@ -23,6 +25,7 @@ const options: Array<{
 }> = [
   { key: 'personas-investigadas', label: 'Personas Investigadas', icon: IconUsers },
   { key: 'actuaciones-realizadas', label: 'Actuaciones Realizadas', icon: IconClipboardText },
+  { key: 'etapa-procesal', label: 'Etapa Procesal', icon: IconOpenBook },
   { key: 'bienes-identificados', label: 'Bienes Identificados', icon: IconCashBanknotes },
   { key: 'personas-juridicas', label: 'Personas Jurídicas', icon: IconUsersGroup },
   { key: 'conclusion-caso', label: 'Conclusión del Caso', icon: IconChecks },

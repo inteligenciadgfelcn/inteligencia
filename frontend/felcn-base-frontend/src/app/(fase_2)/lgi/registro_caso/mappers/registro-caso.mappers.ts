@@ -4,6 +4,7 @@ import type {
   DistritalLgi,
   EstadoCivilLgi,
   GrupoLgi,
+  InicioCasoLgi,
   PaisLgi,
   ProfesionLgi,
   TipoDocumentoLgi,
@@ -67,6 +68,14 @@ export const mapDistritalToOption = (
 
 export const mapGrupoToOption = (item: GrupoLgi): CatalogOption<GrupoLgi> => ({
   value: String(item.id),
+  label: item.descripcion,
+  original: item,
+})
+
+export const mapInicioCasoToOption = (
+  item: InicioCasoLgi
+): CatalogOption<InicioCasoLgi> => ({
+  value: String(item.idInicioCaso),
   label: item.descripcion,
   original: item,
 })
@@ -137,10 +146,12 @@ export const buildDatosGeneralesPayload = (values: {
   conformeA: string
   nombreCaso: string
   nroCaso: string
-  cudIfp: string
+  nroCasoFis: string
   remiteFiscal: string
   controlJurisdiccional: string
   fechaInicio: string
+  inicioCaso: { label: string } | null
+  codigoServicio: string
 }): DatosGeneralesPayload => ({
   disId: Number(values.disId?.value ?? 0),
   idGrupo: Number(values.idGrupo?.value ?? 0),
@@ -148,10 +159,12 @@ export const buildDatosGeneralesPayload = (values: {
   conformeA: values.conformeA,
   nombreCaso: values.nombreCaso,
   nroCaso: values.nroCaso,
-  cudIfp: values.cudIfp,
+  nroCasoFis: values.nroCasoFis,
   remiteFiscal: values.remiteFiscal,
   controlJurisdiccional: values.controlJurisdiccional,
   fechaInicio: values.fechaInicio,
+  inicioCaso: values.inicioCaso?.label ?? '',
+  codigoServicio: values.codigoServicio,
 })
 
 export const buildPersonaPayload = (

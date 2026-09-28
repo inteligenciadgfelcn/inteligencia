@@ -11,6 +11,7 @@ import { MenuVertical } from './MenuVertical'
 import type { MenuOption } from './MenuVertical'
 import { PersonasInvestigadas } from './PersonasInvestigadas'
 import { ActuacionesRealizadas } from './ActuacionesRealizadas'
+import { EtapaProcesal } from './EtapaProcesal'
 import { BienesIdentificados } from './BienesIdentificados'
 import { PersonasJuridicas } from './PersonasJuridicas'
 import { ConclusionCaso } from './ConclusionCaso'
@@ -25,6 +26,7 @@ const bodyMap: Record<
 > = {
   'personas-investigadas': PersonasInvestigadas,
   'actuaciones-realizadas': ActuacionesRealizadas,
+  'etapa-procesal': EtapaProcesal,
   'bienes-identificados': BienesIdentificados,
   'personas-juridicas': PersonasJuridicas,
   'conclusion-caso': ConclusionCaso,

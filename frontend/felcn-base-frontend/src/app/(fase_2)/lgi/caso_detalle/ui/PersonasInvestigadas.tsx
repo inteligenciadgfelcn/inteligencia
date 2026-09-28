@@ -83,6 +83,10 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     useState<PersonaImplicadaRow | null>(null)
   const [situacionLegalId, setSituacionLegalId] = useState<string>('')
   const [fechaSituacion, setFechaSituacion] = useState<string>('')
+  const [nroResolucion, setNroResolucion] = useState<string>('')
+  const [lugarSituacion, setLugarSituacion] = useState<string>('')
+  const [autoridadSituacion, setAutoridadSituacion] = useState<string>('')
+  const [fjtSituacion, setFjtSituacion] = useState<string>('')
   const [guardandoSituacion, setGuardandoSituacion] = useState(false)
   const [historialPersona, setHistorialPersona] =
     useState<PersonaImplicadaRow | null>(null)
@@ -222,6 +226,10 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
         detenidoId,
         situacionLegalId: Number(values.situacionLegalId.value),
         fecha: values.fecha,
+        numeroResolucion: values.numeroResolucion ?? '',
+        lugar: values.lugar ?? '',
+        autoridad: values.autoridad ?? '',
+        fjt: values.fjt ?? '',
       }
       if (personaEditando?.ultimaSituacionJuridica) {
         await RegistroCasoApi.actualizarSituacionJuridica(
@@ -256,17 +264,34 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     setPersonaSituacion(row)
     setSituacionLegalId('')
     setFechaSituacion('')
+    setNroResolucion('')
+    setLugarSituacion('')
+    setAutoridadSituacion('')
+    setFjtSituacion('')
     setSituacionesModalOpen(true)
   }
 
   const onSubmitSituacion = async () => {
-    if (!personaSituacion || !situacionLegalId || !fechaSituacion) return
+    if (
+      !personaSituacion ||
+      !situacionLegalId ||
+      !fechaSituacion ||
+      !nroResolucion ||
+      !lugarSituacion ||
+      !autoridadSituacion ||
+      !fjtSituacion
+    )
+      return
     setGuardandoSituacion(true)
     try {
       await RegistroCasoApi.registrarSituacionJuridica({
         detenidoId: personaSituacion.deId,
         situacionLegalId: Number(situacionLegalId),
         fecha: fechaSituacion,
+        numeroResolucion: nroResolucion,
+        lugar: lugarSituacion,
+        autoridad: autoridadSituacion,
+        fjt: fjtSituacion,
       })
       setSituacionesModalOpen(false)
       queryClient.invalidateQueries({
@@ -586,6 +611,53 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                       </p>
                     )}
                   </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Número de resolución
+                    </label>
+                    <Input {...register('numeroResolucion')} placeholder="RES-123/2026" />
+                    {errors.numeroResolucion && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.numeroResolucion.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Lugar
+                    </label>
+                    <Input {...register('lugar')} placeholder="La Paz" />
+                    {errors.lugar && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.lugar.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Autoridad
+                    </label>
+                    <Input
+                      {...register('autoridad')}
+                      placeholder="Juzgado de Instrucción Penal"
+                    />
+                    {errors.autoridad && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.autoridad.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Juzgado
+                    </label>
+                    <Input {...register('fjt')} placeholder="Nombre del Juzgado" />
+                    {errors.fjt && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.fjt.message}
+                      </p>
+                    )}
+                  </div>
               <div className="mt-5 flex justify-end gap-3">
                 <Button
                   type="button"
@@ -683,6 +755,46 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     onChange={(e) => setFechaSituacion(e.target.value)}
                   />
                 </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de resolución
+                  </label>
+                  <Input
+                    value={nroResolucion}
+                    onChange={(e) => setNroResolucion(e.target.value)}
+                    placeholder="RES-123/2026"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Lugar
+                  </label>
+                  <Input
+                    value={lugarSituacion}
+                    onChange={(e) => setLugarSituacion(e.target.value)}
+                    placeholder="La Paz"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    value={autoridadSituacion}
+                    onChange={(e) => setAutoridadSituacion(e.target.value)}
+                    placeholder="Juzgado de Instrucción Penal"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Juzgado
+                  </label>
+                  <Input
+                    value={fjtSituacion}
+                    onChange={(e) => setFjtSituacion(e.target.value)}
+                    placeholder="Nombre del Juzgado"
+                  />
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
@@ -698,7 +810,14 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 type="button"
                 variant="primary"
                 loading={guardandoSituacion}
-                disabled={!situacionLegalId || !fechaSituacion}
+                disabled={
+                  !situacionLegalId ||
+                  !fechaSituacion ||
+                  !nroResolucion ||
+                  !lugarSituacion ||
+                  !autoridadSituacion ||
+                  !fjtSituacion
+                }
                 onClick={onSubmitSituacion}
               >
                 Registrar

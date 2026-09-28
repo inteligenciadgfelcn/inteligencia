@@ -5,7 +5,6 @@ import type {
   ActuacionPayload,
   ActuacionRow,
   ConclusionCasoPayload,
-  DetalleEtapa,
   TipoInforme,
 } from '../types/actuaciones.types'
 
@@ -17,12 +16,6 @@ interface RespuestaPaginada<T> {
   mensaje: string
   datos: { total: number; filas: T[] }
 }
-
-export const ETAPAS: Array<{ et_id: number; descripcion: string }> = [
-  { et_id: 1, descripcion: 'Preliminar' },
-  { et_id: 2, descripcion: 'Preparatoria' },
-  { et_id: 3, descripcion: 'Juicio Oral' },
-]
 
 export const ActuacionesApi = {
   async listarActuaciones(
@@ -43,10 +36,10 @@ export const ActuacionesApi = {
     fd.append('casosId', String(payload.casosId))
     fd.append('opNrooper', payload.opNrooper)
     fd.append('idTipoInforme', String(payload.idTipoInforme))
-    fd.append('idEtapa', String(payload.idEtapa))
-    fd.append('idEstado', String(payload.idEstado))
-    fd.append('diasOtorgados', String(payload.diasOtorgados))
-    fd.append('fechaRecepcionFiscalia', payload.fechaRecepcionFiscalia)
+    if (payload.otroInforme) {
+      fd.append('otroInforme', payload.otroInforme)
+    }
+    fd.append('opLugar', payload.opLugar)
     fd.append('opDescripcion', payload.opDescripcion)
     if (payload.archivo) {
       fd.append('archivo', payload.archivo)
@@ -64,14 +57,6 @@ export const ActuacionesApi = {
   listarTiposInforme(): Promise<TipoInforme[]> {
     return sesionPeticion<TipoInforme[]>({
       url: `${BASE_PARAMETRICAS}/allTipoInforme`,
-      method: 'get',
-      withCredentials: true,
-    })
-  },
-
-  listarDetallesEtapa(idEtapa: number): Promise<DetalleEtapa[]> {
-    return sesionPeticion<DetalleEtapa[]>({
-      url: `${BASE_PARAMETRICAS}/estado/${idEtapa}`,
       method: 'get',
       withCredentials: true,
     })
