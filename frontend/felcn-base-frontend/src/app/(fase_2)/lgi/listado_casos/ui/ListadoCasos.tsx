@@ -84,10 +84,10 @@ export function ListadoCasos() {
     { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
-    { accessor: 'cudIfp', title: 'CUD/IFP' },
+    { accessor: 'cudIfp', title: 'CUD' },
     { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
-    // { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
+    { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
       accessor: 'fechaHoraIng',
       title: 'Fecha inicio',

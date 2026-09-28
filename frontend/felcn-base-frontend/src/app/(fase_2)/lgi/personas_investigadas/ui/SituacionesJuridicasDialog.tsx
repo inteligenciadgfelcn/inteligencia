@@ -61,6 +61,26 @@ export function SituacionesJuridicasDialog({
       title: 'Fecha',
       render: (row) => formatFecha(row.fecha, 'dd/MM/yyyy'),
     },
+    {
+      accessor: 'numeroResolucion',
+      title: 'Nro resolución',
+      render: (row) => String(row.numeroResolucion ?? '-'),
+    },
+    {
+      accessor: 'lugar',
+      title: 'Lugar',
+      render: (row) => String(row.lugar ?? '-'),
+    },
+    {
+      accessor: 'autoridad',
+      title: 'Autoridad',
+      render: (row) => String(row.autoridad ?? '-'),
+    },
+    {
+      accessor: 'fjt',
+      title: 'Juzgado',
+      render: (row) => String(row.fjt ?? '-'),
+    },
   ]
 
   return (

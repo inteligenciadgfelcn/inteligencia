@@ -16,12 +16,8 @@ import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 
 import { Constantes } from '@/config/Constantes'
 import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
-import { ActuacionesApi, ETAPAS } from '../api/actuaciones.api'
-import type {
-  ActuacionRow,
-  DetalleEtapa,
-  TipoInforme,
-} from '../types/actuaciones.types'
+import { ActuacionesApi } from '../api/actuaciones.api'
+import type { ActuacionRow, TipoInforme } from '../types/actuaciones.types'
 import type { MenuOption } from './MenuVertical'
 import { formatFecha } from '../../utils/fechas'
 
@@ -59,10 +55,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
 
   const [nroInforme, setNroInforme] = useState('')
   const [tipoInformeId, setTipoInformeId] = useState<string>('')
-  const [etapaId, setEtapaId] = useState<string>('')
-  const [detalleEtapaId, setDetalleEtapaId] = useState<string>('')
-  const [diasTranscurridos, setDiasTranscurridos] = useState<string>('')
-  const [fechaRecepcion, setFechaRecepcion] = useState('')
+  const [opLugar, setOpLugar] = useState('')
   const [sintesis, setSintesis] = useState('')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [guardando, setGuardando] = useState(false)
@@ -79,34 +72,17 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
     queryFn: () => ActuacionesApi.listarTiposInforme(),
   })
 
-  const { data: detallesEtapa = [] } = useQuery<DetalleEtapa[]>({
-    queryKey: ['lgi-actuaciones', 'detalles-etapa', etapaId],
-    enabled: Boolean(etapaId),
-    queryFn: () => ActuacionesApi.listarDetallesEtapa(Number(etapaId)),
-  })
-
   const abrirModal = () => {
     setNroInforme('')
     setTipoInformeId('')
-    setEtapaId('')
-    setDetalleEtapaId('')
-    setDiasTranscurridos('')
-    setFechaRecepcion('')
+    setOpLugar('')
     setSintesis('')
     setArchivo(null)
     setModalOpen(true)
   }
 
   const onSubmit = async () => {
-    if (
-      !nroInforme ||
-      !tipoInformeId ||
-      !etapaId ||
-      !detalleEtapaId ||
-      !diasTranscurridos ||
-      !fechaRecepcion ||
-      !sintesis
-    )
+    if (!nroInforme || !tipoInformeId || !opLugar || !sintesis || !archivo)
       return
 
     setGuardando(true)
@@ -115,12 +91,9 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
         casosId: casoId,
         opNrooper: nroInforme,
         idTipoInforme: Number(tipoInformeId),
-        idEtapa: Number(etapaId),
-        idEstado: Number(detalleEtapaId),
-        diasOtorgados: Number(diasTranscurridos),
-        fechaRecepcionFiscalia: fechaRecepcion,
+        opLugar,
         opDescripcion: sintesis,
-        archivo: archivo ?? undefined,
+        archivo,
       })
       setModalOpen(false)
       queryClient.invalidateQueries({
@@ -165,40 +138,10 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
         String(row.idTipoInforme),
     },
     {
-      accessor: 'idEtapa',
-      title: 'Etapa',
-      render: (row) =>
-        ETAPAS.find((e) => e.et_id === row.idEtapa)?.descripcion ??
-        String(row.idEtapa),
+      accessor: 'opLugar',
+      title: 'Lugar',
+      render: (row) => row.opLugar || '-',
     },
-    {
-      accessor: 'idEstado',
-      title: 'Detalle etapa',
-      render: (row) =>
-        detallesEtapa.find((d) => d.estId === row.idEstado)?.descripcion ??
-        String(row.idEstado),
-    },
-    { accessor: 'diasOtorgados', title: 'Días' },
-    {
-      accessor: 'fechaRecepcionFiscalia',
-      title: 'Fec. recepción',
-      render: (row) => formatFecha(row.fechaRecepcionFiscalia, 'dd/MM/yyyy'),
-    },
-    // {
-    //   accessor: 'estado',
-    //   title: 'Estado',
-    //   render: (row) => (
-    //     <span
-    //       className={`badge ${
-    //         row.estado === 'ACTIVO'
-    //           ? 'badge-outline-success'
-    //           : 'badge-outline-danger'
-    //       }`}
-    //     >
-    //       {row.estado}
-    //     </span>
-    //   ),
-    // },
     {
       accessor: 'rutaArchivo',
       title: 'Archivo',
@@ -240,11 +183,9 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   const isFormValid =
     nroInforme &&
     tipoInformeId &&
-    etapaId &&
-    detalleEtapaId &&
-    diasTranscurridos &&
-    fechaRecepcion &&
-    sintesis
+    opLugar &&
+    sintesis &&
+    archivo
 
   return (
     <div className="space-y-4">
@@ -335,28 +276,6 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                       (t) => t.id === detalleModal.idTipoInforme
                     )?.descripcion ?? String(detalleModal.idTipoInforme)
                   }
-                />
-                <DetalleCampo
-                  label="Etapa"
-                  value={
-                    ETAPAS.find((e) => e.et_id === detalleModal.idEtapa)
-                      ?.descripcion ?? String(detalleModal.idEtapa)
-                  }
-                />
-                <DetalleCampo
-                  label="Detalle Etapa"
-                  value={
-                    detallesEtapa.find((d) => d.estId === detalleModal.idEstado)
-                      ?.descripcion ?? String(detalleModal.idEstado)
-                  }
-                />
-                <DetalleCampo
-                  label="Días Otorgados"
-                  value={String(detalleModal.diasOtorgados)}
-                />
-                <DetalleCampo
-                  label="Fecha Recepción Fiscalía"
-                  value={formatFecha(detalleModal.fechaRecepcionFiscalia)}
                 />
                 <DetalleCampo label="Estado" value={detalleModal.estado} />
                 <DetalleCampo label="Lugar" value={detalleModal.opLugar} />
@@ -451,56 +370,12 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Etapa
-                  </label>
-                  <Select
-                    options={ETAPAS.map((e) => ({
-                      value: String(e.et_id),
-                      label: e.descripcion,
-                    }))}
-                    placeholder="Seleccione etapa"
-                    value={etapaId}
-                    onChange={(e) => {
-                      setEtapaId(e.target.value)
-                      setDetalleEtapaId('')
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Detalle etapa
-                  </label>
-                  <Select
-                    options={detallesEtapa.map((d) => ({
-                      value: String(d.estId),
-                      label: d.descripcion,
-                    }))}
-                    placeholder="Seleccione detalle"
-                    value={detalleEtapaId}
-                    disabled={!etapaId}
-                    onChange={(e) => setDetalleEtapaId(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Días transcurridos
+                    Lugar
                   </label>
                   <Input
-                    type="number"
-                    value={diasTranscurridos}
-                    onChange={(e) => setDiasTranscurridos(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha recepción fiscalía
-                  </label>
-                  <Input
-                    type="date"
-                    value={fechaRecepcion}
-                    onChange={(e) => setFechaRecepcion(e.target.value)}
+                    value={opLugar}
+                    onChange={(e) => setOpLugar(e.target.value)}
+                    placeholder="Lugar del operativo"
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -517,12 +392,12 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                 </div>
                 <div className="md:col-span-2">
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Documento de respaldo (PDF, max 10MB)
+                    Documento de respaldo (PDF, DOC o DOCX, max 10MB)
                   </label>
                   <div className="relative">
                     <input
                       type="file"
-                      accept=".pdf"
+                      accept=".pdf,.doc,.docx"
                       className="hidden"
                       id="file-actuacion"
                       onChange={(e) => {
@@ -539,7 +414,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                       className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 hover:border-primary hover:bg-primary/5 dark:border-[#1b2e4b] dark:text-gray-400"
                     >
                       <IconFile className="h-4 w-4" />
-                      {archivo ? archivo.name : 'Seleccionar archivo PDF...'}
+                      {archivo ? archivo.name : 'Seleccionar archivo...'}
                     </label>
                   </div>
                 </div>

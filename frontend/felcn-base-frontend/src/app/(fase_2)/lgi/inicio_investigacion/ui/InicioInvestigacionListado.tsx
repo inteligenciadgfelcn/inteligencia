@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -25,9 +26,9 @@ import {
   getEstadoBadgeClass,
   inicioInvestigacionInitialFilters,
   investigadorOptions,
-  mockInvestigaciones,
   regionalOptions,
 } from '../utils/inicio-investigacion.utils'
+import { InicioInvestigacionApi } from '../api/inicio-investigacion.api'
 import { formatFecha } from '../../utils/fechas'
 
 const topSearchOptions: SelectOption[] = [
@@ -45,7 +46,14 @@ export function InicioInvestigacionListado() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
 
-  const allRows = useMemo(() => mockInvestigaciones, [])
+  const { data: investigaciones = [], isLoading, isFetching } = useQuery<
+    InicioInvestigacionItem[]
+  >({
+    queryKey: ['lgi-inicio-investigacion', 'listado'],
+    queryFn: () => InicioInvestigacionApi.listarInvestigaciones(),
+  })
+
+  const allRows = investigaciones
 
   const filteredRows = useMemo(
     () => filterInvestigaciones(allRows, filters),
@@ -318,6 +326,7 @@ export function InicioInvestigacionListado() {
           onPageChange={setPage}
           onLimitChange={setLimit}
           columns={columns}
+          loading={isLoading || isFetching}
         />
       </div>
     </div>

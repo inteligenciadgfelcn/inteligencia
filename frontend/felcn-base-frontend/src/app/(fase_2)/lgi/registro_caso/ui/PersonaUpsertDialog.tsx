@@ -146,15 +146,21 @@ export function PersonaUpsertDialog({
           : 'Registrar persona investigada'
       }
       maxWidth="md"
+      scroll="paper"
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 p-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 p-4">
+        <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+          <h4 className="col-span-full border-b border-gray-200 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            Datos personales
+          </h4>
+
           <div>
             <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
               Nombres
             </label>
             <Input
               {...form.register('nombres')}
+              size="sm"
               error={!!errors.nombres}
               className="w-full"
               placeholder="Nombres"
@@ -172,6 +178,7 @@ export function PersonaUpsertDialog({
             </label>
             <Input
               {...form.register('paterno')}
+              size="sm"
               error={!!errors.paterno}
               className="w-full"
               placeholder="Apellido paterno"
@@ -189,6 +196,7 @@ export function PersonaUpsertDialog({
             </label>
             <Input
               {...form.register('materno')}
+              size="sm"
               error={!!errors.materno}
               className="w-full"
               placeholder="Apellido materno"
@@ -206,6 +214,7 @@ export function PersonaUpsertDialog({
             </label>
             <Input
               {...form.register('esposo')}
+              size="sm"
               error={!!errors.esposo}
               className="w-full"
               placeholder="Apellido de casada"
@@ -217,16 +226,6 @@ export function PersonaUpsertDialog({
             )}
           </div>
 
-          <RHFSelect<PaisLgi>
-            id="paisId"
-            name="paisId"
-            control={form.control}
-            label="País"
-            error={errors.paisId?.message as string | undefined}
-            originalData={paises}
-            mapOption={mapPaisToOption}
-          />
-
           <RHFSelect<EstadoCivilLgi>
             id="estadoCivilId"
             name="estadoCivilId"
@@ -235,6 +234,7 @@ export function PersonaUpsertDialog({
             error={errors.estadoCivilId?.message as string | undefined}
             originalData={estadosCiviles}
             mapOption={mapEstadoCivilToOption}
+            compact
           />
 
           <RHFSelect<ProfesionLgi>
@@ -245,6 +245,22 @@ export function PersonaUpsertDialog({
             error={errors.profesionId?.message as string | undefined}
             originalData={profesiones}
             mapOption={mapProfesionToOption}
+            compact
+          />
+
+          <h4 className="col-span-full border-b border-gray-200 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            Datos de identidad
+          </h4>
+
+          <RHFSelect<PaisLgi>
+            id="paisId"
+            name="paisId"
+            control={form.control}
+            label="País"
+            error={errors.paisId?.message as string | undefined}
+            originalData={paises}
+            mapOption={mapPaisToOption}
+            compact
           />
 
           <RHFSelect<TipoDocumentoLgi>
@@ -255,6 +271,7 @@ export function PersonaUpsertDialog({
             error={errors.tipoDocumentoId?.message as string | undefined}
             originalData={tiposDocumento}
             mapOption={mapTipoDocumentoToOption}
+            compact
           />
 
           <div>
@@ -263,6 +280,7 @@ export function PersonaUpsertDialog({
             </label>
             <Input
               {...form.register('numeroDocumento')}
+              size="sm"
               error={!!errors.numeroDocumento}
               className="w-full"
               placeholder="Número de documento"

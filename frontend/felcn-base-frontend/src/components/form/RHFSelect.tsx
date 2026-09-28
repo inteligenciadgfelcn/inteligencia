@@ -13,6 +13,7 @@ type Props<T> = {
   error?: string
   prefixClassName?: string
   isDisable?: boolean
+  compact?: boolean
 
   name: string
   control: any
@@ -30,6 +31,7 @@ export function RHFSelect<T>({
   error,
   prefixClassName,
   isDisable = false,
+  compact = false,
   name,
   control,
   originalData,
@@ -37,6 +39,31 @@ export function RHFSelect<T>({
   onValueChange,
 }: Props<T>) {
   const options = originalData.map(mapOption)
+
+  const compactStyles = compact
+    ? {
+        control: (provided: any) => ({
+          ...provided,
+          minHeight: '28px',
+          height: '28px',
+        }),
+        valueContainer: (provided: any) => ({
+          ...provided,
+          height: '28px',
+          padding: '0 8px',
+          minWidth: 0,
+        }),
+        indicatorsContainer: (provided: any) => ({
+          ...provided,
+          height: '28px',
+        }),
+        input: (provided: any) => ({
+          ...provided,
+          margin: 0,
+          minWidth: 0,
+        }),
+      }
+    : undefined
 
   return (
     <div>
@@ -60,6 +87,7 @@ export function RHFSelect<T>({
                 options={options}
                 classNamePrefix="react-select"
                 className={`${error ? 'react-select-error' : ''} w-full !max-w-none`}
+                styles={compactStyles}
                 isDisabled={isDisable}
                 onChange={(option) => {
                   field.onChange(option ?? null)

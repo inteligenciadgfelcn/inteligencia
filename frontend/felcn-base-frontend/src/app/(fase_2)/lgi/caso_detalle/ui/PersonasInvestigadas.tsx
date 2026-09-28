@@ -83,6 +83,10 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     useState<PersonaImplicadaRow | null>(null)
   const [situacionLegalId, setSituacionLegalId] = useState<string>('')
   const [fechaSituacion, setFechaSituacion] = useState<string>('')
+  const [nroResolucion, setNroResolucion] = useState<string>('')
+  const [lugarSituacion, setLugarSituacion] = useState<string>('')
+  const [autoridadSituacion, setAutoridadSituacion] = useState<string>('')
+  const [fjtSituacion, setFjtSituacion] = useState<string>('')
   const [guardandoSituacion, setGuardandoSituacion] = useState(false)
   const [historialPersona, setHistorialPersona] =
     useState<PersonaImplicadaRow | null>(null)
@@ -222,6 +226,10 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
         detenidoId,
         situacionLegalId: Number(values.situacionLegalId.value),
         fecha: values.fecha,
+        numeroResolucion: values.numeroResolucion ?? '',
+        lugar: values.lugar ?? '',
+        autoridad: values.autoridad ?? '',
+        fjt: values.fjt ?? '',
       }
       if (personaEditando?.ultimaSituacionJuridica) {
         await RegistroCasoApi.actualizarSituacionJuridica(
@@ -256,17 +264,34 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     setPersonaSituacion(row)
     setSituacionLegalId('')
     setFechaSituacion('')
+    setNroResolucion('')
+    setLugarSituacion('')
+    setAutoridadSituacion('')
+    setFjtSituacion('')
     setSituacionesModalOpen(true)
   }
 
   const onSubmitSituacion = async () => {
-    if (!personaSituacion || !situacionLegalId || !fechaSituacion) return
+    if (
+      !personaSituacion ||
+      !situacionLegalId ||
+      !fechaSituacion ||
+      !nroResolucion ||
+      !lugarSituacion ||
+      !autoridadSituacion ||
+      !fjtSituacion
+    )
+      return
     setGuardandoSituacion(true)
     try {
       await RegistroCasoApi.registrarSituacionJuridica({
         detenidoId: personaSituacion.deId,
         situacionLegalId: Number(situacionLegalId),
         fecha: fechaSituacion,
+        numeroResolucion: nroResolucion,
+        lugar: lugarSituacion,
+        autoridad: autoridadSituacion,
+        fjt: fjtSituacion,
       })
       setSituacionesModalOpen(false)
       queryClient.invalidateQueries({
@@ -396,7 +421,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <h3 className="text-lg font-bold text-dark dark:text-white-light">
                 {personaEditando ? 'Editar persona' : 'Registrar persona'}
@@ -409,14 +434,21 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="p-5">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-3 overflow-y-auto p-4"
+            >
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+                <h4 className="col-span-full border-b border-gray-200 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  Datos personales
+                </h4>
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Nombres
                   </label>
                   <Input
                     {...register('nombres')}
+                    size="sm"
                     placeholder="Nombres"
                   />
                   {errors.nombres && (
@@ -431,6 +463,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('paterno')}
+                    size="sm"
                     placeholder="Apellido paterno"
                   />
                   {errors.paterno && (
@@ -445,6 +478,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('materno')}
+                    size="sm"
                     placeholder="Apellido materno"
                   />
                   {errors.materno && (
@@ -459,14 +493,17 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('esposo')}
+                    size="sm"
                     placeholder="Apellido de casada"
                   />
                 </div>
+
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Tipo de documento
                   </label>
                   <Select
+                    size="sm"
                     options={tiposDocumento.map(mapTipoDocumentoToOption)}
                     placeholder="Seleccione tipo"
                     value={tipoDocValue?.value ?? ''}
@@ -491,6 +528,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('numeroDocumento')}
+                    size="sm"
                     placeholder="Número de documento"
                   />
                   {errors.numeroDocumento && (
@@ -504,6 +542,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     País
                   </label>
                   <Select
+                    size="sm"
                     options={paises.map(mapPaisToOption)}
                     placeholder="Seleccione país"
                     value={paisValue?.value ?? ''}
@@ -520,6 +559,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Estado civil
                   </label>
                   <Select
+                    size="sm"
                     options={estadosCiviles.map(mapEstadoCivilToOption)}
                     placeholder="Seleccione estado civil"
                     value={estadoCivilValue?.value ?? ''}
@@ -538,6 +578,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Profesión
                   </label>
                   <Select
+                    size="sm"
                     options={profesiones.map(mapProfesionToOption)}
                     placeholder="Seleccione profesión"
                     value={profesionValue?.value ?? ''}
@@ -551,42 +592,104 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     }}
                   />
                 </div>
+
+                <h4 className="col-span-full border-b border-gray-200 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  Situación jurídica
+                </h4>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Situación legal
+                  </label>
+                  <Select
+                    size="sm"
+                    options={situacionesLegales.map(mapSituacionLegalToOption)}
+                    placeholder="Seleccione situación legal"
+                    value={situacionLegalValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = situacionesLegales
+                        .map(mapSituacionLegalToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('situacionLegalId', opt ?? null, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.situacionLegalId && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.situacionLegalId.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha de la situación jurídica
+                  </label>
+                  <Input type="date" size="sm" {...register('fecha')} />
+                  {errors.fecha && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.fecha.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de resolución
+                  </label>
+                  <Input
+                    {...register('numeroResolucion')}
+                    size="sm"
+                    placeholder="RES-123/2026"
+                  />
+                  {errors.numeroResolucion && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.numeroResolucion.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Lugar
+                  </label>
+                  <Input {...register('lugar')} size="sm" placeholder="La Paz" />
+                  {errors.lugar && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.lugar.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    {...register('autoridad')}
+                    size="sm"
+                    placeholder="Juzgado de Instrucción Penal"
+                  />
+                  {errors.autoridad && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.autoridad.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Juzgado
+                  </label>
+                  <Input
+                    {...register('fjt')}
+                    size="sm"
+                    placeholder="Nombre del Juzgado"
+                  />
+                  {errors.fjt && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.fjt.message}
+                    </p>
+                  )}
+                </div>
               </div>
-                  <div>
-                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
-                      Situación legal
-                    </label>
-                    <Select
-                      options={situacionesLegales.map(mapSituacionLegalToOption)}
-                      placeholder="Seleccione situación legal"
-                      value={situacionLegalValue?.value ?? ''}
-                      onChange={(e) => {
-                        const opt = situacionesLegales
-                          .map(mapSituacionLegalToOption)
-                          .find((o) => o.value === e.target.value)
-                        setValue('situacionLegalId', opt ?? null, {
-                          shouldValidate: true,
-                        })
-                      }}
-                    />
-                    {errors.situacionLegalId && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.situacionLegalId.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
-                      Fecha de la situación jurídica
-                    </label>
-                    <Input type="date" {...register('fecha')} />
-                    {errors.fecha && (
-                      <p className="mt-1 text-xs text-red-500">
-                        {errors.fecha.message}
-                      </p>
-                    )}
-                  </div>
-              <div className="mt-5 flex justify-end gap-3">
+
+              <div className="flex justify-end gap-3 pt-1">
                 <Button
                   type="button"
                   variant="outline-secondary"
@@ -641,7 +744,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
       {situacionesModalOpen && personaSituacion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+          <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <h3 className="text-lg font-bold text-dark dark:text-white-light">
                 Registrar situación jurídica
@@ -654,16 +757,20 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 ✕
               </button>
             </div>
-            <div className="p-5">
+            <div className="overflow-y-auto p-4">
               <p className="mb-4 text-sm text-gray-500">
-                Persona: <span className="font-semibold text-dark dark:text-white-light">{formatNombreCompleto(personaSituacion)}</span>
+                Persona:{' '}
+                <span className="font-semibold text-dark dark:text-white-light">
+                  {formatNombreCompleto(personaSituacion)}
+                </span>
               </p>
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Situación legal
                   </label>
                   <Select
+                    size="sm"
                     options={situacionesLegales.map((s) => ({
                       value: String(s.slId),
                       label: s.descripcion,
@@ -679,8 +786,53 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     type="date"
+                    size="sm"
                     value={fechaSituacion}
                     onChange={(e) => setFechaSituacion(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de resolución
+                  </label>
+                  <Input
+                    size="sm"
+                    value={nroResolucion}
+                    onChange={(e) => setNroResolucion(e.target.value)}
+                    placeholder="RES-123/2026"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Lugar
+                  </label>
+                  <Input
+                    size="sm"
+                    value={lugarSituacion}
+                    onChange={(e) => setLugarSituacion(e.target.value)}
+                    placeholder="La Paz"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    size="sm"
+                    value={autoridadSituacion}
+                    onChange={(e) => setAutoridadSituacion(e.target.value)}
+                    placeholder="Juzgado de Instrucción Penal"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Juzgado
+                  </label>
+                  <Input
+                    size="sm"
+                    value={fjtSituacion}
+                    onChange={(e) => setFjtSituacion(e.target.value)}
+                    placeholder="Nombre del Juzgado"
                   />
                 </div>
               </div>
@@ -698,7 +850,14 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 type="button"
                 variant="primary"
                 loading={guardandoSituacion}
-                disabled={!situacionLegalId || !fechaSituacion}
+                disabled={
+                  !situacionLegalId ||
+                  !fechaSituacion ||
+                  !nroResolucion ||
+                  !lugarSituacion ||
+                  !autoridadSituacion ||
+                  !fjtSituacion
+                }
                 onClick={onSubmitSituacion}
               >
                 Registrar
@@ -761,7 +920,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                           {sj.situacionLegal?.descripcion?.trim() ?? '-'}
                         </td>
                         <td className="py-2 text-dark dark:text-white-light">
-                          {formatFecha(sj.fecha)}
+                          {formatFecha(sj.fecha, 'dd/MM/yyyy') ?? '-'}
                         </td>
                       </tr>
                     ))}

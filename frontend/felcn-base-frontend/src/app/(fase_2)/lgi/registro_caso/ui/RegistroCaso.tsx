@@ -19,6 +19,7 @@ import type {
   DepartamentoLgi,
   DistritalLgi,
   GrupoLgi,
+  InicioCasoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import { RegistroCasoApi } from '../api/registro-caso.api'
@@ -28,6 +29,7 @@ import {
   mapDepartamentoToOption,
   mapDistritalToOption,
   mapGrupoToOption,
+  mapInicioCasoToOption,
 } from '../mappers/registro-caso.mappers'
 import {
   datosGeneralesSchema,
@@ -44,10 +46,11 @@ import {
   createDefaultDatosGeneralesValues,
   leerCasoDeStorage,
 } from '../utils/registro-caso.utils'
-import { CasoSiiiDialog } from './CasoSiiiDialog'
+import { ResultadosBusquedaSiii } from './ResultadosBusquedaSiii'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
 import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
 import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
+import { obtenerUltimoCodigoServicioActivo } from '../../../inteligencia/servicio/services/servicio.service'
 
 type TabKey =
   | 'datos-generales'
@@ -110,8 +113,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const [mensaje, setMensaje] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [generandoNumero, setGenerandoNumero] = useState(false)
-  const [solicitarInteligenciaOpen, setSolicitarInteligenciaOpen] =
-    useState(false)
   const [conformeAValue, setConformeAValue] = useState('')
   const [filtroSiii, setFiltroSiii] = useState<ConsultaSiiiQueryDto | null>(
     null
@@ -128,6 +129,11 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const { data: departamentos = [] } = useQuery<DepartamentoLgi[]>({
     queryKey: ['lgi-registro-caso', 'departamentos'],
     queryFn: () => ParametricasLgiApi.listarDepartamentos(),
+  })
+
+  const { data: iniciosCaso = [] } = useQuery<InicioCasoLgi[]>({
+    queryKey: ['lgi-registro-caso', 'inicios-caso'],
+    queryFn: () => ParametricasLgiApi.listarIniciosCaso(),
   })
 
   // ── Formulario datos generales ───────────────────────────────────────────────
@@ -163,13 +169,21 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   } = datosForm
 
   useEffect(() => {
+    if (casoId) return
+    void obtenerUltimoCodigoServicioActivo().then((codigo) => {
+      if (codigo) setValue('codigoServicio', codigo)
+    })
+  }, [casoId, setValue])
+
+  useEffect(() => {
     if (!casoInicial || !casoId) return
     reset({
       ...createDefaultDatosGeneralesValues(),
       disId: disIdInicial,
       nombreCaso: casoInicial.nombreCaso ?? '',
       nroCaso: casoInicial.nroCaso ?? '',
-      cudIfp: casoInicial.cudIfp ?? '',
+      nroCasoFis:
+        casoInicial.nroCasoFis ?? casoInicial.cudIfp ?? '',
       remiteFiscal: casoInicial.remiteFiscal ?? '',
       conformeA: casoInicial.conformeA ?? '',
       controlJurisdiccional:
@@ -177,6 +191,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       fechaInicio:
         (casoInicial.fechaInicio as string | undefined) ??
         dayjs().format('YYYY-MM-DD'),
+      inicioCaso: (casoInicial.inicioCaso as CatalogOption<InicioCasoLgi> | null | undefined) ?? null,
+      codigoServicio:
+        (casoInicial.codigoServicio as string | undefined) ?? '',
     })
     setConformeAValue(casoInicial.conformeA ?? '')
   }, [casoInicial, casoId, disIdInicial, reset])
@@ -270,7 +287,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       apellidoMaterno: valores.apellidoMaterno || undefined,
       nroDocumento: valores.nroDocumento || undefined,
     })
-    setSolicitarInteligenciaOpen(true)
   }
 
   const onSubmitDatosGenerales = async (values: DatosGeneralesSchemaValues) => {
@@ -484,18 +500,18 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
 
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      CUD fiscalía
+                      CUD
                     </label>
                     <Input
-                      {...register('cudIfp')}
+                      {...register('nroCasoFis')}
                       disabled={isLectura}
-                      error={!!errors.cudIfp}
+                      error={!!errors.nroCasoFis}
                       className="w-full"
-                      placeholder="CUD/IFP"
+                      placeholder="CUD"
                     />
-                    {errors.cudIfp && (
+                    {errors.nroCasoFis && (
                       <p className="mt-1 text-xs text-danger">
-                        {errors.cudIfp.message}
+                        {errors.nroCasoFis.message}
                       </p>
                     )}
                   </div>
@@ -543,6 +559,35 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     label="Fecha de inicio"
                     disabled={isLectura}
                   />
+
+                  <RHFSelect<InicioCasoLgi>
+                    id="inicioCaso"
+                    name="inicioCaso"
+                    control={control}
+                    label="Forma de inicio del caso"
+                    error={errors.inicioCaso?.message as string | undefined}
+                    isDisable={isLectura}
+                    originalData={iniciosCaso}
+                    mapOption={mapInicioCasoToOption}
+                  />
+
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      Código de servicio
+                    </label>
+                    <Input
+                      {...register('codigoServicio')}
+                      disabled={isLectura}
+                      error={!!errors.codigoServicio}
+                      className="w-full"
+                      placeholder="ICIA-1619092026"
+                    />
+                    {errors.codigoServicio && (
+                      <p className="mt-1 text-xs text-danger">
+                        {errors.codigoServicio.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </Card>
 
@@ -687,7 +732,16 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 </div>
 
                 {!isLectura && (
-                  <div className="mt-4 flex justify-end">
+                  <div className="mt-4 flex justify-end gap-3">
+                    {filtroSiii && (
+                      <Button
+                        type="button"
+                        variant="outline-secondary"
+                        onClick={() => setFiltroSiii(null)}
+                      >
+                        Limpiar búsqueda
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant="primary"
@@ -698,6 +752,14 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                   </div>
                 )}
               </Card>
+
+              {filtroSiii && (
+                <ResultadosBusquedaSiii
+                  filtro={filtroSiii}
+                  casoId={casoIdEfectivo}
+                  isLectura={isLectura}
+                />
+              )}
 
               <form
                 onSubmit={handleSubmitInformacion(onSubmitInformacion)}
@@ -775,15 +837,6 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
           )}
         </div>
       </div>
-
-      {/* Dialog solicitar info de inteligencia */}
-      <CasoSiiiDialog
-        filtro={filtroSiii}
-        isOpen={solicitarInteligenciaOpen}
-        onClose={() => {
-          setSolicitarInteligenciaOpen(false)
-        }}
-      />
     </div>
   )
 }
