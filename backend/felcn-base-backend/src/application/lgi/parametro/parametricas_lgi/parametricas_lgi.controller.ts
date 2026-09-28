@@ -208,4 +208,12 @@ export class ParametricasLgiController extends BaseController {
     return this.parametricasLgiService.findAllIncioCaso()
   }
 
+  @Get('allVinculoPersonaJuridica')
+   @ApiOperation({
+    summary: 'Listar vinculo personas juridicas',
+  })
+  findAllVinculoPersonaJuridica() {
+    return this.vinculoService.findAllPersonaJuridica();
+  }
+
 }

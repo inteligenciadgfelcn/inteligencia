@@ -21,6 +21,10 @@ export class VinculoService {
     return await this.vinculoRepository.findAllOrdered()
   }
 
+  async findAllPersonaJuridica() {
+    return await this.vinculoRepository.findAllPersonaJuridica()
+  }
+
   async findOne(id: number) {
     const unidad = await this.vinculoRepository.findActiveById(id)
 

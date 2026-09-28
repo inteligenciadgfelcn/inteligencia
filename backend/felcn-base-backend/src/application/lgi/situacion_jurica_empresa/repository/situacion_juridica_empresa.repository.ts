@@ -33,13 +33,7 @@ export class SituacionJuridicaEmpresaRepository {
 
     const registro = this.repository.create({
       idEmpresa: dto.idEmpresa,
-
       fecha: dto.fecha,
-
-      quienAutoriza: dto.quienAutoriza,
-
-      aQuienEntregan: dto.aQuienEntregan,
-
       idTipoSituacionJuridica: dto.idTipoSituacionJuridica,
     })
 
@@ -124,14 +118,6 @@ export class SituacionJuridicaEmpresaRepository {
 
     if (dto.fecha !== undefined) {
       registro.fecha = dto.fecha
-    }
-
-    if (dto.quienAutoriza !== undefined) {
-      registro.quienAutoriza = dto.quienAutoriza
-    }
-
-    if (dto.aQuienEntregan !== undefined) {
-      registro.aQuienEntregan = dto.aQuienEntregan
     }
 
     await this.repository.save(registro)

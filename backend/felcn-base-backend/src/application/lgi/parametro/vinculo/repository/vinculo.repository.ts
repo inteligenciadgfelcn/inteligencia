@@ -27,6 +27,15 @@ export class VinculoLgiRepository {
     })
   }
 
+   async findAllPersonaJuridica() {
+    return await this.repository.find({
+      where: {empresa:true},
+      order: {
+        idVinculo: 'ASC',
+      },
+    })
+  }
+
   async findActiveById(id: number) {
     return await this.repository.findOne({
       where: {

@@ -13,4 +13,7 @@ export class VinculoLgi {
 
   @Column()
   descripcion: string
+
+  @Column()
+  empresa: boolean
 }
