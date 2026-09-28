@@ -93,41 +93,41 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
   const { data: historialData, isLoading: historialLoading } =
     useQuery<PersonaDetalle>({
-      queryKey: ['lgi-personas-investigadas', 'historial', historialPersona?.deId],
+      queryKey: ['apd-personas-investigadas', 'historial', historialPersona?.deId],
       enabled: Boolean(historialPersona?.deId),
       queryFn: () =>
         RegistroCasoApi.obtenerPersona(historialPersona!.deId),
     })
 
   const { data: personasData, isLoading } = useQuery({
-    queryKey: ['lgi-personas-investigadas', casoId, page, limit],
+    queryKey: ['apd-personas-investigadas', casoId, page, limit],
     enabled: Boolean(casoId),
     queryFn: () =>
       RegistroCasoApi.listarPersonas(casoId, { pagina: page, limite: limit }),
   })
 
   const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'tipos-documento'],
+    queryKey: ['apd-personas-investigadas', 'tipos-documento'],
     queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
   })
 
   const { data: paises = [] } = useQuery<PaisLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'paises'],
+    queryKey: ['apd-personas-investigadas', 'paises'],
     queryFn: () => ParametricasLgiApi.listarPaises(),
   })
 
   const { data: estadosCiviles = [] } = useQuery<EstadoCivilLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'estados-civiles'],
+    queryKey: ['apd-personas-investigadas', 'estados-civiles'],
     queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
   })
 
   const { data: profesiones = [] } = useQuery<ProfesionLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'profesiones'],
+    queryKey: ['apd-personas-investigadas', 'profesiones'],
     queryFn: () => ParametricasLgiApi.listarProfesiones(),
   })
 
   const { data: situacionesLegales = [] } = useQuery<SituacionLegalCatalogo[]>({
-    queryKey: ['lgi-personas-investigadas', 'situaciones-legales'],
+    queryKey: ['apd-personas-investigadas', 'situaciones-legales'],
     queryFn: () => RegistroCasoApi.listarSituacionesLegales(),
   })
 
@@ -242,7 +242,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     }
     setModalOpen(false)
     queryClient.invalidateQueries({
-      queryKey: ['lgi-personas-investigadas', casoId],
+      queryKey: ['apd-personas-investigadas', casoId],
     })
   }
 
@@ -253,7 +253,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       await RegistroCasoApi.eliminarPersona(personaEliminar.deId)
       setPersonaEliminar(null)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-personas-investigadas', casoId],
+        queryKey: ['apd-personas-investigadas', casoId],
       })
     } finally {
       setEliminando(false)
@@ -295,7 +295,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       })
       setSituacionesModalOpen(false)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-personas-investigadas', casoId],
+        queryKey: ['apd-personas-investigadas', casoId],
       })
     } finally {
       setGuardandoSituacion(false)
@@ -421,7 +421,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <h3 className="text-lg font-bold text-dark dark:text-white-light">
                 {personaEditando ? 'Editar persona' : 'Registrar persona'}
@@ -434,21 +434,14 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 ✕
               </button>
             </div>
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-3 overflow-y-auto p-4"
-            >
-              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
-                <h4 className="col-span-full border-b border-gray-200 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                  Datos personales
-                </h4>
+            <form onSubmit={handleSubmit(onSubmit)} className="p-5">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Nombres
                   </label>
                   <Input
                     {...register('nombres')}
-                    size="sm"
                     placeholder="Nombres"
                   />
                   {errors.nombres && (
@@ -463,7 +456,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('paterno')}
-                    size="sm"
                     placeholder="Apellido paterno"
                   />
                   {errors.paterno && (
@@ -478,7 +470,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('materno')}
-                    size="sm"
                     placeholder="Apellido materno"
                   />
                   {errors.materno && (
@@ -493,17 +484,14 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('esposo')}
-                    size="sm"
                     placeholder="Apellido de casada"
                   />
                 </div>
-
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Tipo de documento
                   </label>
                   <Select
-                    size="sm"
                     options={tiposDocumento.map(mapTipoDocumentoToOption)}
                     placeholder="Seleccione tipo"
                     value={tipoDocValue?.value ?? ''}
@@ -528,7 +516,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     {...register('numeroDocumento')}
-                    size="sm"
                     placeholder="Número de documento"
                   />
                   {errors.numeroDocumento && (
@@ -542,7 +529,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     País
                   </label>
                   <Select
-                    size="sm"
                     options={paises.map(mapPaisToOption)}
                     placeholder="Seleccione país"
                     value={paisValue?.value ?? ''}
@@ -559,7 +545,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Estado civil
                   </label>
                   <Select
-                    size="sm"
                     options={estadosCiviles.map(mapEstadoCivilToOption)}
                     placeholder="Seleccione estado civil"
                     value={estadoCivilValue?.value ?? ''}
@@ -578,7 +563,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Profesión
                   </label>
                   <Select
-                    size="sm"
                     options={profesiones.map(mapProfesionToOption)}
                     placeholder="Seleccione profesión"
                     value={profesionValue?.value ?? ''}
@@ -592,104 +576,89 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     }}
                   />
                 </div>
-
-                <h4 className="col-span-full border-b border-gray-200 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                  Situación jurídica
-                </h4>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Situación legal
-                  </label>
-                  <Select
-                    size="sm"
-                    options={situacionesLegales.map(mapSituacionLegalToOption)}
-                    placeholder="Seleccione situación legal"
-                    value={situacionLegalValue?.value ?? ''}
-                    onChange={(e) => {
-                      const opt = situacionesLegales
-                        .map(mapSituacionLegalToOption)
-                        .find((o) => o.value === e.target.value)
-                      setValue('situacionLegalId', opt ?? null, {
-                        shouldValidate: true,
-                      })
-                    }}
-                  />
-                  {errors.situacionLegalId && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.situacionLegalId.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha de la situación jurídica
-                  </label>
-                  <Input type="date" size="sm" {...register('fecha')} />
-                  {errors.fecha && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.fecha.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Número de resolución
-                  </label>
-                  <Input
-                    {...register('numeroResolucion')}
-                    size="sm"
-                    placeholder="RES-123/2026"
-                  />
-                  {errors.numeroResolucion && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.numeroResolucion.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Lugar
-                  </label>
-                  <Input {...register('lugar')} size="sm" placeholder="La Paz" />
-                  {errors.lugar && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.lugar.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Autoridad
-                  </label>
-                  <Input
-                    {...register('autoridad')}
-                    size="sm"
-                    placeholder="Juzgado de Instrucción Penal"
-                  />
-                  {errors.autoridad && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.autoridad.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Juzgado
-                  </label>
-                  <Input
-                    {...register('fjt')}
-                    size="sm"
-                    placeholder="Nombre del Juzgado"
-                  />
-                  {errors.fjt && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.fjt.message}
-                    </p>
-                  )}
-                </div>
               </div>
-
-              <div className="flex justify-end gap-3 pt-1">
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Situación legal
+                    </label>
+                    <Select
+                      options={situacionesLegales.map(mapSituacionLegalToOption)}
+                      placeholder="Seleccione situación legal"
+                      value={situacionLegalValue?.value ?? ''}
+                      onChange={(e) => {
+                        const opt = situacionesLegales
+                          .map(mapSituacionLegalToOption)
+                          .find((o) => o.value === e.target.value)
+                        setValue('situacionLegalId', opt ?? null, {
+                          shouldValidate: true,
+                        })
+                      }}
+                    />
+                    {errors.situacionLegalId && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.situacionLegalId.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Fecha de la situación jurídica
+                    </label>
+                    <Input type="date" {...register('fecha')} />
+                    {errors.fecha && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.fecha.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Número de resolución
+                    </label>
+                    <Input {...register('numeroResolucion')} placeholder="RES-123/2026" />
+                    {errors.numeroResolucion && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.numeroResolucion.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Lugar
+                    </label>
+                    <Input {...register('lugar')} placeholder="La Paz" />
+                    {errors.lugar && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.lugar.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Autoridad
+                    </label>
+                    <Input
+                      {...register('autoridad')}
+                      placeholder="Juzgado de Instrucción Penal"
+                    />
+                    {errors.autoridad && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.autoridad.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="mb-1 mt-5 block text-sm font-semibold text-dark dark:text-white-light">
+                      Juzgado
+                    </label>
+                    <Input {...register('fjt')} placeholder="Nombre del Juzgado" />
+                    {errors.fjt && (
+                      <p className="mt-1 text-xs text-red-500">
+                        {errors.fjt.message}
+                      </p>
+                    )}
+                  </div>
+              <div className="mt-5 flex justify-end gap-3">
                 <Button
                   type="button"
                   variant="outline-secondary"
@@ -744,7 +713,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
       {situacionesModalOpen && personaSituacion && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+          <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
               <h3 className="text-lg font-bold text-dark dark:text-white-light">
                 Registrar situación jurídica
@@ -757,20 +726,16 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 ✕
               </button>
             </div>
-            <div className="overflow-y-auto p-4">
+            <div className="p-5">
               <p className="mb-4 text-sm text-gray-500">
-                Persona:{' '}
-                <span className="font-semibold text-dark dark:text-white-light">
-                  {formatNombreCompleto(personaSituacion)}
-                </span>
+                Persona: <span className="font-semibold text-dark dark:text-white-light">{formatNombreCompleto(personaSituacion)}</span>
               </p>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+              <div className="space-y-4">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Situación legal
                   </label>
                   <Select
-                    size="sm"
                     options={situacionesLegales.map((s) => ({
                       value: String(s.slId),
                       label: s.descripcion,
@@ -786,7 +751,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                   </label>
                   <Input
                     type="date"
-                    size="sm"
                     value={fechaSituacion}
                     onChange={(e) => setFechaSituacion(e.target.value)}
                   />
@@ -796,7 +760,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Número de resolución
                   </label>
                   <Input
-                    size="sm"
                     value={nroResolucion}
                     onChange={(e) => setNroResolucion(e.target.value)}
                     placeholder="RES-123/2026"
@@ -807,7 +770,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Lugar
                   </label>
                   <Input
-                    size="sm"
                     value={lugarSituacion}
                     onChange={(e) => setLugarSituacion(e.target.value)}
                     placeholder="La Paz"
@@ -818,7 +780,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Autoridad
                   </label>
                   <Input
-                    size="sm"
                     value={autoridadSituacion}
                     onChange={(e) => setAutoridadSituacion(e.target.value)}
                     placeholder="Juzgado de Instrucción Penal"
@@ -829,7 +790,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     Juzgado
                   </label>
                   <Input
-                    size="sm"
                     value={fjtSituacion}
                     onChange={(e) => setFjtSituacion(e.target.value)}
                     placeholder="Nombre del Juzgado"
@@ -920,7 +880,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                           {sj.situacionLegal?.descripcion?.trim() ?? '-'}
                         </td>
                         <td className="py-2 text-dark dark:text-white-light">
-                          {formatFecha(sj.fecha, 'dd/MM/yyyy') ?? '-'}
+                          {formatFecha(sj.fecha)}
                         </td>
                       </tr>
                     ))}

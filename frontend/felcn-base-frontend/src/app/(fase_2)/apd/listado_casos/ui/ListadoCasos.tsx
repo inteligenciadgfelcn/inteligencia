@@ -39,7 +39,7 @@ export function ListadoCasos() {
   const [eliminando, setEliminando] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['lgi-listado-casos', page, limit, filtroAplicado],
+    queryKey: ['apd-listado-casos', page, limit, filtroAplicado],
     queryFn: () =>
       ListadoCasosApi.listarCasos({
         pagina: page,
@@ -55,7 +55,7 @@ export function ListadoCasos() {
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
     guardarCasoEnStorage(row)
-    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
+    router.push(`/apd/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
@@ -64,7 +64,7 @@ export function ListadoCasos() {
     try {
       await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
       setCasoAEliminar(null)
-      queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
+      queryClient.invalidateQueries({ queryKey: ['apd-listado-casos'] })
     } finally {
       setEliminando(false)
     }
@@ -87,7 +87,7 @@ export function ListadoCasos() {
     { accessor: 'cudIfp', title: 'CUD' },
     { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
-    { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
+    // { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
       accessor: 'fechaHoraIng',
       title: 'Fecha inicio',
@@ -167,17 +167,17 @@ export function ListadoCasos() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-bold text-dark dark:text-white-light">
-              Listado de casos LGI
+              Listado de casos APD
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Casos registrados en el módulo LGI.
+              Casos registrados en el módulo APD.
             </p>
           </div>
           <Button
             type="button"
             variant="primary"
             className="gap-2"
-            onClick={() => router.push('/lgi/registro_caso')}
+            onClick={() => router.push('/apd/registro_caso')}
           >
             <IconPlus className="h-4 w-4" />
             Registrar caso

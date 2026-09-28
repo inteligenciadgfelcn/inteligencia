@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { AlertDialog } from '@/components/modales/AlertDialog'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
@@ -14,19 +15,19 @@ import IconEye from '@/components/Icon/IconEye'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconSearch from '@/components/Icon/IconSearch'
 import IconTrash from '@/components/Icon/IconTrash'
-import { Badge } from '@/components/ui/Badge'
 
 import { ListadoCasosApi } from '../api/listado-casos.api'
 import {
+  calcularTiempoTranscurridos,
   formatFecha,
   mapAsignacionCasoRow,
 } from '../mappers/listado-casos.mappers'
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
 import { guardarCasoEnStorage } from '../../registro_caso/utils/registro-caso.utils'
-import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
+import IconListCheck from '@/components/Icon/IconListCheck'
 import dayjs from 'dayjs'
 
-export function ListadoCasos() {
+export function CasosAsignados() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -39,7 +40,7 @@ export function ListadoCasos() {
   const [eliminando, setEliminando] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['lgi-listado-casos', page, limit, filtroAplicado],
+    queryKey: ['apd-listado-casos', page, limit, filtroAplicado],
     queryFn: () =>
       ListadoCasosApi.listarCasos({
         pagina: page,
@@ -53,9 +54,14 @@ export function ListadoCasos() {
     [data]
   )
 
+  const irADetalle = (row: AsignacionCasoListadoRow) => {
+    guardarCasoEnStorage(row)
+    router.push(`/apd/caso_detalle/${row.casosId}`)
+  }
+
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
     guardarCasoEnStorage(row)
-    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
+    router.push(`/apd/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
@@ -64,7 +70,7 @@ export function ListadoCasos() {
     try {
       await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
       setCasoAEliminar(null)
-      queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
+      queryClient.invalidateQueries({ queryKey: ['apd-listado-casos'] })
     } finally {
       setEliminando(false)
     }
@@ -84,15 +90,10 @@ export function ListadoCasos() {
     { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
-    { accessor: 'cudIfp', title: 'CUD' },
+    { accessor: 'cudIfp', title: 'CUD/IFP' },
     { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
-    { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
-    {
-      accessor: 'fechaHoraIng',
-      title: 'Fecha inicio',
-      render: (row) => formatFecha(row.fechahoraing),
-    },
+    // { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
       accessor: 'fechaHoraIng',
       title: 'Tiempo transcurrido',
@@ -130,32 +131,19 @@ export function ListadoCasos() {
             className="!p-1.5"
             aria-label={`Ver detalle de ${row.nombreCaso}`}
             title="Ver detalle"
-            onClick={() => irA(row, 'ver')}
+            onClick={() => irADetalle(row)}
           >
             <IconEye className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             type="button"
-            variant="outline-secondary"
+            variant="outline-primary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Editar ${row.nombreCaso}`}
-            title="Editar"
-            onClick={() => irA(row)}
+            title="Agregar info"
           >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline-danger"
-            size="sm"
-            className="!p-1.5"
-            aria-label={`Eliminar ${row.nombreCaso}`}
-            title="Eliminar"
-            onClick={() => setCasoAEliminar(row)}
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
+            <IconListCheck className="h-4 w-4" />
+          </Button> */}
         </div>
       ),
     },
@@ -167,21 +155,21 @@ export function ListadoCasos() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-bold text-dark dark:text-white-light">
-              Listado de casos LGI
+              Listado de casos APD
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Casos registrados en el módulo LGI.
+              Casos registrados en el módulo APD.
             </p>
           </div>
-          <Button
+          {/* <Button
             type="button"
             variant="primary"
             className="gap-2"
-            onClick={() => router.push('/lgi/registro_caso')}
+            onClick={() => router.push('/apd/registro_caso')}
           >
             <IconPlus className="h-4 w-4" />
             Registrar caso
-          </Button>
+          </Button> */}
         </div>
       </div>
 
