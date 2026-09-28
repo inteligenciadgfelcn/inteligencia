@@ -32,18 +32,6 @@ export class SituacionJuridicaEmpresa {
   fecha: string
 
   @Column({
-    name: 'quien_autoriza',
-    type: 'varchar',
-  })
-  quienAutoriza: string
-
-  @Column({
-    name: 'a_quien_entregan',
-    type: 'varchar',
-  })
-  aQuienEntregan: string
-
-  @Column({
     name: 'fechahoraing',
     type: 'timestamptz',
   })

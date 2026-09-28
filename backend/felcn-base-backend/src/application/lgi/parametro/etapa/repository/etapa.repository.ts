@@ -21,6 +21,7 @@ export class EtapaLgiRepository {
 
   async findAllOrdered() {
     return await this.repository.find({
+      where: { lgi: true },
       order: {
         etId: 'ASC',
       },

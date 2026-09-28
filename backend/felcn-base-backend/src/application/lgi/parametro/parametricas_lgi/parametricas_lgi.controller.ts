@@ -70,13 +70,7 @@ export class ParametricasLgiController extends BaseController {
     return this.parametricasLgiService.findAllGrupo(idDistrito)
   }
 
-  @Get('allPais')
-  @ApiOperation({
-    summary: 'Listar los países',
-  })
-  findAllPais() {
-    return this.parametricasLgiService.findAllPais()
-  }
+  
 
   @Get('allDepartamento')
   @ApiOperation({
@@ -120,7 +114,7 @@ export class ParametricasLgiController extends BaseController {
 
   @Get('allEtapa')
   @ApiOperation({
-    summary: 'Listar las etapas',
+    summary: 'Listar las etapas de giaef',
   })
   findAllEtapa() {
     return this.etapaService.findAll()
@@ -204,6 +198,22 @@ export class ParametricasLgiController extends BaseController {
    @Get('allTipoSitucionBien')
   findAllSituacionLegalBien() {
     return this.situacionLegalBienService.findAll()
+  }
+
+  @Get('allIncioCaso')
+  @ApiOperation({
+    summary: 'Listar inicio de caso',
+  })
+  findAllIncioCaso() {
+    return this.parametricasLgiService.findAllIncioCaso()
+  }
+
+  @Get('allVinculoPersonaJuridica')
+   @ApiOperation({
+    summary: 'Listar vinculo personas juridicas',
+  })
+  findAllVinculoPersonaJuridica() {
+    return this.vinculoService.findAllPersonaJuridica();
   }
 
 }

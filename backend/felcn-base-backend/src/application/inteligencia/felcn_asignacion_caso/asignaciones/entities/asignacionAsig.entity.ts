@@ -23,7 +23,7 @@ export class AsignacionASIG {
   idDepartamento!: string
 
   @Column({ name: 'id_unidad' })
-  idUnidad!: number
+  idUnidad!: string
 
   @Column({
     name: 'codigo_letra',

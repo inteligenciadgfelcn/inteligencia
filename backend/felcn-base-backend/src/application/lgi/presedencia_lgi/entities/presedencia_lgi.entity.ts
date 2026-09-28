@@ -1,74 +1,31 @@
 import {
+  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Entity,
 } from 'typeorm'
 
-@Entity({
-  name: 'operativo',
-})
-export class OperativoLgi {
+@Entity({ name: 'presedencia' })
+export class PresedenciaLgi {
   @PrimaryGeneratedColumn({
-    name: 'op_id',
+    name: 'prese_id',
     type: 'bigint',
   })
-  opId!: number
+  preseId!: string
 
   @Column({
     name: 'casos_id',
     type: 'bigint',
   })
-  casosId!: number
+  casosId!: string
 
   @Column({
-    name: 'op_nrooper',
+    name: 'nrocasopre',
     type: 'varchar',
     length: 20,
   })
-  opNrooper!: string
-
-  @Column({
-    name: 'op_fechainf',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  opFechainf!: Date
-
-  @Column({
-    name: 'op_lugar',
-    type: 'varchar',
-    length: 255,
-  })
-  opLugar!: string
-
-  @Column({
-    name: 'op_descripcion',
-    type: 'text',
-  })
-  opDescripcion!: string
-
-  @Column({
-    name: 'id_tipo_informe',
-    type: 'int',
-  })
-  idTipoInforme!: number
-
-  @Column({
-    name: 'otro_informe',
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  otroInforme!: string | null
-
-  @Column({
-    name: 'ruta_archivo',
-    type: 'varchar',
-    length: 255,
-  })
-  rutaArchivo!: string
+  nrocasopre!: string
 
   @Column({
     name: 'estado',

@@ -47,7 +47,7 @@ export class ServicioService {
     const fechaSalida = new Date(dto.fechaSalida)
     const ahora = new Date()
 
-   // validarRangoFechas(fechaIngreso, fechaSalida)
+    // validarRangoFechas(fechaIngreso, fechaSalida)
 
     await cerrarServiciosVencidos(this.servicioRepository, ahora)
 
@@ -143,8 +143,12 @@ export class ServicioService {
       )
     }
 
-    const fechaIngreso = dto.fechaIngreso ? new Date(dto.fechaIngreso) : servicio.fechaIngreso
-    const fechaSalida = dto.fechaSalida ?  new Date(dto.fechaSalida) : servicio.fechaSalida
+    const fechaIngreso = dto.fechaIngreso
+      ? new Date(dto.fechaIngreso)
+      : servicio.fechaIngreso
+    const fechaSalida = dto.fechaSalida
+      ? new Date(dto.fechaSalida)
+      : servicio.fechaSalida
 
     validarRangoFechas(fechaIngreso, fechaSalida)
 
@@ -327,5 +331,24 @@ export class ServicioService {
       fechaSalida: formatearFecha(servicio.fechaSalida),
       estado: servicio.estado,
     }
+  }
+
+  async listarActivos() {
+    const ahora = new Date()
+
+    await cerrarServiciosVencidos(this.servicioRepository, ahora)
+
+    const servicios = await this.listarTodos()
+
+    return servicios.filter((servicio) => {
+      const fechaIngreso = new Date(servicio.fechaIngreso)
+      const fechaSalida = new Date(servicio.fechaSalida)
+
+      return (
+        servicio.estado === Estado.ACTIVO &&
+        fechaIngreso <= ahora &&
+        fechaSalida >= ahora
+      )
+    })
   }
 }

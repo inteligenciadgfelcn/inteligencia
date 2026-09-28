@@ -1,12 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({
-  name: 'etapa',
+  name: 'etapainvest',
   schema: 'parametricas',
 })
 export class EtapaLgi {
   @PrimaryGeneratedColumn({
-    name: 'et_id',
+    name: 'eta_inv',
   })
   etId: number;
 
@@ -16,4 +16,8 @@ export class EtapaLgi {
     length: 255,
   })
   descripcion: string;
+
+  @Column({ name: 'lgi', type: 'boolean' })
+  lgi: boolean
+  
 }

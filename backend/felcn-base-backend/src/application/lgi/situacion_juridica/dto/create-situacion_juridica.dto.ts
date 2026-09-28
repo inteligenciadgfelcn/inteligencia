@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsDateString, IsInt } from 'class-validator'
+import { IsDateString, IsInt, IsString, MaxLength } from 'class-validator'
 
 export class CreateSituacionJuridicaDto {
   @ApiProperty({
@@ -25,4 +25,37 @@ export class CreateSituacionJuridicaDto {
   })
   @IsDateString()
   fecha!: string
+
+  @ApiProperty({
+    description: 'Número de resolución',
+    example: 'RES-123/2026',
+  })
+  @IsString()
+  @MaxLength(50)
+  numeroResolucion!: string
+
+  @ApiProperty({
+    description: 'Lugar',
+    example: 'La Paz',
+  })
+  @IsString()
+  @MaxLength(100)
+  lugar!: string
+
+   @ApiProperty({
+    description: 'Autoridad',
+    example: 'Juzgado de Instrucción Penal',
+  })
+  @IsString()
+  @MaxLength(150)
+  autoridad!: string
+
+  @ApiProperty({
+    description: 'Jusgado',
+    example: 'Nombre del Juzgado',
+  })
+  @IsString()
+  @MaxLength(100)
+  fjt!: string
+  
 }
