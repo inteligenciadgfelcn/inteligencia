@@ -66,7 +66,7 @@ export class AsignacionLgiController extends BaseController {
     return this.successListRows(result)
   }
 
-  @Get()
+  @Get('caso/investigador')
   @ApiOperation({
     summary: 'Listar asignaciones con paginación por investigador asignado',
   })

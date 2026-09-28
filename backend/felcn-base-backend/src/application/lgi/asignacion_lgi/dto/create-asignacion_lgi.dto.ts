@@ -103,11 +103,6 @@ export class CreateAsignacionLgiDto {
   @IsDateString()
   fechaInicio!: string
 
-  @ApiProperty({ example: 1 })
-  @Type(() => Number)
-  @IsInt()
-  idEtapa!: number
-
   @ApiProperty({
     description: 'Forma inicio caso',
     example: 'Remision fiscalia',
