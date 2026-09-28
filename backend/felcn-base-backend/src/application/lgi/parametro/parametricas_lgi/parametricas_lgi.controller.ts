@@ -114,7 +114,7 @@ export class ParametricasLgiController extends BaseController {
 
   @Get('allEtapa')
   @ApiOperation({
-    summary: 'Listar las etapas',
+    summary: 'Listar las etapas de giaef',
   })
   findAllEtapa() {
     return this.etapaService.findAll()

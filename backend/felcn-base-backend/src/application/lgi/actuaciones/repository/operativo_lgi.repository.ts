@@ -113,15 +113,8 @@ export class OperativoLgiRepository {
   private formatearRespuesta(operativo: OperativoLgi) {
     return {
       ...operativo,
-
       opFechainf: formatearFechaBolivia(operativo.opFechainf),
-
-      fechaRecepcionFiscalia: formatearFechaBolivia(
-        operativo.fechaRecepcionFiscalia
-      ),
-
       fechaHoraIng: formatearFechaBolivia(operativo.fechaHoraIng),
-
       fechaActualizacion: formatearFechaBolivia(operativo.fechaActualizacion),
     }
   }
@@ -131,38 +124,38 @@ export class OperativoLgiRepository {
     dto: UpdateConclusionCasoDto,
     usuario: string
   ): Promise<OperativoLgi> {
-    const operativo = await this.repository.findOne({
-      where: {
-        opId,
-        estado: 'ACTIVO',
-      },
-    })
+    // const operativo = await this.repository.findOne({
+    //   where: {
+    //     opId,
+    //     estado: 'ACTIVO',
+    //   },
+    // })
 
-    if (!operativo) {
-      throw new NotFoundException(
-        `No existe el operativo activo con ID ${opId}`
-      )
-    }
+    // if (!operativo) {
+    //   throw new NotFoundException(
+    //     `No existe el operativo activo con ID ${opId}`
+    //   )
+    // }
 
-    if (dto.tipologiasIdentificadas !== undefined) {
-      operativo.tipologiasIdentificadas = this.normalizarTexto(
-        dto.tipologiasIdentificadas
-      )
-    }
+    // if (dto.tipologiasIdentificadas !== undefined) {
+    //   operativo.tipologiasIdentificadas = this.normalizarTexto(
+    //     dto.tipologiasIdentificadas
+    //   )
+    // }
 
-    if (dto.verbosRectores !== undefined) {
-      operativo.verbosRectores = this.normalizarTexto(dto.verbosRectores)
-    }
+    // if (dto.verbosRectores !== undefined) {
+    //   operativo.verbosRectores = this.normalizarTexto(dto.verbosRectores)
+    // }
 
-    if (dto.etapasCicloLgi !== undefined) {
-      operativo.etapasCicloLgi = this.normalizarTexto(dto.etapasCicloLgi)
-    }
+    // if (dto.etapasCicloLgi !== undefined) {
+    //   operativo.etapasCicloLgi = this.normalizarTexto(dto.etapasCicloLgi)
+    // }
 
-    operativo.usuarioActualizacion = usuario
+    // operativo.usuarioActualizacion = usuario
 
-    operativo.fechaActualizacion = new Date()
+    // operativo.fechaActualizacion = new Date()
 
-    await this.repository.save(operativo)
+    // await this.repository.save(operativo)
 
     return this.findOne(opId)
   }

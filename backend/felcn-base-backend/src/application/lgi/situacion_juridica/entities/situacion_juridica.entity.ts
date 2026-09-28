@@ -45,7 +45,7 @@ export class SituacionJuridica {
   lugar!: string
 
   @Column({
-    type: 'timestamp',
+    type: 'timestamptz',
     name: 'fecha',
   })
   fecha!: Date

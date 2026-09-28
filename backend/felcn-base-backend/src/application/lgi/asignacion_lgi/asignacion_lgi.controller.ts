@@ -9,10 +9,16 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger'
 
 import { BaseController } from '@/common/base/base-controller'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -24,6 +30,8 @@ import { AsignacionesService } from '@/application/inteligencia/felcn_asignacion
 import { AsignacionLgiService } from './asignacion_lgi.service'
 import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
 import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { RegistrarEtapaProcesalDto } from './dto/etapa-asignacion_lgi.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -55,6 +63,22 @@ export class AsignacionLgiController extends BaseController {
     pagination: PaginacionQueryDto
   ) {
     const result = await this.asignacionLgiService.findAllPaginado(pagination)
+    return this.successListRows(result)
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Listar asignaciones con paginación por investigador asignado',
+  })
+  async findAllInvestigador(
+    @Query()
+    pagination: PaginacionQueryDto,
+    @Req() req: Request & { user: { numeroPase: string } }
+  ) {
+    const result = await this.asignacionLgiService.findAllPaginadoInvestigado(
+      pagination,
+      req.user.numeroPase
+    )
 
     return this.successListRows(result)
   }
@@ -104,5 +128,42 @@ export class AsignacionLgiController extends BaseController {
     id: number
   ) {
     return this.asignacionLgiService.remove(id)
+  }
+
+  @Post(':casosId')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({
+    summary: 'Registrar etapa procesal del caso',
+  })
+  @UseInterceptors(
+    FileInterceptor('documento', {
+      limits: {
+        fileSize: 10 * 1024 * 1024,
+      },
+    })
+  )
+  registrar(
+    @Param('casosId', ParseIntPipe) casosId: number,
+    @Body() dto: RegistrarEtapaProcesalDto,
+    @UploadedFile() documento: Express.Multer.File | undefined,
+    @Req() req: { user: { numeroPase: string } }
+  ) {
+    return this.asignacionLgiService.registrar(
+      casosId,
+      dto,
+      req.user.numeroPase,
+      documento
+    )
+  }
+
+  @Get('caso/:casosId')
+  @ApiOperation({
+    summary: 'Listar historial de etapas del caso',
+  })
+  listarPorCaso(
+    @Param('casosId', ParseIntPipe)
+    casosId: number
+  ) {
+    return this.asignacionLgiService.listarPorCaso(casosId)
   }
 }

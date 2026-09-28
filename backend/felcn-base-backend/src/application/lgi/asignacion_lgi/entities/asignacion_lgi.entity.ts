@@ -6,142 +6,69 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-@Entity({ name: 'asignacion' })
+@Entity({ schema: 'public', name: 'asignacion' })
 export class AsignacionLgi {
-  @PrimaryGeneratedColumn({
-    name: 'casos_id',
-    type: 'bigint',
-  })
+  @PrimaryGeneratedColumn({ name: 'casos_id', type: 'bigint' })
   casosId!: number
 
-  @Column({
-    name: 'dptoav_id',
-    type: 'varchar',
-    length: 2,
-  })
+  @Column({ name: 'dptoav_id', type: 'varchar', length: 2 })
   dptoavId!: string
 
-  @Column({
-    name: 'uni_abrev',
-    type: 'varchar',
-    length: 3,
-  })
+  @Column({ name: 'uni_abrev', type: 'varchar', length: 3 })
   uniAbrev!: string
 
-  @Column({
-    name: 'dis_id',
-    type: 'bigint',
-  })
+  @Column({ name: 'dis_id', type: 'bigint' })
   disId!: number
 
-  @Column({
-    name: 'descripcion_grupo',
-    type: 'varchar',
-  })
+  @Column({ name: 'descripcion_grupo', type: 'varchar' })
   descripcionGrupo!: string
 
-  @Column({
-    name: 'nombrecaso',
-    type: 'varchar',
-    length: 30,
-  })
+  @Column({ name: 'nombrecaso', type: 'varchar', length: 30 })
   nombreCaso!: string
 
-  // @Column({
-  //   name: 'tipocaso',
-  //   type: 'varchar',
-  //   length: 30,
-  // })
-  // tipoCaso!: string
-
-  @Column({
-    name: 'nrocasogiaef',
-    type: 'varchar',
-    length: 20,
-  })
+  @Column({ name: 'nrocasogiaef', type: 'varchar', length: 20 })
   nroCasoGiaef!: string
 
-  @Column({
-    name: 'nrocaso',
-    type: 'varchar',
-    length: 20,
-  })
+  @Column({ name: 'nrocaso', type: 'varchar', length: 20 })
   nroCaso!: string
 
-  @Column({
-    name: 'nrocasofis',
-    type: 'varchar',
-    length: 20,
-  })
+  @Column({ name: 'nrocasofis', type: 'varchar', length: 20 })
   nroCasoFis!: string
 
-  @Column({
-    name: 'perddom',
-    type: 'boolean',
-  })
+  @Column({ name: 'perddom', type: 'boolean' })
   perddom!: boolean
 
-  @Column({
-    name: 'nrocasoperdom',
-    type: 'varchar',
-    length: 20,
-  })
+  @Column({ name: 'nrocasoperdom', type: 'varchar', length: 20 })
   nroCasoPerdom!: string
 
-  // @Column({
-  //   name: 'ianus',
-  //   type: 'varchar',
-  //   length: 15,
-  // })
-  // ianus!: string
-
-  @Column({
-    name: 'eta_inv',
-    type: 'int',
-  })
+  @Column({ name: 'eta_inv', type: 'int' })
   idEtapa!: number
 
-  @Column({
-    name: 'remitefiscal',
-    type: 'varchar',
-    length: 70,
-  })
+  @Column({ name: 'remitefiscal', type: 'varchar', length: 70 })
   remiteFiscal!: string
 
-  @Column({
-    name: 'remitefecha',
-    type: 'timestamp without time zone',
-  })
-  remiteFecha!: Date
+  @Column({ name: 'remitefecha', type: 'timestamp without time zone' })
+  fechaRecepcionFiscalia!: Date
 
-  @Column({
-    name: 'responsable_llenado',
-    type: 'varchar',
-    length: 70,
-  })
+  @Column({ name: 'responsable_llenado', type: 'varchar', length: 70 })
   conformeA!: string
 
-  @Column({
-    name: 'conformea',
-    type: 'varchar',
-    length: 70,
-  })
+  @Column({ name: 'conformea', type: 'varchar', length: 70 })
   inicioCaso!: string
 
-  @Column({
-    name: 'codigo_servicio',
-    type: 'varchar',
-    length: 70,
-  })
+  @Column({ name: 'codigo_servicio', type: 'varchar', length: 70 })
   codigoServicio!: string
 
-  @Column({
-    name: 'fechainicio',
-    type: 'timestamptz',
-  })
+  @Column({ name: 'fechainicio', type: 'timestamptz' })
   fechaInicio!: Date
 
-  @Column({
+  @Column({ name: 'id_estado', type: 'int', nullable: true })
+  idEstado!: number | null
+
+  @Column({ name: 'dias_otorgados', type: 'int', nullable: true })
+  diasOtorgados!: number | null
+
+    @Column({
     name: 'estado',
     type: 'varchar',
     length: 10,
@@ -156,11 +83,7 @@ export class AsignacionLgi {
   })
   fechaHoraIng!: Date
 
-  @Column({
-    name: 'usuario',
-    type: 'varchar',
-    length: 15,
-  })
+  @Column({ name: 'usuario', type: 'varchar', length: 15 })
   usuario!: string
 
   @Column({

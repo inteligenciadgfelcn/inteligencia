@@ -11,12 +11,14 @@ import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository
 import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
 import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
 import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
+import { RegistrarEtapaProcesalDto } from './dto/etapa-asignacion_lgi.dto'
+import { EtapaProcesalRepository } from './repository/etapa-procesal.repository'
 
 @Injectable()
 export class AsignacionLgiService {
   constructor(
     private readonly asignacionLgiRepository: AsignacionLgiRepository,
-
+    private readonly repositoryEtapaprocesal: EtapaProcesalRepository,
     private readonly distritalLgiRepository: DistritalLgiRepository,
     private readonly grupoLgiRepository: GrupoLgiRepository
   ) {}
@@ -64,7 +66,7 @@ export class AsignacionLgiService {
       await this.asignacionLgiRepository.crearAsignacionDual(
         dto,
         uniAbrev,
-        descripcionGrupo,
+        descripcionGrupo
       )
 
     return {
@@ -143,6 +145,16 @@ export class AsignacionLgiService {
     return this.asignacionLgiRepository.findAllPaginado(pagination)
   }
 
+  findAllPaginadoInvestigado(
+    pagination: PaginacionQueryDto,
+    numeroPase: string
+  ) {
+    return this.asignacionLgiRepository.findAllPaginadoInvestigado(
+      pagination,
+      numeroPase
+    )
+  }
+
   async findOne(id: number): Promise<AsignacionLgi> {
     const asignacion = await this.asignacionLgiRepository.findOneById(id)
 
@@ -162,4 +174,46 @@ export class AsignacionLgiService {
 
     return asignacion
   }
+
+  async registrar(
+    casosId: number,
+    dto: RegistrarEtapaProcesalDto,
+    usuario: string,
+    documento?: Express.Multer.File
+  ) {
+    if (documento) {
+      if (!documento.buffer?.length) {
+        throw new BadRequestException('El documento está vacío')
+      }
+
+      const esPdf =
+        documento.mimetype === 'application/pdf' &&
+        documento.buffer.subarray(0, 5).toString() === '%PDF-'
+
+      if (!esPdf) {
+        throw new BadRequestException('Solo se permite adjuntar un PDF')
+      }
+
+      if (!dto.descripcionDocumento?.trim()) {
+        throw new BadRequestException('Ingrese la descripción del documento')
+      }
+    }
+
+    return this.repositoryEtapaprocesal.registrar(
+      casosId,
+      dto,
+      usuario,
+      documento
+    )
+  }
+
+  async listarPorCaso(casosId: number) {
+    const asignacion = await this.asignacionLgiRepository.findOneById(casosId)
+
+    if (!asignacion) {
+      throw new NotFoundException(`No existe el caso ${casosId}`)
+    }
+    return this.repositoryEtapaprocesal.listarPorCaso(casosId)
+  }
+
 }

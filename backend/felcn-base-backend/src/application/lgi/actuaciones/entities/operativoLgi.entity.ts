@@ -37,24 +37,6 @@ export class OperativoLgi {
   opFechainf!: Date
 
   @Column({
-    name: 'dpto_id',
-    type: 'int',
-  })
-  dptoId!: number
-
-  @Column({
-    name: 'prov_id',
-    type: 'int',
-  })
-  provId!: number
-
-  @Column({
-    name: 'loc_id',
-    type: 'int',
-  })
-  locId!: number
-
-  @Column({
     name: 'op_lugar',
     type: 'varchar',
     length: 255,
@@ -62,41 +44,10 @@ export class OperativoLgi {
   opLugar!: string
 
   @Column({
-    name: 'uni_id',
-    type: 'int',
-  })
-  uniId!: number
-
-  @Column({
-    name: 'dis_id',
-    type: 'int',
-  })
-  disId!: number
-
-  @Column({
     name: 'op_descripcion',
     type: 'text',
   })
   opDescripcion!: string
-
-  @Column({
-    name: 'id_etapa',
-    type: 'int',
-  })
-  idEtapa!: number
-
-  @Column({
-    name: 'id_estado',
-    type: 'int',
-    nullable: true,
-  })
-  idEstado!: number | null
-
-  @Column({
-    name: 'dias_otorgados',
-    type: 'int',
-  })
-  diasOtorgados!: number
 
   @Column({
     name: 'id_tipo_informe',
@@ -113,38 +64,11 @@ export class OperativoLgi {
   otroInforme!: string | null
 
   @Column({
-    name: 'fecha_recepcion_fiscalia',
-    type: 'timestamptz',
-  })
-  fechaRecepcionFiscalia!: Date
-
-  @Column({
     name: 'ruta_archivo',
     type: 'varchar',
     length: 255,
   })
   rutaArchivo!: string
-
-  @Column({
-    name: 'tipologias_identificadas',
-    type: 'text',
-    nullable: true,
-  })
-  tipologiasIdentificadas!: string | null
-
-  @Column({
-    name: 'verbos_rectores',
-    type: 'text',
-    nullable: true,
-  })
-  verbosRectores!: string | null
-
-  @Column({
-    name: 'etapas_ciclo_lgi',
-    type: 'text',
-    nullable: true,
-  })
-  etapasCicloLgi!: string | null
 
   @Column({
     name: 'estado',
