@@ -70,8 +70,6 @@ export class ParametricasLgiController extends BaseController {
     return this.parametricasLgiService.findAllGrupo(idDistrito)
   }
 
-  
-
   @Get('allDepartamento')
   @ApiOperation({
     summary: 'Listar los departamentos',
@@ -177,11 +175,11 @@ export class ParametricasLgiController extends BaseController {
   }
 
   @Get('allVinculo')
-   @ApiOperation({
+  @ApiOperation({
     summary: 'Listar vinculo',
   })
   findAllVinculo() {
-    return this.vinculoService.findAll();
+    return this.vinculoService.findAll()
   }
 
   @Get('tipo/:idVinculo')
@@ -195,7 +193,7 @@ export class ParametricasLgiController extends BaseController {
     return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
   }
 
-   @Get('allTipoSitucionBien')
+  @Get('allTipoSitucionBien')
   findAllSituacionLegalBien() {
     return this.situacionLegalBienService.findAll()
   }
@@ -209,11 +207,42 @@ export class ParametricasLgiController extends BaseController {
   }
 
   @Get('allVinculoPersonaJuridica')
-   @ApiOperation({
+  @ApiOperation({
     summary: 'Listar vinculo personas juridicas',
   })
   findAllVinculoPersonaJuridica() {
-    return this.vinculoService.findAllPersonaJuridica();
+    return this.vinculoService.findAllPersonaJuridica()
   }
 
+  @Get('allTipoImplicado')
+  @ApiOperation({
+    summary: 'Listar tipo Implicado de personas Juridicas',
+  })
+  findAllTipoImplicado() {
+    return this.parametricasLgiService.findAllTipoImplicado()
+  }
+
+  @Get('ciclos')
+  @ApiOperation({
+    summary: 'Listar ciclos LGI',
+  })
+  listarCiclos() {
+    return this.parametricasLgiService.listarCiclos()
+  }
+
+  @Get('verbos-rectores')
+  @ApiOperation({
+    summary: 'Listar verbos rectores LGI',
+  })
+  listarVerbosRectores() {
+    return this.parametricasLgiService.listarVerbosRectores()
+  }
+
+  @Get('tipologias')
+  @ApiOperation({
+    summary: 'Listar tipologías LGI',
+  })
+  listarTipologias() {
+    return this.parametricasLgiService.listarTipologias()
+  }
 }

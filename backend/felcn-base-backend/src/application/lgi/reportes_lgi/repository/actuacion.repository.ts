@@ -82,7 +82,6 @@ export class ActuacionReporteRepository {
         'a.nrocasofis AS "numeroCasoFiscalia"',
         'a.nrocasogiaef AS "numeroCasoGiaef"',
         'a.nrocaso AS "numeroCaso"',
-        'a.nrocasoifp AS "numeroCasoIfp"',
         'a.cudifp AS "cudIfp"',
         'a.perddom AS "perdidaDominio"',
         'a.nrocasoperdom AS "numeroCasoPerdidaDominio"',

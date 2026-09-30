@@ -165,30 +165,4 @@ export class ActuacionesController extends BaseController {
     return this.actuacionesService.remove(id, usuario)
   }
 
-  @Patch(':id/conclusion-caso')
-  @ApiOperation({
-    summary: 'Registrar o actualizar la conclusión del caso',
-  })
-  @ApiBody({
-    type: UpdateConclusionCasoDto,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Conclusión del caso actualizada correctamente',
-    type: OperativoLgi,
-  })
-  actualizarConclusionCaso(
-    @Param('id', ParseIntPipe)
-    id: number,
-
-    @Body()
-    dto: UpdateConclusionCasoDto,
-
-    @Req()
-    request: AuthenticatedRequest
-  ): Promise<OperativoLgi> {
-    const usuario = request.user?.numeroPase ?? 'SISTEMA'
-
-    return this.actuacionesService.actualizarConclusionCaso(id, dto, usuario)
-  }
 }
