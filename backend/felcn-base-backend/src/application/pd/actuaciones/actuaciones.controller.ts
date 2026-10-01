@@ -33,10 +33,11 @@ import {
 } from '@/common/utils/file-storage.util'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
-import { ActuacionesService } from './actuaciones.service'
-import { CreateOperativoLgiDto } from './dto/create-operativoLgi.dto'
-import { UpdateOperativoLgiDto } from './dto/update-operativoLgi.dto'
-import { OperativoLgi } from './entities/operativoLgi.entity'
+import { ActuacionesPdService } from './actuaciones.service'
+import { CreateOperativoLgiDto } from '@/application/lgi/actuaciones/dto/create-operativoLgi.dto'
+import { UpdateOperativoLgiDto } from '@/application/lgi/actuaciones/dto/update-operativoLgi.dto'
+import { OperativoLgi } from '@/application/lgi/actuaciones/entities/operativoLgi.entity'
+import { CreateOperativoPdDto } from './dto/create-operativoPd.dto'
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -47,10 +48,10 @@ type AuthenticatedRequest = Request & {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Ganancias ilícitas')
+@ApiTags('PD - Perdida de Dominio')
 @Controller('actuaciones')
 export class ActuacionesController extends BaseController {
-  constructor(private readonly actuacionesService: ActuacionesService) {
+  constructor(private readonly actuacionesService: ActuacionesPdService) {
     super()
   }
 
@@ -60,7 +61,7 @@ export class ActuacionesController extends BaseController {
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    type: CreateOperativoLgiDto,
+    type: CreateOperativoPdDto,
   })
   @ApiResponse({
     status: 201,

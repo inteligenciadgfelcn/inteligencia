@@ -16,7 +16,7 @@ import { ConclusionCasoService } from './conclusion_caso.service'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
 
-@ApiTags('Conclusión del caso LGI')
+@ApiTags('LGI - Ganancias ilícitas')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)

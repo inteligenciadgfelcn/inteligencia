@@ -57,7 +57,7 @@ const configuracionFotografias = {
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('LGI - Bienes secuestrados')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('bienes-secuestrados')
 export class BienesSecuestradosController extends BaseController {
   constructor(private readonly service: BieneSecuestradoLgiService) {

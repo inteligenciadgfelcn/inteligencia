@@ -21,7 +21,7 @@ import { CreateCaracteristicasBieneDto } from './dto/create-caracteristicas_bien
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Bienes secuestrados')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('caracteristicas-bienes')
 export class CaracteristicasBienesController extends BaseController {
   constructor(

@@ -20,7 +20,7 @@ import { SituacionJuridicaEmpresaService } from './situacion_jurica_empresa.serv
 @ApiBearerAuth()
 @UseInterceptors(AuditoriaUsuarioInterceptor)
 @UseGuards(JwtAuthGuard)
-@ApiTags('LGI - Personas jurídicas')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('situacion-juridica-empresa')
 export class SituacionJuridicaEmpresaController extends BaseController {
   constructor(private readonly service: SituacionJuridicaEmpresaService) {

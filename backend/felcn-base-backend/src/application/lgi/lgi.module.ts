@@ -65,7 +65,6 @@ import { ConclusionCasoModule } from './conclusion_caso/conclusion_caso.module';
     BienesSecuestradosModule,
     CaracteristicasBienesModule,
     SituacionJuridicaBienModule,
-    FotoBienesModule,
     PersonasJuridicasModule,
     SituacionJuridicaEmpresaModule,
     ReportesLgiModule,

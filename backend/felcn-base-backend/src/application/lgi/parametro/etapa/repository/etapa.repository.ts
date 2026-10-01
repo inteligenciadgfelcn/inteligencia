@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Not, Repository } from 'typeorm'
 import { DB_LGI } from '@/core/config/database/database.module'
 import { EtapaLgi} from '../entities/etapa.entity'
 
@@ -21,7 +21,16 @@ export class EtapaLgiRepository {
 
   async findAllOrdered() {
     return await this.repository.find({
-      where: { lgi: true },
+      where: { lgi: true , etId: Not(7) },
+      order: {
+        etId: 'ASC',
+      },
+    })
+  }
+
+  async findAllPerdidaDominio() {
+    return await this.repository.find({
+      where: { lgi: false,etId: Not(7) },
       order: {
         etId: 'ASC',
       },

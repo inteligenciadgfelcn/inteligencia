@@ -22,7 +22,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Investigadores')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('investigadores')
 export class InvestigadorLgiController extends BaseController {
   constructor(private readonly investigadorService: InvestigadorLgiService) {

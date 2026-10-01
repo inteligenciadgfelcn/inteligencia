@@ -5,10 +5,6 @@ import {
 } from 'class-validator';
 
 export class DeletePersonasImplicadaDto {
-  /*
-   * Lo agrega el interceptor en PATCH.
-   * No se envía desde el frontend.
-   */
   @ApiHideProperty()
   @IsOptional()
   @IsString()

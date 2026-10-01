@@ -127,4 +127,12 @@ export class PersonasImplicada {
 
   @OneToMany(() => SituacionJuridica, (situacion) => situacion.personaImplicada)
   situacionesJuridicas!: SituacionJuridica[]
+
+  @Column({
+    type: 'varchar',
+    name: 'sexo',
+    length: 5,
+    default: 'M',
+  })
+  sexo!: string
 }

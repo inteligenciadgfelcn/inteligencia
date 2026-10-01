@@ -27,6 +27,10 @@ export class EtapaLgiService {
     return await this.repository.findAllOrdered()
   }
 
+   async findAllPd() {
+    return await this.repository.findAllPerdidaDominio()
+  }
+
   async findOne(id: number) {
     const data =
       await this.repository.findActiveById(id)

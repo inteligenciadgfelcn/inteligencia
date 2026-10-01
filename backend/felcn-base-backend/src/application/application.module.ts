@@ -4,14 +4,16 @@ import { InteligenciaModule } from './inteligencia/inteligencia.module'
 import { InteroperabilidadModule } from './interoperabilidad/interoperabilidad.module'
 import { LgiModule } from './lgi/lgi.module'
 import { FiscaliaModule } from './fiscalia/fiscalia.module'
+import { PdModule } from './pd/pd.module'
 
 @Module({
   imports: [
     SunesisModule,
     InteligenciaModule,
     InteroperabilidadModule,
-    LgiModule,
     FiscaliaModule,
+    LgiModule,
+    PdModule,
   ],
 })
 export class ApplicationModule {}

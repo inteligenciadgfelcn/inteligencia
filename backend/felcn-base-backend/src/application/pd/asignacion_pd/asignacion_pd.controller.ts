@@ -1,46 +1,44 @@
+import { CrearNumeroCasoDto } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/dto/create_numeroCaso.dto'
+import { UpdateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/update-asignacion_lgi.dto'
+import { PaginacionQueryDto } from '@/common/dto'
+import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
+import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import {
-  Body,
+  UseGuards,
+  UseInterceptors,
   Controller,
-  Delete,
+  Post,
+  Body,
   Get,
+  Query,
+  Req,
   Param,
   ParseIntPipe,
   Patch,
-  Post,
-  Query,
-  Req,
+  Delete,
   UploadedFile,
-  UseGuards,
-  UseInterceptors,
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import {
   ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
   ApiTags,
+  ApiOperation,
+  ApiConsumes,
 } from '@nestjs/swagger'
-
+import { AsignacionPdService } from './asignacion_pd.service'
 import { BaseController } from '@/common/base/base-controller'
-import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
-import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
-import { CrearNumeroCasoDto } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/dto/create_numeroCaso.dto'
 import { AsignacionesService } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/asignaciones.service'
-
-import { AsignacionLgiService } from './asignacion_lgi.service'
-import { CreateAsignacionLgiDto } from './dto/create-asignacion_lgi.dto'
-import { UpdateAsignacionLgiDto } from './dto/update-asignacion_lgi.dto'
-import { FileInterceptor } from '@nestjs/platform-express'
-import { RegistrarEtapaProcesalDto } from './dto/etapa-asignacion_lgi.dto'
+import { CreateAsignacionPdDto } from './dto/create-asignacion_pd.dto'
+import { RegistrarEtapaProcesalPdDto } from './dto/etapa-asignacion_pd.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Ganancias ilícitas')
-@Controller('asignacion-lgi')
-export class AsignacionLgiController extends BaseController {
+@ApiTags('PD - Perdida de Dominio')
+@Controller('asignacion-pd')
+export class AsignacionPdController extends BaseController {
   constructor(
-    private readonly asignacionLgiService: AsignacionLgiService,
+    private readonly asignacionPdService: AsignacionPdService,
     private readonly asignacionesService: AsignacionesService
   ) {
     super()
@@ -50,8 +48,8 @@ export class AsignacionLgiController extends BaseController {
   @ApiOperation({
     summary: 'Crear asignación, sección datos generales',
   })
-  create(@Body() dto: CreateAsignacionLgiDto) {
-    return this.asignacionLgiService.create(dto)
+  create(@Body() dto: CreateAsignacionPdDto) {
+    return this.asignacionPdService.create(dto)
   }
 
   @Get()
@@ -62,7 +60,7 @@ export class AsignacionLgiController extends BaseController {
     @Query()
     pagination: PaginacionQueryDto
   ) {
-    const result = await this.asignacionLgiService.findAllPaginado(pagination)
+    const result = await this.asignacionPdService.findAllPaginado(pagination)
     return this.successListRows(result)
   }
 
@@ -75,7 +73,7 @@ export class AsignacionLgiController extends BaseController {
     pagination: PaginacionQueryDto,
     @Req() req: Request & { user: { numeroPase: string } }
   ) {
-    const result = await this.asignacionLgiService.findAllPaginadoInvestigado(
+    const result = await this.asignacionPdService.findAllPaginadoInvestigado(
       pagination,
       req.user.numeroPase
     )
@@ -102,7 +100,7 @@ export class AsignacionLgiController extends BaseController {
     @Param('id', ParseIntPipe)
     id: number
   ) {
-    return this.asignacionLgiService.findOne(id)
+    return this.asignacionPdService.findOne(id)
   }
 
   @Patch(':id')
@@ -116,7 +114,7 @@ export class AsignacionLgiController extends BaseController {
     @Body()
     dto: UpdateAsignacionLgiDto
   ) {
-    return this.asignacionLgiService.update(id, dto)
+    return this.asignacionPdService.update(id, dto)
   }
 
   @Delete(':id')
@@ -127,7 +125,7 @@ export class AsignacionLgiController extends BaseController {
     @Param('id', ParseIntPipe)
     id: number
   ) {
-    return this.asignacionLgiService.remove(id)
+    return this.asignacionPdService.remove(id)
   }
 
   @Post(':casosId')
@@ -144,11 +142,11 @@ export class AsignacionLgiController extends BaseController {
   )
   registrar(
     @Param('casosId', ParseIntPipe) casosId: number,
-    @Body() dto: RegistrarEtapaProcesalDto,
+    @Body() dto: RegistrarEtapaProcesalPdDto,
     @UploadedFile() documento: Express.Multer.File | undefined,
     @Req() req: { user: { numeroPase: string } }
   ) {
-    return this.asignacionLgiService.registrar(
+    return this.asignacionPdService.registrar(
       casosId,
       dto,
       req.user.numeroPase,
@@ -164,6 +162,6 @@ export class AsignacionLgiController extends BaseController {
     @Param('casosId', ParseIntPipe)
     casosId: number
   ) {
-    return this.asignacionLgiService.listarPorCaso(casosId)
+    return this.asignacionPdService.listarPorCaso(casosId)
   }
 }

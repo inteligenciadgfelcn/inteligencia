@@ -1,14 +1,14 @@
-import { Type } from 'class-transformer'
 import {
   IsDateString,
   IsInt,
   IsNotEmpty,
   IsString,
   MaxLength,
-} from 'class-validator'
+} from '@/common/validation'
 import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 
-export class CreateAsignacionLgiDto {
+export class CreateAsignacionPdDto {
   @ApiProperty({
     description: 'ID de la regional o distrital',
     example: 2,
@@ -57,7 +57,7 @@ export class CreateAsignacionLgiDto {
 
   @ApiProperty({
     description: 'Número de caso generado por FELCN',
-    example: 'LP-FELCN-1/26',
+    example: 'LP-PD-1/26',
     maxLength: 20,
   })
   @IsString()
