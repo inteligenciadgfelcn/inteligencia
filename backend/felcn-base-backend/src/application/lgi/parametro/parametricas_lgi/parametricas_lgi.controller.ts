@@ -118,6 +118,14 @@ export class ParametricasLgiController extends BaseController {
     return this.etapaService.findAll()
   }
 
+  @Get('allEtapaPd')
+  @ApiOperation({
+    summary: 'Listar las etapas de Perdida de Dominio',
+  })
+  findAllEtapaPd() {
+    return this.etapaService.findAllPd()
+  }
+
   @Get('estado/:idEtapa')
   @ApiOperation({
     summary: 'Listar detalle etapa',

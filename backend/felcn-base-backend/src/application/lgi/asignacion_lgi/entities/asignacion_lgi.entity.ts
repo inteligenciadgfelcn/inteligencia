@@ -35,6 +35,9 @@ export class AsignacionLgi {
   @Column({ name: 'nrocasofis', type: 'varchar', length: 20 })
   nroCasoFis!: string
 
+  @Column({ name: 'cudifp', type: 'varchar', length: 20 })
+  cudifp!: string
+
   @Column({ name: 'perddom', type: 'boolean' })
   perddom!: boolean
 
