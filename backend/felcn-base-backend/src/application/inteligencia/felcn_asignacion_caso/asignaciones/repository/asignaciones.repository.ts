@@ -199,7 +199,7 @@ export class AsignacionesRepository {
     letra: string,
     year: string,
   ): Promise<number> {
-    const patron = `${dpto}-${letra}-%/${year}`
+    const patron = `${dpto.trim()}-${letra.trim()}-%/${year.trim()}`
 
     const result: Array<{ max: number | string }> =
       await this.asignacionAsigRepository.query(
@@ -227,7 +227,7 @@ export class AsignacionesRepository {
       )
 
     const maximo = Number(result[0]?.max ?? 0)
-    return maximo + 1
+    return maximo
   }
 
   async actualizarFiscalAsignadoDual(

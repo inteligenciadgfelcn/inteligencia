@@ -18,7 +18,7 @@ export class CreateArrestadoAuxiliarDto {
 
   @ApiProperty({ example: 'Los pinos', description: 'Lugar de nacimiento' })
   @IsString()
-  @MaxLength(20)
+  @MaxLength(50)
   lugarNacimiento?: string
 
   @ApiProperty({ example: 'base64imagen', description: 'Foto dedo izquierdo' })
