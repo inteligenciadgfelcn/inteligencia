@@ -3,10 +3,11 @@ import {
   IsDateString,
   IsInt,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class CreateAsignacionLgiDto {
   @ApiProperty({
@@ -123,13 +124,13 @@ export class CreateAsignacionLgiDto {
   @MaxLength(50)
   codigoServicio!: string
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'CUD PARALELA',
     example: '201102012600123',
     maxLength: 20,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(30)
   cudifp!: string
 }

@@ -53,14 +53,14 @@ export function ListadoCasos() {
   )
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
+    router.push(`/lgi/registro_caso/${row.casos_id}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
     if (!casoAEliminar) return
     setEliminando(true)
     try {
-      await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
+      await ListadoCasosApi.eliminarCaso(casoAEliminar.casos_id)
       setCasoAEliminar(null)
       queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
     } finally {
@@ -77,12 +77,13 @@ export function ListadoCasos() {
     {
       accessor: 'nombreCaso',
       title: 'Nombre del caso',
-      render: (row) => <span className="font-medium">{row.nombreCaso}</span>,
+      render: (row) => <span className="font-medium">{row.nombrecaso}</span>,
     },
     { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
-    { accessor: 'cudIfp', title: 'CUD' },
+    { accessor: 'nrocasofis', title: 'CUD' },
+    { accessor: 'cudifp', title: 'CUD PAR' },
     { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
@@ -126,7 +127,7 @@ export function ListadoCasos() {
             variant="outline-secondary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Ver detalle de ${row.nombreCaso}`}
+            aria-label={`Ver detalle de ${row.nombrecaso}`}
             title="Ver detalle"
             onClick={() => irA(row, 'ver')}
           >
@@ -137,7 +138,7 @@ export function ListadoCasos() {
             variant="outline-secondary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Editar ${row.nombreCaso}`}
+            aria-label={`Editar ${row.nombrecaso}`}
             title="Editar"
             onClick={() => irA(row)}
           >
@@ -148,7 +149,7 @@ export function ListadoCasos() {
             variant="outline-danger"
             size="sm"
             className="!p-1.5"
-            aria-label={`Eliminar ${row.nombreCaso}`}
+            aria-label={`Eliminar ${row.nombrecaso}`}
             title="Eliminar"
             onClick={() => setCasoAEliminar(row)}
           >
@@ -245,7 +246,7 @@ export function ListadoCasos() {
       <AlertDialog
         isOpen={!!casoAEliminar}
         titulo="Eliminar caso"
-        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombreCaso}"? Esta acción no se puede deshacer.`}
+        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombrecaso}"? Esta acción no se puede deshacer.`}
       >
         <Button
           type="button"

@@ -573,15 +573,15 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                       CUD Inv. Paralela
                     </label>
                     <Input
-                      {...register('nroCasoFis')}
+                      {...register('cudifp')}
                       disabled={isLectura}
-                      error={!!errors.nroCasoFis}
+                      error={!!errors.cudifp}
                       className="w-full"
-                      placeholder="CUD"
+                      placeholder=""
                     />
-                    {errors.nroCasoFis && (
+                    {errors.cudifp && (
                       <p className="mt-1 text-xs text-danger">
-                        {errors.nroCasoFis.message}
+                        {errors.cudifp.message}
                       </p>
                     )}
                   </div>

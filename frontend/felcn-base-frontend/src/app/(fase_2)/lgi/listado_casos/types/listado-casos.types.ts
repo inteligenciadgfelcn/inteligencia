@@ -29,29 +29,32 @@ export interface AsignacionCasoApiRow {
 }
 
 export interface AsignacionCasoListadoRow {
-  casosId: string
-  dptoavId: string
-  uniAbrev: string
-  disId: string
-  nombreCaso: string
-  tipoCaso: string
-  nroCasoGiaef: string
-  nroCaso: string
-  nroCasoFis: string
-  cudIfp: string
-  perddom: boolean
-  nroCasoPerdom: string
-  ianus: string
-  etaInv: string
-  remiteFiscal: string
-  remiteFecha: string | null
-  conformeA: string
-  fechaInicio: string | null
-  regional: string
-  etapaInvestigacion: string
-  fechahoraing: string | null
-  codigo_servicio?: string | null
-  [key: string]: unknown
+  casos_id: string;
+  dptoav_id: string;
+  uni_abrev: string;
+  dis_id: string;
+  nombrecaso: string;
+  nrocasogiaef: string;
+  nrocaso: string;
+  nrocasofis: string;
+  perddom: boolean;
+  eta_inv: string;
+  remitefiscal: string;
+  conformea: string;
+  fechainicio: string;
+  fechahoraing: string;
+  usuario: string;
+  usuario_actualizacion: string;
+  fecha_actualizacion: string;
+  estado: string;
+  descripcion_grupo: string;
+  responsable_llenado: string;
+  codigo_servicio: string;
+  cudifp: string;
+  etapaInvestigacion: string;
+  unidad: string;
+  regional: string;
+  puesto: string;
 }
 
 export interface ListadoCasosParams {

@@ -72,6 +72,7 @@ export interface DatosGeneralesPayload {
   fechaInicio: string
   inicioCaso: string
   codigoServicio: string
+  cudifp: string 
 }
 
 export interface UltimaSituacionJuridica {

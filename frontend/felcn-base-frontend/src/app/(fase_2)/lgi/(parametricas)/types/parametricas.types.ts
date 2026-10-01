@@ -49,6 +49,6 @@ export interface ProfesionLgi {
 }
 
 export interface InicioCasoLgi {
-  idInicioCaso: number
+  id_inicio_caso: number
   descripcion: string
 }
