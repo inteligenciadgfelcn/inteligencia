@@ -4,7 +4,6 @@ import { InteligenciaModule } from './inteligencia/inteligencia.module'
 import { InteroperabilidadModule } from './interoperabilidad/interoperabilidad.module'
 import { LgiModule } from './lgi/lgi.module'
 import { FiscaliaModule } from './fiscalia/fiscalia.module'
-import { AsignacionPdModule } from './pd/asignacion_pd/asignacion_pd.module';
 import { PdModule } from './pd/pd.module'
 
 @Module({
@@ -12,9 +11,8 @@ import { PdModule } from './pd/pd.module'
     SunesisModule,
     InteligenciaModule,
     InteroperabilidadModule,
-    LgiModule,
     FiscaliaModule,
-    AsignacionPdModule,
+    LgiModule,
     PdModule,
   ],
 })

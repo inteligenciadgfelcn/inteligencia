@@ -37,7 +37,6 @@ import { ActuacionesService } from './actuaciones.service'
 import { CreateOperativoLgiDto } from './dto/create-operativoLgi.dto'
 import { UpdateOperativoLgiDto } from './dto/update-operativoLgi.dto'
 import { OperativoLgi } from './entities/operativoLgi.entity'
-import { UpdateConclusionCasoDto } from './dto/update-conclusion-caso.dto'
 
 type AuthenticatedRequest = Request & {
   user?: {
@@ -48,7 +47,7 @@ type AuthenticatedRequest = Request & {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Actuaciones')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('actuaciones')
 export class ActuacionesController extends BaseController {
   constructor(private readonly actuacionesService: ActuacionesService) {

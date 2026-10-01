@@ -1,15 +1,15 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
 import {
-  IsIn,
   IsInt,
-  IsNotEmpty,
-  IsOptional,
   IsString,
+  IsNotEmpty,
   MaxLength,
+  IsOptional,
+  IsIn,
 } from 'class-validator'
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
-export class CreatePersonaImplicadaDto {
+export class CreatePersonasIdentificadaDto {
   @ApiProperty({
     description: 'Identificador del caso',
     example: 100,
@@ -101,14 +101,14 @@ export class CreatePersonaImplicadaDto {
   numeroDocumento!: string
 
   @ApiProperty({
-      description: 'Sexo: M = hombre, F = mujer',
-      example: 'M',
-      default: 'M',
-      enum: ['M', 'F'],
-      required: false,
-    })
-    @IsOptional()
-    @IsString()
-    @IsIn(['M', 'F'])
-    sexo: string = 'M'
+    description: 'Sexo: M = hombre, F = mujer',
+    example: 'M',
+    default: 'M',
+    enum: ['M', 'F'],
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['M', 'F'])
+  sexo: string = 'M'
 }

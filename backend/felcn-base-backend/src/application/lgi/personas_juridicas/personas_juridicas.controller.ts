@@ -24,19 +24,11 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger'
-
-import { Response } from 'express'
-
 import { BaseController } from '@/common/base'
-
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
-
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
-
 import { CreatePersonasJuridicaDto } from './dto/create-personas_juridica.dto'
-
 import { UpdatePersonasJuridicaDto } from './dto/update-personas_juridica.dto'
-
 import { PersonasJuridicasService } from './personas_juridicas.service'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
@@ -49,7 +41,7 @@ interface ArchivosEmpresa {
 @ApiBearerAuth()
 @UseInterceptors(AuditoriaUsuarioInterceptor)
 @UseGuards(JwtAuthGuard)
-@ApiTags('LGI - Personas jurídicas')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('personas-juridicas')
 export class PersonasJuridicasController extends BaseController {
   constructor(private readonly service: PersonasJuridicasService) {

@@ -24,7 +24,7 @@ import { DeletePersonasImplicadaDto } from './dto/delete-personas_implicadas.dto
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Personas implicadas')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('personas-implicadas')
 export class PersonasImplicadasController extends BaseController {
   constructor(

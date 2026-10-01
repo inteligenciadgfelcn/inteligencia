@@ -36,7 +36,7 @@ import { RegistrarEtapaProcesalDto } from './dto/etapa-asignacion_lgi.dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Asignación')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('asignacion-lgi')
 export class AsignacionLgiController extends BaseController {
   constructor(

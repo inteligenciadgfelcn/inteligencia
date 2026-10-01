@@ -48,7 +48,7 @@ type AuthenticatedRequest = Request & {
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('PD - Actuaciones')
+@ApiTags('PD - Perdida de Dominio')
 @Controller('actuaciones')
 export class ActuacionesController extends BaseController {
   constructor(private readonly actuacionesService: ActuacionesPdService) {

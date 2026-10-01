@@ -22,7 +22,7 @@ import { DeleteSituacionJuridicaDto } from './dto/delete-situacion_juridica.dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Situacion Jurídica')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('situacion-juridica')
 export class SituacionJuridicaController extends BaseController {
   constructor(

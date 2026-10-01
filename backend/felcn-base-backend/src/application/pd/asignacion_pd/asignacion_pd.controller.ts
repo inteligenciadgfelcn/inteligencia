@@ -34,7 +34,7 @@ import { RegistrarEtapaProcesalPdDto } from './dto/etapa-asignacion_pd.dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('PD - Asignación')
+@ApiTags('PD - Perdida de Dominio')
 @Controller('asignacion-pd')
 export class AsignacionPdController extends BaseController {
   constructor(
