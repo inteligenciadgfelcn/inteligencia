@@ -84,16 +84,4 @@ export class ActuacionesService {
 
     return operativo
   }
-
-  actualizarConclusionCaso(
-    opId: number,
-    dto: UpdateConclusionCasoDto,
-    usuario: string
-  ): Promise<OperativoLgi> {
-    return this.operativoLgiRepository.actualizarConclusionCaso(
-      opId,
-      dto,
-      usuario
-    )
-  }
 }

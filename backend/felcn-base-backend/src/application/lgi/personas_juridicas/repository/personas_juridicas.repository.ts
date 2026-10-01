@@ -381,18 +381,6 @@ export class PersonasJuridicasRepository {
             .addSelect('situacion.fecha', 'fecha')
             .addSelect(
               `
-                  situacion.quien_autoriza
-                `,
-              'quien_autoriza'
-            )
-            .addSelect(
-              `
-                  situacion.a_quien_entregan
-                `,
-              'a_quien_entregan'
-            )
-            .addSelect(
-              `
                   situacion.fechahoraing
                 `,
               'fechahoraing'
@@ -572,15 +560,6 @@ export class PersonasJuridicasRepository {
             .orWhere(
               `
                   asignacion.nrocasofis
-                  ILIKE :filtro
-                `,
-              {
-                filtro: valor,
-              }
-            )
-            .orWhere(
-              `
-                  asignacion.nrocasoifp
                   ILIKE :filtro
                 `,
               {
@@ -790,9 +769,6 @@ export class PersonasJuridicasRepository {
                 'numeroCasoFiscalia',
                 asignacion.nrocasofis,
 
-                'numeroCasoIfp',
-                asignacion.nrocasoifp,
-
                 'cud',
                 asignacion.cudifp
               )
@@ -854,12 +830,6 @@ export class PersonasJuridicasRepository {
 
                 'fecha',
                 ultima_situacion.fecha,
-
-                'quienAutoriza',
-                ultima_situacion.quien_autoriza,
-
-                'aQuienEntregan',
-                ultima_situacion.a_quien_entregan,
 
                 'fechaHoraIngreso',
                 ultima_situacion.fechahoraing,
@@ -977,9 +947,6 @@ export class PersonasJuridicasRepository {
                 'numeroCasoFiscalia',
                 asignacion.nrocasofis,
 
-                'numeroCasoIfp',
-                asignacion.nrocasoifp,
-
                 'cud',
                 asignacion.cudifp
               )
@@ -1051,16 +1018,6 @@ export class PersonasJuridicasRepository {
         `
           situacion.fecha
           AS "fecha"
-        `,
-
-        `
-          situacion.quien_autoriza
-          AS "quienAutoriza"
-        `,
-
-        `
-          situacion.a_quien_entregan
-          AS "aQuienEntregan"
         `,
 
         `

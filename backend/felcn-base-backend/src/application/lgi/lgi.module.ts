@@ -32,6 +32,8 @@ import { PersonasJuridicasModule } from './personas_juridicas/personas_juridicas
 import { SituacionJuridicaEmpresaModule } from './situacion_jurica_empresa/situacion_jurica_empresa.module'
 import { ReportesLgiModule } from './reportes_lgi/reportes_lgi.module';
 import { PresedenciaLgiModule } from './presedencia_lgi/presedencia_lgi.module';
+import { ImplicadosModule } from './implicados/implicados.module';
+import { ConclusionCasoModule } from './conclusion_caso/conclusion_caso.module';
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { PresedenciaLgiModule } from './presedencia_lgi/presedencia_lgi.module';
     SituacionJuridicaEmpresaModule,
     ReportesLgiModule,
     PresedenciaLgiModule,
+    ImplicadosModule,
+    ConclusionCasoModule,
   ],
   controllers: [],
 })
