@@ -7,7 +7,6 @@ import {
   IsBoolean,
   IsOptional,
   IsString,
-  IsDateString,
 } from 'class-validator'
 
 export class CreateBienesSecuestradoDto {
@@ -142,14 +141,14 @@ export class CreateBienesSecuestradoDto {
   ciDepositario?: string
 
   @ApiPropertyOptional({
-  type: 'array',
-  items: {
-    type: 'string',
-    format: 'binary',
-  },
-  description:
-    'Fotografías del bien secuestrado',
-})
-@IsOptional()
-fotografias?: unknown[]
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+    description:
+      'Fotografías del bien secuestrado',
+  })
+  @IsOptional()
+  fotografias?: unknown[]
 }
