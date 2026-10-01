@@ -232,7 +232,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     if (!codigo) return
     setGenerandoNumero(true)
     try {
-      const numero = await RegistroCasoApi.generarNumero(codigo, 'LGI')
+      const numero = await RegistroCasoApi.generarNumero(codigo, 'AP')
       setValue('nroCaso', numero, { shouldValidate: true })
     } finally {
       setGenerandoNumero(false)

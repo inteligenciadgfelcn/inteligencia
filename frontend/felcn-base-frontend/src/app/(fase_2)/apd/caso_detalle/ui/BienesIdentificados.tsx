@@ -504,6 +504,74 @@ export function BienesIdentificados({ casoId }: Props) {
             </div>
           </Fieldset>
 
+          <Fieldset title="Características">
+            <div className="space-y-3">
+              {form.caracteristicas.length === 0 && (
+                <p className="text-xs text-gray-500">
+                  No hay características registradas. Haga clic en &quot;Agregar&quot;
+                  para añadir una.
+                </p>
+              )}
+              {form.caracteristicas.map((car, index) => (
+                <div key={index} className="flex items-end gap-2">
+                  <div className="w-48 shrink-0">
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      Característica
+                    </label>
+                    <Select
+                      options={caracteristicasCatalogo.map((c) =>
+                        option(c.catcaracId, c.descripcion)
+                      )}
+                      placeholder="Seleccione"
+                      value={car.catcaracId ? String(car.catcaracId) : ''}
+                      onChange={(e) =>
+                        actualizarCaracteristica(
+                          index,
+                          'catcaracId',
+                          Number(e.target.value)
+                        )
+                      }
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="mb-1 block text-xs font-semibold text-gray-500">
+                      Descripción
+                    </label>
+                    <Input
+                      value={car.descripcion}
+                      onChange={(e) =>
+                        actualizarCaracteristica(index, 'descripcion', e.target.value)
+                      }
+                      placeholder="Descripción"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline-danger"
+                    size="sm"
+                    className="!p-1.5 shrink-0 mb-0.5"
+                    onClick={() => eliminarCaracteristica(index)}
+                  >
+                    <IconTrash className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline-primary"
+                size="sm"
+                className="gap-2"
+                onClick={agregarCaracteristica}
+                disabled={!form.claseId || caracteristicasCatalogo.length === 0}
+              >
+                <IconPlus className="h-4 w-4" />
+                Agregar característica
+              </Button>
+            </div>
+          </Fieldset>
+
+
+
           <Fieldset title="Dirección">
             <Input
               value={form.direccion}
@@ -641,7 +709,7 @@ export function BienesIdentificados({ casoId }: Props) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Valor comercial aprox. (BOB) *
+                  Valor comercial aprox. (USD) *
                 </label>
                 <Input
                   type="number"
@@ -653,7 +721,7 @@ export function BienesIdentificados({ casoId }: Props) {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Cuantía presuntamente ilegal (BOB)
+                  Cuantía presuntamente ilegal (USD)
                 </label>
                 <Input
                   type="number"
@@ -920,72 +988,6 @@ export function BienesIdentificados({ casoId }: Props) {
                 </div>
               </div>
             )}
-          </Fieldset>
-
-          <Fieldset title="Características">
-            <div className="space-y-3">
-              {form.caracteristicas.length === 0 && (
-                <p className="text-xs text-gray-500">
-                  No hay características registradas. Haga clic en &quot;Agregar&quot;
-                  para añadir una.
-                </p>
-              )}
-              {form.caracteristicas.map((car, index) => (
-                <div key={index} className="flex items-end gap-2">
-                  <div className="w-48 shrink-0">
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">
-                      Característica
-                    </label>
-                    <Select
-                      options={caracteristicasCatalogo.map((c) =>
-                        option(c.catcaracId, c.descripcion)
-                      )}
-                      placeholder="Seleccione"
-                      value={car.catcaracId ? String(car.catcaracId) : ''}
-                      onChange={(e) =>
-                        actualizarCaracteristica(
-                          index,
-                          'catcaracId',
-                          Number(e.target.value)
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="mb-1 block text-xs font-semibold text-gray-500">
-                      Descripción
-                    </label>
-                    <Input
-                      value={car.descripcion}
-                      onChange={(e) =>
-                        actualizarCaracteristica(index, 'descripcion', e.target.value)
-                      }
-                      placeholder="Descripción"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline-danger"
-                    size="sm"
-                    className="!p-1.5 shrink-0 mb-0.5"
-                    onClick={() => eliminarCaracteristica(index)}
-                  >
-                    <IconTrash className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline-primary"
-                size="sm"
-                className="gap-2"
-                onClick={agregarCaracteristica}
-                disabled={!form.claseId || caracteristicasCatalogo.length === 0}
-              >
-                <IconPlus className="h-4 w-4" />
-                Agregar característica
-              </Button>
-            </div>
           </Fieldset>
 
           <Fieldset title="Fotografías">

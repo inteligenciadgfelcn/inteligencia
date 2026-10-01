@@ -50,6 +50,7 @@ export interface AsignacionCasoListadoRow {
   regional: string
   etapaInvestigacion: string
   fechahoraing: string | null
+  codigo_servicio?: string | null
   [key: string]: unknown
 }
 

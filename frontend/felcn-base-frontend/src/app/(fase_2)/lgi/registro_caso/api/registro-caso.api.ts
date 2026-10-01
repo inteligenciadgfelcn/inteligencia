@@ -1,6 +1,7 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
+  AsignacionLgiDetalle,
   DatosGeneralesPayload,
   PersonaDetalle,
   PersonaImplicadaPayload,
@@ -22,6 +23,12 @@ interface RespuestaPaginada<T> {
   datos: RespuestaPaginadaDatos<T>
 }
 
+interface RespuestaEnvuelta<T> {
+  finalizado?: boolean
+  mensaje?: string
+  datos?: T
+}
+
 export const RegistroCasoApi = {
   crearDatosGenerales(dto: DatosGeneralesPayload): Promise<RespuestaCrud> {
     return sesionPeticion({
@@ -30,6 +37,20 @@ export const RegistroCasoApi = {
       body: dto,
       withCredentials: true,
     })
+  },
+
+  async obtenerCaso(casoId: string | number): Promise<AsignacionLgiDetalle> {
+    const respuesta = await sesionPeticion<
+      RespuestaEnvuelta<AsignacionLgiDetalle> | AsignacionLgiDetalle
+    >({
+      url: `${BASE_ASIGNACION}/${casoId}`,
+      method: 'get',
+      withCredentials: true,
+    })
+
+    return 'datos' in respuesta && respuesta.datos
+      ? respuesta.datos
+      : (respuesta as AsignacionLgiDetalle)
   },
 
   actualizarDatosGenerales(

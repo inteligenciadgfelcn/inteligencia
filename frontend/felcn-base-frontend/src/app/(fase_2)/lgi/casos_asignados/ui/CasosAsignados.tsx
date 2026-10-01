@@ -23,7 +23,6 @@ import {
   mapAsignacionCasoRow,
 } from '../mappers/listado-casos.mappers'
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
-import { guardarCasoEnStorage } from '../../registro_caso/utils/registro-caso.utils'
 import IconListCheck from '@/components/Icon/IconListCheck'
 import dayjs from 'dayjs'
 
@@ -55,12 +54,10 @@ export function CasosAsignados() {
   )
 
   const irADetalle = (row: AsignacionCasoListadoRow) => {
-    guardarCasoEnStorage(row)
     router.push(`/lgi/caso_detalle/${row.casosId}`)
   }
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    guardarCasoEnStorage(row)
     router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 
@@ -93,7 +90,7 @@ export function CasosAsignados() {
     { accessor: 'cudIfp', title: 'CUD/IFP' },
     { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
-    // { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
+    { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
       accessor: 'fechaHoraIng',
       title: 'Tiempo transcurrido',

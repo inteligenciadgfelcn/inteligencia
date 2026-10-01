@@ -12,7 +12,24 @@ export interface OperativoSiiiPrecedente {
   ubicacionInstitucional: string
   ubicacionGeografica: string
   nombreCaso: string
-  ianus: string
+  ianus: string | null
+  fiscalSolicitud: string
+  asignado: string
+  asignadoFiscal: string
+  tipoOperativo: string
+  tipoRelevancia: string
+  categoriaOperativo: string
+  planOperacion: string
+  tipoDenuncia: string
+  tipoPenal: string
+  organizacion: string
+  alMandoDe: string
+  esPositivo: boolean
+  esAprehendido: boolean
+  esArrestado: boolean
+  esIcia: boolean
+  esParteDiario: boolean
+  esRevisado: boolean
   [key: string]: unknown
 }
 
@@ -24,7 +41,7 @@ export interface PresedenciaCasoRow {
   usuario: string
   usuarioActualizacion: string | null
   fechaHoraIng: string
-  fechaActualizacion: string
+  fechaActualizacion: string | null
   operativosSiii: OperativoSiiiPrecedente[]
 }
 

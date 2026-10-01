@@ -15,6 +15,35 @@ export interface CatalogOption<T = unknown> {
   original: T
 }
 
+export interface AsignacionLgiDetalle {
+  casosId: string
+  dptoavId: string
+  uniAbrev: string
+  disId: string
+  descripcionGrupo: string
+  nombreCaso: string
+  nroCasoGiaef: string | null
+  nroCaso: string
+  nroCasoFis: string | null
+  cudifp: string | null
+  perddom: boolean | null
+  nroCasoPerdom: string | null
+  idEtapa: number | null
+  remiteFiscal: string
+  fechaRecepcionFiscalia: string | null
+  conformeA: string
+  inicioCaso: string | null
+  codigoServicio: string | null
+  fechaInicio: string | null
+  idEstado: number | null
+  diasOtorgados: number | null
+  estado: string
+  fechaHoraIng: string
+  usuario: string
+  usuarioActualizacion: string | null
+  fechaActualizacion: string
+}
+
 export interface DatosGeneralesFormValues {
   disId: CatalogOption<DistritalLgi> | null
   idGrupo: CatalogOption<GrupoLgi> | null
@@ -39,7 +68,7 @@ export interface DatosGeneralesPayload {
   nroCaso: string
   nroCasoFis: string
   remiteFiscal: string
-  controlJurisdiccional: string
+  controlJurisdiccional?: string
   fechaInicio: string
   inicioCaso: string
   codigoServicio: string

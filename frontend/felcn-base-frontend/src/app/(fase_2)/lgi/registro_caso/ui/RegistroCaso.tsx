@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,6 +25,9 @@ import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import { RegistroCasoApi } from '../api/registro-caso.api'
 import {
   buildDatosGeneralesPayload,
+  buscarDistritalPorId,
+  buscarGrupoPorDescripcion,
+  buscarInicioCasoPorDescripcion,
   codigoDepartamento,
   mapDepartamentoToOption,
   mapDistritalToOption,
@@ -38,15 +41,13 @@ import {
   type InformacionCasoSchemaValues,
 } from '../schemas/registro-caso.schema'
 import type {
+  AsignacionLgiDetalle,
   CatalogOption,
 } from '../types/registro-caso.types'
 import type { ConsultaSiiiQueryDto } from '../types/siii.types'
-import type { AsignacionCasoListadoRow } from '../../listado_casos/types/listado-casos.types'
-import {
-  createDefaultDatosGeneralesValues,
-  leerCasoDeStorage,
-} from '../utils/registro-caso.utils'
+import { createDefaultDatosGeneralesValues } from '../utils/registro-caso.utils'
 import { ResultadosBusquedaSiii } from './ResultadosBusquedaSiii'
+import { CasosRelacionados } from './CasosRelacionados'
 import { InvestigadoresDataTable } from './InvestigadoresDataTable'
 import { InvestigadorCombobox } from '../../components/InvestigadorCombobox'
 import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
@@ -99,14 +100,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const queryClient = useQueryClient()
 
   const isLectura = modo === 'ver'
-  const [casoInicial, setCasoInicial] = useState<AsignacionCasoListadoRow | null>(
-    null
-  )
   const casoActivo = casoId ? Number(casoId) : null
-
-  useEffect(() => {
-    setCasoInicial(leerCasoDeStorage())
-  }, [])
 
   const [activeTab, setActiveTab] = useState<TabKey>('datos-generales')
   const [casoActivoId, setCasoActivoId] = useState<number | null>(null)
@@ -136,22 +130,19 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     queryFn: () => ParametricasLgiApi.listarIniciosCaso(),
   })
 
-  // ── Formulario datos generales ───────────────────────────────────────────────
-  const disIdInicial = useMemo(() => {
-    if (!casoInicial?.disId) return null
-    return {
-      value: String(casoInicial.disId),
-      label: casoInicial.regional || String(casoInicial.disId),
-      original: {
-        id: Number(casoInicial.disId),
-        descripcion: casoInicial.regional || '',
-        estado: '',
-        idUnidad: 0,
-        unidad: '',
-      } as DistritalLgi,
-    }
-  }, [casoInicial])
+  // ── Caso a editar ────────────────────────────────────────────────────────────
+  const {
+    data: caso,
+    isLoading: isLoadingCaso,
+    isError: isErrorCaso,
+    error: errorCaso,
+  } = useQuery<AsignacionLgiDetalle>({
+    queryKey: ['lgi-registro-caso', 'caso', casoId],
+    queryFn: () => RegistroCasoApi.obtenerCaso(casoId!),
+    enabled: Boolean(casoId),
+  })
 
+  // ── Formulario datos generales ───────────────────────────────────────────────
   const datosForm = useForm<DatosGeneralesSchemaValues>({
     resolver: zodResolver(datosGeneralesSchema),
     defaultValues: createDefaultDatosGeneralesValues(),
@@ -175,28 +166,41 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     })
   }, [casoId, setValue])
 
+  // Solo se hidrata una vez por caso: evita que un refetch de catálogos pise
+  // lo que el usuario ya está editando.
+  const casoHidratadoRef = useRef<string | null>(null)
+
   useEffect(() => {
-    if (!casoInicial || !casoId) return
+    if (!casoId || !caso) return
+    if (!distritales.length || !departamentos.length || !iniciosCaso.length) {
+      return
+    }
+    if (casoHidratadoRef.current === casoId) return
+    casoHidratadoRef.current = casoId
+
+    const departamento = departamentos.find(
+      (item) => codigoDepartamento(item) === caso.dptoavId
+    )
+
     reset({
       ...createDefaultDatosGeneralesValues(),
-      disId: disIdInicial,
-      nombreCaso: casoInicial.nombreCaso ?? '',
-      nroCaso: casoInicial.nroCaso ?? '',
-      nroCasoFis:
-        casoInicial.nroCasoFis ?? casoInicial.cudIfp ?? '',
-      remiteFiscal: casoInicial.remiteFiscal ?? '',
-      conformeA: casoInicial.conformeA ?? '',
-      controlJurisdiccional:
-        (casoInicial.controlJurisdiccional as string | undefined) ?? '',
-      fechaInicio:
-        (casoInicial.fechaInicio as string | undefined) ??
-        dayjs().format('YYYY-MM-DD'),
-      inicioCaso: (casoInicial.inicioCaso as CatalogOption<InicioCasoLgi> | null | undefined) ?? null,
-      codigoServicio:
-        (casoInicial.codigoServicio as string | undefined) ?? '',
+      disId: buscarDistritalPorId(distritales, caso.disId),
+      departamento: departamento ? mapDepartamentoToOption(departamento) : null,
+      inicioCaso: buscarInicioCasoPorDescripcion(iniciosCaso, caso.inicioCaso),
+      nombreCaso: caso.nombreCaso || '',
+      nroCaso: caso.nroCaso || caso.nroCasoGiaef || '',
+      nroCasoFis: caso.nroCasoFis || caso.cudifp || '',
+      remiteFiscal: caso.remiteFiscal || '',
+      conformeA: caso.conformeA || '',
+      controlJurisdiccional: '',
+      fechaInicio: caso.fechaInicio
+        ? dayjs(caso.fechaInicio).format('YYYY-MM-DD')
+        : dayjs().format('YYYY-MM-DD'),
+      codigoServicio: caso.codigoServicio || '',
     })
-    setConformeAValue(casoInicial.conformeA ?? '')
-  }, [casoInicial, casoId, disIdInicial, reset])
+
+    setConformeAValue(caso.conformeA || '')
+  }, [caso, casoId, departamentos, distritales, iniciosCaso, reset])
 
   const disIdSeleccionado = useWatch({
     control,
@@ -210,19 +214,36 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       ParametricasLgiApi.listarGrupos(Number(disIdSeleccionado!.value)),
   })
 
-  useEffect(() => {
-    resetField('idGrupo')
-  }, [disIdSeleccionado?.value, resetField])
+  // El puesto avanzado llega como `descripcionGrupo` (texto), no como id: se
+  // resuelve contra el catálogo de grupos de la distrital ya seleccionada.
+  // Solo se aplica una vez por distrital y nunca después de que el usuario
+  // elija otra, para no pisear su selección.
+  const distritalCambiadaPorUsuarioRef = useRef(false)
+  const grupoResueltoParaDistritalRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!casoId || !casoInicial?.dptoavId || !departamentos.length) return
-    const match = departamentos.find(
-      (d) => codigoDepartamento(d) === casoInicial.dptoavId
-    )
-    if (match) {
-      setValue('departamento', mapDepartamentoToOption(match))
-    }
-  }, [casoId, casoInicial?.dptoavId, departamentos, setValue])
+    if (distritalCambiadaPorUsuarioRef.current) return
+    if (!caso?.descripcionGrupo || !grupos.length) return
+
+    const distritalActual = String(disIdSeleccionado?.value ?? '')
+    if (!distritalActual) return
+    if (grupoResueltoParaDistritalRef.current === distritalActual) return
+    grupoResueltoParaDistritalRef.current = distritalActual
+
+    const grupo = buscarGrupoPorDescripcion(grupos, caso.descripcionGrupo)
+    if (grupo) setValue('idGrupo', grupo)
+  }, [
+    caso?.descripcionGrupo,
+    grupos,
+    disIdSeleccionado?.value,
+    setValue,
+  ])
+
+  const onCambiarDistrital = () => {
+    distritalCambiadaPorUsuarioRef.current = true
+    grupoResueltoParaDistritalRef.current = null
+    resetField('idGrupo')
+  }
 
   const onGenerarNumero = async () => {
     const { departamento } = getValues()
@@ -304,9 +325,39 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         setActiveTab('personas')
       }
       queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
+      if (casoId) {
+        queryClient.invalidateQueries({
+          queryKey: ['lgi-registro-caso', 'caso', casoId],
+        })
+      }
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (casoId && isLoadingCaso) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-sm text-gray-500">Cargando datos del caso...</p>
+      </div>
+    )
+  }
+
+  if (casoId && isErrorCaso) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <p className="text-sm text-red-500">
+          Error al cargar el caso: {errorCaso?.message ?? 'Error desconocido'}
+        </p>
+        <Button
+          type="button"
+          variant="outline-secondary"
+          onClick={() => router.push('/lgi/listado_casos')}
+        >
+          Volver al listado
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -322,7 +373,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                   : 'Editar caso'}
             </p>
             <h2 className="mt-1 text-xl font-bold text-dark dark:text-white-light">
-              {casoInicial?.nombreCaso ?? 'Registro de caso LGI'}
+              {caso?.nombreCaso || 'Registro de caso LGI'}
             </h2>
             {casoIdEfectivo && (
               <p className="mt-1 text-sm text-gray-500">ID {casoIdEfectivo}</p>
@@ -398,6 +449,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     isDisable={isLectura}
                     originalData={distritales}
                     mapOption={mapDistritalToOption}
+                    onValueChange={onCambiarDistrital}
                   />
 
                   <RHFSelect<GrupoLgi>
@@ -515,6 +567,24 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                       </p>
                     )}
                   </div>
+                  
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+                      CUD Inv. Paralela
+                    </label>
+                    <Input
+                      {...register('nroCasoFis')}
+                      disabled={isLectura}
+                      error={!!errors.nroCasoFis}
+                      className="w-full"
+                      placeholder="CUD"
+                    />
+                    {errors.nroCasoFis && (
+                      <p className="mt-1 text-xs text-danger">
+                        {errors.nroCasoFis.message}
+                      </p>
+                    )}
+                  </div>
 
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
@@ -577,10 +647,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                     </label>
                     <Input
                       {...register('codigoServicio')}
-                      disabled={isLectura}
+                      disabled={true}
                       error={!!errors.codigoServicio}
                       className="w-full"
-                      placeholder="ICIA-1619092026"
                     />
                     {errors.codigoServicio && (
                       <p className="mt-1 text-xs text-danger">
@@ -652,7 +721,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
 
           {activeTab === 'informacion-caso' && (
             <div className="space-y-4">
-              <Card title="Búsqueda avanzada en SIII">
+              <Card title="Búsqueda avanzada de SSCC">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <RHFDate
                     id="filtroFechaInicio"
@@ -753,15 +822,36 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 )}
               </Card>
 
-              {filtroSiii && (
+              {filtroSiii ? (
                 <ResultadosBusquedaSiii
                   filtro={filtroSiii}
                   casoId={casoIdEfectivo}
                   isLectura={isLectura}
                 />
+              ) : (
+                <CasosRelacionados
+                  casoId={casoIdEfectivo}
+                  isLectura={isLectura}
+                />
               )}
 
-              <form
+                {!isLectura && (
+                  <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline-secondary"
+                      onClick={() => setActiveTab('personas')}
+                    >
+                      Volver
+                    </Button>
+                    <Button type="submit" variant="primary">
+                      Siguiente
+                    </Button>
+                  </div>
+                )}
+
+
+              {/* <form
                 onSubmit={handleSubmitInformacion(onSubmitInformacion)}
                 className="space-y-4"
               >
@@ -814,21 +904,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                   </div>
                 </Card>
 
-                {!isLectura && (
-                  <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
-                    <Button
-                      type="button"
-                      variant="outline-secondary"
-                      onClick={() => setActiveTab('personas')}
-                    >
-                      Volver
-                    </Button>
-                    <Button type="submit" variant="primary">
-                      Siguiente
-                    </Button>
-                  </div>
-                )}
-              </form>
+              </form> */}
             </div>
           )}
 

@@ -22,7 +22,6 @@ import {
   mapAsignacionCasoRow,
 } from '../mappers/listado-casos.mappers'
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
-import { guardarCasoEnStorage } from '../../registro_caso/utils/registro-caso.utils'
 import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
 import dayjs from 'dayjs'
 
@@ -54,7 +53,6 @@ export function ListadoCasos() {
   )
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    guardarCasoEnStorage(row)
     router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 

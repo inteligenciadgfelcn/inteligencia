@@ -124,6 +124,53 @@ export const mapSituacionLegalToOption = (
   original: item,
 })
 
+/**
+ * Normaliza texto para comparar descripciones que vienen del backend contra las
+ * de los catálogos: el backend guarda las descripciones sin acentos
+ * (ej. "Bulo Bulo", "Remision Fiscalia") mientras que `parametricas.inicio_caso`
+ * sí las tiene.
+ */
+export const normalizarTexto = (valor: string | null | undefined): string =>
+  (valor ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
+
+export const buscarDistritalPorId = (
+  distritales: DistritalLgi[],
+  disId: string | number | null | undefined
+): CatalogOption<DistritalLgi> | null => {
+  if (disId === null || disId === undefined || disId === '') return null
+  const match = distritales.find((item) => String(item.id) === String(disId))
+  return match ? mapDistritalToOption(match) : null
+}
+
+export const buscarGrupoPorDescripcion = (
+  grupos: GrupoLgi[],
+  descripcion: string | null | undefined
+): CatalogOption<GrupoLgi> | null => {
+  const objetivo = normalizarTexto(descripcion)
+  if (!objetivo) return null
+  const match = grupos.find(
+    (item) => normalizarTexto(item.descripcion) === objetivo
+  )
+  return match ? mapGrupoToOption(match) : null
+}
+
+export const buscarInicioCasoPorDescripcion = (
+  iniciosCaso: InicioCasoLgi[],
+  descripcion: string | null | undefined
+): CatalogOption<InicioCasoLgi> | null => {
+  const objetivo = normalizarTexto(descripcion)
+  if (!objetivo) return null
+  const match = iniciosCaso.find(
+    (item) => normalizarTexto(item.descripcion) === objetivo
+  )
+  return match ? mapInicioCasoToOption(match) : null
+}
+
 export const formatNombreCompleto = (row: PersonaImplicadaRow) =>
   `${row.nombres} ${row.paterno} ${row.materno}`.replace(/\s+/g, ' ').trim()
 
@@ -161,7 +208,11 @@ export const buildDatosGeneralesPayload = (values: {
   nroCaso: values.nroCaso,
   nroCasoFis: values.nroCasoFis,
   remiteFiscal: values.remiteFiscal,
-  controlJurisdiccional: values.controlJurisdiccional,
+  // El backend descarta `controlJurisdiccional` y su DTO lo declara con
+  // `@IsNotEmpty()`: enviarlo vacío haría fallar el PATCH, así que se omite.
+  ...(values.controlJurisdiccional.trim()
+    ? { controlJurisdiccional: values.controlJurisdiccional.trim() }
+    : {}),
   fechaInicio: values.fechaInicio,
   inicioCaso: values.inicioCaso?.label ?? '',
   codigoServicio: values.codigoServicio,

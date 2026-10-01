@@ -23,7 +23,7 @@ const options: Array<{
   label: string
   icon: typeof IconUsers
 }> = [
-  { key: 'personas-investigadas', label: 'Personas Investigadas', icon: IconUsers },
+  { key: 'personas-investigadas', label: 'Personas Afectadas', icon: IconUsers },
   { key: 'actuaciones-realizadas', label: 'Actuaciones Realizadas', icon: IconClipboardText },
   { key: 'etapa-procesal', label: 'Etapa Procesal', icon: IconOpenBook },
   { key: 'bienes-identificados', label: 'Bienes Identificados', icon: IconCashBanknotes },
