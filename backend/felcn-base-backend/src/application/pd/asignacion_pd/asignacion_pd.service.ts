@@ -7,17 +7,17 @@ import { CreateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/cre
 import { RegistrarEtapaProcesalDto } from '@/application/lgi/asignacion_lgi/dto/etapa-asignacion_lgi.dto'
 import { UpdateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/update-asignacion_lgi.dto'
 import { AsignacionLgi } from '@/application/lgi/asignacion_lgi/entities/asignacion_lgi.entity'
-import { EtapaProcesalRepository } from '@/application/lgi/asignacion_lgi/repository/etapa-procesal.repository'
 import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
 import { PaginacionQueryDto } from '@/common/dto'
 import { AsignacionPdRepository } from './repository/asignacion_pd.repository'
+import { EtapaProcesalPdRepository } from './repository/etapa-procesal.repository'
 
 @Injectable()
 export class AsignacionPdService {
   constructor(
     private readonly asignacionPdRepository: AsignacionPdRepository,
-    private readonly repositoryEtapaprocesal: EtapaProcesalRepository,
+    private readonly repositoryEtapaprocesal: EtapaProcesalPdRepository,
     private readonly distritalLgiRepository: DistritalLgiRepository,
     private readonly grupoLgiRepository: GrupoLgiRepository
   ) {}
