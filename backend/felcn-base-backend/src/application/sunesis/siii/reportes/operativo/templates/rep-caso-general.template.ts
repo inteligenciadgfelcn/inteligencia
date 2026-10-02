@@ -236,7 +236,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
 
         const formatNumber = (num: any, decimales = 2) => {
             const val = typeof num === 'string' ? parseFloat(num) : num
-            return (val || 0).toLocaleString('en-US', {
+            return (val || 0).toLocaleString('es-BO', {
                 minimumFractionDigits: decimales,
                 maximumFractionDigits: decimales,
             })
