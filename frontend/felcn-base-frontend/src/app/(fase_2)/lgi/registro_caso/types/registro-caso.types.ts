@@ -18,9 +18,13 @@ export interface CatalogOption<T = unknown> {
 export interface AsignacionLgiDetalle {
   casosId: string
   dptoavId: string
-  uniAbrev: string
+  uniAbrev: string | null
   disId: string
-  descripcionGrupo: string
+  descripcionGrupo?: string | null
+  puesto?: string | null
+  unidad?: string | null
+  regional?: string | null
+  idUnidad?: number | null
   nombreCaso: string
   nroCasoGiaef: string | null
   nroCaso: string
@@ -28,7 +32,7 @@ export interface AsignacionLgiDetalle {
   cudifp: string | null
   perddom: boolean | null
   nroCasoPerdom: string | null
-  idEtapa: number | null
+  idEtapa: string | number | null
   remiteFiscal: string
   fechaRecepcionFiscalia: string | null
   conformeA: string
@@ -37,11 +41,12 @@ export interface AsignacionLgiDetalle {
   fechaInicio: string | null
   idEstado: number | null
   diasOtorgados: number | null
-  estado: string
-  fechaHoraIng: string
-  usuario: string
+  controlJurisdiccional?: string | null
+  estado: string | null
+  fechaHoraIng: string | null
+  usuario: string | null
   usuarioActualizacion: string | null
-  fechaActualizacion: string
+  fechaActualizacion: string | null
 }
 
 export interface DatosGeneralesFormValues {

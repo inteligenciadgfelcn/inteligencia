@@ -52,3 +52,9 @@ export interface InicioCasoLgi {
   id_inicio_caso: number
   descripcion: string
 }
+
+export interface EtapaLgi {
+  etId: number
+  descripcion: string
+  lgi: boolean
+}

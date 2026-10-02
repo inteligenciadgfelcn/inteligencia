@@ -182,6 +182,11 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       (item) => codigoDepartamento(item) === caso.dptoavId
     )
 
+
+    console.log('Aqui vienen el useEffect');
+    console.log(caso);
+
+
     reset({
       ...createDefaultDatosGeneralesValues(),
       disId: buscarDistritalPorId(distritales, caso.disId),
@@ -192,7 +197,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
       nroCasoFis: caso.nroCasoFis || caso.cudifp || '',
       remiteFiscal: caso.remiteFiscal || '',
       conformeA: caso.conformeA || '',
-      controlJurisdiccional: '',
+      controlJurisdiccional: caso.controlJurisdiccional || '',
       fechaInicio: caso.fechaInicio
         ? dayjs(caso.fechaInicio).format('YYYY-MM-DD')
         : dayjs().format('YYYY-MM-DD'),
@@ -230,10 +235,12 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     if (grupoResueltoParaDistritalRef.current === distritalActual) return
     grupoResueltoParaDistritalRef.current = distritalActual
 
-    const grupo = buscarGrupoPorDescripcion(grupos, caso.descripcionGrupo)
+    const grupoNombre = caso?.descripcionGrupo || caso?.puesto || ''
+    const grupo = buscarGrupoPorDescripcion(grupos, grupoNombre)
     if (grupo) setValue('idGrupo', grupo)
   }, [
     caso?.descripcionGrupo,
+    caso?.puesto,
     grupos,
     disIdSeleccionado?.value,
     setValue,
@@ -567,7 +574,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                       </p>
                     )}
                   </div>
-                  
+
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
                       CUD Inv. Paralela
@@ -835,20 +842,24 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 />
               )}
 
-                {!isLectura && (
-                  <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
-                    <Button
-                      type="button"
-                      variant="outline-secondary"
-                      onClick={() => setActiveTab('personas')}
-                    >
-                      Volver
-                    </Button>
-                    <Button type="submit" variant="primary">
-                      Siguiente
-                    </Button>
-                  </div>
-                )}
+              {!isLectura && (
+                <div className="flex flex-col gap-3 rounded-md border border-dashed border-[#e0e6ed] bg-white p-4 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] md:flex-row md:items-center md:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline-secondary"
+                    onClick={() => setActiveTab('personas')}
+                  >
+                    Volver
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    onClick={() => setActiveTab('investigadores')}
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              )}
 
 
               {/* <form
@@ -909,7 +920,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
           )}
 
           {activeTab === 'investigadores' && (
-            <InvestigadoresDataTable casoId={casoId!} />
+            <InvestigadoresDataTable casoId={caso?.casosId!} />
           )}
         </div>
       </div>
