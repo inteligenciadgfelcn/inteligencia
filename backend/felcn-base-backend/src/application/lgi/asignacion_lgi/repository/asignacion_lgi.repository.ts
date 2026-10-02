@@ -7,21 +7,23 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { AsignacionLgi } from '../entities/asignacion_lgi.entity'
 import { CreateAsignacionLgiDto } from '../dto/create-asignacion_lgi.dto'
 import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
+import { GrupoLgiRepository } from '../../parametro/parametricas_lgi/repository/grupo.repository'
+import { DistritalLgiRepository } from '../../parametro/parametricas_lgi/repository/distrito.repository'
 
 @Injectable()
 export class AsignacionLgiRepository {
   constructor(
     @InjectRepository(AsignacionLgi, DB_LGI)
     private readonly repository: Repository<AsignacionLgi>,
-
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
-    private readonly asignacionCasoRepository: Repository<AsignacionASIG>
+    private readonly asignacionCasoRepository: Repository<AsignacionASIG>,
+    private readonly grupoLgiRepository: GrupoLgiRepository,
+    private readonly distritalLgiRepository: DistritalLgiRepository
   ) {}
 
   async crearAsignacionDual(
     dto: CreateAsignacionLgiDto,
-    uniAbrev: string,
-    descripcionGrupo: string,
+    uniAbrev: string
   ): Promise<AsignacionLgi> {
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
@@ -30,7 +32,8 @@ export class AsignacionLgiRepository {
       nroCasoGiaef: dto.nroCaso,
       disId,
       uniAbrev,
-      descripcionGrupo,
+      idGrupo: dto.idGrupo,
+      controlJurisdiccional: dto.controlJurisdiccional,
     })
 
     const asignacionGuardada = await this.repository.save(asignacionLgi)
@@ -51,20 +54,19 @@ export class AsignacionLgiRepository {
         idDepartamento: asignacionGuardada.dptoavId,
         nroOperativo: asignacionGuardada.nroCaso,
         nroCaso: asignacionGuardada.nroCaso,
-        codigoServicio:asignacionGuardada.codigoServicio,
-        idUnidad:uniAbrev,
+        codigoServicio: asignacionGuardada.codigoServicio,
+        idUnidad: uniAbrev,
       })
 
       await this.asignacionCasoRepository.save(asignacionCaso)
     } catch (error) {
-
-       console.error('Error real al guardar AsignacionCaso:', error)
+      console.error('Error real al guardar AsignacionCaso:', error)
       await this.repository.remove(asignacionGuardada)
 
       throw new BadRequestException(
-         error instanceof Error
-      ? `No se pudo registrar AsignacionCaso: ${error.message}`
-      : 'No se pudo registrar AsignacionCaso'
+        error instanceof Error
+          ? `No se pudo registrar AsignacionCaso: ${error.message}`
+          : 'No se pudo registrar AsignacionCaso'
       )
     }
 
@@ -102,7 +104,7 @@ export class AsignacionLgiRepository {
         'a.uni_abrev = u.uni_abrev'
       )
       .where('a.estado = :estado', { estado: 'ACTIVO' })
-       .andWhere('a.usuario = :numeroPase', { numeroPase })
+      .andWhere('a.usuario = :numeroPase', { numeroPase })
 
     if (filtro?.trim()) {
       const valor = `%${filtro.trim()}%`
@@ -137,7 +139,7 @@ export class AsignacionLgiRepository {
     return [data, total]
   }
 
-   async findAllPaginado(
+  async findAllPaginado(
     pagination: PaginacionQueryDto
   ): Promise<[any[], number]> {
     const { limite, saltar, filtro } = pagination
@@ -201,12 +203,41 @@ export class AsignacionLgiRepository {
     return [data, total]
   }
 
-  async findOneById(id: number): Promise<AsignacionLgi | null> {
-    return await this.repository.findOne({
+  async findOneById(id: number): Promise<
+    | (AsignacionLgi & {
+        regional: string | null
+        unidad: string | null
+        idUnidad: number | null
+        puesto: string | null
+      })
+    | null
+  > {
+    const asignacion = await this.repository.findOne({
       where: {
         casosId: id,
         estado: 'ACTIVO',
       },
+    })
+
+    if (!asignacion) {
+      return null
+    }
+
+    const [distrital, grupo] = await Promise.all([
+      asignacion.disId != null
+        ? this.distritalLgiRepository.findOne(Number(asignacion.disId))
+        : Promise.resolve(null),
+
+      asignacion.idGrupo != null
+        ? this.grupoLgiRepository.findOne(Number(asignacion.idGrupo))
+        : Promise.resolve(null),
+    ])
+
+    return Object.assign(asignacion, {
+      regional: distrital?.descripcion ?? null,
+      unidad: distrital?.unidad ?? null,
+      idUnidad: distrital?.idUnidad ?? null,
+      puesto: grupo?.descripcion ?? null,
     })
   }
 
@@ -225,5 +256,4 @@ export class AsignacionLgiRepository {
 
     return this.repository.save(asignacion)
   }
-  
 }

@@ -6,6 +6,8 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, Brackets } from 'typeorm'
 import { CreateAsignacionPdDto } from '../dto/create-asignacion_pd.dto'
+import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
+import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
 
 @Injectable()
 export class AsignacionPdRepository {
@@ -14,13 +16,14 @@ export class AsignacionPdRepository {
     private readonly repository: Repository<AsignacionLgi>,
 
     @InjectRepository(AsignacionASIG, DB_ASIG_CASOS)
-    private readonly asignacionCasoRepository: Repository<AsignacionASIG>
+    private readonly asignacionCasoRepository: Repository<AsignacionASIG>,
+        private readonly grupoLgiRepository: GrupoLgiRepository,
+        private readonly distritalLgiRepository: DistritalLgiRepository
   ) {}
 
   async crearAsignacionDual(
     dto: CreateAsignacionPdDto,
     uniAbrev: string,
-    descripcionGrupo: string
   ): Promise<AsignacionLgi> {
     const { disId, idGrupo, controlJurisdiccional, ...datos } = dto
 
@@ -30,7 +33,8 @@ export class AsignacionPdRepository {
       perddom: true,
       disId,
       uniAbrev,
-      descripcionGrupo,
+      idGrupo: dto.idGrupo,
+      controlJurisdiccional: dto.controlJurisdiccional,
     })
 
     const asignacionGuardada = await this.repository.save(asignacionLgi)
@@ -200,12 +204,41 @@ export class AsignacionPdRepository {
     return [data, total]
   }
 
-  async findOneById(id: number): Promise<AsignacionLgi | null> {
-    return await this.repository.findOne({
+  async findOneById(id: number): Promise<
+    | (AsignacionLgi & {
+        regional: string | null
+        unidad: string | null
+        idUnidad: number | null
+        puesto: string | null
+      })
+    | null
+  > {
+    const asignacion = await this.repository.findOne({
       where: {
         casosId: id,
         estado: 'ACTIVO',
       },
+    })
+
+    if (!asignacion) {
+      return null
+    }
+
+    const [distrital, grupo] = await Promise.all([
+      asignacion.disId != null
+        ? this.distritalLgiRepository.findOne(Number(asignacion.disId))
+        : Promise.resolve(null),
+
+      asignacion.idGrupo != null
+        ? this.grupoLgiRepository.findOne(Number(asignacion.idGrupo))
+        : Promise.resolve(null),
+    ])
+
+    return Object.assign(asignacion, {
+      regional: distrital?.descripcion ?? null,
+      unidad: distrital?.unidad ?? null,
+      idUnidad: distrital?.idUnidad ?? null,
+      puesto: grupo?.descripcion ?? null,
     })
   }
 

@@ -20,8 +20,8 @@ export class AsignacionLgi {
   @Column({ name: 'dis_id', type: 'bigint' })
   disId!: number
 
-  @Column({ name: 'descripcion_grupo', type: 'varchar' })
-  descripcionGrupo!: string
+  @Column({ name: 'id_grupo', type: 'int' })
+  idGrupo!: number
 
   @Column({ name: 'nombrecaso', type: 'varchar', length: 30 })
   nombreCaso!: string
@@ -71,7 +71,10 @@ export class AsignacionLgi {
   @Column({ name: 'dias_otorgados', type: 'int', nullable: true })
   diasOtorgados!: number | null
 
-    @Column({
+  @Column({ name: 'control_juridiccional', type: 'varchar' })
+  controlJurisdiccional!: string
+
+  @Column({
     name: 'estado',
     type: 'varchar',
     length: 10,
