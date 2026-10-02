@@ -1,10 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
 import IconTrash from '@/components/Icon/IconTrash'
-import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { InputDecimal } from '@/components/ui/InputDecimal'
@@ -440,7 +438,6 @@ export function SeccionBienesForm({
   titulo,
   idoperativo = 0,
 }: SeccionFormProps) {
-  const router = useRouter()
   const { confirm, ConfirmDialog } = useConfirmDialog()
   const { Alerta } = useAlerts()
   // ── Catálogos ─────────────────────────────────────────────────────────────
@@ -641,20 +638,8 @@ export function SeccionBienesForm({
       <LoadingDialog show={cargando} />
       <ConfirmDialog />
       <div className="rounded-md border border-[#e0e6ed] p-4 dark:border-[#1b2e4b]">
-        <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#e0e6ed] pb-2 dark:border-[#1b2e4b]">
+        <div className="mb-4 border-b border-[#e0e6ed] pb-2 dark:border-[#1b2e4b]">
           <h4 className="text-sm font-semibold">{titulo}</h4>
-          {idoperativo > 0 && (
-            <Button
-              type="button"
-              variant="outline-primary"
-              size="sm"
-              onClick={() => router.push(`/operativos/patrimonio?caso=${idoperativo}`)}
-              className="flex items-center gap-1.5"
-            >
-              <IconCashBanknotes className="h-4.5 w-4.5" />
-              Calcular Patrimonio del Caso
-            </Button>
-          )}
         </div>
 
         {/* ── Formulario de registro ── */}
