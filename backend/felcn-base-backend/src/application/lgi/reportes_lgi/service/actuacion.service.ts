@@ -1,11 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { formatearFechaVisualizacionBolivia } from '@/common/utils/date.util'
 import { ActuacionReporteRepository } from '../repository/actuacion.repository'
+import { DataSource } from 'typeorm'
+import { DB_LGI } from '@/application/sunesis/shared/constants/database-connections'
+import { InjectDataSource } from '@nestjs/typeorm'
+import { ConsultaSiiiRepository } from '../../informacion_siii/repository/consulta.repository'
 
 @Injectable()
 export class ActuacionLgiService {
   constructor(
-    private readonly actuacionRepository: ActuacionReporteRepository
+    private readonly actuacionRepository: ActuacionReporteRepository,
+    @InjectDataSource(DB_LGI)
+    private readonly dataSourceLgi: DataSource,
+    private readonly consultaSiiiRepository: ConsultaSiiiRepository,
   ) {}
 
   async GenerarPDFActuacion(opId: number) {
@@ -25,6 +32,69 @@ export class ActuacionLgiService {
     }
 
     const { datosPrincipales, bienes, personasAfectadas } = resultado
+
+    // Obtener números de casos precedentes vinculados al caso LGI.
+   const numerosCasosPrecedentes =
+  await this.obtenerNumerosCasosPrecedentes(opId)
+
+    // Consultar sus operativos, personas y bienes en SIII.
+    const operativosPrecedentes =
+      await this.consultaSiiiRepository.buscarPorNumerosCaso(
+        numerosCasosPrecedentes
+      )
+
+    const delitosPrecedentes = operativosPrecedentes.map((operativo) => ({
+      numeroCaso: operativo.numeroCaso ?? 'Sin especificar',
+
+      numeroOperativo: operativo.numeroOperativo ?? 'Sin especificar',
+
+      numeroInforme: operativo.numeroInforme ?? 'Sin especificar',
+
+      idOperativo: operativo.idOperativo,
+
+      // SIII devuelve esta fecha como DD/MM/YYYY HH:mm.
+      fecha: operativo.fechaOperativo ?? 'Sin especificar',
+
+      unidad: operativo.ubicacionInstitucional ?? 'Sin especificar',
+
+      lugar: operativo.ubicacionGeografica ?? 'Sin especificar',
+
+      personasImplicadas:
+        operativo.personasImplicadas?.trim() || 'Sin personas registradas',
+
+      bienesSecuestrados: (operativo.detalleBienes ?? [])
+        .filter((bien) => bien.esSecuestrado)
+        .map((bien) => ({
+          id: bien.idItemBienSecuestrado,
+
+          descripcion: bien.tipoBien ?? 'Bien sin descripción',
+
+          cantidad: bien.cantidad ?? 1,
+
+          valor: this.formatearMoneda(
+            Number(bien.costoCuantificado ?? bien.costoAproximado ?? 0)
+          ),
+
+          costoAproximado: Number(bien.costoAproximado ?? 0),
+
+          costoCuantificado: Number(bien.costoCuantificado ?? 0),
+
+          caracteristicas: bien.caracteristicas ?? [],
+
+          esSecuestrado: bien.esSecuestrado,
+          esIncautado: bien.esIncautado,
+          esConfiscado: bien.esConfiscado,
+        })),
+
+      // Estos totales corresponden a todos los bienes del operativo SIII.
+      costoTotalAproximado: this.formatearMoneda(
+        Number(operativo.costoTotalAproximadoBienes ?? 0)
+      ),
+
+      costoTotalCuantificado: this.formatearMoneda(
+        Number(operativo.costoTotalCuantificadoBienes ?? 0)
+      ),
+    }))
 
     const montoTotal = bienes.reduce(
       (total, bien) => total + Number(bien.costoCuant ?? bien.costoAprox ?? 0),
@@ -74,9 +144,7 @@ export class ActuacionLgiService {
 
         productoInstrumento: 'Sin especificar',
 
-        etapa: datosPrincipales.idEtapa
-          ? String(datosPrincipales.etapaDescripcion)
-          : 'Sin especificar',
+        etapa: datosPrincipales.etapaDescripcion ?? 'Sin especificar',
 
         formaInicio: 'Sin especificar',
 
@@ -116,29 +184,8 @@ export class ActuacionLgiService {
         relacion: persona.relacion?.trim() || 'Sin especificar',
       })),
 
-      delitoPrecedente: {
-        numeroCaso: datosPrincipales.numeroCaso ?? 'Sin especificar',
-
-        fecha: this.formatearFechaReporte(datosPrincipales.fechaInicio),
-
-        unidad: datosPrincipales.unidadAbreviada ?? 'Sin especificar',
-
-        lugar: datosPrincipales.lugarInvestigacion ?? 'Sin especificar',
-
-        aprehendidos: [],
-
-        inmuebleSecuestrado: 'Sin especificar',
-
-        dineroSecuestrado: [],
-
-        vehiculosSecuestrados: [],
-
-        mediosComunicacion: [],
-
-        armamentoSecuestrado: 'Sin especificar',
-
-        sustanciasSecuestradas: 'Sin especificar',
-      },
+      // Un elemento por cada operativo SIII de los casos precedentes.
+      delitoPrecedente: delitosPrecedentes,
 
       bienesAfectados: {
         inmuebles: [],
@@ -562,4 +609,26 @@ export class ActuacionLgiService {
       ],
     }
   }
+
+  async obtenerNumerosCasosPrecedentes(
+  opId: number
+): Promise<string[]> {
+  const filas: { numeroCaso: string }[] =
+    await this.dataSourceLgi.query(
+      `
+        SELECT DISTINCT
+          UPPER(TRIM(p.nrocasopre)) AS "numeroCaso"
+        FROM public.operativo o
+        INNER JOIN public.presedencia p
+          ON p.casos_id = o.casos_id
+        WHERE o.op_id = $1
+          AND o.estado = 'ACTIVO'
+          AND p.estado = 'ACTIVO'
+          AND NULLIF(TRIM(p.nrocasopre), '') IS NOT NULL
+      `,
+      [opId]
+    )
+
+  return filas.map((fila) => fila.numeroCaso)
+}
 }

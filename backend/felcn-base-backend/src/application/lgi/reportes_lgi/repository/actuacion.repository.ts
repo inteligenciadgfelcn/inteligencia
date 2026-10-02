@@ -1,18 +1,25 @@
 import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, Repository } from 'typeorm'
+
 import { DB_LGI } from '@/core/config/database/database.module'
+
 import { OperativoLgi } from '../../actuaciones/entities/operativoLgi.entity'
 import { BieneSecuestradoLgi } from '../../bienes_secuestrados/entities/bienes_secuestrado.entity'
 import { AsignacionLgi } from '../../asignacion_lgi/entities/asignacion_lgi.entity'
-import { EtapaLgi } from '../../parametro/etapa/entities/etapa.entity'
 import { PersonasImplicada } from '../../personas_implicadas/entities/personas_implicada.entity'
+
+import { DistritalLgiRepository } from '../../parametro/parametricas_lgi/repository/distrito.repository'
+import { GrupoLgiRepository } from '../../parametro/parametricas_lgi/repository/grupo.repository'
 
 @Injectable()
 export class ActuacionReporteRepository {
   constructor(
     @InjectDataSource(DB_LGI)
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+
+    private readonly distritalLgiRepository: DistritalLgiRepository,
+    private readonly grupoLgiRepository: GrupoLgiRepository,
   ) {}
 
   private get operativoRepository(): Repository<OperativoLgi> {
@@ -24,23 +31,27 @@ export class ActuacionReporteRepository {
   }
 
   private get personasRepository(): Repository<PersonasImplicada> {
-  return this.dataSource.getRepository(PersonasImplicada)
-}
+    return this.dataSource.getRepository(PersonasImplicada)
+  }
 
   async obtenerDatosPrincipales(opId: number): Promise<any | null> {
-    return this.operativoRepository
+    const datos = await this.operativoRepository
       .createQueryBuilder('o')
       .innerJoin(
         AsignacionLgi,
         'a',
         `
-        a.casos_id = o.casos_id
-        AND a.estado = :estado
-      `
+          a.casos_id = o.casos_id
+          AND a.estado = :estado
+        `
       )
-      .leftJoin(EtapaLgi, 'etapa', 'etapa.etId = o.idEtapa')
+      .leftJoin(
+  '(SELECT * FROM parametricas.etapainvest)',
+  'etapa',
+  'etapa.eta_inv = a.eta_inv'
+)
       .select([
-        // Reporte
+        // Reporte: tabla operativo.
         'o.op_id AS "opId"',
         'o.casos_id AS "casosId"',
         'o.op_nrooper AS "numeroReporte"',
@@ -49,34 +60,25 @@ export class ActuacionReporteRepository {
         'o.id_tipo_informe AS "idTipoInforme"',
         'o.otro_informe AS "otroInforme"',
 
-        /*
-         * Número correlativo de la actuación dentro
-         * del mismo caso.
-         *
-         * No se reinicia cuando cambia el año.
-         */
+        // Correlativo por caso, conservando tu cálculo actual.
         `(
-        SELECT COUNT(*)
-        FROM operativo contador
-        WHERE contador.casos_id = o.casos_id
-          AND (
-            contador.fechahoraing < o.fechahoraing
-            OR (
-              contador.fechahoraing = o.fechahoraing
-              AND contador.op_id <= o.op_id
+          SELECT COUNT(*)
+          FROM operativo contador
+          WHERE contador.casos_id = o.casos_id
+            AND (
+              contador.fechahoraing < o.fechahoraing
+              OR (
+                contador.fechahoraing = o.fechahoraing
+                AND contador.op_id <= o.op_id
+              )
             )
-          )
-      )::int AS "numeroActuacion"`,
+        )::int AS "numeroActuacion"`,
 
-        /*
-         * Año en el que fue creada la actuación.
-         */
         `EXTRACT(
-        YEAR FROM o.fechahoraing
-      )::int AS "gestionActuacion"`,
+          YEAR FROM o.fechahoraing
+        )::int AS "gestionActuacion"`,
 
-        // Acción
-        'a.tipocaso AS "tipoAccion"',
+        // Datos generales: tabla asignacion.
         'a.nombrecaso AS "nombreCaso"',
         'a.fechainicio AS "fechaInicio"',
         'a.nrocasofis AS "numeroCasoFiscalia"',
@@ -88,35 +90,73 @@ export class ActuacionReporteRepository {
         'a.ianus AS "ianus"',
         'a.conformea AS "investigadorPrincipal"',
         'a.remitefiscal AS "fiscalAsignado"',
-        'a.remitefiscal AS "fiscalAsignado"',
-        'a.descripcion_grupo AS "divisionRegional"',
         'a.uni_abrev AS "unidadAbreviada"',
         'a.dis_id AS "disId"',
+        'a.id_grupo AS "idGrupo"',
+        'a.dptoav_id AS "dptoId"',
+        'a.control_juridiccional AS "controlJurisdiccional"',
 
-        // Actuación o novedad
+        // Actuación: tabla operativo.
         'o.op_lugar AS "lugarInvestigacion"',
         'o.op_descripcion AS "sintesis"',
-        'o.id_etapa AS "idEtapa"',
-        'etapa.descripcion AS "etapaDescripcion"',
-        'o.id_estado AS "idEstado"',
-        'o.dpto_id AS "dptoId"',
-        'o.prov_id AS "provId"',
-        'o.loc_id AS "locId"',
-        'o.uni_id AS "uniId"',
-        'o.dis_id AS "divisionId"',
-        'o.dias_otorgados AS "diasOtorgados"',
-        'o.fecha_recepcion_fiscalia AS "fechaRecepcionFiscalia"',
 
-        // Conclusiones
-        'o.tipologias_identificadas AS "tipologiasIdentificadas"',
-        'o.verbos_rectores AS "verbosRectores"',
-        'o.etapas_ciclo_lgi AS "etapasCicloLgi"',
+        // Última etapa: tabla asignacion.
+        'a.eta_inv AS "idEtapa"',
+        'etapa.descripcion AS "etapaDescripcion"',
+        'a.id_estado AS "idEstado"',
+        'a.dias_otorgados AS "diasOtorgados"',
+
+        /*
+         * Lectura opcional de campos no confirmados en las capturas.
+         * Si la columna no existe en asignacion, devuelve null.
+         */
+        `(to_jsonb(a) ->> 'tipocaso') AS "tipoAccion"`,
+        `(to_jsonb(a) ->> 'inicio_caso') AS "formaInicio"`,
+        `(to_jsonb(a) ->> 'fecha_recepcion_fiscalia')
+          AS "fechaRecepcionFiscalia"`,
+
+        `(to_jsonb(a) ->> 'tipologias_identificadas')
+          AS "tipologiasIdentificadas"`,
+
+        `(to_jsonb(a) ->> 'verbos_rectores')
+          AS "verbosRectores"`,
+
+        `(to_jsonb(a) ->> 'etapas_ciclo_lgi')
+          AS "etapasCicloLgi"`,
       ])
       .where('o.op_id = :opId', { opId })
-      .andWhere('o.estado = :estado', {
-        estado: 'ACTIVO',
-      })
+      .andWhere('o.estado = :estado')
+      .setParameter('estado', 'ACTIVO')
       .getRawOne()
+
+    if (!datos) {
+      return null
+    }
+
+    // Descripciones institucionales mediante la conexión DB_AUTH.
+    const [distrital, grupo] = await Promise.all([
+      datos.disId != null
+        ? this.distritalLgiRepository.findOne(Number(datos.disId))
+        : Promise.resolve(null),
+
+      datos.idGrupo != null
+        ? this.grupoLgiRepository.findOne(Number(datos.idGrupo))
+        : Promise.resolve(null),
+    ])
+
+    return {
+      ...datos,
+
+      regional: distrital?.descripcion ?? null,
+      unidad: distrital?.unidad ?? null,
+      idUnidad: distrital?.idUnidad ?? null,
+
+      descripcionGrupo: grupo?.descripcion ?? null,
+      puesto: grupo?.descripcion ?? null,
+
+      // División regional tomada de la descripción de la distrital.
+      divisionRegional: distrital?.descripcion ?? null,
+    }
   }
 
   async obtenerBienes(opId: number): Promise<BieneSecuestradoLgi[]> {
@@ -139,46 +179,61 @@ export class ActuacionReporteRepository {
       .getMany()
   }
 
-  async obtenerReporteCompleto(opId: number) {
-  const datosPrincipales =
-    await this.obtenerDatosPrincipales(opId)
-
-  if (!datosPrincipales) {
-    return null
+  async obtenerPersonasAfectadas(
+    casosId: number | string
+  ): Promise<PersonasImplicada[]> {
+    return this.personasRepository
+      .createQueryBuilder('persona')
+      .where('persona.caso_id = :casosId', { casosId })
+      .andWhere('persona.estado = :estado', {
+        estado: true,
+      })
+      .orderBy('persona.de_id', 'ASC')
+      .getMany()
   }
 
-  const casosId = Number(
-    datosPrincipales.casosId
-  )
+  async obtenerNumerosCasosPrecedentes(
+    opId: number
+  ): Promise<string[]> {
+    const filas: { numeroCaso: string }[] =
+      await this.dataSource.query(
+        `
+          SELECT DISTINCT
+            UPPER(TRIM(p.nrocasopre)) AS "numeroCaso"
+          FROM public.operativo o
+          INNER JOIN public.presedencia p
+            ON p.casos_id = o.casos_id
+          WHERE o.op_id = $1
+            AND o.estado = 'ACTIVO'
+            AND p.estado = 'ACTIVO'
+            AND NULLIF(TRIM(p.nrocasopre), '') IS NOT NULL
+        `,
+        [opId]
+      )
 
-  const [bienes, personasAfectadas] =
-    await Promise.all([
+    return filas.map((fila) => fila.numeroCaso)
+  }
+
+  async obtenerReporteCompleto(opId: number) {
+    const datosPrincipales =
+      await this.obtenerDatosPrincipales(opId)
+
+    if (!datosPrincipales) {
+      return null
+    }
+
+    // Conservar bigint como string evita pérdida de precisión.
+    const casosId = String(datosPrincipales.casosId)
+
+    const [bienes, personasAfectadas] = await Promise.all([
       this.obtenerBienes(opId),
-
-      this.obtenerPersonasAfectadas(
-        casosId
-      ),
+      this.obtenerPersonasAfectadas(casosId),
     ])
 
-  return {
-    datosPrincipales,
-    bienes,
-    personasAfectadas,
+    return {
+      datosPrincipales,
+      bienes,
+      personasAfectadas,
+    }
   }
-}
-
-  async obtenerPersonasAfectadas(
-  casosId: number | string
-): Promise<PersonasImplicada[]> {
-  return this.personasRepository
-    .createQueryBuilder('persona')
-    .where('persona.caso_id = :casosId', {
-      casosId,
-    })
-    .andWhere('persona.estado = :estado', {
-      estado: true,
-    })
-    .orderBy('persona.de_id', 'ASC')
-    .getMany()
-}
 }
