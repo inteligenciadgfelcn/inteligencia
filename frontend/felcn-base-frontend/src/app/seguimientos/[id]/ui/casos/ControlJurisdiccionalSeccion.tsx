@@ -49,12 +49,12 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha de Inicio <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fecha de Inicio de la Investigación <span className="text-danger">*</span></label>
               <Input type="date" {...register('fecha', { required: 'Campo requerido' })} error={!!errors.fecha} />
               {errors.fecha && <div className="mt-1 text-xs text-danger">{errors.fecha.message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Juzgado <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Juzgado de instrucción en lo Penal y/o Cautelar <span className="text-danger">*</span></label>
               <Input uppercase {...register('juzgadoInstruccion', { required: 'Campo requerido' })} error={!!errors.juzgadoInstruccion} />
               {errors.juzgadoInstruccion && <div className="mt-1 text-xs text-danger">{errors.juzgadoInstruccion.message}</div>}
             </div>
@@ -64,7 +64,7 @@ export function ControlJurisdiccionalSeccion({ idCaso, datos, onGuardar }: Contr
               {errors.juzgadoPartido && <div className="mt-1 text-xs text-danger">{errors.juzgadoPartido.message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Juzgado de Ejecución Penal</label>
+              <label className="block text-sm font-medium mb-1">Juzgado de Ejecución en lo Penal Actual</label>
               <Input uppercase {...register('juzgadoEjecucion')} error={!!errors.juzgadoEjecucion} />
               {errors.juzgadoEjecucion && <div className="mt-1 text-xs text-danger">{errors.juzgadoEjecucion.message}</div>}
             </div>

@@ -62,7 +62,7 @@ export function PerdidaDominioSeccion({ idItemBien }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1">Fiscalía <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fiscalía que emitió la Pérdida de Dominio <span className="text-danger">*</span></label>
               <Input uppercase {...register('fiscalia', { required: 'Campo requerido' })} error={!!errors.fiscalia} />
               {errors.fiscalia && <div className="mt-1 text-xs text-danger">{errors.fiscalia.message}</div>}
             </div>

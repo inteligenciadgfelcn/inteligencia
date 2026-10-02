@@ -62,17 +62,17 @@ export function BienConfiscadoSeccion({ idItemBien }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1">Nro. de Sentencia <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Número de Sentencia Judicial <span className="text-danger">*</span></label>
               <Input uppercase {...register('numeroSentenciaJudicial', { required: 'Campo requerido' })} error={!!errors.numeroSentenciaJudicial} />
               {errors.numeroSentenciaJudicial && <div className="mt-1 text-xs text-danger">{errors.numeroSentenciaJudicial.message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha de Sentencia <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fecha de la Sentencia Judicial <span className="text-danger">*</span></label>
               <Input type="date" {...register('fechaSentenciaJudicial', { required: 'Campo requerido' })} error={!!errors.fechaSentenciaJudicial} />
               {errors.fechaSentenciaJudicial && <div className="mt-1 text-xs text-danger">{errors.fechaSentenciaJudicial.message}</div>}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Autoridad que Emite la Sentencia <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Nombres y Apellidos y Cargo de la Autoridad que emite la sentencia <span className="text-danger">*</span></label>
               <Input uppercase {...register('autoridad', { required: 'Campo requerido' })} error={!!errors.autoridad} />
               {errors.autoridad && <div className="mt-1 text-xs text-danger">{errors.autoridad.message}</div>}
             </div>

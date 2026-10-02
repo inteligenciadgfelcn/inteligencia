@@ -65,7 +65,7 @@ export function InvestigadoresSeccion({ idCaso, datos, onGuardar }: Investigador
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha Asignación <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fecha de Asignación al Caso <span className="text-danger">*</span></label>
               <Input type="date" {...register('fecha', { required: 'Campo requerido' })} error={!!errors.fecha} />
               {errors.fecha && <div className="mt-1 text-xs text-danger">{(errors.fecha as any).message}</div>}
             </div>
@@ -79,12 +79,12 @@ export function InvestigadoresSeccion({ idCaso, datos, onGuardar }: Investigador
               {errors.idGrado && <div className="mt-1 text-xs text-danger">{(errors.idGrado as any).message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Nombre y Apellidos <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Investigador <span className="text-danger">*</span></label>
               <Input uppercase {...register('nombreApp', { required: 'Campo requerido' })} error={!!errors.nombreApp} />
               {errors.nombreApp && <div className="mt-1 text-xs text-danger">{(errors.nombreApp as any).message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Teléfono Celular</label>
+              <label className="block text-sm font-medium mb-1">Número Celular</label>
               <Input uppercase {...register('telefonoCelular')} error={!!errors.telefonoCelular} />
               {errors.telefonoCelular && <div className="mt-1 text-xs text-danger">{(errors.telefonoCelular as any).message}</div>}
             </div>

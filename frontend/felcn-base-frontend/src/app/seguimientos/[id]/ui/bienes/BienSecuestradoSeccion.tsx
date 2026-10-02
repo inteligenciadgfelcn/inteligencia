@@ -62,17 +62,17 @@ export function BienSecuestradoSeccion({ idItemBien }: Props) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-sm font-medium mb-1">Fiscal <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Nombre y Apellidos del Fiscal <span className="text-danger">*</span></label>
               <Input uppercase {...register('fiscal', { required: 'Campo requerido' })} error={!!errors.fiscal} />
               {errors.fiscal && <div className="mt-1 text-xs text-danger">{errors.fiscal.message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha del Acta <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fecha del Acta del Secuestro <span className="text-danger">*</span></label>
               <Input type="date" {...register('fechaActoSecuestro', { required: 'Campo requerido' })} error={!!errors.fechaActoSecuestro} />
               {errors.fechaActoSecuestro && <div className="mt-1 text-xs text-danger">{errors.fechaActoSecuestro.message}</div>}
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Investigador que Secuestró el Bien <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Nombres y Apellidos del Investigador del Secuestro del Bien <span className="text-danger">*</span></label>
               <Input uppercase {...register('investigador', { required: 'Campo requerido' })} error={!!errors.investigador} />
               {errors.investigador && <div className="mt-1 text-xs text-danger">{errors.investigador.message}</div>}
             </div>

@@ -80,21 +80,21 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
               <label className="block text-sm font-medium mb-1">
-                Fecha del Requerimiento <span className="text-danger">*</span>
+                Fecha del Requerimiento Fiscal de Entrega y Devolución del Bien <span className="text-danger">*</span>
               </label>
               <Input type="date" {...register('fechaRequerimiento', { required: 'Campo requerido' })} error={!!errors.fechaRequerimiento} />
               {errors.fechaRequerimiento && <div className="mt-1 text-xs text-danger">{errors.fechaRequerimiento.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Fiscal del Requerimiento <span className="text-danger">*</span>
+                Nombres y Apellidos del Fiscal que emite el requerimiento <span className="text-danger">*</span>
               </label>
               <Input uppercase {...register('fiscalRequerimiento', { required: 'Campo requerido' })} error={!!errors.fiscalRequerimiento} />
               {errors.fiscalRequerimiento && <div className="mt-1 text-xs text-danger">{errors.fiscalRequerimiento.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Condición Legal <span className="text-danger">*</span>
+                Condición Legal de la Entrega del Bien <span className="text-danger">*</span>
               </label>
               <Select
                 placeholder="Seleccione..."
@@ -105,27 +105,27 @@ export function SituacionBienSeccion({ idItemBien }: Props) {
               {errors.idCalidadBien && <div className="mt-1 text-xs text-danger">{errors.idCalidadBien.message}</div>}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Fecha de Entrega <span className="text-danger">*</span></label>
+              <label className="block text-sm font-medium mb-1">Fecha de entrega del bien <span className="text-danger">*</span></label>
               <Input type="date" {...register('fechaEntrega', { required: 'Campo requerido' })} error={!!errors.fechaEntrega} />
               {errors.fechaEntrega && <div className="mt-1 text-xs text-danger">{errors.fechaEntrega.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Responsable de la Entrega <span className="text-danger">*</span>
+                Nombres y Apellidos y Cargo del responsable de la entrega del bien <span className="text-danger">*</span>
               </label>
               <Input uppercase {...register('responsableEntrega', { required: 'Campo requerido' })} error={!!errors.responsableEntrega} />
               {errors.responsableEntrega && <div className="mt-1 text-xs text-danger">{errors.responsableEntrega.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Responsable de la Recepción <span className="text-danger">*</span>
+                Nombres y Apellidos y Cargo del responsable de recepción del bien <span className="text-danger">*</span>
               </label>
               <Input uppercase {...register('responsableRecepcion', { required: 'Campo requerido' })} error={!!errors.responsableRecepcion} />
               {errors.responsableRecepcion && <div className="mt-1 text-xs text-danger">{errors.responsableRecepcion.message}</div>}
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                Institución Responsable <span className="text-danger">*</span>
+                Institución responsable del bien <span className="text-danger">*</span>
               </label>
               <Input uppercase {...register('institucion', { required: 'Campo requerido' })} error={!!errors.institucion} />
               {errors.institucion && <div className="mt-1 text-xs text-danger">{errors.institucion.message}</div>}
