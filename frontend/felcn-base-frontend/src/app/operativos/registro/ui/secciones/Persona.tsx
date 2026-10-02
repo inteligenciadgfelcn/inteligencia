@@ -279,6 +279,19 @@ export function Persona({ titulo, idoperativo }: Props) {
 
   const [submitted, setSubmitted] = useState(false)
 
+  // Tipo de Documento "NINGUNO": el sujeto no tiene documento, así que el
+  // Nro. Documento deja de ser obligatorio (se compara por descripción, no
+  // por id, porque el catálogo puede no tener siempre el mismo id).
+  const esSinDocumento =
+    opcionesDocumento
+      .find((o) => o.id === idTipoDocumento)
+      ?.label.trim()
+      .toUpperCase() === 'NINGUNO'
+
+  useEffect(() => {
+    if (esSinDocumento) setNumeroDocumento('')
+  }, [esSinDocumento])
+
   // ── Cache de fotos ────────────────────────────────────────────────────────
   const [fotosCache, setFotosCache] = useState<Record<string, FotosCache>>({})
   const fotosCacheRef = useRef<Record<string, FotosCache>>({})
@@ -411,7 +424,7 @@ export function Persona({ titulo, idoperativo }: Props) {
       !idEstadoSujeto ||
       !genero ||
       !idTipoDocumento ||
-      !numeroDocumento ||
+      (!esSinDocumento && !numeroDocumento) ||
       !idPais ||
       !fechaNacimiento ||
       !direccion ||
@@ -616,16 +629,17 @@ export function Persona({ titulo, idoperativo }: Props) {
               htmlFor="numeroDocumento"
               className="mb-1 block text-sm font-medium"
             >
-              Nro. Documento <span className="text-danger">*</span>
+              Nro. Documento {!esSinDocumento && <span className="text-danger">*</span>}
             </label>
             <Input
               id="numeroDocumento"
               type="text"
-              className={`w-full ${!numeroDocumento && submitted ? 'border-danger' : ''}`}
+              disabled={esSinDocumento}
+              className={`w-full ${!esSinDocumento && !numeroDocumento && submitted ? 'border-danger' : ''}`}
               value={numeroDocumento}
               onChange={(e) => setNumeroDocumento(e.target.value.toUpperCase())}
             />
-            {!numeroDocumento && submitted && (
+            {!esSinDocumento && !numeroDocumento && submitted && (
               <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
             )}
           </div>

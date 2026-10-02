@@ -457,6 +457,14 @@ export class OperativoService extends BaseService {
     fotoDocumento?: Buffer,
     fotoPerfilIzquierdo?: Buffer
   ): Promise<PersonaAuxiliar> {
+    const tipoDocumento = await this.operativoRepository.buscarTipoDocumento(data.idTipoDocumento)
+    const esSinDocumento = tipoDocumento?.descripcion.trim().toUpperCase() === 'NINGUNO'
+    if (!esSinDocumento && !data.nroDocumento?.trim()) {
+      throw new BadRequestException(
+        'Nro. Documento es obligatorio, salvo que el Tipo de Documento sea NINGUNO'
+      )
+    }
+
     const persona = new PersonaAuxiliar({
       idOperativo,
       idPais: data.idPais,
@@ -465,7 +473,7 @@ export class OperativoService extends BaseService {
       apellidoPaterno: data.apellidoPaterno ?? '',
       apellidoMaterno: data.apellidoMaterno ?? '',
       apellidoEsposo: data.apellidoEsposo ?? '',
-      nroDocumento: data.nroDocumento,
+      nroDocumento: data.nroDocumento ?? '',
       fechaNacimiento: data.fechaNacimiento ? parsearFechaPura(data.fechaNacimiento) : undefined,
       genero: data.genero,
       direccion: data.direccion,

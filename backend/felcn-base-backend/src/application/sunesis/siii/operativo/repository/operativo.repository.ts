@@ -16,6 +16,7 @@ import { Fabrica } from '../entity/fabrica.entity'
 import { ItemBienSecuestrado } from '../entity/item-bien-secuestrado.entity'
 import { ItemBienCaracteristica } from '../entity/item-bien-caracteristica.entity'
 import { PersonaAuxiliar } from '../entity/persona-auxiliar.entity'
+import { TipoDocumento } from '../../parametrica/entity/tipo/tipo-documento.entity'
 import { ArrestadoAuxiliar } from '../entity/arrestado-auxiliar.entity'
 import { Galeria } from '../entity/galeria.entity'
 import { Logotipo } from '../entity/logotipo.entity'
@@ -337,6 +338,10 @@ export class OperativoRepository {
     return this.conAuditoria((manager) =>
       manager.getRepository(PersonaAuxiliar).save(persona)
     )
+  }
+
+  async buscarTipoDocumento(id: number): Promise<TipoDocumento | null> {
+    return this.dataSource.getRepository(TipoDocumento).findOne({ where: { id } })
   }
 
   async listarPersonasAuxiliaresPorOperativo(
