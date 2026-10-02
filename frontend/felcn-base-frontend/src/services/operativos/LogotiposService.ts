@@ -17,9 +17,12 @@ const buildFormData = (payload: LogotipoPayload) => {
   formData.append('idTipoDroga', String(payload.idTipoDroga))
   formData.append('idPaisOrigen', String(payload.idPaisOrigen))
   formData.append('idPaisDestino', String(payload.idPaisDestino))
-  formData.append('organizacion', payload.organizacion)
   if (payload.fotografia) {
     formData.append('fotografia', payload.fotografia)
+  }
+
+  if (payload.organizacion) {
+    formData.append('organizacion', payload.organizacion)
   }
 
   if (payload.blanco) {

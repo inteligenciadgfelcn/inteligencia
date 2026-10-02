@@ -3,6 +3,7 @@ import { Type } from 'class-transformer'
 import {
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator'
@@ -37,19 +38,19 @@ export class CreateLogotipoDto {
   @IsNumber()
   idPaisDestino: number
 
-  @ApiProperty({ description: 'Organización', example: 'Cartel X' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Organización', example: 'Cartel X', required: false })
+  @IsOptional()
   @IsString()
   @MaxLength(50)
-  organizacion: string
+  organizacion?: string
 
-  @ApiProperty({ description: 'Blanco/objetivo' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Blanco/objetivo', required: false })
+  @IsOptional()
   @IsString()
-  blanco: string
+  blanco?: string
 
-  @ApiProperty({ description: 'Observaciones' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Observaciones', required: false })
+  @IsOptional()
   @IsString()
-  observacion: string
+  observacion?: string
 }

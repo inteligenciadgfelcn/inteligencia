@@ -246,10 +246,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
       !idTipoDroga ||
       !idPaisOrigen ||
       !idPaisDestino ||
-      !organizacion ||
-      !blanco ||
-      !fotografia ||
-      !observacion
+      !fotografia
     ) {
       return
     }
@@ -262,7 +259,7 @@ export function Logotipos({ titulo, idoperativo }: Props) {
         idTipoDroga: Number(idTipoDroga),
         idPaisOrigen: Number(idPaisOrigen),
         idPaisDestino: Number(idPaisDestino),
-        organizacion: organizacion.trim(),
+        organizacion: organizacion.trim() || undefined,
         blanco: blanco.trim() || undefined,
         observacion: observacion.trim() || undefined,
         fotografia: fotografia ?? undefined,
@@ -392,47 +389,38 @@ export function Logotipos({ titulo, idoperativo }: Props) {
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Organización Criminal <span className="text-danger">*</span>
+              Organización Criminal
             </label>
             <Input
               type="text"
               uppercase
-              className={`w-full ${!organizacion && submitted ? 'border-danger' : ''}`}
+              className="w-full"
               value={organizacion}
               onChange={(e) => setOrganizacion(e.target.value)}
             />
-            {!organizacion && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium">
-              Posibles Blancos <span className="text-danger">*</span>
+              Posibles Blancos
             </label>
             <Input
               value={blanco}
               onChange={(e) => setBlanco(e.target.value)}
               uppercase
-              className={`w-full ${!blanco && submitted ? 'border-danger' : ''}`}
+              className="w-full"
             />
-            {!blanco && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
           </div>
           <div className="col-span-1 md:col-span-2">
             <label className="mb-1 block text-sm font-medium">
-              Observación <span className="text-danger">*</span>
+              Observación
             </label>
             <Textarea
               value={observacion}
               onChange={(e) => setObservacion(e.target.value)}
               rows={2}
               uppercase
-              className={`w-full ${!observacion && submitted ? 'border-danger' : ''}`}
+              className="w-full"
             />
-            {!observacion && submitted && (
-              <span className="text-danger text-xs mt-1">Este campo es obligatorio</span>
-            )}
           </div>
           <div className="col-span-1 md:col-span-2">
             <DropzoneFoto

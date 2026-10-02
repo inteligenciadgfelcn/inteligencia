@@ -89,7 +89,7 @@ export interface LogotipoPayload {
   idTipoDroga: number
   idPaisOrigen: number
   idPaisDestino: number
-  organizacion: string
+  organizacion?: string
   blanco?: string
   observacion?: string
   fotografia?: File
@@ -106,7 +106,7 @@ export interface LogotipoResponse {
   descripcionPaisOrigen?: string
   idPaisDestino?: number
   descripcionPaisDestino?: string
-  organizacion: string
+  organizacion?: string
   blanco?: string
   observacion?: string
   urlFotografia: string | null

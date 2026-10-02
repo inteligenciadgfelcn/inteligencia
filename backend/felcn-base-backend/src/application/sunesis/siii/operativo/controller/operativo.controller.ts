@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -767,7 +768,10 @@ export class OperativoController extends BaseController {
     @UploadedFile() file: Express.Multer.File
   ) {
     const { numeroPase = '' } = req.user as PassportUser
-    const fotografia = await optimizarImagen(file?.buffer || Buffer.alloc(0))
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('La fotografía del logotipo es obligatoria')
+    }
+    const fotografia = await optimizarImagen(file.buffer)
     const logotipo = await this.operativoService.agregarLogotipo(idOperativo, data, fotografia, numeroPase)
     return this.successCreate(logotipo)
   }

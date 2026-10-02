@@ -43,14 +43,14 @@ export class Logotipo extends AuditoriaEntity {
   @Column({ name: 'id_pais_destino', type: 'integer', nullable: true })
   idPaisDestino?: number
 
-  @Column({ name: 'organizacion', type: 'varchar', length: 50 })
-  organizacion: string
+  @Column({ name: 'organizacion', type: 'varchar', length: 50, nullable: true })
+  organizacion?: string
 
-  @Column({ name: 'blanco', type: 'text' })
-  blanco: string
+  @Column({ name: 'blanco', type: 'text', nullable: true })
+  blanco?: string
 
-  @Column({ name: 'observacion', type: 'text' })
-  observacion: string
+  @Column({ name: 'observacion', type: 'text', nullable: true })
+  observacion?: string
 
   @Column({ name: 'fotografia', type: 'bytea' })
   fotografia: Buffer
