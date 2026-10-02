@@ -263,7 +263,7 @@ export function SustanciasSolidas({
                     accessor: 'cantidad',
                     title: 'Cantidad en Kilos',
                     className: 'text-right [&>div]:justify-end',
-                    render: (row) => formatDecimal(Number(row.cantidad ?? 0), 3),
+                    render: (row) => formatDecimal(Number(row.cantidad ?? 0), 2),
                   },
                   {
                     accessor: 'costo',

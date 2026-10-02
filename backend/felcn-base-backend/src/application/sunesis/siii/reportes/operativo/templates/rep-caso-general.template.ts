@@ -249,7 +249,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
             <tr>
                 <td>${droga.descripcionTipoDroga || 'N/A'}</td>
                 <td>${droga.descripcionEstadoDroga || 'N/A'}</td>
-                <td>${formatNumber(droga.cantidadGramos || droga.cantidad, 3)}</td>
+                <td>${formatNumber(droga.cantidadGramos || droga.cantidad, 2)}</td>
                 <td>${formatNumber(droga.costo)}</td>
                 <td>${droga.descripcionFormaTransporte || 'N/A'}</td>
                 <td>${droga.descripcionPaisProcedencia || 'N/A'}</td>
@@ -311,7 +311,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                 (sustanciaSolida) => `
             <tr>
                 <td>${sustanciaSolida.descripcionSustancia || 'N/A'}</td>
-                <td>${formatNumber(sustanciaSolida.cantidad, 3)}</td>
+                <td>${formatNumber(sustanciaSolida.cantidad, 2)}</td>
                 <td>${formatNumber(sustanciaSolida.costo)}</td>
             </tr>
         `
@@ -323,7 +323,7 @@ export class CasoGralReportTemplate implements ReportTemplate<any> {
                 (sustanciaLiquida) => `
             <tr>
                 <td>${sustanciaLiquida.descripcionSustancia || 'N/A'}</td>
-                <td>${formatNumber(sustanciaLiquida.cantidad, 3)}</td>
+                <td>${formatNumber(sustanciaLiquida.cantidad, 2)}</td>
                 <td>${formatNumber(sustanciaLiquida.costo)}</td>
             </tr>
         `

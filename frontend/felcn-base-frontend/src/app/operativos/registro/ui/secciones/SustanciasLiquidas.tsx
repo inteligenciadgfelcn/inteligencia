@@ -259,7 +259,7 @@ export function SustanciasLiquidas({
                   accessor: 'cantidad',
                   title: 'Cantidad en litros',
                   className: 'text-right [&>div]:justify-end',
-                  render: (row: any) => formatDecimal(Number(row.cantidad ?? 0), 3),
+                  render: (row: any) => formatDecimal(Number(row.cantidad ?? 0), 2),
                 },
                 {
                   accessor: 'costo',

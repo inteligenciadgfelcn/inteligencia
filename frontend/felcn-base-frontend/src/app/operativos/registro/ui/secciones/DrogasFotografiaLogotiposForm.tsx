@@ -819,10 +819,10 @@ export function SeccionDrogasFotografiaLogotiposForm({
                   title: 'Cantidad (gramos)/Litro',
                   className: 'text-right [&>div]:justify-end',
                   render: (r) => {
-                    if (r.cantidadGramos == null) return formatDecimal(0, 3)
+                    if (r.cantidadGramos == null) return formatDecimal(0, 2)
                     // El total se guarda en gramos (sólido) o litros (líquido, ya en su unidad base).
                     // Se muestra tal cual se almacena, igual que el reporte.
-                    return formatDecimal(Number(r.cantidadGramos), 3)
+                    return formatDecimal(Number(r.cantidadGramos), 2)
                   },
                 },
                 {
