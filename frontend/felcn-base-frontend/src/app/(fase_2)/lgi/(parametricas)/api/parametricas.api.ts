@@ -44,7 +44,7 @@ export const ParametricasLgiApi = {
       finalizado: boolean
       datos?: Array<{ id: number | string; descripcion: string }>
     }>({
-      url: `${Constantes.baseUrl}/s2i/lookups/paises`,
+      url: `${Constantes.baseUrl}/pais/allGeneral`,
       method: 'get',
       withCredentials: true,
     })
