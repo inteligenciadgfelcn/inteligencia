@@ -70,7 +70,7 @@ export function ListadoCasos() {
 
   const columns: Column<AsignacionCasoListadoRow>[] = [
     {
-      accessor: 'casosId',
+      accessor: 'casos_id',
       title: 'ID',
       sortable: true,
     },
@@ -79,31 +79,31 @@ export function ListadoCasos() {
       title: 'Nombre del caso',
       render: (row) => <span className="font-medium">{row.nombrecaso}</span>,
     },
-    { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
+    { accessor: 'nrocaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
     { accessor: 'nrocasofis', title: 'CUD' },
     { accessor: 'cudifp', title: 'CUD PAR' },
-    { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
+    { accessor: 'remitefiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'fechaHoraIng',
+      accessor: '',
       title: 'Fecha inicio',
-      render: (row) => formatFecha(row.fechahoraing),
+      render: (row) => formatFecha(row.fechainicio),
     },
     {
-      accessor: 'fechaHoraIng',
+      accessor: 'fechainicio',
       title: 'Tiempo transcurrido',
       render: (row) => {
-        const tiempo = calcularTiempoTranscurridos(row.fechahoraing)
+        const tiempo = calcularTiempoTranscurridos(row.fechainicio)
         if (tiempo === null) return <span>-</span>
 
         // Calculamos el total de días aproximado o usamos el campo de días para evaluar la variante del badge
         const totalDiasAprox = (tiempo.anos * 365) + (tiempo.meses * 30) + tiempo.dias; // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
 
         // Si prefieres evaluar el color estrictamente por los días totales de diferencia:
-        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechahoraing).startOf('day'), 'day')
+        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechainicio).startOf('day'), 'day')
         const variant = diasTotales <= 5 ? 'success' : diasTotales <= 10 ? 'warning' : 'danger'
 
         // Construimos el texto dinámicamente solo mostrando lo que sea mayor a 0 (opcional, para que se vea más limpio)
@@ -116,6 +116,17 @@ export function ListadoCasos() {
 
         return <Badge variant={variant} rounded>{textoFormateado}</Badge>
       },
+    },
+    {
+      accessor: 'cudifp',
+      title: 'IFP',
+      render: (row) => (
+        row.cudifp?.trim().length > 2 ? (
+          <Badge variant="success" rounded>
+            ✓
+          </Badge>
+        ) : null
+      ),
     },
     {
       accessor: 'acciones',
@@ -240,6 +251,11 @@ export function ListadoCasos() {
           onLimitChange={setLimit}
           columns={columns}
           loading={isLoading || isFetching}
+          rowClassName={(row) =>
+            row.cudifp?.trim().length > 2
+              ? 'bg-blue-50 hover:bg-green-100'
+              : ''
+          }
         />
       </div>
 

@@ -45,11 +45,10 @@ export const datosGeneralesSchema = z
       'Máximo 70 caracteres'
     ),
     // El backend nunca persiste este campo, por eso al editar vuelve vacío.
-    controlJurisdiccional: z
-      .string()
-      .trim()
-      .max(70, 'Máximo 70 caracteres')
-      .default(''),
+    controlJurisdiccional: requiredText('El control jurisdiccional es obligatorio').max(
+      70,
+      'Máximo 70 caracteres'
+    ),
     fechaInicio: dateSchema('La fecha de inicio es obligatoria'),
     inicioCaso: optionSchema.nullable(),
     codigoServicio: requiredText('El código de servicio es obligatorio').max(

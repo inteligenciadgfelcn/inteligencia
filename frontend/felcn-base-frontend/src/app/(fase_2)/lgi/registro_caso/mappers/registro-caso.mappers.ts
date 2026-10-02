@@ -199,11 +199,12 @@ export const buildDatosGeneralesPayload = (values: {
   fechaInicio: string
   inicioCaso: { label: string } | null
   codigoServicio: string
+  cudifp?: string
 }): DatosGeneralesPayload => ({
   disId: Number(values.disId?.value ?? 0),
   idGrupo: Number(values.idGrupo?.value ?? 0),
   dptoavId: values.departamento?.value ?? '',
-  cudifp: '',
+  cudifp: values.cudifp ?? '',
   conformeA: values.conformeA,
   nombreCaso: values.nombreCaso,
   nroCaso: values.nroCaso,
