@@ -47,11 +47,14 @@ export class CreatePersonaAuxiliarDto {
   @IsNumber()
   idTipoDocumento: number
 
-  @ApiProperty({ description: 'Número de documento', example: '5432198-1A' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({
+    description: 'Número de documento. Opcional solo si el Tipo de Documento es "NINGUNO" (validado en el service).',
+    example: '5432198-1A',
+  })
+  @IsOptional()
   @IsString()
   @MaxLength(35)
-  nroDocumento: string
+  nroDocumento?: string
 
   @ApiPropertyOptional({ description: 'Fecha de nacimiento', example: '1985-05-15' })
   @IsOptional()
