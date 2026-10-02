@@ -64,7 +64,6 @@ export class AsignacionPdService {
       await this.asignacionPdRepository.crearAsignacionDual(
         dto,
         uniAbrev,
-        descripcionGrupo
       )
 
     return {
@@ -126,8 +125,6 @@ export class AsignacionPdService {
           'El grupo no tiene una descripción configurada'
         )
       }
-
-      asignacion.descripcionGrupo = descripcionGrupo
     }
 
     Object.assign(asignacion, datos)

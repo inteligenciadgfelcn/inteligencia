@@ -89,11 +89,9 @@ export class CreateAsignacionLgiDto {
   @ApiProperty({
     description: 'Control jurisdiccional',
     example: 'JUZGADO PRIMERO DE INSTRUCCIÓN PENAL',
-    maxLength: 70,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(70)
   controlJurisdiccional!: string
 
   @ApiProperty({

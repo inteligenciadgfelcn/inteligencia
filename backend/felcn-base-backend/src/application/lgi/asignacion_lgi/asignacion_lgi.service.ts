@@ -66,7 +66,6 @@ export class AsignacionLgiService {
       await this.asignacionLgiRepository.crearAsignacionDual(
         dto,
         uniAbrev,
-        descripcionGrupo
       )
 
     return {
@@ -129,7 +128,7 @@ export class AsignacionLgiService {
         )
       }
 
-      asignacion.descripcionGrupo = descripcionGrupo
+      asignacion.idGrupo = grupo.id
     }
 
     Object.assign(asignacion, datos)
