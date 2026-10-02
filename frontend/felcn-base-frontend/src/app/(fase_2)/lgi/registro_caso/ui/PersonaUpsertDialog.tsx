@@ -58,7 +58,7 @@ const paisOption = (
   catalogo: PaisLgi[],
   id?: number
 ): CatalogOption<PaisLgi> | null => {
-  const item = catalogo.find((c) => String(c.pa_id) === String(id))
+  const item = catalogo.find((c) => String(c.idPais) === String(id))
   return item ? mapPaisToOption(item) : null
 }
 

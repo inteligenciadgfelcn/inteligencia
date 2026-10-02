@@ -40,17 +40,21 @@ export const ParametricasLgiApi = {
   },
 
   async listarPaises(): Promise<PaisLgi[]> {
-    const respuesta = await sesionPeticion<{
-      finalizado: boolean
-      datos?: Array<{ id: number | string; descripcion: string }>
-    }>({
+    const respuesta = await sesionPeticion<any
+      // finalizado: boolean
+      // datos?: Array<{ id: number | string; descripcion: string }>
+      // datos?: Array<any>
+    >({
       url: `${Constantes.baseUrl}/pais/allGeneral`,
       method: 'get',
       withCredentials: true,
     })
 
-    return (respuesta.datos ?? []).map((pais) => ({
-      pa_id: String(pais.id),
+    console.log(respuesta[0]);
+    
+
+    return (respuesta ?? []).map((pais) => ({
+      idPais: String(pais.idPais),
       cont_id: '',
       descripcion: pais.descripcion,
     }))
