@@ -19,7 +19,7 @@ export class AsignacionLgiRepository {
     private readonly asignacionCasoRepository: Repository<AsignacionASIG>,
     private readonly grupoLgiRepository: GrupoLgiRepository,
     private readonly distritalLgiRepository: DistritalLgiRepository
-  ) {}
+  ) { }
 
   async crearAsignacionDual(
     dto: CreateAsignacionLgiDto,
@@ -81,30 +81,10 @@ export class AsignacionLgiRepository {
 
     const query = this.repository
       .createQueryBuilder('a')
-      .leftJoin(
-        `(SELECT * FROM parametricas.distritales
-      )`,
-        'd',
-        'a.dis_id = d.dis_id'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.etapainvest
-      )`,
-        'e',
-        'a.eta_inv = e.eta_inv'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.unidades
-      )`,
-        'u',
-        'a.uni_abrev = u.uni_abrev'
-      )
       .where('a.estado = :estado', { estado: 'ACTIVO' })
-      .andWhere('a.usuario = :numeroPase', { numeroPase })
+      .andWhere('a.usuario = :numeroPase', {
+        numeroPase: numeroPase.trim(),
+      })
 
     if (filtro?.trim()) {
       const valor = `%${filtro.trim()}%`
@@ -115,7 +95,6 @@ export class AsignacionLgiRepository {
             .orWhere('a.nrocaso ILIKE :filtro', { filtro: valor })
             .orWhere('a.nrocasogiaef ILIKE :filtro', { filtro: valor })
             .orWhere('a.nrocasofis ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasoifp ILIKE :filtro', { filtro: valor })
             .orWhere('a.cudifp ILIKE :filtro', { filtro: valor })
         })
       )
@@ -123,18 +102,78 @@ export class AsignacionLgiRepository {
 
     const total = await query.clone().getCount()
 
-    const data = await query
+    const filas = await query
+      .leftJoin(
+        '(SELECT * FROM parametricas.etapainvest)',
+        'e',
+        'a.eta_inv = e.eta_inv'
+      )
       .select([
         'a.*',
         'e.descripcion AS "etapaInvestigacion"',
-        'u.uni_descripcion AS "unidad"',
-        'd.dis_descripcion AS "regional"',
-        'a.descripcion_grupo AS "puesto"',
       ])
       .orderBy('a.casos_id', 'DESC')
-      .take(limite)
-      .skip(saltar)
+      .limit(limite)
+      .offset(saltar)
       .getRawMany()
+
+    const distritosIds = [
+      ...new Set(
+        filas
+          .filter((fila) => fila.dis_id != null)
+          .map((fila) => Number(fila.dis_id))
+      ),
+    ]
+
+    const gruposIds = [
+      ...new Set(
+        filas
+          .filter((fila) => fila.id_grupo != null)
+          .map((fila) => Number(fila.id_grupo))
+      ),
+    ]
+
+    // Consultar cada ID una sola vez por página en DB_AUTH.
+    const [distritos, grupos] = await Promise.all([
+      Promise.all(
+        distritosIds.map(async (id) => ({
+          id,
+          datos: await this.distritalLgiRepository.findOne(id),
+        }))
+      ),
+
+      Promise.all(
+        gruposIds.map(async (id) => ({
+          id,
+          datos: await this.grupoLgiRepository.findOne(id),
+        }))
+      ),
+    ])
+
+    const distritosMap = new Map(
+      distritos.map(({ id, datos }) => [id, datos])
+    )
+
+    const gruposMap = new Map(
+      grupos.map(({ id, datos }) => [id, datos])
+    )
+
+    const data = filas.map((fila) => {
+      const distrito = fila.dis_id != null
+        ? distritosMap.get(Number(fila.dis_id))
+        : null
+
+      const grupo = fila.id_grupo != null
+        ? gruposMap.get(Number(fila.id_grupo))
+        : null
+
+      return {
+        ...fila,
+        unidad: distrito?.unidad ?? null,
+        regional: distrito?.descripcion ?? null,
+        puesto: grupo?.descripcion ?? null,
+      }
+    })
 
     return [data, total]
   }
@@ -146,28 +185,6 @@ export class AsignacionLgiRepository {
 
     const query = this.repository
       .createQueryBuilder('a')
-      .leftJoin(
-        `(SELECT * FROM parametricas.distritales
-      )`,
-        'd',
-        'a.dis_id = d.dis_id'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.etapainvest
-      )`,
-        'e',
-        'a.eta_inv = e.eta_inv'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.unidades
-      )`,
-        'u',
-        'a.uni_abrev = u.uni_abrev'
-      )
       .where('a.estado = :estado', { estado: 'ACTIVO' })
 
     if (filtro?.trim()) {
@@ -178,8 +195,8 @@ export class AsignacionLgiRepository {
           qb.where('a.nombrecaso ILIKE :filtro', { filtro: valor })
             .orWhere('a.nrocaso ILIKE :filtro', { filtro: valor })
             .orWhere('a.nrocasogiaef ILIKE :filtro', { filtro: valor })
+            .orWhere('a.nrocasoperdom ILIKE :filtro', { filtro: valor })
             .orWhere('a.nrocasofis ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasoifp ILIKE :filtro', { filtro: valor })
             .orWhere('a.cudifp ILIKE :filtro', { filtro: valor })
         })
       )
@@ -187,29 +204,88 @@ export class AsignacionLgiRepository {
 
     const total = await query.clone().getCount()
 
-    const data = await query
+    const filas = await query
+      .leftJoin(
+        '(SELECT * FROM parametricas.etapainvest)',
+        'e',
+        'a.eta_inv = e.eta_inv'
+      )
       .select([
         'a.*',
         'e.descripcion AS "etapaInvestigacion"',
-        'u.uni_descripcion AS "unidad"',
-        'd.dis_descripcion AS "regional"',
-        'a.descripcion_grupo AS "puesto"',
       ])
       .orderBy('a.casos_id', 'DESC')
-      .take(limite)
-      .skip(saltar)
+      .limit(limite)
+      .offset(saltar)
       .getRawMany()
+
+    const distritosIds = [
+      ...new Set(
+        filas
+          .filter((fila) => fila.dis_id != null)
+          .map((fila) => Number(fila.dis_id))
+      ),
+    ]
+
+    const gruposIds = [
+      ...new Set(
+        filas
+          .filter((fila) => fila.id_grupo != null)
+          .map((fila) => Number(fila.id_grupo))
+      ),
+    ]
+
+    const [distritos, grupos] = await Promise.all([
+      Promise.all(
+        distritosIds.map(async (id) => ({
+          id,
+          datos: await this.distritalLgiRepository.findOne(id),
+        }))
+      ),
+
+      Promise.all(
+        gruposIds.map(async (id) => ({
+          id,
+          datos: await this.grupoLgiRepository.findOne(id),
+        }))
+      ),
+    ])
+
+    const distritosMap = new Map(
+      distritos.map(({ id, datos }) => [id, datos])
+    )
+
+    const gruposMap = new Map(
+      grupos.map(({ id, datos }) => [id, datos])
+    )
+
+    const data = filas.map((fila) => {
+      const distrito = fila.dis_id != null
+        ? distritosMap.get(Number(fila.dis_id))
+        : null
+
+      const grupo = fila.id_grupo != null
+        ? gruposMap.get(Number(fila.id_grupo))
+        : null
+
+      return {
+        ...fila,
+        unidad: distrito?.unidad ?? null,
+        regional: distrito?.descripcion ?? null,
+        puesto: grupo?.descripcion ?? null,
+      }
+    })
 
     return [data, total]
   }
 
   async findOneById(id: number): Promise<
     | (AsignacionLgi & {
-        regional: string | null
-        unidad: string | null
-        idUnidad: number | null
-        puesto: string | null
-      })
+      regional: string | null
+      unidad: string | null
+      idUnidad: number | null
+      puesto: string | null
+    })
     | null
   > {
     const asignacion = await this.repository.findOne({
