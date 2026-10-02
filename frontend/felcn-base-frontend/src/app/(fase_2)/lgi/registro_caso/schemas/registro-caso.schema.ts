@@ -24,6 +24,7 @@ export const datosGeneralesSchema = z
     disId: optionSchema.nullable(),
     idGrupo: optionSchema.nullable(),
     departamento: optionSchema.nullable(),
+    cudifp: z.string().optional(),
     nombreCaso: requiredText('El nombre del caso es obligatorio').max(
       30,
       'Máximo 30 caracteres'
@@ -33,7 +34,7 @@ export const datosGeneralesSchema = z
       'Máximo 20 caracteres'
     ),
     nroCasoFis: requiredText(
-      'El CUD o número de fiscalía es obligatorio'
+      'El CUD es obligatorio'
     ).max(20, 'Máximo 20 caracteres'),
     remiteFiscal: requiredText('El fiscal que remite es obligatorio').max(
       70,
@@ -43,12 +44,10 @@ export const datosGeneralesSchema = z
       70,
       'Máximo 70 caracteres'
     ),
-    // El backend nunca persiste este campo, por eso al editar vuelve vacío.
-    controlJurisdiccional: z
-      .string()
-      .trim()
-      .max(70, 'Máximo 70 caracteres')
-      .default(''),
+    controlJurisdiccional: requiredText('El control jurisdiccional es obligatorio').max(
+      70,
+      'Máximo 70 caracteres'
+    ),
     fechaInicio: dateSchema('La fecha de inicio es obligatoria'),
     inicioCaso: optionSchema.nullable(),
     codigoServicio: requiredText('El código de servicio es obligatorio').max(

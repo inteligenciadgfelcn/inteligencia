@@ -53,14 +53,14 @@ export function ListadoCasos() {
   )
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
+    router.push(`/lgi/registro_caso/${row.casos_id}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
     if (!casoAEliminar) return
     setEliminando(true)
     try {
-      await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
+      await ListadoCasosApi.eliminarCaso(casoAEliminar.casos_id)
       setCasoAEliminar(null)
       queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
     } finally {
@@ -70,39 +70,40 @@ export function ListadoCasos() {
 
   const columns: Column<AsignacionCasoListadoRow>[] = [
     {
-      accessor: 'casosId',
+      accessor: 'casos_id',
       title: 'ID',
       sortable: true,
     },
     {
       accessor: 'nombreCaso',
       title: 'Nombre del caso',
-      render: (row) => <span className="font-medium">{row.nombreCaso}</span>,
+      render: (row) => <span className="font-medium">{row.nombrecaso}</span>,
     },
-    { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
+    { accessor: 'nrocaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
-    { accessor: 'cudIfp', title: 'CUD' },
-    { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
+    { accessor: 'nrocasofis', title: 'CUD' },
+    { accessor: 'cudifp', title: 'CUD PAR' },
+    { accessor: 'remitefiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'fechaHoraIng',
+      accessor: '',
       title: 'Fecha inicio',
-      render: (row) => formatFecha(row.fechahoraing),
+      render: (row) => formatFecha(row.fechainicio),
     },
     {
-      accessor: 'fechaHoraIng',
+      accessor: 'fechainicio',
       title: 'Tiempo transcurrido',
       render: (row) => {
-        const tiempo = calcularTiempoTranscurridos(row.fechahoraing)
+        const tiempo = calcularTiempoTranscurridos(row.fechainicio)
         if (tiempo === null) return <span>-</span>
 
         // Calculamos el total de días aproximado o usamos el campo de días para evaluar la variante del badge
         const totalDiasAprox = (tiempo.anos * 365) + (tiempo.meses * 30) + tiempo.dias; // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
 
         // Si prefieres evaluar el color estrictamente por los días totales de diferencia:
-        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechahoraing).startOf('day'), 'day')
+        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechainicio).startOf('day'), 'day')
         const variant = diasTotales <= 5 ? 'success' : diasTotales <= 10 ? 'warning' : 'danger'
 
         // Construimos el texto dinámicamente solo mostrando lo que sea mayor a 0 (opcional, para que se vea más limpio)
@@ -117,6 +118,17 @@ export function ListadoCasos() {
       },
     },
     {
+      accessor: 'cudifp',
+      title: 'IFP',
+      render: (row) => (
+        row.cudifp?.trim().length > 2 ? (
+          <Badge variant="success" rounded>
+            ✓
+          </Badge>
+        ) : null
+      ),
+    },
+    {
       accessor: 'acciones',
       title: 'Acciones',
       render: (row) => (
@@ -126,7 +138,7 @@ export function ListadoCasos() {
             variant="outline-secondary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Ver detalle de ${row.nombreCaso}`}
+            aria-label={`Ver detalle de ${row.nombrecaso}`}
             title="Ver detalle"
             onClick={() => irA(row, 'ver')}
           >
@@ -137,7 +149,7 @@ export function ListadoCasos() {
             variant="outline-secondary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Editar ${row.nombreCaso}`}
+            aria-label={`Editar ${row.nombrecaso}`}
             title="Editar"
             onClick={() => irA(row)}
           >
@@ -148,7 +160,7 @@ export function ListadoCasos() {
             variant="outline-danger"
             size="sm"
             className="!p-1.5"
-            aria-label={`Eliminar ${row.nombreCaso}`}
+            aria-label={`Eliminar ${row.nombrecaso}`}
             title="Eliminar"
             onClick={() => setCasoAEliminar(row)}
           >
@@ -239,13 +251,18 @@ export function ListadoCasos() {
           onLimitChange={setLimit}
           columns={columns}
           loading={isLoading || isFetching}
+          rowClassName={(row) =>
+            row.cudifp?.trim().length > 2
+              ? 'bg-blue-50 hover:bg-green-100'
+              : ''
+          }
         />
       </div>
 
       <AlertDialog
         isOpen={!!casoAEliminar}
         titulo="Eliminar caso"
-        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombreCaso}"? Esta acción no se puede deshacer.`}
+        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombrecaso}"? Esta acción no se puede deshacer.`}
       >
         <Button
           type="button"

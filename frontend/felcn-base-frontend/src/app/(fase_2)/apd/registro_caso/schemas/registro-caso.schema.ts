@@ -35,6 +35,7 @@ export const datosGeneralesSchema = z
     nroCasoFis: requiredText(
       'El CUD o número de fiscalía es obligatorio'
     ).max(20, 'Máximo 20 caracteres'),
+    cudifp: z.string().nullable(),
     remiteFiscal: requiredText('El fiscal que remite es obligatorio').max(
       70,
       'Máximo 70 caracteres'

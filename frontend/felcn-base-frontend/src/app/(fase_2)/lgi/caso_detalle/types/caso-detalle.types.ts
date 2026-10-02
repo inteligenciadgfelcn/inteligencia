@@ -57,6 +57,7 @@ export interface CasoDetalleApiRow {
   usuario_actualizacion?: string | null
   fechaActualizacion?: string
   fecha_actualizacion?: string
+  idEtapa: string
   [key: string]: unknown
 }
 
@@ -92,4 +93,5 @@ export interface CasoDetalle {
   usuario: string
   usuarioActualizacion: string | null
   fechaActualizacion: string
+  idEtapa: string
 }

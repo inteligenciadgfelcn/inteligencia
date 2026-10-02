@@ -75,7 +75,7 @@ export const mapGrupoToOption = (item: GrupoLgi): CatalogOption<GrupoLgi> => ({
 export const mapInicioCasoToOption = (
   item: InicioCasoLgi
 ): CatalogOption<InicioCasoLgi> => ({
-  value: String(item.idInicioCaso),
+  value: String(item.id_inicio_caso),
   label: item.descripcion,
   original: item,
 })
@@ -199,10 +199,12 @@ export const buildDatosGeneralesPayload = (values: {
   fechaInicio: string
   inicioCaso: { label: string } | null
   codigoServicio: string
+  cudifp?: string
 }): DatosGeneralesPayload => ({
   disId: Number(values.disId?.value ?? 0),
   idGrupo: Number(values.idGrupo?.value ?? 0),
   dptoavId: values.departamento?.value ?? '',
+  cudifp: values.cudifp ?? '',
   conformeA: values.conformeA,
   nombreCaso: values.nombreCaso,
   nroCaso: values.nroCaso,
