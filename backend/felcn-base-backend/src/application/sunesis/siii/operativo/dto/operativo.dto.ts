@@ -126,10 +126,10 @@ export class OperativoDto {
   @IsString()
   breveDetalle?: string
 
-  @ApiProperty({ description: 'Descripción del operativo' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: 'Descripción del operativo (exclusivo de Seguimientos, este formulario no lo usa)' })
+  @IsOptional()
   @IsString()
-  descripcion: string
+  descripcion?: string
 
   @ApiProperty({ description: 'ID tipo de operación', example: 1 })
   @IsNotEmpty()

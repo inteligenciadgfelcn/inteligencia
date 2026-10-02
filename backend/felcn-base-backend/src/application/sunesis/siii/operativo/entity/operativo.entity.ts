@@ -124,8 +124,8 @@ export class Operativo extends AuditoriaEntity {
   @Column({ name: 'breve_detalle', type: 'text', nullable: true })
   breveDetalle?: string
 
-  @Column({ name: 'descripcion', type: 'text' })
-  descripcion: string
+  @Column({ name: 'descripcion', type: 'text', nullable: true })
+  descripcion?: string
 
   @Column({ name: 'id_tipo_operacion', type: 'integer' })
   idTipoOperacion: number

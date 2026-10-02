@@ -77,7 +77,6 @@ export interface OperativoPayload {
   segY?: number
   idPlanOperacion: number
   breveDetalle: string
-  descripcion: string
   idTipoOperacion: number
   organizacion: string
   clanFamiliar: string

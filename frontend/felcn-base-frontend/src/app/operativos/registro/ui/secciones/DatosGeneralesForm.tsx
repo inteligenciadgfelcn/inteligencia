@@ -105,7 +105,6 @@ const DEFAULT_VALUES: OperativoPayload = {
   mando: 'CAP. OSCAR DANIEL CHOQUE ALARCON',
   idPlanOperacion: 0,
   breveDetalle: '',
-  descripcion: '',
   idTipoOperacion: 0,
   organizacion: '',
   coordX: -17.3895, // Cochabamba (ciudad)
@@ -170,8 +169,10 @@ const mapCasoOperativoToForm = (
   gradosY: toNumberOrZero(operativo?.gradosY),
   minY: toNumberOrZero(operativo?.minY),
   segY: toNumberOrZero(operativo?.segY),
-  breveDetalle: operativo?.breveDetalle ?? operativo?.descripcion ?? '',
-  descripcion: operativo?.descripcion ?? operativo?.breveDetalle ?? '',
+  // Ya no espeja operativo.descripcion -- ese campo pasa a ser exclusivo de
+  // Seguimientos (tab Metadatos, "Informe del Caso/Detalle del Hecho"); este
+  // formulario solo lee/escribe breve_detalle.
+  breveDetalle: operativo?.breveDetalle ?? '',
 })
 
 export function DatosGeneralesForm({
@@ -607,7 +608,7 @@ export function DatosGeneralesForm({
       return
     }
 
-    const payload = trimPayload(getValues(), ['breveDetalle', 'descripcion'])
+    const payload = trimPayload(getValues(), ['breveDetalle'])
     const idCaso = Number(searchParams.get('id') ?? 0)
 
     try {
@@ -639,7 +640,6 @@ export function DatosGeneralesForm({
           segY: toNumberOrZero(lngS),
           idPlanOperacion: toNumberOrZero(payload.idPlanOperacion),
           breveDetalle: payload.breveDetalle,
-          descripcion: payload.descripcion || payload.breveDetalle || '',
           idTipoOperacion: toNumberOrZero(payload.idTipoOperacion),
           organizacion: payload.organizacion,
           clanFamiliar: payload.clanFamiliar,
