@@ -8,7 +8,7 @@ import type { SituacionJuridicaRow } from '../types/personas-investigadas.types'
 
 export const resolverPais = (catalogo: PaisLgi[], id?: number): string => {
   if (!id) return '-'
-  return catalogo.find((c) => String(c.pa_id) === String(id))?.descripcion ?? '-'
+  return catalogo.find((c) => String(c.idPais) === String(id))?.descripcion ?? '-'
 }
 
 export const resolverEstadoCivil = (

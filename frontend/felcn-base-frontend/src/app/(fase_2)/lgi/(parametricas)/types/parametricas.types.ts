@@ -32,7 +32,7 @@ export interface TipoDocumentoLgi {
 }
 
 export interface PaisLgi {
-  pa_id: string
+  idPais: string
   cont_id: string
   descripcion: string
 }

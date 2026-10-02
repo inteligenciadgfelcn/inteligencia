@@ -37,7 +37,7 @@ export const mapTipoDocumentoToOption = (
 export const mapPaisToOption = (
   item: PaisLgi
 ): CatalogOption<PaisLgi> => ({
-  value: item.pa_id,
+  value: item.idPais,
   label: item.descripcion,
   original: item,
 })

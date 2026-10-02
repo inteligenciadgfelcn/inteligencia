@@ -184,7 +184,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
         paisId: {
           value: String(row.paisId),
           label: buscarDescripcionLocal(paises, row.paisId, 'pa_id'),
-          original: paises.find((p) => String(p.pa_id) === String(row.paisId))!,
+          original: paises.find((p) => String(p.idPais) === String(row.paisId))!,
         },
         estadoCivilId: {
           value: String(row.estadoCivilId),
