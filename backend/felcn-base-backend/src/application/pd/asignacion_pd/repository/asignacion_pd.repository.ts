@@ -141,68 +141,104 @@ export class AsignacionPdRepository {
   }
 
   async findAllPaginado(
-    pagination: PaginacionQueryDto
-  ): Promise<[any[], number]> {
-    const { limite, saltar, filtro } = pagination
+  pagination: PaginacionQueryDto
+): Promise<[any[], number]> {
+  const { limite, saltar, filtro } = pagination
 
-    const query = this.repository
-      .createQueryBuilder('a')
-      .leftJoin(
-        `(SELECT * FROM parametricas.distritales
-      )`,
-        'd',
-        'a.dis_id = d.dis_id'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.etapainvest
-      )`,
-        'e',
-        'a.eta_inv = e.eta_inv'
-      )
-      .leftJoin(
-        `(
-        SELECT *
-        FROM parametricas.unidades
-      )`,
-        'u',
-        'a.uni_abrev = u.uni_abrev'
-      )
-      .where('a.estado = :estado', { estado: 'ACTIVO' })
+  const query = this.repository
+    .createQueryBuilder('a')
+    .where('a.estado = :estado', { estado: 'ACTIVO' })
 
-    if (filtro?.trim()) {
-      const valor = `%${filtro.trim()}%`
+  if (filtro?.trim()) {
+    const valor = `%${filtro.trim()}%`
 
-      query.andWhere(
-        new Brackets((qb) => {
-          qb.where('a.nombrecaso ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocaso ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasoperdom ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasofis ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasoifp ILIKE :filtro', { filtro: valor })
-            .orWhere('a.cudifp ILIKE :filtro', { filtro: valor })
-        })
-      )
-    }
-
-    const total = await query.clone().getCount()
-
-    const data = await query
-      .select([
-        'a.*',
-        'e.descripcion AS "etapaInvestigacion"',
-        'u.uni_descripcion AS "unidad"',
-        'd.dis_descripcion AS "regional"',
-        'a.descripcion_grupo AS "puesto"',
-      ])
-      .orderBy('a.casos_id', 'DESC')
-      .take(limite)
-      .skip(saltar)
-      .getRawMany()
-
-    return [data, total]
+    query.andWhere(
+      new Brackets((qb) => {
+        qb.where('a.nombrecaso ILIKE :filtro', { filtro: valor })
+          .orWhere('a.nrocaso ILIKE :filtro', { filtro: valor })
+          .orWhere('a.nrocasogiaef ILIKE :filtro', { filtro: valor })
+          .orWhere('a.nrocasoperdom ILIKE :filtro', { filtro: valor })
+          .orWhere('a.nrocasofis ILIKE :filtro', { filtro: valor })
+          .orWhere('a.cudifp ILIKE :filtro', { filtro: valor })
+      })
+    )
   }
+
+  const total = await query.clone().getCount()
+
+  const filas = await query
+    .leftJoin(
+      '(SELECT * FROM parametricas.etapainvest)',
+      'e',
+      'a.eta_inv = e.eta_inv'
+    )
+    .select([
+      'a.*',
+      'e.descripcion AS "etapaInvestigacion"',
+    ])
+    .orderBy('a.casos_id', 'DESC')
+    .limit(limite)
+    .offset(saltar)
+    .getRawMany()
+
+  // Consultar una sola vez cada distrito y grupo de esta página.
+  const distritosIds = [
+    ...new Set(
+      filas
+        .filter((fila) => fila.dis_id != null)
+        .map((fila) => Number(fila.dis_id))
+    ),
+  ]
+
+  const gruposIds = [
+    ...new Set(
+      filas
+        .filter((fila) => fila.id_grupo != null)
+        .map((fila) => Number(fila.id_grupo))
+    ),
+  ]
+
+  const [distritos, grupos] = await Promise.all([
+    Promise.all(
+      distritosIds.map(async (id) => ({
+        id,
+        datos: await this.distritalLgiRepository.findOne(id),
+      }))
+    ),
+    Promise.all(
+      gruposIds.map(async (id) => ({
+        id,
+        datos: await this.grupoLgiRepository.findOne(id),
+      }))
+    ),
+  ])
+
+  const distritosMap = new Map(
+    distritos.map(({ id, datos }) => [id, datos])
+  )
+
+  const gruposMap = new Map(
+    grupos.map(({ id, datos }) => [id, datos])
+  )
+
+  const data = filas.map((fila) => {
+    const distrito = distritosMap.get(Number(fila.dis_id))
+    const grupo = gruposMap.get(Number(fila.id_grupo))
+
+    return {
+      ...fila,
+      disId: fila.dis_id,
+      idGrupo: fila.id_grupo,
+      idUnidad: distrito?.idUnidad ?? null,
+      unidad: distrito?.unidad ?? null,
+      regional: distrito?.descripcion ?? null,
+      puesto: grupo?.descripcion ?? null,
+      descripcionGrupo: grupo?.descripcion ?? null,
+    }
+  })
+
+  return [data, total]
+}
 
   async findOneById(id: number): Promise<
     | (AsignacionLgi & {
