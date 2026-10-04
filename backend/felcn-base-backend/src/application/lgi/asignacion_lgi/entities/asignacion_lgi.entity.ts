@@ -106,4 +106,11 @@ export class AsignacionLgi {
     default: () => 'CURRENT_TIMESTAMP',
   })
   fechaActualizacion!: Date
+
+  @UpdateDateColumn({
+    name: 'fecha_etapa_procesal',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  fechaEtapaProcesal!: Date
 }

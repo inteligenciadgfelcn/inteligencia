@@ -81,22 +81,6 @@ export class CreateBienesSecuestradoDto {
   idTipoVinculo?: number
 
   @ApiPropertyOptional({
-    description: 'Nombre completo de la persona vinculada',
-    example: 'Juan Pérez López',
-  })
-  @IsOptional()
-  @IsString()
-  nombreCompletoVinculo?: string
-
-  @ApiPropertyOptional({
-    description: 'Cédula de identidad de la persona vinculada',
-    example: '1234567',
-  })
-  @IsOptional()
-  @IsString()
-  cedulaIdentidadVinculo?: string
-
-  @ApiPropertyOptional({
     description: 'Indica si el bien requiere pericia',
     example: false,
     type: Boolean,
@@ -123,22 +107,6 @@ export class CreateBienesSecuestradoDto {
   @IsOptional()
   @IsString()
   resultadoPericia?: string
-
-  @ApiPropertyOptional({
-    description: 'Nombre completo del depositario',
-    example: 'María Quispe Mamani',
-  })
-  @IsOptional()
-  @IsString()
-  nombreDepositario?: string
-
-  @ApiPropertyOptional({
-    description: 'Cédula de identidad del depositario',
-    example: '7654321 LP',
-  })
-  @IsOptional()
-  @IsString()
-  ciDepositario?: string
 
   @ApiPropertyOptional({
     type: 'array',

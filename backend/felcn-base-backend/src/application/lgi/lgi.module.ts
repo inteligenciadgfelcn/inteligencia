@@ -34,6 +34,7 @@ import { ReportesLgiModule } from './reportes_lgi/reportes_lgi.module';
 import { PresedenciaLgiModule } from './presedencia_lgi/presedencia_lgi.module';
 import { ImplicadosModule } from './implicados/implicados.module';
 import { ConclusionCasoModule } from './conclusion_caso/conclusion_caso.module';
+import { ImplicadosBienModule } from './implicados_bien/implicados_bien.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { ConclusionCasoModule } from './conclusion_caso/conclusion_caso.module';
     PresedenciaLgiModule,
     ImplicadosModule,
     ConclusionCasoModule,
+    ImplicadosBienModule,
   ],
   controllers: [],
 })

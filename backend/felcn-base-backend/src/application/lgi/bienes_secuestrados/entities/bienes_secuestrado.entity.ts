@@ -100,20 +100,6 @@ export class BieneSecuestradoLgi {
   idTipoVinculo?: number | null
 
   @Column({
-    name: 'nombre_completo_vinculo',
-    type: 'varchar',
-    nullable: true,
-  })
-  nombreCompletoVinculo?: string | null
-
-  @Column({
-    name: 'cedula_identidad_vinculo',
-    type: 'varchar',
-    nullable: true,
-  })
-  cedulaIdentidadVinculo?: string | null
-
-  @Column({
     name: 'pericia',
     type: 'boolean',
     default: false,
@@ -126,20 +112,6 @@ export class BieneSecuestradoLgi {
     nullable: true,
   })
   resultadoPericia?: string | null
-
-  @Column({
-    name: 'nombre_depositario',
-    type: 'character varying',
-    nullable: true,
-  })
-  nombreDepositario?: string | null
-
-  @Column({
-    name: 'ci_depositorio',
-    type: 'character varying',
-    nullable: true,
-  })
-  ciDepositario?: string | null
 
   @Column({
     name: 'estado',

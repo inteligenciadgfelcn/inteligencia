@@ -73,20 +73,6 @@ export class PersonasJuridica {
   usuario: string
 
   @Column({
-    name: 'propietario_socio',
-    type: 'varchar',
-    nullable: true,
-  })
-  propietarioSocio?: string | null
-
-  @Column({
-    name: 'beneficiarios_finales',
-    type: 'varchar',
-    nullable: true,
-  })
-  beneficiariosFinales?: string | null
-
-  @Column({
     name: 'capital_social',
     type: 'varchar',
     nullable: true,

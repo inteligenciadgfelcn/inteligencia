@@ -70,24 +70,6 @@ export class CreatePersonasJuridicaDto {
   observaciones?: string | null
 
   @ApiPropertyOptional({
-    description: 'Propietarios o socios',
-    example: 'Juan Pérez; María López',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsString()
-  propietarioSocio?: string | null
-
-  @ApiPropertyOptional({
-    description: 'Beneficiarios finales',
-    example: 'Carlos Pérez López',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsString()
-  beneficiariosFinales?: string | null
-
-  @ApiPropertyOptional({
     description: 'Capital social declarado',
     example: '1500000.00',
     nullable: true,
