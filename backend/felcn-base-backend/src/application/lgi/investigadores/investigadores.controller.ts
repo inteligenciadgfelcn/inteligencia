@@ -7,9 +7,13 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
+
+import type { Request } from 'express'
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { BaseController } from '@/common/base/base-controller'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
@@ -29,21 +33,22 @@ export class InvestigadorLgiController extends BaseController {
     super()
   }
 
-  @Get('grupo/:idGrupo')
+  @Get('unidad')
   @ApiOperation({
-    summary: 'Obtener los usuarios activos de un grupo',
+    summary:
+      'Obtener los investigadores activos de la unidad del usuario autenticado',
   })
-  @ApiParam({
-    name: 'idGrupo',
-    description: 'Identificador del grupo',
-    type: Number,
-    example: 1,
-  })
-  findAllGeneralInvestigadores(
-    @Param('idGrupo', ParseIntPipe)
-    idGrupo: number
-  ): Promise<any[]> {
-    return this.investigadorService.findAllGeneralInvestigadores(idGrupo)
+  findAllGeneralInvestigadores(@Req() request: Request): Promise<any[]> {
+    const usuario = request.user as { id?: number | string } | undefined
+    const idUsuario = Number(usuario?.id)
+
+    if (!Number.isInteger(idUsuario) || idUsuario <= 0) {
+      throw new UnauthorizedException(
+        'No se encontró un identificador válido del usuario autenticado'
+      )
+    }
+
+    return this.investigadorService.findAllGeneralInvestigadores(idUsuario)
   }
 
   @Post('asignar-investigador/:casoId')

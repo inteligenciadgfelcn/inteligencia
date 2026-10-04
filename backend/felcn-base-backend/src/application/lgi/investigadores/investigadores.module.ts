@@ -8,10 +8,7 @@ import { DB_LGI } from '@/core/config/database/database.module'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature(
-      [InvestigadorLgi],
-      DB_LGI
-    ),
+    TypeOrmModule.forFeature([InvestigadorLgi], DB_LGI),
   ],
   controllers: [InvestigadorLgiController],
   providers: [
