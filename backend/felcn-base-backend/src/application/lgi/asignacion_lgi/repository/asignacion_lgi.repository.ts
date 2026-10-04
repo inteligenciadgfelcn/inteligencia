@@ -19,7 +19,7 @@ export class AsignacionLgiRepository {
     private readonly asignacionCasoRepository: Repository<AsignacionASIG>,
     private readonly grupoLgiRepository: GrupoLgiRepository,
     private readonly distritalLgiRepository: DistritalLgiRepository
-  ) { }
+  ) {}
 
   async crearAsignacionDual(
     dto: CreateAsignacionLgiDto,
@@ -108,10 +108,7 @@ export class AsignacionLgiRepository {
         'e',
         'a.eta_inv = e.eta_inv'
       )
-      .select([
-        'a.*',
-        'e.descripcion AS "etapaInvestigacion"',
-      ])
+      .select(['a.*', 'e.descripcion AS "etapaInvestigacion"'])
       .orderBy('a.casos_id', 'DESC')
       .limit(limite)
       .offset(saltar)
@@ -150,22 +147,16 @@ export class AsignacionLgiRepository {
       ),
     ])
 
-    const distritosMap = new Map(
-      distritos.map(({ id, datos }) => [id, datos])
-    )
+    const distritosMap = new Map(distritos.map(({ id, datos }) => [id, datos]))
 
-    const gruposMap = new Map(
-      grupos.map(({ id, datos }) => [id, datos])
-    )
+    const gruposMap = new Map(grupos.map(({ id, datos }) => [id, datos]))
 
     const data = filas.map((fila) => {
-      const distrito = fila.dis_id != null
-        ? distritosMap.get(Number(fila.dis_id))
-        : null
+      const distrito =
+        fila.dis_id != null ? distritosMap.get(Number(fila.dis_id)) : null
 
-      const grupo = fila.id_grupo != null
-        ? gruposMap.get(Number(fila.id_grupo))
-        : null
+      const grupo =
+        fila.id_grupo != null ? gruposMap.get(Number(fila.id_grupo)) : null
 
       return {
         ...fila,
@@ -210,10 +201,7 @@ export class AsignacionLgiRepository {
         'e',
         'a.eta_inv = e.eta_inv'
       )
-      .select([
-        'a.*',
-        'e.descripcion AS "etapaInvestigacion"',
-      ])
+      .select(['a.*', 'e.descripcion AS "etapaInvestigacion"'])
       .orderBy('a.casos_id', 'DESC')
       .limit(limite)
       .offset(saltar)
@@ -251,22 +239,16 @@ export class AsignacionLgiRepository {
       ),
     ])
 
-    const distritosMap = new Map(
-      distritos.map(({ id, datos }) => [id, datos])
-    )
+    const distritosMap = new Map(distritos.map(({ id, datos }) => [id, datos]))
 
-    const gruposMap = new Map(
-      grupos.map(({ id, datos }) => [id, datos])
-    )
+    const gruposMap = new Map(grupos.map(({ id, datos }) => [id, datos]))
 
     const data = filas.map((fila) => {
-      const distrito = fila.dis_id != null
-        ? distritosMap.get(Number(fila.dis_id))
-        : null
+      const distrito =
+        fila.dis_id != null ? distritosMap.get(Number(fila.dis_id)) : null
 
-      const grupo = fila.id_grupo != null
-        ? gruposMap.get(Number(fila.id_grupo))
-        : null
+      const grupo =
+        fila.id_grupo != null ? gruposMap.get(Number(fila.id_grupo)) : null
 
       return {
         ...fila,
@@ -281,17 +263,20 @@ export class AsignacionLgiRepository {
 
   async findOneById(id: number): Promise<
     | (AsignacionLgi & {
-      regional: string | null
-      unidad: string | null
-      idUnidad: number | null
-      puesto: string | null
-    })
+        regional: string | null
+        unidad: string | null
+        idUnidad: number | null
+        puesto: string | null
+      })
     | null
   > {
     const asignacion = await this.repository.findOne({
       where: {
         casosId: id,
         estado: 'ACTIVO',
+      },
+      relations: {
+        etapaInvestigacion: true,
       },
     })
 

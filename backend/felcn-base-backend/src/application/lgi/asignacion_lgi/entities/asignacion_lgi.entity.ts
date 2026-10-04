@@ -2,9 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
+import { EtapaLgi } from '../../parametro/etapa/entities/etapa.entity'
 
 @Entity({ schema: 'public', name: 'asignacion' })
 export class AsignacionLgi {
@@ -46,6 +49,13 @@ export class AsignacionLgi {
 
   @Column({ name: 'eta_inv', type: 'int' })
   idEtapa!: number
+
+  @ManyToOne(() => EtapaLgi)
+  @JoinColumn({
+    name: 'eta_inv',
+    referencedColumnName: 'etId',
+  })
+  etapaInvestigacion!: EtapaLgi | null
 
   @Column({ name: 'remitefiscal', type: 'varchar', length: 70 })
   remiteFiscal!: string

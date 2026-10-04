@@ -10,10 +10,11 @@ import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository
 import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
 import { EtapaProcesalRepository } from './repository/etapa-procesal.repository'
+import { EtapaLgi } from '../parametro/etapa/entities/etapa.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AsignacionLgi, ], DB_LGI),
+    TypeOrmModule.forFeature([AsignacionLgi, EtapaLgi], DB_LGI),
     AsignacionesModule,
     TypeOrmModule.forFeature([AsignacionASIG], DB_ASIG_CASOS),
   ],
