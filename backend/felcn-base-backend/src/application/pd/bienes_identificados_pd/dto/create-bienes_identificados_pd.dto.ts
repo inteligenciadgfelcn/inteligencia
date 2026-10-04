@@ -79,22 +79,6 @@ export class CreateBienesIdentificadosPdDto {
       idTipoVinculo?: number
     
       @ApiPropertyOptional({
-        description: 'Nombre completo de la persona vinculada',
-        example: 'Juan Pérez López',
-      })
-      @IsOptional()
-      @IsString()
-      nombreCompletoVinculo?: string
-    
-      @ApiPropertyOptional({
-        description: 'Cédula de identidad de la persona vinculada',
-        example: '1234567',
-      })
-      @IsOptional()
-      @IsString()
-      cedulaIdentidadVinculo?: string
-    
-      @ApiPropertyOptional({
         description: 'Indica si el bien requiere pericia',
         example: false,
         type: Boolean,

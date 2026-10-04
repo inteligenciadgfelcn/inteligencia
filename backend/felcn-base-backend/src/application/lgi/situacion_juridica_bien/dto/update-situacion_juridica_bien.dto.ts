@@ -17,13 +17,11 @@ import {
 import { UpdateBienSecuestradoDto } from './update-bien-secuestrado.dto'
 import { UpdateBienIncautadoDto } from './update-bien-incautado.dto'
 import { UpdateBienConfiscadoDto } from './update-bien-confiscado.dto'
-import { UpdateSituacionBienDto } from './update-situacion-bien.dto'
 
 export type DatosActualizarSituacion =
   | UpdateBienSecuestradoDto
   | UpdateBienIncautadoDto
   | UpdateBienConfiscadoDto
-  | UpdateSituacionBienDto
 
 export class UpdateSituacionJuridicaBienDto {
   @ApiProperty({
@@ -56,9 +54,6 @@ export class UpdateSituacionJuridicaBienDto {
       {
         $ref: getSchemaPath(UpdateBienConfiscadoDto),
       },
-      {
-        $ref: getSchemaPath(UpdateSituacionBienDto),
-      },
     ],
   })
   @IsDefined()
@@ -75,10 +70,6 @@ export class UpdateSituacionJuridicaBienDto {
 
       case 3:
         return UpdateBienConfiscadoDto
-
-      case 4:
-      case 5:
-        return UpdateSituacionBienDto
 
       default:
         return Object

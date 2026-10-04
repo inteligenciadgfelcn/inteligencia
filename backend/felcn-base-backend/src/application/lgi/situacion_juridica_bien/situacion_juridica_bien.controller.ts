@@ -28,11 +28,9 @@ import { UpdateSituacionJuridicaBienDto } from './dto/update-situacion_juridica_
 import { CreateBienSecuestadoDto } from './dto/create-bien-secuestrado.dto'
 import { CreateBienIncautadoDto } from './dto/create-bien-incautado.dto'
 import { CreateBienConfiscadoDto } from './dto/create-bien-confiscado.dto'
-import { CreateSituacionBienDto } from './dto/create-situacion-bien.dto'
 import { UpdateBienSecuestradoDto } from './dto/update-bien-secuestrado.dto'
 import { UpdateBienIncautadoDto } from './dto/update-bien-incautado.dto'
 import { UpdateBienConfiscadoDto } from './dto/update-bien-confiscado.dto'
-import { UpdateSituacionBienDto } from './dto/update-situacion-bien.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -42,11 +40,9 @@ import { UpdateSituacionBienDto } from './dto/update-situacion-bien.dto'
   CreateBienSecuestadoDto,
   CreateBienIncautadoDto,
   CreateBienConfiscadoDto,
-  CreateSituacionBienDto,
   UpdateBienSecuestradoDto,
   UpdateBienIncautadoDto,
   UpdateBienConfiscadoDto,
-  UpdateSituacionBienDto
 )
 @Controller('situacion-juridica-bien')
 export class SituacionJuridicaBienController extends BaseController {
@@ -100,42 +96,6 @@ export class SituacionJuridicaBienController extends BaseController {
           },
         },
       },
-
-      entregaDircabi: {
-        summary: '4 - Entrega a DIRCABI',
-        value: {
-          itembiensecId: 15,
-          idTipoSituacionLegalBien: 4,
-          datos: {
-            fechaRequerimiento: '2026-09-06',
-            fiscalRequirente: 'Juan Pérez López',
-            calbId: 1,
-            fechaEntrega: '2026-09-07',
-            responsableEntrega: 'Carlos Mamani Quispe',
-            responsableRecepcion: 'María Condori Flores',
-            institucion: 'DIRCABI',
-            ubicacion: 'Depósito central',
-          },
-        },
-      },
-
-      situacionIncautado: {
-        summary: '5 - Situación de bien incautado',
-        value: {
-          itembiensecId: 15,
-          idTipoSituacionLegalBien: 5,
-          datos: {
-            fechaRequerimiento: '2026-09-06T10:30:00.000Z',
-            fiscalRequirente: 'Juan Pérez López',
-            calbId: 1,
-            fechaEntrega: '2026-09-07T10:00:00.000Z',
-            responsableEntrega: 'Carlos Mamani Quispe',
-            responsableRecepcion: 'María Condori Flores',
-            institucion: 'FELCN',
-            ubicacion: 'Depósito de evidencias',
-          },
-        },
-      },
     },
   })
   create(
@@ -171,7 +131,6 @@ export class SituacionJuridicaBienController extends BaseController {
    * 1 = bienes secuestrados
    * 2 = bienes incautados
    * 3 = bienes confiscados
-   * 4 y 5 = situación de bienes
    */
   @Patch(':idTipo/:idRegistro')
   @ApiOperation({

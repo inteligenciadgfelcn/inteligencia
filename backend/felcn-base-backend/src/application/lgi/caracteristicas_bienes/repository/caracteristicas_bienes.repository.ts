@@ -55,7 +55,6 @@ export class CaracteristicasBienesRepository {
         bienSecuestrado: {
           operativo: true,
           categoriaTipo: true,
-          tipoVinculo: true,
         },
       },
 

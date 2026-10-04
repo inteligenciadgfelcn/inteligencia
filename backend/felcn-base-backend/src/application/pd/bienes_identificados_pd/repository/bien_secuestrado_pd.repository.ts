@@ -83,7 +83,6 @@ export class BienSecuestradoPdRepository {
         relations: {
           operativo: true,
           categoriaTipo: true,
-          tipoVinculo: true,
           caracteristicas: true,
         },
   
@@ -272,7 +271,6 @@ export class BienSecuestradoPdRepository {
         relations: {
           operativo: true,
           categoriaTipo: true,
-          tipoVinculo: true,
           caracteristicas: true,
         },
   
@@ -394,7 +392,6 @@ export class BienSecuestradoPdRepository {
         relations: {
           operativo: true,
           categoriaTipo: true,
-          tipoVinculo: true,
           caracteristicas: true,
         },
       })

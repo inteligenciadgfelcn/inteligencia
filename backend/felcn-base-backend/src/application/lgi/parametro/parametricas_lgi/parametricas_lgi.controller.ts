@@ -174,9 +174,9 @@ export class ParametricasLgiController extends BaseController {
     return this.caracteristicaService.findAllCaracteristicaClase(idClase)
   }
 
-  @Get('allSituacionlegalBien')
+  @Get('allSituacionBien')
   @ApiOperation({
-    summary: 'Listar situacion legal',
+    summary: 'Listar situacion del bien ejemplo: depositario',
   })
   findAll() {
     return this.situacionLegalService.findAll()
@@ -184,7 +184,7 @@ export class ParametricasLgiController extends BaseController {
 
   @Get('allVinculo')
   @ApiOperation({
-    summary: 'Listar vinculo',
+    summary: 'Listar vinculo para bienes secuestrados',
   })
   findAllVinculo() {
     return this.vinculoService.findAll()
@@ -201,7 +201,10 @@ export class ParametricasLgiController extends BaseController {
     return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
   }
 
-  @Get('allTipoSitucionBien')
+  @Get('allTipoSituacionBien')
+   @ApiOperation({
+    summary: 'Listar bienes siuacion legal del bien',
+  })
   findAllSituacionLegalBien() {
     return this.situacionLegalBienService.findAll()
   }

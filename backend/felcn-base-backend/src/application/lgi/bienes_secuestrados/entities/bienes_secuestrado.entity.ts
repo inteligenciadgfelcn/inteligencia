@@ -93,13 +93,6 @@ export class BieneSecuestradoLgi {
   lugarSecuestro?: string | null
 
   @Column({
-    name: 'id_tipo_vinculo',
-    type: 'integer',
-    nullable: true,
-  })
-  idTipoVinculo?: number | null
-
-  @Column({
     name: 'pericia',
     type: 'boolean',
     default: false,
@@ -136,12 +129,6 @@ export class BieneSecuestradoLgi {
     name: 'cattipo_id',
   })
   categoriaTipo: CatalogoTipoLgi
-
-  @ManyToOne(() => TipoVinculoLgi)
-  @JoinColumn({
-    name: 'id_tipo_vinculo',
-  })
-  tipoVinculo?: TipoVinculoLgi | null
 
   @OneToMany(
     () => CaracteristicasBiene,

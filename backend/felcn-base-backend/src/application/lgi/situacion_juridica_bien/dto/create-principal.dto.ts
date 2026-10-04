@@ -5,13 +5,11 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger'
 import { CreateBienSecuestadoDto } from './create-bien-secuestrado.dto'
 import { CreateBienIncautadoDto } from './create-bien-incautado.dto'
 import { CreateBienConfiscadoDto } from './create-bien-confiscado.dto'
-import { CreateSituacionBienDto } from './create-situacion-bien.dto'
 
 export type DatosSituacionJuridica =
   | CreateBienSecuestadoDto
   | CreateBienIncautadoDto
   | CreateBienConfiscadoDto
-  | CreateSituacionBienDto
 
 export class CreateSituacionJuridicaBienDto {
   @ApiProperty({
@@ -23,11 +21,11 @@ export class CreateSituacionJuridicaBienDto {
 
   @ApiProperty({
     example: 1,
-    enum: [1, 2, 3, 4, 5],
+    enum: [1, 2, 3],
   })
   @Type(() => Number)
   @IsInt()
-  @IsIn([1, 2, 3, 4, 5])
+  @IsIn([1, 2, 3])
   idTipoSituacionLegalBien: number
 
   @ApiProperty({
@@ -40,9 +38,6 @@ export class CreateSituacionJuridicaBienDto {
       },
       {
         $ref: getSchemaPath(CreateBienConfiscadoDto),
-      },
-      {
-        $ref: getSchemaPath(CreateSituacionBienDto),
       },
     ],
   })
@@ -60,10 +55,6 @@ export class CreateSituacionJuridicaBienDto {
 
       case 3:
         return CreateBienConfiscadoDto
-
-      case 4:
-      case 5:
-        return CreateSituacionBienDto
 
       default:
         return Object

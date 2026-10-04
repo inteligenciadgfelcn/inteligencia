@@ -8,48 +8,32 @@ export class SituacionBien {
     name: 'sitb_id',
     type: 'bigint',
   })
-  sitbId: number
+  sitbId: string
 
   @Column({
     name: 'itembiensec_id',
     type: 'bigint',
   })
-  itemBienSecId: number
-
-  @Column({
-    name: 'fechareq',
-    type: 'timestamptz',
-  })
-  fechaRequerimiento: Date
+  itemBienSecId: string
 
   @Column({
     name: 'fisreq',
     type: 'varchar',
     length: 300,
-    nullable: true,
   })
-  fiscalRequirente?: string | null
+  fiscalRequirente: string
 
   @Column({
     name: 'calb_id',
-    type: 'integer',
-    nullable: true,
+    type: 'bigint',
   })
-  calbId?: number | null
+  calbId: string
 
   @Column({
     name: 'fechaent',
-    type: 'timestamptz',
-    nullable: true,
+    type: 'timestamp',
   })
-  fechaEntrega?: Date | null
-
-  @Column({
-    name: 'responsablee',
-    type: 'varchar',
-    length: 150,
-  })
-  responsableEntrega: string
+  fechaEntrega: Date
 
   @Column({
     name: 'responsabler',
@@ -62,8 +46,9 @@ export class SituacionBien {
     name: 'institucion',
     type: 'varchar',
     length: 150,
+    nullable: true,
   })
-  institucion: string
+  institucion?: string | null
 
   @Column({
     name: 'ubicacion',
@@ -75,14 +60,28 @@ export class SituacionBien {
 
   @Column({
     name: 'fechahoraing',
-    type: 'timestamptz',
+    type: 'timestamp',
   })
   fechaHoraIngreso: Date
 
   @Column({
     name: 'usuario',
-    type: 'varchar',
+    type: 'char',
     length: 15,
   })
   usuario: string
+
+  @Column({
+    name: 'id_tipo_documento',
+    type: 'integer',
+    nullable: true,
+  })
+  idTipoDocumento?: number | null
+
+  @Column({
+    name: 'numero_documento',
+    type: 'varchar',
+    nullable: true,
+  })
+  numeroDocumento?: string | null
 }
