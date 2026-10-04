@@ -15,8 +15,8 @@ export class InvestigadorLgiService {
     private readonly investigadorRepository: InvestigadorLgiRepository
   ) {}
 
-  async findAllGeneralInvestigadores(idGrupo: number): Promise<any[]> {
-    return this.investigadorRepository.findAllGeneralInvestigadores(idGrupo)
+  async findAllGeneralInvestigadores(idUsuario: number): Promise<any[]> {
+    return this.investigadorRepository.findAllGeneralInvestigadores(idUsuario)
   }
 
   async asignarInvestigador(casoId: number, dto: AsignarInvestigadorDto) {

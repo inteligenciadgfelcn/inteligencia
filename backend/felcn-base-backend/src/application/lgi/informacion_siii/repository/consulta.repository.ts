@@ -253,21 +253,19 @@ COALESCE((
   }
 
   async buscarPorNumerosCaso(
-  numerosCaso: string[]
-): Promise<ResultadoConsultaAvanzada[]> {
-  const numeros = [
-    ...new Set(
-      numerosCaso
-        .map((numero) => numero.trim().toUpperCase())
-        .filter(Boolean)
-    ),
-  ]
+    numerosCaso: string[]
+  ): Promise<ResultadoConsultaAvanzada[]> {
+    const numeros = [
+      ...new Set(
+        numerosCaso.map((numero) => numero.trim().toUpperCase()).filter(Boolean)
+      ),
+    ]
 
-  if (numeros.length === 0) {
-    return []
-  }
+    if (numeros.length === 0) {
+      return []
+    }
 
-  const sql = `
+    const sql = `
     SELECT
       o.id_operativo::text AS "idOperativo",
       TO_CHAR(o.fecha_operativo, 'DD/MM/YYYY HH24:MI')
@@ -442,9 +440,236 @@ COALESCE((
     ORDER BY o.fecha_operativo DESC, o.id_operativo DESC
   `
 
-  return this.dataSource.query<ResultadoConsultaAvanzada[]>(
-    sql,
-    [numeros]
-  )
-}
+    return this.dataSource.query<ResultadoConsultaAvanzada[]>(sql, [numeros])
+  }
+
+  async buscarCasosPrecedentesParaReporte(numerosCaso: string[]): Promise<
+    Array<
+      ResultadoConsultaAvanzada & {
+        aprehendidos: string
+        resumenOtros: string
+      }
+    >
+  > {
+    // Conserva buscarPorNumerosCaso() sin modificaciones.
+    // Esa consulta ya obtiene los bienes y sus totales.
+    const operativos = await this.buscarPorNumerosCaso(numerosCaso)
+
+    if (operativos.length === 0) {
+      return []
+    }
+
+    const idsOperativos = [
+      ...new Set(operativos.map((operativo) => String(operativo.idOperativo))),
+    ]
+
+    // Todas las personas del operativo:
+    // únicamente nombre completo y estado.
+    const filas: Array<{
+      idOperativo: string
+      aprehendidos: string
+    }> = await this.dataSource.query(
+      `
+      SELECT
+        per.id_operativo::text AS "idOperativo",
+
+        STRING_AGG(
+          CONCAT_WS(
+            ' ',
+            NULLIF(TRIM(per.nombres), ''),
+            NULLIF(TRIM(per.apellido_paterno), ''),
+            NULLIF(TRIM(per.apellido_materno), ''),
+            NULLIF(TRIM(per.apellido_esposo), '')
+          )
+          || ' ('
+          || COALESCE(
+            NULLIF(LOWER(TRIM(per.estado)), ''),
+            'sin estado'
+          )
+          || ')',
+          ', '
+          ORDER BY
+            per.nombres,
+            per.apellido_paterno,
+            per.apellido_materno
+        ) AS "aprehendidos"
+
+      FROM public.persona_auxiliar per
+
+      WHERE per.id_operativo = ANY($1::bigint[])
+
+      GROUP BY per.id_operativo
+    `,
+      [idsOperativos]
+    )
+
+    const aprehendidosPorOperativo = new Map<string, string>(
+      filas.map((fila) => [fila.idOperativo, fila.aprehendidos])
+    )
+
+    const otrosPorOperativo =
+      await this.obtenerResumenOtrosPorOperativos(idsOperativos)
+
+    return operativos.map((operativo) => ({
+      ...operativo,
+      aprehendidos:
+        aprehendidosPorOperativo.get(String(operativo.idOperativo)) ?? '',
+      resumenOtros: otrosPorOperativo.get(String(operativo.idOperativo)) ?? '',
+      detalleBienes: operativo.detalleBienes ?? [],
+      costoTotalAproximadoBienes: operativo.costoTotalAproximadoBienes ?? 0,
+      costoTotalCuantificadoBienes: operativo.costoTotalCuantificadoBienes ?? 0,
+    }))
+  }
+
+  async obtenerResumenOtrosPorOperativos(
+    idsOperativos: string[]
+  ): Promise<Map<string, string>> {
+    if (idsOperativos.length === 0) {
+      return new Map<string, string>()
+    }
+
+    const filas: Array<{
+      idOperativo: string
+      resumen: string
+    }> = await this.dataSource.query(
+      `
+      WITH detalles AS (
+        -- Drogas: conserva la unidad registrada en estado_droga.
+        SELECT
+          dr.id_operativo,
+          1 AS orden,
+          CONCAT_WS(
+            ' ',
+            dr.cantidad::text,
+            NULLIF(TRIM(ed.medida), ''),
+            'de',
+            COALESCE(
+              NULLIF(TRIM(td.descripcion), ''),
+              'droga sin tipo registrado'
+            )
+          )
+          || CASE
+            WHEN NULLIF(TRIM(ed.descripcion), '') IS NOT NULL
+              THEN ' (' || TRIM(ed.descripcion) || ')'
+            ELSE ''
+          END AS descripcion
+
+        FROM public.droga dr
+
+        LEFT JOIN public.estado_droga ed
+          ON ed.id_estado_droga = dr.id_estado_droga
+
+        LEFT JOIN parametricas.tipo_droga td
+          ON td.id_tipo_droga = ed.id_tipo_droga
+
+        WHERE dr.id_operativo = ANY($1::bigint[])
+
+        UNION ALL
+
+        -- Sustancias sólidas.
+        SELECT
+          ss.id_operativo,
+          2 AS orden,
+          CONCAT_WS(
+            ' ',
+            ss.cantidad::text,
+            'de',
+            COALESCE(
+              NULLIF(TRIM(ssd.descripcion), ''),
+              'sustancia sólida sin descripción'
+            )
+          ) AS descripcion
+
+        FROM public.sustancia_solida ss
+
+        LEFT JOIN parametricas.sustancia_solida_descripcion ssd
+          ON ssd.id_sustancia_solida_descripcion =
+            ss.id_sustancia_solida_descripcion
+
+        WHERE ss.id_operativo = ANY($1::bigint[])
+
+        UNION ALL
+
+        -- Sustancias líquidas.
+        SELECT
+          sl.id_operativo,
+          3 AS orden,
+          CONCAT_WS(
+            ' ',
+            sl.cantidad::text,
+            'de',
+            COALESCE(
+              NULLIF(TRIM(sld.descripcion), ''),
+              'sustancia líquida sin descripción'
+            )
+          ) AS descripcion
+
+        FROM public.sustancia_liquida sl
+
+        LEFT JOIN parametricas.sustancia_liquida_descripcion sld
+          ON sld.id_sustancia_liquida_descripcion =
+            sl.id_sustancia_liquida_descripcion
+
+        WHERE sl.id_operativo = ANY($1::bigint[])
+
+        UNION ALL
+
+        -- Hoja de coca.
+        SELECT
+          hc.id_operativo,
+          4 AS orden,
+          CONCAT_WS(
+            ' ',
+            hc.coca_cantidad::text,
+            'de hoja de coca'
+          ) AS descripcion
+
+        FROM public.hoja_coca hc
+
+        WHERE hc.id_operativo = ANY($1::bigint[])
+
+        UNION ALL
+
+        -- Fábricas y laboratorios.
+        SELECT
+          f.id_operativo,
+          5 AS orden,
+          CONCAT_WS(
+            ' ',
+            f.cantidad::text,
+            COALESCE(
+              NULLIF(TRIM(tf.descripcion), ''),
+              'fábrica o laboratorio sin descripción'
+            )
+          ) AS descripcion
+
+        FROM public.fabrica f
+
+        LEFT JOIN public.fabrica_modelo fm
+          ON fm.id_fabrica_modelo = f.id_fabrica_modelo
+
+        LEFT JOIN parametricas.tipo_fabrica tf
+          ON tf.id_tipo_fabrica = fm.id_tipo_fabrica
+
+        WHERE f.id_operativo = ANY($1::bigint[])
+      )
+
+      SELECT
+        id_operativo::text AS "idOperativo",
+
+        STRING_AGG(
+          descripcion,
+          '; '
+          ORDER BY orden, descripcion
+        ) AS "resumen"
+
+      FROM detalles
+
+      GROUP BY id_operativo
+    `,
+      [idsOperativos]
+    )
+
+    return new Map(filas.map((fila) => [fila.idOperativo, fila.resumen]))
+  }
 }

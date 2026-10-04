@@ -14,10 +14,17 @@ import { EstadisticasLgiRepository } from './repository/estadisticas_lgi.reposit
 import { ConsultaSiiiRepository } from '../informacion_siii/repository/consulta.repository'
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
+import { InvestigadoresModule } from '../investigadores/investigadores.module'
 
 @Module({
-  imports: [ExportModule],
-  controllers: [ReportesLgiController, EstadisticasLgiController],
+  imports: [
+    ExportModule,
+    InvestigadoresModule,
+  ],
+  controllers: [
+    ReportesLgiController,
+    EstadisticasLgiController,
+  ],
   providers: [
     ActuacionLgiService,
     ActuacionReporteRepository,
@@ -30,9 +37,8 @@ import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/gru
     EstadisticasLgiRepository,
     ConsultaSiiiRepository,
     DistritalLgiRepository,
-     GrupoLgiRepository,
+    GrupoLgiRepository,
   ],
-
   exports: [
     ActuacionLgiService,
     ActuacionReporteRepository,
@@ -45,7 +51,7 @@ import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/gru
     EstadisticasLgiRepository,
     ConsultaSiiiRepository,
     DistritalLgiRepository,
-     GrupoLgiRepository,
+    GrupoLgiRepository,
   ],
 })
 export class ReportesLgiModule {}

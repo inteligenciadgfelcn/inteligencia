@@ -414,26 +414,55 @@
         white-space: nowrap;
       }
 
+      .tabla-bienes {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 10px;
+      }
+
+      .tabla-bienes th,
+      .tabla-bienes td {
+        padding: 5px;
+        border-bottom: 1px solid #ddd;
+        vertical-align: top;
+        overflow-wrap: break-word;
+      }
+
+      .tabla-bienes th {
+        text-align: left;
+      }
+
+      .tabla-bienes .col-descripcion {
+        width: 40%;
+      }
+
+      .tabla-bienes .col-monto {
+        width: 30%;
+        text-align: right;
+      }
+
       /* ==================================================
        MUESTRARIO FOTOGRÁFICO
        ================================================== */
 
       .muestrario {
         padding: 2mm;
-        break-inside: avoid;
-        page-break-inside: avoid;
+        break-inside: auto;
+        page-break-inside: auto;
       }
 
       .fotografias {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 2mm;
         margin-top: 2mm;
       }
 
       .fotografia {
         position: relative;
-        height: 43mm;
+        min-width: 0;
+        height: 30mm;
         overflow: hidden;
         background: var(--verde-claro);
         border: 1px solid var(--verde);
@@ -445,7 +474,7 @@
         display: block;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
       }
 
       .numero-fotografia {
@@ -542,7 +571,7 @@
 
         <aside class='columna-izquierda'>
           <h2 class='titulo-accion'>
-            {{accion.tipo}}
+            Legitimación de Ganancias Ilícitas
           </h2>
 
           <div class='fila-doble'>
@@ -589,13 +618,25 @@
             </div>
           </div>
 
-          <div class='campo-completo'>
-            <div class='campo-valor'>
-              {{accion.etapa}}
+          <div class='fila-doble'>
+            <div class='campo'>
+              <div class='campo-valor'>
+                {{accion.etapa}}
+              </div>
+
+              <div class='campo-etiqueta'>
+                Etapa
+              </div>
             </div>
 
-            <div class='campo-etiqueta'>
-              Etapa
+            <div class='campo'>
+              <div class='campo-valor'>
+                {{accion.cudIfp}}
+              </div>
+
+              <div class='campo-etiqueta'>
+                inv.fin paralela
+              </div>
             </div>
           </div>
 
@@ -621,13 +662,15 @@
 
           <div class='campo-completo'>
             <div class='campo-valor investigadores'>
-              <div>
-                {{accion.investigadorPrincipal}}
-              </div>
+              {{#each accion.investigadores}}
+                <div>{{this}}</div>
+              {{else}}
+                <div>Sin investigadores asignados.</div>
+              {{/each}}
             </div>
 
             <div class='campo-etiqueta'>
-              Investigador asignado al caso
+              Investigadores asignados al caso
             </div>
           </div>
 
@@ -641,36 +684,22 @@
             </div>
           </div>
 
-          <!-- SÍNTESIS DEL DELITO PRECEDENTE -->
+          <div class='campo-completo'>
+            <div class='campo-valor'>
+              {{accion.controlJurisdiccional}}
+            </div>
+
+            <div class='campo-etiqueta'>
+              Control jurisdiccional
+            </div>
+          </div>
+
+          <!-- PERSONAS INVESTIGADAS -->
 
           <section class='seccion'>
             <h2 class='titulo-seccion'>
-              Síntesis del caso delito precedente:
+              Personas Investigadas:
             </h2>
-
-            <div class='dato'>
-              <strong>Caso:</strong>
-              {{delitoPrecedente.numeroCaso}}
-            </div>
-
-            <div class='dato'>
-              <strong>Fecha:</strong>
-              {{delitoPrecedente.fecha}}
-            </div>
-
-            <div class='dato'>
-              <strong>Unidad:</strong>
-              {{delitoPrecedente.unidad}}
-            </div>
-
-            <div class='dato'>
-              <strong>Lugar:</strong>
-              {{delitoPrecedente.lugar}}
-            </div>
-
-            <div class='dato'>
-              <strong>Aprehendidos:</strong>
-            </div>
 
             <ol class='lista'>
               {{#each personasAfectadas}}
@@ -685,89 +714,66 @@
             </ol>
           </section>
 
-          {{#if delitoPrecedente.inmuebleSecuestrado}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Inmueble secuestrado:
-              </h2>
+          <!-- SÍNTESIS DEL DELITO PRECEDENTE -->
 
-              <p class='texto'>
-                {{delitoPrecedente.inmuebleSecuestrado}}
+          <section class='seccion'>
+            <h2 class='titulo-seccion'>
+              Datos de los casos precedentes
+            </h2>
+
+            {{#each delitoPrecedente}}
+              <div class='seccion'>
+                <div class='dato'>
+                  <strong>Caso N°:</strong>
+                  {{numeroCaso}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Nombre del caso:</strong>
+                  {{nombreCaso}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Fecha:</strong>
+                  {{fecha}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Unidad:</strong>
+                  {{unidad}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Lugar:</strong>
+                  {{lugar}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Personas implicadas:</strong>
+                  {{aprehendidos}}
+                </div>
+
+                <p class='dato'>
+                  <strong>Bienes registrados:</strong>
+                  {{resumenBienes}}
+                </p>
+
+                <div class='dato'>
+                  <strong>Total aproximado:</strong>
+                  {{costoTotalAproximado}}
+                </div>
+
+                <div class='dato'>
+                  <strong>Total cuantificado:</strong>
+                  {{costoTotalCuantificado}}
+                </div>
+              </div>
+            {{else}}
+              <p class='sin-registros'>
+                No existen delitos precedentes.
               </p>
-            </section>
-          {{/if}}
-
-          {{#if delitoPrecedente.dineroSecuestrado}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Secuestro de dinero:
-              </h2>
-
-              <ul class='lista'>
-                {{#each delitoPrecedente.dineroSecuestrado}}
-                  <li>
-                    {{this}}
-                  </li>
-                {{/each}}
-              </ul>
-            </section>
-          {{/if}}
-
-          {{#if delitoPrecedente.vehiculosSecuestrados}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Vehículos secuestrados:
-              </h2>
-
-              <ul class='lista'>
-                {{#each delitoPrecedente.vehiculosSecuestrados}}
-                  <li>
-                    {{this}}
-                  </li>
-                {{/each}}
-              </ul>
-            </section>
-          {{/if}}
-
-          {{#if delitoPrecedente.mediosComunicacion}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Medios de comunicación:
-              </h2>
-
-              <ul class='lista'>
-                {{#each delitoPrecedente.mediosComunicacion}}
-                  <li>
-                    {{this}}
-                  </li>
-                {{/each}}
-              </ul>
-            </section>
-          {{/if}}
-
-          {{#if delitoPrecedente.armamentoSecuestrado}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Armamento secuestrado:
-              </h2>
-
-              <p class='texto'>
-                {{delitoPrecedente.armamentoSecuestrado}}
-              </p>
-            </section>
-          {{/if}}
-
-          {{#if delitoPrecedente.sustanciasSecuestradas}}
-            <section class='seccion'>
-              <h2 class='titulo-seccion'>
-                Sustancia secuestrada:
-              </h2>
-
-              <p class='texto'>
-                {{delitoPrecedente.sustanciasSecuestradas}}
-              </p>
-            </section>
-          {{/if}}
+            {{/each}}
+          </section>
         </aside>
 
         <!-- =================================================
@@ -781,7 +787,7 @@
             <div class='novedad-grid'>
               <div class='campo'>
                 <div class='campo-valor'>
-                  {{reporte.numero}}/{{reporte.gestion}}
+                  {{novedad.tipo}}
                 </div>
 
                 <div class='campo-etiqueta'>
@@ -849,76 +855,64 @@
             </h2>
 
             <div class='categoria-bienes'>
-              Bienes inmuebles
+              Empresas
             </div>
 
-            <ul class='lista-bienes'>
-              {{#each bienesAfectados.inmuebles}}
-                <li>
-                  <div class='bien-fila'>
-                    <span class='bien-descripcion'>
-                      {{descripcion}}
-                    </span>
+            <table class='tabla-bienes'>
+              <thead>
+                <tr>
+                  <th class='col-descripcion'>Descripción</th>
+                  <th class='col-monto'>Valor aproximado</th>
+                </tr>
+              </thead>
 
-                    <span class='bien-valor'>
-                      {{valor}}
-                    </span>
-                  </div>
-                </li>
-              {{else}}
-                <li class='sin-registros'>
-                  Sin bienes inmuebles registrados.
-                </li>
-              {{/each}}
-            </ul>
+              <tbody>
+                {{#each bienesAfectados.inmuebles}}
+                  <tr>
+                    <td class='col-descripcion'>{{descripcion}}</td>
+                    <td class='col-monto'>{{valorAproximado}}</td>
+                  </tr>
+                {{else}}
+                  <tr>
+                    <td colspan='3' class='sin-registros'>
+                      Sin empresas registradas.
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
 
             <div class='categoria-bienes'>
-              Bienes muebles
+              Bienes
             </div>
 
-            <ul class='lista-bienes'>
-              {{#each bienesAfectados.muebles}}
-                <li>
-                  <div class='bien-fila'>
-                    <span class='bien-descripcion'>
-                      {{descripcion}}
-                    </span>
+            <table class='tabla-bienes'>
+              <thead>
+                <tr>
+                  <th class='col-descripcion'>Descripción</th>
+                  <th class='col-monto'>Valor aproximado</th>
+                  <th class='col-monto'>Cuantía presuntamente ilegal</th>
+                </tr>
+              </thead>
 
-                    <span class='bien-valor'>
-                      {{valor}}
-                    </span>
-                  </div>
-                </li>
-              {{else}}
-                <li class='sin-registros'>
-                  Sin bienes muebles registrados.
-                </li>
-              {{/each}}
-            </ul>
-
-            <div class='categoria-bienes'>
-              Dinero
-            </div>
-
-            <ul class='lista-bienes'>
-              {{#each bienesAfectados.dinero}}
-                <li>
-                  <div class='bien-fila'>
-                    <span class='bien-descripcion'>
-                      {{descripcion}}
-                    </span>
-
-                    <span class='bien-valor'>
-                      {{valor}}
-                    </span>
-                  </div>
-                </li>
-              {{else}}
-                <li class='sin-registros'>
-                  Sin dinero registrado.
-                </li>
-              {{/each}}
-            </ul>
+              <tbody>
+                {{#each bienesAfectados.muebles}}
+                  <tr>
+                    <td class='col-descripcion'>{{descripcion}}</td>
+                    <td class='col-monto'>{{valorAproximado}}</td>
+                    <td
+                      class='col-monto'
+                    >{{valorCuantiaPresuntamenteIlegal}}</td>
+                  </tr>
+                {{else}}
+                  <tr>
+                    <td colspan='3' class='sin-registros'>
+                      Sin bienes muebles registrados.
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
           </section>
 
           <!-- FOTOGRAFÍAS -->
