@@ -175,6 +175,25 @@ const mapCasoOperativoToForm = (
   breveDetalle: operativo?.breveDetalle ?? '',
 })
 
+/**
+ * Asegura que el valor ya guardado de un select en cascada (distrital, grupo,
+ * provincia, localidad) siempre esté visible y editable al editar un caso,
+ * aunque su catálogo aún no se haya cargado o no contenga ese id (mismatch).
+ */
+const opcionesConSeleccionActual = (
+  opciones: optionType[],
+  valorSeleccionado: unknown,
+  etiquetaFallback: (valor: number) => string
+): optionType[] => {
+  const valor = Number(valorSeleccionado)
+  if (valor <= 0) return opciones
+  if (opciones.some((o) => Number(o.value) === valor)) return opciones
+  return [
+    { id: String(valor), value: String(valor), label: etiquetaFallback(valor) },
+    ...opciones,
+  ]
+}
+
 export function DatosGeneralesForm({
   titulo,
   onGuardar,
@@ -338,11 +357,48 @@ export function DatosGeneralesForm({
   const categoriaOperativoSeleccionada = watch('idCategoriaOperativo')
   const departamentoSeleccionado = watch('idDepartamento')
   const provinciaSeleccionada = watch('idProvincia')
+  const localidadSeleccionada = watch('idLocalidad')
   const unidadSeleccionada = watch('idUnidad')
   const distritalSeleccionado = watch('idDistrital')
+  const grupoSeleccionado = watch('idGrupo')
+
+  // Opciones de selects en cascada con fallback para que el valor guardado
+  // del caso en edición siempre se muestre aunque el catálogo tarde o falte.
+  const opcionesDistritalEstFinal = opcionesConSeleccionActual(
+    opcionesDistritalEst,
+    distritalSeleccionado,
+    (v) => `Distrital ${v}`
+  )
+  const opcionesGrupoEstFinal = opcionesConSeleccionActual(
+    opcionesGrupoEst,
+    grupoSeleccionado,
+    (v) => `Grupo ${v}`
+  )
+  const opcionesProvinciaFinal = opcionesConSeleccionActual(
+    opcionesProvincia,
+    provinciaSeleccionada,
+    (v) => `Provincia ${v}`
+  )
+  const opcionesMunicipioFinal = opcionesConSeleccionActual(
+    opcionesMunicipio,
+    localidadSeleccionada,
+    (v) => `Municipio ${v}`
+  )
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null)
-  const cargandoDesdePropsRef = useRef(false)
+  // Solo se hidrata una vez por caso: evita que un refetch de `datosCaso`
+  // pise lo que el usuario ya está editando.
+  const casoHidratadoRef = useRef<string | null>(null)
+  // Valores de los selects en cascada aplicados programáticamente al hidratar:
+  // los efectos de cascada solo deben dispararse cuando el usuario cambia un
+  // valor, no cuando el valor proviene del caso cargado.
+  const valoresHidratadosRef = useRef<{
+    idDepartamento: number
+    idProvincia: number
+    idUnidad: number
+    idDistrital: number
+    idCategoria: number
+  } | null>(null)
 
   const [latD, setLatD] = useState<string>('')
   const [latM, setLatM] = useState<string>('')
@@ -484,16 +540,19 @@ export function DatosGeneralesForm({
 
     const cargarItemsOperativo = async () => {
       const idCategoria = Number(categoriaOperativoSeleccionada)
+      const hidratados = valoresHidratadosRef.current
+      const esValorProgramatico =
+        hidratados !== null && idCategoria === hidratados.idCategoria
 
       if (idCategoria <= 0) {
-        if (!cargandoDesdePropsRef.current) {
+        if (!esValorProgramatico) {
           setOpcionesOperativoEn([])
           setValue('idItemOperativo', 0)
         }
         return
       }
 
-      if (cargandoDesdePropsRef.current) return
+      if (esValorProgramatico) return
 
       try {
         const respuesta =
@@ -532,7 +591,10 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     const id = Number(departamentoSeleccionado)
-    if (id > 0 && !cargandoDesdePropsRef.current) {
+    const hidratados = valoresHidratadosRef.current
+    const esValorProgramatico =
+      hidratados !== null && id === hidratados.idDepartamento
+    if (id > 0 && !esValorProgramatico) {
       setValue('idProvincia', 0)
       setValue('idLocalidad', 0)
       void cargarProvincias(id)
@@ -541,7 +603,10 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     const id = Number(provinciaSeleccionada)
-    if (id > 0 && !cargandoDesdePropsRef.current) {
+    const hidratados = valoresHidratadosRef.current
+    const esValorProgramatico =
+      hidratados !== null && id === hidratados.idProvincia
+    if (id > 0 && !esValorProgramatico) {
       setValue('idLocalidad', 0)
       void cargarLocalidades(id)
     }
@@ -549,7 +614,10 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     const id = Number(unidadSeleccionada)
-    if (id > 0 && !cargandoDesdePropsRef.current) {
+    const hidratados = valoresHidratadosRef.current
+    const esValorProgramatico =
+      hidratados !== null && id === hidratados.idUnidad
+    if (id > 0 && !esValorProgramatico) {
       setValue('idDistrital', 0)
       setValue('idGrupo', 0)
       void cargarDistritales(id)
@@ -558,7 +626,10 @@ export function DatosGeneralesForm({
 
   useEffect(() => {
     const id = Number(distritalSeleccionado)
-    if (id > 0 && !cargandoDesdePropsRef.current) {
+    const hidratados = valoresHidratadosRef.current
+    const esValorProgramatico =
+      hidratados !== null && id === hidratados.idDistrital
+    if (id > 0 && !esValorProgramatico) {
       setValue('idGrupo', 0)
       void cargarGrupos(id)
     }
@@ -697,6 +768,10 @@ export function DatosGeneralesForm({
     const operativo = datosCaso.operativos?.[0] ?? null
     const mapped = mapCasoOperativoToForm(caso, operativo)
 
+    const idCasoRef = String(caso?.idCaso ?? '')
+    if (idCasoRef && casoHidratadoRef.current === idCasoRef) return
+    casoHidratadoRef.current = idCasoRef
+
     setDatosLectura({
       numeroOperativoCaso: caso?.numeroOperativo ?? '',
       nombreCaso: caso?.nombreCaso ?? '',
@@ -715,14 +790,20 @@ export function DatosGeneralesForm({
     })
 
     void (async () => {
-      // Bloquea temporalmente los useEffect de cascada para evitar limpiezas
-      cargandoDesdePropsRef.current = true
-
       const idDepto = Number(mapped.idDepartamento)
       const idProv = Number(mapped.idProvincia)
       const idUnidad = Number(mapped.idUnidad)
       const idDistrital = Number(mapped.idDistrital)
       const idCategoria = Number(mapped.idCategoriaOperativo)
+
+      // Estos valores provienen del caso cargado: la cascada no debe limpiarlos.
+      valoresHidratadosRef.current = {
+        idDepartamento: idDepto,
+        idProvincia: idProv,
+        idUnidad,
+        idDistrital,
+        idCategoria,
+      }
 
       // Cargar primer nivel de dependencias (para no chocar estados de limpieza sincrona)
       await Promise.all([
@@ -760,11 +841,6 @@ export function DatosGeneralesForm({
       // Todas las opciones ya están precargadas.
       // Hacer reset emparejará los values exactos en la UI porque las etiquetas ya existen en el render
       reset({ ...DEFAULT_VALUES, ...mapped })
-
-      // Liberar el bloqueo después del ciclo de render de react-hook-form
-      setTimeout(() => {
-        cargandoDesdePropsRef.current = false
-      }, 300)
     })()
   }, [
     datosCaso,
@@ -893,13 +969,13 @@ export function DatosGeneralesForm({
             </label>
             <Select
               id="idDistrital"
-              options={opcionesDistritalEst.map((opt) => ({
+              options={opcionesDistritalEstFinal.map((opt) => ({
                 value: Number(opt.value),
                 label: opt.label,
               }))}
               placeholder="Seleccione un dato"
               className={`w-full ${errors.idDistrital ? 'border-danger' : ''}`}
-              disabled={opcionesDistritalEst.length === 0}
+              disabled={opcionesDistritalEstFinal.length === 0}
               {...register('idDistrital', {
                 ...reglaObligatorio,
                 valueAsNumber: true,
@@ -917,13 +993,13 @@ export function DatosGeneralesForm({
             </label>
             <Select
               id="idGrupo"
-              options={opcionesGrupoEst.map((opt) => ({
+              options={opcionesGrupoEstFinal.map((opt) => ({
                 value: Number(opt.value),
                 label: opt.label,
               }))}
               placeholder="Seleccione un dato"
               className={`w-full ${errors.idGrupo ? 'border-danger' : ''}`}
-              disabled={opcionesGrupoEst.length === 0}
+              disabled={opcionesGrupoEstFinal.length === 0}
               {...register('idGrupo', {
                 ...reglaObligatorio,
                 valueAsNumber: true,
@@ -1262,13 +1338,13 @@ export function DatosGeneralesForm({
             </label>
             <Select
               id="idProvincia"
-              options={opcionesProvincia.map((opt) => ({
+              options={opcionesProvinciaFinal.map((opt) => ({
                 value: Number(opt.value),
                 label: opt.label,
               }))}
               placeholder="Seleccione un dato"
               className={`w-full ${errors.idProvincia ? 'border-danger' : ''}`}
-              disabled={opcionesProvincia.length === 0}
+              disabled={opcionesProvinciaFinal.length === 0}
               {...register('idProvincia', {
                 ...reglaObligatorio,
                 valueAsNumber: true,
@@ -1289,13 +1365,13 @@ export function DatosGeneralesForm({
             </label>
             <Select
               id="idLocalidad"
-              options={opcionesMunicipio.map((opt) => ({
+              options={opcionesMunicipioFinal.map((opt) => ({
                 value: Number(opt.value),
                 label: opt.label,
               }))}
               placeholder="Seleccione un dato"
               className={`w-full ${errors.idLocalidad ? 'border-danger' : ''}`}
-              disabled={opcionesMunicipio.length === 0}
+              disabled={opcionesMunicipioFinal.length === 0}
               {...register('idLocalidad', {
                 ...reglaObligatorio,
                 valueAsNumber: true,

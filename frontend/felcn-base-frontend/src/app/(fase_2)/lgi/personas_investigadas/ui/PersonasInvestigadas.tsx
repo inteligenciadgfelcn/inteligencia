@@ -22,7 +22,7 @@ import type {
   TipoDocumentoLgi,
 } from '../../(parametricas)/types/parametricas.types'
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
-import { PersonaUpsertDialog } from '../../registro_caso/ui/PersonaUpsertDialog'
+import { PersonaUpsertDialog } from '../../registro_caso/ui/shared/PersonaUpsertDialog'
 import { formatNombreCompleto } from '../../registro_caso/mappers/registro-caso.mappers'
 import type {
   PersonaImplicadaPayload,

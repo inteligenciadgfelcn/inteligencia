@@ -18,6 +18,7 @@ export interface CatalogOption<T = unknown> {
 export interface AsignacionLgiDetalle {
   casosId: string
   dptoavId: string
+  idGrupo: number | null
   uniAbrev: string | null
   disId: string
   descripcionGrupo?: string | null

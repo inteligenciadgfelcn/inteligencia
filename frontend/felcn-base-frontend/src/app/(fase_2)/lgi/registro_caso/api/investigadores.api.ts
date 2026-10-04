@@ -3,6 +3,7 @@ import { sesionPeticion } from '@/utils/peticion';
 import type {
   InvestigadoresCasoResponse,
   InvestigadoresGeneralResponse,
+  InvestigadorGeneralRow,
   AsignarInvestigadorPayload,
   SepararInvestigadorPayload,
 } from '../types/investigadores.types';
@@ -13,6 +14,14 @@ export const InvestigadoresApi = {
   listarPorCaso(casoId: string | number): Promise<InvestigadoresCasoResponse> {
     return sesionPeticion({
       url: `${BASE}/caso/${casoId}`,
+      method: 'get',
+      withCredentials: true,
+    });
+  },
+
+  listarPorUnidad(): Promise<InvestigadorGeneralRow[]> {
+    return sesionPeticion({
+      url: `${BASE}/unidad`,
       method: 'get',
       withCredentials: true,
     });

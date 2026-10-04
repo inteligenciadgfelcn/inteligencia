@@ -17,6 +17,7 @@ import type {
   PersonaImplicadaShortPayload,
   SituacionLegalCatalogo,
 } from '../types/registro-caso.types'
+import type { InvestigadorGeneralRow } from '../types/investigadores.types'
 
 export const mapCatalogoToOption = (
   item: CatalogoLgi
@@ -77,6 +78,14 @@ export const mapInicioCasoToOption = (
 ): CatalogOption<InicioCasoLgi> => ({
   value: String(item.id_inicio_caso),
   label: item.descripcion,
+  original: item,
+})
+
+export const mapInvestigadorToOption = (
+  item: InvestigadorGeneralRow
+): CatalogOption<InvestigadorGeneralRow> => ({
+  value: item.investigador,
+  label: `${item.investigador} / ${item.numero_pase}`,
   original: item,
 })
 

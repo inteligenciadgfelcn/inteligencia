@@ -22,7 +22,7 @@ export interface InvestigadoresCasoResponse {
 }
 
 export interface InvestigadorGeneralRow {
-  numeroPase: string;
+  numero_pase: string;
   investigador: string;
   usuarioId: string;
   gradoId: number;
