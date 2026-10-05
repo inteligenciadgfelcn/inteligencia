@@ -106,13 +106,15 @@ export class CreatePersonasJuridicaDto {
   longitud?: string | null
 
   @ApiPropertyOptional({
-    description: 'Identificador del tipo de vínculo',
-    example: '1',
+    description: 'Identificador del vínculo',
+    example: 1,
+    type: Number,
     nullable: true,
   })
   @IsOptional()
-  @IsString()
-  idTipoVinculo?: string | null
+  @Type(() => Number)
+  @IsInt({ message: 'idVinculo debe ser un número entero' })
+  idVinculo?: number | null
 
   @ApiPropertyOptional({
     description: 'Indica si la empresa fue sometida a pericia',

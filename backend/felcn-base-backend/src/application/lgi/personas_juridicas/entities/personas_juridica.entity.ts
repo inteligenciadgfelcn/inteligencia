@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { OperativoLgi } from '../../actuaciones/entities/operativoLgi.entity'
+import { VinculoLgi } from '../../parametro/vinculo/entities/vinculo.entity'
 
 @Entity({
   name: 'empresas',
@@ -101,11 +103,11 @@ export class PersonasJuridica {
   longitud?: string | null
 
   @Column({
-    name: 'id_tipo_vinculo',
-    type: 'varchar',
+    name: 'id_vinculo',
+    type: 'int',
     nullable: true,
   })
-  idTipoVinculo?: string | null
+  idVinculo: number | null
 
   @Column({
     name: 'pericia',
@@ -127,4 +129,24 @@ export class PersonasJuridica {
     nullable: true,
   })
   documento?: string | null
+
+  @ManyToOne(() => VinculoLgi, {
+    nullable: true,
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
+    name: 'id_vinculo',
+    referencedColumnName: 'idVinculo',
+  })
+  vinculo: VinculoLgi | null
+
+  @ManyToOne(() => OperativoLgi, {
+    nullable: false,
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
+    name: 'op_id',
+    referencedColumnName: 'opId',
+  })
+  operativo: OperativoLgi
 }
