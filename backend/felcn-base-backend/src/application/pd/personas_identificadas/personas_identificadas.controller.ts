@@ -13,22 +13,25 @@ import {
 import { PersonasIdentificadasService } from './personas_identificadas.service'
 import { CreatePersonasIdentificadaDto } from './dto/create-personas_identificada.dto'
 import { UpdatePersonasIdentificadaDto } from './dto/update-personas_identificada.dto'
-import { PaginacionQueryDto } from '@/common/dto'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { DeletePersonasIdentificadaDto } from './dto/delete-personas_identificada.dto'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
+import { BaseController } from '@/common/base/base-controller'
+import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
 @ApiTags('PD - Perdida de Dominio')
 @Controller('personas-afectadas')
-export class PersonasIdentificadasController {
-  [x: string]: any
+export class PersonasIdentificadasController extends BaseController {
+
   constructor(
     private readonly personasIdentificadasService: PersonasIdentificadasService
-  ) {}
+  ) {
+    super()
+  }
 
   @Post('crear-persona-afectada')
   @ApiOperation({
@@ -55,7 +58,7 @@ export class PersonasIdentificadasController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Obtener una persona afectada con sus situaciones jurídicas',
+    summary: 'Obtener una persona afectada',
   })
   findOne(
     @Param('id', ParseIntPipe)
