@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 
 import { BaseController } from '@/common/base/base-controller'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
@@ -174,9 +174,9 @@ export class ParametricasLgiController extends BaseController {
     return this.caracteristicaService.findAllCaracteristicaClase(idClase)
   }
 
-  @Get('allSituacionlegalBien')
+  @Get('allSituacionBien')
   @ApiOperation({
-    summary: 'Listar situacion legal',
+    summary: 'Listar situacion del bien ejemplo: depositario',
   })
   findAll() {
     return this.situacionLegalService.findAll()
@@ -184,7 +184,7 @@ export class ParametricasLgiController extends BaseController {
 
   @Get('allVinculo')
   @ApiOperation({
-    summary: 'Listar vinculo',
+    summary: 'Listar vinculo para bienes secuestrados',
   })
   findAllVinculo() {
     return this.vinculoService.findAll()
@@ -201,7 +201,10 @@ export class ParametricasLgiController extends BaseController {
     return this.tipoVinculoService.findAllByTipoVinculo(idVinculo)
   }
 
-  @Get('allTipoSitucionBien')
+  @Get('allTipoSituacionBien')
+  @ApiOperation({
+    summary: 'Listar bienes siuacion legal del bien',
+  })
   findAllSituacionLegalBien() {
     return this.situacionLegalBienService.findAll()
   }
@@ -252,5 +255,22 @@ export class ParametricasLgiController extends BaseController {
   })
   listarTipologias() {
     return this.parametricasLgiService.listarTipologias()
+  }
+
+  @Get('medidas-cautelares')
+  @ApiOperation({ summary: 'Listar las medidas cautelares' })
+  findAllGeneralMedidaCautelar() {
+    return this.parametricasLgiService.findAllGeneralMedidaCautelar()
+  }
+
+  @Get('medidas-cautelares/:id')
+  @ApiOperation({ summary: 'Obtener una medida cautelar por ID' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    example: 1,
+  })
+  findOneMedidaCautelar(@Param('id', ParseIntPipe) id: number) {
+    return this.parametricasLgiService.findOneMedidaCautelar(id)
   }
 }

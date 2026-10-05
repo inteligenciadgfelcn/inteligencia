@@ -21,6 +21,7 @@ export class VinculoLgiRepository {
 
   async findAllOrdered() {
     return await this.repository.find({
+      where: {empresa:false},
       order: {
         idVinculo: 'ASC',
       },

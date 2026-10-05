@@ -90,7 +90,6 @@ export class BienSecuestradoLgiRepository {
       relations: {
         operativo: true,
         categoriaTipo: true,
-        tipoVinculo: true,
         caracteristicas: true,
       },
 
@@ -279,7 +278,6 @@ export class BienSecuestradoLgiRepository {
       relations: {
         operativo: true,
         categoriaTipo: true,
-        tipoVinculo: true,
         caracteristicas: true,
       },
 
@@ -401,7 +399,6 @@ export class BienSecuestradoLgiRepository {
       relations: {
         operativo: true,
         categoriaTipo: true,
-        tipoVinculo: true,
         caracteristicas: true,
       },
     })

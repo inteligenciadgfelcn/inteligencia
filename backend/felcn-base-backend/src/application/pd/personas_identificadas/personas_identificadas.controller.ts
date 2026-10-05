@@ -23,16 +23,16 @@ import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
 @ApiTags('PD - Perdida de Dominio')
-@Controller('personas-identificadas')
+@Controller('personas-afectadas')
 export class PersonasIdentificadasController {
   [x: string]: any
   constructor(
     private readonly personasIdentificadasService: PersonasIdentificadasService
   ) {}
 
-  @Post('crear-persona-identificada')
+  @Post('crear-persona-afectada')
   @ApiOperation({
-    summary: 'Registrar una persona identificada',
+    summary: 'Registrar una persona afectada',
   })
   registrarPersona(@Body() dto: CreatePersonasIdentificadaDto) {
     return this.personasIdentificadasService.registrarPersona(dto)
@@ -40,7 +40,7 @@ export class PersonasIdentificadasController {
 
   @Get('caso/:casoId')
   @ApiOperation({
-    summary: 'Listar todas las personas identificadas en un caso con paginacion',
+    summary: 'Listar todas las personas afectadas en un caso con paginacion',
   })
   async findAll(
     @Param('casoId') casoId: string,
@@ -55,7 +55,7 @@ export class PersonasIdentificadasController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Obtener una persona identificada con sus situaciones jurídicas',
+    summary: 'Obtener una persona afectada con sus situaciones jurídicas',
   })
   findOne(
     @Param('id', ParseIntPipe)
@@ -66,7 +66,7 @@ export class PersonasIdentificadasController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: 'Actualizar una persona identificada',
+    summary: 'Actualizar una persona afectada',
   })
   update(
     @Param('id', ParseIntPipe)
@@ -79,7 +79,7 @@ export class PersonasIdentificadasController {
 
   @Patch(':id/eliminar')
   @ApiOperation({
-    summary: 'Eliminar lógicamente una persona identificada',
+    summary: 'Eliminar lógicamente una persona afectada',
   })
   updateEstado(
     @Param('id', ParseIntPipe)

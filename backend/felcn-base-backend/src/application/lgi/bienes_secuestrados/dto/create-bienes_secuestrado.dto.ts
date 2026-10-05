@@ -72,15 +72,6 @@ export class CreateBienesSecuestradoDto {
   lugarSecuestro?: string
 
   @ApiPropertyOptional({
-    description: 'Identificador del tipo de vínculo',
-    example: 1,
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  idTipoVinculo?: number
-
-  @ApiPropertyOptional({
     description: 'Indica si el bien requiere pericia',
     example: false,
     type: Boolean,

@@ -10,6 +10,7 @@ import { AsignacionLgi } from '@/application/lgi/asignacion_lgi/entities/asignac
 import { DocumentoContenidoCaso } from '@/application/lgi/asignacion_lgi/entities/docuemnto-contenido-caso.entity'
 import { DocumentacionCaso } from '@/application/lgi/asignacion_lgi/entities/documento-caso.entity'
 import { RegistrarEtapaProcesalPdDto } from '../dto/etapa-asignacion_pd.dto'
+import { formatearFechaBolivia } from '@/common/utils/date.util'
 
 @Injectable()
 export class EtapaProcesalPdRepository {
@@ -88,6 +89,7 @@ export class EtapaProcesalPdRepository {
       asignacion.fechaRecepcionFiscalia = new Date(dto.fechaRecepcionFiscalia)
       asignacion.diasOtorgados = dto.diasOtorgados
       asignacion.usuarioActualizacion = usuario
+      asignacion.fechaEtapaProcesal = new Date()
       const asignacionGuardada = await asignacionRepository.save(asignacion)
 
       return {
@@ -95,48 +97,54 @@ export class EtapaProcesalPdRepository {
         casosId: asignacionGuardada.casosId,
         etapaId: asignacionGuardada.idEtapa,
         idEstado: asignacionGuardada.idEstado,
-        fechaRecepcionFiscalia: asignacionGuardada.fechaRecepcionFiscalia,
+        fechaRecepcionFiscalia: formatearFechaBolivia(
+          asignacionGuardada.fechaRecepcionFiscalia
+        ),
         diasOtorgados: asignacionGuardada.diasOtorgados,
         docCasoId,
         documentoContenidoId,
+        fechaEtapaProcesal: formatearFechaBolivia(
+          asignacionGuardada.fechaEtapaProcesal
+        ),
       }
     })
   }
 
   async listarPorCaso(casosId: number) {
-  const documentos = await this.dataSourceLgi
-    .getRepository(DocumentacionCaso)
-    .find({
-      where: { casosId },
-      order: { docCasoId: 'DESC' },
-    })
-
-  const contenidoRepository = this.dataSourceLgi
-    .getRepository(DocumentoContenidoCaso)
-
-  return Promise.all(
-    documentos.map(async (documento) => {
-      const contenido = await contenidoRepository.findOne({
-        where: { docCasoId: documento.docCasoId },
+    const documentos = await this.dataSourceLgi
+      .getRepository(DocumentacionCaso)
+      .find({
+        where: { casosId },
+        order: { docCasoId: 'DESC' },
       })
 
-      const contenidoBase64 = contenido
-        ? contenido.archivo.toString('base64')
-        : null
+    const contenidoRepository = this.dataSourceLgi.getRepository(
+      DocumentoContenidoCaso
+    )
 
-      return {
-        docCasoId: documento.docCasoId,
-        descripcion: documento.descripcion.trim(),
-        nombreArchivo: `documento-${documento.docCasoId}.pdf`,
-        mimeType: contenido ? 'application/pdf' : null,
-        contenidoBase64,
-        dataUrl: contenidoBase64
-          ? `data:application/pdf;base64,${contenidoBase64}`
-          : null,
-      }
-    }),
-  )
-}
+    return Promise.all(
+      documentos.map(async (documento) => {
+        const contenido = await contenidoRepository.findOne({
+          where: { docCasoId: documento.docCasoId },
+        })
+
+        const contenidoBase64 = contenido
+          ? contenido.archivo.toString('base64')
+          : null
+
+        return {
+          docCasoId: documento.docCasoId,
+          descripcion: documento.descripcion.trim(),
+          nombreArchivo: `documento-${documento.docCasoId}.pdf`,
+          mimeType: contenido ? 'application/pdf' : null,
+          contenidoBase64,
+          dataUrl: contenidoBase64
+            ? `data:application/pdf;base64,${contenidoBase64}`
+            : null,
+        }
+      })
+    )
+  }
 
   async obtenerArchivo(casosId: number, docCasoId: number): Promise<Buffer> {
     // Verifica que el documento pertenezca al caso solicitado.
