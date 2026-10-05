@@ -24,10 +24,10 @@ import { CreateImplicadoLgiDto } from './dto/create-implicado.dto'
 import { UpdateImplicadoLgiDto } from './dto/update-implicado.dto'
 import { ImplicadoLgiService } from './implicados.service'
 
-@ApiTags('Implicados LGI')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('implicado-lgi')
 export class ImplicadoLgiController {
   constructor(private readonly service: ImplicadoLgiService) {}

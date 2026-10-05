@@ -23,7 +23,7 @@ import { PaginacionQueryDto } from '@/common/dto'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Ganancias ilícitas')
+@ApiTags('LGI - Presedencia')
 @Controller('presedencia-lgi')
 export class PresedenciaLgiController extends BaseController {
   constructor(private readonly presedenciaLgiService: PresedenciaLgiService) {

@@ -27,7 +27,6 @@ import { VinculoModule } from './parametro/vinculo/vinculo.module'
 import { TipoVinculoModule } from './parametro/tipo-vinculo/tipo-vinculo.module'
 import { CaracteristicasBienesModule } from './caracteristicas_bienes/caracteristicas_bienes.module'
 import { SituacionJuridicaBienModule } from './situacion_juridica_bien/situacion_juridica_bien.module'
-import { FotoBienesModule } from './foto_bienes/foto_bienes.module'
 import { PersonasJuridicasModule } from './personas_juridicas/personas_juridicas.module'
 import { SituacionJuridicaEmpresaModule } from './situacion_jurica_empresa/situacion_jurica_empresa.module'
 import { ReportesLgiModule } from './reportes_lgi/reportes_lgi.module';
@@ -69,10 +68,10 @@ import { SituacionBienLgiModule } from './situacion_bien_lgi/situacion_bien_lgi.
     CaracteristicasBienesModule,
     SituacionJuridicaBienModule,
     PersonasJuridicasModule,
+    ImplicadosModule,
     SituacionJuridicaEmpresaModule,
     ReportesLgiModule,
     PresedenciaLgiModule,
-    ImplicadosModule,
     ConclusionCasoModule,
     ImplicadosBienModule,
     VinculoBienLgiModule,

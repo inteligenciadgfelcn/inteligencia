@@ -212,7 +212,6 @@ export class ActuacionReporteRepository {
     return this.bienesRepository
       .createQueryBuilder('bien')
       .leftJoinAndSelect('bien.categoriaTipo', 'categoriaTipo')
-      .leftJoinAndSelect('bien.tipoVinculo', 'tipoVinculo')
       .leftJoinAndSelect('bien.caracteristicas', 'caracteristica')
       .leftJoinAndSelect(
         'bien.fotografias',
