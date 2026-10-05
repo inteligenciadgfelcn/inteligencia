@@ -1,6 +1,11 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 
+import { RegistroCasoApi } from '../../registro_caso/api/registro-caso.api'
+import type {
+  RespuestaPaginadaDatos,
+  PersonaImplicadaRow,
+} from '../../registro_caso/types/registro-caso.types'
 import type {
   BienCatalogo,
   BienSecuestradoRow,
@@ -8,17 +13,23 @@ import type {
   CaracteristicaCatalogo,
   CaracteristicaPayload,
   ClaseBien,
+  SituacionBienPayload,
   SituacionJuridicaBienPayload,
   TipoBien,
+  TipoDocumento,
   TipoSituacionBien,
   TipoVinculo,
   Vinculo,
+  VinculoBienPayload,
+  VinculoBienRow,
 } from '../types/bienes.types'
 
 const BASE_BIENES = `${Constantes.baseUrl}/bienes-secuestrados`
 const BASE_SITUACION = `${Constantes.baseUrl}/situacion-juridica-bien`
+const BASE_SITUACION_BIEN = `${Constantes.baseUrl}/situacion-bien-lgi`
 const BASE_CARACTERISTICAS = `${Constantes.baseUrl}/caracteristicas-bienes`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
+const BASE_VINCULO_BIEN = `${Constantes.baseUrl}/vinculo-bien-lgi`
 
 interface RespuestaPaginada<T> {
   finalizado: boolean
@@ -51,7 +62,9 @@ export const BienesApi = {
     })
   },
 
-  listarCaracteristicasClase(idClase: number): Promise<CaracteristicaCatalogo[]> {
+  listarCaracteristicasClase(
+    idClase: number
+  ): Promise<CaracteristicaCatalogo[]> {
     return sesionPeticion({
       url: `${BASE_PARAMETRICAS}/allCaracteristicasClase/${idClase}`,
       method: 'get',
@@ -77,15 +90,23 @@ export const BienesApi = {
 
   listarTiposSituacionBien(): Promise<TipoSituacionBien[]> {
     return sesionPeticion({
-      url: `${BASE_PARAMETRICAS}/allTipoSitucionBien`,
+      url: `${BASE_PARAMETRICAS}/allTipoSituacionBien`,
       method: 'get',
       withCredentials: true,
     })
   },
 
-  listarSituacionesLegalesBien(): Promise<CalidadBien[]> {
+  listarSituacionBien(): Promise<CalidadBien[]> {
     return sesionPeticion({
-      url: `${BASE_PARAMETRICAS}/allSituacionlegalBien`,
+      url: `${BASE_PARAMETRICAS}/allSituacionBien`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarTiposDocumento(): Promise<TipoDocumento[]> {
+    return sesionPeticion({
+      url: `${BASE_PARAMETRICAS}/allTipoDocumento`,
       method: 'get',
       withCredentials: true,
     })
@@ -107,9 +128,11 @@ export const BienesApi = {
   },
 
   async crearBien(formData: FormData): Promise<BienSecuestradoRow> {
-    const respuesta = await sesionPeticion<{
-      datos?: BienSecuestradoRow
-    } & Partial<BienSecuestradoRow>>({
+    const respuesta = await sesionPeticion<
+      {
+        datos?: BienSecuestradoRow
+      } & Partial<BienSecuestradoRow>
+    >({
       url: BASE_BIENES,
       method: 'post',
       body: formData,
@@ -130,15 +153,46 @@ export const BienesApi = {
     })
   },
 
-  registrarCaracteristica(
-    payload: CaracteristicaPayload
-  ): Promise<unknown> {
+  registrarSituacionBien(payload: SituacionBienPayload): Promise<unknown> {
+    return sesionPeticion({
+      url: BASE_SITUACION_BIEN,
+      method: 'post',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  registrarCaracteristica(payload: CaracteristicaPayload): Promise<unknown> {
     return sesionPeticion({
       url: BASE_CARACTERISTICAS,
       method: 'post',
       body: payload,
       withCredentials: true,
     })
+  },
+
+  listarVinculosBien(idItemBienSecuestrado: string): Promise<VinculoBienRow[]> {
+    return sesionPeticion({
+      url: `${BASE_VINCULO_BIEN}/bien/${idItemBienSecuestrado}`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  crearVinculoBien(payload: VinculoBienPayload): Promise<VinculoBienRow> {
+    return sesionPeticion({
+      url: BASE_VINCULO_BIEN,
+      method: 'post',
+      body: payload,
+      withCredentials: true,
+    })
+  },
+
+  listarPersonasImplicadas(
+    casoId: number,
+    params: { pagina: number; limite: number; filtro?: string }
+  ): Promise<RespuestaPaginadaDatos<PersonaImplicadaRow>> {
+    return RegistroCasoApi.listarPersonas(casoId, params)
   },
 
   eliminarBien(id: number): Promise<unknown> {

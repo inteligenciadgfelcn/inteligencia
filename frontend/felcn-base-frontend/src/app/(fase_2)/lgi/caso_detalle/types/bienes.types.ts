@@ -1,3 +1,5 @@
+import type { PersonaImplicadaRow } from '../../registro_caso/types/registro-caso.types'
+
 export interface BienCatalogo {
   bienId: number
   descripcion: string
@@ -44,6 +46,65 @@ export interface CalidadBien {
   descripcion: string
 }
 
+export interface TipoDocumento {
+  td_id: string
+  descripcion: string
+}
+
+export interface SituacionBienPayload {
+  itemBienSecId: string
+  fiscalRequirente: string
+  calbId: string
+  fechaEntrega: string
+  responsableRecepcion: string
+  institucion?: string | null
+  ubicacion?: string | null
+  idTipoDocumento?: number | null
+  numeroDocumento?: string | null
+}
+
+export interface PersonaVinculo {
+  deId: number
+  nombres?: string | null
+  paterno?: string | null
+  materno?: string | null
+  esposo?: string | null
+  tipoDocumentoId?: number | null
+  numeroDocumento?: string | null
+  sexo?: string | null
+  estado?: boolean | null
+  relacion?: string | null
+  observaciones?: string | null
+  tipoDocumento?: { tdId: number; descripcion: string } | null
+  [clave: string]: unknown
+}
+
+export interface VinculoBienRow {
+  idVinculoBien: string
+  idDetenidoAuxiliar: number | null
+  idVinculo: number | null
+  idTipoVinculo: number | null
+  fechaHoraIngreso?: string | null
+  idItemBienSecuestrado?: string | null
+  detenidoAuxiliar: PersonaVinculo | null
+}
+
+export interface VinculoBienPayload {
+  idDetenidoAuxiliar: number
+  idVinculo: number
+  idTipoVinculo: number
+  idItemBienSecuestrado: string
+}
+
+export interface VinculoBorradorRow {
+  idDetenidoAuxiliar: number
+  idVinculo: number
+  idTipoVinculo: number
+  vinculoDescripcion: string
+  tipoVinculoDescripcion: string
+  persona: PersonaImplicadaRow
+}
+
 export interface CaracteristicaBien {
   catcaracId: number
   descripcion: string
@@ -84,14 +145,6 @@ export interface DatosSituacionJuridicaBien {
   numSentJud?: string | null
   fechaSenjud?: string
   autoridad?: string | null
-  fechaRequerimiento?: string
-  fiscalRequirente?: string | null
-  calbId?: number | null
-  fechaEntrega?: string | null
-  responsableEntrega?: string
-  responsableRecepcion?: string
-  institucion?: string
-  ubicacion?: string | null
 }
 
 export interface SituacionJuridicaBienPayload {
@@ -114,12 +167,6 @@ export const VALORES_POR_DEFECTO = {
   direccion: '',
   latitud: null as number | null,
   longitud: null as number | null,
-  idVinculo: 0,
-  idTipoVinculo: 0,
-  nombreCompletoVinculo: '',
-  cedulaIdentidadVinculo: '',
-  nombreDepositario: '',
-  ciDepositario: '',
   costoAprox: 0,
   costoCuant: 0,
   pericia: false,
@@ -133,13 +180,13 @@ export const VALORES_POR_DEFECTO = {
   numSentJud: '',
   fechaSenjud: '',
   autoridad: '',
-  fechaRequerimiento: '',
-  fiscalRequirente: '',
   calbId: null as number | null,
+  fiscalRequirente: '',
   fechaEntrega: '',
-  responsableEntrega: '',
   responsableRecepcion: '',
   institucion: '',
   ubicacion: '',
+  idTipoDocumento: null as number | null,
+  numeroDocumento: '',
   fotografias: [] as File[],
 }
