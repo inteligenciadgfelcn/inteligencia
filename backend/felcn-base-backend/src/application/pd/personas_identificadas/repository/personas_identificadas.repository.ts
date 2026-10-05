@@ -46,26 +46,6 @@ export class PersonasIdentificadaRepository {
 
     const query = this.personasRepository
       .createQueryBuilder('p')
-      .leftJoinAndMapOne(
-        'p.ultimaSituacionJuridica',
-        SituacionJuridica,
-        's',
-        `s.sit_id = (
-          SELECT sj.sit_id
-          FROM situacion sj
-          WHERE sj.de_id = p.de_id
-          ORDER BY
-            sj.fechahoraing DESC NULLS LAST,
-            sj.sit_id DESC
-          LIMIT 1
-        )`
-      )
-      .leftJoinAndMapOne(
-        's.situacionLegal',
-        'situacionlegal',
-        'sl',
-        'sl.sl_id = s.sl_id'
-      )
       .where('p.caso_id = :casoId', {
         casoId,
       })
@@ -97,24 +77,9 @@ export class PersonasIdentificadaRepository {
   async findOne(deId: number): Promise<PersonasImplicada | null> {
     return this.personasRepository
       .createQueryBuilder('p')
-      .leftJoinAndSelect('p.situacionesJuridicas', 's')
-      .leftJoinAndMapOne(
-        's.situacionLegal',
-        'situacionlegal',
-        'sl',
-        'sl.sl_id = s.sl_id'
-      )
-      // .leftJoinAndMapOne(
-      //   's.tipoPersona',
-      //   'tipopersona',
-      //   'tp',
-      //   'tp.tp_id = s.sl_id'
-      // )
       .where('p.de_id = :deId', {
         deId,
       })
-      .orderBy('s.fecha', 'DESC')
-      .addOrderBy('s.sit_id', 'DESC')
       .getOne()
   }
 
