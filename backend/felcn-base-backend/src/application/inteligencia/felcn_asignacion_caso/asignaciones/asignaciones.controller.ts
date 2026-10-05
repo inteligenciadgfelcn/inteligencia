@@ -19,6 +19,7 @@ import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { CrearNumeroCasoDto } from './dto/create_numeroCaso.dto'
 import { AsignarNumeroCasoDto } from './dto/asignarNumeroCaso.dto'
+import { AsignarNumeroCasoManualDto } from './dto/asignarNumeroCasoManual.dto'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 
 @ApiBearerAuth()
@@ -113,5 +114,11 @@ export class AsignacionesController extends BaseController {
       dto.abreviatura,
       dto.letra
     )
+  }
+
+  @Post('asignar-numero-caso-manual')
+  @ApiOperation({ summary: 'Guardar numero de caso enviado manualmente' })
+  asignarNumeroCasoManual(@Body() dto: AsignarNumeroCasoManualDto) {
+    return this.service.asignarNumeroCasoManual(dto.nroOperativo, dto.nroCaso)
   }
 }

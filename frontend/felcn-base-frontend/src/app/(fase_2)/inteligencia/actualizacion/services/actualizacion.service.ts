@@ -70,3 +70,19 @@ export const saveAssignNroCaso = async (
   })
   return response
 }
+
+export const saveAssignNroCasoManual = async (
+  nroOperativo: string,
+  nroCaso: string
+): Promise<NroCasoResponse> => {
+  const response = await sesionPeticion({
+    url: `${Constantes.baseUrl}/asignaciones/asignar-numero-caso-manual`,
+    method: 'POST',
+    body: {
+      nroOperativo: nroOperativo,
+      nroCaso: nroCaso,
+    },
+    withCredentials: true,
+  })
+  return response
+}

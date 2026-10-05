@@ -244,11 +244,7 @@ export class AsignacionesService {
     return `${dpto}-${letra.trim()}-${max + 1}/${year}`
   }
 
-  async asignarNumeroCaso(
-    nroOperativo: string,
-    abreviatura: string,
-    letra: string
-  ) {
+  private async validarOperativoExistente(nroOperativo: string) {
     const result = await this.dataSourceSIII.query(
       `
       SELECT * FROM public.asignacion WHERE numero_operativo = $1
@@ -259,6 +255,16 @@ export class AsignacionesService {
     if (!result.length) {
       throw new NotFoundException('Asignación no encontrada')
     }
+
+    return result
+  }
+
+  async asignarNumeroCaso(
+    nroOperativo: string,
+    abreviatura: string,
+    letra: string
+  ) {
+    await this.validarOperativoExistente(nroOperativo)
 
     const nroCaso = await this.generarNumeroCaso(
       abreviatura.toUpperCase(),
@@ -274,6 +280,34 @@ export class AsignacionesService {
     return {
       message: 'Número de caso asignado correctamente',
       nroCaso,
+    }
+  }
+
+  async asignarNumeroCasoManual(nroOperativo: string, nroCaso: string) {
+    await this.validarOperativoExistente(nroOperativo)
+
+    const nroLimpio = cleanText(nroCaso).toUpperCase()
+    const datos = nroLimpio.match(
+      /^([A-Za-z0-9]+)-([A-Za-z0-9]+)-\d+\/\d{2,4}$/
+    )
+
+    if (!datos) {
+      throw new BadRequestException(
+        'Formato de número de caso inválido (Ej: CH-A-1/26)'
+      )
+    }
+
+    const letra = datos[2]
+
+    await this.asignacionesRepository.actualizarNumeroCasoDual(
+      nroOperativo,
+      nroLimpio,
+      letra
+    )
+
+    return {
+      message: 'Número de caso asignado correctamente',
+      nroCaso: nroLimpio,
     }
   }
 }

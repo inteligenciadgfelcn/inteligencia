@@ -16,6 +16,7 @@ import IconPrinter from '@/components/Icon/IconPrinter'
 import {
   generateNroCaso,
   saveAssignNroCaso,
+  saveAssignNroCasoManual,
 } from '../services/actualizacion.service'
 import { InterpreteMensajes } from '@/utils'
 import { useAlerts } from '@/hooks'
@@ -97,11 +98,18 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
   const onSubmit = async (values: FormState) => {
     try {
       setLoading(true)
-      const code = await saveAssignNroCaso(
-        getValues('nroRegistro'),
-        getValues('codigoDepartamento'),
-        getValues('letrasPrincipalAprendido')?.label
-      )
+      if (continuacionCaso) {
+        await saveAssignNroCasoManual(
+          getValues('nroRegistro'),
+          getValues('newCode')
+        )
+      } else {
+        await saveAssignNroCaso(
+          getValues('nroRegistro'),
+          getValues('codigoDepartamento'),
+          getValues('letrasPrincipalAprendido')?.label
+        )
+      }
 
       Alerta({
         mensaje: InterpreteMensajes({
