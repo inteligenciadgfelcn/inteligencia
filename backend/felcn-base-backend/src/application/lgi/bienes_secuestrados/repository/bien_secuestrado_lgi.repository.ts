@@ -109,7 +109,6 @@ export class BienSecuestradoLgiRepository {
       .createQueryBuilder('bien')
       .leftJoinAndSelect('bien.operativo', 'operativo')
       .leftJoinAndSelect('bien.categoriaTipo', 'categoriaTipo')
-      .leftJoinAndSelect('bien.tipoVinculo', 'tipoVinculo')
       .leftJoinAndSelect(
         'bien.caracteristicas',
         'caracteristicas',
@@ -163,15 +162,6 @@ export class BienSecuestradoLgiRepository {
             .orWhere(
               `
               categoriaTipo.descripcion
-              ILIKE :filtro
-            `,
-              {
-                filtro: valor,
-              }
-            )
-            .orWhere(
-              `
-              tipoVinculo.descripcion
               ILIKE :filtro
             `,
               {
@@ -518,10 +508,9 @@ export class BienSecuestradoLgiRepository {
             'situacionbienes'
               AS tabla,
             COALESCE(
-              sit.fechaent,
-              sit.fechareq
+              sit.fechaent
             )
-              AS fecha_situacion,
+              AS fecha_entrega,
             sit.fechahoraing
               AS fecha_hora_ingreso
 
@@ -736,9 +725,8 @@ export class BienSecuestradoLgiRepository {
 
             COALESCE(
               sit.fechaent,
-              sit.fechareq
             )
-              AS fecha_situacion,
+              AS fecha_entrega,
 
             sit.fechahoraing
               AS fecha_hora_ingreso,
@@ -749,9 +737,6 @@ export class BienSecuestradoLgiRepository {
 
               'itemBienSecId',
                 sit.itembiensec_id,
-
-              'fechaRequerimiento',
-                sit.fechareq,
 
               'fiscalRequirente',
                 sit.fisreq,
