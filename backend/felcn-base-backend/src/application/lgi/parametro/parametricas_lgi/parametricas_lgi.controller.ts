@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common'
 
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 
 import { BaseController } from '@/common/base/base-controller'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
@@ -202,7 +202,7 @@ export class ParametricasLgiController extends BaseController {
   }
 
   @Get('allTipoSituacionBien')
-   @ApiOperation({
+  @ApiOperation({
     summary: 'Listar bienes siuacion legal del bien',
   })
   findAllSituacionLegalBien() {
@@ -255,5 +255,22 @@ export class ParametricasLgiController extends BaseController {
   })
   listarTipologias() {
     return this.parametricasLgiService.listarTipologias()
+  }
+
+  @Get('medidas-cautelares')
+  @ApiOperation({ summary: 'Listar las medidas cautelares' })
+  findAllGeneralMedidaCautelar() {
+    return this.parametricasLgiService.findAllGeneralMedidaCautelar()
+  }
+
+  @Get('medidas-cautelares/:id')
+  @ApiOperation({ summary: 'Obtener una medida cautelar por ID' })
+  @ApiParam({
+    name: 'id',
+    type: Number,
+    example: 1,
+  })
+  findOneMedidaCautelar(@Param('id', ParseIntPipe) id: number) {
+    return this.parametricasLgiService.findOneMedidaCautelar(id)
   }
 }

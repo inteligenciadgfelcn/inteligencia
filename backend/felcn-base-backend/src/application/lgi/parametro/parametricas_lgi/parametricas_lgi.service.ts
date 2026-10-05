@@ -16,6 +16,7 @@ import { TipologiaLgiRepository } from './repository/tipologia.repository'
 import { CicloLgi } from './entity/ciclo.entity'
 import { TipologiaLgi } from './entity/tipologia.entity'
 import { VerboRectorLgi } from './entity/verbo-rector.entity'
+import { MedidaCautelarRepository } from './repository/medida_cautelar.repository'
 
 @Injectable()
 export class ParametricasLgiService {
@@ -33,7 +34,8 @@ export class ParametricasLgiService {
     private readonly tipoImplicadoRepository: TipoImplicadoRepository,
     private readonly cicloRepository: CicloLgiRepository,
     private readonly verboRectorRepository: VerboRectorLgiRepository,
-    private readonly tipologiaRepository: TipologiaLgiRepository
+    private readonly tipologiaRepository: TipologiaLgiRepository,
+    private readonly medidaCautelarRepository: MedidaCautelarRepository
   ) {}
 
   findAllDistrito(idUsuario: number) {
@@ -94,5 +96,13 @@ export class ParametricasLgiService {
 
   async listarTipologias(): Promise<TipologiaLgi[]> {
     return this.tipologiaRepository.findAllGeneral()
+  }
+
+  findAllGeneralMedidaCautelar() {
+    return this.medidaCautelarRepository.findAllGeneral()
+  }
+
+  findOneMedidaCautelar(id: number) {
+    return this.medidaCautelarRepository.findOne(id)
   }
 }

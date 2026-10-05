@@ -31,6 +31,8 @@ import { VerboRectorLgi } from './entity/verbo-rector.entity'
 import { CicloLgiRepository } from './repository/ciclo.repository'
 import { TipologiaLgiRepository } from './repository/tipologia.repository'
 import { VerboRectorLgiRepository } from './repository/verbo_rector.repository'
+import { MedidaCautelar } from './entity/medida_cautelar.entity'
+import { MedidaCautelarRepository } from './repository/medida_cautelar.repository'
 
 @Module({
   imports: [
@@ -45,7 +47,7 @@ import { VerboRectorLgiRepository } from './repository/verbo_rector.repository'
     TipoVinculoModule,
     TipoSituacionLegalBienLgiModule,
     TypeOrmModule.forFeature(
-      [TipoImplicado, CicloLgi, VerboRectorLgi, TipologiaLgi],
+      [TipoImplicado, CicloLgi, VerboRectorLgi, TipologiaLgi, MedidaCautelar],
       DB_LGI
     ),
   ],
@@ -67,6 +69,7 @@ import { VerboRectorLgiRepository } from './repository/verbo_rector.repository'
     CicloLgiRepository,
     VerboRectorLgiRepository,
     TipologiaLgiRepository,
+    MedidaCautelarRepository,
   ],
   exports: [
     ParametricasLgiService,
@@ -84,6 +87,7 @@ import { VerboRectorLgiRepository } from './repository/verbo_rector.repository'
     CicloLgiRepository,
     VerboRectorLgiRepository,
     TipologiaLgiRepository,
+    MedidaCautelarRepository,
   ],
 })
 export class ParametricasLgiModule {}
