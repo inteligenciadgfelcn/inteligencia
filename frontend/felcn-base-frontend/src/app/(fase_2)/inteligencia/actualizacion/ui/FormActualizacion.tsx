@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { BaseSyntheticEvent, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -31,6 +31,19 @@ const selectSchema = (message: string) =>
       { required_error: message }
     )
   )
+
+export const extraerDatosNroCaso = (
+  nroCaso: string
+): { codigoDepartamento: string; letra: string } | null => {
+  const match = nroCaso
+    .trim()
+    .match(/^([A-Za-z0-9]+)-([A-Za-z0-9]+)-\d+\/\d{2,4}$/)
+  if (!match) return null
+  return {
+    codigoDepartamento: match[1].toUpperCase(),
+    letra: match[2].toUpperCase(),
+  }
+}
 
 export const formSchema = z.object({
   letrasPrincipalAprendido: selectSchema(
@@ -109,6 +122,44 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
     }
   }
 
+  const onSubmitForm = (e: BaseSyntheticEvent) => {
+    if (continuacionCaso) {
+      const nro = (getValues('newCode') ?? '').trim()
+      if (nro) {
+        const datos = extraerDatosNroCaso(nro)
+        const letra = datos?.letra
+        const opcion = letras?.find(
+          (item) => item.descripcion.trim().toUpperCase() === letra
+        )
+
+        if (!datos || !opcion) {
+          e.preventDefault()
+          Alerta({
+            mensaje: InterpreteMensajes({
+              mensaje:
+                'El Nro Caso no tiene un formato válido ({codigoDepartamento}-{letra}-1/26) o la letra no existe en el catálogo de letras.',
+            }),
+            variant: 'error',
+          })
+          return
+        }
+
+        setValue('codigoDepartamento', datos.codigoDepartamento, {
+          shouldValidate: true,
+          shouldDirty: true,
+        })
+
+        setValue(
+          'letrasPrincipalAprendido',
+          { label: opcion.descripcion, value: opcion.descripcion },
+          { shouldValidate: true, shouldDirty: true }
+        )
+      }
+    }
+
+    return handleSubmit(onSubmit)(e)
+  }
+
   const onContinuacionChange = async (value: boolean) => {
     setContinuacionCaso(value)
     if (value) {
@@ -180,7 +231,7 @@ export function FormActualizacion({ caso, onActualizar }: Props) {
 
   return (
     <div className="panel p-4">
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={onSubmitForm}>
         <div className="grid grid-cols-12 gap-4">
           <div className="col-span-12 md:col-span-4">
             <AsyncSearchSelect<LetraInicial>
