@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm'
 import { OperativoLgi } from '../../actuaciones/entities/operativoLgi.entity'
-import { TipoVinculoLgi } from '../../parametro/tipo-vinculo/entities/tipo-vinculo.entity'
 import { CatalogoTipoLgi } from '../../parametro/catalogo-tipo/entities/catalogo-tipo.entity'
 import { CaracteristicasBiene } from '../../caracteristicas_bienes/entities/caracteristicas_biene.entity'
 import { FotoBienLgi } from '../../foto_bienes/entities/foto_biene.entity'
