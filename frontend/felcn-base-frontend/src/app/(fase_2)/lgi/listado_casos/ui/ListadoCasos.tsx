@@ -88,12 +88,12 @@ export function ListadoCasos() {
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: '',
+      accessor: 'fechainicio',
       title: 'Fecha inicio',
       render: (row) => formatFecha(row.fechainicio),
     },
     {
-      accessor: 'fechainicio',
+      accessor: 'fechainicio_calc',
       title: 'Tiempo transcurrido',
       render: (row) => {
         const tiempo = calcularTiempoTranscurridos(row.fechainicio)
@@ -118,7 +118,7 @@ export function ListadoCasos() {
       },
     },
     {
-      accessor: 'cudifp',
+      accessor: 'check_ifp',
       title: 'IFP',
       render: (row) => (
         row.cudifp?.trim().length > 2 ? (

@@ -1,286 +1,493 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { VristoDataTable, type Column } from '@/components/datatable/VristoDataTable';
+import { Button } from '@/components/ui/Button';
+import { AlertDialog } from '@/components/modales/AlertDialog';
+import IconLink from '@/components/Icon/IconLink';
+import IconTrash from '@/components/Icon/IconTrash';
+import { SiiiApi } from '../../api/siii.api';
+import { PresedenciaApi, PresedenciaCasoRow } from '../../../inicio_investigacion/api/presedencia.api';
+import type {
+  BienDetalleAvanzado,
+  ConsultaSiiiQueryDto,
+  ResultadoBusquedaAvanzada,
+} from '../../types/siii.types';
 
-import { Button } from '@/components/ui/Button'
-import { AlertDialog } from '@/components/modales/AlertDialog'
-import { VristoDataTable } from '@/components/datatable/VristoDataTable'
-import type { Column } from '@/components/datatable/VristoDataTable'
-import IconTrash from '@/components/Icon/IconTrash'
-
-import { PresedenciaApi } from '../../../inicio_investigacion/api/presedencia.api'
-import type { PresedenciaCasoRow } from '../../../inicio_investigacion/api/presedencia.api'
-
-type Props = {
-  casoId?: number | null
-  isLectura?: boolean
+interface Props {
+  casoId?: number | null;
+  isLectura?: boolean;
 }
 
-type CasoRelacionado = {
-  id: string
-  preseId: string
-  nrocasopre: string
-  nombreCaso: string
-  fechaOperativo: string
-  numeroOperativo: string
-  numeroInforme: string
-  ubicacionInstitucional: string
-  ubicacionGeografica: string
-  fiscalSolicitud: string
-  asignadoFiscal: string
-  tipoOperativo: string
-  categoriaOperativo: string
-  planOperacion: string
+interface PersonaImplicada {
+  nombre: string;
+  doc?: string;
+  nac?: string;
+  estado?: string;
 }
 
-const SIN_DATO = '-'
+const formatearCosto = (valor: number) =>
+  new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: 0,
+  }).format(valor);
 
-type Mensaje = {
-  tipo: 'success' | 'error'
-  texto: string
+const parsePersonas = (personasImplicadas: string): PersonaImplicada[] => {
+  if (!personasImplicadas) return [];
+  return personasImplicadas.split(' | ').map((bloque) => {
+    const lineas = bloque
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+    const extraer = (prefijo: string) =>
+      lineas.find((l) => l.startsWith(prefijo))?.replace(prefijo, '').trim();
+    return {
+      nombre: lineas[0] ?? '',
+      doc: extraer('Doc.:'),
+      nac: extraer('Nac.:'),
+      estado: extraer('Estado:'),
+    };
+  });
+};
+
+const estadoVariant = (estado: string) => {
+  const e = estado.toLowerCase();
+  if (e.includes('aprehendido'))
+    return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+  if (e.includes('arrestado'))
+    return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+  if (e.includes('principal'))
+    return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+  return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+};
+
+const separarFechaHora = (valor: string): { fecha: string; hora?: string } => {
+  if (!valor) return { fecha: '-', hora: undefined };
+  const partes = valor.trim().split(/\s+/);
+  return { fecha: partes[0], hora: partes[1] };
+};
+
+const bienEstados = (
+  bien: BienDetalleAvanzado
+): Array<{ label: string; className: string }> => {
+  const estados: Array<{ label: string; className: string }> = [];
+  if (bien.esSecuestrado)
+    estados.push({
+      label: 'Secuestrado',
+      className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    });
+  if (bien.esIncautado)
+    estados.push({
+      label: 'Incautado',
+      className: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+    });
+  if (bien.esConfiscado)
+    estados.push({
+      label: 'Confiscado',
+      className: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
+    });
+  if (bien.enInvestigacion)
+    estados.push({
+      label: 'En investigación',
+      className: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    });
+  return estados;
+};
+
+function BienesExpansion({ detalleBienes }: { detalleBienes: BienDetalleAvanzado[] }) {
+  if (!detalleBienes.length) {
+    return (
+      <div className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        Sin bienes registrados en este operativo.
+      </div>
+    );
+  }
+
+  return (
+    <div className="table-responsive">
+      <table className="w-full table-hover whitespace-nowrap">
+        <thead>
+          <tr className="border-b border-[#e0e6ed] dark:border-gray-700">
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Bien
+            </th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Cantidad
+            </th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Características
+            </th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Total aproximado
+            </th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Total cuantificado
+            </th>
+            <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">
+              Estado jurídico
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {detalleBienes.map((bien) => {
+            const caracteristicas = bien.caracteristicas
+              .map((c) => c.descripcion)
+              .join(', ');
+            return (
+              <tr
+                key={bien.idItemBienSecuestrado}
+                className="border-b border-[#e0e6ed] dark:border-gray-800"
+              >
+                <td className="px-3 py-2">
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {bien.tipoBien}
+                  </p>
+                </td>
+                <td className="px-3 py-2 text-sm">{bien.cantidad}</td>
+                <td className="px-3 py-2 text-sm text-gray-500">
+                  {caracteristicas || '-'}
+                </td>
+                <td className="px-3 py-2 text-sm">{formatearCosto(bien.costoAproximado)}</td>
+                <td className="px-3 py-2 text-sm">
+                  {formatearCosto(bien.costoCuantificado)}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {bienEstados(bien).map((estado) => (
+                      <span
+                        key={estado.label}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${estado.className}`}
+                      >
+                        {estado.label}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
-const aFilaOperativo = (
-  fila: PresedenciaCasoRow,
-  operativo?: PresedenciaCasoRow['operativosSiii'][number]
-): CasoRelacionado => ({
-  id: `${fila.preseId}-${operativo?.idOperativo ?? 'sin-operativo'}`,
-  preseId: fila.preseId,
-  nrocasopre: fila.nrocasopre,
-  nombreCaso: operativo?.nombreCaso || SIN_DATO,
-  fechaOperativo: operativo?.fechaOperativo || SIN_DATO,
-  numeroOperativo: operativo?.numeroOperativo || SIN_DATO,
-  numeroInforme: operativo?.numeroInforme || SIN_DATO,
-  ubicacionInstitucional: operativo?.ubicacionInstitucional || SIN_DATO,
-  ubicacionGeografica: operativo?.ubicacionGeografica || SIN_DATO,
-  fiscalSolicitud: operativo?.fiscalSolicitud || SIN_DATO,
-  asignadoFiscal: operativo?.asignadoFiscal || SIN_DATO,
-  tipoOperativo: operativo?.tipoOperativo || SIN_DATO,
-  categoriaOperativo: operativo?.categoriaOperativo || SIN_DATO,
-  planOperacion: operativo?.planOperacion || SIN_DATO,
-})
+type Confirmacion =
+  | { tipo: 'relacionar'; row: ResultadoBusquedaAvanzada }
+  | { tipo: 'inactivar'; row: ResultadoBusquedaAvanzada; preseId: string }
+  | null;
 
-const aplanar = (filas: PresedenciaCasoRow[]): CasoRelacionado[] =>
-  filas.flatMap((fila) => {
-    const operativos = fila.operativosSiii ?? []
-    if (!operativos.length) return [aFilaOperativo(fila)]
-    return operativos.map((operativo) => aFilaOperativo(fila, operativo))
-  })
+interface Mensaje {
+  tipo: 'success' | 'error';
+  texto: string;
+}
 
 const mensajeDeError = (err: unknown): string => {
   if (err && typeof err === 'object' && 'mensaje' in err) {
-    return String((err as { mensaje: unknown }).mensaje)
+    return String((err as { mensaje: unknown }).mensaje);
   }
-  if (typeof err === 'string' && err) return err
-  return 'Ocurrió un error inesperado'
-}
+  if (typeof err === 'string' && err) return err;
+  return 'Ocurrió un error inesperado';
+};
 
 export function CasosRelacionados({ casoId, isLectura = false }: Props) {
-  const queryClient = useQueryClient()
-  const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
-  const [casoAEliminar, setCasoAEliminar] = useState<CasoRelacionado | null>(
-    null
-  )
-  const [eliminando, setEliminando] = useState(false)
-  const [mensaje, setMensaje] = useState<Mensaje | null>(null)
 
-  const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['lgi-registro-caso', 'presedencias', casoId, page, limit],
+  const queryClient = useQueryClient();
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [confirmacion, setConfirmacion] = useState<Confirmacion>(null);
+  const [procesando, setProcesando] = useState(false);
+  const [mensaje, setMensaje] = useState<Mensaje | null>(null);
+
+  // const { data: filas, isLoading, isError } = useQuery({
+  //   queryKey: ['siii-avanzado', filtro],
+  //   queryFn: () => SiiiApi.buscarAvanzado(filtro),
+  // });
+
+  const { data: respCasos, isLoading, isError, refetch } = useQuery({
+    queryKey: ['lgi-registro-caso', 'presedencias', casoId],
     enabled: Boolean(casoId),
     queryFn: () =>
-      PresedenciaApi.listarPorCaso(casoId!, { pagina: page, limite: limit }),
-  })
+      PresedenciaApi.listarPorCaso(casoId!, { pagina: 1, limite: 50 }),
+  });
 
-  const filas = aplanar(data?.filas ?? [])
+  const presedencias: PresedenciaCasoRow[] = respCasos?.filas ?? [];
+  const presedenciasSet = new Set(
+    presedencias.map((p) => p.nrocasopre.trim().toUpperCase())
+  );
+  const filas: ResultadoBusquedaAvanzada[] = presedencias.flatMap((p) => p.operativosSiii ?? []);
 
-  const invalidar = () =>
-    queryClient.invalidateQueries({
-      queryKey: ['lgi-registro-caso', 'presedencias', casoId],
-    })
+  // const invalidarPresedencias = () =>
+  //   queryClient.invalidateQueries({
+  //     queryKey: ['lgi-registro-caso', 'presedencias', casoId],
+  //   });
 
-  const handleEliminar = async () => {
-    if (!casoAEliminar) return
-    setEliminando(true)
-    setMensaje(null)
+  const toggleExpand = (id: string) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((eid) => eid !== id) : [...prev, id]
+    );
+  };
+
+  const handleConfirmar = async () => {
+    if (!confirmacion) return;
+    setProcesando(true);
+    setMensaje(null);
     try {
-      await PresedenciaApi.eliminar(casoAEliminar.preseId)
-      setMensaje({
-        tipo: 'success',
-        texto: `Se inactivó el caso precedente ${casoAEliminar.nrocasopre}.`,
-      })
-      setCasoAEliminar(null)
-      invalidar()
+      if (confirmacion.tipo === 'relacionar') {
+        await PresedenciaApi.registrar(casoId!, confirmacion.row.numeroCaso);
+        setMensaje({
+          tipo: 'success',
+          texto: `Caso ${confirmacion.row.numeroCaso} vinculado como caso precedente.`,
+        });
+      } else {
+        await PresedenciaApi.eliminar(confirmacion.preseId);
+        setMensaje({
+          tipo: 'success',
+          texto: `Precedencia del caso ${confirmacion.row.numeroCaso} inactivada.`,
+        });
+      }
+      // invalidarPresedencias();
+      setConfirmacion(null);
     } catch (err) {
-      setMensaje({ tipo: 'error', texto: mensajeDeError(err) })
+      setMensaje({ tipo: 'error', texto: mensajeDeError(err) });
     } finally {
-      setEliminando(false)
+      setProcesando(false);
+      refetch();
     }
-  }
+  };
 
-  const columnasAcciones: Column<CasoRelacionado>[] = isLectura
+  const accionesColumna: Column<ResultadoBusquedaAvanzada>[] = isLectura
     ? []
-    : [
-        {
-          accessor: 'acciones',
-          title: 'Acciones',
-          render: (row) => (
+    : ([
+      {
+        accessor: 'acciones',
+        title: 'Acciones',
+        render: (row) => {
+          const relacionado = true;
+          if (!casoId) {
+            return (
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                disabled
+                title="Registre primero los datos generales"
+              >
+                <IconLink className="h-4 w-4" />
+              </Button>
+            );
+          }
+          return relacionado ? (
             <Button
               type="button"
               variant="outline-danger"
               size="sm"
               className="!p-1.5"
-              title="Inactivar caso precedente"
-              onClick={() => setCasoAEliminar(row)}
+              title="Inactivar precedencia"
+              onClick={() => {
+                const presedencia = presedencias.find(
+                  (p) =>
+                    p.nrocasopre.trim().toUpperCase() ===
+                    row.numeroCaso?.trim().toUpperCase()
+                );
+                setConfirmacion({
+                  tipo: 'inactivar',
+                  row,
+                  preseId: presedencia?.preseId ?? '',
+                });
+              }}
             >
               <IconTrash className="h-4 w-4" />
             </Button>
-          ),
+          ) : (
+            <Button
+              type="button"
+              variant="outline-primary"
+              size="sm"
+              className="!p-1.5"
+              title="Relacionar como caso precedente"
+              onClick={() => setConfirmacion({ tipo: 'relacionar', row })}
+            >
+              <IconLink className="h-4 w-4" />
+            </Button>
+          );
         },
-      ]
+      },
+    ] as Column<ResultadoBusquedaAvanzada>[]);
 
-  const columns: Column<CasoRelacionado>[] = [
+  const columns: Column<ResultadoBusquedaAvanzada>[] = [
     {
-      accessor: 'nrocasopre',
-      title: 'Nro caso precedente',
+      accessor: 'operativo',
+      title: 'Operativo',
+      render: (row) => {
+        const { fecha, hora } = separarFechaHora(row.fechaOperativo);
+        return (
+          <div className="whitespace-normal space-y-0.5 text-sm">
+            <p className="font-semibold text-gray-900 dark:text-white">
+              {row.numeroCaso}
+            </p>
+            <p className="text-xs text-gray-500">Nro. operativo: {row.numeroOperativo}</p>
+            <p className="text-xs text-gray-500">
+              {fecha}
+              {hora ? ` ${hora}` : ''}
+            </p>
+            <p className="text-xs text-gray-500">{row.ubicacionInstitucional}</p>
+            <p className="text-xs text-gray-500">Asignado: {row.asignado}</p>
+            <p className="text-xs text-gray-500">Fiscal: {row.asignadoFiscal}</p>
+          </div>
+        );
+      },
+    },
+    {
+      accessor: 'personas',
+      title: 'Personas implicadas',
+      render: (row) => {
+        const personas = parsePersonas(row.personasImplicadas);
+        if (!personas.length) return <span className="text-xs text-gray-400">-</span>;
+        return (
+          <div className="whitespace-normal space-y-2">
+            {personas.map((persona, i) => (
+              <div key={i}>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {persona.nombre}
+                  </p>
+                  {persona.estado && (
+                    <span
+                      className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium ${estadoVariant(persona.estado)}`}
+                    >
+                      {persona.estado}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-x-3 text-xs text-gray-500">
+                  {persona.doc && <span>Doc.: {persona.doc}</span>}
+                  {persona.nac && <span>Nac.: {persona.nac}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      accessor: 'totalBienes',
+      title: 'Nro total de bienes',
+      className: 'cursor-pointer',
       render: (row) => (
-        <div className="whitespace-normal space-y-0.5 text-sm">
-          <p className="font-semibold text-gray-900 dark:text-white">
-            {row.nrocasopre}
-          </p>
-          <p className="text-xs text-gray-500">{row.nombreCaso}</p>
-        </div>
+        <button
+          type="button"
+          className="font-semibold text-primary hover:underline"
+          onClick={() => toggleExpand(row.idOperativo)}
+        >
+          {row.detalleBienes.length}
+        </button>
       ),
     },
     {
-      accessor: 'fechaOperativo',
-      title: 'Fecha operativo',
-      render: (row) => <span className="text-sm">{row.fechaOperativo}</span>,
-    },
-    {
-      accessor: 'numeroOperativo',
-      title: 'Nro. operativo',
-      render: (row) => <span className="text-sm">{row.numeroOperativo}</span>,
-    },
-    {
-      accessor: 'numeroInforme',
-      title: 'Nro. informe',
-      render: (row) => <span className="text-sm">{row.numeroInforme}</span>,
-    },
-    {
-      accessor: 'ubicacionInstitucional',
-      title: 'Ubicación',
+      accessor: 'costoTotalAproximadoBienes',
+      title: 'Total aproximado',
+      className: 'cursor-pointer',
       render: (row) => (
-        <div className="whitespace-normal space-y-0.5 text-sm">
-          <p className="text-gray-900 dark:text-white">
-            {row.ubicacionInstitucional}
-          </p>
-          <p className="text-xs text-gray-500">{row.ubicacionGeografica}</p>
-        </div>
+        <button
+          type="button"
+          className="font-medium text-gray-900 hover:text-primary hover:underline dark:text-white"
+          onClick={() => toggleExpand(row.idOperativo)}
+        >
+          {formatearCosto(row.costoTotalAproximadoBienes)}
+        </button>
       ),
     },
     {
-      accessor: 'fiscalSolicitud',
-      title: 'Fiscal',
+      accessor: 'costoTotalCuantificadoBienes',
+      title: 'Total cuantificado',
+      className: 'cursor-pointer',
       render: (row) => (
-        <div className="whitespace-normal space-y-0.5 text-sm">
-          <p className="text-gray-900 dark:text-white">{row.asignadoFiscal}</p>
-          <p className="text-xs text-gray-500">
-            Solicitud: {row.fiscalSolicitud}
-          </p>
-        </div>
+        <button
+          type="button"
+          className="font-medium text-gray-900 hover:text-primary hover:underline dark:text-white"
+          onClick={() => toggleExpand(row.idOperativo)}
+        >
+          {formatearCosto(row.costoTotalCuantificadoBienes)}
+        </button>
       ),
     },
-    {
-      accessor: 'tipoOperativo',
-      title: 'Tipo de operativo',
-      render: (row) => (
-        <div className="whitespace-normal space-y-0.5 text-sm">
-          <p className="text-gray-900 dark:text-white">{row.tipoOperativo}</p>
-          <p className="text-xs text-gray-500">{row.categoriaOperativo}</p>
-          <p className="text-xs text-gray-500">{row.planOperacion}</p>
-        </div>
-      ),
-    },
-    ...columnasAcciones,
-  ]
-
-  const operativosDeLaPrecedencia = casoAEliminar
-    ? filas.filter((f) => f.preseId === casoAEliminar.preseId).length
-    : 0
-
-  if (!casoId) {
-    return (
-      <div className="rounded-md border border-[#e0e6ed] bg-white p-4 text-sm text-gray-500 shadow-sm dark:border-[#1b2e4b] dark:bg-[#0f172a] dark:text-gray-400">
-        Registre primero los datos generales del caso para ver los casos
-        relacionados.
-      </div>
-    )
-  }
+    ...accionesColumna,
+  ];
 
   return (
     <div className="space-y-3">
-      {isError ? (
+      {isError && (
         <div className="rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
-          Ocurrió un error al consultar los casos relacionados.
+          Ocurrió un error al consultar los antecedentes SIII.
         </div>
-      ) : null}
-
+      )}
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${
-            mensaje.tipo === 'success'
-              ? 'border-success/30 bg-success/5 text-success'
-              : 'border-danger/30 bg-danger/5 text-danger'
-          }`}
+          className={`rounded-md border px-4 py-3 text-sm ${mensaje.tipo === 'success'
+            ? 'border-success/30 bg-success/5 text-success'
+            : 'border-danger/30 bg-danger/5 text-danger'
+            }`}
         >
           {mensaje.texto}
         </div>
       )}
-
-      <VristoDataTable<CasoRelacionado>
-        title="Casos relacionados"
-        rows={filas}
-        total={data?.total ?? 0}
+      <VristoDataTable<ResultadoBusquedaAvanzada>
+        title="Resultados de la búsqueda"
+        rows={filas ?? []}
+        total={filas?.length ?? 0}
         page={page}
         limit={limit}
         onPageChange={setPage}
         onLimitChange={setLimit}
         columns={columns}
-        loading={isLoading || isFetching}
+        loading={isLoading}
+        rowExpansion={{
+          idField: 'idOperativo',
+          expandedIds,
+          onExpandChange: (ids) => setExpandedIds(ids as string[]),
+          renderContent: (row) => (
+            <BienesExpansion detalleBienes={row.detalleBienes} />
+          ),
+        }}
       />
 
       <AlertDialog
-        isOpen={casoAEliminar !== null}
-        titulo="Inactivar caso precedente"
+        isOpen={confirmacion !== null}
+        titulo={
+          confirmacion?.tipo === 'inactivar'
+            ? 'Inactivar precedencia'
+            : 'Relacionar caso precedente'
+        }
         texto={
-          casoAEliminar
-            ? `¿Desea inactivar el caso precedente "${casoAEliminar.nrocasopre}" de este caso?${
-                operativosDeLaPrecedencia > 1
-                  ? ` Se quitarán sus ${operativosDeLaPrecedencia} operativos relacionados.`
-                  : ''
-              }`
+          confirmacion
+            ? confirmacion.tipo === 'inactivar'
+              ? `¿Desea inactivar la precedencia del caso "${confirmacion.row.numeroCaso}" de este caso?`
+              : `¿Desea vincular el caso "${confirmacion.row.numeroCaso}" como caso precedente de este caso?`
             : ''
         }
       >
         <Button
           type="button"
           variant="outline-secondary"
-          disabled={eliminando}
-          onClick={() => setCasoAEliminar(null)}
+          disabled={procesando}
+          onClick={() => setConfirmacion(null)}
         >
           Cancelar
         </Button>
         <Button
           type="button"
-          variant="danger"
-          loading={eliminando}
-          onClick={handleEliminar}
+          variant={confirmacion?.tipo === 'inactivar' ? 'danger' : 'primary'}
+          loading={procesando}
+          onClick={handleConfirmar}
         >
-          Inactivar
+          {confirmacion?.tipo === 'inactivar' ? 'Inactivar' : 'Relacionar'}
         </Button>
       </AlertDialog>
     </div>
-  )
+  );
 }

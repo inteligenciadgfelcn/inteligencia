@@ -158,8 +158,8 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       const ultima = row.ultimaSituacionJuridica
       const situacionLegalOpt = ultima
         ? situacionesLegales.find(
-            (s) => String(s.slId) === String(ultima.situacionLegalId)
-          ) ?? null
+          (s) => String(s.slId) === String(ultima.situacionLegalId)
+        ) ?? null
         : null
       reset({
         ...createDefaultSituacionJuridicaValues(),
@@ -332,55 +332,55 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     ...(isLectura
       ? []
       : ([
-          {
-            accessor: 'acciones',
-            title: 'Acciones',
-            render: (row: PersonaImplicadaRow) => (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  title="Editar"
-                  onClick={() => abrirModal(row)}
-                >
-                  <IconEdit className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  title="Situaciones jurídicas"
-                  onClick={() => abrirSituacionesModal(row)}
-                >
-                  <IconClipboardText className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  title="Historial de situaciones jurídicas"
-                  onClick={() => setHistorialPersona(row)}
-                >
-                  <IconListCheck className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline-danger"
-                  size="sm"
-                  className="!p-1.5"
-                  title="Eliminar"
-                  onClick={() => setPersonaEliminar(row)}
-                >
-                  <IconTrash className="h-4 w-4" />
-                </Button>
-              </div>
-            ),
-          },
-        ] as Column<PersonaImplicadaRow>[])),
+        {
+          accessor: 'acciones',
+          title: 'Acciones',
+          render: (row: PersonaImplicadaRow) => (
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Editar"
+                onClick={() => abrirModal(row)}
+              >
+                <IconEdit className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Situaciones jurídicas"
+                onClick={() => abrirSituacionesModal(row)}
+              >
+                <IconClipboardText className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Historial de situaciones jurídicas"
+                onClick={() => setHistorialPersona(row)}
+              >
+                <IconListCheck className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-danger"
+                size="sm"
+                className="!p-1.5"
+                title="Eliminar"
+                onClick={() => setPersonaEliminar(row)}
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            </div>
+          ),
+        },
+      ] as Column<PersonaImplicadaRow>[])),
   ]
 
   return (
@@ -866,7 +866,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
           </div>
         </div>
       )}
-    {historialPersona && (
+      {historialPersona && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">

@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import IconGoogle from '@/components/Icon/IconGoogle'
-import { Constantes } from '@/config/Constantes'
 import { CustomDialog } from '@/components/modales/CustomDialog'
 import { LoadingDialog } from '@/components/modales/LoadingDialog'
 
@@ -22,6 +21,7 @@ const MapaConMarcador = dynamic(
     ),
   }
 )
+import { BuscadorDireccion } from '@/components/mapas/BuscadorDireccion'
 import { useParametricas } from '@/hooks'
 import { useAlerts } from '@/hooks/useAlerts'
 import { trimPayload } from '@/utils/trimPayload'
@@ -210,9 +210,6 @@ export function DatosGeneralesForm({
   const [opcionesOperativoEn, setOpcionesOperativoEn] = useState<optionType[]>(
     []
   )
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [isSearching, setIsSearching] = useState(false)
   const [modalGoogleMaps, setModalGoogleMaps] = useState(false)
   const [datosLectura, setDatosLectura] = useState<DatosLectura>({
     numeroOperativoCaso: '',
@@ -640,37 +637,14 @@ export function DatosGeneralesForm({
     setValue('coordY', center[1])
   }
 
-  const buscarDireccion = async () => {
-    if (!searchQuery.trim()) return
-    setIsSearching(true)
-    try {
-      const resp = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery
-        )}&countrycodes=bo`
-      )
-      const data = await resp.json()
-      setSearchResults(data)
-    } catch (error) {
-      console.error('Error buscando dirección', error)
-      Alerta({
-        mensaje: 'Hubo un error al buscar la dirección',
-        variant: 'error',
-      })
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  const seleccionarDireccion = (item: any) => {
-    setValue('coordX', Number(item.lat))
-    setValue('coordY', Number(item.lon))
-    setValue('lugar', item.display_name)
-    setSearchResults([])
-    setSearchQuery('')
-    if (mapRef.current) {
-      mapRef.current.flyTo([Number(item.lat), Number(item.lon)], 16)
-    }
+  const handleDireccionSeleccionada = (
+    coords: [number, number],
+    etiqueta: string
+  ) => {
+    setValue('coordX', coords[0])
+    setValue('coordY', coords[1])
+    setValue('lugar', etiqueta)
+    mapRef.current?.flyTo(coords, 16)
   }
 
   const handleGuardar = async () => {
@@ -1611,7 +1585,11 @@ export function DatosGeneralesForm({
           </div>
 
           <div className="col-span-1 lg:col-span-4 mt-4">
-            <div className="flex gap-2 mb-2 relative justify-end">
+            <div className="mb-2 flex items-end gap-2">
+              <BuscadorDireccion
+                className="flex-1"
+                onSeleccionar={handleDireccionSeleccionada}
+              />
               <button
                 type="button"
                 className="text-danger hover:text-danger/80 flex items-center justify-center p-2"
@@ -1623,20 +1601,6 @@ export function DatosGeneralesForm({
               >
                 <IconGoogle className="h-5 w-5" />
               </button>
-
-              {searchResults.length > 0 && (
-                <ul className="absolute top-full left-0 mt-1 z-[1000] w-full bg-white dark:bg-[#1b2e4b] border border-[#e0e6ed] dark:border-[#1b2e4b] rounded-md shadow-lg max-h-60 overflow-auto">
-                  {searchResults.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer text-sm"
-                      onClick={() => seleccionarDireccion(item)}
-                    >
-                      {item.display_name}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
 
             <MapaConMarcador

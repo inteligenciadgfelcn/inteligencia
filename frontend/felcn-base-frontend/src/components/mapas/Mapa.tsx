@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, memo } from 'react'
+import React, { useCallback, useEffect, memo, useRef } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -14,6 +14,7 @@ import 'leaflet/dist/leaflet.css'
 
 export interface MapaProps {
   mapRef: RefObject<LeafletMap>
+  /** Centro controlado de la cámara. Si no se provee, la cámara no se mueve sola. */
   centro?: [number, number]
   onZoomed?: (zoom: number, center: [number, number]) => void
   onClick?: (center: [number, number], zoom: number) => void
@@ -33,7 +34,7 @@ export interface MapaProps {
 }
 
 interface ChangeMapViewProps {
-  centro: [number, number]
+  centro?: [number, number]
   zoom: number
   onClick: (center: [number, number], zoom: number) => void
 }
@@ -41,9 +42,28 @@ interface ChangeMapViewProps {
 const ChangeMapView: React.FC<ChangeMapViewProps> = memo(
   ({ centro, zoom, onClick }) => {
     const map = useMap()
+    const centroPrevio = useRef<[number, number] | undefined>(centro)
+    const zoomPrevio = useRef(zoom)
 
     useEffect(() => {
-      map.flyTo(centro, zoom)
+      if (!centro) {
+        centroPrevio.current = undefined
+        zoomPrevio.current = zoom
+        return
+      }
+
+      const centroCambio =
+        !centroPrevio.current ||
+        centroPrevio.current[0] !== centro[0] ||
+        centroPrevio.current[1] !== centro[1]
+      const zoomCambio = zoomPrevio.current !== zoom
+
+      centroPrevio.current = centro
+      zoomPrevio.current = zoom
+
+      if (centroCambio || zoomCambio) {
+        map.flyTo(centro, zoom)
+      }
     }, [map, centro, zoom])
 
     useMapEvents({
@@ -60,10 +80,15 @@ ChangeMapView.displayName = 'ChangeMapView'
 
 const DEFAULT_TILE = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 
+const CENTRO_DEFECTO: [number, number] = [
+  -17.405356227442883,
+  -66.15823659326952,
+]
+
 const Mapa: React.FC<MapaProps> = ({
   mapRef,
   markers,
-  centro = [-17.405356227442883, -66.15823659326952],
+  centro,
   height = 400,
   width = '100%',
   onClick,
@@ -90,7 +115,7 @@ const Mapa: React.FC<MapaProps> = ({
         id={id}
         ref={mapRef}
         maxZoom={maxZoom}
-        center={centro}
+        center={centro ?? CENTRO_DEFECTO}
         zoom={zoom}
         scrollWheelZoom={scrollWheelZoom}
         zoomControl={zoomControl}

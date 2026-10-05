@@ -56,6 +56,7 @@ export interface CasoDetalleApiRow {
   usuarioActualizacion?: string | null
   usuario_actualizacion?: string | null
   fechaActualizacion?: string
+  fechaEtapaProcesal?: string
   fecha_actualizacion?: string
   idEtapa: string
   [key: string]: unknown
@@ -82,6 +83,7 @@ export interface CasoDetalle {
   remiteFiscal: string
   remiteFecha: string | null
   fechaRecepcionFiscalia: string | null
+  fechaEtapaProcesal: string | null
   diasOtorgados: number | null
   idEstado: number | null
   inicioCaso: string | null

@@ -352,6 +352,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                     value={nroInforme}
                     onChange={(e) => setNroInforme(e.target.value)}
                     placeholder="INF-001-2026"
+                    maxLength={20}
                   />
                 </div>
                 <div>

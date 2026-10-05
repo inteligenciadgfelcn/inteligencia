@@ -13,6 +13,7 @@ import type { Column } from '@/components/datatable/VristoDataTable'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconEye from '@/components/Icon/IconEye'
 import IconTrash from '@/components/Icon/IconTrash'
+import { BuscadorDireccion } from '@/components/mapas/BuscadorDireccion'
 
 import { BienesApi } from '../api/bienes.api'
 import { ActuacionesApi } from '../api/actuaciones.api'
@@ -55,6 +56,7 @@ export function BienesIdentificados({ casoId }: Props) {
   const [bienEliminar, setBienEliminar] = useState<BienSecuestradoRow | null>(null)
   const [mapaOpen, setMapaOpen] = useState(false)
   const [coordenadas, setCoordenadas] = useState<[number, number] | null>(null)
+  const [centroMapa, setCentroMapa] = useState<[number, number] | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState<string | null>(null)
 
@@ -149,16 +151,18 @@ export function BienesIdentificados({ casoId }: Props) {
   const abrirCrear = () => {
     setForm({ ...VALORES_POR_DEFECTO })
     setCoordenadas(null)
+    setCentroMapa(null)
     setMensaje(null)
     setVista('formulario')
   }
 
   const abrirMapa = () => {
+    setCentroMapa(coordenadas)
     setMapaOpen(true)
   }
 
   const confirmarMapa = () => {
-    if (mapRef.current) {
+    if (!coordenadas && mapRef.current) {
       const center = mapRef.current.getCenter()
       setCoordenadas([center.lat, center.lng])
     }
@@ -230,9 +234,9 @@ export function BienesIdentificados({ casoId }: Props) {
     if (tipo === 4 || tipo === 5)
       return Boolean(
         form.fechaRequerimiento &&
-          form.responsableEntrega &&
-          form.responsableRecepcion &&
-          form.institucion
+        form.responsableEntrega &&
+        form.responsableRecepcion &&
+        form.institucion
       )
     return false
   }
@@ -388,10 +392,10 @@ export function BienesIdentificados({ casoId }: Props) {
       accessor: 'ultimaSituacionJuridica',
       title: 'Situación',
       render: (row) =>
-        (
-          (row.ultimaSituacionJuridica as { descripcionTipo?: string } | null)
-            ?.descripcionTipo ?? '-'
-        ),
+      (
+        (row.ultimaSituacionJuridica as { descripcionTipo?: string } | null)
+          ?.descripcionTipo ?? '-'
+      ),
     },
     {
       accessor: 'itembiensecId',
@@ -443,7 +447,7 @@ export function BienesIdentificados({ casoId }: Props) {
           <span className="font-semibold">Actuación seleccionada: </span>
           {actuaciones.find((a) => String(a.opId) === String(opId))?.opNrooper ??
             'Sin seleccionar'}
-          {opId ? ` (opId ${opId})` : ''}
+          {/* {opId ? ` (opId ${opId})` : ''} */}
         </div>
 
         <div className="panel space-y-6 p-5">
@@ -901,92 +905,92 @@ export function BienesIdentificados({ casoId }: Props) {
 
             {(form.idTipoSituacionLegalBien === 4 ||
               form.idTipoSituacionLegalBien === 5) && (
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha requerimiento *
-                  </label>
-                  <Input
-                    type="date"
-                    value={form.fechaRequerimiento}
-                    onChange={(e) => setField('fechaRequerimiento', e.target.value)}
-                  />
+                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Fecha requerimiento *
+                    </label>
+                    <Input
+                      type="date"
+                      value={form.fechaRequerimiento}
+                      onChange={(e) => setField('fechaRequerimiento', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Fiscal requirente
+                    </label>
+                    <Input
+                      value={form.fiscalRequirente}
+                      onChange={(e) => setField('fiscalRequirente', e.target.value)}
+                      placeholder="Nombre del fiscal"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Calidad del bien
+                    </label>
+                    <Select
+                      options={calidades.map((c) => option(c.calbId, c.descripcion))}
+                      placeholder="Seleccione calidad"
+                      value={form.calbId ? String(form.calbId) : ''}
+                      onChange={(e) =>
+                        setField('calbId', Number(e.target.value) || null)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Fecha de entrega
+                    </label>
+                    <Input
+                      type="date"
+                      value={form.fechaEntrega}
+                      onChange={(e) => setField('fechaEntrega', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Responsable entrega *
+                    </label>
+                    <Input
+                      value={form.responsableEntrega}
+                      onChange={(e) => setField('responsableEntrega', e.target.value)}
+                      placeholder="Responsable de la entrega"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Responsable recepción *
+                    </label>
+                    <Input
+                      value={form.responsableRecepcion}
+                      onChange={(e) => setField('responsableRecepcion', e.target.value)}
+                      placeholder="Responsable de la recepción"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Institución *
+                    </label>
+                    <Input
+                      value={form.institucion}
+                      onChange={(e) => setField('institucion', e.target.value)}
+                      placeholder="Institución que recibe el bien"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Ubicación
+                    </label>
+                    <Input
+                      value={form.ubicacion}
+                      onChange={(e) => setField('ubicacion', e.target.value)}
+                      placeholder="Ubicación actual del bien"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fiscal requirente
-                  </label>
-                  <Input
-                    value={form.fiscalRequirente}
-                    onChange={(e) => setField('fiscalRequirente', e.target.value)}
-                    placeholder="Nombre del fiscal"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Calidad del bien
-                  </label>
-                  <Select
-                    options={calidades.map((c) => option(c.calbId, c.descripcion))}
-                    placeholder="Seleccione calidad"
-                    value={form.calbId ? String(form.calbId) : ''}
-                    onChange={(e) =>
-                      setField('calbId', Number(e.target.value) || null)
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha de entrega
-                  </label>
-                  <Input
-                    type="date"
-                    value={form.fechaEntrega}
-                    onChange={(e) => setField('fechaEntrega', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Responsable entrega *
-                  </label>
-                  <Input
-                    value={form.responsableEntrega}
-                    onChange={(e) => setField('responsableEntrega', e.target.value)}
-                    placeholder="Responsable de la entrega"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Responsable recepción *
-                  </label>
-                  <Input
-                    value={form.responsableRecepcion}
-                    onChange={(e) => setField('responsableRecepcion', e.target.value)}
-                    placeholder="Responsable de la recepción"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Institución *
-                  </label>
-                  <Input
-                    value={form.institucion}
-                    onChange={(e) => setField('institucion', e.target.value)}
-                    placeholder="Institución que recibe el bien"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Ubicación
-                  </label>
-                  <Input
-                    value={form.ubicacion}
-                    onChange={(e) => setField('ubicacion', e.target.value)}
-                    placeholder="Ubicación actual del bien"
-                  />
-                </div>
-              </div>
-            )}
+              )}
           </Fieldset>
 
           <Fieldset title="Fotografías">
@@ -1070,9 +1074,18 @@ export function BienesIdentificados({ casoId }: Props) {
                 <p className="mb-3 text-xs text-gray-500">
                   Haga clic en el mapa para colocar el marcador. Luego confirme.
                 </p>
+                <BuscadorDireccion
+                  autoFocus
+                  className="mb-3"
+                  onSeleccionar={(coords) => {
+                    setCoordenadas(coords)
+                    mapRef.current?.flyTo(coords, 16)
+                  }}
+                />
                 <MapaConMarcador
                   id="mapa-bien"
                   mapRef={mapRef}
+                  centro={centroMapa ?? undefined}
                   coordenadas={coordenadas}
                   onClick={handleMapClick}
                   height={400}

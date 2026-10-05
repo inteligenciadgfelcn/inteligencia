@@ -10,11 +10,13 @@ import { RHFDate } from '@/components/form/RHFDate'
 
 import type { ConsultaSiiiQueryDto } from '../../types/siii.types'
 import { ResultadosBusquedaSiii } from './ResultadosBusquedaSiii'
+import { CasosRelacionadosOld } from './CasosRelacionados_old'
 import { CasosRelacionados } from './CasosRelacionados'
 
 interface BusquedaSiiiFiltros {
   fechaInicio: string
   fechaFin: string
+  numeroCaso: string
   nombreCaso: string
   nombresPersona: string
   apellidoPaterno: string
@@ -44,6 +46,7 @@ export function AntecedentesTab({
       fechaInicio: '',
       fechaFin: '',
       nombreCaso: '',
+      numeroCaso: '',
       nombresPersona: '',
       apellidoPaterno: '',
       apellidoMaterno: '',
@@ -66,13 +69,14 @@ export function AntecedentesTab({
       apellidoPaterno: valores.apellidoPaterno || undefined,
       apellidoMaterno: valores.apellidoMaterno || undefined,
       nroDocumento: valores.nroDocumento || undefined,
+      numeroCaso: valores.numeroCaso || undefined,
     })
   }
 
   return (
     <div className="space-y-4">
       <Card title="Búsqueda avanzada de SSCC">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <RHFDate
             id="filtroFechaInicio"
             name="fechaInicio"
@@ -88,6 +92,18 @@ export function AntecedentesTab({
             label="Fecha operativo hasta"
             disabled={isLectura}
           />
+
+          <div>
+            <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">
+              Numero del caso
+            </label>
+            <Input
+              {...registerFiltroSiii('numeroCaso')}
+              disabled={isLectura}
+              className="w-full"
+              placeholder="Numero del caso"
+            />
+          </div>
 
           <div>
             <label className="mb-1 block text-sm font-semibold text-gray-900 dark:text-gray-200">

@@ -14,6 +14,7 @@ import IconPlus from '@/components/Icon/IconPlus'
 import IconEdit from '@/components/Icon/IconEdit'
 import IconTrash from '@/components/Icon/IconTrash'
 import IconEye from '@/components/Icon/IconEye'
+import { BuscadorDireccion } from '@/components/mapas/BuscadorDireccion'
 
 import { PersonasJuridicasApi } from '../api/personas-juridicas.api'
 import { ActuacionesApi } from '../api/actuaciones.api'
@@ -48,6 +49,7 @@ export function PersonasJuridicas({ casoId }: Props) {
     useState<PersonaJuridicaRow | null>(null)
   const [mapaOpen, setMapaOpen] = useState(false)
   const [coordenadas, setCoordenadas] = useState<[number, number] | null>(null)
+  const [centroMapa, setCentroMapa] = useState<[number, number] | null>(null)
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState<string | null>(null)
 
@@ -119,6 +121,7 @@ export function PersonasJuridicas({ casoId }: Props) {
     setPersonaEditando(null)
     setForm({ ...VALORES_POR_DEFECTO })
     setCoordenadas(null)
+    setCentroMapa(null)
     setMensaje(null)
     setVista('formulario')
   }
@@ -152,11 +155,12 @@ export function PersonasJuridicas({ casoId }: Props) {
   }
 
   const abrirMapa = () => {
+    setCentroMapa(coordenadas)
     setMapaOpen(true)
   }
 
   const confirmarMapa = () => {
-    if (mapRef.current) {
+    if (!coordenadas && mapRef.current) {
       const center = mapRef.current.getCenter()
       setCoordenadas([center.lat, center.lng])
     }
@@ -714,9 +718,18 @@ export function PersonasJuridicas({ casoId }: Props) {
                 <p className="mb-3 text-xs text-gray-500">
                   Haga clic en el mapa para colocar el marcador. Luego confirme.
                 </p>
+                <BuscadorDireccion
+                  autoFocus
+                  className="mb-3"
+                  onSeleccionar={(coords) => {
+                    setCoordenadas(coords)
+                    mapRef.current?.flyTo(coords, 16)
+                  }}
+                />
                 <MapaConMarcador
                   id="mapa-pj"
                   mapRef={mapRef}
+                  centro={centroMapa ?? undefined}
                   coordenadas={coordenadas}
                   onClick={handleMapClick}
                   height={400}

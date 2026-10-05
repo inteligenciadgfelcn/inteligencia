@@ -27,10 +27,6 @@ export const CasoDetalleApi = {
 }
 
 function mapCasoDetalleRaw(row: CasoDetalleApiRow): CasoDetalle {
-  console.log(`mapCasoDetalleRaw`);
-  console.log(row);
-  
-  
   return {
     casosId: row.casosId ?? row.casos_id ?? '',
     dptoavId: row.dptoavId ?? row.dptoav_id ?? '',
@@ -65,5 +61,6 @@ function mapCasoDetalleRaw(row: CasoDetalleApiRow): CasoDetalle {
     usuarioActualizacion: row.usuarioActualizacion ?? row.usuario_actualizacion ?? null,
     fechaActualizacion: row.fechaActualizacion ?? row.fecha_actualizacion ?? '',
     idEtapa: row.idEtapa ?? '',
+    fechaEtapaProcesal: row.fechaEtapaProcesal ?? '',
   }
 }

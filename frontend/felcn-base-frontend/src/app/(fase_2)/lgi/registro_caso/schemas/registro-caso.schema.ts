@@ -142,44 +142,44 @@ export const situacionJuridicaSchema = z
     fjt: z.string().trim().max(100, 'Máximo 100 caracteres').optional(),
   })
   .superRefine((values, context) => {
-    if (!values.situacionLegalId) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La situación legal es obligatoria',
-        path: ['situacionLegalId'],
-      })
-      return
-    }
+    // if (!values.situacionLegalId) {
+    //   context.addIssue({
+    //     code: z.ZodIssueCode.custom,
+    //     message: 'La situación legal es obligatoria',
+    //     path: ['situacionLegalId'],
+    //   })
+    //   return
+    // }
 
-    const campos: Array<['numeroResolucion' | 'lugar' | 'autoridad' | 'fjt', string]> = [
-      ['numeroResolucion', 'El número de resolución es obligatorio'],
-      ['lugar', 'El lugar es obligatorio'],
-      ['autoridad', 'La autoridad es obligatoria'],
-      ['fjt', 'El juzgado es obligatorio'],
-    ]
+    // const campos: Array<['numeroResolucion' | 'lugar' | 'autoridad' | 'fjt', string]> = [
+    //   ['numeroResolucion', 'El número de resolución es obligatorio'],
+    //   ['lugar', 'El lugar es obligatorio'],
+    //   ['autoridad', 'La autoridad es obligatoria'],
+    //   ['fjt', 'El juzgado es obligatorio'],
+    // ]
 
-    for (const [campo, mensaje] of campos) {
-      if (!values[campo]?.trim()) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: mensaje,
-          path: [campo],
-        })
-      }
-    }
+    // for (const [campo, mensaje] of campos) {
+    //   if (!values[campo]?.trim()) {
+    //     context.addIssue({
+    //       code: z.ZodIssueCode.custom,
+    //       message: mensaje,
+    //       path: [campo],
+    //     })
+    //   }
+    // }
   })
 
 export const personaConSituacionSchema = personaImplicadaSchema
   .and(situacionJuridicaSchema)
-  .superRefine((values, context) => {
-    if (values.situacionLegalId && !values.fecha) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'La fecha de la situación jurídica es obligatoria',
-        path: ['fecha'],
-      })
-    }
-  })
+  // .superRefine((values, context) => {
+  //   if (values.situacionLegalId && !values.fecha) {
+  //     context.addIssue({
+  //       code: z.ZodIssueCode.custom,
+  //       message: 'La fecha de la situación jurídica es obligatoria',
+  //       path: ['fecha'],
+  //     })
+  //   }
+  // })
 
 export const informacionCasoSchema = z
   .object({

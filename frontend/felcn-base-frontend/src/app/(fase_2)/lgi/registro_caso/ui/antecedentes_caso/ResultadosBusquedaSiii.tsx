@@ -211,7 +211,7 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
     queryKey: ['lgi-registro-caso', 'presedencias', casoId],
     enabled: Boolean(casoId),
     queryFn: () =>
-      PresedenciaApi.listarPorCaso(casoId!, { pagina: 1, limite: 1000 }),
+      PresedenciaApi.listarPorCaso(casoId!, { pagina: 1, limite: 50 }),
   });
 
   const presedencias = presedenciasData?.filas ?? [];
@@ -260,64 +260,64 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
   const accionesColumna: Column<ResultadoBusquedaAvanzada>[] = isLectura
     ? []
     : ([
-        {
-          accessor: 'acciones',
-          title: 'Acciones',
-          render: (row) => {
-            const relacionado = presedenciasSet.has(
-              row.numeroCaso?.trim().toUpperCase()
-            );
-            if (!casoId) {
-              return (
-                <Button
-                  type="button"
-                  variant="outline-secondary"
-                  size="sm"
-                  className="!p-1.5"
-                  disabled
-                  title="Registre primero los datos generales"
-                >
-                  <IconLink className="h-4 w-4" />
-                </Button>
-              );
-            }
-            return relacionado ? (
+      {
+        accessor: 'acciones',
+        title: 'Acciones',
+        render: (row) => {
+          const relacionado = presedenciasSet.has(
+            row.numeroCaso?.trim().toUpperCase()
+          );
+          if (!casoId) {
+            return (
               <Button
                 type="button"
-                variant="outline-danger"
+                variant="outline-secondary"
                 size="sm"
                 className="!p-1.5"
-                title="Inactivar precedencia"
-                onClick={() => {
-                  const presedencia = presedencias.find(
-                    (p) =>
-                      p.nrocasopre.trim().toUpperCase() ===
-                      row.numeroCaso?.trim().toUpperCase()
-                  );
-                  setConfirmacion({
-                    tipo: 'inactivar',
-                    row,
-                    preseId: presedencia?.preseId ?? '',
-                  });
-                }}
-              >
-                <IconTrash className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline-primary"
-                size="sm"
-                className="!p-1.5"
-                title="Relacionar como caso precedente"
-                onClick={() => setConfirmacion({ tipo: 'relacionar', row })}
+                disabled
+                title="Registre primero los datos generales"
               >
                 <IconLink className="h-4 w-4" />
               </Button>
             );
-          },
+          }
+          return relacionado ? (
+            <Button
+              type="button"
+              variant="outline-danger"
+              size="sm"
+              className="!p-1.5"
+              title="Inactivar precedencia"
+              onClick={() => {
+                const presedencia = presedencias.find(
+                  (p) =>
+                    p.nrocasopre.trim().toUpperCase() ===
+                    row.numeroCaso?.trim().toUpperCase()
+                );
+                setConfirmacion({
+                  tipo: 'inactivar',
+                  row,
+                  preseId: presedencia?.preseId ?? '',
+                });
+              }}
+            >
+              <IconTrash className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline-primary"
+              size="sm"
+              className="!p-1.5"
+              title="Relacionar como caso precedente"
+              onClick={() => setConfirmacion({ tipo: 'relacionar', row })}
+            >
+              <IconLink className="h-4 w-4" />
+            </Button>
+          );
         },
-      ] as Column<ResultadoBusquedaAvanzada>[]);
+      },
+    ] as Column<ResultadoBusquedaAvanzada>[]);
 
   const columns: Column<ResultadoBusquedaAvanzada>[] = [
     {
@@ -428,11 +428,10 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
       )}
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${
-            mensaje.tipo === 'success'
+          className={`rounded-md border px-4 py-3 text-sm ${mensaje.tipo === 'success'
               ? 'border-success/30 bg-success/5 text-success'
               : 'border-danger/30 bg-danger/5 text-danger'
-          }`}
+            }`}
         >
           {mensaje.texto}
         </div>

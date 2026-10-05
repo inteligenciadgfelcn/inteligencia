@@ -85,6 +85,9 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
       queryClient.invalidateQueries({
         queryKey: ['lgi-etapa-procesal', 'historial', casoId],
       })
+      queryClient.invalidateQueries({
+        queryKey: ['lgi-caso-detalle'],
+      })
     } finally {
       setGuardando(false)
     }
