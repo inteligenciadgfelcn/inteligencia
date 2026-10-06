@@ -17,6 +17,9 @@ import { CicloLgi } from './entity/ciclo.entity'
 import { TipologiaLgi } from './entity/tipologia.entity'
 import { VerboRectorLgi } from './entity/verbo-rector.entity'
 import { MedidaCautelarRepository } from './repository/medida_cautelar.repository'
+import { SentenciaRepository } from './repository/sentencia.repository'
+import { BienSujetoPdRepository } from './repository/bien_sujeto_pd.repository'
+import { Sentencia } from './entity/sentencia.entity'
 
 @Injectable()
 export class ParametricasLgiService {
@@ -35,7 +38,9 @@ export class ParametricasLgiService {
     private readonly cicloRepository: CicloLgiRepository,
     private readonly verboRectorRepository: VerboRectorLgiRepository,
     private readonly tipologiaRepository: TipologiaLgiRepository,
-    private readonly medidaCautelarRepository: MedidaCautelarRepository
+    private readonly medidaCautelarRepository: MedidaCautelarRepository, 
+    private readonly sentenciaRepository: SentenciaRepository,
+    private readonly bienSujetoPdRepository: BienSujetoPdRepository
   ) {}
 
   findAllDistrito(idUsuario: number) {
@@ -104,5 +109,11 @@ export class ParametricasLgiService {
 
   findOneMedidaCautelar(id: number) {
     return this.medidaCautelarRepository.findOne(id)
+  }
+   async findAllSentencia() {
+    return this.sentenciaRepository.findAllGeneral()
+  }
+   async findAllBienSujeto(){
+    return this.bienSujetoPdRepository.findAllGeneral()
   }
 }

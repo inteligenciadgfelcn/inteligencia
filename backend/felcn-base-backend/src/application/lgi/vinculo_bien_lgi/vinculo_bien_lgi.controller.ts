@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -16,10 +17,12 @@ import { VinculoBienLgiService } from './vinculo_bien_lgi.service'
 import { CreateVinculoBienLgiDto } from './dto/create-vinculo_bien_lgi.dto'
 import { UpdateVinculoBienLgiDto } from './dto/update-vinculo_bien_lgi.dto'
 import { BaseController } from '@/common/base/base-controller'
+import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
 
 @ApiBearerAuth()
+@UseInterceptors(AuditoriaUsuarioInterceptor)
 @UseGuards(JwtAuthGuard)
-@ApiTags('LGI - Vínculos de bienes')
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('vinculo-bien-lgi')
 export class VinculoBienLgiController extends BaseController {
 

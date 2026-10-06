@@ -38,7 +38,8 @@ interface ArchivosEmpresa {
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@ApiTags('PD - Pérdida de Dominio')
+@UseInterceptors(AuditoriaUsuarioInterceptor)
+@ApiTags('PD - Perdida de Dominio')
 @Controller('personas-juridicas-pd')
 export class PersonasJuridicasPdController extends BaseController {
   constructor(

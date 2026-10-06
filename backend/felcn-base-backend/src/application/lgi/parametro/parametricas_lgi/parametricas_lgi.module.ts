@@ -33,6 +33,10 @@ import { TipologiaLgiRepository } from './repository/tipologia.repository'
 import { VerboRectorLgiRepository } from './repository/verbo_rector.repository'
 import { MedidaCautelar } from './entity/medida_cautelar.entity'
 import { MedidaCautelarRepository } from './repository/medida_cautelar.repository'
+import { BienSujetoPd } from './entity/bien_sujeto_pd.entity'
+import { Sentencia } from './entity/sentencia.entity'
+import { BienSujetoPdRepository } from './repository/bien_sujeto_pd.repository'
+import { SentenciaRepository } from './repository/sentencia.repository'
 
 @Module({
   imports: [
@@ -47,7 +51,7 @@ import { MedidaCautelarRepository } from './repository/medida_cautelar.repositor
     TipoVinculoModule,
     TipoSituacionLegalBienLgiModule,
     TypeOrmModule.forFeature(
-      [TipoImplicado, CicloLgi, VerboRectorLgi, TipologiaLgi, MedidaCautelar],
+      [TipoImplicado, CicloLgi, VerboRectorLgi, TipologiaLgi, MedidaCautelar,Sentencia, BienSujetoPd],
       DB_LGI
     ),
   ],
@@ -70,6 +74,8 @@ import { MedidaCautelarRepository } from './repository/medida_cautelar.repositor
     VerboRectorLgiRepository,
     TipologiaLgiRepository,
     MedidaCautelarRepository,
+    SentenciaRepository,
+    BienSujetoPdRepository,
   ],
   exports: [
     ParametricasLgiService,
@@ -88,6 +94,8 @@ import { MedidaCautelarRepository } from './repository/medida_cautelar.repositor
     VerboRectorLgiRepository,
     TipologiaLgiRepository,
     MedidaCautelarRepository,
+    SentenciaRepository,
+    BienSujetoPdRepository,
   ],
 })
 export class ParametricasLgiModule {}

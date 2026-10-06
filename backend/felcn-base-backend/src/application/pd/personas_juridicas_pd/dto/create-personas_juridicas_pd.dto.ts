@@ -10,7 +10,7 @@ import {
 } from 'class-validator'
 
 export class CreatePersonasJuridicasPdDto {
-  @ApiProperty({
+   @ApiProperty({
     description: 'Identificador del operativo',
     example: 1,
   })
@@ -66,24 +66,6 @@ export class CreatePersonasJuridicasPdDto {
   @IsOptional()
   @IsString()
   observaciones?: string | null
-
-  @ApiPropertyOptional({
-    description: 'Propietarios o socios',
-    example: 'Juan Pérez; María López',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsString()
-  propietarioSocio?: string | null
-
-  @ApiPropertyOptional({
-    description: 'Beneficiarios finales',
-    example: 'Carlos Pérez López',
-    nullable: true,
-  })
-  @IsOptional()
-  @IsString()
-  beneficiariosFinales?: string | null
 
   @ApiPropertyOptional({
     description: 'Capital social declarado',

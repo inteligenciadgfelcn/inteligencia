@@ -21,9 +21,9 @@ import { PresedenciaLgiService } from './presedencia_lgi.service'
 import { PaginacionQueryDto } from '@/common/dto'
 
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Presedencia')
+@UseGuards(JwtAuthGuard)
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('presedencia-lgi')
 export class PresedenciaLgiController extends BaseController {
   constructor(private readonly presedenciaLgiService: PresedenciaLgiService) {
