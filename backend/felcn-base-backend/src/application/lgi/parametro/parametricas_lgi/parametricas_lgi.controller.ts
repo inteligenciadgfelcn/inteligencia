@@ -273,4 +273,16 @@ export class ParametricasLgiController extends BaseController {
   findOneMedidaCautelar(@Param('id', ParseIntPipe) id: number) {
     return this.parametricasLgiService.findOneMedidaCautelar(id)
   }
+
+  @Get('sentencia')
+  @ApiOperation({ summary: 'Listar las sentencias' })
+  findAllGeneralSentencia() {
+    return this.parametricasLgiService.findAllSentencia()
+  }
+
+  @Get('bien-sujeto-pd')
+  @ApiOperation({ summary: 'Listar los bienes sujetos' })
+  findAllGeneralBienSujeto() {
+    return this.parametricasLgiService.findAllBienSujeto()
+  }
 }

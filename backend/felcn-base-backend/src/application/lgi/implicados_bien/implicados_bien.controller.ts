@@ -6,10 +6,10 @@ import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usu
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiParam } from '@nestjs/swagger';
 
-@ApiTags('Implicados Bien LGI')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
+@UseGuards(JwtAuthGuard)
+@ApiTags('LGI - Ganancias ilícitas')
 @Controller('implicados-bien')
 export class ImplicadosBienController {
   constructor(private readonly service: ImplicadosBienService) {}
