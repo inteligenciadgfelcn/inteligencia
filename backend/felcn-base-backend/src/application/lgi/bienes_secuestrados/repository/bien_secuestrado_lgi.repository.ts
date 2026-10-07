@@ -723,10 +723,7 @@ export class BienSecuestradoLgiRepository {
             'situacionbienes'
               AS tabla,
 
-            COALESCE(
-              sit.fechaent,
-            )
-              AS fecha_entrega,
+            sit.fechaent AS fecha_situacion,
 
             sit.fechahoraing
               AS fecha_hora_ingreso,
@@ -746,9 +743,6 @@ export class BienSecuestradoLgiRepository {
 
               'fechaEntrega',
                 sit.fechaent,
-
-              'responsableEntrega',
-                sit.responsablee,
 
               'responsableRecepcion',
                 sit.responsabler,
