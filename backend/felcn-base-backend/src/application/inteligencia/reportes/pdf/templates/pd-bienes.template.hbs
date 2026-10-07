@@ -3,15 +3,15 @@
 <head>
   <meta charset='UTF-8' />
   <title>
-    Reporte GIAEF
+    Reporte GIAEF - Pérdida de Dominio
   </title>
   <style>
     :root {
-      --verde: #4f6b43;
-      --verde-oscuro: #3d5633;
-      --verde-claro: #eef3e9;
-      --verde-fondo: #f7f9f2;
-      --naranja: #d58d55;
+      --verde: #5f9fbd;
+      --verde-oscuro: #2e6680;
+      --verde-claro: #eaf5fb;
+      --verde-fondo: #f5fafd;
+      --naranja: #9ac9df;
       --amarillo: #dfc313;
       --texto: #181818;
       --gris: #777777;
@@ -555,13 +555,13 @@
 
     .fila-ultima td,
     .ultima-juridica {
-      background: #eef3e9;
-      color: #3d5633;
+      background: #eaf5fb;
+      color: #2e6680;
       font-weight: bold;
     }
 
     .ultima-juridica {
-      border-left: 3px solid #4f6b43;
+      border-left: 3px solid #5f9fbd;
       padding: 2mm;
       margin: 2mm 0;
     }
@@ -726,7 +726,7 @@
            ================================================= -->
       <aside class='columna-izquierda'>
         <h2 class='titulo-accion'>
-          Legitimación de Ganancias Ilícitas
+          Pérdida de Dominio
         </h2>
         <div class='fila-doble'>
           <div class='campo'>
@@ -1044,7 +1044,6 @@
         </section>
         <section class='seccion ubicacion-secuestro'>
           <h2 class='titulo-seccion'>Ubicación del secuestro:</h2>
-
           <div class='ubicacion-contenido'>
             <div class='ubicacion-mapa'>
               {{#if bien.mapaImagen}}
@@ -1055,7 +1054,6 @@
               {{else}}
               <img src='{{bien.mapaImagen}}' alt='Mapa del lugar de secuestro' />
               {{/if}}
-
               <div class='mapa-atribucion'>
                 © OpenStreetMap contributors
               </div>
@@ -1069,14 +1067,12 @@
               </div>
               {{/if}}
             </div>
-
             <div class='ubicacion-detalle'>
               {{#if bien.lugarSecuestro}}
               <div class='dato-bien-compacto'>
                 <strong>Lugar:</strong> {{bien.lugarSecuestro}}
               </div>
               {{/if}}
-
               <table class='tabla-detalle tabla-coordenadas'>
                 <tbody>
                   <tr>
@@ -1101,7 +1097,6 @@
                   </tr>
                 </tbody>
               </table>
-
               {{#if bien.googleMapsUrl}}
               <div class='enlace-ubicacion'>
                 <a href='{{bien.googleMapsUrl}}' target='_blank' rel='noopener'>

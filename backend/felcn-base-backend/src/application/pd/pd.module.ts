@@ -8,6 +8,7 @@ import { VinculoBienModule } from './vinculo_bien_pd/vinculo_bien.module'
 import { SituacionJuridicaPdModule } from './situacion_juridica_pd/situacion_juridica_pd.module';
 import { ImplicadosModule } from './implicados/implicados.module'
 import { ConclusionPdModule } from './conclusion_caso/conclusion_caso.module'
+import { ReportesLgiModule } from './reportes_pd/reportes_lgi.module'
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ConclusionPdModule } from './conclusion_caso/conclusion_caso.module'
     PersonasJuridicasPdModule,
     ImplicadosModule,
     ConclusionPdModule,
+    ReportesLgiModule,
   ],
   controllers: [],
 })

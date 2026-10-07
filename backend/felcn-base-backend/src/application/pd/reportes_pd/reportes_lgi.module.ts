@@ -12,18 +12,15 @@ import { BienesLgiService } from './service/bienes_lgi.service'
 import { EstadisticasLgiService } from './service/estadisticas_lgi.service'
 import { EstadisticasLgiRepository } from './repository/estadisticas_lgi.repository'
 
-import { ConsultaSiiiRepository } from '../informacion_siii/repository/consulta.repository'
-import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
-import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
-import { InvestigadoresModule } from '../investigadores/investigadores.module'
-import { BienesSecuestradosModule } from '../bienes_secuestrados/bienes_secuestrados.module'
-
 import { PersonasJuridicasReporteRepository } from './repository/personas-juridica.repository'
 import { PersonasJuridicasReporteService } from './service/personas-juridicas.service'
 import { ConclusionReporteRepository } from './repository/lgi-conclusion.repository'
 import { ConclusionReporteService } from './service/conclusion.service'
-import { CasoIntegralRepository } from './repository/caso-integral.repository'
-import { CasoIntegralService } from './service/caso-integral.service'
+import { InvestigadoresModule } from '@/application/lgi/investigadores/investigadores.module'
+import { BienesSecuestradosModule } from '@/application/lgi/bienes_secuestrados/bienes_secuestrados.module'
+import { ConsultaSiiiRepository } from '@/application/lgi/informacion_siii/repository/consulta.repository'
+import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
+import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
 
 @Module({
   imports: [
@@ -51,7 +48,6 @@ import { CasoIntegralService } from './service/caso-integral.service'
     PersonasJuridicasReporteService,
     ConclusionReporteRepository,
     ConclusionReporteService,
-    CasoIntegralRepository, CasoIntegralService,
   ],
   exports: [
     ActuacionLgiService,
@@ -65,7 +61,6 @@ import { CasoIntegralService } from './service/caso-integral.service'
     ConsultaSiiiRepository,
     DistritalLgiRepository,
     GrupoLgiRepository,
-    CasoIntegralService,
   ],
 })
 export class ReportesLgiModule {}

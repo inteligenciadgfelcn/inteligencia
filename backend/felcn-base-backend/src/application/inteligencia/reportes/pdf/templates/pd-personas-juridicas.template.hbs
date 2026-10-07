@@ -3,15 +3,15 @@
 <head>
   <meta charset='UTF-8' />
   <title>
-    Reporte GIAEF
+    Reporte GIAEF - Pérdida de Dominio
   </title>
   <style>
     :root {
-      --verde: #4f6b43;
-      --verde-oscuro: #3d5633;
-      --verde-claro: #eef3e9;
-      --verde-fondo: #f7f9f2;
-      --naranja: #d58d55;
+      --verde: #5f9fbd;
+      --verde-oscuro: #2e6680;
+      --verde-claro: #eaf5fb;
+      --verde-fondo: #f5fafd;
+      --naranja: #9ac9df;
       --amarillo: #dfc313;
       --texto: #181818;
       --gris: #777777;
@@ -555,13 +555,13 @@
 
     .fila-ultima td,
     .ultima-juridica {
-      background: #eef3e9;
-      color: #3d5633;
+      background: #eaf5fb;
+      color: #2e6680;
       font-weight: bold;
     }
 
     .ultima-juridica {
-      border-left: 3px solid #4f6b43;
+      border-left: 3px solid #5f9fbd;
       padding: 2mm;
       margin: 2mm 0;
     }
@@ -595,22 +595,16 @@
     }
 
     .mapa-bien {
-      width: 100%;
       margin: 2mm 0;
       break-inside: avoid;
     }
 
-    .mapa-bien a {
-      display: block;
-      width: 100%;
-    }
-
     .mapa-bien img {
+      width: 43mm;
+      max-width: 100%;
+      height: auto;
       display: block;
-      width: 100%;
-      height: 43mm;
-      object-fit: contain;
-      margin: 0;
+      margin: 0 auto;
       border: 1px solid #ddd;
     }
 
@@ -638,8 +632,28 @@
       overflow-wrap: anywhere;
     }
 
-    .ubicacion-secuestro {
-      padding: 2mm;
+    .detalle-empresa {
+      padding: 0 2mm;
+    }
+
+    .tabla-detalle {
+      font-size: 8px;
+    }
+
+    .tabla-implicados th:first-child {
+      width: 7%;
+    }
+
+    .tabla-implicados th:nth-child(2) {
+      width: 35%;
+    }
+
+    .imagen-empresa {
+      display: block;
+      max-width: 100%;
+      max-height: 40mm;
+      margin: 1mm auto;
+      object-fit: contain;
     }
 
     .ubicacion-contenido {
@@ -651,14 +665,6 @@
       page-break-inside: avoid;
     }
 
-    .ubicacion-mapa {
-      min-width: 0;
-    }
-
-    .ubicacion-mapa a {
-      display: block;
-    }
-
     .ubicacion-mapa img {
       display: block;
       width: 43mm;
@@ -667,31 +673,14 @@
       border: 1px solid #ddd;
     }
 
-    .ubicacion-mapa .mapa-atribucion {
-      margin-top: 1mm;
-      font-size: 6px;
-      text-align: center;
-    }
-
     .ubicacion-detalle {
       min-width: 0;
       font-size: 8px;
-      line-height: 1.3;
       overflow-wrap: anywhere;
     }
 
-    .ubicacion-detalle .tabla-coordenadas {
-      margin-top: 2mm;
-      font-size: 8px;
-    }
-
-    .tabla-coordenadas th {
-      width: 40%;
-    }
-
-    .enlace-ubicacion {
-      margin-top: 2mm;
-      font-size: 8px;
+    .ubicacion-mapa .mapa-atribucion {
+      font-size: 6px;
     }
   </style>
 </head>
@@ -726,7 +715,7 @@
            ================================================= -->
       <aside class='columna-izquierda'>
         <h2 class='titulo-accion'>
-          Legitimación de Ganancias Ilícitas
+          Pérdida de Dominio
         </h2>
         <div class='fila-doble'>
           <div class='campo'>
@@ -926,189 +915,102 @@
               </div>
             </div>
           </div>
-          <div class='afectacion'>
-            <div class='afectacion-valor'>
-              <span class='afectacion-numero'>
-                {{novedad.afectacionEstimadaNumero}}
-              </span>
-              {{#if novedad.afectacionEstimadaLiteral}}
-              <span class='afectacion-literal'>
-                ({{novedad.afectacionEstimadaLiteral}})
-              </span>
-              {{/if}}
-            </div>
-            <div class='afectacion-etiqueta'>
-              Afectación estimada
-            </div>
-          </div>
         </section>
-        <section class='seccion'>
-          <h2 class='titulo-seccion'>Detalle del bien: {{bien.tipoBien}}</h2>
-          <div class='ultima-juridica'><strong>Última situación jurídica:</strong> {{bien.ultimaSituacionJuridica}}
+        <section class='seccion detalle-empresa'>
+          <h2 class='titulo-seccion'>Persona jurídica: {{empresa.nombre}}</h2>
+          <div class='ultima-juridica'><strong>Última situación jurídica:</strong> {{empresa.ultimaSituacionJuridica}}
           </div>
           <div class='datos-bien-compactos'>
-            {{#each bien.datos}}
+            <div class='dato-bien-compacto'><strong>Vínculo:</strong> {{empresa.vinculo}}</div>
+            {{#each empresa.datos}}
             <div class='dato-bien-compacto'><strong>{{etiqueta}}:</strong> {{valor}}</div>
             {{/each}}
-            <div class='dato-bien-compacto'><strong>Costo aproximado:</strong> {{bien.valorAproximado}}</div>
-            <div class='dato-bien-compacto'><strong>Costo cuantificado:</strong> {{bien.valorCuantificado}}</div>
+            <div class='dato-bien-compacto'><strong>Fecha de registro:</strong> {{empresa.fechaRegistro}}</div>
+            <div class='dato-bien-compacto'><strong>Documento adjunto:</strong> {{#if
+              empresa.tieneDocumento}}Registrado{{else}}Sin documento registrado{{/if}}</div>
           </div>
-          <h2 class='titulo-seccion'>Características del bien:</h2>
-          <div class='datos-bien-compactos'>
-            {{#each bien.caracteristicas}}
-            <div class='dato-bien-compacto'><strong>{{etiqueta}}:</strong> {{valor}}</div>
-            {{else}}
-            <div class='dato-bien-compacto'>Sin características activas registradas.</div>
-            {{/each}}
-          </div>
+          <h2 class='titulo-seccion'>Implicados de la empresa:</h2>
+          <table class='tabla-detalle tabla-implicados'>
+            <thead>
+              <tr>
+                <th>N.º</th>
+                <th>Nombre</th>
+                <th>Tipo de implicado</th>
+                <th>Documento</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each empresa.implicados}}
+              <tr>
+                <td>{{numero}}</td>
+                <td>{{nombre}}</td>
+                <td>{{tipoImplicado}}</td>
+                <td>
+                  <div>{{tipoDocumento}}</div>
+                  <div>{{numeroDocumento}}</div>
+                </td>
+              </tr>
+              {{else}}<tr>
+                <td colspan='4'>Sin implicados activos registrados para esta empresa.</td>
+              </tr>{{/each}}
+            </tbody>
+          </table>
           <h2 class='titulo-seccion'>Historial de situación jurídica:</h2>
           <table class='tabla-detalle'>
             <thead>
               <tr>
                 <th>Situación</th>
                 <th>Fecha</th>
-                <th>Información</th>
+                <th>Fecha de registro</th>
               </tr>
             </thead>
             <tbody>
-              {{#each bien.historialJuridico}}
+              {{#each empresa.historialJuridico}}
               <tr class='{{#if esUltima}}fila-ultima{{/if}}'>
                 <td>{{situacion}}{{#if esUltima}} <strong>(Última)</strong>{{/if}}</td>
                 <td>{{fecha}}</td>
-                <td>{{#each detalles}}<div><strong>{{etiqueta}}:</strong> {{valor}}</div>{{/each}}</td>
+                <td>{{fechaRegistro}}</td>
               </tr>
               {{else}}<tr>
                 <td colspan='3'>Sin situaciones jurídicas registradas.</td>
               </tr>{{/each}}
             </tbody>
           </table>
-          {{#if bien.anotacionesJuridicas}}
-          <h2 class='titulo-seccion'>Anotaciones jurídicas:</h2>
-          <table class='tabla-detalle'>
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Descripción</th>
-              </tr>
-            </thead>
-            <tbody>{{#each bien.anotacionesJuridicas}}<tr>
-                <td>{{fecha}}</td>
-                <td>{{descripcion}}</td>
-              </tr>{{/each}}</tbody>
-          </table>
-          {{/if}}
-          <h2 class='titulo-seccion'>Historial de situación del bien:</h2>
-          <table class='tabla-detalle'>
-            <thead>
-              <tr>
-                <th>Calidad y fecha</th>
-                <th>Documento y fiscal</th>
-                <th>Recepción y ubicación</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each bien.historialSituacionBien}}
-              <tr>
-                <td><strong>{{calidad}}</strong>
-                  <div>{{fecha}}</div>
-                </td>
-                <td>{{#if numeroDocumento}}<div>Documento: {{numeroDocumento}}</div>{{/if}}
-                  <div><strong>Tipo de documento:</strong> {{#if tipoDocumento}}{{tipoDocumento}}{{else}}Sin
-                    especificar{{/if}}</div>
-                  {{#if fiscalRequirente}}<div>Fiscal: {{fiscalRequirente}}</div>{{/if}}
-                </td>
-                <td>{{#if responsableRecepcion}}<div>Responsable: {{responsableRecepcion}}</div>{{/if}}
-                  {{#if institucion}}<div>Institución: {{institucion}}</div>{{/if}}
-                  {{#if ubicacion}}<div>Ubicación: {{ubicacion}}</div>{{/if}}</td>
-              </tr>
-              {{else}}<tr>
-                <td colspan='3'>Sin situaciones del bien registradas.</td>
-              </tr>{{/each}}
-            </tbody>
-          </table>
         </section>
         <section class='muestrario'>
-          <h2 class='titulo-seccion'>Muestrario fotográfico del bien:</h2>
-          <div class='fotografias'>
-            {{#each bien.fotografias}}
-            <div class='fotografia'>
-              <div class='numero-fotografia'>{{numero}}</div>
-              {{#if imagen}}<img src='{{imagen}}' alt='Fotografía {{numero}}' />
-              {{else}}<div class='foto-vacia'>Sin fotografía</div>{{/if}}
-              <p class='texto'>{{descripcion}}</p>
-            </div>
-            {{else}}
-            <div class='sin-registros'>No existen fotografías registradas para este bien.</div>
-            {{/each}}
-          </div>
+          <h2 class='titulo-seccion'>Imagen de la empresa:</h2>
+          {{#if empresa.imagen}}<img class='imagen-empresa' src='{{empresa.imagen}}'
+            alt='Imagen de {{empresa.nombre}}' />
+          {{else}}<div class='sin-registros'>Sin imagen registrada.</div>{{/if}}
         </section>
         <section class='seccion ubicacion-secuestro'>
-          <h2 class='titulo-seccion'>Ubicación del secuestro:</h2>
-
+          <h2 class='titulo-seccion'>Ubicación de la empresa:</h2>
           <div class='ubicacion-contenido'>
             <div class='ubicacion-mapa'>
-              {{#if bien.mapaImagen}}
-              {{#if bien.googleMapsUrl}}
-              <a href='{{bien.googleMapsUrl}}' target='_blank' rel='noopener'>
-                <img src='{{bien.mapaImagen}}' alt='Mapa del lugar de secuestro' />
-              </a>
-              {{else}}
-              <img src='{{bien.mapaImagen}}' alt='Mapa del lugar de secuestro' />
-              {{/if}}
-
-              <div class='mapa-atribucion'>
-                © OpenStreetMap contributors
-              </div>
-              {{else}}
-              <div class='sin-registros'>
-                {{#if bien.mapaError}}
-                {{bien.mapaError}}
-                {{else}}
-                Mapa no disponible.
-                {{/if}}
-              </div>
-              {{/if}}
+              {{#if empresa.mapaImagen}}
+              {{#if empresa.googleMapsUrl}}<a href='{{empresa.googleMapsUrl}}' target='_blank' rel='noopener'><img
+                  src='{{empresa.mapaImagen}}' alt='Ubicación de la empresa' /></a>
+              {{else}}<img src='{{empresa.mapaImagen}}' alt='Ubicación de la empresa' />{{/if}}
+              <div class='mapa-atribucion'>© OpenStreetMap contributors</div>
+              {{else}}<div class='sin-registros'>{{empresa.mapaError}}</div>{{/if}}
             </div>
-
             <div class='ubicacion-detalle'>
-              {{#if bien.lugarSecuestro}}
-              <div class='dato-bien-compacto'>
-                <strong>Lugar:</strong> {{bien.lugarSecuestro}}
-              </div>
-              {{/if}}
-
+              {{#if empresa.direccion}}<div class='dato-bien-compacto'><strong>Dirección:</strong> {{empresa.direccion}}
+              </div>{{/if}}
               <table class='tabla-detalle tabla-coordenadas'>
                 <tbody>
                   <tr>
                     <th>Latitud</th>
-                    <td>
-                      {{#if bien.latitud includeZero=true}}
-                      {{bien.latitud}}
-                      {{else}}
-                      Sin registro
-                      {{/if}}
-                    </td>
+                    <td>{{#if empresa.latitud includeZero=true}}{{empresa.latitud}}{{else}}Sin registro{{/if}}</td>
                   </tr>
                   <tr>
                     <th>Longitud</th>
-                    <td>
-                      {{#if bien.longitud includeZero=true}}
-                      {{bien.longitud}}
-                      {{else}}
-                      Sin registro
-                      {{/if}}
-                    </td>
+                    <td>{{#if empresa.longitud includeZero=true}}{{empresa.longitud}}{{else}}Sin registro{{/if}}</td>
                   </tr>
                 </tbody>
               </table>
-
-              {{#if bien.googleMapsUrl}}
-              <div class='enlace-ubicacion'>
-                <a href='{{bien.googleMapsUrl}}' target='_blank' rel='noopener'>
-                  Ver ubicación en Google Maps
-                </a>
-              </div>
-              {{/if}}
+              {{#if empresa.googleMapsUrl}}<div class='enlace-ubicacion'><a href='{{empresa.googleMapsUrl}}'
+                  target='_blank' rel='noopener'>Ver ubicación en Google Maps</a></div>{{/if}}
             </div>
           </div>
         </section>
