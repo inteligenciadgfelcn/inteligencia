@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 import { DB_LGI } from '@/core/config/database/database.module'
-import { BienSecuestradoLgiRepository } from '../../bienes_secuestrados/repository/bien_secuestrado_lgi.repository'
+import { BienSecuestradoLgiRepository } from '@/application/lgi/bienes_secuestrados/repository/bien_secuestrado_lgi.repository'
 
 @Injectable()
 export class ConclusionReporteRepository {
