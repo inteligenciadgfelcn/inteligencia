@@ -15,16 +15,11 @@ import { ConsultaSiiiRepository } from '../informacion_siii/repository/consulta.
 import { DistritalLgiRepository } from '../parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '../parametro/parametricas_lgi/repository/grupo.repository'
 import { InvestigadoresModule } from '../investigadores/investigadores.module'
+import { BienesSecuestradosModule } from '../bienes_secuestrados/bienes_secuestrados.module'
 
 @Module({
-  imports: [
-    ExportModule,
-    InvestigadoresModule,
-  ],
-  controllers: [
-    ReportesLgiController,
-    EstadisticasLgiController,
-  ],
+  imports: [ExportModule, InvestigadoresModule, BienesSecuestradosModule],
+  controllers: [ReportesLgiController, EstadisticasLgiController],
   providers: [
     ActuacionLgiService,
     ActuacionReporteRepository,
@@ -38,6 +33,8 @@ import { InvestigadoresModule } from '../investigadores/investigadores.module'
     ConsultaSiiiRepository,
     DistritalLgiRepository,
     GrupoLgiRepository,
+    BienesLgiReporteRepository,
+    BienesLgiService,
   ],
   exports: [
     ActuacionLgiService,

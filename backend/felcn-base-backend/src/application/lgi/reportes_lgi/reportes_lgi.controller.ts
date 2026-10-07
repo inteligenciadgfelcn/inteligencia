@@ -74,29 +74,22 @@ export class ReportesLgiController {
   }
 
   @Get('export/pdf/bienes/:idActuacion')
-  async exportPDFBienesSecuestrados(
-    @Param('idActuacion', ParseIntPipe) idActuacion: number,
-    @Res() res: Response,
-  ) {
-    const data =
-      await this.reporteBienes.GenerarPDFBienes(idActuacion)
+async exportPDFBienesSecuestrados(
+  @Param('idActuacion', ParseIntPipe) idActuacion: number,
+  @Res() res: Response,
+) {
+  const data = await this.reporteBienes.GenerarPDFBienes(idActuacion)
+  const buffer = await this.exportService.generatePDF(
+    'lgi-bienes', data, PDF_OFICIO_VERTICAL,
+  )
+  res.set({
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `attachment; filename=lgi-bienes-${idActuacion}.pdf`,
+    'Content-Length': buffer.length,
+  })
+  res.end(buffer)
+}
 
-    const buffer =
-      await this.exportService.generatePDF(
-        'lgi-bienes',
-        data,
-        PDF_OFICIO_VERTICAL,
-      )
-
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=lgi-bienes-${idActuacion}.pdf`,
-      'Content-Length': buffer.length,
-    })
-
-    res.end(buffer)
-  }
 
   @Get('export/pdf/caso/:idCaso')
   async exportPDFConclusionCaso(
