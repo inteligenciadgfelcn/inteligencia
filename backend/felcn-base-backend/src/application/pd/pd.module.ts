@@ -7,6 +7,7 @@ import { BienesIdentificadosPdModule } from './bienes_identificados_pd/bienes_id
 import { VinculoBienModule } from './vinculo_bien_pd/vinculo_bien.module'
 import { SituacionJuridicaPdModule } from './situacion_juridica_pd/situacion_juridica_pd.module';
 import { ImplicadosModule } from './implicados/implicados.module'
+import { ConclusionPdModule } from './conclusion_caso/conclusion_caso.module'
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { ImplicadosModule } from './implicados/implicados.module'
     VinculoBienModule,
     SituacionJuridicaPdModule,
     PersonasJuridicasPdModule,
-    ImplicadosModule
+    ImplicadosModule,
+    ConclusionPdModule,
   ],
   controllers: [],
 })
