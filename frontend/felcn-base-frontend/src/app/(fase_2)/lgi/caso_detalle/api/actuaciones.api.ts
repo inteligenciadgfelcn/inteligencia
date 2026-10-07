@@ -4,7 +4,6 @@ import { sesionPeticion } from '@/utils/peticion'
 import type {
   ActuacionPayload,
   ActuacionRow,
-  ConclusionCasoPayload,
   TipoInforme,
 } from '../types/actuaciones.types'
 
@@ -76,28 +75,6 @@ export const ActuacionesApi = {
       method: 'get',
       responseType: 'blob',
       headers: { accept: 'application/pdf' },
-      withCredentials: true,
-    })
-  },
-
-  exportarBienesPdf(): Promise<Blob> {
-    return sesionPeticion<Blob>({
-      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/bienes/10`,
-      method: 'get',
-      responseType: 'blob',
-      headers: { accept: 'application/pdf' },
-      withCredentials: true,
-    })
-  },
-
-  actualizarConclusionCaso(
-    opId: number,
-    payload: ConclusionCasoPayload
-  ): Promise<unknown> {
-    return sesionPeticion({
-      url: `${BASE}/${opId}/conclusion-caso`,
-      method: 'patch',
-      body: payload,
       withCredentials: true,
     })
   },

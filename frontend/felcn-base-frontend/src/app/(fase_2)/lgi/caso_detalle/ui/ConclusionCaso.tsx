@@ -1,75 +1,185 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/Button'
-import { Select } from '@/components/ui/Select'
 import IconDownload from '@/components/Icon/IconDownload'
 
-import { ActuacionesApi } from '../api/actuaciones.api'
-import type { ActuacionRow } from '../types/actuaciones.types'
-import { formatFecha } from '../../utils/fechas'
+import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
+import type { CatalogoConclusionLgi } from '../../(parametricas)/types/parametricas.types'
+import { ConclusionCasoApi } from '../api/conclusion-caso.api'
+
 import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
 
 type Props = {
   casoId: number
 }
 
+type Mensaje = {
+  tipo: 'exito' | 'error'
+  texto: string
+} | null
+
+function alternar(ids: string[], id: string): string[] {
+  return ids.includes(id) ? ids.filter((valor) => valor !== id) : [...ids, id]
+}
+
+type GrupoCheckboxProps = {
+  titulo: string
+  descripcion: string
+  opciones: CatalogoConclusionLgi[]
+  seleccionados: string[]
+  onToggle: (id: string) => void
+  columnas?: 1 | 2
+  cargando?: boolean
+}
+
+function GrupoCheckboxes({
+  titulo,
+  descripcion,
+  opciones,
+  seleccionados,
+  onToggle,
+  columnas = 1,
+  cargando = false,
+}: GrupoCheckboxProps) {
+  return (
+    <div className="rounded border border-gray-300 p-4 dark:border-[#1b2e4b]">
+      <h6 className="text-sm font-semibold text-dark dark:text-white-light">
+        {titulo}
+      </h6>
+      <p className="mb-3 mt-1 text-xs text-gray-500">{descripcion}</p>
+
+      {cargando ? (
+        <p className="text-xs text-gray-500">Cargando catálogo…</p>
+      ) : opciones.length === 0 ? (
+        <p className="text-xs text-gray-500">Sin opciones disponibles.</p>
+      ) : (
+        <div
+          className={
+            columnas === 2
+              ? 'grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2'
+              : 'flex flex-col gap-1'
+          }
+        >
+          {opciones.map((opcion) => {
+            const marcado = seleccionados.includes(String(opcion.id))
+
+            return (
+              <label
+                key={String(opcion.id)}
+                className="flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
+              >
+                <input
+                  type="checkbox"
+                  className="form-checkbox h-4 w-4 text-primary"
+                  checked={marcado}
+                  onChange={() => onToggle(String(opcion.id))}
+                />
+                <span>{opcion.descripcion}</span>
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ConclusionCaso({ casoId }: Props) {
-  const [actuaciones, setActuaciones] = useState<ActuacionRow[]>([])
-  const [opId, setOpId] = useState<number | null>(null)
-  const [tipologias, setTipologias] = useState('')
-  const [verbosRectores, setVerbosRectores] = useState('')
-  const [etapasCiclo, setEtapasCiclo] = useState('')
+  const queryClient = useQueryClient()
+
+  const [cicloIds, setCicloIds] = useState<string[]>([])
+  const [verboRectorIds, setVerboRectorIds] = useState<string[]>([])
+  const [tipologiaIds, setTipologiaIds] = useState<string[]>([])
   const [guardando, setGuardando] = useState(false)
-  const [mensaje, setMensaje] = useState<string | null>(null)
+  const [mensaje, setMensaje] = useState<Mensaje>(null)
+
+  const {
+    data: ciclos = [],
+    isLoading: cargandoCiclos,
+    isError: errorCiclos,
+  } = useQuery<CatalogoConclusionLgi[]>({
+    queryKey: ['lgi-conclusion-caso', 'catalogos', 'ciclos'],
+    queryFn: () => ParametricasLgiApi.listarCiclos(),
+    staleTime: Infinity,
+  })
+
+  const {
+    data: verbosRectores = [],
+    isLoading: cargandoVerbos,
+    isError: errorVerbos,
+  } = useQuery<CatalogoConclusionLgi[]>({
+    queryKey: ['lgi-conclusion-caso', 'catalogos', 'verbos-rectores'],
+    queryFn: () => ParametricasLgiApi.listarVerbosRectores(),
+    staleTime: Infinity,
+  })
+
+  const {
+    data: tipologias = [],
+    isLoading: cargandoTipologias,
+    isError: errorTipologias,
+  } = useQuery<CatalogoConclusionLgi[]>({
+    queryKey: ['lgi-conclusion-caso', 'catalogos', 'tipologias'],
+    queryFn: () => ParametricasLgiApi.listarTipologias(),
+    staleTime: Infinity,
+  })
+
+  const {
+    data: conclusion,
+    isLoading: cargandoConclusion,
+    isError: errorConclusion,
+  } = useQuery({
+    queryKey: ['lgi-conclusion-caso', casoId],
+    queryFn: () => ConclusionCasoApi.obtenerConclusionCaso(casoId),
+    enabled: Boolean(casoId),
+  })
 
   useEffect(() => {
-    let activo = true
-    ActuacionesApi.listarActuaciones(casoId, { pagina: 1, limite: 50 })
-      .then((res) => {
-        if (activo) setActuaciones(res.filas ?? [])
-      })
-      .catch(() => undefined)
-    return () => {
-      activo = false
-    }
-  }, [casoId])
+    if (!conclusion) return
+    setCicloIds((conclusion.ciclos ?? []).map((item) => String(item.id)))
+    setVerboRectorIds(
+      (conclusion.verbosRectores ?? []).map((item) => String(item.id))
+    )
+    setTipologiaIds(
+      (conclusion.tipologias ?? []).map((item) => String(item.id))
+    )
+  }, [conclusion])
 
-  useEffect(() => {
-    if (opId == null) {
-      setTipologias('')
-      setVerbosRectores('')
-      setEtapasCiclo('')
-      setMensaje(null)
-      return
-    }
-    const actuacion = actuaciones.find((a) => String(a.opId) === String(opId))
-    setTipologias(actuacion?.tipologiasIdentificadas ?? '')
-    setVerbosRectores(actuacion?.verbosRectores ?? '')
-    setEtapasCiclo(actuacion?.etapasCicloLgi ?? '')
-    setMensaje(null)
-  }, [opId, actuaciones])
-
-  const isFormValid =
-    opId != null &&
-    tipologias.trim() !== '' &&
-    verbosRectores.trim() !== '' &&
-    etapasCiclo.trim() !== ''
+  const cargandoCatalogos =
+    cargandoCiclos || cargandoVerbos || cargandoTipologias
+  const errorCatalogos = errorCiclos || errorVerbos || errorTipologias
 
   const guardar = async () => {
-    if (!isFormValid || opId == null) return
     setGuardando(true)
     setMensaje(null)
     try {
-      await ActuacionesApi.actualizarConclusionCaso(opId, {
-        tipologiasIdentificadas: tipologias,
-        verbosRectores: verbosRectores,
-        etapasCicloLgi: etapasCiclo,
+      const resultado = await ConclusionCasoApi.guardarConclusionCaso({
+        casoId: String(casoId),
+        cicloIds,
+        verboRectorIds,
+        tipologiaIds,
       })
-      setMensaje('Conclusión del caso guardada correctamente')
+      setCicloIds((resultado.ciclos ?? []).map((item) => String(item.id)))
+      setVerboRectorIds(
+        (resultado.verbosRectores ?? []).map((item) => String(item.id))
+      )
+      setTipologiaIds(
+        (resultado.tipologias ?? []).map((item) => String(item.id))
+      )
+      await queryClient.invalidateQueries({
+        queryKey: ['lgi-conclusion-caso', casoId],
+      })
+      setMensaje({
+        tipo: 'exito',
+        texto: 'Conclusión del caso guardada correctamente',
+      })
     } catch {
-      setMensaje('Error al guardar la conclusión del caso. Intente nuevamente.')
+      setMensaje({
+        tipo: 'error',
+        texto: 'Error al guardar la conclusión del caso. Intente nuevamente.',
+      })
     } finally {
       setGuardando(false)
     }
@@ -78,109 +188,136 @@ export function ConclusionCaso({ casoId }: Props) {
   const abrirReporte = async () => {
     setMensaje(null)
     try {
-      await abrirPdfEnNuevaPestana(ActuacionesApi.exportarBienesPdf)
-    } catch {
-      setMensaje(
-        'No se pudo abrir el reporte. Verifique que su navegador permita pestañas emergentes.'
+      await abrirPdfEnNuevaPestana(() =>
+        ConclusionCasoApi.exportarConclusionCasoPdf(casoId)
       )
+    } catch {
+      setMensaje({
+        tipo: 'error',
+        texto:
+          'No se pudo abrir el reporte. Verifique que su navegador permita pestañas emergentes.',
+      })
     }
+  }
+
+  const reintentarCatalogos = () => {
+    void queryClient.invalidateQueries({
+      queryKey: ['lgi-conclusion-caso', 'catalogos'],
+    })
+  }
+
+  const reintentarConclusion = () => {
+    setMensaje(null)
+    void queryClient.invalidateQueries({
+      queryKey: ['lgi-conclusion-caso', casoId],
+    })
   }
 
   return (
     <div className="space-y-4">
-      <div className="panel p-4">
-        <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-          Actuación realizada *
-        </label>
-        <Select
-          options={actuaciones.map((a) => ({
-            value: String(a.opId),
-            label: `${a.opNrooper} (${formatFecha(a.opFechainf, 'dd/MM/yyyy')})`,
-          }))}
-          placeholder="Seleccione la actuación"
-          value={opId != null ? String(opId) : ''}
-          onChange={(e) => setOpId(Number(e.target.value) || null)}
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Seleccione la actuación para registrar la conclusión del caso.
-        </p>
-      </div>
-
       {mensaje && (
-        <div className="rounded-md border border-success/30 bg-success/5 px-4 py-3 text-sm text-success">
-          {mensaje}
+        <div
+          className={`rounded-md border px-4 py-3 text-sm ${
+            mensaje.tipo === 'exito'
+              ? 'border-success/30 bg-success/5 text-success'
+              : 'border-danger/30 bg-danger/5 text-danger'
+          }`}
+        >
+          {mensaje.texto}
         </div>
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_280px]">
         <div className="panel space-y-5 p-5">
-          {opId == null ? (
-            <p className="text-sm text-gray-500">
-              Seleccione una actuación para registrar la conclusión.
-            </p>
-          ) : (
-            <>
-              <div>
-                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-                  Tipologías Identificadas
-                </h6>
-                <p className="mb-2 text-xs text-gray-500">
-                  Tipos de delitos o patrones criminales identificados en el caso.
-                </p>
-                <textarea
-                  className="form-textarea w-full"
-                  rows={4}
-                  value={tipologias}
-                  onChange={(e) => setTipologias(e.target.value)}
-                  placeholder="Ej: Lavado de activos, Financiamiento del terrorismo, Corrupción..."
-                />
-              </div>
-
-              <div>
-                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-                  Verbos Rectores
-                </h6>
-                <p className="mb-2 text-xs text-gray-500">
-                  Acciones legales que definen el delito investigado.
-                </p>
-                <textarea
-                  className="form-textarea w-full"
-                  rows={4}
-                  value={verbosRectores}
-                  onChange={(e) => setVerbosRectores(e.target.value)}
-                  placeholder="Ej: Lavado, Financiamiento, Cohecha, Extorsión..."
-                />
-              </div>
-
-              <div>
-                <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-                  Etapas / Ciclo de LGI
-                </h6>
-                <p className="mb-2 text-xs text-gray-500">
-                  Etapas del ciclo de lavado de activos identificadas.
-                </p>
-                <textarea
-                  className="form-textarea w-full"
-                  rows={4}
-                  value={etapasCiclo}
-                  onChange={(e) => setEtapasCiclo(e.target.value)}
-                  placeholder="Ej: Colocación, Integración, Ocultamiento..."
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="primary"
-                  loading={guardando}
-                  disabled={!isFormValid || guardando}
-                  onClick={guardar}
-                >
-                  Guardar
-                </Button>
-              </div>
-            </>
+          {errorCatalogos && (
+            <div className="flex items-center justify-between gap-3 rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+              <span>No se pudieron cargar los catálogos de la conclusión.</span>
+              <Button
+                type="button"
+                variant="outline-danger"
+                size="sm"
+                onClick={reintentarCatalogos}
+              >
+                Reintentar
+              </Button>
+            </div>
           )}
+
+          {errorConclusion && (
+            <div className="flex items-center justify-between gap-3 rounded-md border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger">
+              <span>
+                No se pudo cargar la conclusión guardada del caso. No se permite
+                guardar hasta recuperar los datos.
+              </span>
+              <Button
+                type="button"
+                variant="outline-danger"
+                size="sm"
+                onClick={reintentarConclusion}
+              >
+                Reintentar
+              </Button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <GrupoCheckboxes
+              titulo="Etapas/Ciclos LGI"
+              descripcion="Etapas del ciclo de lavado de activos identificadas en el caso."
+              opciones={ciclos}
+              seleccionados={cicloIds}
+              onToggle={(id) => setCicloIds((actual) => alternar(actual, id))}
+              cargando={cargandoCiclos}
+            />
+
+            <GrupoCheckboxes
+              titulo="Verbos rectores"
+              descripcion="Acciones que definen el delito investigado."
+              opciones={verbosRectores}
+              seleccionados={verboRectorIds}
+              onToggle={(id) =>
+                setVerboRectorIds((actual) => alternar(actual, id))
+              }
+              columnas={2}
+              cargando={cargandoVerbos}
+            />
+          </div>
+
+          <GrupoCheckboxes
+            titulo="Tipologías investigadas"
+            descripcion="Tipos de delitos o patrones criminales identificados en el caso."
+            opciones={tipologias}
+            seleccionados={tipologiaIds}
+            onToggle={(id) => setTipologiaIds((actual) => alternar(actual, id))}
+            cargando={cargandoTipologias}
+          />
+
+          <div className="flex items-center gap-3 border-t border-gray-200 pt-4 dark:border-[#1b2e4b]">
+            <Button
+              type="button"
+              variant="primary"
+              loading={guardando}
+              disabled={
+                guardando ||
+                cargandoConclusion ||
+                cargandoCatalogos ||
+                errorConclusion ||
+                errorCatalogos
+              }
+              onClick={guardar}
+            >
+              Guardar
+            </Button>
+            <span className="text-xs text-gray-500">
+              {guardando
+                ? 'Procesando…'
+                : errorConclusion || errorCatalogos
+                  ? 'Corrija los errores de carga antes de guardar.'
+                  : cargandoConclusion || cargandoCatalogos
+                    ? 'Cargando datos…'
+                    : 'Puede guardar aunque algún grupo no tenga selecciones.'}
+            </span>
+          </div>
         </div>
 
         <div className="panel flex flex-col items-center justify-center gap-4 p-5 lg:sticky lg:top-4 lg:self-start">
@@ -195,7 +332,7 @@ export function ConclusionCaso({ casoId }: Props) {
             onClick={abrirReporte}
           >
             <IconDownload className="h-4 w-4" />
-            Descargar Reporte
+            Descargar reporte de conclusión
           </Button>
         </div>
       </div>

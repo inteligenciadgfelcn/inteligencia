@@ -18,16 +18,7 @@ export interface ActuacionRow {
   usuario: string
   usuarioActualizacion: string | null
   fechaActualizacion: string
-  tipologiasIdentificadas?: string | null
-  verbosRectores?: string | null
-  etapasCicloLgi?: string | null
   [key: string]: unknown
-}
-
-export interface ConclusionCasoPayload {
-  tipologiasIdentificadas: string
-  verbosRectores: string
-  etapasCicloLgi: string
 }
 
 export interface TipoInforme {

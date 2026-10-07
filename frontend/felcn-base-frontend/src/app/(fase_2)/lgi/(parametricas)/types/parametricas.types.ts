@@ -58,3 +58,8 @@ export interface EtapaLgi {
   descripcion: string
   lgi: boolean
 }
+
+export interface CatalogoConclusionLgi {
+  id: string
+  descripcion: string
+}

@@ -1,6 +1,7 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
+  CatalogoConclusionLgi,
   CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
@@ -103,6 +104,30 @@ export const ParametricasLgiApi = {
   listarIniciosCaso(): Promise<InicioCasoLgi[]> {
     return sesionPeticion({
       url: `${BASE}/allIncioCaso`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarCiclos(): Promise<CatalogoConclusionLgi[]> {
+    return sesionPeticion({
+      url: `${BASE}/ciclos`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarVerbosRectores(): Promise<CatalogoConclusionLgi[]> {
+    return sesionPeticion({
+      url: `${BASE}/verbos-rectores`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarTipologias(): Promise<CatalogoConclusionLgi[]> {
+    return sesionPeticion({
+      url: `${BASE}/tipologias`,
       method: 'get',
       withCredentials: true,
     })
