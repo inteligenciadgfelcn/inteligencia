@@ -122,14 +122,4 @@ export class CreateAsignacionPdDto {
   @IsNotEmpty()
   @MaxLength(50)
   codigoServicio!: string
-
-  @ApiProperty({
-    description: 'CUD PARALELA',
-    example: '201102012600123',
-    maxLength: 20,
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(30)
-  cudifp!: string
 }

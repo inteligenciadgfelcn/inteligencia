@@ -3,15 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
-import { CreateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/create-asignacion_lgi.dto'
 import { RegistrarEtapaProcesalDto } from '@/application/lgi/asignacion_lgi/dto/etapa-asignacion_lgi.dto'
-import { UpdateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/update-asignacion_lgi.dto'
 import { AsignacionLgi } from '@/application/lgi/asignacion_lgi/entities/asignacion_lgi.entity'
 import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
 import { PaginacionQueryDto } from '@/common/dto'
 import { AsignacionPdRepository } from './repository/asignacion_pd.repository'
 import { EtapaProcesalPdRepository } from './repository/etapa-procesal.repository'
+import { UpdateAsignacionPdDto } from './dto/update-asignacion_pd.dto'
+import { CreateAsignacionPdDto } from './dto/create-asignacion_pd.dto'
 
 @Injectable()
 export class AsignacionPdService {
@@ -21,7 +21,7 @@ export class AsignacionPdService {
     private readonly distritalLgiRepository: DistritalLgiRepository,
     private readonly grupoLgiRepository: GrupoLgiRepository
   ) {}
-  async create(dto: CreateAsignacionLgiDto) {
+  async create(dto: CreateAsignacionPdDto) {
     const unidad = await this.distritalLgiRepository.findUnidadByDistrito(
       dto.disId
     )
@@ -72,7 +72,7 @@ export class AsignacionPdService {
     }
   }
 
-  async update(id: number, dto: UpdateAsignacionLgiDto) {
+  async update(id: number, dto: UpdateAsignacionPdDto) {
     const asignacion = await this.asignacionPdRepository.findOneById(id)
 
     if (!asignacion) {

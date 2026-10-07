@@ -35,14 +35,14 @@ export class CreateBienesSecuestradoDto {
   @Min(0)
   costoAprox: number
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Costo calculado según la cantidad',
     example: 3001,
   })
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  @IsOptional()
   costoCuant?: number
 
   @ApiPropertyOptional({
@@ -105,8 +105,7 @@ export class CreateBienesSecuestradoDto {
       type: 'string',
       format: 'binary',
     },
-    description:
-      'Fotografías del bien secuestrado',
+    description: 'Fotografías del bien secuestrado',
   })
   @IsOptional()
   fotografias?: unknown[]

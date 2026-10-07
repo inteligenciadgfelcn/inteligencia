@@ -1,5 +1,4 @@
 import { CrearNumeroCasoDto } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/dto/create_numeroCaso.dto'
-import { UpdateAsignacionLgiDto } from '@/application/lgi/asignacion_lgi/dto/update-asignacion_lgi.dto'
 import { PaginacionQueryDto } from '@/common/dto'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
@@ -30,6 +29,7 @@ import { BaseController } from '@/common/base/base-controller'
 import { AsignacionesService } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/asignaciones.service'
 import { CreateAsignacionPdDto } from './dto/create-asignacion_pd.dto'
 import { RegistrarEtapaProcesalPdDto } from './dto/etapa-asignacion_pd.dto'
+import { UpdateAsignacionPdDto } from './dto/update-asignacion_pd.dto'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -112,7 +112,7 @@ export class AsignacionPdController extends BaseController {
     id: number,
 
     @Body()
-    dto: UpdateAsignacionLgiDto
+    dto: UpdateAsignacionPdDto
   ) {
     return this.asignacionPdService.update(id, dto)
   }

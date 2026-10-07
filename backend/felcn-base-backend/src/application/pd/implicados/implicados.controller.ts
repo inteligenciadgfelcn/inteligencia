@@ -27,8 +27,8 @@ import { ImplicadoLgiService } from './implicados.service'
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
-@ApiTags('LGI - Ganancias ilícitas')
-@Controller('implicado-lgi')
+@ApiTags('PD - Perdida de Dominio')
+@Controller('implicado-pd')
 export class ImplicadoLgiController {
   constructor(private readonly service: ImplicadoLgiService) {}
 
