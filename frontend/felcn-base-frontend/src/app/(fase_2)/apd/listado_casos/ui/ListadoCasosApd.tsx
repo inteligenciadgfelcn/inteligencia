@@ -16,13 +16,13 @@ import IconSearch from '@/components/Icon/IconSearch'
 import IconTrash from '@/components/Icon/IconTrash'
 import { Badge } from '@/components/ui/Badge'
 
-import { ListadoCasosApi } from '../api/listado-casos.api'
+import { ListadoCasosApi } from '../api/listado-casos-apd.api'
 import {
   formatFecha,
   mapAsignacionCasoRow,
-} from '../mappers/listado-casos.mappers'
-import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
-import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
+} from '../mappers/listado-casos-apd.mappers'
+import type { AsignacionCasoListadoRow } from '../types/listado-casos-apd.types'
+import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos-apd.mappers'
 import dayjs from 'dayjs'
 
 export function ListadoCasos() {
@@ -38,7 +38,7 @@ export function ListadoCasos() {
   const [eliminando, setEliminando] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['lgi-listado-casos', page, limit, filtroAplicado],
+    queryKey: ['apd-listado-casos', page, limit, filtroAplicado],
     queryFn: () =>
       ListadoCasosApi.listarCasos({
         pagina: page,
@@ -48,12 +48,12 @@ export function ListadoCasos() {
   })
 
   const rows = useMemo(
-    () => (data?.filas.filter((i) => i.nrocaso.includes('LGI')) ?? []).map(mapAsignacionCasoRow),
+    () => (data?.filas.filter((i) => i.nrocaso.includes('PD')) ?? []).map(mapAsignacionCasoRow),
     [data]
   )
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    router.push(`/lgi/registro_caso/${row.casos_id}${modo ? '?modo=ver' : ''}`)
+    router.push(`/apd/registro_caso/${row.casos_id}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
@@ -62,7 +62,7 @@ export function ListadoCasos() {
     try {
       await ListadoCasosApi.eliminarCaso(casoAEliminar.casos_id)
       setCasoAEliminar(null)
-      queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
+      queryClient.invalidateQueries({ queryKey: ['apd-listado-casos'] })
     } finally {
       setEliminando(false)
     }
@@ -83,7 +83,6 @@ export function ListadoCasos() {
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
     { accessor: 'nrocasofis', title: 'CUD' },
-    { accessor: 'cudifp', title: 'CUD PAR' },
     { accessor: 'remitefiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
@@ -116,17 +115,6 @@ export function ListadoCasos() {
 
         return <Badge variant={variant} rounded>{textoFormateado}</Badge>
       },
-    },
-    {
-      accessor: 'check_ifp',
-      title: 'IFP',
-      render: (row) => (
-        row.cudifp?.trim().length > 2 ? (
-          <Badge variant="success" rounded>
-            ✓
-          </Badge>
-        ) : null
-      ),
     },
     {
       accessor: 'acciones',
@@ -177,10 +165,10 @@ export function ListadoCasos() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-xl font-bold text-dark dark:text-white-light">
-              Listado de casos LGI
+              Listado de casos APD
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Casos registrados en el módulo LGI.
+              Casos registrados en el módulo APD.
             </p>
           </div>
           <Button
@@ -251,11 +239,6 @@ export function ListadoCasos() {
           onLimitChange={setLimit}
           columns={columns}
           loading={isLoading || isFetching}
-          rowClassName={(row) =>
-            row.cudifp?.trim().length > 2
-              ? 'bg-blue-50 hover:bg-green-100'
-              : ''
-          }
         />
       </div>
 

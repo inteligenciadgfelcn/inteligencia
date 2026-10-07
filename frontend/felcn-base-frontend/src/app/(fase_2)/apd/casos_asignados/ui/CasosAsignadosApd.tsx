@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { AlertDialog } from '@/components/modales/AlertDialog'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { VristoDataTable } from '@/components/datatable/VristoDataTable'
@@ -14,18 +15,18 @@ import IconEye from '@/components/Icon/IconEye'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconSearch from '@/components/Icon/IconSearch'
 import IconTrash from '@/components/Icon/IconTrash'
-import { Badge } from '@/components/ui/Badge'
 
-import { ListadoCasosApi } from '../api/listado-casos.api'
+import { ListadoCasosApi } from '../api/listado-casos-apd.api'
 import {
+  calcularTiempoTranscurridos,
   formatFecha,
   mapAsignacionCasoRow,
-} from '../mappers/listado-casos.mappers'
-import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
-import { calcularTiempoTranscurridos } from '../../casos_asignados/mappers/listado-casos.mappers'
+} from '../mappers/listado-casos-apd.mappers'
+import type { AsignacionCasoListadoRow } from '../types/listado-casos-apd.types'
+import IconListCheck from '@/components/Icon/IconListCheck'
 import dayjs from 'dayjs'
 
-export function ListadoCasos() {
+export function CasosAsignados() {
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -48,19 +49,23 @@ export function ListadoCasos() {
   })
 
   const rows = useMemo(
-    () => (data?.filas.filter((i) => i.nrocaso.includes('LGI')) ?? []).map(mapAsignacionCasoRow),
+    () => (data?.filas ?? []).map(mapAsignacionCasoRow),
     [data]
   )
 
+  const irADetalle = (row: AsignacionCasoListadoRow) => {
+    router.push(`/lgi/caso_detalle/${row.casosId}`)
+  }
+
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    router.push(`/lgi/registro_caso/${row.casos_id}${modo ? '?modo=ver' : ''}`)
+    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
     if (!casoAEliminar) return
     setEliminando(true)
     try {
-      await ListadoCasosApi.eliminarCaso(casoAEliminar.casos_id)
+      await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
       setCasoAEliminar(null)
       queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
     } finally {
@@ -70,40 +75,34 @@ export function ListadoCasos() {
 
   const columns: Column<AsignacionCasoListadoRow>[] = [
     {
-      accessor: 'casos_id',
+      accessor: 'casosId',
       title: 'ID',
       sortable: true,
     },
     {
       accessor: 'nombreCaso',
       title: 'Nombre del caso',
-      render: (row) => <span className="font-medium">{row.nombrecaso}</span>,
+      render: (row) => <span className="font-medium">{row.nombreCaso}</span>,
     },
-    { accessor: 'nrocaso', title: 'Nro Caso GIAEF' },
+    { accessor: 'nroCaso', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoGiaef', title: 'Nro Caso GIAEF' },
     // { accessor: 'nroCasoFis', title: 'Nro Caso FIS' },
-    { accessor: 'nrocasofis', title: 'CUD' },
-    { accessor: 'cudifp', title: 'CUD PAR' },
-    { accessor: 'remitefiscal', title: 'Fiscal asignado' },
+    { accessor: 'cudIfp', title: 'CUD/IFP' },
+    { accessor: 'remiteFiscal', title: 'Fiscal asignado' },
     { accessor: 'regional', title: 'Regional' },
     { accessor: 'etapaInvestigacion', title: 'Etapa investigación' },
     {
-      accessor: 'fechainicio',
-      title: 'Fecha inicio',
-      render: (row) => formatFecha(row.fechainicio),
-    },
-    {
-      accessor: 'fechainicio_calc',
+      accessor: 'fechaHoraIng',
       title: 'Tiempo transcurrido',
       render: (row) => {
-        const tiempo = calcularTiempoTranscurridos(row.fechainicio)
+        const tiempo = calcularTiempoTranscurridos(row.fechahoraing)
         if (tiempo === null) return <span>-</span>
 
         // Calculamos el total de días aproximado o usamos el campo de días para evaluar la variante del badge
         const totalDiasAprox = (tiempo.anos * 365) + (tiempo.meses * 30) + tiempo.dias; // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
 
         // Si prefieres evaluar el color estrictamente por los días totales de diferencia:
-        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechainicio).startOf('day'), 'day')
+        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechahoraing).startOf('day'), 'day')
         const variant = diasTotales <= 5 ? 'success' : diasTotales <= 10 ? 'warning' : 'danger'
 
         // Construimos el texto dinámicamente solo mostrando lo que sea mayor a 0 (opcional, para que se vea más limpio)
@@ -118,17 +117,6 @@ export function ListadoCasos() {
       },
     },
     {
-      accessor: 'check_ifp',
-      title: 'IFP',
-      render: (row) => (
-        row.cudifp?.trim().length > 2 ? (
-          <Badge variant="success" rounded>
-            ✓
-          </Badge>
-        ) : null
-      ),
-    },
-    {
       accessor: 'acciones',
       title: 'Acciones',
       render: (row) => (
@@ -138,34 +126,21 @@ export function ListadoCasos() {
             variant="outline-secondary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Ver detalle de ${row.nombrecaso}`}
+            aria-label={`Ver detalle de ${row.nombreCaso}`}
             title="Ver detalle"
-            onClick={() => irA(row, 'ver')}
+            onClick={() => irADetalle(row)}
           >
             <IconEye className="h-4 w-4" />
           </Button>
-          <Button
+          {/* <Button
             type="button"
-            variant="outline-secondary"
+            variant="outline-primary"
             size="sm"
             className="!p-1.5"
-            aria-label={`Editar ${row.nombrecaso}`}
-            title="Editar"
-            onClick={() => irA(row)}
+            title="Agregar info"
           >
-            <IconEdit className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="outline-danger"
-            size="sm"
-            className="!p-1.5"
-            aria-label={`Eliminar ${row.nombrecaso}`}
-            title="Eliminar"
-            onClick={() => setCasoAEliminar(row)}
-          >
-            <IconTrash className="h-4 w-4" />
-          </Button>
+            <IconListCheck className="h-4 w-4" />
+          </Button> */}
         </div>
       ),
     },
@@ -183,7 +158,7 @@ export function ListadoCasos() {
               Casos registrados en el módulo LGI.
             </p>
           </div>
-          <Button
+          {/* <Button
             type="button"
             variant="primary"
             className="gap-2"
@@ -191,7 +166,7 @@ export function ListadoCasos() {
           >
             <IconPlus className="h-4 w-4" />
             Registrar caso
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -251,18 +226,13 @@ export function ListadoCasos() {
           onLimitChange={setLimit}
           columns={columns}
           loading={isLoading || isFetching}
-          rowClassName={(row) =>
-            row.cudifp?.trim().length > 2
-              ? 'bg-blue-50 hover:bg-green-100'
-              : ''
-          }
         />
       </div>
 
       <AlertDialog
         isOpen={!!casoAEliminar}
         titulo="Eliminar caso"
-        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombrecaso}"? Esta acción no se puede deshacer.`}
+        texto={`¿Seguro que desea eliminar el caso "${casoAEliminar?.nombreCaso}"? Esta acción no se puede deshacer.`}
       >
         <Button
           type="button"

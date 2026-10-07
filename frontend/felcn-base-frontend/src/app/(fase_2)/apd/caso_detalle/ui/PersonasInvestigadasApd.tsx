@@ -1,0 +1,949 @@
+'use client'
+
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import dayjs from 'dayjs'
+
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { VristoDataTable } from '@/components/datatable/VristoDataTable'
+import type { Column } from '@/components/datatable/VristoDataTable'
+import IconEdit from '@/components/Icon/IconEdit'
+import IconPlus from '@/components/Icon/IconPlus'
+import IconTrash from '@/components/Icon/IconTrash'
+import IconClipboardText from '@/components/Icon/IconClipboardText'
+import IconListCheck from '@/components/Icon/IconListCheck'
+
+import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas-apd.api'
+import type {
+  TipoDocumentoLgi,
+  PaisLgi,
+  EstadoCivilLgi,
+  ProfesionLgi,
+} from '../../(parametricas)/types/parametricas-apd.types'
+import { RegistroCasoApi } from '../../registro_caso/api/registro-caso-apd.api'
+import {
+  formatNombreCompleto,
+  buscarDescripcion,
+  mapTipoDocumentoToOption,
+  mapPaisToOption,
+  mapEstadoCivilToOption,
+  mapProfesionToOption,
+  mapSituacionLegalToOption,
+  buildPersonaPayload,
+} from '../../registro_caso/mappers/registro-caso-apd.mappers'
+import {
+  personaConSituacionSchema,
+  type PersonaConSituacionSchemaValues,
+} from '../../registro_caso/schemas/registro-caso-apd.schema'
+import type {
+  PersonaImplicadaRow,
+  PersonaImplicadaPayload,
+  PersonaDetalle,
+  SituacionLegalCatalogo,
+} from '../../registro_caso/types/registro-caso-apd.types'
+import {
+  createDefaultPersonaValues,
+  createDefaultSituacionJuridicaValues,
+} from '../../registro_caso/utils/registro-caso-apd.utils'
+import { formatFecha } from '../../utils/fechas-apd'
+
+type Props = {
+  casoId: number
+  isLectura?: boolean
+}
+
+function buscarDescripcionLocal(
+  catalogo: unknown[],
+  id: string | number,
+  idField: string
+): string {
+  const item = catalogo.find(
+    (entry) => String((entry as Record<string, unknown>)[idField]) === String(id)
+  )
+  return ((item as Record<string, unknown>)?.descripcion as string) ?? '-'
+}
+
+export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
+  const queryClient = useQueryClient()
+
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(10)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [personaEditando, setPersonaEditando] =
+    useState<PersonaImplicadaRow | null>(null)
+  const [personaEliminar, setPersonaEliminar] =
+    useState<PersonaImplicadaRow | null>(null)
+  const [eliminando, setEliminando] = useState(false)
+  const [situacionesModalOpen, setSituacionesModalOpen] = useState(false)
+  const [personaSituacion, setPersonaSituacion] =
+    useState<PersonaImplicadaRow | null>(null)
+  const [situacionLegalId, setSituacionLegalId] = useState<string>('')
+  const [fechaSituacion, setFechaSituacion] = useState<string>('')
+  const [nroResolucion, setNroResolucion] = useState<string>('')
+  const [lugarSituacion, setLugarSituacion] = useState<string>('')
+  const [autoridadSituacion, setAutoridadSituacion] = useState<string>('')
+  const [fjtSituacion, setFjtSituacion] = useState<string>('')
+  const [guardandoSituacion, setGuardandoSituacion] = useState(false)
+  const [historialPersona, setHistorialPersona] =
+    useState<PersonaImplicadaRow | null>(null)
+
+  const { data: historialData, isLoading: historialLoading } =
+    useQuery<PersonaDetalle>({
+      queryKey: ['lgi-personas-investigadas', 'historial', historialPersona?.deId],
+      enabled: Boolean(historialPersona?.deId),
+      queryFn: () =>
+        RegistroCasoApi.obtenerPersona(historialPersona!.deId),
+    })
+
+  const { data: personasData, isLoading } = useQuery({
+    queryKey: ['lgi-personas-investigadas', casoId, page, limit],
+    enabled: Boolean(casoId),
+    queryFn: () =>
+      RegistroCasoApi.listarPersonas(casoId, { pagina: page, limite: limit }),
+  })
+
+  const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
+    queryKey: ['lgi-personas-investigadas', 'tipos-documento'],
+    queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
+  })
+
+  const { data: paises = [] } = useQuery<PaisLgi[]>({
+    queryKey: ['lgi-personas-investigadas', 'paises'],
+    queryFn: () => ParametricasLgiApi.listarPaises(),
+  })
+
+  const { data: estadosCiviles = [] } = useQuery<EstadoCivilLgi[]>({
+    queryKey: ['lgi-personas-investigadas', 'estados-civiles'],
+    queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
+  })
+
+  const { data: profesiones = [] } = useQuery<ProfesionLgi[]>({
+    queryKey: ['lgi-personas-investigadas', 'profesiones'],
+    queryFn: () => ParametricasLgiApi.listarProfesiones(),
+  })
+
+  const { data: situacionesLegales = [] } = useQuery<SituacionLegalCatalogo[]>({
+    queryKey: ['lgi-personas-investigadas', 'situaciones-legales'],
+    queryFn: () => RegistroCasoApi.listarSituacionesLegales(),
+  })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<PersonaConSituacionSchemaValues>({
+    resolver: zodResolver(personaConSituacionSchema),
+    defaultValues: {
+      ...createDefaultPersonaValues(),
+      ...createDefaultSituacionJuridicaValues(),
+    },
+  })
+
+  const tipoDocValue = watch('tipoDocumentoId')
+  const paisValue = watch('paisId')
+  const estadoCivilValue = watch('estadoCivilId')
+  const profesionValue = watch('profesionId')
+  const situacionLegalValue = watch('situacionLegalId')
+
+  const abrirModal = (row?: PersonaImplicadaRow) => {
+    if (row) {
+      setPersonaEditando(row)
+      const ultima = row.ultimaSituacionJuridica
+      const situacionLegalOpt = ultima
+        ? situacionesLegales.find(
+          (s) => String(s.slId) === String(ultima.situacionLegalId)
+        ) ?? null
+        : null
+      reset({
+        ...createDefaultSituacionJuridicaValues(),
+        situacionLegalId: situacionLegalOpt
+          ? mapSituacionLegalToOption(situacionLegalOpt)
+          : null,
+        fecha: ultima?.fecha
+          ? dayjs(ultima.fecha).format('YYYY-MM-DD')
+          : createDefaultSituacionJuridicaValues().fecha,
+        nombres: row.nombres,
+        paterno: row.paterno,
+        materno: row.materno,
+        esposo: row.esposo ?? '',
+        numeroDocumento: row.numeroDocumento,
+        tipoDocumentoId: {
+          value: String(row.tipoDocumentoId),
+          label: buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
+          original: tiposDocumento.find(
+            (t) => String(t.td_id) === String(row.tipoDocumentoId)
+          )!,
+        },
+        paisId: {
+          value: String(row.paisId),
+          label: buscarDescripcionLocal(paises, row.paisId, 'pa_id'),
+          original: paises.find((p) => String(p.idPais) === String(row.paisId))!,
+        },
+        estadoCivilId: {
+          value: String(row.estadoCivilId),
+          label: buscarDescripcionLocal(estadosCiviles, row.estadoCivilId, 'ec_id'),
+          original: estadosCiviles.find(
+            (e) => String(e.ec_id) === String(row.estadoCivilId)
+          )!,
+        },
+        profesionId: {
+          value: String(row.profesionId),
+          label: buscarDescripcionLocal(profesiones, row.profesionId, 'prof_id'),
+          original: profesiones.find(
+            (p) => String(p.prof_id) === String(row.profesionId)
+          )!,
+        },
+      })
+    } else {
+      setPersonaEditando(null)
+      reset({
+        ...createDefaultPersonaValues(),
+        ...createDefaultSituacionJuridicaValues(),
+      })
+    }
+    setModalOpen(true)
+  }
+
+  const onSubmit = async (values: PersonaConSituacionSchemaValues) => {
+    const payload: PersonaImplicadaPayload = buildPersonaPayload(casoId, values)
+    let detenidoId: number
+    if (personaEditando) {
+      await RegistroCasoApi.actualizarPersona(personaEditando.deId, payload)
+      detenidoId = personaEditando.deId
+    } else {
+      const respuesta = await RegistroCasoApi.crearPersona(payload)
+      detenidoId = respuesta.id
+    }
+    if (values.situacionLegalId) {
+      const situacionPayload = {
+        detenidoId,
+        situacionLegalId: Number(values.situacionLegalId.value),
+        fecha: values.fecha,
+        numeroResolucion: values.numeroResolucion ?? '',
+        lugar: values.lugar ?? '',
+        autoridad: values.autoridad ?? '',
+        fjt: values.fjt ?? '',
+      }
+      if (personaEditando?.ultimaSituacionJuridica) {
+        await RegistroCasoApi.actualizarSituacionJuridica(
+          personaEditando.ultimaSituacionJuridica.situacionId,
+          situacionPayload
+        )
+      } else {
+        await RegistroCasoApi.registrarSituacionJuridica(situacionPayload)
+      }
+    }
+    setModalOpen(false)
+    queryClient.invalidateQueries({
+      queryKey: ['lgi-personas-investigadas', casoId],
+    })
+  }
+
+  const confirmarEliminar = async () => {
+    if (!personaEliminar) return
+    setEliminando(true)
+    try {
+      await RegistroCasoApi.eliminarPersona(personaEliminar.deId)
+      setPersonaEliminar(null)
+      queryClient.invalidateQueries({
+        queryKey: ['lgi-personas-investigadas', casoId],
+      })
+    } finally {
+      setEliminando(false)
+    }
+  }
+
+  const abrirSituacionesModal = (row: PersonaImplicadaRow) => {
+    setPersonaSituacion(row)
+    setSituacionLegalId('')
+    setFechaSituacion('')
+    setNroResolucion('')
+    setLugarSituacion('')
+    setAutoridadSituacion('')
+    setFjtSituacion('')
+    setSituacionesModalOpen(true)
+  }
+
+  const onSubmitSituacion = async () => {
+    if (
+      !personaSituacion ||
+      !situacionLegalId ||
+      !fechaSituacion ||
+      !nroResolucion ||
+      !lugarSituacion ||
+      !autoridadSituacion ||
+      !fjtSituacion
+    )
+      return
+    setGuardandoSituacion(true)
+    try {
+      await RegistroCasoApi.registrarSituacionJuridica({
+        detenidoId: personaSituacion.deId,
+        situacionLegalId: Number(situacionLegalId),
+        fecha: fechaSituacion,
+        numeroResolucion: nroResolucion,
+        lugar: lugarSituacion,
+        autoridad: autoridadSituacion,
+        fjt: fjtSituacion,
+      })
+      setSituacionesModalOpen(false)
+      queryClient.invalidateQueries({
+        queryKey: ['lgi-personas-investigadas', casoId],
+      })
+    } finally {
+      setGuardandoSituacion(false)
+    }
+  }
+
+  const columns: Column<PersonaImplicadaRow>[] = [
+    // { accessor: 'deId', title: 'ID' },
+    {
+      accessor: 'nombres',
+      title: 'Nombre completo',
+      render: (row) => (
+        <span className="font-medium">{formatNombreCompleto(row)}</span>
+      ),
+    },
+    { accessor: 'numeroDocumento', title: 'Nro documento' },
+    {
+      accessor: 'tipoDocumentoId',
+      title: 'Tipo documento',
+      render: (row) => buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
+    },
+    {
+      accessor: 'ultimaSituacionJuridica',
+      title: 'Última situación jurídica',
+      render: (row) =>
+        row.ultimaSituacionJuridica?.situacionLegal?.descripcion ?? '-',
+    },
+    {
+      accessor: 'fechaUltimaSituacionJuridica',
+      title: 'Fecha última situación jurídica',
+      render: (row) =>
+        formatFecha(row.ultimaSituacionJuridica?.fecha, 'dd/MM/yyyy'),
+    },
+    ...(isLectura
+      ? []
+      : ([
+        {
+          accessor: 'acciones',
+          title: 'Acciones',
+          render: (row: PersonaImplicadaRow) => (
+            <div className="flex items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Editar"
+                onClick={() => abrirModal(row)}
+              >
+                <IconEdit className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Situaciones jurídicas"
+                onClick={() => abrirSituacionesModal(row)}
+              >
+                <IconClipboardText className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="!p-1.5"
+                title="Historial de situaciones jurídicas"
+                onClick={() => setHistorialPersona(row)}
+              >
+                <IconListCheck className="h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline-danger"
+                size="sm"
+                className="!p-1.5"
+                title="Eliminar"
+                onClick={() => setPersonaEliminar(row)}
+              >
+                <IconTrash className="h-4 w-4" />
+              </Button>
+            </div>
+          ),
+        },
+      ] as Column<PersonaImplicadaRow>[])),
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h6 className="text-sm font-semibold text-dark dark:text-white-light">
+            Personas investigadas del caso
+          </h6>
+          <p className="text-xs text-gray-500">
+            Registre, edite o elimine personas implicadas.
+          </p>
+        </div>
+        {!isLectura && (
+          <Button
+            type="button"
+            variant="primary"
+            className="gap-2"
+            onClick={() => abrirModal()}
+          >
+            <IconPlus className="h-4 w-4" />
+            Registrar persona
+          </Button>
+        )}
+      </div>
+
+      <VristoDataTable<PersonaImplicadaRow>
+        title="Personas"
+        rows={personasData?.filas ?? []}
+        total={personasData?.total ?? 0}
+        page={page}
+        limit={limit}
+        onPageChange={setPage}
+        onLimitChange={setLimit}
+        columns={columns}
+        loading={isLoading}
+      />
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <h3 className="text-lg font-bold text-dark dark:text-white-light">
+                {personaEditando ? 'Editar persona' : 'Registrar persona'}
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-3 overflow-y-auto p-4"
+            >
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+                <h4 className="col-span-full border-b border-gray-200 pb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  Datos personales
+                </h4>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Nombres
+                  </label>
+                  <Input
+                    {...register('nombres')}
+                    size="sm"
+                    placeholder="Nombres"
+                  />
+                  {errors.nombres && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.nombres.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Apellido paterno
+                  </label>
+                  <Input
+                    {...register('paterno')}
+                    size="sm"
+                    placeholder="Apellido paterno"
+                  />
+                  {errors.paterno && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.paterno.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Apellido materno
+                  </label>
+                  <Input
+                    {...register('materno')}
+                    size="sm"
+                    placeholder="Apellido materno"
+                  />
+                  {errors.materno && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.materno.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Apellido de casada
+                  </label>
+                  <Input
+                    {...register('esposo')}
+                    size="sm"
+                    placeholder="Apellido de casada"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Tipo de documento
+                  </label>
+                  <Select
+                    size="sm"
+                    options={tiposDocumento.map(mapTipoDocumentoToOption)}
+                    placeholder="Seleccione tipo"
+                    value={tipoDocValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = tiposDocumento
+                        .map(mapTipoDocumentoToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('tipoDocumentoId', opt ?? null, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.tipoDocumentoId && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.tipoDocumentoId.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de documento
+                  </label>
+                  <Input
+                    {...register('numeroDocumento')}
+                    size="sm"
+                    placeholder="Número de documento"
+                  />
+                  {errors.numeroDocumento && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.numeroDocumento.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    País
+                  </label>
+                  <Select
+                    size="sm"
+                    options={paises.map(mapPaisToOption)}
+                    placeholder="Seleccione país"
+                    value={paisValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = paises
+                        .map(mapPaisToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('paisId', opt ?? null, { shouldValidate: true })
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Estado civil
+                  </label>
+                  <Select
+                    size="sm"
+                    options={estadosCiviles.map(mapEstadoCivilToOption)}
+                    placeholder="Seleccione estado civil"
+                    value={estadoCivilValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = estadosCiviles
+                        .map(mapEstadoCivilToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('estadoCivilId', opt ?? null, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Profesión
+                  </label>
+                  <Select
+                    size="sm"
+                    options={profesiones.map(mapProfesionToOption)}
+                    placeholder="Seleccione profesión"
+                    value={profesionValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = profesiones
+                        .map(mapProfesionToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('profesionId', opt ?? null, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                </div>
+
+                <h4 className="col-span-full border-b border-gray-200 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  Situación jurídica
+                </h4>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Situación legal
+                  </label>
+                  <Select
+                    size="sm"
+                    options={situacionesLegales.map(mapSituacionLegalToOption)}
+                    placeholder="Seleccione situación legal"
+                    value={situacionLegalValue?.value ?? ''}
+                    onChange={(e) => {
+                      const opt = situacionesLegales
+                        .map(mapSituacionLegalToOption)
+                        .find((o) => o.value === e.target.value)
+                      setValue('situacionLegalId', opt ?? null, {
+                        shouldValidate: true,
+                      })
+                    }}
+                  />
+                  {errors.situacionLegalId && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.situacionLegalId.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha de la situación jurídica
+                  </label>
+                  <Input type="date" size="sm" {...register('fecha')} />
+                  {errors.fecha && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.fecha.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de resolución
+                  </label>
+                  <Input
+                    {...register('numeroResolucion')}
+                    size="sm"
+                    placeholder="RES-123/2026"
+                  />
+                  {errors.numeroResolucion && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.numeroResolucion.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Lugar
+                  </label>
+                  <Input {...register('lugar')} size="sm" placeholder="La Paz" />
+                  {errors.lugar && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.lugar.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    {...register('autoridad')}
+                    size="sm"
+                    placeholder="Juzgado de Instrucción Penal"
+                  />
+                  {errors.autoridad && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.autoridad.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Juzgado
+                  </label>
+                  <Input
+                    {...register('fjt')}
+                    size="sm"
+                    placeholder="Nombre del Juzgado"
+                  />
+                  {errors.fjt && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.fjt.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  onClick={() => setModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="primary">
+                  {personaEditando ? 'Actualizar' : 'Guardar'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {personaEliminar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+            <div className="border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <h3 className="text-lg font-bold text-dark dark:text-white-light">
+                Eliminar persona
+              </h3>
+            </div>
+            <div className="p-5">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                ¿Seguro que desea eliminar a &quot;
+                {formatNombreCompleto(personaEliminar)}&quot;?
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                disabled={eliminando}
+                onClick={() => setPersonaEliminar(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                loading={eliminando}
+                onClick={confirmarEliminar}
+              >
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {situacionesModalOpen && personaSituacion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <h3 className="text-lg font-bold text-dark dark:text-white-light">
+                Registrar situación jurídica
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setSituacionesModalOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4">
+              <p className="mb-4 text-sm text-gray-500">
+                Persona:{' '}
+                <span className="font-semibold text-dark dark:text-white-light">
+                  {formatNombreCompleto(personaSituacion)}
+                </span>
+              </p>
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Situación legal
+                  </label>
+                  <Select
+                    size="sm"
+                    options={situacionesLegales.map((s) => ({
+                      value: String(s.slId),
+                      label: s.descripcion,
+                    }))}
+                    placeholder="Seleccione situación legal"
+                    value={situacionLegalId}
+                    onChange={(e) => setSituacionLegalId(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Fecha
+                  </label>
+                  <Input
+                    type="date"
+                    size="sm"
+                    value={fechaSituacion}
+                    onChange={(e) => setFechaSituacion(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Número de resolución
+                  </label>
+                  <Input
+                    size="sm"
+                    value={nroResolucion}
+                    onChange={(e) => setNroResolucion(e.target.value)}
+                    placeholder="RES-123/2026"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Lugar
+                  </label>
+                  <Input
+                    size="sm"
+                    value={lugarSituacion}
+                    onChange={(e) => setLugarSituacion(e.target.value)}
+                    placeholder="La Paz"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Autoridad
+                  </label>
+                  <Input
+                    size="sm"
+                    value={autoridadSituacion}
+                    onChange={(e) => setAutoridadSituacion(e.target.value)}
+                    placeholder="Juzgado de Instrucción Penal"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Juzgado
+                  </label>
+                  <Input
+                    size="sm"
+                    value={fjtSituacion}
+                    onChange={(e) => setFjtSituacion(e.target.value)}
+                    placeholder="Nombre del Juzgado"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                disabled={guardandoSituacion}
+                onClick={() => setSituacionesModalOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                loading={guardandoSituacion}
+                disabled={
+                  !situacionLegalId ||
+                  !fechaSituacion ||
+                  !nroResolucion ||
+                  !lugarSituacion ||
+                  !autoridadSituacion ||
+                  !fjtSituacion
+                }
+                onClick={onSubmitSituacion}
+              >
+                Registrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {historialPersona && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <h3 className="text-lg font-bold text-dark dark:text-white-light">
+                Historial de situaciones jurídicas
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-600"
+                onClick={() => setHistorialPersona(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto p-5">
+              <p className="mb-4 text-sm text-gray-500">
+                Persona:{' '}
+                <span className="font-semibold text-dark dark:text-white-light">
+                  {formatNombreCompleto(historialPersona)}
+                </span>
+              </p>
+              {historialLoading ? (
+                <p className="text-sm text-gray-500">
+                  Cargando historial...
+                </p>
+              ) : historialData?.situacionesJuridicas?.length ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-[#1b2e4b]">
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        #
+                      </th>
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        Situación legal
+                      </th>
+                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
+                        Fecha
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialData.situacionesJuridicas.map((sj, idx) => (
+                      <tr
+                        key={sj.situacionId}
+                        className="border-b border-gray-100 dark:border-[#1b2e4b]/50"
+                      >
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {idx + 1}
+                        </td>
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {sj.situacionLegal?.descripcion?.trim() ?? '-'}
+                        </td>
+                        <td className="py-2 text-dark dark:text-white-light">
+                          {formatFecha(sj.fecha, 'dd/MM/yyyy') ?? '-'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  No tiene situaciones jurídicas registradas.
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                onClick={() => setHistorialPersona(null)}
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
