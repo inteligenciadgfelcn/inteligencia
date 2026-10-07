@@ -93,41 +93,41 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
 
   const { data: historialData, isLoading: historialLoading } =
     useQuery<PersonaDetalle>({
-      queryKey: ['lgi-personas-investigadas', 'historial', historialPersona?.deId],
+      queryKey: ['apd-personas-investigadas', 'historial', historialPersona?.deId],
       enabled: Boolean(historialPersona?.deId),
       queryFn: () =>
         RegistroCasoApi.obtenerPersona(historialPersona!.deId),
     })
 
   const { data: personasData, isLoading } = useQuery({
-    queryKey: ['lgi-personas-investigadas', casoId, page, limit],
+    queryKey: ['apd-personas-investigadas', casoId, page, limit],
     enabled: Boolean(casoId),
     queryFn: () =>
       RegistroCasoApi.listarPersonas(casoId, { pagina: page, limite: limit }),
   })
 
   const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'tipos-documento'],
+    queryKey: ['apd-personas-investigadas', 'tipos-documento'],
     queryFn: () => ParametricasLgiApi.listarTiposDocumento(),
   })
 
   const { data: paises = [] } = useQuery<PaisLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'paises'],
+    queryKey: ['apd-personas-investigadas', 'paises'],
     queryFn: () => ParametricasLgiApi.listarPaises(),
   })
 
   const { data: estadosCiviles = [] } = useQuery<EstadoCivilLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'estados-civiles'],
+    queryKey: ['apd-personas-investigadas', 'estados-civiles'],
     queryFn: () => ParametricasLgiApi.listarEstadosCiviles(),
   })
 
   const { data: profesiones = [] } = useQuery<ProfesionLgi[]>({
-    queryKey: ['lgi-personas-investigadas', 'profesiones'],
+    queryKey: ['apd-personas-investigadas', 'profesiones'],
     queryFn: () => ParametricasLgiApi.listarProfesiones(),
   })
 
   const { data: situacionesLegales = [] } = useQuery<SituacionLegalCatalogo[]>({
-    queryKey: ['lgi-personas-investigadas', 'situaciones-legales'],
+    queryKey: ['apd-personas-investigadas', 'situaciones-legales'],
     queryFn: () => RegistroCasoApi.listarSituacionesLegales(),
   })
 
@@ -242,7 +242,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
     }
     setModalOpen(false)
     queryClient.invalidateQueries({
-      queryKey: ['lgi-personas-investigadas', casoId],
+      queryKey: ['apd-personas-investigadas', casoId],
     })
   }
 
@@ -253,7 +253,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       await RegistroCasoApi.eliminarPersona(personaEliminar.deId)
       setPersonaEliminar(null)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-personas-investigadas', casoId],
+        queryKey: ['apd-personas-investigadas', casoId],
       })
     } finally {
       setEliminando(false)
@@ -295,7 +295,7 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       })
       setSituacionesModalOpen(false)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-personas-investigadas', casoId],
+        queryKey: ['apd-personas-investigadas', casoId],
       })
     } finally {
       setGuardandoSituacion(false)

@@ -42,7 +42,7 @@ export function CasoDetallePage({ casoId }: Props) {
     isError,
     error,
   } = useQuery({
-    queryKey: ['lgi-caso-detalle', casoId],
+    queryKey: ['apd-caso-detalle', casoId],
     queryFn: () => CasoDetalleApi.obtenerCasoDetalle(casoId),
   })
 

@@ -48,7 +48,7 @@ export function InvestigadorDialog({
   const isEditing = Boolean(initialData);
 
   const { data: investigadores = [] } = useQuery({
-    queryKey: ['lgi-registro-caso', 'investigadores'],
+    queryKey: ['apd-registro-caso', 'investigadores'],
     queryFn: () => InvestigadoresApi.listarPorUnidad(),
   });
 

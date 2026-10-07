@@ -9,7 +9,7 @@ import type {
   Vinculo,
 } from '../types/personas-juridicas-apd.types'
 
-const BASE_PJ = `${Constantes.baseUrl}/personas-juridicas`
+const BASE_PJ = `${Constantes.baseUrl}/personas-juridicas-pd`
 const BASE_SIT_EMP = `${Constantes.baseUrl}/situacion-juridica-empresa`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
 

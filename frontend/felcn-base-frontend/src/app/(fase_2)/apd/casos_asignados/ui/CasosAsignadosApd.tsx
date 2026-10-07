@@ -39,7 +39,7 @@ export function CasosAsignados() {
   const [eliminando, setEliminando] = useState(false)
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['lgi-listado-casos', page, limit, filtroAplicado],
+    queryKey: ['apd-listado-casos', page, limit, filtroAplicado],
     queryFn: () =>
       ListadoCasosApi.listarCasos({
         pagina: page,
@@ -54,11 +54,11 @@ export function CasosAsignados() {
   )
 
   const irADetalle = (row: AsignacionCasoListadoRow) => {
-    router.push(`/lgi/caso_detalle/${row.casosId}`)
+    router.push(`/apd/caso_detalle/${row.casosId}`)
   }
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {
-    router.push(`/lgi/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
+    router.push(`/apd/registro_caso/${row.casosId}${modo ? '?modo=ver' : ''}`)
   }
 
   const confirmarEliminar = async () => {
@@ -67,7 +67,7 @@ export function CasosAsignados() {
     try {
       await ListadoCasosApi.eliminarCaso(casoAEliminar.casosId)
       setCasoAEliminar(null)
-      queryClient.invalidateQueries({ queryKey: ['lgi-listado-casos'] })
+      queryClient.invalidateQueries({ queryKey: ['apd-listado-casos'] })
     } finally {
       setEliminando(false)
     }
@@ -162,7 +162,7 @@ export function CasosAsignados() {
             type="button"
             variant="primary"
             className="gap-2"
-            onClick={() => router.push('/lgi/registro_caso')}
+            onClick={() => router.push('/apd/registro_caso')}
           >
             <IconPlus className="h-4 w-4" />
             Registrar caso

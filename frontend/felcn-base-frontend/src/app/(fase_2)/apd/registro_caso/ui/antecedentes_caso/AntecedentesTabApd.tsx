@@ -10,7 +10,6 @@ import { RHFDate } from '@/components/form/RHFDate'
 
 import type { ConsultaSiiiQueryDto } from '../../types/siii-apd.types'
 import { ResultadosBusquedaSiii } from './ResultadosBusquedaSiiiApd'
-import { CasosRelacionadosOld } from './CasosRelacionados_old_apd'
 import { CasosRelacionados } from './CasosRelacionadosApd'
 
 interface BusquedaSiiiFiltros {

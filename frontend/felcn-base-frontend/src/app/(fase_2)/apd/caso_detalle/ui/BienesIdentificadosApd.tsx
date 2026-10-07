@@ -107,7 +107,7 @@ export function BienesIdentificados({ casoId }: Props) {
     isLoading: bienesLoading,
     isFetching: bienesFetching,
   } = useQuery({
-    queryKey: ['lgi-bienes', opId, page, limit],
+    queryKey: ['apd-bienes', opId, page, limit],
     enabled: Boolean(opId),
     queryFn: () =>
       BienesApi.listarPorOperativo(opId!, {
@@ -117,39 +117,39 @@ export function BienesIdentificados({ casoId }: Props) {
   })
 
   const refrescarBienes = () =>
-    queryClient.invalidateQueries({ queryKey: ['lgi-bienes', opId] })
+    queryClient.invalidateQueries({ queryKey: ['apd-bienes', opId] })
 
   const { data: bienesCatalogo = [] } = useQuery<BienCatalogo[]>({
-    queryKey: ['lgi-bienes', 'catalogo-bienes'],
+    queryKey: ['apd-bienes', 'catalogo-bienes'],
     queryFn: () => BienesApi.listarBienes(),
   })
   const { data: tiposSituacion = [] } = useQuery<TipoSituacionBien[]>({
-    queryKey: ['lgi-bienes', 'tipos-situacion'],
+    queryKey: ['apd-bienes', 'tipos-situacion'],
     queryFn: () => BienesApi.listarTiposSituacionBien(),
   })
   const { data: situacionesBien = [] } = useQuery<CalidadBien[]>({
-    queryKey: ['lgi-bienes', 'situacion-bien'],
+    queryKey: ['apd-bienes', 'situacion-bien'],
     queryFn: () => BienesApi.listarSituacionBien(),
   })
   const { data: tiposDocumento = [] } = useQuery<TipoDocumento[]>({
-    queryKey: ['lgi-bienes', 'tipos-documento'],
+    queryKey: ['apd-bienes', 'tipos-documento'],
     queryFn: () => BienesApi.listarTiposDocumento(),
   })
 
   const { data: clases = [] } = useQuery<ClaseBien[]>({
-    queryKey: ['lgi-bienes', 'clases', form.bienId],
+    queryKey: ['apd-bienes', 'clases', form.bienId],
     enabled: Boolean(form.bienId),
     queryFn: () => BienesApi.listarClasesBien(form.bienId),
   })
   const { data: tipos = [] } = useQuery<TipoBien[]>({
-    queryKey: ['lgi-bienes', 'tipos', form.claseId],
+    queryKey: ['apd-bienes', 'tipos', form.claseId],
     enabled: Boolean(form.claseId),
     queryFn: () => BienesApi.listarTiposClase(form.claseId),
   })
   const { data: caracteristicasCatalogo = [] } = useQuery<
     CaracteristicaCatalogo[]
   >({
-    queryKey: ['lgi-bienes', 'caracteristicas', form.claseId],
+    queryKey: ['apd-bienes', 'caracteristicas', form.claseId],
     enabled: Boolean(form.claseId),
     queryFn: () => BienesApi.listarCaracteristicasClase(form.claseId),
   })
@@ -157,7 +157,7 @@ export function BienesIdentificados({ casoId }: Props) {
   const { data: vinculosBien = [], isLoading: vinculosBienLoading } = useQuery<
     VinculoBienRow[]
   >({
-    queryKey: ['lgi-bienes', 'vinculos', itemBienSecuestrado],
+    queryKey: ['apd-bienes', 'vinculos', itemBienSecuestrado],
     enabled: Boolean(itemBienSecuestrado),
     queryFn: () => BienesApi.listarVinculosBien(itemBienSecuestrado!),
   })

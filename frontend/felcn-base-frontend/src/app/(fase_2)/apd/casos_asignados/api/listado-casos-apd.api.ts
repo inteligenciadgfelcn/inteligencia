@@ -5,7 +5,7 @@ import type {
   ListadoCasosResponse,
 } from '../types/listado-casos-apd.types'
 
-const BASE = `${Constantes.baseUrl}/asignacion-lgi`
+const BASE = `${Constantes.baseUrl}/asignacion-pd`
 
 interface RespuestaListado {
   finalizado: boolean

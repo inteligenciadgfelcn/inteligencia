@@ -6,7 +6,7 @@ import type {
   ConclusionCasoPayload,
 } from '../types/conclusion-caso-apd.types'
 
-const BASE = `${Constantes.baseUrl}/conclusion-caso`
+const BASE = `${Constantes.baseUrl}/conclusion-pd`
 const BASE_REPORTES = `${Constantes.baseUrl}/reportes-lgi`
 
 export const ConclusionCasoApi = {

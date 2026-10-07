@@ -101,7 +101,7 @@ export function ConclusionCaso({ casoId }: Props) {
     isLoading: cargandoCiclos,
     isError: errorCiclos,
   } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['lgi-conclusion-caso', 'catalogos', 'ciclos'],
+    queryKey: ['apd-conclusion-caso', 'catalogos', 'ciclos'],
     queryFn: () => ParametricasLgiApi.listarCiclos(),
     staleTime: Infinity,
   })
@@ -111,7 +111,7 @@ export function ConclusionCaso({ casoId }: Props) {
     isLoading: cargandoVerbos,
     isError: errorVerbos,
   } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['lgi-conclusion-caso', 'catalogos', 'verbos-rectores'],
+    queryKey: ['apd-conclusion-caso', 'catalogos', 'verbos-rectores'],
     queryFn: () => ParametricasLgiApi.listarVerbosRectores(),
     staleTime: Infinity,
   })
@@ -121,7 +121,7 @@ export function ConclusionCaso({ casoId }: Props) {
     isLoading: cargandoTipologias,
     isError: errorTipologias,
   } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['lgi-conclusion-caso', 'catalogos', 'tipologias'],
+    queryKey: ['apd-conclusion-caso', 'catalogos', 'tipologias'],
     queryFn: () => ParametricasLgiApi.listarTipologias(),
     staleTime: Infinity,
   })
@@ -131,7 +131,7 @@ export function ConclusionCaso({ casoId }: Props) {
     isLoading: cargandoConclusion,
     isError: errorConclusion,
   } = useQuery({
-    queryKey: ['lgi-conclusion-caso', casoId],
+    queryKey: ['apd-conclusion-caso', casoId],
     queryFn: () => ConclusionCasoApi.obtenerConclusionCaso(casoId),
     enabled: Boolean(casoId),
   })
@@ -169,7 +169,7 @@ export function ConclusionCaso({ casoId }: Props) {
         (resultado.tipologias ?? []).map((item) => String(item.id))
       )
       await queryClient.invalidateQueries({
-        queryKey: ['lgi-conclusion-caso', casoId],
+        queryKey: ['apd-conclusion-caso', casoId],
       })
       setMensaje({
         tipo: 'exito',
@@ -202,14 +202,14 @@ export function ConclusionCaso({ casoId }: Props) {
 
   const reintentarCatalogos = () => {
     void queryClient.invalidateQueries({
-      queryKey: ['lgi-conclusion-caso', 'catalogos'],
+      queryKey: ['apd-conclusion-caso', 'catalogos'],
     })
   }
 
   const reintentarConclusion = () => {
     setMensaje(null)
     void queryClient.invalidateQueries({
-      queryKey: ['lgi-conclusion-caso', casoId],
+      queryKey: ['apd-conclusion-caso', casoId],
     })
   }
 

@@ -3,7 +3,7 @@ import { sesionPeticion } from '@/utils/peticion'
 
 import type { CasoDetalle, CasoDetalleApiRow } from '../types/caso-detalle-apd.types'
 
-const BASE = `${Constantes.baseUrl}/asignacion-lgi`
+const BASE = `${Constantes.baseUrl}/asignacion-pd`
 
 interface RespuestaCasoDetalle {
   finalizado: boolean

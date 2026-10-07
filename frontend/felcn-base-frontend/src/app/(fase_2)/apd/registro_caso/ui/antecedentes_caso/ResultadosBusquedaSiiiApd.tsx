@@ -8,12 +8,12 @@ import { AlertDialog } from '@/components/modales/AlertDialog';
 import IconLink from '@/components/Icon/IconLink';
 import IconTrash from '@/components/Icon/IconTrash';
 import { SiiiApi } from '../../api/siii-apd.api';
-import { PresedenciaApi } from '../../../inicio_investigacion/api/presedencia.api';
 import type {
   BienDetalleAvanzado,
   ConsultaSiiiQueryDto,
   ResultadoBusquedaAvanzada,
 } from '../../types/siii-apd.types';
+import { PresedenciaApi } from '../../../../lgi/inicio_investigacion/api/presedencia.api';
 
 interface Props {
   filtro: ConsultaSiiiQueryDto;
@@ -208,7 +208,7 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
   });
 
   const { data: presedenciasData } = useQuery({
-    queryKey: ['lgi-registro-caso', 'presedencias', casoId],
+    queryKey: ['apd-registro-caso', 'presedencias', casoId],
     enabled: Boolean(casoId),
     queryFn: () =>
       PresedenciaApi.listarPorCaso(casoId!, { pagina: 1, limite: 50 }),
@@ -221,7 +221,7 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
 
   const invalidarPresedencias = () =>
     queryClient.invalidateQueries({
-      queryKey: ['lgi-registro-caso', 'presedencias', casoId],
+      queryKey: ['apd-registro-caso', 'presedencias', casoId],
     });
 
   const toggleExpand = (id: string) => {
@@ -429,8 +429,8 @@ export function ResultadosBusquedaSiii({ filtro, casoId, isLectura = false }: Pr
       {mensaje && (
         <div
           className={`rounded-md border px-4 py-3 text-sm ${mensaje.tipo === 'success'
-              ? 'border-success/30 bg-success/5 text-success'
-              : 'border-danger/30 bg-danger/5 text-danger'
+            ? 'border-success/30 bg-success/5 text-success'
+            : 'border-danger/30 bg-danger/5 text-danger'
             }`}
         >
           {mensaje.texto}

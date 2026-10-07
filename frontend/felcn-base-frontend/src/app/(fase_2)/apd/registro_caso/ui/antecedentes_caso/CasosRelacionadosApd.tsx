@@ -8,12 +8,12 @@ import { AlertDialog } from '@/components/modales/AlertDialog';
 import IconLink from '@/components/Icon/IconLink';
 import IconTrash from '@/components/Icon/IconTrash';
 import { SiiiApi } from '../../api/siii-apd.api';
-import { PresedenciaApi, PresedenciaCasoRow } from '../../../inicio_investigacion/api/presedencia.api';
 import type {
   BienDetalleAvanzado,
   ConsultaSiiiQueryDto,
   ResultadoBusquedaAvanzada,
 } from '../../types/siii-apd.types';
+import { PresedenciaApi, PresedenciaCasoRow } from '../../../../lgi/inicio_investigacion/api/presedencia.api';
 
 interface Props {
   casoId?: number | null;
@@ -208,7 +208,7 @@ export function CasosRelacionados({ casoId, isLectura = false }: Props) {
   // });
 
   const { data: respCasos, isLoading, isError, refetch } = useQuery({
-    queryKey: ['lgi-registro-caso', 'presedencias', casoId],
+    queryKey: ['apd-registro-caso', 'presedencias', casoId],
     enabled: Boolean(casoId),
     queryFn: () =>
       PresedenciaApi.listarPorCaso(casoId!, { pagina: 1, limite: 50 }),
@@ -222,7 +222,7 @@ export function CasosRelacionados({ casoId, isLectura = false }: Props) {
 
   // const invalidarPresedencias = () =>
   //   queryClient.invalidateQueries({
-  //     queryKey: ['lgi-registro-caso', 'presedencias', casoId],
+  //     queryKey: ['apd-registro-caso', 'presedencias', casoId],
   //   });
 
   const toggleExpand = (id: string) => {

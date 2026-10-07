@@ -82,22 +82,22 @@ export function DatosGeneralesForm({
 
   // ── Catálogos ────────────────────────────────────────────────────────────────
   const { data: distritales = [] } = useQuery<DistritalLgi[]>({
-    queryKey: ['lgi-registro-caso', 'distritales'],
+    queryKey: ['apd-registro-caso', 'distritales'],
     queryFn: () => ParametricasLgiApi.listarDistritales(),
   })
 
   const { data: departamentos = [] } = useQuery<DepartamentoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'departamentos'],
+    queryKey: ['apd-registro-caso', 'departamentos'],
     queryFn: () => ParametricasLgiApi.listarDepartamentos(),
   })
 
   const { data: iniciosCaso = [] } = useQuery<InicioCasoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'inicios-caso'],
+    queryKey: ['apd-registro-caso', 'inicios-caso'],
     queryFn: () => ParametricasLgiApi.listarIniciosCaso(),
   })
 
   const { data: investigadores = [] } = useQuery<InvestigadorGeneralRow[]>({
-    queryKey: ['lgi-registro-caso', 'investigadores'],
+    queryKey: ['apd-registro-caso', 'investigadores'],
     queryFn: () => InvestigadoresApi.listarPorUnidad(),
   })
 
@@ -114,7 +114,7 @@ export function DatosGeneralesForm({
   }) as CatalogOption<DistritalLgi> | null
 
   const { data: grupos = [] } = useQuery<GrupoLgi[]>({
-    queryKey: ['lgi-registro-caso', 'grupos', disIdSeleccionado?.value ?? ''],
+    queryKey: ['apd-registro-caso', 'grupos', disIdSeleccionado?.value ?? ''],
     enabled: Boolean(disIdSeleccionado?.value),
     queryFn: () => ParametricasLgiApi.listarGrupos(Number(disIdSeleccionado!.value)),
   })

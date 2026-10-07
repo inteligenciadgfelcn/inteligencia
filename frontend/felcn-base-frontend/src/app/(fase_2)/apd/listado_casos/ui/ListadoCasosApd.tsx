@@ -175,7 +175,7 @@ export function ListadoCasos() {
             type="button"
             variant="primary"
             className="gap-2"
-            onClick={() => router.push('/lgi/registro_caso')}
+            onClick={() => router.push('/apd/registro_caso')}
           >
             <IconPlus className="h-4 w-4" />
             Registrar caso

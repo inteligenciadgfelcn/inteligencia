@@ -37,18 +37,18 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
   const [guardando, setGuardando] = useState(false)
 
   const { data: etapas = [] } = useQuery<EtapaCatalogo[]>({
-    queryKey: ['lgi-etapa-procesal', 'etapas'],
+    queryKey: ['apd-etapa-procesal', 'etapas'],
     queryFn: () => EtapaProcesalApi.listarEtapas(),
   })
 
   const { data: estadosEtapa = [] } = useQuery<EstadoEtapa[]>({
-    queryKey: ['lgi-etapa-procesal', 'estados', etapaId],
+    queryKey: ['apd-etapa-procesal', 'estados', etapaId],
     enabled: Boolean(etapaId),
     queryFn: () => EtapaProcesalApi.listarEstadosEtapa(Number(etapaId)),
   })
 
   const { data: historial = [], isLoading } = useQuery<EtapaProcesalRow[]>({
-    queryKey: ['lgi-etapa-procesal', 'historial', casoId],
+    queryKey: ['apd-etapa-procesal', 'historial', casoId],
     enabled: Boolean(casoId),
     queryFn: () => EtapaProcesalApi.listarEtapasCaso(casoId),
   })
@@ -83,10 +83,10 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
       )
       setModalOpen(false)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-etapa-procesal', 'historial', casoId],
+        queryKey: ['apd-etapa-procesal', 'historial', casoId],
       })
       queryClient.invalidateQueries({
-        queryKey: ['lgi-caso-detalle'],
+        queryKey: ['apd-caso-detalle'],
       })
     } finally {
       setGuardando(false)

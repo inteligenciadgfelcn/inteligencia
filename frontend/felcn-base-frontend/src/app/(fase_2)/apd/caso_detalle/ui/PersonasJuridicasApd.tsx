@@ -124,7 +124,7 @@ export function PersonasJuridicas({ casoId }: Props) {
     isLoading: empresasLoading,
     isFetching: empresasFetching,
   } = useQuery({
-    queryKey: ['lgi-personas-juridicas', opId, page, limit],
+    queryKey: ['apd-personas-juridicas', opId, page, limit],
     enabled: Boolean(opId),
     queryFn: () =>
       PersonasJuridicasApi.listarPorOperativo(opId!, {
@@ -135,28 +135,28 @@ export function PersonasJuridicas({ casoId }: Props) {
 
   const refrescarEmpresas = () =>
     queryClient.invalidateQueries({
-      queryKey: ['lgi-personas-juridicas', opId],
+      queryKey: ['apd-personas-juridicas', opId],
     })
 
   const { data: vinculos = [] } = useQuery<Vinculo[]>({
-    queryKey: ['lgi-personas-juridicas', 'vinculos'],
+    queryKey: ['apd-personas-juridicas', 'vinculos'],
     queryFn: () => PersonasJuridicasApi.listarVinculosPersonaJuridica(),
   })
 
   const { data: tiposSituacion = [] } = useQuery<
     TipoSituacionJuridicaEmpresa[]
   >({
-    queryKey: ['lgi-personas-juridicas', 'tipos-situacion'],
+    queryKey: ['apd-personas-juridicas', 'tipos-situacion'],
     queryFn: () => PersonasJuridicasApi.listarTiposSituacionJuridicaEmpresa(),
   })
 
   const { data: tiposImplicado = [] } = useQuery<TipoImplicado[]>({
-    queryKey: ['lgi-personas-juridicas', 'tipos-implicado'],
+    queryKey: ['apd-personas-juridicas', 'tipos-implicado'],
     queryFn: () => ImplicadoLgiApi.listarTiposImplicado(),
   })
 
   const { data: tiposDocumento = [] } = useQuery<TipoDocumentoLgi[]>({
-    queryKey: ['lgi-personas-juridicas', 'tipos-documento'],
+    queryKey: ['apd-personas-juridicas', 'tipos-documento'],
     queryFn: () => ImplicadoLgiApi.listarTiposDocumento(),
   })
 
@@ -165,7 +165,7 @@ export function PersonasJuridicas({ casoId }: Props) {
     isLoading: implicadosLoading,
     isFetching: implicadosFetching,
   } = useQuery<ImplicadoRow[]>({
-    queryKey: ['lgi-implicados', opId, empresaId],
+    queryKey: ['apd-implicados', opId, empresaId],
     enabled: vista === 'formulario' && opId != null && empresaId != null,
     queryFn: () =>
       ImplicadoLgiApi.listarPorOperativoYEmpresa(opId!, empresaId!),
@@ -386,7 +386,7 @@ export function PersonasJuridicas({ casoId }: Props) {
       }
 
       await queryClient.invalidateQueries({
-        queryKey: ['lgi-implicados', opId, empresaId],
+        queryKey: ['apd-implicados', opId, empresaId],
       })
       setModalImplicado(false)
       notificar(
@@ -410,7 +410,7 @@ export function PersonasJuridicas({ casoId }: Props) {
       await ImplicadoLgiApi.eliminarImplicado(implicadoEliminar.id)
       setImplicadoEliminar(null)
       await queryClient.invalidateQueries({
-        queryKey: ['lgi-implicados', opId, empresaId],
+        queryKey: ['apd-implicados', opId, empresaId],
       })
       notificar('Beneficiario final eliminado correctamente')
     } catch {

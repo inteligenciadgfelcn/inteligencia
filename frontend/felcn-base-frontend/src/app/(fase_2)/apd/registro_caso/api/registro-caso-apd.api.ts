@@ -12,8 +12,8 @@ import type {
   SituacionLegalCatalogo,
 } from '../types/registro-caso-apd.types'
 
-const BASE_ASIGNACION = `${Constantes.baseUrl}/asignacion-lgi`
-const BASE_PERSONAS = `${Constantes.baseUrl}/personas-implicadas`
+const BASE_ASIGNACION = `${Constantes.baseUrl}/asignacion-pd`
+const BASE_PERSONAS = `${Constantes.baseUrl}/personas-afectadas`
 const BASE_SITUACION_JURIDICA = `${Constantes.baseUrl}/situacion-juridica`
 const BASE_SITUACION_LEGAL = `${Constantes.baseUrl}/parametro/situacion-legal`
 
@@ -99,7 +99,7 @@ export const RegistroCasoApi = {
 
   crearPersona(dto: PersonaImplicadaPayload): Promise<RespuestaCrud> {
     return sesionPeticion({
-      url: `${BASE_PERSONAS}/crear-persona-implicada`,
+      url: `${BASE_PERSONAS}/crear-persona-afectada`,
       method: 'post',
       body: dto,
       withCredentials: true,

@@ -8,7 +8,7 @@ import type {
   TipoImplicado,
 } from '../types/implicado-lgi-apd.types'
 
-const BASE_IMPLICADO = `${Constantes.baseUrl}/implicado-lgi`
+const BASE_IMPLICADO = `${Constantes.baseUrl}/implicado-pd`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
 
 export const ImplicadoLgiApi = {

@@ -89,17 +89,17 @@ export function VinculosBienCard({
   )
 
   const { data: catalogoVinculos = [] } = useQuery<Vinculo[]>({
-    queryKey: ['lgi-bienes', 'vinculos'],
+    queryKey: ['apd-bienes', 'vinculos'],
     queryFn: () => BienesApi.listarVinculos(),
   })
 
   const { data: catalogoTiposDocumento = [] } = useQuery<TipoDocumento[]>({
-    queryKey: ['lgi-bienes', 'tipos-documento'],
+    queryKey: ['apd-bienes', 'tipos-documento'],
     queryFn: () => BienesApi.listarTiposDocumento(),
   })
 
   const { data: tiposVinculoSel = [] } = useQuery<TipoVinculo[]>({
-    queryKey: ['lgi-bienes', 'tipos-vinculo', idVinculoSel],
+    queryKey: ['apd-bienes', 'tipos-vinculo', idVinculoSel],
     enabled: modalPersonas && idVinculoSel > 0,
     queryFn: () => BienesApi.listarTiposVinculo(idVinculoSel),
   })
@@ -115,8 +115,8 @@ export function VinculosBienCard({
 
   const { data: personas, isLoading: cargandoPersonas } = useQuery({
     queryKey: [
-      'lgi-bienes',
-      'personas-implicadas',
+      'apd-bienes',
+      'personas-afectadas',
       casoId,
       pagina,
       limite,
@@ -161,7 +161,7 @@ export function VinculosBienCard({
 
   const consultasTipos = useQueries({
     queries: idsVinculos.map((idVinculo) => ({
-      queryKey: ['lgi-bienes', 'tipos-vinculo', idVinculo],
+      queryKey: ['apd-bienes', 'tipos-vinculo', idVinculo],
       queryFn: () => BienesApi.listarTiposVinculo(idVinculo),
     })),
   })
@@ -313,7 +313,7 @@ export function VinculosBienCard({
         idItemBienSecuestrado: itemBienSecuestrado,
       })
       await queryClient.invalidateQueries({
-        queryKey: ['lgi-bienes', 'vinculos', itemBienSecuestrado],
+        queryKey: ['apd-bienes', 'vinculos', itemBienSecuestrado],
       })
       cerrarModal()
     } catch {

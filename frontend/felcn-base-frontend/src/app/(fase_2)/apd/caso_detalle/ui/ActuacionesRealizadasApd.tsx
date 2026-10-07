@@ -61,14 +61,14 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   const [guardando, setGuardando] = useState(false)
 
   const { data: actuacionesData, isLoading } = useQuery({
-    queryKey: ['lgi-actuaciones', casoId, page, limit],
+    queryKey: ['apd-actuaciones', casoId, page, limit],
     enabled: Boolean(casoId),
     queryFn: () =>
       ActuacionesApi.listarActuaciones(casoId, { pagina: page, limite: limit }),
   })
 
   const { data: tiposInforme = [] } = useQuery<TipoInforme[]>({
-    queryKey: ['lgi-actuaciones', 'tipos-informe'],
+    queryKey: ['apd-actuaciones', 'tipos-informe'],
     queryFn: () => ActuacionesApi.listarTiposInforme(),
   })
 
@@ -97,7 +97,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
       })
       setModalOpen(false)
       queryClient.invalidateQueries({
-        queryKey: ['lgi-actuaciones', casoId],
+        queryKey: ['apd-actuaciones', casoId],
       })
     } finally {
       setGuardando(false)

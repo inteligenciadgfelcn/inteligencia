@@ -53,7 +53,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
     isError: isErrorCaso,
     error: errorCaso,
   } = useQuery<AsignacionLgiDetalle>({
-    queryKey: ['lgi-registro-caso', 'caso', casoId],
+    queryKey: ['apd-registro-caso', 'caso', casoId],
     queryFn: () => RegistroCasoApi.obtenerCaso(casoId!),
     enabled: Boolean(casoId),
   })
@@ -85,7 +85,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
         <Button
           type="button"
           variant="outline-secondary"
-          onClick={() => router.push('/lgi/listado_casos')}
+          onClick={() => router.push('/apd/listado_casos')}
         >
           Volver al listado
         </Button>
@@ -117,7 +117,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
             <Button
               type="button"
               variant="outline-secondary"
-              onClick={() => router.push('/lgi/listado_casos')}
+              onClick={() => router.push('/apd/listado_casos')}
             >
               Volver al listado
             </Button>

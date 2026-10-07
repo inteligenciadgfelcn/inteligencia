@@ -24,12 +24,12 @@ import type {
   VinculoBienRow,
 } from '../types/bienes-apd.types'
 
-const BASE_BIENES = `${Constantes.baseUrl}/bienes-secuestrados`
+const BASE_BIENES = `${Constantes.baseUrl}/bienes-identificados-pd`
 const BASE_SITUACION = `${Constantes.baseUrl}/situacion-juridica-bien`
-const BASE_SITUACION_BIEN = `${Constantes.baseUrl}/situacion-bien-lgi`
+const BASE_SITUACION_BIEN = `${Constantes.baseUrl}/situacion-juridica-pd`
 const BASE_CARACTERISTICAS = `${Constantes.baseUrl}/caracteristicas-bienes`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
-const BASE_VINCULO_BIEN = `${Constantes.baseUrl}/vinculo-bien-lgi`
+const BASE_VINCULO_BIEN = `${Constantes.baseUrl}/vinculo-bien-pd`
 
 interface RespuestaPaginada<T> {
   finalizado: boolean

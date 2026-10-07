@@ -8,13 +8,13 @@ import type {
   RegistrarEtapaProcesalPayload,
 } from '../types/etapa-procesal-apd.types'
 
-const BASE = `${Constantes.baseUrl}/asignacion-lgi`
+const BASE = `${Constantes.baseUrl}/asignacion-pd`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
 
 export const EtapaProcesalApi = {
   listarEtapas(): Promise<EtapaCatalogo[]> {
     return sesionPeticion({
-      url: `${BASE_PARAMETRICAS}/allEtapa`,
+      url: `${BASE_PARAMETRICAS}/allEtapaPd`,
       method: 'get',
       withCredentials: true,
     })
