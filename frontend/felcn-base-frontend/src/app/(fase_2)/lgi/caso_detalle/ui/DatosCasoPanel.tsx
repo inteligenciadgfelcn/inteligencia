@@ -64,7 +64,10 @@ export function DatosCasoPanel({ caso }: Props) {
       'day',
     );
 
-    return caso.diasOtorgados ?? 0 - diasPasados;
+    console.log(diasPasados);
+
+
+    return (caso.diasOtorgados ?? 0) - diasPasados;
   }
 
   return (

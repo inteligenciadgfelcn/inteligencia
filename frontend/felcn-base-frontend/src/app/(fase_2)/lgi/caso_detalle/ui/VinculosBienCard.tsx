@@ -307,9 +307,9 @@ export function VinculosBienCard({
     setError(null)
     try {
       await BienesApi.crearVinculoBien({
-        idDetenidoAuxiliar: personaSel.deId,
-        idVinculo: idVinculoSel,
-        idTipoVinculo: idTipoVinculoSel,
+        idDetenidoAuxiliar: Number(personaSel.deId),
+        idVinculo: Number(idVinculoSel),
+        idTipoVinculo: Number(idTipoVinculoSel),
         idItemBienSecuestrado: itemBienSecuestrado,
       })
       await queryClient.invalidateQueries({

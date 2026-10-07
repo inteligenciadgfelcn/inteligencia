@@ -221,29 +221,6 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
         loading={isLoading}
       />
 
-      {onSelect && (
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline-primary"
-            className="gap-2"
-            onClick={() => onSelect('personas-investigadas')}
-          >
-            <IconUsers className="h-4 w-4" />
-            Personas Investigadas
-          </Button>
-          <Button
-            type="button"
-            variant="outline-primary"
-            className="gap-2"
-            onClick={() => onSelect('bienes-identificados')}
-          >
-            <IconCashBanknotes className="h-4 w-4" />
-            Bienes Identificados
-          </Button>
-        </div>
-      )}
-
       {detalleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import type { Map as LeafletMap } from 'leaflet'
 
@@ -57,6 +57,8 @@ const MAX_TAMANO_FOTOGRAFIA = 10 * 1024 * 1024
 type FormState = typeof VALORES_POR_DEFECTO
 
 export function BienesIdentificados({ casoId }: Props) {
+  const queryClient = useQueryClient()
+
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
   const [bienDetalle, setBienDetalle] = useState<BienSecuestradoRow | null>(
     null
@@ -100,7 +102,11 @@ export function BienesIdentificados({ casoId }: Props) {
     }
   }, [casoId])
 
-  const { data: bienesData, isLoading: bienesLoading } = useQuery({
+  const {
+    data: bienesData,
+    isLoading: bienesLoading,
+    isFetching: bienesFetching,
+  } = useQuery({
     queryKey: ['lgi-bienes', opId, page, limit],
     enabled: Boolean(opId),
     queryFn: () =>
@@ -109,6 +115,9 @@ export function BienesIdentificados({ casoId }: Props) {
         limite: limit,
       }),
   })
+
+  const refrescarBienes = () =>
+    queryClient.invalidateQueries({ queryKey: ['lgi-bienes', opId] })
 
   const { data: bienesCatalogo = [] } = useQuery<BienCatalogo[]>({
     queryKey: ['lgi-bienes', 'catalogo-bienes'],
@@ -243,8 +252,8 @@ export function BienesIdentificados({ casoId }: Props) {
     setErrorFotos(
       excedidas.length > 0
         ? `Se omitieron ${excedidas.length} imagen(es) por superar los 10 MB: ${excedidas
-            .map((f) => f.name)
-            .join(', ')}`
+          .map((f) => f.name)
+          .join(', ')}`
         : null
     )
 
@@ -382,9 +391,9 @@ export function BienesIdentificados({ casoId }: Props) {
       try {
         for (const vinculo of vinculosBorrador) {
           await BienesApi.crearVinculoBien({
-            idDetenidoAuxiliar: vinculo.idDetenidoAuxiliar,
-            idVinculo: vinculo.idVinculo,
-            idTipoVinculo: vinculo.idTipoVinculo,
+            idDetenidoAuxiliar: Number(vinculo.idDetenidoAuxiliar),
+            idVinculo: Number(vinculo.idVinculo),
+            idTipoVinculo: Number(vinculo.idTipoVinculo),
             idItemBienSecuestrado,
           })
         }
@@ -399,7 +408,13 @@ export function BienesIdentificados({ casoId }: Props) {
           ? 'Bien registrado correctamente'
           : 'El bien se registró, pero no se pudieron guardar los vínculos. Intente nuevamente.'
       )
-      setPage(1)
+      // setPage(1) cambia la queryKey y fuerza el refetch, pero si ya se estaba
+      // en la página 1 es una asignación no-op: en ese caso hay que invalidar.
+      if (page === 1) {
+        await refrescarBienes()
+      } else {
+        setPage(1)
+      }
     } catch {
       setMensaje('Error al registrar el bien. Intente nuevamente.')
     } finally {
@@ -412,7 +427,19 @@ export function BienesIdentificados({ casoId }: Props) {
     try {
       await BienesApi.eliminarBien(Number(bienEliminar.itembiensecId))
       setBienEliminar(null)
+      if (bienDetalle?.itembiensecId === bienEliminar.itembiensecId) {
+        setBienDetalle(null)
+      }
       setMensaje('Bien eliminado correctamente')
+
+      // Si se borró la única fila de una página anterior, la página quedó fuera
+      // de rango (VristoDataTable no la recorta): se retrocede una página. En los
+      // demás casos se refresca la página actual.
+      if ((bienesData?.filas?.length ?? 0) <= 1 && page > 1) {
+        setPage(page - 1)
+      } else {
+        await refrescarBienes()
+      }
     } catch {
       setMensaje('Error al eliminar el bien.')
     }
@@ -1237,7 +1264,7 @@ export function BienesIdentificados({ casoId }: Props) {
           onPageChange={setPage}
           onLimitChange={setLimit}
           columns={columns}
-          loading={bienesLoading}
+          loading={bienesLoading || bienesFetching}
         />
       )}
 
