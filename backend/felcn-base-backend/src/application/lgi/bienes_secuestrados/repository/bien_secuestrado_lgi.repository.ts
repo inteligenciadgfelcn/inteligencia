@@ -62,11 +62,8 @@ export class BienSecuestradoLgiRepository {
         const registrosFotografias = archivos.map((archivo) =>
           fotoRepository.create({
             itembiensecId: bienGuardado.itembiensecId,
-
             fotografia: archivo.buffer,
-
             descripcion: archivo.originalname.substring(0, 75),
-
             estado: 'ACTIVO',
           })
         )
