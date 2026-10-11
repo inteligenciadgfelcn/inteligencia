@@ -78,4 +78,14 @@ export const ActuacionesApi = {
       withCredentials: true,
     })
   },
+
+  abrirArchivoActuacion(opId: number | string): Promise<Blob> {
+  return sesionPeticion<Blob>({
+    url: `${BASE}/${opId}/archivo`,
+    method: 'get',
+    responseType: 'blob',
+    headers: { accept: 'application/pdf' },
+    withCredentials: true,
+  })
+},
 }

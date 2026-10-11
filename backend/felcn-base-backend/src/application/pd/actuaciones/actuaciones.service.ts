@@ -5,12 +5,11 @@ import { OperativoLgi } from '@/application/lgi/actuaciones/entities/operativoLg
 import { CreateOperativoPdDto } from './dto/create-operativoPd.dto'
 import { OperativoPdRepository } from './repository/operativo_lgi.repository'
 import { UpdateOperativoPdDto } from './dto/update-operativoPd.dto'
+import { crearStreamArchivo } from '@/common/utils/archivo-seguro.util'
 
 @Injectable()
 export class ActuacionesPdService {
-  constructor(
-    private readonly operativoRepository: OperativoPdRepository
-  ) {}
+  constructor(private readonly operativoRepository: OperativoPdRepository) {}
 
   async create(
     dto: CreateOperativoPdDto,
@@ -30,10 +29,7 @@ export class ActuacionesPdService {
     casosId: number,
     pagination: PaginacionQueryDto
   ): Promise<[OperativoLgi[], number]> {
-    return this.operativoRepository.findAllPaginadoByCaso(
-      casosId,
-      pagination
-    )
+    return this.operativoRepository.findAllPaginadoByCaso(casosId, pagination)
   }
   async findOne(id: number): Promise<OperativoLgi> {
     const operativo = await this.operativoRepository.findOne(id)
@@ -81,5 +77,15 @@ export class ActuacionesPdService {
     }
 
     return operativo
+  }
+
+  async obtenerArchivo(id: number) {
+    const operativo = await this.findOne(id)
+
+    if (!operativo) {
+      throw new NotFoundException('La actuación no existe')
+    }
+
+    return crearStreamArchivo(operativo.rutaArchivo)
   }
 }

@@ -9,6 +9,8 @@ import {
   Post,
   Query,
   Req,
+  Res,
+  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -22,7 +24,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
-import { Request } from 'express'
+import { Response } from 'express'
 
 import { BaseController } from '@/common/base'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
@@ -106,6 +108,29 @@ export class ActuacionesController extends BaseController {
     return this.successListRows(result)
   }
 
+  @Get(':id/archivo')
+  @ApiOperation({
+    summary: 'Abrir el archivo adjunto de una actuación',
+  })
+  async obtenerArchivo(
+    @Param('id', ParseIntPipe)
+    id: number,
+
+    @Res({ passthrough: true })
+    response: Response
+  ): Promise<StreamableFile> {
+    const archivo = await this.actuacionesService.obtenerArchivo(id)
+
+    response.setHeader('Cache-Control', 'private, no-store')
+
+    response.setHeader('X-Content-Type-Options', 'nosniff')
+
+    return new StreamableFile(archivo.stream, {
+      type: archivo.mimeType,
+      disposition: `inline; filename*=UTF-8''${encodeURIComponent(archivo.nombre)}`,
+    })
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Obtener un operativo por ID',
@@ -164,5 +189,4 @@ export class ActuacionesController extends BaseController {
 
     return this.actuacionesService.remove(id, usuario)
   }
-
 }

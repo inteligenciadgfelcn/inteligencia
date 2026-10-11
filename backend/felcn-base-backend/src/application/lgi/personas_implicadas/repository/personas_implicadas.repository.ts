@@ -99,7 +99,7 @@ export class PersonasImplicadasLgiRepository {
       .leftJoinAndSelect('p.situacionesJuridicas', 's')
       .leftJoinAndMapOne(
         's.situacionLegal',
-        'parametricas.situacionlegal',
+        SituacionLegalLgi,
         'sl',
         'sl.sl_id = s.sl_id'
       )

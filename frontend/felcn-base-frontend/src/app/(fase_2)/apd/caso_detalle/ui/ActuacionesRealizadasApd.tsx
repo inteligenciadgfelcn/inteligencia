@@ -104,12 +104,11 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
     }
   }
 
-  const abrirArchivo = (ruta: string) => {
-    const url = ruta.startsWith('http')
-      ? ruta
-      : `${Constantes.baseUrl.replace('/api', '')}/${ruta}`
-    window.open(url, '_blank')
-  }
+  const abrirArchivo = (opId: number | string) => {
+  void abrirPdfEnNuevaPestana(() =>
+    ActuacionesApi.abrirArchivoActuacion(opId)
+  )
+}
 
   const columns: Column<ActuacionRow>[] = [
     {
@@ -154,7 +153,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
               size="sm"
               className="!p-1.5"
               title="Ver archivo"
-              onClick={() => abrirArchivo(row.rutaArchivo!)}
+              onClick={() => abrirArchivo(row.opId)}
             >
               <IconDownload className="h-4 w-4" />
             </Button>
@@ -283,7 +282,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
                     type="button"
                     variant="outline-secondary"
                     className="gap-2"
-                    onClick={() => abrirArchivo(detalleModal.rutaArchivo!)}
+                    onClick={() => abrirArchivo(detalleModal.opId)}
                   >
                     <IconDownload className="h-4 w-4" />
                     Ver documento adjunto
