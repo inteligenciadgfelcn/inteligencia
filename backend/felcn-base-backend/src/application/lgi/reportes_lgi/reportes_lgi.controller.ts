@@ -14,7 +14,9 @@ import { PDF_OFICIO_VERTICAL } from '@/application/inteligencia/reportes/export/
 import { ActuacionLgiService } from './service/actuacion.service'
 import { InicioInvestigacionService } from './service/inicio_investigacion.service'
 import { BienesLgiService } from './service/bienes_lgi.service'
-import { ConclusionCasoService } from './service/conclusion.service'
+import { PersonasJuridicasReporteService } from './service/personas-juridicas.service'
+import { ConclusionReporteService } from './service/conclusion.service'
+import { CasoIntegralService } from './service/caso-integral.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -24,9 +26,10 @@ export class ReportesLgiController {
   constructor(
     private readonly reporteService: ActuacionLgiService,
     private readonly exportService: ExportService,
-    private readonly reporteIncio: InicioInvestigacionService,
     private readonly reporteBienes: BienesLgiService,
-    private readonly reporteCaso: ConclusionCasoService
+    private readonly personasJuridicasReporte: PersonasJuridicasReporteService,
+    private readonly conclusionReporte: ConclusionReporteService,
+    private readonly reporte: CasoIntegralService,
   ) { }
 
   @Get('export/pdf/actuacion/:id')
@@ -51,75 +54,77 @@ export class ReportesLgiController {
     res.end(buffer)
   }
 
-  @Get('export/pdf/inicio/:id')
-  async exportPDFInicioInvestigacion(
-    @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response
+  @Get('export/pdf/bienes/:idBien')
+  async exportPDFBienesSecuestrados(
+    @Param('idBien', ParseIntPipe) idBien: number,
+    @Res() res: Response,
   ) {
-    const data = await this.reporteIncio.GenerarPDFInicio(id)
+    const data = await this.reporteBienes.GenerarPDFBienes(idBien)
+    const buffer = await this.exportService.generatePDF(
+      'lgi-bienes', data, PDF_OFICIO_VERTICAL,
+    )
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=lgi-bienes-${idBien}.pdf`,
+      'Content-Length': buffer.length,
+    })
+    res.end(buffer)
+  }
+
+  @Get('export/pdf/personas-juridicas/:idEmpresa')
+  async exportPDFPersonaJuridica(
+    @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
+    @Res() res: Response,
+  ) {
+    const data = await this.personasJuridicasReporte.GenerarPDFEmpresa(idEmpresa)
+    const buffer = await this.exportService.generatePDF(
+      'lgi-personas-juridicas', data, PDF_OFICIO_VERTICAL,
+    )
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=lgi-personas-juridicas-${idEmpresa}.pdf`,
+      'Content-Length': buffer.length,
+    })
+    res.end(buffer)
+  }
+
+  @Get('export/pdf/conclusion/:opId')
+  async exportPDFConclusion(
+    @Param('opId', ParseIntPipe) opId: number,
+    @Res() res: Response,
+  ) {
+    const data =
+      await this.conclusionReporte.GenerarPDFConclusion(opId)
 
     const buffer = await this.exportService.generatePDF(
-      'lgi-inicio-investigacion',
+      'lgi-conclusion',
       data,
       PDF_OFICIO_VERTICAL,
     )
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename=lgi-inicio-investigacion-${id}.pdf`,
+      'Content-Disposition':
+        `attachment; filename=lgi-conclusion-${opId}.pdf`,
       'Content-Length': buffer.length,
     })
 
     res.end(buffer)
   }
 
-  @Get('export/pdf/bienes/:idActuacion')
-  async exportPDFBienesSecuestrados(
-    @Param('idActuacion', ParseIntPipe) idActuacion: number,
+  @Get('export/pdf/caso-integral/:casosId')
+  async exportPDFCasoIntegral(
+    @Param('casosId', ParseIntPipe) casosId: number,
     @Res() res: Response,
   ) {
-    const data =
-      await this.reporteBienes.GenerarPDFBienes(idActuacion)
-
-    const buffer =
-      await this.exportService.generatePDF(
-        'lgi-bienes',
-        data,
-        PDF_OFICIO_VERTICAL,
-      )
-
+    const data = await this.reporte.GenerarPDFCasoIntegral(casosId)
+    const buffer = await this.exportService.generatePDF('lgi-caso-integral', data, PDF_OFICIO_VERTICAL)
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=lgi-bienes-${idActuacion}.pdf`,
+      'Content-Disposition': `attachment; filename=lgi-caso-integral-${casosId}.pdf`,
       'Content-Length': buffer.length,
     })
-
     res.end(buffer)
   }
 
-  @Get('export/pdf/caso/:idCaso')
-  async exportPDFConclusionCaso(
-    @Param('idCaso', ParseIntPipe) idCaso: number,
-    @Res() res: Response,
-  ) {
-    const data =
-      await this.reporteCaso.GenerarPDFCaso(idCaso)
-
-    const buffer =
-      await this.exportService.generatePDF(
-        'lgi-conclusion',
-        data,
-        PDF_OFICIO_VERTICAL,
-      )
-
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=lgi-caso-${idCaso}.pdf`,
-      'Content-Length': buffer.length,
-    })
-
-    res.end(buffer)
-  }
 }

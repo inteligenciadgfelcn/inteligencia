@@ -8,6 +8,7 @@ import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { UpdatePersonasImplicadaDto } from '../dto/update-personas_implicada.dto'
 import { DeletePersonasImplicadaDto } from '../dto/delete-personas_implicadas.dto'
 import { SituacionJuridica } from '../../situacion_juridica/entities/situacion_juridica.entity'
+import { SituacionLegalLgi } from '../../parametro/situacion-legal/entities/situacion-legal.entity'
 
 @Injectable()
 export class PersonasImplicadasLgiRepository {
@@ -60,7 +61,7 @@ export class PersonasImplicadasLgiRepository {
       )
       .leftJoinAndMapOne(
         's.situacionLegal',
-        'situacionlegal',
+        SituacionLegalLgi,
         'sl',
         'sl.sl_id = s.sl_id'
       )
@@ -98,7 +99,7 @@ export class PersonasImplicadasLgiRepository {
       .leftJoinAndSelect('p.situacionesJuridicas', 's')
       .leftJoinAndMapOne(
         's.situacionLegal',
-        'situacionlegal',
+        'parametricas.situacionlegal',
         'sl',
         'sl.sl_id = s.sl_id'
       )

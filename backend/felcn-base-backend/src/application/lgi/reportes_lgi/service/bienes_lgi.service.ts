@@ -1,231 +1,154 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+
+import { Injectable, BadRequestException } from '@nestjs/common'
+import {
+  formatearMoneda,
+  convertirMontoLiteral,
+  formatearFechaReporte,
+} from '@/common/utils/reporte.util'
 import { BienesLgiReporteRepository } from '../repository/bienes-lgi.repository'
+import { ActuacionLgiService } from './actuacion.service'
+import { generarMapaBien } from '@/common/utils/mapa-bien.util'
 
 @Injectable()
 export class BienesLgiService {
   constructor(
     private readonly bienesRepository: BienesLgiReporteRepository,
+    private readonly actuacionService: ActuacionLgiService,
   ) {}
 
   async GenerarPDFBienes(idBien: number) {
-    if (!idBien) {
-      throw new NotFoundException(
-        'No se proporcionó el identificador del bien',
-      )
+    if (!Number.isSafeInteger(idBien) || idBien <= 0) {
+      throw new BadRequestException('El identificador del bien debe ser un entero positivo')
     }
 
+    const registro = await this.bienesRepository.obtenerBien(idBien)
+    const base = await this.actuacionService.GenerarPDFActuacion(Number(registro.opId))
+    const [situacionesBien, anotacionesJuridicas, datosBien, caracteristicas] = await Promise.all([
+      this.bienesRepository.obtenerHistorialSituacionBien(idBien),
+      this.bienesRepository.obtenerAnotacionesJuridicas(idBien),
+      this.bienesRepository.obtenerDatosBien(idBien),
+      this.bienesRepository.obtenerCaracteristicas(idBien),
+    ])
+    // Exclusivamente situacionbienes; no mezcla los eventos jurídicos.
+    const ultimaSituacionBien = situacionesBien[0] ?? null
+    const aprox = this.obtenerMonto(datosBien?.costoaprox)
+    const cuant = this.obtenerMonto(datosBien?.costocuant)
+
+    const mapa = await generarMapaBien(datosBien?.latitud, datosBien?.longitud)
+
     return {
-      /*
-       * DATOS DEL REPORTE
-       */
-      reporte: {
-        numero: '011',
-        gestion: '2025',
-        divisionRegional: 'GIAEF Oriente',
+      reporte: base.reporte,
+      accion: base.accion,
+      personasAfectadas: base.personasAfectadas,
+      delitoPrecedente: base.delitoPrecedente,
+      novedad: {
+        tipo: ultimaSituacionBien?.calidad ?? 'Sin situación del bien registrada',
+        numero: base.novedad.numero,
+        fecha: ultimaSituacionBien?.fechaEntrega
+          ? formatearFechaReporte(ultimaSituacionBien.fechaEntrega)
+          : 'Sin fecha registrada',
+        afectacionEstimadaNumero: aprox === null ? 'Sin especificar' : formatearMoneda(aprox),
+        afectacionEstimadaLiteral: aprox === null ? '' : convertirMontoLiteral(aprox),
       },
-
-      /*
-       * DATOS DEL CASO
-       * Se muestran en la columna izquierda.
-       */
-      accion: {
-        nombreCaso: 'SILVESTRE',
-
-        fechaInicio: '16/01/2024',
-
-        numeroCasoFiscalia: '801102012400084',
-
-        numeroCasoGiaef: 'BN-X-01/24',
-
-        etapa: 'Preparatoria',
-
-        investigacionFinancieraParalela: 'No',
-
-        formaInicio: 'Ministerio Público',
-
-        lugarInvestigacion:
-          'Municipio de Trinidad, Provincia Cercado - Beni',
-
-        investigadores: [
-          'Sgto. My. Milton Mita Guaigua',
-          'Sgto. 2do. Jasmín F. Molle Callisaya',
-        ],
-
-        fiscalAsignado:
-          'Abg. Oscar M. Vargas Suarez',
-
-        controlJurisdiccional:
-          'Juzgado de Instrucción Anticorrupción y Violencia hacia la Mujer 2do. - Trinidad',
-      },
-
-      /*
-       * PERSONAS INVESTIGADAS
-       */
-      personasInvestigadas: [
-        {
-          numero: 1,
-          nombre: 'Yaser Andrés Vásquez Cardona',
-          documento: 'CI: 10784111',
-        },
-        {
-          numero: 2,
-          nombre: 'Raquel Álvarez Velásquez',
-          documento: 'CI: 5596889',
-        },
-        {
-          numero: 3,
-          nombre: 'Alondra Mercado Campos',
-          documento: 'CI: 5604681',
-        },
-      ],
-
-      /*
-       * DELITO PRECEDENTE
-       */
-      delitoPrecedente: {
-        numeroCaso: 'BN-X-32/2021',
-
-        fecha: '19/06/2021',
-
-        unidad: 'GIOE-AMAZONIA',
-
-        lugar:
-          'Municipio de Ixiamas, provincia Abel Iturralde del departamento de La Paz',
-
-        aprehendidos:
-          'Sin aprehendidos',
-
-        ampliados: [
-          'Yaser Andrés Vásquez Cardona',
-          'Limbert Alexander Chávez',
-        ],
-
-        secuestros:
-          'Total de 298 kilos con 980 gramos de clorhidrato de cocaína y 1.500 litros de av-gas',
-      },
-
-      /*
-       * BIEN SELECCIONADO
-       *
-       * Este objeto reemplaza a:
-       * novedad
-       * bienesAfectados
-       */
       bien: {
-        idBien,
-
-        numero: idBien,
-
-        tipoBien: 'VEHÍCULO',
-
-        fechaRegistro: '08/05/2025',
-
-        valorEstimado:
-          '$ 15.000,00',
-
-        valorLiteral:
-          'Quince mil dólares americanos 00/100',
-
-        descripcion:
-          'Vehículo automotor secuestrado dentro del proceso de investigación por Legitimación de Ganancias Ilícitas.',
-
-        /*
-         * Datos específicos del bien.
-         *
-         * Los que no existan pueden enviarse como null.
-         * El template solamente mostrará los que tengan valor.
-         */
-        clase: 'Camioneta',
-
-        tipo: 'Grandtiger',
-
-        marca: 'ZX AUTO',
-
-        modelo: null,
-
-        color: 'Blanco',
-
-        placa: '3018-NLS',
-
-        chasis:
-          'LTA12H2P5D2000143',
-
-        motor: null,
-
-        ubicacion:
-          'Municipio de Trinidad, Provincia Cercado - Beni',
-
-        superficie: null,
+        ...mapa,
+        latitud: datosBien?.latitud ?? null,
+  longitud: datosBien?.longitud ?? null,
+        idBien: registro.itembiensecId,
+        tipoBien: datosBien?.tipoDescripcion ?? registro.categoriaTipo?.descripcion ?? 'Sin especificar',
+        cantidad: registro.cantidadBien ?? 1,
+        fechaRegistro: registro.fechaHoraIngreso ?? 'Sin especificar',
+        lugarSecuestro: registro.lugarSecuestro ?? null,
+        valorCuantificado: cuant === null ? 'Sin especificar' : formatearMoneda(cuant),
+        caracteristicas: caracteristicas.map((c: any) => ({
+          etiqueta: c.etiqueta ?? 'Característica sin nombre',
+          valor: c.valor ?? 'Sin valor registrado',
+        })),
+        datos: this.mapearDatosBien(datosBien ?? {}),
+        ultimaSituacionJuridica: (registro.situacionesJuridicas ?? [])
+          .find((s: any) => [1, 2, 3].includes(Number(s.idTipoSituacionLegalBien)))?.descripcionTipo
+          ?? 'Sin situación jurídica registrada',
+        valorAproximado: aprox === null ? 'Sin especificar' : formatearMoneda(aprox),
+        historialJuridico: (registro.situacionesJuridicas ?? [])
+          .filter((situacion: any) => [1, 2, 3].includes(Number(situacion.idTipoSituacionLegalBien)))
+          .map((situacion: any, indice: number) => ({
+            ...this.mapearSituacion(situacion), esUltima: indice === 0,
+          })),
+        anotacionesJuridicas: anotacionesJuridicas.map((anotacion: any) => ({
+          descripcion: anotacion.descripcion ?? 'Sin descripción',
+          fecha: anotacion.fechaHoraIngreso
+            ? formatearFechaReporte(anotacion.fechaHoraIngreso)
+            : 'Sin fecha registrada',
+        })),
+        historialSituacionBien: situacionesBien.map((situacion: any) => ({
+          ...situacion,
+          tipoDocumento: situacion.tipoDocumento ?? 'Sin especificar',
+          fecha: situacion.fechaEntrega
+            ? formatearFechaReporte(situacion.fechaEntrega)
+            : 'Sin fecha registrada',
+        })),
+        fotografias: (registro.fotografias ?? []).map((foto: any, indice: number) => ({
+          numero: indice + 1,
+          descripcion: foto.descripcion ?? '',
+          imagen: foto.fotografiaDataUrl ?? null,
+        })),
       },
+    }
+  }
 
-      /*
-       * HISTORIAL / SITUACIÓN JURÍDICA DEL BIEN
-       */
-      situacionesLegales: [
-        {
-          situacion:
-            'SECUESTRADO',
+  private mapearDatosBien(datos: any) {
+    const campos: Array<[string, string]> = [
+      ['claseDescripcion', 'Clase'], ['tipoDescripcion', 'Tipo'],
+      ['cantidadbien', 'Cantidad'],
+      ['inves', 'En investigación'], ['lugar_secuestro', 'Lugar de secuestro'],
+      ['pericia', 'Pericia'], ['resultado_pericia', 'Resultado de pericia'],
+      ['fechahoraing', 'Fecha de registro'], ['usuario', 'Usuario de registro'],
+      ['estado', 'Estado del registro'],
+    ]
+    return campos.map(([campo, etiqueta]) => {
+      const valor = datos[campo]
+      return {
+        etiqueta,
+        valor: valor === null || valor === undefined || String(valor).trim() === ''
+          ? 'Sin información registrada'
+          : typeof valor === 'boolean' ? (valor ? 'Sí' : 'No')
+          : campo === 'fechahoraing' ? formatearFechaReporte(valor) : String(valor),
+      }
+    })
+  }
 
-          fecha:
-            '16/01/2024',
+  private obtenerMonto(valor: unknown): number | null {
+    if (valor === null || valor === undefined || String(valor).trim() === '') return null
+    const numero = Number(valor)
+    return Number.isFinite(numero) ? numero : null
+  }
 
-          detalle:
-            'Bien secuestrado dentro del proceso de investigación.',
+  private mapearSituacion(situacion: any) {
+    const datos = situacion.datos ?? {}
+    const detalles: Array<{ etiqueta: string; valor: string }> = []
+    const agregar = (etiqueta: string, valor: unknown) => {
+      if (valor !== null && valor !== undefined && String(valor).trim() !== '') {
+        detalles.push({ etiqueta, valor: String(valor) })
+      }
+    }
 
-          autoridad:
-            'Ministerio Público',
+    // Claves reales de los jsonb_build_object de tu repositorio.
+    agregar('Fiscal', datos.fiscal)
+    agregar('Investigador', datos.investigador)
+    agregar('Número de resolución', datos.nroResol)
+    agregar('Número de sentencia judicial', datos.numSentJud)
+    agregar('Autoridad', datos.autoridad)
+    agregar('Fiscal requirente', datos.fiscalRequirente)
+    agregar('Responsable de recepción', datos.responsableRecepcion)
+    agregar('Institución', datos.institucion)
+    agregar('Ubicación', datos.ubicacion)
 
-          responsable:
-            null,
-
-          institucion:
-            'FELCN',
-        },
-
-        {
-          situacion:
-            'ENTREGADO A DIRCABI',
-
-          fecha:
-            '08/05/2025',
-
-          detalle:
-            'Se procedió a la entrega del bien para su administración.',
-
-          autoridad:
-            null,
-
-          responsable:
-            'Lic. Marco Antonio Justiniano Saucedo',
-
-          institucion:
-            'DIRCABI BENI',
-        },
-      ],
-
-      /*
-       * FOTOGRAFÍAS DEL BIEN
-       *
-       * Después reemplazaremos estos valores por las
-       * fotografías reales almacenadas en la BD.
-       */
-      fotografias: [
-        {
-          numero: 1,
-          imagen:
-            'data:image/jpeg;base64,...',
-        },
-        {
-          numero: 2,
-          imagen:
-            'data:image/jpeg;base64,...',
-        },
-        {
-          numero: 3,
-          imagen:
-            'data:image/jpeg;base64,...',
-        },
-      ],
+    return {
+      situacion: situacion.descripcionTipo ?? 'Sin especificar',
+      fecha: situacion.fechaSituacion
+        ? formatearFechaReporte(situacion.fechaSituacion)
+        : 'Sin fecha registrada',
+      detalles,
     }
   }
 }
