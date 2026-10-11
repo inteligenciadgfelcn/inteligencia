@@ -123,4 +123,10 @@ export class AsignacionLgi {
     default: () => 'CURRENT_TIMESTAMP',
   })
   fechaEtapaProcesal!: Date
+
+  @Column({ name: 'fecha_etapa', type: 'timestamptz' })
+  fechaEtapa!: Date
+
+  @Column({ name: 'formalizacion_accion', type: 'varchar' })
+  formalizacionAccion!: string
 }

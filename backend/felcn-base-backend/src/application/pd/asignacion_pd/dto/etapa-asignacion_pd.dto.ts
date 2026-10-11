@@ -15,21 +15,12 @@ export class RegistrarEtapaProcesalPdDto {
   @IsInt()
   etapaId!: number
 
-  @ApiPropertyOptional({
-    example: 1,
-    description: 'ID del estado del caso',
-  })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  idEstado?: number
-
   @ApiProperty({
     example: '2026-09-27T14:30:00-04:00',
-    description: 'Fecha y hora de recepción de Fiscalía',
+    description: 'Fecha de etapa',
   })
   @IsDateString()
-  fechaRecepcionFiscalia!: string
+  fechaEtapa!: string
 
   @ApiProperty({
     example: 20,
@@ -39,6 +30,15 @@ export class RegistrarEtapaProcesalPdDto {
   @IsInt()
   @Min(1)
   diasOtorgados!: number
+
+   @ApiPropertyOptional({
+    example: 'texto',
+    description: 'formalizacion de accion',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(150)
+  formalizacionAccion?: string
 
   @ApiPropertyOptional({
     example: 'Resolución fiscal recibida',

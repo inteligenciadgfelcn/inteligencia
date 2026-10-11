@@ -12,6 +12,7 @@ import { AsignacionPdRepository } from './repository/asignacion_pd.repository'
 import { EtapaProcesalPdRepository } from './repository/etapa-procesal.repository'
 import { UpdateAsignacionPdDto } from './dto/update-asignacion_pd.dto'
 import { CreateAsignacionPdDto } from './dto/create-asignacion_pd.dto'
+import { RegistrarEtapaProcesalPdDto } from './dto/etapa-asignacion_pd.dto'
 
 @Injectable()
 export class AsignacionPdService {
@@ -172,7 +173,7 @@ export class AsignacionPdService {
 
   async registrar(
     casosId: number,
-    dto: RegistrarEtapaProcesalDto,
+    dto: RegistrarEtapaProcesalPdDto,
     usuario: string,
     documento?: Express.Multer.File
   ) {

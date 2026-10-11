@@ -81,12 +81,10 @@ export class EtapaProcesalPdRepository {
 
       // Datos actuales del caso.
       asignacion.idEtapa = dto.etapaId
-
-      if (dto.idEstado !== undefined) {
-        asignacion.idEstado = dto.idEstado
+      asignacion.fechaEtapa = new Date(dto.fechaEtapa)
+      if (dto.formalizacionAccion !== undefined) {
+        asignacion.formalizacionAccion = dto.formalizacionAccion
       }
-
-      asignacion.fechaRecepcionFiscalia = new Date(dto.fechaRecepcionFiscalia)
       asignacion.diasOtorgados = dto.diasOtorgados
       asignacion.usuarioActualizacion = usuario
       asignacion.fechaEtapaProcesal = new Date()
@@ -96,12 +94,13 @@ export class EtapaProcesalPdRepository {
         message: 'Etapa del caso registrada correctamente',
         casosId: asignacionGuardada.casosId,
         etapaId: asignacionGuardada.idEtapa,
-        idEstado: asignacionGuardada.idEstado,
         fechaRecepcionFiscalia: formatearFechaBolivia(
           asignacionGuardada.fechaRecepcionFiscalia
         ),
         diasOtorgados: asignacionGuardada.diasOtorgados,
         docCasoId,
+        fechaEtapa: formatearFechaBolivia(asignacionGuardada.fechaEtapa),
+        formalizacionAccion: asignacionGuardada.formalizacionAccion,
         documentoContenidoId,
         fechaEtapaProcesal: formatearFechaBolivia(
           asignacionGuardada.fechaEtapaProcesal
