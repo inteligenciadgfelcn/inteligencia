@@ -36,6 +36,7 @@ import { ConclusionCasoModule } from './conclusion_caso/conclusion_caso.module';
 import { ImplicadosBienModule } from './implicados_bien/implicados_bien.module';
 import { VinculoBienLgiModule } from './vinculo_bien_lgi/vinculo_bien_lgi.module';
 import { SituacionBienLgiModule } from './situacion_bien_lgi/situacion_bien_lgi.module';
+import { BusquedaLgiModule } from './busqueda_lgi/busqueda_lgi.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { SituacionBienLgiModule } from './situacion_bien_lgi/situacion_bien_lgi.
     SituacionJuridicaEmpresaModule,
     ConclusionCasoModule,
     ReportesLgiModule,
+    BusquedaLgiModule,
   ],
   controllers: [],
 })

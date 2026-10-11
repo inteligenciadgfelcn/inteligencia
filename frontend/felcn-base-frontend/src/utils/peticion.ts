@@ -3,6 +3,7 @@ import { eliminarCookie, guardarCookie, leerCookie } from '@/utils'
 import { imprimir } from '@/utils/imprimir'
 import { verificarToken } from '@/utils/token'
 import { Constantes } from '@/config/Constantes'
+import type { AxiosResponse } from 'axios'
 
 const estadosSinPermiso = [401]
 
@@ -28,6 +29,10 @@ const actualizarTokenDirecto = async (): Promise<boolean> => {
 /**
  * Función plana de petición autenticada — úsala en archivos de servicio (.ts).
  * Equivale a `usePeticion().sesionPeticion` pero sin violar las reglas de hooks.
+ *
+ * `onRespuesta` permite leer status y headers (p. ej. `Content-Disposition` al
+ * descargar un archivo) sin cambiar el valor devuelto, que sigue siendo
+ * `response.data`. Opcional: los llamadores que no lo pasan no se ven afectados.
  */
 export const sesionPeticion = async <T = any>({
   url,
@@ -37,7 +42,10 @@ export const sesionPeticion = async <T = any>({
   params,
   responseType,
   withCredentials,
-}: peticionFormatoMetodo): Promise<T> => {
+  onRespuesta,
+}: peticionFormatoMetodo & {
+  onRespuesta?: (respuesta: AxiosResponse<T>) => void
+}): Promise<T> => {
   if (!verificarToken(leerCookie('token') ?? '')) {
     imprimir(`Token caducado ⏳`)
     const actualizado = await actualizarTokenDirecto()
@@ -65,6 +73,7 @@ export const sesionPeticion = async <T = any>({
       withCredentials,
     })
     imprimir('respuesta 🔐📡', body, method, url, response)
+    onRespuesta?.(response)
     return response.data
   } catch (e: import('axios').AxiosError | any) {
     if (e.code === 'ECONNABORTED') {
@@ -87,7 +96,10 @@ export const sesionPeticion = async <T = any>({
  * navegador. A diferencia de `window.open(url)`, esta petición sí adjunta el header
  * `Authorization`, necesario porque los endpoints de reportes están detrás de `JwtAuthGuard`.
  */
-export const descargarArchivoAutenticado = async (url: string, nombreArchivo: string): Promise<void> => {
+export const descargarArchivoAutenticado = async (
+  url: string,
+  nombreArchivo: string
+): Promise<void> => {
   const blob = await sesionPeticion<Blob>({ url, responseType: 'blob' })
   const objectUrl = URL.createObjectURL(blob)
   const enlace = document.createElement('a')
