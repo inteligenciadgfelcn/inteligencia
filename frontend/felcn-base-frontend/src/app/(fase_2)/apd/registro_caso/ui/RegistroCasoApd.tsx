@@ -29,7 +29,7 @@ interface Props {
 
 const tabs: Array<{ key: TabKey; label: string }> = [
   { key: 'datos-generales', label: 'Datos generales del caso' },
-  { key: 'personas', label: 'Personas investigadas' },
+  { key: 'personas', label: 'Personas afectadas' },
   { key: 'informacion-caso', label: 'Antecedentes del caso' },
   { key: 'investigadores', label: 'Investigadores asignados' },
 ]
@@ -126,7 +126,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 type="button"
                 variant="outline-primary"
                 onClick={() =>
-                  void abrirPdfEnNuevaPestana(RegistroCasoApi.exportarInicioPdf)
+                  void abrirPdfEnNuevaPestana(() =>
+                    RegistroCasoApi.exportarInicioApdPdf(Number(casoIdEfectivo))
+                  )
                 }
               >
                 Vista previa

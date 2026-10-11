@@ -388,10 +388,10 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h6 className="text-sm font-semibold text-dark dark:text-white-light">
-            Personas investigadas del caso
+            Personas afectadas del caso
           </h6>
           <p className="text-xs text-gray-500">
-            Registre, edite o elimine personas implicadas.
+            Registre, edite o elimine personas afectadas.
           </p>
         </div>
         {!isLectura && (

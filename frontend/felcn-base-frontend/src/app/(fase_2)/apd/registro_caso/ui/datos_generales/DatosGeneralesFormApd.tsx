@@ -322,7 +322,7 @@ export function DatosGeneralesForm({
                 disabled={isLectura}
                 error={!!errors.nroCaso}
                 className="w-full"
-                placeholder="LP-LGI-1/26"
+                placeholder="LP-PD-1/26"
               />
               {!isLectura && (
                 <Button

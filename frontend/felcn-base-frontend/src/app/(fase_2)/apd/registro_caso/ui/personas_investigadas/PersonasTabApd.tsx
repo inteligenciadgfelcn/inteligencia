@@ -20,7 +20,7 @@ export function PersonasTab({
 }: Props) {
   if (!casoId) {
     return (
-      <Card title="Personas investigadas">
+      <Card title="Personas afectadas">
         <p className="text-sm text-gray-500">
           Primero registre los datos generales del caso para poder agregar
           personas investigadas.

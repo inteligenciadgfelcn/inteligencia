@@ -157,9 +157,9 @@ export const RegistroCasoApi = {
     })
   },
 
-  exportarInicioPdf(): Promise<Blob> {
+  exportarInicioApdPdf(idApd: Number): Promise<Blob> {
     return sesionPeticion<Blob>({
-      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/inicio/10`,
+      url: `${Constantes.baseUrl}/reportes-pd/export/pdf/caso-integral/${idApd}`,
       method: 'get',
       responseType: 'blob',
       headers: { accept: 'application/pdf' },
