@@ -79,51 +79,85 @@ export const BusquedaGeneralApi = {
   /**
    * POST /lgi/busqueda-general/export/:formato
    *
-   * Con `responseType: 'blob'` un 4xx del backend también llega como Blob con el
-   * JSON de error dentro: sin esta comprobación se descargaría un `.xlsx` corrupto.
+   * No se discrimina el resultado por content-type: el export JSON también es
+   * `application/json`. El status HTTP ya lo resuelve `validateStatus` (Servicios.ts),
+   * así que un Blob devuelto es un archivo válido y cualquier error llega por throw.
    */
   async exportar(
     formato: FormatoExportacion,
     filtros: FiltrosBusquedaLgi
   ): Promise<ResultadoExportacion> {
-    const blob = await sesionPeticion<Blob>({
-      url: `${BASE}/export/${formato}`,
-      method: 'post',
-      body: filtros,
-      responseType: 'blob',
-      withCredentials: true,
-    })
+    const nombrePorDefecto = `${NOMBRE_BASE}.${EXTENSION_POR_FORMATO[formato]}`
+    let nombreArchivo = nombrePorDefecto
+    let blob: Blob
 
-    if (esRespuestaDeError(blob)) {
-      throw new Error(await extraerMensajeDeError(blob))
+    try {
+      blob = await sesionPeticion<Blob>({
+        url: `${BASE}/export/${formato}`,
+        method: 'post',
+        body: filtros,
+        responseType: 'blob',
+        withCredentials: true,
+        onRespuesta: (respuesta) => {
+          nombreArchivo =
+            leerNombreArchivo(respuesta.headers) ?? nombrePorDefecto
+        },
+      })
+    } catch (e) {
+      throw new Error(await mensajeDeErrorExportacion(e))
     }
 
-    return {
-      blob,
-      nombreArchivo: `${NOMBRE_BASE}.${EXTENSION_POR_FORMATO[formato]}`,
+    if (blob.size === 0) {
+      throw new Error('El backend devolvió un archivo vacío.')
     }
+
+    return { blob, nombreArchivo }
   },
 }
 
-/** Los errores del backend con responseType blob llegan como `application/json`. */
-function esRespuestaDeError(blob: Blob): boolean {
-  return blob.type === 'application/json' || blob.type.includes('json')
+/** Nombre que propone el backend en `Content-Disposition`, con timestamp incluido. */
+function leerNombreArchivo(headers: unknown): string | null {
+  const cabecera = headers as Record<string, unknown> | undefined
+  const raw =
+    cabecera?.['content-disposition'] ?? cabecera?.['Content-Disposition']
+  if (typeof raw !== 'string') return null
+
+  const conComillas = raw.match(/filename="([^"]+)"/i)
+  const sinComillas = raw.match(/filename=([^;]+)/i)
+  const nombre = (conComillas?.[1] ?? sinComillas?.[1])?.trim()
+  if (!nombre) return null
+
+  // Sólo el nombre de archivo: descarta cualquier ruta que envíe el backend.
+  return nombre.split(/[\\/]/).pop() || null
 }
 
-async function extraerMensajeDeError(blob: Blob): Promise<string> {
+/**
+ * Con `responseType: 'blob'`, `sesionPeticion` lanza `e.response.data`, que es un
+ * Blob con el JSON de error de NestJS dentro: hay que leerlo para mostrar el mensaje real.
+ */
+async function mensajeDeErrorExportacion(error: unknown): Promise<string> {
+  if (error instanceof Blob) return interpretarMensaje(await error.text())
+  if (typeof error === 'string') return interpretarMensaje(error)
+  if (error instanceof Error) return error.message
+  return 'No se pudo generar el archivo de exportación.'
+}
+
+function interpretarMensaje(texto: string): string {
   try {
-    const texto = await blob.text()
-    const datos = JSON.parse(texto) as
-      | string
-      | { message?: string; mensaje?: string; error?: string }
-    if (typeof datos === 'string') return datos
-    return (
-      datos.message ??
-      datos.mensaje ??
-      datos.error ??
-      'No se pudo generar el archivo de exportación.'
-    )
+    const datos = JSON.parse(texto) as {
+      message?: string | string[]
+      mensaje?: string
+      error?: string
+    }
+    const mensaje = datos.message ?? datos.mensaje ?? datos.error
+    // El ValidationPipe de Nest devuelve `message` como string[] en los 400.
+    if (Array.isArray(mensaje)) return mensaje.join(' · ')
+    if (typeof mensaje === 'string' && mensaje) return mensaje
   } catch {
-    return 'No se pudo generar el archivo de exportación.'
+    // No es JSON: se devuelve el texto plano más abajo.
   }
+  // Una página de error HTML de un proxy no le sirve al usuario.
+  return texto && !texto.startsWith('<')
+    ? texto
+    : 'No se pudo generar el archivo de exportación.'
 }
