@@ -118,4 +118,14 @@ export const PersonasJuridicasApi = {
       withCredentials: true,
     })
   },
+
+  exportarEmpresaPdf(idEmpresa: number): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/personas-juridicas/${idEmpresa}`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
 }

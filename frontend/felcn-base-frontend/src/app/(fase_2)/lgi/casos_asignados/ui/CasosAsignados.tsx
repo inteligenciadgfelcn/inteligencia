@@ -25,6 +25,8 @@ import {
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
 import IconListCheck from '@/components/Icon/IconListCheck'
 import dayjs from 'dayjs'
+import IconFile from '../../../../../components/Icon/IconFile'
+import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
 
 export function CasosAsignados() {
   const router = useRouter()
@@ -131,6 +133,20 @@ export function CasosAsignados() {
             onClick={() => irADetalle(row)}
           >
             <IconEye className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline-primary"
+            size="sm"
+            className="!p-1.5"
+            title="Ver reporte PDF"
+            onClick={() => {
+              void abrirPdfEnNuevaPestana(() =>
+                ListadoCasosApi.exportarCasoIntegral(Number(row.casosId))
+              )
+            }}
+          >
+            <IconFile className="h-4 w-4" />
           </Button>
           {/* <Button
             type="button"

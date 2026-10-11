@@ -126,7 +126,9 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 type="button"
                 variant="outline-primary"
                 onClick={() =>
-                  void abrirPdfEnNuevaPestana(RegistroCasoApi.exportarInicioPdf)
+                  void abrirPdfEnNuevaPestana(() =>
+                    RegistroCasoApi.exportarInicioPdf(Number(casoIdEfectivo))
+                  )
                 }
               >
                 Vista previa

@@ -34,6 +34,8 @@ import type {
 } from '../types/bienes.types'
 import { VALORES_POR_DEFECTO } from '../types/bienes.types'
 import { formatFecha } from '../../utils/fechas'
+import IconFile from '../../../../../components/Icon/IconFile'
+import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -459,12 +461,12 @@ export function BienesIdentificados({ casoId }: Props) {
           ?.descripcion ?? String(row.cattipoId),
     },
     { accessor: 'lugarSecuestro', title: 'Lugar' },
-    {
-      accessor: 'idTipoVinculo',
-      title: 'Vínculo',
-      render: (row) => row.tipoVinculo?.descripcion ?? '-',
-    },
-    { accessor: 'nombreCompletoVinculo', title: 'Vinculado' },
+    // {
+    //   accessor: 'idTipoVinculo',
+    //   title: 'Vínculo',
+    //   render: (row) => row.tipoVinculo?.descripcion ?? '-',
+    // },
+    // { accessor: 'nombreCompletoVinculo', title: 'Vinculado' },
     {
       accessor: 'costoAprox',
       title: 'Costo aprox.',
@@ -496,6 +498,20 @@ export function BienesIdentificados({ casoId }: Props) {
             onClick={() => setBienDetalle(row)}
           >
             <IconEye className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline-primary"
+            size="sm"
+            className="!p-1.5"
+            title="Ver reporte PDF"
+            onClick={() => {
+              void abrirPdfEnNuevaPestana(() =>
+                BienesApi.exportarBienPdf(Number(row.itembiensecId))
+              )
+            }}
+          >
+            <IconFile className="h-4 w-4" />
           </Button>
           <Button
             type="button"

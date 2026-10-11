@@ -31,7 +31,7 @@ export const ConclusionCasoApi = {
 
   exportarConclusionCasoPdf(casoId: number): Promise<Blob> {
     return sesionPeticion<Blob>({
-      url: `${BASE_REPORTES}/export/pdf/caso/${casoId}`,
+      url: `${BASE_REPORTES}/export/pdf/conclusion/${casoId}`,
       method: 'get',
       responseType: 'blob',
       headers: { accept: 'application/pdf' },

@@ -31,4 +31,14 @@ export const ListadoCasosApi = {
       withCredentials: true,
     })
   },
+
+  exportarCasoIntegral(idCaso: number): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/caso-integral/${idCaso}`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
 }

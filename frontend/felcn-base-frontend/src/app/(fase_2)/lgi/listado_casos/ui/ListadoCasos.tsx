@@ -48,7 +48,7 @@ export function ListadoCasos() {
   })
 
   const rows = useMemo(
-    () => (data?.filas ?? []).map(mapAsignacionCasoRow),
+    () => (data?.filas.filter((i) => i.nrocaso.includes('LGI')) ?? []).map(mapAsignacionCasoRow),
     [data]
   )
 
