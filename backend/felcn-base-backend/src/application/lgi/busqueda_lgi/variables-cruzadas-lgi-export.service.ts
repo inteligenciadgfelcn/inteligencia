@@ -15,10 +15,198 @@ export class VariablesCruzadasLgiExportService {
   ) {}
 
   async generarExcel(filtros: FiltrosVariablesCruzadasLgiDto): Promise<Buffer> {
-    const filas = await this.obtenerFilas(filtros)
-    return this.exportService.generateExcel(
-      'Variables cruzadas LGI',
-      this.prepararFilasPlanas(filas)
+    const casos = await this.obtenerFilas(filtros ?? {})
+    const datos = this.prepararExcelConsolidado(casos)
+    return this.exportService.generateExcel('Reporte LGI', datos)
+  }
+  private prepararExcelConsolidado(
+    casos: Record<string, any>[]
+  ): Record<string, any>[] {
+    return casos.map((caso, indice) => {
+      const actuaciones = caso.actuaciones ?? []
+
+      const bienes = actuaciones.flatMap((actuacion: Record<string, any>) =>
+        (actuacion.bienes ?? []).map((bien: Record<string, any>) => ({
+          ...bien,
+          numeroActuacion: actuacion.numeroActuacion ?? actuacion.opId,
+        }))
+      )
+
+      const empresas = actuaciones.flatMap((actuacion: Record<string, any>) =>
+        (actuacion.empresas ?? []).map((empresa: Record<string, any>) => ({
+          ...empresa,
+          numeroActuacion: actuacion.numeroActuacion ?? actuacion.opId,
+        }))
+      )
+
+      return {
+        Nro: indice + 1,
+        'ID caso': caso.casosId,
+        'Caso GIAEF': caso.numeroCasoGiaef ?? '',
+        'Nombre del caso': caso.nombreCaso ?? '',
+        CUD: caso.cud ?? '',
+        'Caso Fiscalía': caso.numeroCasoFiscalia ?? '',
+        'Fecha inicio': this.fecha(caso.fechaInicio),
+        Departamento: caso.departamentoCodigo ?? '',
+        Unidad: caso.unidad ?? caso.unidadAbreviada ?? '',
+        Distrital: caso.distrital ?? '',
+        Grupo: caso.grupo ?? '',
+        'Etapa investigación': caso.etapaInvestigacion ?? '',
+        'Estado procesal': caso.estadoProcesal ?? '',
+
+        Personas: (caso.personasInvestigadas ?? [])
+          .map((persona: Record<string, any>) =>
+            [
+              persona.nombreCompleto ?? '',
+              `Documento: ${persona.numeroDocumento ?? ''}`,
+              `Relación: ${persona.relacion ?? ''}`,
+              `Situación: ${
+                persona.situacionJuridicaActual ?? 'Sin situación registrada'
+              }`,
+              // `Observaciones: ${persona.observaciones ?? ''}`,
+            ].join('\n')
+          )
+          .join('\n\n'),
+
+        Actuaciones: actuaciones
+          .map((actuacion: Record<string, any>) =>
+            [
+              `Actuación: ${actuacion.numeroActuacion ?? actuacion.opId}`,
+              `Fecha: ${this.fecha(actuacion.fechaInforme)}`,
+              `Tipo: ${actuacion.tipoInforme ?? ''}`,
+              `Lugar: ${actuacion.lugar ?? ''}`,
+              // `Descripción: ${actuacion.descripcion ?? ''}`,
+            ].join('\n')
+          )
+          .join('\n\n'),
+
+        Bienes: bienes
+          .map((bien: Record<string, any>) =>
+            [
+              `Actuación: ${bien.numeroActuacion}`,
+              `ID bien: ${bien.itemBienSecId}`,
+              `Bien: ${bien.tipo ?? ''}`,
+              `Categoría: ${bien.categoria ?? ''}`,
+              `Clase: ${bien.clase ?? ''}`,
+              `Características: ${(bien.caracteristicas ?? [])
+                .map(
+                  (caracteristica: Record<string, any>) =>
+                    `${
+                      caracteristica.caracteristica ??
+                      caracteristica.caracteristicaId
+                    }: ${caracteristica.valor ?? ''}`
+                )
+                .join('; ')}`,
+              `Cantidad: ${bien.cantidad ?? 0}`,
+              `Costo aproximado: ${this.textoMonto(bien.valorAproximado)}`,
+              `Costo cuantificado: ${this.textoMonto(bien.valorCuantificado)}`,
+              `Situación legal: ${
+                bien.situacionLegalActual ?? 'Sin situación registrada'
+              }`,
+              `Situación jurídica: ${
+                bien.situacionJuridicaActual ?? 'Sin situación registrada'
+              }`,
+              `Lugar de secuestro: ${bien.lugarSecuestro ?? ''}`,
+              // `Resultado pericia: ${bien.resultadoPericia ?? ''}`,
+            ].join('\n')
+          )
+          .join('\n\n'),
+
+        'Registros de bienes': bienes.length,
+
+        'Cantidad total de bienes': bienes.reduce(
+          (total: number, bien: Record<string, any>) =>
+            total + this.numeroMonto(bien.cantidad),
+          0
+        ),
+
+        'Total aproximado bienes': this.sumarMontos(bienes, 'valorAproximado'),
+
+        'Total cuantificado bienes': this.sumarMontos(
+          bienes,
+          'valorCuantificado'
+        ),
+
+        Empresas: empresas
+          .map((empresa: Record<string, any>) =>
+            [
+              `Actuación: ${empresa.numeroActuacion}`,
+              `ID empresa: ${empresa.empId}`,
+              `Empresa: ${empresa.nombre ?? ''}`,
+              `NIT: ${empresa.nit ?? ''}`,
+              `Matrícula: ${empresa.matricula ?? ''}`,
+              `Representante: ${empresa.representante ?? ''}`,
+              `Dirección: ${empresa.direccion ?? ''}`,
+              `Capital social: ${this.textoMonto(empresa.capitalSocial)}`,
+              `Situación jurídica: ${
+                empresa.situacionJuridicaActual ?? 'Sin situación registrada'
+              }`,
+              `Vínculo: ${empresa.vinculo ?? ''}`,
+              // `Observaciones: ${empresa.observaciones ?? ''}`,
+              // `Resultado pericia: ${empresa.resultadoPericia ?? ''}`,
+            ].join('\n')
+          )
+          .join('\n\n'),
+
+        'Registros de empresas': empresas.length,
+
+        'Total capital social empresas': this.sumarMontos(
+          empresas,
+          'capitalSocial'
+        ),
+      }
+    })
+  }
+
+  private numeroMonto(valor: unknown): number {
+    if (valor === null || valor === undefined || valor === '') {
+      return 0
+    }
+
+    // PostgreSQL devuelve numeric como texto con punto decimal.
+    const numero = Number(valor)
+
+    if (!Number.isFinite(numero)) {
+      throw new Error(`Monto inválido recibido: ${String(valor)}`)
+    }
+
+    return numero
+  }
+
+  private sumarMontos(registros: Record<string, any>[], campo: string): number {
+    // Acumula en centavos para evitar errores habituales de decimales.
+    const centavos = registros.reduce(
+      (total, registro) =>
+        total + Math.round(this.numeroMonto(registro[campo]) * 100),
+      0
+    )
+
+    if (!Number.isSafeInteger(centavos)) {
+      throw new Error(
+        'El total supera la precisión permitida para exportar como número'
+      )
+    }
+
+    return centavos / 100
+  }
+
+  private textoMonto(valor: unknown): string {
+    if (valor === null || valor === undefined || valor === '') {
+      return 'Sin registrar'
+    }
+
+    return this.numeroMonto(valor).toLocaleString('es-BO', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  private sinCampos(
+    registro: Record<string, any>,
+    excluir: string[]
+  ): Record<string, any> {
+    return Object.fromEntries(
+      Object.entries(registro).filter(([campo]) => !excluir.includes(campo))
     )
   }
 
@@ -40,10 +228,13 @@ export class VariablesCruzadasLgiExportService {
   }
 
   async generarPdf(filtros: FiltrosVariablesCruzadasLgiDto): Promise<Buffer> {
-    const filas = await this.obtenerFilas(filtros)
+    const casos = await this.obtenerFilas(filtros ?? {})
+
+    const datos = this.prepararDatosPdf(casos, filtros)
+
     return this.exportService.generatePDF(
       'variables-cruzadas-lgi',
-      this.prepararDatosPdf(filas, filtros),
+      datos,
       PDF_A3_HORIZONTAL
     )
   }
@@ -274,63 +465,36 @@ export class VariablesCruzadasLgiExportService {
   }
 
   private prepararDatosPdf(
-    casos: Registro[],
+    casos: Record<string, any>[],
     filtros: FiltrosVariablesCruzadasLgiDto
-  ): Registro {
+  ) {
+    const filas = this.prepararExcelConsolidado(casos)
+
     return {
-      titulo: 'Reporte de variables cruzadas LGI',
+      titulo: 'REPORTE DE VARIABLES CRUZADAS LGI',
       fechaGeneracion: this.obtenerFechaGeneracion(),
-      resumen: this.crearResumen(casos),
+
       filtros: Object.entries(filtros ?? {})
-        .filter(([, v]) => v !== undefined && v !== null && v !== '')
-        .map(([nombre, valor]) => ({ nombre, valor: String(valor) })),
-      casos: casos.map((c) => ({
-        ...c,
-        fechaInicio: this.fecha(c.fechaInicio),
-        personasInvestigadas: (c.personasInvestigadas ?? []).map(
-          (p: Registro) => ({
-            ...p,
-            fechaRegistro: this.fecha(p.fechaRegistro),
-            historialSituaciones: (p.historialSituaciones ?? []).map(
-              (s: Registro) => ({
-                ...s,
-                fecha: this.fecha(s.fecha ?? s.fechaRegistro),
-              })
-            ),
-          })
-        ),
-        actuaciones: (c.actuaciones ?? []).map((a: Registro) => ({
-          ...a,
-          fechaInforme: this.fecha(a.fechaInforme),
-          bienes: (a.bienes ?? []).map((b: Registro) => ({
-            ...b,
-            caracteristicasTexto: (b.caracteristicas ?? [])
-              .map(
-                (x: Registro) =>
-                  `${x.caracteristica ?? x.caracteristicaId}: ${x.valor ?? ''}`
-              )
-              .join('; '),
-            historialLegal: (b.historialLegal ?? []).map((s: Registro) => ({
-              ...s,
-              fecha: this.fecha(s.fecha ?? s.fechaRegistro),
-            })),
-            historialJuridico: (b.historialJuridico ?? []).map(
-              (s: Registro) => ({
-                ...s,
-                fechaRegistro: this.fecha(s.fechaRegistro),
-              })
-            ),
-          })),
-          empresas: (a.empresas ?? []).map((e: Registro) => ({
-            ...e,
-            historialSituaciones: (e.historialSituaciones ?? []).map(
-              (s: Registro) => ({
-                ...s,
-                fecha: this.fecha(s.fecha ?? s.fechaRegistro),
-              })
-            ),
-          })),
+        .filter(
+          ([, valor]) => valor !== undefined && valor !== null && valor !== ''
+        )
+        .map(([nombre, valor]) => ({
+          nombre,
+          valor: String(valor),
         })),
+
+      filas: filas.map((fila) => ({
+        ...fila,
+
+        totalAproximadoBienes: this.textoMonto(fila['Total aproximado bienes']),
+
+        totalCuantificadoBienes: this.textoMonto(
+          fila['Total cuantificado bienes']
+        ),
+
+        totalCapitalEmpresas: this.textoMonto(
+          fila['Total capital social empresas']
+        ),
       })),
     }
   }

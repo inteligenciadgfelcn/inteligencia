@@ -70,7 +70,7 @@ class Condiciones {
   readonly valores: unknown[] = []
   readonly caso: string[] = [
     "a.estado = 'ACTIVO'",
-    "a.nrocasogiaef LIKE 'CB-LGI-%'",
+    "a.nrocasogiaef LIKE '%-LGI-%'",
   ]
   parametro(valor: unknown): string {
     this.valores.push(valor)
@@ -389,7 +389,7 @@ export class BusquedaLgiRepository {
   ): Promise<Registro | null> {
     const [caso] = await manager.query(
       `SELECT ${CASO_SELECT} ${CASO_FROM}
-      WHERE a.casos_id = $1 AND a.estado = 'ACTIVO' AND a.nrocasogiaef LIKE 'CB-LGI-%'`,
+      WHERE a.casos_id = $1 AND a.estado = 'ACTIVO' AND a.nrocasogiaef LIKE '%-LGI-%'`,
       [casosId]
     )
     if (!caso) return null
@@ -524,7 +524,7 @@ export class BusquedaLgiRepository {
     return this.dataSource.transaction('REPEATABLE READ', async (m) => {
       const consultas: Record<string, string> = {
         departamentos: `SELECT DISTINCT dptoav_id AS codigo FROM public.asignacion
-          WHERE estado = 'ACTIVO' AND nrocasogiaef LIKE 'CB-LGI-%' ORDER BY codigo`,
+          WHERE estado = 'ACTIVO' AND nrocasogiaef LIKE '%-LGI-%' ORDER BY codigo`,
         unidades: `SELECT uni_id::text AS id, uni_descripcion AS descripcion FROM parametricas.unidades ORDER BY descripcion`,
         distritales: `SELECT dis_id::text AS id, dis_descripcion AS descripcion, uni_id::text AS "unidadId" FROM parametricas.distritales ORDER BY descripcion`,
         grupos: `SELECT grp_id::text AS id, TRIM(descripcion) AS descripcion, dis_id::text AS "distritalId" FROM parametricas.grupos ORDER BY descripcion`,

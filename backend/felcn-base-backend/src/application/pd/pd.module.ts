@@ -9,6 +9,7 @@ import { SituacionJuridicaPdModule } from './situacion_juridica_pd/situacion_jur
 import { ImplicadosModule } from './implicados/implicados.module'
 import { ConclusionPdModule } from './conclusion_caso/conclusion_caso.module'
 import { ReportesLgiModule } from './reportes_pd/reportes_lgi.module'
+import { BusquedaPdModule } from './busqueda_pd/busqueda_pd.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ReportesLgiModule } from './reportes_pd/reportes_lgi.module'
     ImplicadosModule,
     ConclusionPdModule,
     ReportesLgiModule,
+    BusquedaPdModule
   ],
   controllers: [],
 })

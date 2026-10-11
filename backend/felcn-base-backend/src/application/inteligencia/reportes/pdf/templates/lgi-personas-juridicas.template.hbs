@@ -474,35 +474,154 @@
       .ubicacion-mapa img { display: block; width: 43mm; height: 43mm; object-fit: contain; border: 1px solid #ddd; }
       .ubicacion-detalle { min-width: 0; font-size: 8px; overflow-wrap: anywhere; }
       .ubicacion-mapa .mapa-atribucion { font-size: 6px; }
+      :root {
+  --verde: #4f6b43;
+  --verde-oscuro: #3d5633;
+  --verde-claro: #eef3e9;
+  --verde-fondo: #f7f9f2;
+  --naranja: #d58d55;
+  --texto: #181818;
+}
+
+body {
+  color: var(--texto);
+}
+
+.encabezado {
+  display: grid;
+  grid-template-columns: 42mm minmax(0, 1fr);
+  align-items: center;
+  min-height: 25mm;
+  padding: 3mm;
+  margin-bottom: 4mm;
+  background: var(--verde-fondo);
+  border-bottom: 2px solid var(--verde);
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2mm;
+}
+
+.logo {
+  width: 18mm;
+  height: 18mm;
+  object-fit: contain;
+}
+
+.separador-logo {
+  width: 1px;
+  height: 18mm;
+  background: var(--verde);
+}
+
+.encabezado-texto {
+  min-width: 0;
+  padding: 0 2mm;
+  text-align: center;
+}
+
+.titulo-institucion {
+  margin: 0;
+  color: var(--verde);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.titulo-reporte {
+  margin: 2mm 0;
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.subtitulo {
+  margin: 1mm 0;
+  color: var(--verde-oscuro);
+  font-size: 9px;
+}
+
+.filtros {
+  background: var(--verde-fondo);
+  border: 1px solid #cbd7c4;
+}
+
+th {
+  background: var(--verde);
+  border-color: var(--verde-oscuro);
+}
+
+td {
+  border-color: #cbd7c4;
+}
+
+tbody tr:nth-child(even) {
+  background: var(--verde-claro);
+}
+
+.etiqueta {
+  color: var(--verde-oscuro);
+}
+
+.total {
+  border-bottom-color: var(--naranja);
+}
+
+.importe {
+  color: var(--verde-oscuro);
+}
+
+.sin-datos {
+  background: var(--verde-fondo);
+  border-color: #cbd7c4;
+}
     </style>
   </head>
   <body>
     <main class='pagina'>
       <!-- ENCABEZADO -->
-      <header class='encabezado'>
-        <div class='logos'>
-          <img
-            class='logo'
-            src='{{institucional}}'
-            alt='Logotipo institucional'
-          />
-          <span class='separador-logo'></span>
-          <img class='logo' src='{{escudo}}' alt='Escudo institucional' />
-        </div>
-        <div class='encabezado-texto'>
-          <h1 class='titulo-institucion'>
-            Grupo de Investigación y Análisis Económico Financiero
-          </h1>
-          <p class='titulo-reporte'>
-            Reporte N.º
-            <strong>
-              {{reporte.numero}}/{{reporte.gestion}}
-            </strong>
-            - División Regional del GIAEF
-            {{reporte.divisionRegional}}
-          </p>
-        </div>
-      </header>
+      <header class="encabezado">
+  <div class="logos">
+    {{#if institucional}}
+      <img
+        class="logo"
+        src="{{institucional}}"
+        alt="Logotipo institucional"
+      >
+    {{/if}}
+
+    {{#if escudo}}
+      <span class="separador-logo"></span>
+
+      <img
+        class="logo"
+        src="{{escudo}}"
+        alt="Escudo institucional"
+      >
+    {{/if}}
+  </div>
+
+  <div class="encabezado-texto">
+    <h1 class="titulo-institucion">
+      Grupo de Investigación y Análisis Económico Financiero
+    </h1>
+
+    <p class="titulo-reporte">{{titulo}}</p>
+
+    <p class="subtitulo">
+      Legitimación de Ganancias Ilícitas
+    </p>
+
+    <p class="subtitulo">
+      Fecha de generación: {{fechaGeneracion}}
+    </p>
+  </div>
+</header>
       <!-- CUERPO -->
       <section class='cuerpo'>
         <!-- =================================================

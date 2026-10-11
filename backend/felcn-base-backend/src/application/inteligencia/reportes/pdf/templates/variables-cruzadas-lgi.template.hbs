@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <title>{{titulo}}</title>
+
+  <style>
+    :root {
+      --verde: #4f6b43;
+      --verde-oscuro: #3d5633;
+      --verde-claro: #eef3e9;
+      --verde-fondo: #f7f9f2;
+      --naranja: #d58d55;
+      --texto: #181818;
+      --gris: #666666;
+      --borde: #cbd7c4;
+      --blanco: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9px;
+      color: var(--texto);
+      background: var(--blanco);
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .encabezado {
+      display: grid;
+      grid-template-columns: 42mm minmax(0, 1fr) 42mm;
+      align-items: center;
+      width: 100%;
+      min-height: 25mm;
+      padding: 3mm;
+      margin-bottom: 4mm;
+      background: var(--verde-fondo);
+      border-bottom: 2px solid var(--verde);
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 2mm;
+    }
+
+    .logo {
+      display: block;
+      width: 18mm;
+      height: 18mm;
+      object-fit: contain;
+    }
+
+    .separador-logo {
+      width: 1px;
+      height: 18mm;
+      background: var(--verde);
+    }
+
+    .encabezado-texto {
+      min-width: 0;
+      padding: 0 2mm;
+      text-align: center;
+    }
+
+    .titulo-institucion {
+      margin: 0;
+      color: var(--verde);
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .titulo-reporte {
+      margin: 2mm 0;
+      color: var(--texto);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .subtitulo {
+      margin: 1mm 0;
+      color: var(--verde-oscuro);
+      font-size: 9px;
+      line-height: 1.3;
+    }
+
+    .filtros {
+      padding: 2.5mm;
+      margin-bottom: 3mm;
+      background: var(--verde-fondo);
+      border: 1px solid var(--borde);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .filtro {
+      display: inline-block;
+      margin: 1mm 3mm 0 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    th {
+      padding: 7px 5px;
+      background: var(--verde);
+      color: var(--blanco);
+      border: 1px solid var(--verde-oscuro);
+      font-size: 9px;
+      font-weight: 700;
+      text-align: center;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+    }
+
+    td {
+      padding: 7px 5px;
+      border: 1px solid var(--borde);
+      vertical-align: top;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    tbody tr:nth-child(even) {
+      background: var(--verde-claro);
+    }
+
+    tr {
+      break-inside: auto;
+      page-break-inside: auto;
+    }
+
+    .numero {
+      text-align: center;
+      font-weight: 700;
+      color: var(--verde-oscuro);
+    }
+
+    .texto {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.35;
+    }
+
+    .etiqueta {
+      color: var(--verde-oscuro);
+      font-weight: 700;
+    }
+
+    .dato {
+      margin-bottom: 6px;
+    }
+
+    .total {
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--naranja);
+    }
+
+    .importe {
+      display: block;
+      margin-top: 3px;
+      color: var(--verde-oscuro);
+      font-size: 10px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .sin-registros {
+      color: var(--gris);
+      font-style: italic;
+    }
+
+    .sin-datos {
+      padding: 25px;
+      text-align: center;
+      background: var(--verde-fondo);
+      border: 1px solid var(--borde);
+    }
+
+    .nota {
+      margin: 3mm 0;
+      color: var(--gris);
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .pie {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      margin-top: 4mm;
+      color: var(--verde-oscuro);
+      font-size: 8px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .pie-linea {
+      flex: 1;
+      border-top: 1px dashed var(--naranja);
+    }
+
+    .pie-texto {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="encabezado">
+    <div class="logos">
+      {{#if institucional}}
+        <img
+          class="logo"
+          src="{{institucional}}"
+          alt="Logotipo institucional"
+        >
+      {{/if}}
+
+      {{#if escudo}}
+        <span class="separador-logo"></span>
+
+        <img
+          class="logo"
+          src="{{escudo}}"
+          alt="Escudo institucional"
+        >
+      {{/if}}
+    </div>
+
+    <div class="encabezado-texto">
+      <h1 class="titulo-institucion">
+        Grupo de Investigación y Análisis Económico Financiero
+      </h1>
+
+      <p class="titulo-reporte">{{titulo}}</p>
+
+      <p class="subtitulo">
+        Legitimación de Ganancias Ilícitas
+      </p>
+
+      <p class="subtitulo">
+        Fecha de generación: {{fechaGeneracion}}
+      </p>
+    </div>
+
+    <div aria-hidden="true"></div>
+  </header>
+
+  {{#if filtros}}
+    <div class="filtros">
+      <strong>Filtros aplicados:</strong>
+
+      {{#each filtros}}
+        <span class="filtro">
+          <strong>{{nombre}}:</strong> {{valor}}
+        </span>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="filtros">
+      Sin filtros adicionales. Casos LGI activos.
+    </div>
+  {{/if}}
+
+  {{#if filas}}
+    <table>
+      <colgroup>
+        <col style="width: 3%;">
+        <col style="width: 12%;">
+        <col style="width: 10%;">
+        <col style="width: 15%;">
+        <col style="width: 13%;">
+        <col style="width: 22%;">
+        <col style="width: 15%;">
+        <col style="width: 10%;">
+      </colgroup>
+
+      <thead>
+        <tr>
+          <th>N.º</th>
+          <th>Datos del caso</th>
+          <th>Dependencia y estado</th>
+          <th>Personas y situación</th>
+          <th>Actuaciones</th>
+          <th>Bienes, costos y situación</th>
+          <th>Empresas y situación</th>
+          <th>Totales del caso</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each filas}}
+          <tr>
+            <td class="numero">
+              {{lookup this "Nro"}}
+            </td>
+
+            <td>
+              <div class="dato">
+                <span class="etiqueta">Caso GIAEF:</span><br>
+                {{lookup this "Caso GIAEF"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Nombre del caso:</span><br>
+                {{lookup this "Nombre del caso"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">CUD:</span><br>
+                {{lookup this "CUD"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Caso Fiscalía:</span><br>
+                {{lookup this "Caso Fiscalía"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Fecha de inicio:</span><br>
+                {{lookup this "Fecha inicio"}}
+              </div>
+
+              <div>
+                <span class="etiqueta">ID caso:</span>
+                {{lookup this "ID caso"}}
+              </div>
+            </td>
+
+            <td>
+              <div class="dato">
+                <span class="etiqueta">Departamento:</span><br>
+                {{lookup this "Departamento"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Unidad:</span><br>
+                {{lookup this "Unidad"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Distrital:</span><br>
+                {{lookup this "Distrital"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Grupo:</span><br>
+                {{lookup this "Grupo"}}
+              </div>
+
+              <div class="dato">
+                <span class="etiqueta">Etapa de investigación:</span><br>
+                {{lookup this "Etapa investigación"}}
+              </div>
+
+              <div>
+                <span class="etiqueta">Estado procesal:</span><br>
+                {{lookup this "Estado procesal"}}
+              </div>
+            </td>
+
+            <td>
+              {{#if (lookup this "Personas")}}
+                <div class="texto">{{lookup this "Personas"}}</div>
+              {{else}}
+                <span class="sin-registros">
+                  Sin personas registradas.
+                </span>
+              {{/if}}
+            </td>
+
+            <td>
+              {{#if (lookup this "Actuaciones")}}
+                <div class="texto">{{lookup this "Actuaciones"}}</div>
+              {{else}}
+                <span class="sin-registros">
+                  Sin actuaciones activas.
+                </span>
+              {{/if}}
+            </td>
+
+            <td>
+              {{#if (lookup this "Bienes")}}
+                <div class="texto">{{lookup this "Bienes"}}</div>
+              {{else}}
+                <span class="sin-registros">
+                  Sin bienes registrados.
+                </span>
+              {{/if}}
+            </td>
+
+            <td>
+              {{#if (lookup this "Empresas")}}
+                <div class="texto">{{lookup this "Empresas"}}</div>
+              {{else}}
+                <span class="sin-registros">
+                  Sin empresas registradas.
+                </span>
+              {{/if}}
+            </td>
+
+            <td>
+              <div class="total">
+                Registros de bienes:
+                <span class="importe">
+                  {{lookup this "Registros de bienes"}}
+                </span>
+              </div>
+
+              <div class="total">
+                Cantidad total de bienes:
+                <span class="importe">
+                  {{lookup this "Cantidad total de bienes"}}
+                </span>
+              </div>
+
+              <div class="total">
+                Total aproximado de bienes:
+                <span class="importe">
+                  {{totalAproximadoBienes}}
+                </span>
+              </div>
+
+              <div class="total">
+                Total cuantificado de bienes:
+                <span class="importe">
+                  {{totalCuantificadoBienes}}
+                </span>
+              </div>
+
+              <div class="total">
+                Registros de empresas:
+                <span class="importe">
+                  {{lookup this "Registros de empresas"}}
+                </span>
+              </div>
+
+              <div>
+                Total capital social de empresas:
+                <span class="importe">
+                  {{totalCapitalEmpresas}}
+                </span>
+              </div>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <div class="sin-datos">
+      No se encontraron casos con los filtros seleccionados.
+    </div>
+  {{/if}}
+
+  <p class="nota">
+    Los totales de bienes suman los costos registrados de todas
+    las actuaciones activas de cada caso. Los montos sin registrar
+    no aportan al total. El capital social de las empresas se
+    presenta por separado.
+  </p>
+
+  <footer class="pie">
+    <div class="pie-linea"></div>
+
+    <div class="pie-texto">
+      Fin del reporte
+    </div>
+
+    <div class="pie-linea"></div>
+  </footer>
+</body>
+</html>
