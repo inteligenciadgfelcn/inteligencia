@@ -38,6 +38,8 @@ import {
   VALORES_POR_DEFECTO,
 } from '../types/personas-juridicas.types'
 import { formatFecha } from '../../utils/fechas'
+import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
+import IconFile from '../../../../../components/Icon/IconFile'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -543,6 +545,20 @@ export function PersonasJuridicas({ casoId }: Props) {
           >
             <IconEye className="h-4 w-4" />
           </Button>
+          <Button
+            type="button"
+            variant="outline-primary"
+            size="sm"
+            className="!p-1.5"
+            title="Ver reporte PDF"
+            onClick={() => {
+              void abrirPdfEnNuevaPestana(() =>
+                PersonasJuridicasApi.exportarEmpresaPdf(Number(row.empId))
+              )
+            }}
+          >
+            <IconFile className="h-4 w-4" />
+          </Button>
           {/* <Button
             type="button"
             variant="outline-secondary"
@@ -860,11 +876,11 @@ export function PersonasJuridicas({ casoId }: Props) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Documento de respaldo (PDF/JPG/PNG/WEBP)
+                    Documento de respaldo (PDF)
                   </label>
                   <input
                     type="file"
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    accept="application/pdf"
                     className="block w-full text-sm"
                     onChange={(e) =>
                       setField('documento', e.target.files?.[0] ?? null)
@@ -1003,11 +1019,6 @@ export function PersonasJuridicas({ casoId }: Props) {
               </div>
             </div>
 
-            <p className="text-xs text-gray-500">
-              Investigado · Imputado · Acusado · Rechazado · Sobreseido ·
-              Absuelto · Condenado
-            </p>
-
             <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-[#1b2e4b]">
               <Button
                 type="button"
@@ -1106,6 +1117,26 @@ export function PersonasJuridicas({ casoId }: Props) {
               </div>
 
               <div className="space-y-4 p-5">
+
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Tipo de implicado *
+                  </label>
+                  <Select
+                    options={tiposImplicado.map((t) =>
+                      option(t.idTipoImplicado, t.descripcion)
+                    )}
+                    placeholder="Seleccione tipo"
+                    value={implicadoForm.tipoImplicadoId}
+                    onChange={(e) =>
+                      setImplicadoForm((prev) => ({
+                        ...prev,
+                        tipoImplicadoId: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
@@ -1124,25 +1155,6 @@ export function PersonasJuridicas({ casoId }: Props) {
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                      Número de documento *
-                    </label>
-                    <Input
-                      value={implicadoForm.numeroDocumento}
-                      maxLength={15}
-                      onChange={(e) =>
-                        setImplicadoForm((prev) => ({
-                          ...prev,
-                          numeroDocumento: e.target.value,
-                        }))
-                      }
-                      placeholder="1234567"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                       Apellido paterno
                     </label>
                     <Input
@@ -1156,6 +1168,9 @@ export function PersonasJuridicas({ casoId }: Props) {
                       placeholder="Pérez"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                       Apellido materno
@@ -1191,24 +1206,6 @@ export function PersonasJuridicas({ casoId }: Props) {
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                      Tipo de implicado *
-                    </label>
-                    <Select
-                      options={tiposImplicado.map((t) =>
-                        option(t.idTipoImplicado, t.descripcion)
-                      )}
-                      placeholder="Seleccione tipo"
-                      value={implicadoForm.tipoImplicadoId}
-                      onChange={(e) =>
-                        setImplicadoForm((prev) => ({
-                          ...prev,
-                          tipoImplicadoId: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                       Tipo de documento *
                     </label>
                     <Select
@@ -1223,6 +1220,22 @@ export function PersonasJuridicas({ casoId }: Props) {
                           tipoDocumentoId: e.target.value,
                         }))
                       }
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                      Número de documento *
+                    </label>
+                    <Input
+                      value={implicadoForm.numeroDocumento}
+                      maxLength={15}
+                      onChange={(e) =>
+                        setImplicadoForm((prev) => ({
+                          ...prev,
+                          numeroDocumento: e.target.value,
+                        }))
+                      }
+                      placeholder="1234567"
                     />
                   </div>
                 </div>

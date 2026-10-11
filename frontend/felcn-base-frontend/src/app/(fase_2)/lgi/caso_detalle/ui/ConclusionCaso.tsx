@@ -217,11 +217,10 @@ export function ConclusionCaso({ casoId }: Props) {
     <div className="space-y-4">
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${
-            mensaje.tipo === 'exito'
+          className={`rounded-md border px-4 py-3 text-sm ${mensaje.tipo === 'exito'
               ? 'border-success/30 bg-success/5 text-success'
               : 'border-danger/30 bg-danger/5 text-danger'
-          }`}
+            }`}
         >
           {mensaje.texto}
         </div>
@@ -288,6 +287,7 @@ export function ConclusionCaso({ casoId }: Props) {
             descripcion="Tipos de delitos o patrones criminales identificados en el caso."
             opciones={tipologias}
             seleccionados={tipologiaIds}
+            columnas={2}
             onToggle={(id) => setTipologiaIds((actual) => alternar(actual, id))}
             cargando={cargandoTipologias}
           />
