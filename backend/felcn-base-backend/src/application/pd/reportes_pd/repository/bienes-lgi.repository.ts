@@ -1,119 +1,267 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
+
 import { DB_LGI } from '@/core/config/database/database.module'
 import { BienSecuestradoLgiRepository } from '@/application/lgi/bienes_secuestrados/repository/bien_secuestrado_lgi.repository'
+
+export interface SituacionBienPdReporte {
+  idSituacion: string
+  itemBienSecId: string
+  fiscalia: string
+  fechaResolucion: Date
+  autoridad: string
+  fechaHoraIngreso: Date
+  usuario: string
+  idMedidaCautelar: number | null
+  medidaCautelar: string | null
+}
+
+export interface ImplicadoBienReporte {
+  idVinculoBien: string
+  idDetenidoAuxiliar: number | null
+  idVinculo: number | null
+  idTipoVinculo: number | null
+  itemBienSecId: string
+  fechaHoraIngreso: Date | null
+  usuario: string | null
+  nombreCompleto: string
+  numeroDocumento: string | null
+}
 
 @Injectable()
 export class BienesLgiReporteRepository {
   constructor(
     private readonly bienesRepository: BienSecuestradoLgiRepository,
+
     @InjectDataSource(DB_LGI)
-    private readonly dataSource: DataSource,
-  ) { }
+    private readonly dataSource: DataSource
+  ) {}
+
+  // =====================================================
+  // OBTENER BIEN CON SUS RELACIONES EXISTENTES
+  // =====================================================
 
   async obtenerBien(idBien: number): Promise<any> {
     return this.bienesRepository.findOne(idBien)
   }
 
+  // =====================================================
+  // DATOS GENERALES DEL BIEN
+  // =====================================================
+
   async obtenerDatosBien(idBien: number): Promise<any> {
     const filas = await this.dataSource.query(
-      `SELECT b.*, ct.descripcion AS "tipoDescripcion", cl.descripcion AS "claseDescripcion"
-       FROM itembiensecuestrado b
-       LEFT JOIN parametricas.catalogotipo ct ON ct.cattipo_id = b.cattipo_id
-       LEFT JOIN parametricas.catalogoclase cl ON cl.catclas_id = ct.catclas_id
-       WHERE b.itembiensec_id = $1 AND b.estado = 'ACTIVO'`,
-      [idBien],
+      `
+        SELECT
+          b.*,
+          ct.descripcion AS "tipoDescripcion",
+          cl.descripcion AS "claseDescripcion"
+
+        FROM public.itembiensecuestrado b
+
+        LEFT JOIN parametricas.catalogotipo ct
+          ON ct.cattipo_id = b.cattipo_id
+
+        LEFT JOIN parametricas.catalogoclase cl
+          ON cl.catclas_id = ct.catclas_id
+
+        WHERE b.itembiensec_id = $1
+          AND UPPER(TRIM(b.estado)) = 'ACTIVO'
+      `,
+      [idBien]
     )
+
     return filas[0] ?? null
   }
 
+  // =====================================================
+  // CARACTERÍSTICAS DEL BIEN
+  // =====================================================
+
   async obtenerCaracteristicas(idBien: number): Promise<any[]> {
     return this.dataSource.query(
-      `SELECT ic.itembiencar_id AS "idCaracteristica",
-              cc.descripcion AS etiqueta,
-              ic.descripcion AS valor,
-              ic.fechahoraing AS "fechaHoraIngreso",
-              ic.usuario, ic.estado
-       FROM itembiencaracteristicas ic
-       LEFT JOIN parametricas.catalogocaracteristicas cc ON cc.catcarac_id = ic.catcarac_id
-       WHERE ic.itembiensec_id = $1 AND ic.estado = 'ACTIVO'
-       ORDER BY ic.itembiencar_id ASC`,
-      [idBien],
+      `
+        SELECT
+          ic.itembiencar_id AS "idCaracteristica",
+          cc.descripcion AS "etiqueta",
+          ic.descripcion AS "valor",
+          ic.fechahoraing AS "fechaHoraIngreso",
+          ic.usuario,
+          ic.estado
+
+        FROM public.itembiencaracteristicas ic
+
+        LEFT JOIN parametricas.catalogocaracteristicas cc
+          ON cc.catcarac_id = ic.catcarac_id
+
+        WHERE ic.itembiensec_id = $1
+          AND UPPER(TRIM(ic.estado)) = 'ACTIVO'
+
+        ORDER BY ic.itembiencar_id ASC
+      `,
+      [idBien]
     )
   }
 
-  async obtenerHistorialSituacionBien(idBien: number): Promise<any[]> {
-    const filas: any[] = await this.dataSource.query(
-      `SELECT
-         sit.sitb_id AS "idSituacion",
-         sit.calb_id AS "calbId",
-         sit.fechaent AS "fechaEntrega",
-         sit.fisreq AS "fiscalRequirente",
-         sit.responsabler AS "responsableRecepcion",
-         sit.institucion,
-         sit.ubicacion,
-         sit.id_tipo_documento AS "idTipoDocumento",
-         sit.numero_documento AS "numeroDocumento",
-         sit.fechahoraing AS "fechaHoraIngreso",
-         td.descripcion AS "tipoDocumento"
-       FROM situacionbienes sit
-       LEFT JOIN parametricas.tipodoc td
-  ON td.td_id = sit.id_tipo_documento
-       WHERE sit.itembiensec_id = $1
-       ORDER BY sit.fechaent DESC NULLS LAST,
-                sit.fechahoraing DESC NULLS LAST,
-                sit.sitb_id DESC`,
-      [idBien],
-    )
-    const calidades = new Map<string, string | null>()
-    for (const fila of filas) {
-      const clave = String(fila.calbId)
-      if (!calidades.has(clave)) {
-        calidades.set(clave, await this.obtenerCalidad(fila.calbId))
-      }
-    }
-    return filas.map((fila) => ({
-      ...fila,
-      calidad: calidades.get(String(fila.calbId)) ?? 'Sin calidad registrada',
-    }))
-  }
+  // =====================================================
+  // HISTORIAL DE SITUACIÓN DEL BIEN
+  // TABLA: public.perdidadominio
+  //
+  // La primera fila corresponde a la última situación
+  // por fecha de resolución.
+  // =====================================================
 
-  async obtenerAnotacionesJuridicas(idBien: number): Promise<any[]> {
+  async obtenerHistorialSituacionBien(
+    idBien: number
+  ): Promise<SituacionBienPdReporte[]> {
     return this.dataSource.query(
-      `SELECT
-         j.itembienjur_id AS "idAnotacion",
-         j.catjur_id AS "catjurId",
-         j.descripcion,
-         j.fechahoraing AS "fechaHoraIngreso"
-       FROM itembienjuridica j
-       WHERE j.itembiensec_id = $1 AND j.estado = 'ACTIVO'
-       ORDER BY j.fechahoraing DESC NULLS LAST, j.itembienjur_id DESC`,
-      [idBien],
+      `
+        SELECT
+          pd.perdom_id::text AS "idSituacion",
+          pd.itembiensec_id::text AS "itemBienSecId",
+          pd.fiscalia,
+          pd.fechares AS "fechaResolucion",
+          pd.autoridad,
+          pd.fechahoraing AS "fechaHoraIngreso",
+          TRIM(pd.usuario) AS "usuario",
+          pd.id_medida_cautelar AS "idMedidaCautelar",
+          mc.descripcion AS "medidaCautelar"
+
+        FROM public.perdidadominio pd
+
+        LEFT JOIN parametricas.medida_cautelar mc
+          ON mc.id_medida_cautelar = pd.id_medida_cautelar
+
+        WHERE pd.itembiensec_id = $1
+
+        ORDER BY
+          pd.fechares DESC NULLS LAST,
+          pd.fechahoraing DESC NULLS LAST,
+          pd.perdom_id DESC
+      `,
+      [idBien]
     )
   }
 
-  async obtenerCalidad(calbId: number | string): Promise<string | null> {
-    // La captura no identifica el esquema del catálogo.
-    // Lo resuelve sin asumir public o parametricas.
-    const tablas: Array<{ esquema: string }> = await this.dataSource.query(`
-      SELECT n.nspname AS esquema
-      FROM pg_catalog.pg_class c
-      INNER JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-      WHERE c.relname = 'calidadbien'
-        AND c.relkind IN ('r', 'p', 'v', 'm')
-        AND n.nspname NOT IN ('pg_catalog', 'information_schema')
-    `)
-    if (tablas.length !== 1) {
-      throw new InternalServerErrorException(
-        'No se pudo identificar un único catálogo calidadbien; configura su esquema en el repositorio del reporte',
-      )
-    }
-    const esquema = '"' + tablas[0].esquema.replace(/"/g, '""') + '"'
-    const filas: Array<{ descripcion: string | null }> = await this.dataSource.query(
-      `SELECT descripcion FROM ${esquema}.calidadbien WHERE calb_id = $1`,
-      [calbId],
+  // =====================================================
+  // ÚLTIMA SITUACIÓN DEL BIEN
+  // =====================================================
+
+  async obtenerUltimaSituacionBien(
+    idBien: number
+  ): Promise<SituacionBienPdReporte | null> {
+    const filas: SituacionBienPdReporte[] = await this.dataSource.query(
+      `
+          SELECT
+            pd.perdom_id::text AS "idSituacion",
+            pd.itembiensec_id::text AS "itemBienSecId",
+            pd.fiscalia,
+            pd.fechares AS "fechaResolucion",
+            pd.autoridad,
+            pd.fechahoraing AS "fechaHoraIngreso",
+            TRIM(pd.usuario) AS "usuario",
+            pd.id_medida_cautelar AS "idMedidaCautelar",
+            mc.descripcion AS "medidaCautelar"
+
+          FROM public.perdidadominio pd
+
+          LEFT JOIN parametricas.medida_cautelar mc
+            ON mc.id_medida_cautelar = pd.id_medida_cautelar
+
+          WHERE pd.itembiensec_id = $1
+
+          ORDER BY
+            pd.fechares DESC NULLS LAST,
+            pd.fechahoraing DESC NULLS LAST,
+            pd.perdom_id DESC
+
+          LIMIT 1
+        `,
+      [idBien]
     )
-    return filas[0]?.descripcion ?? null
+
+    return filas[0] ?? null
+  }
+
+  // =====================================================
+  // IMPLICADOS VINCULADOS AL BIEN
+  // TABLA: public.vinculo_bien
+  // =====================================================
+
+  async obtenerImplicadosBien(idBien: number): Promise<ImplicadoBienReporte[]> {
+    return this.dataSource.query(
+      `
+      SELECT
+        vb.id_vinculo_bien::text AS "idVinculoBien",
+        vb.id_detenido_auxiliar AS "idDetenidoAuxiliar",
+        vb.id_vinculo AS "idVinculo",
+        vb.id_tipo_vinculo AS "idTipoVinculo",
+        vb.id_item_bien_secuestrado::text AS "itemBienSecId",
+        vb.fechahoraing AS "fechaHoraIngreso",
+        vb.usuario,
+
+        COALESCE(
+          NULLIF(
+            CONCAT_WS(
+              ' ',
+              NULLIF(TRIM(p.de_nombres), ''),
+              NULLIF(TRIM(p.de_paterno), ''),
+              NULLIF(TRIM(p.de_materno), ''),
+              NULLIF(TRIM(p.de_esposo), '')
+            ),
+            ''
+          ),
+          'Persona sin nombre registrado'
+        ) AS "nombreCompleto",
+
+        NULLIF(TRIM(p.nro_docum), '') AS "numeroDocumento",
+
+        tv.descripcion AS "tipoVinculoDescripcion"
+
+      FROM public.vinculo_bien vb
+
+      LEFT JOIN public.detenidosaux p
+        ON p.de_id = vb.id_detenido_auxiliar
+
+      LEFT JOIN parametricas.tipo_vinculo tv
+        ON tv.id_vinculo = vb.id_vinculo
+
+      WHERE vb.id_item_bien_secuestrado = $1
+        AND UPPER(TRIM(vb.estado)) = 'ACTIVO'
+
+      ORDER BY vb.id_vinculo_bien ASC
+    `,
+      [idBien]
+    )
+  }
+
+  // =====================================================
+  // DATOS CONSOLIDADOS PARA EL REPORTE
+  // =====================================================
+
+  async obtenerReporteCompleto(idBien: number) {
+    const datosBien = await this.obtenerDatosBien(idBien)
+
+    if (!datosBien) {
+      return null
+    }
+
+    const [bien, caracteristicas, historialSituacionBien, implicados] =
+      await Promise.all([
+        this.obtenerBien(idBien),
+        this.obtenerCaracteristicas(idBien),
+        this.obtenerHistorialSituacionBien(idBien),
+        this.obtenerImplicadosBien(idBien),
+      ])
+
+    return {
+      datosBien,
+      bien,
+      caracteristicas,
+      historialSituacionBien,
+      ultimaSituacionBien: historialSituacionBien[0] ?? null,
+      implicados,
+    }
   }
 }

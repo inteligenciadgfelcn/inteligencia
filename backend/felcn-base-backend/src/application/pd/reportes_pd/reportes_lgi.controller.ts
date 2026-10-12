@@ -28,26 +28,25 @@ export class ReportesLgiController {
     private readonly reporteIncio: InicioInvestigacionService,
     private readonly reporteBienes: BienesLgiService,
     private readonly personasJuridicasReporte: PersonasJuridicasReporteService,
-    private readonly conclusionReporte: ConclusionReporteService,
-  ) { }
+    private readonly conclusionReporte: ConclusionReporteService
+  ) {}
 
   @Get('export/pdf/actuacion/:id')
   async exportPDFActuacionPd(
     @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
     const data = await this.reporteService.GenerarPDFActuacion(id)
 
     const buffer = await this.exportService.generatePDF(
       'pd-actuacion',
       data,
-      PDF_OFICIO_VERTICAL,
+      PDF_OFICIO_VERTICAL
     )
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=pd-actuacion-${id}.pdf`,
+      'Content-Disposition': `attachment; filename=pd-actuacion-${id}.pdf`,
       'Content-Length': buffer.length,
     })
 
@@ -57,19 +56,18 @@ export class ReportesLgiController {
   @Get('export/pdf/bienes/:idBien')
   async exportPDFBienesSecuestrados(
     @Param('idBien', ParseIntPipe) idBien: number,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
     const data = await this.reporteBienes.GenerarPDFBienes(idBien)
     const buffer = await this.exportService.generatePDF(
       'pd-bienes',
       data,
-      PDF_OFICIO_VERTICAL,
+      PDF_OFICIO_VERTICAL
     )
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=pd-bienes-${idBien}.pdf`,
+      'Content-Disposition': `attachment; filename=pd-bienes-${idBien}.pdf`,
       'Content-Length': buffer.length,
     })
 
@@ -79,43 +77,44 @@ export class ReportesLgiController {
   @Get('export/pdf/personas-juridicas/:idEmpresa')
   async exportPDFPersonaJuridica(
     @Param('idEmpresa', ParseIntPipe) idEmpresa: number,
-    @Res() res: Response,
+    @Res() res: Response
   ) {
-    const data = await this.personasJuridicasReporte.GenerarPDFEmpresa(idEmpresa)
+    const data =
+      await this.personasJuridicasReporte.GenerarPDFEmpresa(idEmpresa)
     const buffer = await this.exportService.generatePDF(
       'pd-personas-juridicas',
       data,
-      PDF_OFICIO_VERTICAL,
+      PDF_OFICIO_VERTICAL
     )
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=pd-personas-juridicas-${idEmpresa}.pdf`,
+      'Content-Disposition': `attachment; filename=pd-personas-juridicas-${idEmpresa}.pdf`,
       'Content-Length': buffer.length,
     })
 
     res.end(buffer)
   }
 
-  @Get('export/pdf/conclusion/:opId')
+  @Get('export/pdf/conclusion/:casosId')
   async exportPDFConclusion(
-    @Param('opId', ParseIntPipe) opId: number,
-    @Res() res: Response,
+    @Param('casosId', ParseIntPipe)
+    casosId: number,
+
+    @Res()
+    res: Response
   ) {
-    const data =
-      await this.conclusionReporte.GenerarPDFConclusion(opId)
+    const data = await this.conclusionReporte.GenerarPDFConclusion(casosId)
 
     const buffer = await this.exportService.generatePDF(
-      'lgi-conclusion',
+      'pd-conclusion-caso',
       data,
-      PDF_OFICIO_VERTICAL,
+      PDF_OFICIO_VERTICAL
     )
 
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        `attachment; filename=lgi-conclusion-${opId}.pdf`,
+      'Content-Disposition': `attachment; filename="pd-conclusion-caso-${casosId}.pdf"`,
       'Content-Length': buffer.length,
     })
 

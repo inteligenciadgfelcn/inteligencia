@@ -14,13 +14,13 @@ import { EstadisticasLgiRepository } from './repository/estadisticas_lgi.reposit
 
 import { PersonasJuridicasReporteRepository } from './repository/personas-juridica.repository'
 import { PersonasJuridicasReporteService } from './service/personas-juridicas.service'
-import { ConclusionReporteRepository } from './repository/lgi-conclusion.repository'
 import { ConclusionReporteService } from './service/conclusion.service'
 import { InvestigadoresModule } from '@/application/lgi/investigadores/investigadores.module'
 import { BienesSecuestradosModule } from '@/application/lgi/bienes_secuestrados/bienes_secuestrados.module'
 import { ConsultaSiiiRepository } from '@/application/lgi/informacion_siii/repository/consulta.repository'
 import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
+import { ConclusionReporteRepository } from './repository/conclusion-caso.repository'
 
 @Module({
   imports: [

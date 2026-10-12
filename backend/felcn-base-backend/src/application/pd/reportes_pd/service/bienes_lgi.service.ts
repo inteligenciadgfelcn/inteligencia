@@ -1,10 +1,15 @@
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common'
 
-import { Injectable, BadRequestException } from '@nestjs/common'
 import {
   formatearMoneda,
   convertirMontoLiteral,
   formatearFechaReporte,
 } from '@/common/utils/reporte.util'
+
 import { BienesLgiReporteRepository } from '../repository/bienes-lgi.repository'
 import { ActuacionLgiService } from './actuacion.service'
 import { generarMapaBien } from '@/common/utils/mapa-bien.util'
@@ -18,137 +23,297 @@ export class BienesLgiService {
 
   async GenerarPDFBienes(idBien: number) {
     if (!Number.isSafeInteger(idBien) || idBien <= 0) {
-      throw new BadRequestException('El identificador del bien debe ser un entero positivo')
+      throw new BadRequestException(
+        'El identificador del bien debe ser un entero positivo',
+      )
     }
 
-    const registro = await this.bienesRepository.obtenerBien(idBien)
-    const base = await this.actuacionService.GenerarPDFActuacion(Number(registro.opId))
-    const [situacionesBien, anotacionesJuridicas, datosBien, caracteristicas] = await Promise.all([
-      this.bienesRepository.obtenerHistorialSituacionBien(idBien),
-      this.bienesRepository.obtenerAnotacionesJuridicas(idBien),
+    const registro =
+      await this.bienesRepository.obtenerBien(idBien)
+
+    if (!registro) {
+      throw new NotFoundException(
+        `No existe el bien con ID ${idBien}`,
+      )
+    }
+
+    const opId = Number(registro.opId)
+
+    if (!Number.isSafeInteger(opId) || opId <= 0) {
+      throw new BadRequestException(
+        'El bien no tiene un operativo válido asociado',
+      )
+    }
+
+    const base =
+      await this.actuacionService.GenerarPDFActuacion(opId)
+
+    const [
+      situacionesBien,
+      datosBien,
+      caracteristicas,
+      implicados,
+    ] = await Promise.all([
+      this.bienesRepository.obtenerHistorialSituacionBien(
+        idBien,
+      ),
       this.bienesRepository.obtenerDatosBien(idBien),
       this.bienesRepository.obtenerCaracteristicas(idBien),
+      this.bienesRepository.obtenerImplicadosBien(idBien),
     ])
-    // Exclusivamente situacionbienes; no mezcla los eventos jurídicos.
-    const ultimaSituacionBien = situacionesBien[0] ?? null
-    const aprox = this.obtenerMonto(datosBien?.costoaprox)
-    const cuant = this.obtenerMonto(datosBien?.costocuant)
 
-    const mapa = await generarMapaBien(datosBien?.latitud, datosBien?.longitud)
+    const ultimaSituacion = situacionesBien[0] ?? null
+
+    const ultimaSituacionTexto = ultimaSituacion
+      ? this.texto(
+          ultimaSituacion.medidaCautelar,
+          'Sin medida cautelar especificada',
+        )
+      : 'Sin situación del bien registrada'
+
+    const aprox = this.obtenerMonto(
+      datosBien?.costoaprox ?? registro.costoAprox,
+    )
+
+    const cuant = this.obtenerMonto(
+      datosBien?.costocuant ?? registro.costoCuant,
+    )
+
+    const latitud =
+      datosBien?.latitud ?? registro.latitud ?? null
+
+    const longitud =
+      datosBien?.longitud ?? registro.longitud ?? null
+
+    const mapa = await generarMapaBien(
+      latitud,
+      longitud,
+    )
+
+    const datosParaDetalle = {
+      ...(datosBien ?? {}),
+      cantidadbien:
+        datosBien?.cantidadbien ?? registro.cantidadBien,
+      inves: datosBien?.inves ?? registro.inves,
+      lugar_secuestro:
+        datosBien?.lugar_secuestro ?? registro.lugarSecuestro,
+      pericia: datosBien?.pericia ?? registro.pericia,
+      resultado_pericia:
+        datosBien?.resultado_pericia ?? registro.resultadoPericia,
+      fechahoraing:
+        datosBien?.fechahoraing ?? registro.fechaHoraIngreso,
+      usuario: datosBien?.usuario ?? registro.usuario,
+      estado: datosBien?.estado ?? registro.estado,
+    }
 
     return {
-      reporte: base.reporte,
-      accion: base.accion,
-      personasAfectadas: base.personasAfectadas,
-      delitoPrecedente: base.delitoPrecedente,
+      reporte: base.reporte ?? {},
+      accion: base.accion ?? {},
+      personasAfectadas: base.personasAfectadas ?? [],
+      delitoPrecedente: base.delitoPrecedente ?? [],
+
       novedad: {
-        tipo: ultimaSituacionBien?.calidad ?? 'Sin situación del bien registrada',
-        numero: base.novedad.numero,
-        fecha: ultimaSituacionBien?.fechaEntrega
-          ? formatearFechaReporte(ultimaSituacionBien.fechaEntrega)
-          : 'Sin fecha registrada',
-        afectacionEstimadaNumero: aprox === null ? 'Sin especificar' : formatearMoneda(aprox),
-        afectacionEstimadaLiteral: aprox === null ? '' : convertirMontoLiteral(aprox),
+        tipo: ultimaSituacionTexto,
+
+        numero: ultimaSituacion
+          ? ultimaSituacion.idSituacion
+          : 'Sin registro',
+
+        fecha: this.fecha(
+          ultimaSituacion?.fechaResolucion,
+        ),
+
+        afectacionEstimadaNumero:
+          aprox === null
+            ? 'Sin especificar'
+            : formatearMoneda(aprox),
+
+        afectacionEstimadaLiteral:
+          aprox === null
+            ? ''
+            : convertirMontoLiteral(aprox),
       },
+
       bien: {
         ...mapa,
-        latitud: datosBien?.latitud ?? null,
-  longitud: datosBien?.longitud ?? null,
+
         idBien: registro.itembiensecId,
-        tipoBien: datosBien?.tipoDescripcion ?? registro.categoriaTipo?.descripcion ?? 'Sin especificar',
-        cantidad: registro.cantidadBien ?? 1,
-        fechaRegistro: registro.fechaHoraIngreso ?? 'Sin especificar',
-        lugarSecuestro: registro.lugarSecuestro ?? null,
-        valorCuantificado: cuant === null ? 'Sin especificar' : formatearMoneda(cuant),
-        caracteristicas: caracteristicas.map((c: any) => ({
-          etiqueta: c.etiqueta ?? 'Característica sin nombre',
-          valor: c.valor ?? 'Sin valor registrado',
+
+        latitud,
+        longitud,
+
+        tipoBien: this.texto(
+          datosBien?.tipoDescripcion ??
+            registro.categoriaTipo?.descripcion,
+        ),
+
+        cantidad:
+          datosBien?.cantidadbien ??
+          registro.cantidadBien ??
+          'Sin especificar',
+
+        fechaRegistro: this.fecha(
+          registro.fechaHoraIngreso,
+        ),
+
+        lugarSecuestro:
+          datosBien?.lugar_secuestro ??
+          registro.lugarSecuestro ??
+          null,
+
+        valorAproximado:
+          aprox === null
+            ? 'Sin especificar'
+            : formatearMoneda(aprox),
+
+        valorCuantificado:
+          cuant === null
+            ? 'Sin especificar'
+            : formatearMoneda(cuant),
+
+        datos: this.mapearDatosBien(datosParaDetalle),
+
+        caracteristicas: caracteristicas.map(
+          (caracteristica: any) => ({
+            etiqueta: this.texto(
+              caracteristica.etiqueta,
+              'Característica sin nombre',
+            ),
+            valor: this.texto(
+              caracteristica.valor,
+              'Sin valor registrado',
+            ),
+          }),
+        ),
+
+        ultimaSituacionBien: ultimaSituacionTexto,
+
+        historialSituacionBien: situacionesBien.map(
+          (situacion, indice) => ({
+            ...situacion,
+            esUltima: indice === 0,
+
+            medidaCautelar: this.texto(
+              situacion.medidaCautelar,
+              'Sin medida cautelar especificada',
+            ),
+
+            fecha: this.fecha(
+              situacion.fechaResolucion,
+            ),
+
+            fiscalia: this.texto(situacion.fiscalia),
+            autoridad: this.texto(situacion.autoridad),
+
+            fechaRegistro: this.fecha(
+              situacion.fechaHoraIngreso,
+            ),
+          }),
+        ),
+
+        // El repositorio actual devuelve IDs.
+        // Los nombres requieren unir detenidosaux y sus catálogos.
+        implicados: implicados.map((implicado) => ({
+          ...implicado,
+          fechaRegistro: this.fecha(
+            implicado.fechaHoraIngreso,
+          ),
         })),
-        datos: this.mapearDatosBien(datosBien ?? {}),
-        ultimaSituacionJuridica: (registro.situacionesJuridicas ?? [])
-          .find((s: any) => [1, 2, 3].includes(Number(s.idTipoSituacionLegalBien)))?.descripcionTipo
-          ?? 'Sin situación jurídica registrada',
-        valorAproximado: aprox === null ? 'Sin especificar' : formatearMoneda(aprox),
-        historialJuridico: (registro.situacionesJuridicas ?? [])
-          .filter((situacion: any) => [1, 2, 3].includes(Number(situacion.idTipoSituacionLegalBien)))
-          .map((situacion: any, indice: number) => ({
-            ...this.mapearSituacion(situacion), esUltima: indice === 0,
-          })),
-        anotacionesJuridicas: anotacionesJuridicas.map((anotacion: any) => ({
-          descripcion: anotacion.descripcion ?? 'Sin descripción',
-          fecha: anotacion.fechaHoraIngreso
-            ? formatearFechaReporte(anotacion.fechaHoraIngreso)
-            : 'Sin fecha registrada',
-        })),
-        historialSituacionBien: situacionesBien.map((situacion: any) => ({
-          ...situacion,
-          tipoDocumento: situacion.tipoDocumento ?? 'Sin especificar',
-          fecha: situacion.fechaEntrega
-            ? formatearFechaReporte(situacion.fechaEntrega)
-            : 'Sin fecha registrada',
-        })),
-        fotografias: (registro.fotografias ?? []).map((foto: any, indice: number) => ({
-          numero: indice + 1,
-          descripcion: foto.descripcion ?? '',
-          imagen: foto.fotografiaDataUrl ?? null,
-        })),
+
+        fotografias: (registro.fotografias ?? []).map(
+          (foto: any, indice: number) => ({
+            numero: indice + 1,
+            descripcion: foto.descripcion ?? '',
+            imagen: foto.fotografiaDataUrl ?? null,
+          }),
+        ),
       },
     }
   }
 
   private mapearDatosBien(datos: any) {
     const campos: Array<[string, string]> = [
-      ['claseDescripcion', 'Clase'], ['tipoDescripcion', 'Tipo'],
+      ['claseDescripcion', 'Clase'],
+      ['tipoDescripcion', 'Tipo'],
       ['cantidadbien', 'Cantidad'],
-      ['inves', 'En investigación'], ['lugar_secuestro', 'Lugar de secuestro'],
-      ['pericia', 'Pericia'], ['resultado_pericia', 'Resultado de pericia'],
-      ['fechahoraing', 'Fecha de registro'], ['usuario', 'Usuario de registro'],
+      ['inves', 'En investigación'],
+      ['lugar_secuestro', 'Lugar de secuestro'],
+      ['pericia', 'Pericia'],
+      ['resultado_pericia', 'Resultado de pericia'],
+      ['fechahoraing', 'Fecha de registro'],
+      ['usuario', 'Usuario de registro'],
       ['estado', 'Estado del registro'],
     ]
+
     return campos.map(([campo, etiqueta]) => {
       const valor = datos[campo]
+
+      if (
+        valor === null ||
+        valor === undefined ||
+        String(valor).trim() === ''
+      ) {
+        return {
+          etiqueta,
+          valor: 'Sin información registrada',
+        }
+      }
+
       return {
         etiqueta,
-        valor: valor === null || valor === undefined || String(valor).trim() === ''
-          ? 'Sin información registrada'
-          : typeof valor === 'boolean' ? (valor ? 'Sí' : 'No')
-          : campo === 'fechahoraing' ? formatearFechaReporte(valor) : String(valor),
+        valor:
+          typeof valor === 'boolean'
+            ? valor
+              ? 'Sí'
+              : 'No'
+            : campo === 'fechahoraing'
+              ? this.fecha(valor)
+              : String(valor),
       }
     })
   }
 
   private obtenerMonto(valor: unknown): number | null {
-    if (valor === null || valor === undefined || String(valor).trim() === '') return null
+    if (
+      valor === null ||
+      valor === undefined ||
+      String(valor).trim() === ''
+    ) {
+      return null
+    }
+
     const numero = Number(valor)
+
     return Number.isFinite(numero) ? numero : null
   }
 
-  private mapearSituacion(situacion: any) {
-    const datos = situacion.datos ?? {}
-    const detalles: Array<{ etiqueta: string; valor: string }> = []
-    const agregar = (etiqueta: string, valor: unknown) => {
-      if (valor !== null && valor !== undefined && String(valor).trim() !== '') {
-        detalles.push({ etiqueta, valor: String(valor) })
-      }
+  private texto(
+    valor: unknown,
+    defecto = 'Sin especificar',
+  ): string {
+    if (valor === null || valor === undefined) {
+      return defecto
     }
 
-    // Claves reales de los jsonb_build_object de tu repositorio.
-    agregar('Fiscal', datos.fiscal)
-    agregar('Investigador', datos.investigador)
-    agregar('Número de resolución', datos.nroResol)
-    agregar('Número de sentencia judicial', datos.numSentJud)
-    agregar('Autoridad', datos.autoridad)
-    agregar('Fiscal requirente', datos.fiscalRequirente)
-    agregar('Responsable de recepción', datos.responsableRecepcion)
-    agregar('Institución', datos.institucion)
-    agregar('Ubicación', datos.ubicacion)
+    const texto = String(valor).trim()
 
-    return {
-      situacion: situacion.descripcionTipo ?? 'Sin especificar',
-      fecha: situacion.fechaSituacion
-        ? formatearFechaReporte(situacion.fechaSituacion)
-        : 'Sin fecha registrada',
-      detalles,
+    return texto || defecto
+  }
+
+  private fecha(
+    valor: string | Date | null | undefined,
+  ): string {
+    if (!valor) {
+      return 'Sin fecha registrada'
     }
+
+    const fecha =
+      valor instanceof Date ? valor : new Date(valor)
+
+    if (Number.isNaN(fecha.getTime())) {
+      return 'Sin fecha válida registrada'
+    }
+
+    return formatearFechaReporte(fecha)
   }
 }
