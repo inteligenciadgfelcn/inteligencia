@@ -46,6 +46,11 @@ export interface CalidadBien {
   descripcion: string
 }
 
+export interface MedidasCautelares {
+  idMedidaCautelar: number
+  descripcion: string
+}
+
 export interface TipoDocumento {
   td_id: string
   descripcion: string
@@ -53,14 +58,10 @@ export interface TipoDocumento {
 
 export interface SituacionBienPayload {
   itemBienSecId: string
-  fiscalRequirente: string
-  calbId: string
-  fechaEntrega: string
-  responsableRecepcion: string
-  institucion?: string | null
-  ubicacion?: string | null
-  idTipoDocumento?: number | null
-  numeroDocumento?: string | null
+  fiscalia: string
+  fechaResolucion: string
+  autoridad: string
+  idMedidaCautelar: number
 }
 
 export interface PersonaVinculo {
@@ -180,7 +181,7 @@ export const VALORES_POR_DEFECTO = {
   numSentJud: '',
   fechaSenjud: '',
   autoridad: '',
-  calbId: null as number | null,
+  calbId: 0,
   fiscalRequirente: '',
   fechaEntrega: '',
   responsableRecepcion: '',

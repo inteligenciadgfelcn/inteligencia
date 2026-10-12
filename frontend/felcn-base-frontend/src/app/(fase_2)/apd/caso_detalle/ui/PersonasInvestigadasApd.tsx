@@ -317,18 +317,18 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
       title: 'Tipo documento',
       render: (row) => buscarDescripcion(tiposDocumento, row.tipoDocumentoId),
     },
-    {
-      accessor: 'ultimaSituacionJuridica',
-      title: 'Última situación jurídica',
-      render: (row) =>
-        row.ultimaSituacionJuridica?.situacionLegal?.descripcion ?? '-',
-    },
-    {
-      accessor: 'fechaUltimaSituacionJuridica',
-      title: 'Fecha última situación jurídica',
-      render: (row) =>
-        formatFecha(row.ultimaSituacionJuridica?.fecha, 'dd/MM/yyyy'),
-    },
+    // {
+    //   accessor: 'ultimaSituacionJuridica',
+    //   title: 'Última situación jurídica',
+    //   render: (row) =>
+    //     row.ultimaSituacionJuridica?.situacionLegal?.descripcion ?? '-',
+    // },
+    // {
+    //   accessor: 'fechaUltimaSituacionJuridica',
+    //   title: 'Fecha última situación jurídica',
+    //   render: (row) =>
+    //     formatFecha(row.ultimaSituacionJuridica?.fecha, 'dd/MM/yyyy'),
+    // },
     ...(isLectura
       ? []
       : ([
@@ -346,26 +346,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 onClick={() => abrirModal(row)}
               >
                 <IconEdit className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline-secondary"
-                size="sm"
-                className="!p-1.5"
-                title="Situaciones jurídicas"
-                onClick={() => abrirSituacionesModal(row)}
-              >
-                <IconClipboardText className="h-4 w-4" />
-              </Button>
-              <Button
-                type="button"
-                variant="outline-secondary"
-                size="sm"
-                className="!p-1.5"
-                title="Historial de situaciones jurídicas"
-                onClick={() => setHistorialPersona(row)}
-              >
-                <IconListCheck className="h-4 w-4" />
               </Button>
               <Button
                 type="button"
@@ -592,101 +572,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                     }}
                   />
                 </div>
-
-                <h4 className="col-span-full border-b border-gray-200 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                  Situación jurídica
-                </h4>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Situación legal
-                  </label>
-                  <Select
-                    size="sm"
-                    options={situacionesLegales.map(mapSituacionLegalToOption)}
-                    placeholder="Seleccione situación legal"
-                    value={situacionLegalValue?.value ?? ''}
-                    onChange={(e) => {
-                      const opt = situacionesLegales
-                        .map(mapSituacionLegalToOption)
-                        .find((o) => o.value === e.target.value)
-                      setValue('situacionLegalId', opt ?? null, {
-                        shouldValidate: true,
-                      })
-                    }}
-                  />
-                  {errors.situacionLegalId && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.situacionLegalId.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha de la situación jurídica
-                  </label>
-                  <Input type="date" size="sm" {...register('fecha')} />
-                  {errors.fecha && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.fecha.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Número de resolución
-                  </label>
-                  <Input
-                    {...register('numeroResolucion')}
-                    size="sm"
-                    placeholder="RES-123/2026"
-                  />
-                  {errors.numeroResolucion && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.numeroResolucion.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Lugar
-                  </label>
-                  <Input {...register('lugar')} size="sm" placeholder="La Paz" />
-                  {errors.lugar && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.lugar.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Autoridad
-                  </label>
-                  <Input
-                    {...register('autoridad')}
-                    size="sm"
-                    placeholder="Juzgado de Instrucción Penal"
-                  />
-                  {errors.autoridad && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.autoridad.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Juzgado
-                  </label>
-                  <Input
-                    {...register('fjt')}
-                    size="sm"
-                    placeholder="Nombre del Juzgado"
-                  />
-                  {errors.fjt && (
-                    <p className="mt-1 text-xs text-red-500">
-                      {errors.fjt.message}
-                    </p>
-                  )}
-                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-1">
@@ -736,209 +621,6 @@ export function PersonasInvestigadas({ casoId, isLectura = false }: Props) {
                 onClick={confirmarEliminar}
               >
                 Eliminar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {situacionesModalOpen && personaSituacion && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
-              <h3 className="text-lg font-bold text-dark dark:text-white-light">
-                Registrar situación jurídica
-              </h3>
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => setSituacionesModalOpen(false)}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="overflow-y-auto p-4">
-              <p className="mb-4 text-sm text-gray-500">
-                Persona:{' '}
-                <span className="font-semibold text-dark dark:text-white-light">
-                  {formatNombreCompleto(personaSituacion)}
-                </span>
-              </p>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Situación legal
-                  </label>
-                  <Select
-                    size="sm"
-                    options={situacionesLegales.map((s) => ({
-                      value: String(s.slId),
-                      label: s.descripcion,
-                    }))}
-                    placeholder="Seleccione situación legal"
-                    value={situacionLegalId}
-                    onChange={(e) => setSituacionLegalId(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha
-                  </label>
-                  <Input
-                    type="date"
-                    size="sm"
-                    value={fechaSituacion}
-                    onChange={(e) => setFechaSituacion(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Número de resolución
-                  </label>
-                  <Input
-                    size="sm"
-                    value={nroResolucion}
-                    onChange={(e) => setNroResolucion(e.target.value)}
-                    placeholder="RES-123/2026"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Lugar
-                  </label>
-                  <Input
-                    size="sm"
-                    value={lugarSituacion}
-                    onChange={(e) => setLugarSituacion(e.target.value)}
-                    placeholder="La Paz"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Autoridad
-                  </label>
-                  <Input
-                    size="sm"
-                    value={autoridadSituacion}
-                    onChange={(e) => setAutoridadSituacion(e.target.value)}
-                    placeholder="Juzgado de Instrucción Penal"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Juzgado
-                  </label>
-                  <Input
-                    size="sm"
-                    value={fjtSituacion}
-                    onChange={(e) => setFjtSituacion(e.target.value)}
-                    placeholder="Nombre del Juzgado"
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
-              <Button
-                type="button"
-                variant="outline-secondary"
-                disabled={guardandoSituacion}
-                onClick={() => setSituacionesModalOpen(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                loading={guardandoSituacion}
-                disabled={
-                  !situacionLegalId ||
-                  !fechaSituacion ||
-                  !nroResolucion ||
-                  !lugarSituacion ||
-                  !autoridadSituacion ||
-                  !fjtSituacion
-                }
-                onClick={onSubmitSituacion}
-              >
-                Registrar
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      {historialPersona && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-white shadow-xl dark:bg-[#0f172a]">
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
-              <h3 className="text-lg font-bold text-dark dark:text-white-light">
-                Historial de situaciones jurídicas
-              </h3>
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-600"
-                onClick={() => setHistorialPersona(null)}
-              >
-                ✕
-              </button>
-            </div>
-            <div className="max-h-[70vh] overflow-y-auto p-5">
-              <p className="mb-4 text-sm text-gray-500">
-                Persona:{' '}
-                <span className="font-semibold text-dark dark:text-white-light">
-                  {formatNombreCompleto(historialPersona)}
-                </span>
-              </p>
-              {historialLoading ? (
-                <p className="text-sm text-gray-500">
-                  Cargando historial...
-                </p>
-              ) : historialData?.situacionesJuridicas?.length ? (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-[#1b2e4b]">
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
-                        #
-                      </th>
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
-                        Situación legal
-                      </th>
-                      <th className="pb-2 text-left text-xs font-semibold text-gray-500">
-                        Fecha
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historialData.situacionesJuridicas.map((sj, idx) => (
-                      <tr
-                        key={sj.situacionId}
-                        className="border-b border-gray-100 dark:border-[#1b2e4b]/50"
-                      >
-                        <td className="py-2 text-dark dark:text-white-light">
-                          {idx + 1}
-                        </td>
-                        <td className="py-2 text-dark dark:text-white-light">
-                          {sj.situacionLegal?.descripcion?.trim() ?? '-'}
-                        </td>
-                        <td className="py-2 text-dark dark:text-white-light">
-                          {formatFecha(sj.fecha, 'dd/MM/yyyy') ?? '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  No tiene situaciones jurídicas registradas.
-                </p>
-              )}
-            </div>
-            <div className="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-[#1b2e4b]">
-              <Button
-                type="button"
-                variant="outline-secondary"
-                onClick={() => setHistorialPersona(null)}
-              >
-                Cerrar
               </Button>
             </div>
           </div>

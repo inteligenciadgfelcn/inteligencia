@@ -4,15 +4,13 @@ export interface SeleccionConclusion {
 }
 
 export interface ConclusionCasoActual {
-  casoId: string
-  ciclos: SeleccionConclusion[]
-  verbosRectores: SeleccionConclusion[]
-  tipologias: SeleccionConclusion[]
+  casosId: number
+  bienesSujetosPd: SeleccionConclusion[]
+  sentencias: SeleccionConclusion[]
 }
 
 export interface ConclusionCasoPayload {
-  casoId: string
-  cicloIds: string[]
-  verboRectorIds: string[]
-  tipologiaIds: string[]
+  casosId: number
+  bienesSujetosPd: number[]
+  sentencias: number[]
 }

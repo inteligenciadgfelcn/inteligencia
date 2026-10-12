@@ -386,7 +386,11 @@ export class PersonasJuridicasPdRepository {
     private async guardarDocumento(
       archivo: Express.Multer.File
     ): Promise<DocumentoGuardado> {
-      if (!archivo.buffer?.length) {
+      console.log(archivo);
+      console.log(archivo.buffer);
+      console.log(archivo.size);
+      
+      if (!archivo.size) {
         throw new BadRequestException(
           'El documento recibido no contiene información'
         )
@@ -416,7 +420,7 @@ export class PersonasJuridicasPdRepository {
       })
       const nombreArchivo = `${Date.now()}-${randomUUID()}${extension}`
       const rutaCompleta = resolve(directorio, nombreArchivo)
-      await fs.writeFile(rutaCompleta, archivo.buffer)
+      // await fs.writeFile(rutaCompleta, archivo.buffer)
       return {
         rutaCompleta,
         rutaRelativa: [

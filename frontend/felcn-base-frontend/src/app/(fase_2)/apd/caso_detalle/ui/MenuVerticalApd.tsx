@@ -23,13 +23,13 @@ const options: Array<{
   label: string
   icon: typeof IconUsers
 }> = [
-  { key: 'personas-investigadas', label: 'Personas Investigadas', icon: IconUsers },
-  { key: 'actuaciones-realizadas', label: 'Actuaciones Realizadas', icon: IconClipboardText },
-  { key: 'etapa-procesal', label: 'Etapa Procesal', icon: IconOpenBook },
-  { key: 'bienes-identificados', label: 'Bienes Identificados', icon: IconCashBanknotes },
-  { key: 'personas-juridicas', label: 'Personas Jurídicas', icon: IconUsersGroup },
-  { key: 'conclusion-caso', label: 'Conclusión del Caso', icon: IconChecks },
-]
+    { key: 'personas-investigadas', label: 'Personas Afectadas', icon: IconUsers },
+    { key: 'actuaciones-realizadas', label: 'Actuaciones Realizadas', icon: IconClipboardText },
+    { key: 'etapa-procesal', label: 'Etapa Procesal', icon: IconOpenBook },
+    { key: 'bienes-identificados', label: 'Bienes Identificados', icon: IconCashBanknotes },
+    { key: 'personas-juridicas', label: 'Personas Jurídicas', icon: IconUsersGroup },
+    { key: 'conclusion-caso', label: 'Conclusión del Caso', icon: IconChecks },
+  ]
 
 export function MenuVertical({ activeOption, onSelect }: Props) {
   return (
@@ -44,11 +44,10 @@ export function MenuVertical({ activeOption, onSelect }: Props) {
               <button
                 key={opt.key}
                 type="button"
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition ${
-                  active
+                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm font-medium transition ${active
                     ? 'bg-primary/10 text-primary'
                     : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#1b2e4b]'
-                }`}
+                  }`}
                 onClick={() => onSelect(opt.key)}
               >
                 <Icon className={`h-5 w-5 ${active ? 'text-primary' : ''}`} />
@@ -68,11 +67,10 @@ export function MenuVertical({ activeOption, onSelect }: Props) {
             <button
               key={opt.key}
               type="button"
-              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${
-                active
+              className={`flex shrink-0 items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition ${active
                   ? 'bg-primary/10 text-primary'
                   : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-[#0f172a] dark:text-gray-400 dark:hover:bg-[#1b2e4b]'
-              }`}
+                }`}
               onClick={() => onSelect(opt.key)}
             >
               <Icon className={`h-4 w-4 ${active ? 'text-primary' : ''}`} />

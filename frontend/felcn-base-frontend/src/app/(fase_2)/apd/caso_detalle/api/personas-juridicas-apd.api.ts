@@ -28,12 +28,19 @@ export const PersonasJuridicasApi = {
     })
   },
 
-  listarVinculosPersonaJuridica(): Promise<Vinculo[]> {
-    return sesionPeticion({
-      url: `${BASE_PARAMETRICAS}/allVinculoPersonaJuridica`,
-      method: 'get',
-      withCredentials: true,
-    })
+  listarVinculosPersonaJuridica(): Vinculo[] {
+    // return sesionPeticion({
+    //   url: `${BASE_PARAMETRICAS}/allVinculoPersonaJuridica`,
+    //   method: 'get',
+    //   withCredentials: true,
+    // })
+    return [
+      {
+        "idVinculo": 5,
+        "descripcion": "Identificada/intervenida",
+        "empresa": true
+      }
+    ]
   },
 
   listarTiposVinculo(idVinculo: number): Promise<TipoVinculo[]> {

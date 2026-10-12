@@ -1,7 +1,7 @@
 import { Constantes } from '@/config/Constantes'
 import { sesionPeticion } from '@/utils/peticion'
 import type {
-  CatalogoConclusionLgi,
+  BienSujetoConclusionApd,
   CatalogoLgi,
   DepartamentoLgi,
   DistritalLgi,
@@ -10,6 +10,7 @@ import type {
   InicioCasoLgi,
   PaisLgi,
   ProfesionLgi,
+  SentenciaConclusionApd,
   TipoDocumentoLgi,
 } from '../types/parametricas-apd.types'
 
@@ -41,18 +42,16 @@ export const ParametricasLgiApi = {
   },
 
   async listarPaises(): Promise<PaisLgi[]> {
-    const respuesta = await sesionPeticion<any
-      // finalizado: boolean
-      // datos?: Array<{ id: number | string; descripcion: string }>
-      // datos?: Array<any>
-    >({
+    const respuesta = await sesionPeticion<any>({
+    // finalizado: boolean
+    // datos?: Array<{ id: number | string; descripcion: string }>
+    // datos?: Array<any>
       url: `${Constantes.baseUrl}/pais/allGeneral`,
       method: 'get',
       withCredentials: true,
     })
 
-    console.log(respuesta[0]);
-    
+    console.log(respuesta[0])
 
     return (respuesta ?? []).map((pais) => ({
       idPais: String(pais.idPais),
@@ -109,25 +108,17 @@ export const ParametricasLgiApi = {
     })
   },
 
-  listarCiclos(): Promise<CatalogoConclusionLgi[]> {
+  listarSentencias(): Promise<SentenciaConclusionApd[]> {
     return sesionPeticion({
-      url: `${BASE}/ciclos`,
+      url: `${BASE}/sentencia`,
       method: 'get',
       withCredentials: true,
     })
   },
 
-  listarVerbosRectores(): Promise<CatalogoConclusionLgi[]> {
+  listarBienSujeto(): Promise<BienSujetoConclusionApd[]> {
     return sesionPeticion({
-      url: `${BASE}/verbos-rectores`,
-      method: 'get',
-      withCredentials: true,
-    })
-  },
-
-  listarTipologias(): Promise<CatalogoConclusionLgi[]> {
-    return sesionPeticion({
-      url: `${BASE}/tipologias`,
+      url: `${BASE}/bien-sujeto-pd`,
       method: 'get',
       withCredentials: true,
     })

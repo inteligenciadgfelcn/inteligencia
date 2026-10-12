@@ -12,9 +12,9 @@ export interface EstadoEtapa {
 
 export interface RegistrarEtapaProcesalPayload {
   etapaId: number
-  idEstado?: number
-  fechaRecepcionFiscalia: string
+  fechaEtapa: string
   diasOtorgados: number
+  formalizacionAccion?: string
   descripcionDocumento?: string
 }
 

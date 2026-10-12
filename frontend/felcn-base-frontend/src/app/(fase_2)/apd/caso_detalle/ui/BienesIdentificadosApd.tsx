@@ -26,6 +26,7 @@ import type {
   CalidadBien,
   CaracteristicaCatalogo,
   ClaseBien,
+  MedidasCautelares,
   TipoBien,
   TipoDocumento,
   TipoSituacionBien,
@@ -127,9 +128,9 @@ export function BienesIdentificados({ casoId }: Props) {
     queryKey: ['apd-bienes', 'tipos-situacion'],
     queryFn: () => BienesApi.listarTiposSituacionBien(),
   })
-  const { data: situacionesBien = [] } = useQuery<CalidadBien[]>({
-    queryKey: ['apd-bienes', 'situacion-bien'],
-    queryFn: () => BienesApi.listarSituacionBien(),
+  const { data: medidasCautelares = [] } = useQuery<MedidasCautelares[]>({
+    queryKey: ['apd-bienes', 'medidas-cautelares'],
+    queryFn: () => BienesApi.listarMedidasCautelares(),
   })
   const { data: tiposDocumento = [] } = useQuery<TipoDocumento[]>({
     queryKey: ['apd-bienes', 'tipos-documento'],
@@ -286,11 +287,7 @@ export function BienesIdentificados({ casoId }: Props) {
     Boolean(form.calbId) &&
     form.fiscalRequirente.trim() !== '' &&
     Boolean(form.fechaEntrega) &&
-    form.responsableRecepcion.trim() !== '' &&
-    Boolean(form.idTipoDocumento) &&
-    form.numeroDocumento.trim() !== '' &&
-    (!esEntregaDircabi ||
-      (form.institucion.trim() !== '' && form.ubicacion.trim() !== ''))
+    form.responsableRecepcion.trim() !== ''
 
   const isFormValid =
     Boolean(opId) &&
@@ -303,8 +300,6 @@ export function BienesIdentificados({ casoId }: Props) {
     vinculosBorrador.length > 0 &&
     form.costoAprox >= 0 &&
     situacionBienValida() &&
-    form.idTipoSituacionLegalBien > 0 &&
-    situacionValida() &&
     (!form.pericia || form.resultadoPericia.trim() !== '') &&
     form.caracteristicas.every(
       (c) => c.catcaracId > 0 && c.descripcion.trim() !== ''
@@ -360,12 +355,6 @@ export function BienesIdentificados({ casoId }: Props) {
       )
       setItemBienSecuestrado(idItemBienSecuestrado)
 
-      await BienesApi.registrarSituacionJuridica({
-        itembiensecId,
-        idTipoSituacionLegalBien: form.idTipoSituacionLegalBien,
-        datos: construirDatosSituacion(),
-      })
-
       for (const caracteristica of form.caracteristicas) {
         await BienesApi.registrarCaracteristica({
           itembiensecId,
@@ -376,15 +365,10 @@ export function BienesIdentificados({ casoId }: Props) {
 
       await BienesApi.registrarSituacionBien({
         itemBienSecId: String(itembiensecId),
-        fiscalRequirente: form.fiscalRequirente,
-        calbId: String(form.calbId),
-        fechaEntrega: form.fechaEntrega,
-        responsableRecepcion: form.responsableRecepcion,
-        idTipoDocumento: form.idTipoDocumento,
-        numeroDocumento: form.numeroDocumento,
-        ...(esEntregaDircabi
-          ? { institucion: form.institucion, ubicacion: form.ubicacion }
-          : {}),
+        fiscalia: form.fiscalRequirente,
+        fechaResolucion: form.fechaEntrega,
+        autoridad: form.responsableRecepcion,
+        idMedidaCautelar: form.calbId
       })
 
       let vinculosGuardados = true
@@ -856,7 +840,7 @@ export function BienesIdentificados({ casoId }: Props) {
           </div>
         </Card>
 
-        <Card title="Vínculo con personas">
+        <Card title="Vínculo con personas afectadas">
           <VinculosBienCard
             casoId={casoId}
             itemBienSecuestrado={itemBienSecuestrado}
@@ -874,27 +858,23 @@ export function BienesIdentificados({ casoId }: Props) {
           />
         </Card>
 
-        <Card title="Situación bien">
+        <Card title="Medidas cautelares">
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Situación del bien *
+                  Medida cautelar *
                 </label>
                 <Select
-                  options={situacionesBien.map((s) =>
-                    option(s.calbId, s.descripcion)
+                  options={medidasCautelares.map((s) =>
+                    option(s.idMedidaCautelar, s.descripcion)
                   )}
-                  placeholder="Seleccione situación del bien"
+                  placeholder="Seleccione una medida"
                   value={form.calbId ? String(form.calbId) : ''}
                   onChange={(e) =>
-                    setField('calbId', Number(e.target.value) || null)
+                    setField('calbId', Number(e.target.value))
                   }
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  Si selecciona &quot;Entrega a DIRCABI&quot; deberá indicar
-                  institución y ubicación.
-                </p>
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
@@ -918,7 +898,7 @@ export function BienesIdentificados({ casoId }: Props) {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Responsable de recepción *
+                  Autoridad *
                 </label>
                 <Input
                   value={form.responsableRecepcion}
@@ -928,194 +908,7 @@ export function BienesIdentificados({ casoId }: Props) {
                   placeholder="Responsable de la recepción"
                 />
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Tipo de documento *
-                </label>
-                <Select
-                  options={tiposDocumento.map((d) =>
-                    option(d.td_id, d.descripcion)
-                  )}
-                  placeholder="Seleccione tipo de documento"
-                  value={
-                    form.idTipoDocumento ? String(form.idTipoDocumento) : ''
-                  }
-                  onChange={(e) =>
-                    setField('idTipoDocumento', Number(e.target.value) || null)
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Número de documento *
-                </label>
-                <Input
-                  value={form.numeroDocumento}
-                  onChange={(e) => setField('numeroDocumento', e.target.value)}
-                  placeholder="Número de documento"
-                />
-              </div>
             </div>
-
-            {esEntregaDircabi && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Institución *
-                  </label>
-                  <Input
-                    value={form.institucion}
-                    onChange={(e) => setField('institucion', e.target.value)}
-                    placeholder="Institución que recibe el bien"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Ubicación *
-                  </label>
-                  <Input
-                    value={form.ubicacion}
-                    onChange={(e) => setField('ubicacion', e.target.value)}
-                    placeholder="Ubicación actual del bien"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <Card title="Situación legal del bien">
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Tipo de situación *
-                </label>
-                <Select
-                  options={tiposSituacion.map((t) =>
-                    option(t.etId, t.descripcion)
-                  )}
-                  placeholder="Seleccione tipo de situación"
-                  value={
-                    form.idTipoSituacionLegalBien
-                      ? String(form.idTipoSituacionLegalBien)
-                      : ''
-                  }
-                  onChange={(e) =>
-                    setField('idTipoSituacionLegalBien', Number(e.target.value))
-                  }
-                />
-              </div>
-            </div>
-
-            {form.idTipoSituacionLegalBien === 1 && (
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fiscal
-                  </label>
-                  <Input
-                    value={form.fiscal}
-                    onChange={(e) => setField('fiscal', e.target.value)}
-                    placeholder="Nombre del fiscal"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha acta de secuestro *
-                  </label>
-                  <Input
-                    type="date"
-                    value={form.fechaActaSecuestro}
-                    onChange={(e) =>
-                      setField('fechaActaSecuestro', e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Investigador
-                  </label>
-                  <Input
-                    value={form.investigador}
-                    onChange={(e) => setField('investigador', e.target.value)}
-                    placeholder="Nombre del investigador"
-                  />
-                </div>
-              </div>
-            )}
-
-            {form.idTipoSituacionLegalBien === 2 && (
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Nro resolución
-                  </label>
-                  <Input
-                    value={form.nroResol}
-                    onChange={(e) => setField('nroResol', e.target.value)}
-                    placeholder="RES-123/2026"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha de resolución *
-                  </label>
-                  <Input
-                    type="date"
-                    value={form.fechaResolucion}
-                    onChange={(e) =>
-                      setField('fechaResolucion', e.target.value)
-                    }
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Autoridad
-                  </label>
-                  <Input
-                    value={form.autoridad}
-                    onChange={(e) => setField('autoridad', e.target.value)}
-                    placeholder="Autoridad que emitió la resolución"
-                  />
-                </div>
-              </div>
-            )}
-
-            {form.idTipoSituacionLegalBien === 3 && (
-              <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Nro sentencia judicial
-                  </label>
-                  <Input
-                    value={form.numSentJud}
-                    onChange={(e) => setField('numSentJud', e.target.value)}
-                    placeholder="SENT-123/2026"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha de sentencia *
-                  </label>
-                  <Input
-                    type="date"
-                    value={form.fechaSenjud}
-                    onChange={(e) => setField('fechaSenjud', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Autoridad
-                  </label>
-                  <Input
-                    value={form.autoridad}
-                    onChange={(e) => setField('autoridad', e.target.value)}
-                    placeholder="Autoridad que emitió la sentencia"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </Card>
 
