@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Reporte integral de Pérdida de Dominio</title>
+  <style>
+    :root {
+      --ink: #253649;
+      --navy: #174e70;
+      --line: #d7e3ec;
+      --blue: #eaf3f9;
+      --muted: #64748b
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      background: #fff
+    }
+
+    body {
+      margin: 0;
+      width: 100%;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      break-inside: avoid;
+      background: #f1f6fa;
+      border-radius: 8px;
+      padding: 14px 16px;
+      border-bottom: 3px solid #46a8cc;
+      margin-bottom: 18px
+    }
+
+    .logos {
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .logos img {
+      width: 43px;
+      height: 48px;
+      object-fit: contain
+    }
+
+    .org {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: .3px
+    }
+
+    .title {
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 5px 0
+    }
+
+    .subtitle {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    h2 {
+      color: var(--navy);
+      font-size: 14px;
+      margin: 20px 0 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      break-after: avoid;
+      page-break-after: avoid
+    }
+
+    h3 {
+      background: var(--blue);
+      color: var(--navy);
+      font-size: 11px;
+      margin: 15px 0 8px;
+      padding: 7px 9px;
+      break-after: avoid;
+      page-break-after: avoid
+    }
+
+    p {
+      margin: 7px 0
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .text {
+      white-space: pre-line;
+      overflow-wrap: anywhere
+    }
+
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+      padding: 8px 0
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 12px 0 17px;
+      break-inside: avoid
+    }
+
+    .metric {
+      flex: 1 1 30%;
+      background: #f6f9fc;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 17px;
+      color: var(--navy);
+      margin-top: 3px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      table-layout: fixed
+    }
+
+    thead {
+      display: table-header-group
+    }
+
+    tr {
+      break-inside: avoid;
+      page-break-inside: avoid
+    }
+
+    th {
+      background: var(--blue);
+      color: var(--navy);
+      font-weight: 700;
+      text-align: left
+    }
+
+    td,
+    th {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      overflow-wrap: anywhere
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc
+    }
+
+    .kv th {
+      width: 25%;
+      background: #f6f9fc;
+      color: var(--muted);
+      font-size: 10px
+    }
+
+    .kv td {
+      width: 25%
+    }
+
+    .small {
+      font-size: 9.5px
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      background: #eaf3f9;
+      color: var(--navy);
+      border-radius: 9px;
+      font-size: 9px
+    }
+
+    .case-title {
+      padding: 9px 11px;
+      border-left: 3px solid #46a8cc;
+      background: #f5f9fc;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 12px 0 8px;
+      break-after: avoid
+    }
+
+    .values {
+      display: flex;
+      gap: 12px;
+      margin: 10px 0 14px;
+      break-inside: avoid
+    }
+
+    .value {
+      flex: 1;
+      border: 1px solid var(--line);
+      padding: 9px;
+      border-radius: 5px
+    }
+
+    .value span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px
+    }
+
+    .value strong {
+      font-size: 12px
+    }
+
+    .closing {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9px;
+      margin-top: 20px;
+      padding-top: 9px
+    }
+
+    .photo {
+      break-inside: avoid;
+      margin: 10px 0
+    }
+
+    .photo img {
+      max-width: 240px;
+      max-height: 180px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      padding: 5px;
+      border-radius: 5px
+    }
+
+    .latest td {
+      background: #eaf3f9
+    }
+
+    a {
+      color: #17739b;
+      text-decoration: none
+    }
+
+    .photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px
+    }
+
+    .photos .photo {
+      width: calc(50% - 6px)
+    }
+
+    .photos img {
+      width: 100%;
+      max-height: 180px
+    }
+
+    .precedente-resumen {
+      border-left: 3px solid #46a8cc;
+      background: #f5f9fc;
+      padding: 10px 12px;
+      margin: 10px 0 15px
+    }
+
+    .precedente-resumen p {
+      margin: 3px 0
+    }
+
+    .precedente-resumen b {
+      color: var(--navy)
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="logos" style="flex-shrink:0">{{#if institucional}}<img src="{{institucional}}"
+        alt="Institucional" />{{/if}}{{#if escudo}}<img src="{{escudo}}" alt="Escudo" />{{/if}}</div>
+    <div style="min-width:0">
+      <div class="org">GRUPO DE INVESTIGACIÓN Y ANÁLISIS ECONÓMICO FINANCIERO</div>
+      <div class="title">REPORTE INTEGRAL · PÉRDIDA DE DOMINIO</div>
+      <div class="subtitle">{{caso.nombreCaso}} · {{caso.numeroCaso}} · Emisión: {{fechaGeneracionTexto}}</div>
+    </div>
+  </header>
+  <div class="summary">
+    <div class="metric"><span>Personas investigadas</span><strong>{{resumen.cantidadPersonasInvestigadas}}</strong>
+    </div>
+    <div class="metric"><span>Investigadores actuales</span><strong>{{resumen.cantidadInvestigadoresActuales}}</strong>
+    </div>
+    <div class="metric"><span>Casos precedentes</span><strong>{{resumen.cantidadCasosPrecedentes}}</strong></div>
+    <div class="metric"><span>Empresas del caso</span><strong>{{resumen.cantidadEmpresas}}</strong></div>
+    <div class="metric"><span>Actuaciones del caso</span><strong>{{resumen.cantidadActuaciones}}</strong></div>
+    <div class="metric"><span>Registros de bienes del caso</span><strong>{{resumen.cantidadRegistrosBienes}}</strong>
+    </div>
+  </div>
+  <h2>1. Datos generales del caso</h2>
+  <table class="kv">
+    <tbody>
+      <tr>
+        <th>Nombre del caso</th>
+        <td>{{caso.nombreCaso}}</td>
+        <th>Fecha de inicio</th>
+        <td>{{caso.fechaInicioTexto}}</td>
+      </tr>
+      <tr>
+        <th>N.º caso</th>
+        <td>{{caso.numeroCaso}}</td>
+        <th>N.º caso GIAEF</th>
+        <td>{{#if caso.numeroCasoGiaef}}{{caso.numeroCasoGiaef}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>N.º caso Fiscalía</th>
+        <td>{{#if caso.numeroCasoFiscalia}}{{caso.numeroCasoFiscalia}}{{else}}No registrado{{/if}}</td>
+        <th>N.º Pérdida de Dominio</th>
+        <td>{{#if caso.numeroCasoPerdidaDominio}}{{caso.numeroCasoPerdidaDominio}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Etapa de investigación</th>
+        <td>{{#if caso.etapaInvestigacion}}{{caso.etapaInvestigacion}}{{else}}No registrada{{/if}}</td>
+        <th>Estado procesal</th>
+        <td>{{#if caso.estadoProcesal}}{{caso.estadoProcesal}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Unidad</th>
+        <td>{{caso.unidadAbreviada}}</td>
+        <th>Distrital</th>
+        <td>{{#if caso.distrital}}{{caso.distrital}}{{else}}No registrada{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Grupo</th>
+        <td>{{#if caso.grupo}}{{caso.grupo}}{{else}}No registrado{{/if}}</td>
+        <th>Plazo otorgado</th>
+        <td>{{#if caso.diasOtorgados}}{{caso.diasOtorgados}} días{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Fiscal asignado</th>
+        <td colspan="3">{{#if caso.fiscalAsignado}}{{caso.fiscalAsignado}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Control jurisdiccional</th>
+        <td colspan="3">{{#if caso.controlJurisdiccional}}{{caso.controlJurisdiccional}}{{else}}No registrado{{/if}}
+        </td>
+      </tr>
+      <tr>
+        <th>Conforme a</th>
+        <td colspan="3">{{#if caso.conformeA}}{{caso.conformeA}}{{else}}No registrado{{/if}}</td>
+      </tr>
+    </tbody>
+  </table>
+  {{#if caso.formalizacionAccion}}<h3>Formalización de la acción</h3>
+  <p class="text">{{caso.formalizacionAccion}}</p>{{/if}}
+  <h2>2. Casos precedentes</h2>
+  {{#each casosPrecedentes}}
+  {{#each operativos}}
+  <div class="precedente-resumen">
+    <p><b>Caso N.º:</b> {{numeroCaso}}</p>
+    <p><b>Nombre:</b> {{nombreCaso}}</p>
+    <p><b>Fecha:</b> {{fechaOperativo}}</p>
+    <p><b>Unidad:</b> {{ubicacionInstitucional}}</p>
+    <p><b>Lugar:</b> {{ubicacionGeografica}}</p>
+    <p class="text"><b>Personas implicadas:</b> {{#if aprehendidos}}{{aprehendidos}}{{else}}{{#if
+      personasImplicadas}}{{personasImplicadas}}{{else}}No registradas{{/if}}{{/if}}</p>
+    <p class="text"><b>Bienes y otros elementos:</b> {{#if resumenBienes}}{{resumenBienes}}{{else}}No registrados{{/if}}
+    </p>
+    <p><b>Total aproximado registrado:</b> {{costoTotalAproximadoTexto}}</p>
+    <p><b>Total cuantificado registrado:</b> {{costoTotalCuantificadoTexto}}</p>
+  </div>
+  {{else}}<p class="empty">Caso {{numeroCaso}}: no se encontraron operativos en SIII.</p>{{/each}}
+  {{else}}<p class="empty">No hay casos precedentes registrados.</p>{{/each}}
+  <h2>3. Investigadores asignados e historial</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:25%">Investigador / pase</th>
+        <th style="width:17%">Memorando</th>
+        <th style="width:17%">Asignación</th>
+        <th style="width:23%">Estado</th>
+        <th style="width:18%">Separación</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each investigadores}}<tr>
+        <td>{{#if nombreCompleto}}{{nombreCompleto}}<br /><span class="muted small">Pase:
+            {{numeroPase}}</span>{{else}}Pase: {{numeroPase}}{{/if}}</td>
+        <td>{{memorando}}</td>
+        <td>{{fechaAsignacionTexto}}</td>
+        <td>{{estadoInvestigador}}<br /><span class="muted small">Actual: {{#if actual}}Sí{{else}}No{{/if}}</span></td>
+        <td>{{fechaSeparacionTexto}}</td>
+      </tr>
+      {{#if informacion}}<tr>
+        <td colspan="5" class="small text"><b>Información de asignación:</b> {{informacion}}</td>
+      </tr>{{/if}}
+      {{else}}<tr>
+        <td colspan="5" class="empty">No hay investigadores registrados.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  <h2>4. Personas investigadas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:34%">Nombre completo</th>
+        <th style="width:26%">Documento</th>
+        <th style="width:16%">Nacionalidad</th>
+        <th style="width:24%">Relación</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each personasInvestigadas}}<tr>
+        <td>{{nombreCompleto}}</td>
+        <td>{{tipoDocumento}}<br />{{numeroDocumento}}</td>
+        <td>{{nacionalidad}}</td>
+        <td>{{#if relacion}}{{relacion}}{{else}}No registrada{{/if}}</td>
+      </tr>
+      {{#if observaciones}}<tr>
+        <td colspan="4" class="small text"><b>Observaciones:</b> {{observaciones}}</td>
+      </tr>{{/if}}
+      {{else}}<tr>
+        <td colspan="4" class="empty">No hay personas investigadas registradas.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  <h2>5. Personas jurídicas / empresas del caso PD</h2>
+  {{#each empresas}}
+  <div class="case-title">{{nombre}} · Actuación {{numeroActuacion}}</div>
+  <table class="kv">
+    <tbody>
+      <tr>
+        <th>NIT</th>
+        <td>{{nit}}</td>
+        <th>Matrícula</th>
+        <td>{{matricula}}</td>
+      </tr>
+      <tr>
+        <th>Representante legal</th>
+        <td colspan="3">{{representante}}</td>
+      </tr>
+      <tr>
+        <th>Capital social</th>
+        <td>{{#if capitalSocial}}{{capitalSocial}}{{else}}No registrado{{/if}}</td>
+        <th>Fecha de actuación</th>
+        <td>{{fechaActuacionTexto}}</td>
+      </tr>
+      <tr>
+        <th>Dirección</th>
+        <td colspan="3">{{#if direccion}}{{direccion}}{{else}}No registrada{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Vínculo</th>
+        <td colspan="3">{{#if vinculo}}{{vinculo}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      <tr>
+        <th>Situación jurídica actual</th>
+        <td colspan="3">{{ultimaSituacionJuridica}}</td>
+      </tr>
+      <tr>
+        <th>Pericia</th>
+        <td>{{#if pericia}}Sí{{else}}No{{/if}}</td>
+        <th>Fecha de registro</th>
+        <td>{{fechaRegistroTexto}}</td>
+      </tr>
+      <tr>
+        <th>Documento adjunto</th>
+        <td colspan="3">{{#if documento}}Registrado{{else}}No registrado{{/if}}</td>
+      </tr>
+    </tbody>
+  </table>
+  {{#if observaciones}}<h3>Observaciones</h3>
+  <p class="text">{{observaciones}}</p>{{/if}}
+  {{#if resultadoPericia}}<h3>Resultado de pericia</h3>
+  <p class="text">{{resultadoPericia}}</p>{{/if}}
+  <h3>Implicados y funciones</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40%">Nombre completo</th>
+        <th style="width:25%">Tipo de implicado</th>
+        <th style="width:35%">Documento</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each implicados}}<tr>
+        <td>{{nombreCompleto}}</td>
+        <td>{{tipoImplicado}}</td>
+        <td>{{tipoDocumento}}<br />{{numeroDocumento}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="3" class="empty">No hay implicados registrados para esta empresa.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  <h3>Historial de situación jurídica</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:45%">Situación</th>
+        <th style="width:25%">Fecha</th>
+        <th style="width:30%">Fecha de registro</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each historialJuridico}}<tr {{#if ultima}}class="latest" {{/if}}>
+        <td>{{descripcion}}{{#if ultima}} <b>· Última registrada</b>{{/if}}</td>
+        <td>{{fechaTexto}}</td>
+        <td>{{fechaRegistroTexto}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="3" class="empty">No hay situaciones jurídicas registradas.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  {{#if imagenSrc}}<h3>Muestrario fotográfico</h3>
+  <div class="photo"><img src="{{imagenSrc}}" alt="Fotografía de {{nombre}}" />
+    <p class="small muted">{{nombre}}</p>
+  </div>{{/if}}
+  {{#if mapaUrl}}<h3>Ubicación geográfica</h3>
+  <p class="small">Latitud: {{latitud}} · Longitud: {{longitud}}</p>
+  <p><a href="{{mapaUrl}}">Ver ubicación en Google Maps</a></p>{{/if}}
+  {{else}}<p class="empty">No hay empresas registradas en las actuaciones activas de este caso.</p>{{/each}}
+  <h2>6. Bienes sujetos a Pérdida de Dominio</h2>
+  <p class="muted small">Clasificaciones seleccionadas para el caso:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Clasificación</th>
+      </tr>
+    </thead>
+    <tbody>{{#each bienesSujetosPd}}<tr>
+        <td>{{descripcion}}</td>
+      </tr>{{else}}<tr>
+        <td class="empty">No hay clasificaciones registradas.</td>
+      </tr>{{/each}}</tbody>
+  </table>
+  <h3>Detalle de bienes identificados del caso PD</h3>
+  <p class="small muted">Registros de bienes identificados en las actuaciones activas del caso:
+    {{resumen.cantidadRegistrosBienes}}. Las clasificaciones Producto e Instrumento se presentan en su propia sección.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Tipo de bien</th>
+        <th>Cantidad registrada</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each resumenBienesPorTipo}}<tr>
+        <td>{{tipo}}</td>
+        <td>{{cantidad}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="2" class="empty">No hay bienes registrados.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  {{#each bienes}}
+  <div class="case-title">{{tipoBien}} · Bien {{itemBienSecId}} · Actuación {{numeroActuacion}}</div>
+  <table class="kv">
+    <tbody>
+      <tr>
+        <th>Clase</th>
+        <td>{{claseBien}}</td>
+        <th>Cantidad</th>
+        <td>{{cantidad}}</td>
+      </tr>
+      <tr>
+        <th>Última medida registrada</th>
+        <td colspan="3">{{ultimaMedida}}</td>
+      </tr>
+      <tr>
+        <th>Valor aproximado</th>
+        <td>{{valorAproximadoTexto}}</td>
+        <th>Valor cuantificado</th>
+        <td>{{valorCuantificadoTexto}}</td>
+      </tr>
+      <tr>
+        <th>En investigación</th>
+        <td>{{#if enInvestigacion}}Sí{{else}}No{{/if}}</td>
+        <th>Fecha de registro</th>
+        <td>{{fechaRegistroTexto}}</td>
+      </tr>
+      <tr>
+        <th>Pericia</th>
+        <td>{{#if pericia}}Sí{{else}}No{{/if}}</td>
+        <th>Lugar de secuestro</th>
+        <td>{{#if lugarSecuestro}}{{lugarSecuestro}}{{else}}No registrado{{/if}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="small muted">La estructura recibida no contiene una columna de moneda. Los valores se muestran según el
+    registro, sin atribuir USD o Bs.</p>
+  <h3>Características</h3>
+  <p class="text">{{#if caracteristicasTexto}}{{caracteristicasTexto}}{{else}}No registradas{{/if}}</p>
+  {{#if resultadoPericia}}<h3>Resultado de pericia</h3>
+  <p class="text">{{resultadoPericia}}</p>{{/if}}
+  <h3>Personas vinculadas al bien</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32%">Persona</th>
+        <th style="width:25%">Documento</th>
+        <th style="width:21%">Vínculo</th>
+        <th style="width:22%">Tipo de vínculo</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each vinculados}}<tr>
+        <td>{{#if nombreCompleto}}{{nombreCompleto}}{{else}}Persona no registrada{{/if}}</td>
+        <td>{{tipoDocumento}}<br />{{numeroDocumento}}</td>
+        <td>{{#if vinculo}}{{vinculo}}{{else}}No registrado{{/if}}</td>
+        <td>{{#if tipoVinculo}}{{tipoVinculo}}{{else}}No registrado{{/if}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="4" class="empty">No hay vínculos activos registrados para este bien.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  <h3>Historial de medidas jurídicas</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:24%">Medida / fecha</th>
+        <th style="width:38%">Autoridad y respaldo</th>
+        <th style="width:38%">Detalle</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each medidas}}<tr {{#if ultima}}class="latest" {{/if}}>
+        <td>{{tipo}}<br />{{fechaTexto}}{{#if ultima}}<br /><b>Última registrada</b>{{/if}}</td>
+        <td>{{#if autoridad}}Autoridad / fiscal: {{autoridad}}<br />{{/if}}{{#if documento}}Documento / Fiscalía:
+          {{documento}}{{/if}}</td>
+        <td>{{#if investigador}}Investigador: {{investigador}}<br />{{/if}}{{#if
+          detalle}}{{detalle}}<br />{{/if}}Registro: {{fechaRegistroTexto}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="3" class="empty">No hay medidas jurídicas registradas.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  <h3>Historial de custodia y entrega</h3>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:23%">Calidad / fecha</th>
+        <th style="width:37%">Documento / fiscal</th>
+        <th style="width:40%">Recepción y ubicación</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each custodias}}<tr {{#if ultima}}class="latest" {{/if}}>
+        <td>{{calidad}}<br />{{fechaTexto}}{{#if ultima}}<br /><b>Última registrada</b>{{/if}}</td>
+        <td>{{tipoDocumento}} {{numeroDocumento}}<br />Fiscal: {{fiscal}}</td>
+        <td>Responsable: {{responsable}}<br />{{institucion}}<br />{{ubicacion}}</td>
+      </tr>{{else}}<tr>
+        <td colspan="3" class="empty">No hay custodias o entregas registradas.</td>
+      </tr>{{/each}}
+    </tbody>
+  </table>
+  {{#if informacionJuridica}}<h3>Información jurídica adicional del bien</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Descripción registrada</th>
+        <th>Fecha de registro</th>
+      </tr>
+    </thead>
+    <tbody>{{#each informacionJuridica}}<tr>
+        <td>{{descripcion}}</td>
+        <td>{{fechaTexto}}</td>
+      </tr>{{/each}}</tbody>
+  </table>{{/if}}
+  <h3>Muestrario fotográfico</h3>
+  <div class="photos">{{#each fotografias}}<div class="photo">{{#if imagenSrc}}<img src="{{imagenSrc}}"
+        alt="Fotografía del bien" />{{else}}<p class="empty">Formato de imagen no reconocido.</p>{{/if}}<p
+        class="small muted">{{descripcion}}</p>
+    </div>{{else}}<p class="empty">No hay fotografías activas registradas.</p>{{/each}}</div>
+  {{#if mapaUrl}}<h3>Ubicación geográfica</h3>
+  <p class="small">Latitud: {{latitud}} · Longitud: {{longitud}}</p>
+  <p><a href="{{mapaUrl}}">Ver ubicación en Google Maps</a></p>{{/if}}
+  {{/each}}
+
+
+  <h2>7. Sentencias seleccionadas</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Sentencia</th>
+      </tr>
+    </thead>
+    <tbody>{{#each sentencias}}<tr>
+        <td>{{descripcion}}</td>
+      </tr>{{else}}<tr>
+        <td class="empty">No hay sentencias seleccionadas.</td>
+      </tr>{{/each}}</tbody>
+  </table>
+  <h2>8. Actuaciones del caso PD</h2>
+  {{#each actuaciones}}
+  <div class="case-title">Actuación {{numeroActuacion}} · {{fechaInformeTexto}}</div>
+  <table class="kv">
+    <tbody>
+      <tr>
+        <th>Tipo de informe</th>
+        <td>{{#if tipoInforme}}{{tipoInforme}}{{else}}No registrado{{/if}}</td>
+        <th>Bienes / empresas</th>
+        <td>{{cantidadBienes}} / {{cantidadEmpresas}}</td>
+      </tr>
+      <tr>
+        <th>Lugar</th>
+        <td colspan="3">{{#if lugar}}{{lugar}}{{else}}No registrado{{/if}}</td>
+      </tr>
+      {{#if otroInforme}}<tr>
+        <th>Otro informe</th>
+        <td colspan="3">{{otroInforme}}</td>
+      </tr>{{/if}}
+      <tr>
+        <th>Documento adjunto</th>
+        <td colspan="3">{{#if documento}}Registrado{{else}}No registrado{{/if}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Síntesis de la actuación</h3>
+  <p class="text">{{#if sintesis}}{{sintesis}}{{else}}No registrada{{/if}}</p>
+  {{else}}<p class="empty">No hay actuaciones activas registradas.</p>{{/each}}
+  <div class="closing">Fin del reporte integral de Pérdida de Dominio · Caso {{caso.numeroCaso}} · Emisión:
+    {{fechaGeneracionTexto}}</div>
+</body>
+
+</html>

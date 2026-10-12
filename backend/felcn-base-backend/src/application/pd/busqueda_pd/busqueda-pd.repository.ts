@@ -2,23 +2,19 @@ import { Injectable } from '@nestjs/common'
 import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource, EntityManager } from 'typeorm'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
-import { DB_LGI } from '@/core/config/database/database.module'
+import { DB_LGI } from '@/application/sunesis/shared/constants/database-connections'
 import { FiltrosVariablesCruzadasPdDto } from './dto/filtros-variables-cruzadas.dto'
-
 /** Fragmentos constantes: ningún nombre SQL procede del usuario. */
 const SITUACION_PERSONA = `(SELECT s.sl_id FROM public.situacion s
   WHERE s.de_id = p.de_id AND s.estado = TRUE
   ORDER BY s.fechahoraing DESC NULLS LAST, s.sit_id DESC LIMIT 1)`
-
 const SITUACION_EMPRESA = `(SELECT se.id_tipo_situacion_juridica
   FROM public.situacion_juridica_empresa se WHERE se.id_empresa = e.emp_id
   ORDER BY se.fechahoraing DESC NULLS LAST, se.id_situacion_juridica_empresa DESC LIMIT 1)`
-
 const SITUACION_JURIDICA_BIEN = `(SELECT j.catjur_id
   FROM public.itembienjuridica j
   WHERE j.itembiensec_id = b.itembiensec_id AND j.estado = 'ACTIVO'
   ORDER BY j.fechahoraing DESC NULLS LAST, j.itembienjur_id DESC LIMIT 1)`
-
 const EVENTOS_LEGALES_BIEN = `
   SELECT 'SECUESTRADO'::text AS tipo, s.bsec_id AS id,
     s.itembiensec_id, s.fechaactsec::timestamptz AS fecha,
@@ -40,9 +36,8 @@ const EVENTOS_LEGALES_BIEN = `
 const SITUACION_LEGAL_BIEN = `(SELECT ev.tipo FROM (${EVENTOS_LEGALES_BIEN}) ev
   WHERE ev.itembiensec_id = b.itembiensec_id
   ORDER BY ev.ingreso DESC NULLS LAST, ev.tipo DESC, ev.id DESC LIMIT 1)`
-
 const CASO_SELECT = `a.casos_id::text AS "casosId",
-  a.nrocasogiaef AS "numeroCasoGiaef", a.nombrecaso AS "nombreCaso",
+  a.nrocasoperdom AS "numeroCasoGiaef", a.nombrecaso AS "nombreCaso",
   a.nrocaso AS "numeroCaso", a.nrocasofis AS "numeroCasoFiscalia",
   a.cudifp AS cud, a.fechainicio AS "fechaInicio", a.estado,
   a.dptoav_id AS "departamentoCodigo", a.uni_abrev AS "unidadAbreviada",
@@ -51,22 +46,29 @@ const CASO_SELECT = `a.casos_id::text AS "casosId",
   a.id_grupo::text AS "grupoId", TRIM(g.descripcion) AS grupo,
   a.eta_inv::text AS "etapaInvestigacionId", ei.descripcion AS "etapaInvestigacion",
   a.id_estado::text AS "estadoProcesalId", TRIM(ep.descripcion) AS "estadoProcesal"`
-
 const CASO_FROM = `FROM public.asignacion a
   LEFT JOIN parametricas.distritales d ON d.dis_id = a.dis_id
   LEFT JOIN parametricas.unidades u ON u.uni_id = d.uni_id
   LEFT JOIN parametricas.grupos g ON g.grp_id = a.id_grupo
   LEFT JOIN parametricas.etapainvest ei ON ei.eta_inv = a.eta_inv
   LEFT JOIN parametricas.estado ep ON ep.est_id = a.id_estado`
+function escaparLike(texto: string): string {
+  return [...texto]
+    .map((c) =>
+      c === '%' || c === '_' || c.charCodeAt(0) === 92
+        ? String.fromCharCode(92) + c
+        : c
+    )
+    .join('')
+}
 
 type Registro = Record<string, any>
 export type ResultadoPaginadoPd = [Registro[], number]
-
 class Condiciones {
   readonly valores: unknown[] = []
   readonly caso: string[] = [
     "a.estado = 'ACTIVO'",
-    "a.nrocasogiaef LIKE '%-PD-%'",
+    "a.nrocasoperdom LIKE '%-PD-%'",
   ]
   parametro(valor: unknown): string {
     this.valores.push(valor)
@@ -74,13 +76,25 @@ class Condiciones {
   }
   texto(destino: string[], campo: string, valor?: string): void {
     if (valor?.trim()) {
-      const texto = `%${valor.trim().replace(/[\\%_]/g, '\\$&')}%`
+      const texto = '%' + escaparLike(valor.trim()) + '%'
       destino.push(`${campo} ILIKE ${this.parametro(texto)}`)
     }
   }
   igual(destino: string[], campo: string, valor: unknown): void {
     if (valor !== undefined && valor !== null && valor !== '') {
       destino.push(`${campo} = ${this.parametro(valor)}`)
+    }
+  }
+  situacion(
+    destino: string[],
+    expresion: string,
+    id?: number | string,
+    sin?: boolean
+  ): void {
+    if (sin === true) destino.push(`${expresion} IS NULL`)
+    else {
+      this.igual(destino, expresion, id)
+      if (sin === false) destino.push(`${expresion} IS NOT NULL`)
     }
   }
   fechas(
@@ -100,20 +114,17 @@ class Condiciones {
       )
   }
 }
-
 @Injectable()
 export class BusquedaPdRepository {
   constructor(
     @InjectDataSource(DB_LGI) private readonly dataSource: DataSource
   ) {}
-
   construirFiltros(f: FiltrosVariablesCruzadasPdDto): {
     where: string
     valores: unknown[]
   } {
     const c = new Condiciones()
     for (const [campo, valor] of [
-      ['a.nrocasogiaef', f.numeroCaso],
       ['a.nombrecaso', f.nombreCaso],
       ['a.cudifp', f.cud],
       ['a.nrocasofis', f.numeroCasoFiscalia],
@@ -128,12 +139,18 @@ export class BusquedaPdRepository {
       ['a.id_estado', f.estadoProcesalId],
     ] as const)
       c.igual(c.caso, campo, valor)
-    c.fechas(c.caso, 'a.fechainicio', f.inicioCasoDesde, f.inicioCasoHasta)
-    if (f.tipologiaId !== undefined)
+    if (f.numeroCaso?.trim()) {
+      const v = c.parametro('%' + escaparLike(f.numeroCaso.trim()) + '%')
+      c.caso.push(
+        `(a.nrocasoperdom ILIKE ${v} OR a.nrocaso ILIKE ${v} OR a.nrocasoperdom ILIKE ${v})`
+      )
+    }
+    if (f.tipologiaId !== undefined) {
       c.caso.push(`EXISTS (SELECT 1 FROM public.caso_tipologia ct
-      WHERE ct.casos_id = a.casos_id AND ct.estado = 'ACTIVO'
-      AND ct.id_tipologia = ${c.parametro(f.tipologiaId)})`)
-
+        WHERE ct.casos_id = a.casos_id AND ct.estado = 'ACTIVO'
+        AND ct.id_tipologia = ${c.parametro(f.tipologiaId)})`)
+    }
+    c.fechas(c.caso, 'a.fechainicio', f.inicioCasoDesde, f.inicioCasoHasta)
     const p: string[] = []
     for (const [campo, valor] of [
       ['p.de_nombres', f.nombres],
@@ -151,10 +168,6 @@ export class BusquedaPdRepository {
       ['p.prof_id', f.profesionId],
       ['p.td_id', f.tipoDocumentoId],
       ['p.sexo', f.sexo],
-      [
-        SITUACION_PERSONA,
-        f.personaSinSituacion === true ? undefined : f.situacionPersonaId,
-      ],
     ] as const)
       c.igual(p, campo, valor)
     c.fechas(
@@ -163,13 +176,15 @@ export class BusquedaPdRepository {
       f.personaRegistroDesde,
       f.personaRegistroHasta
     )
-    if (f.personaSinSituacion)
-      p.push(`NOT EXISTS (SELECT 1 FROM public.situacion s
-      WHERE s.de_id = p.de_id AND s.estado = TRUE)`)
+    c.situacion(
+      p,
+      SITUACION_PERSONA,
+      f.situacionPersonaId,
+      f.personaSinSituacion
+    )
     if (p.length)
       c.caso.push(`EXISTS (SELECT 1 FROM public.detenidosaux p
       WHERE p.caso_id = a.casos_id AND p.estado = TRUE AND ${p.join(' AND ')})`)
-
     const o: string[] = []
     c.texto(o, 'o.op_nrooper', f.numeroActuacion)
     c.texto(o, 'o.op_lugar', f.lugarActuacion)
@@ -181,16 +196,6 @@ export class BusquedaPdRepository {
       ['t.catclas_id', f.claseBienId],
       ['b.cattipo_id', f.tipoBienId],
       ['b.pericia', f.periciaBien],
-      [
-        SITUACION_LEGAL_BIEN,
-        f.bienSinSituacionLegal === true ? undefined : f.situacionLegalBien,
-      ],
-      [
-        SITUACION_JURIDICA_BIEN,
-        f.bienSinSituacionJuridica === true
-          ? undefined
-          : f.situacionJuridicaBienId,
-      ],
     ] as const)
       c.igual(b, campo, valor)
     c.texto(b, 'b.lugar_secuestro', f.lugarSecuestro)
@@ -200,10 +205,18 @@ export class BusquedaPdRepository {
       b.push(`b.costoaprox >= ${c.parametro(f.valorBienDesde)}`)
     if (f.valorBienHasta !== undefined)
       b.push(`b.costoaprox <= ${c.parametro(f.valorBienHasta)}`)
-    if (f.bienSinSituacionLegal) b.push(`${SITUACION_LEGAL_BIEN} IS NULL`)
-    if (f.bienSinSituacionJuridica)
-      b.push(`NOT EXISTS (SELECT 1 FROM public.itembienjuridica j
-      WHERE j.itembiensec_id = b.itembiensec_id AND j.estado = 'ACTIVO')`)
+    c.situacion(
+      b,
+      SITUACION_LEGAL_BIEN,
+      f.situacionLegalBien,
+      f.bienSinSituacionLegal
+    )
+    c.situacion(
+      b,
+      SITUACION_JURIDICA_BIEN,
+      f.situacionJuridicaBienId,
+      f.bienSinSituacionJuridica
+    )
     const bc: string[] = []
     c.igual(bc, 'bc.catcarac_id', f.caracteristicaId)
     c.texto(bc, 'bc.descripcion', f.caracteristicaBien)
@@ -211,7 +224,6 @@ export class BusquedaPdRepository {
       b.push(`EXISTS (SELECT 1 FROM public.itembiencaracteristicas bc
       WHERE bc.itembiensec_id = b.itembiensec_id AND bc.estado = 'ACTIVO'
       AND ${bc.join(' AND ')})`)
-
     const e: string[] = []
     for (const [campo, valor] of [
       ['e.nombre', f.nombreEmpresa],
@@ -225,10 +237,11 @@ export class BusquedaPdRepository {
       c.texto(e, campo, valor)
     c.igual(e, 'e.id_vinculo', f.vinculoEmpresaId)
     c.igual(e, 'e.pericia', f.periciaEmpresa)
-    c.igual(
+    c.situacion(
       e,
       SITUACION_EMPRESA,
-      f.empresaSinSituacion === true ? undefined : f.situacionEmpresaId
+      f.situacionEmpresaId,
+      f.empresaSinSituacion
     )
     c.fechas(
       e,
@@ -236,13 +249,6 @@ export class BusquedaPdRepository {
       f.empresaRegistroDesde,
       f.empresaRegistroHasta
     )
-    if (f.empresaSinSituacion)
-      e.push(`NOT EXISTS (SELECT 1 FROM public.situacion_juridica_empresa se
-      WHERE se.id_empresa = e.emp_id)`)
-
-    // Bienes y empresas pueden pertenecer a actuaciones distintas del caso.
-    // Si se filtra una actuación, esos criterios también se aplican a las
-    // actuaciones que contienen los bienes o empresas buscados.
     if (o.length)
       c.caso.push(`EXISTS (SELECT 1 FROM public.operativo o
       WHERE o.casos_id = a.casos_id AND o.estado = 'ACTIVO' AND ${o.join(' AND ')})`)
@@ -258,10 +264,9 @@ export class BusquedaPdRepository {
       JOIN public.empresas e ON e.op_id = o.op_id
       WHERE o.casos_id = a.casos_id AND o.estado = 'ACTIVO'
       ${o.length ? 'AND ' + o.join(' AND ') : ''} AND ${e.join(' AND ')})`)
-
     if (f.filtro?.trim()) {
-      const v = c.parametro(`%${f.filtro.trim().replace(/[\\%_]/g, '\\$&')}%`)
-      c.caso.push(`(a.nrocasogiaef ILIKE ${v} OR a.nombrecaso ILIKE ${v}
+      const v = c.parametro('%' + escaparLike(f.filtro.trim()) + '%')
+      c.caso.push(`(a.nrocasoperdom ILIKE ${v} OR a.nombrecaso ILIKE ${v}
         OR a.cudifp ILIKE ${v} OR a.nrocasofis ILIKE ${v}
         OR EXISTS (SELECT 1 FROM public.detenidosaux p WHERE p.caso_id = a.casos_id
           AND p.estado = TRUE AND (CONCAT_WS(' ', p.de_nombres, p.de_paterno,
@@ -277,7 +282,6 @@ export class BusquedaPdRepository {
     }
     return { where: c.caso.join(' AND '), valores: c.valores }
   }
-
   async buscarGeneralPaginado(
     f: FiltrosVariablesCruzadasPdDto,
     pagination: PaginacionQueryDto
@@ -346,14 +350,12 @@ export class BusquedaPdRepository {
       return [casos, Number(conteo.total)]
     })
   }
-
   async obtenerDetalle(casosId: string): Promise<Registro | null> {
     return this.dataSource.transaction('REPEATABLE READ', async (manager) => {
       await manager.query("SET LOCAL TIME ZONE 'America/La_Paz'")
       return this.obtenerDetalleConManager(manager, casosId)
     })
   }
-
   async obtenerFilasExportacion(
     f: FiltrosVariablesCruzadasPdDto
   ): Promise<Registro[]> {
@@ -375,14 +377,13 @@ export class BusquedaPdRepository {
       return filas
     })
   }
-
   private async obtenerDetalleConManager(
     manager: EntityManager,
     casosId: string
   ): Promise<Registro | null> {
     const [caso] = await manager.query(
       `SELECT ${CASO_SELECT} ${CASO_FROM}
-      WHERE a.casos_id = $1 AND a.estado = 'ACTIVO' AND a.nrocasogiaef LIKE '%-PD-%'`,
+      WHERE a.casos_id = $1 AND a.estado = 'ACTIVO' AND a.nrocasoperdom LIKE '%-PD-%'`,
       [casosId]
     )
     if (!caso) return null
@@ -397,6 +398,10 @@ export class BusquedaPdRepository {
       WHERE o.casos_id = $1 AND o.estado = 'ACTIVO' ORDER BY o.op_id DESC`,
       [casosId]
     )
+    for (const o of actuaciones) {
+      o.bienes = []
+      o.empresas = []
+    }
     const opIds = actuaciones.map((o) => o.opId)
     if (opIds.length) {
       const bienes = await this.cargarBienes(manager, opIds)
@@ -420,7 +425,6 @@ export class BusquedaPdRepository {
     }
     return { ...caso, personasInvestigadas: personas, actuaciones }
   }
-
   private async cargarPersonas(
     m: EntityManager,
     casosId: string
@@ -450,7 +454,6 @@ export class BusquedaPdRepository {
       [casosId]
     )
   }
-
   private async cargarBienes(
     m: EntityManager,
     opIds: string[]
@@ -460,7 +463,7 @@ export class BusquedaPdRepository {
       b.cattipo_id::text AS "tipoBienId", t.descripcion AS tipo, cl.descripcion AS clase,
       ca.descripcion AS categoria, b.cantidadbien AS cantidad, b.costoaprox AS "valorAproximado",
       b.costocuant AS "valorCuantificado", b.lugar_secuestro AS "lugarSecuestro", b.latitud, b.longitud,
-      b.pericia, b.resultado_pericia AS "resultadoPericia", b.fechahoraing AS "fechaRegistro",
+      b.inves AS "enInvestigacion", b.pericia, b.resultado_pericia AS "resultadoPericia", b.fechahoraing AS "fechaRegistro",
       ${SITUACION_LEGAL_BIEN} AS "situacionLegalActual",
       ${SITUACION_JURIDICA_BIEN}::text AS "situacionJuridicaActualId",
       (SELECT j.descripcion FROM public.itembienjuridica j WHERE j.itembiensec_id = b.itembiensec_id
@@ -487,7 +490,6 @@ export class BusquedaPdRepository {
       [opIds]
     )
   }
-
   private async cargarEmpresas(
     m: EntityManager,
     opIds: string[]
@@ -512,12 +514,11 @@ export class BusquedaPdRepository {
       [opIds]
     )
   }
-
   async obtenerCatalogos(): Promise<Registro> {
     return this.dataSource.transaction('REPEATABLE READ', async (m) => {
       const consultas: Record<string, string> = {
         departamentos: `SELECT DISTINCT dptoav_id AS codigo FROM public.asignacion
-          WHERE estado = 'ACTIVO' AND nrocasogiaef LIKE '%-PD-%' ORDER BY codigo`,
+          WHERE estado = 'ACTIVO' AND nrocasoperdom LIKE '%-PD-%' ORDER BY codigo`,
         unidades: `SELECT uni_id::text AS id, uni_descripcion AS descripcion FROM parametricas.unidades ORDER BY descripcion`,
         distritales: `SELECT dis_id::text AS id, dis_descripcion AS descripcion, uni_id::text AS "unidadId" FROM parametricas.distritales ORDER BY descripcion`,
         grupos: `SELECT grp_id::text AS id, TRIM(descripcion) AS descripcion, dis_id::text AS "distritalId" FROM parametricas.grupos ORDER BY descripcion`,

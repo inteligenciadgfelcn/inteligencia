@@ -21,17 +21,12 @@ import { ConsultaSiiiRepository } from '@/application/lgi/informacion_siii/repos
 import { DistritalLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/distrito.repository'
 import { GrupoLgiRepository } from '@/application/lgi/parametro/parametricas_lgi/repository/grupo.repository'
 import { ConclusionReporteRepository } from './repository/conclusion-caso.repository'
+import { ReportePdService } from './service/reporte-pd.service'
+import { ReportePdRepository } from './repository/reporte-pd.repository'
 
 @Module({
-  imports: [
-    ExportModule,
-    InvestigadoresModule,
-    BienesSecuestradosModule,
-  ],
-  controllers: [
-    ReportesLgiController,
-    EstadisticasLgiController,
-  ],
+  imports: [ExportModule, InvestigadoresModule, BienesSecuestradosModule],
+  controllers: [ReportesLgiController, EstadisticasLgiController],
   providers: [
     ActuacionLgiService,
     ActuacionReporteRepository,
@@ -48,6 +43,8 @@ import { ConclusionReporteRepository } from './repository/conclusion-caso.reposi
     PersonasJuridicasReporteService,
     ConclusionReporteRepository,
     ConclusionReporteService,
+    ReportePdService,
+    ReportePdRepository,
   ],
   exports: [
     ActuacionLgiService,
