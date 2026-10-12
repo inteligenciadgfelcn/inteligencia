@@ -181,20 +181,9 @@ export class BienSecuestradoPdRepository {
 
     const idsBienes = bienes.map((bien) => Number(bien.itembiensecId))
 
-    const ultimasSituaciones = await this.obtenerUltimasSituaciones(idsBienes)
-
-    const mapaSituaciones = new Map<number, any>(
-      ultimasSituaciones.map((situacion) => [
-        Number(situacion.itembiensecId),
-        situacion,
-      ])
-    )
 
     const resultado = bienes.map((bien) => ({
       ...bien,
-
-      ultimaSituacionJuridica:
-        mapaSituaciones.get(Number(bien.itembiensecId)) ?? null,
     }))
 
     return [resultado, total]
@@ -244,16 +233,9 @@ export class BienSecuestradoPdRepository {
 
     return {
       ...item,
-
       fechaHoraIngreso: formatearFechaBolivia(item.fechaHoraIngreso),
-
       caracteristicas: caracteristicasActivas,
-
       fotografias: fotografiasBase64,
-
-      ultimaSituacionJuridica: situacionesJuridicas[0] ?? null,
-
-      situacionesJuridicas,
     }
   }
 
@@ -397,138 +379,6 @@ export class BienSecuestradoPdRepository {
     }
 
     return item
-  }
-
-  private async obtenerUltimasSituaciones(idsBienes: number[]): Promise<any[]> {
-    if (!idsBienes.length) {
-      return []
-    }
-
-    const registros = await this.repository.manager.query(
-      `
-        SELECT DISTINCT ON (
-          situacion.itembiensec_id
-        )
-          situacion.itembiensec_id
-            AS "itembiensecId",
-
-          situacion.id_registro
-            AS "idRegistro",
-
-          situacion.id_tipo
-            AS "idTipoSituacionLegalBien",
-
-          situacion.descripcion_tipo
-            AS "descripcionTipo",
-
-          situacion.tabla,
-
-          situacion.fecha_situacion
-            AS "fechaSituacion",
-
-          situacion.fecha_hora_ingreso
-            AS "fechaHoraIngreso"
-
-        FROM (
-          SELECT
-            sec.itembiensec_id,
-            sec.bsec_id
-              AS id_registro,
-            1
-              AS id_tipo,
-            'Secuestrado'
-              AS descripcion_tipo,
-            'bienessecuestados'
-              AS tabla,
-            sec.fechaactsec
-              AS fecha_situacion,
-            sec.fechahoraing
-              AS fecha_hora_ingreso
-
-          FROM bienessecuestados sec
-
-          WHERE sec.itembiensec_id =
-            ANY($1::bigint[])
-
-          UNION ALL
-
-          SELECT
-            inc.itembiensec_id,
-            inc.binc_id
-              AS id_registro,
-            2
-              AS id_tipo,
-            'Incautado'
-              AS descripcion_tipo,
-            'bienesincautados'
-              AS tabla,
-            inc.fechares
-              AS fecha_situacion,
-            inc.fechahoraing
-              AS fecha_hora_ingreso
-
-          FROM bienesincautados inc
-
-          WHERE inc.itembiensec_id =
-            ANY($1::bigint[])
-
-          UNION ALL
-
-          SELECT
-            con.itembiensec_id,
-            con.bconf_id
-              AS id_registro,
-            3
-              AS id_tipo,
-            'Confiscado/Decomisado'
-              AS descripcion_tipo,
-            'bienesconfiscados'
-              AS tabla,
-            con.fechasenjud
-              AS fecha_situacion,
-            con.fechahoraing
-              AS fecha_hora_ingreso
-
-          FROM bienesconfiscados con
-
-          WHERE con.itembiensec_id =
-            ANY($1::bigint[])
-
-          UNION ALL
-
-          SELECT
-            sit.itembiensec_id,
-            sit.sitb_id
-              AS id_registro,
-            4
-              AS id_tipo,
-            'Entrega a DIRCABI'
-              AS descripcion_tipo,
-            'situacionbienes'
-              AS tabla,
-            COALESCE(
-              sit.fechaent
-            )
-              AS fecha_entrega,
-            sit.fechahoraing
-              AS fecha_hora_ingreso
-
-          FROM situacionbienes sit
-
-          WHERE sit.itembiensec_id =
-            ANY($1::bigint[])
-        ) situacion
-
-        ORDER BY
-          situacion.itembiensec_id,
-          situacion.fecha_situacion DESC,
-          situacion.fecha_hora_ingreso DESC,
-          situacion.id_registro DESC
-      `,
-      [idsBienes]
-    )
-
-    return registros
   }
 
   private async obtenerSituacionesPorBien(

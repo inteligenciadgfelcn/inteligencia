@@ -10,10 +10,14 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common'
+
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger'
+
 import type { Request } from 'express'
+
 import { JwtAuthGuard } from '@/core/config/authorization/guards/jwt-auth.guard'
 import { AuditoriaUsuarioInterceptor } from '@/common/interceptors/auditoria-usuario.interceptor'
+
 import { SituacionJuridicaPdService } from './situacion_juridica_pd.service'
 import { CreateSituacionJuridicaPdDto } from './dto/create-situacion_juridica_pd.dto'
 import { UpdateSituacionJuridicaPdDto } from './dto/update-situacion_juridica_pd.dto'
@@ -26,11 +30,9 @@ type RequestConAuditoria = Request & {
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(AuditoriaUsuarioInterceptor)
 @ApiTags('PD - Perdida de Dominio')
-@Controller('situacion-juridica-pd')
+@Controller('situacion-bien-pd')
 export class SituacionJuridicaPdController {
-  constructor(
-    private readonly situacionJuridicaPdService: SituacionJuridicaPdService
-  ) {}
+  constructor(private readonly service: SituacionJuridicaPdService) {}
 
   @Post()
   @ApiOperation({
@@ -40,7 +42,7 @@ export class SituacionJuridicaPdController {
     @Body() dto: CreateSituacionJuridicaPdDto,
     @Req() req: RequestConAuditoria
   ) {
-    return this.situacionJuridicaPdService.create(dto, req.usuarioAuditoria)
+    return this.service.create(dto, req.usuarioAuditoria)
   }
 
   @Get()
@@ -48,7 +50,7 @@ export class SituacionJuridicaPdController {
     summary: 'Listar las situaciones jurídicas de bienes',
   })
   findAll() {
-    return this.situacionJuridicaPdService.findAll()
+    return this.service.findAll()
   }
 
   @Get('bien/:itemBienSecId')
@@ -58,10 +60,10 @@ export class SituacionJuridicaPdController {
   @ApiParam({
     name: 'itemBienSecId',
     type: String,
-    example: '150',
+    example: '4465',
   })
   findByBien(@Param('itemBienSecId') itemBienSecId: string) {
-    return this.situacionJuridicaPdService.findByBien(itemBienSecId)
+    return this.service.findByBien(itemBienSecId)
   }
 
   @Get(':id')
@@ -74,7 +76,7 @@ export class SituacionJuridicaPdController {
     example: '1',
   })
   findOne(@Param('id') id: string) {
-    return this.situacionJuridicaPdService.findOne(id)
+    return this.service.findOne(id)
   }
 
   @Patch(':id')
@@ -87,7 +89,7 @@ export class SituacionJuridicaPdController {
     example: '1',
   })
   update(@Param('id') id: string, @Body() dto: UpdateSituacionJuridicaPdDto) {
-    return this.situacionJuridicaPdService.update(id, dto)
+    return this.service.update(id, dto)
   }
 
   @Delete(':id')
@@ -100,6 +102,6 @@ export class SituacionJuridicaPdController {
     example: '1',
   })
   remove(@Param('id') id: string) {
-    return this.situacionJuridicaPdService.remove(id)
+    return this.service.remove(id)
   }
 }

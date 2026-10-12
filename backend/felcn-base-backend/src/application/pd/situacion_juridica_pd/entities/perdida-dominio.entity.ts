@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
   schema: 'public',
   name: 'perdidadominio',
 })
-export class SituacionJuridicaPd {
+export class PerdidaDominioLgi {
   @PrimaryGeneratedColumn({
     name: 'perdom_id',
     type: 'bigint',

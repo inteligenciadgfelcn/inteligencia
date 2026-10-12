@@ -109,22 +109,6 @@ export class CreateBienesIdentificadosPdDto {
   resultadoPericia?: string
 
   @ApiPropertyOptional({
-    description: 'Nombre completo del depositario',
-    example: 'María Quispe Mamani',
-  })
-  @IsOptional()
-  @IsString()
-  nombreDepositario?: string
-
-  @ApiPropertyOptional({
-    description: 'Cédula de identidad del depositario',
-    example: '7654321 LP',
-  })
-  @IsOptional()
-  @IsString()
-  ciDepositario?: string
-
-  @ApiPropertyOptional({
     type: 'array',
     items: {
       type: 'string',

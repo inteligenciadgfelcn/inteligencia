@@ -338,6 +338,7 @@ export const DB_VLS = 'vls' // felcn_vls
           __dirname +
             '/../../../application/sunesis/siii/investigacion/lgi/**/*.entity{.ts,.js}',
           __dirname + '/../../../application/lgi/**/*.entity{.ts,.js}',
+          __dirname + '/../../../application/pd/**/*.entity{.ts,.js}',
         ],
       }),
     }),
