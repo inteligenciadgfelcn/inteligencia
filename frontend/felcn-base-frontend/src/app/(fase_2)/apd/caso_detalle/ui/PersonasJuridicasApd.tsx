@@ -849,10 +849,6 @@ export function PersonasJuridicas({ casoId }: Props) {
                     setField('idVinculo', Number(e.target.value) || 0)
                   }
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  Investigada con responsabilidad penal, o
-                  identificada/intervenida.
-                </p>
               </div>
             </Fieldset>
 
@@ -860,11 +856,11 @@ export function PersonasJuridicas({ casoId }: Props) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Documento de respaldo (PDF/JPG/PNG/WEBP)
+                    Documento de respaldo (PDF)
                   </label>
                   <input
                     type="file"
-                    accept="application/pdf,image/jpeg,image/png,image/webp"
+                    accept="application/pdf"
                     className="block w-full text-sm"
                     onChange={(e) =>
                       setField('documento', e.target.files?.[0] ?? null)
@@ -903,7 +899,7 @@ export function PersonasJuridicas({ casoId }: Props) {
           </div>
         </Card>
 
-        <Card title="Beneficiarios finales">
+        <Card title="Vinculo con la investigación">
           {empresaId == null ? (
             <div className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
               Guarde primero los datos generales para registrar los
@@ -935,91 +931,6 @@ export function PersonasJuridicas({ casoId }: Props) {
               }
             />
           )}
-        </Card>
-
-        <Card title="Vínculo con la investigación">
-          <div className="space-y-4">
-            {empresaId == null && (
-              <div className="rounded-md border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-                Guarde primero los datos generales para registrar el vínculo con
-                la investigación.
-              </div>
-            )}
-
-            {personaEditando?.ultimaSituacionJuridica && (
-              <div className="rounded-md border border-gray-200 px-4 py-3 text-sm dark:border-[#1b2e4b]">
-                <span className="font-semibold">
-                  Última situación registrada:{' '}
-                </span>
-                {personaEditando.ultimaSituacionJuridica.descripcionTipo ?? '-'}
-                {personaEditando.ultimaSituacionJuridica.fecha
-                  ? ` (${formatFecha(
-                    personaEditando.ultimaSituacionJuridica.fecha,
-                    'dd/MM/yyyy'
-                  )})`
-                  : ''}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Tipo de situación jurídica *
-                </label>
-                <Select
-                  options={tiposSituacion.map((t) =>
-                    option(t.idTipoSituacionJuridica, t.descripcion)
-                  )}
-                  placeholder="Seleccione tipo de situación"
-                  value={
-                    situacion.idTipoSituacionJuridica
-                      ? String(situacion.idTipoSituacionJuridica)
-                      : ''
-                  }
-                  disabled={empresaId == null}
-                  onChange={(e) =>
-                    setSituacion((prev) => ({
-                      ...prev,
-                      idTipoSituacionJuridica: Number(e.target.value) || 0,
-                    }))
-                  }
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                  Fecha *
-                </label>
-                <Input
-                  type="date"
-                  value={situacion.fecha}
-                  disabled={empresaId == null}
-                  onChange={(e) =>
-                    setSituacion((prev) => ({
-                      ...prev,
-                      fecha: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <p className="text-xs text-gray-500">
-              Investigado · Imputado · Acusado · Rechazado · Sobreseido ·
-              Absuelto · Condenado
-            </p>
-
-            <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-[#1b2e4b]">
-              <Button
-                type="button"
-                variant="primary"
-                loading={guardandoSituacion}
-                disabled={!esValidoSituacion}
-                onClick={guardarSituacion}
-              >
-                Registrar vínculo
-              </Button>
-            </div>
-          </div>
         </Card>
 
         <div className="flex justify-end gap-3">

@@ -48,12 +48,12 @@ export const EtapaProcesalApi = {
     const fd = new FormData()
     fd.append('etapaId', String(payload.etapaId))
 
-    if (payload.idEstado !== undefined) {
-      fd.append('idEstado', String(payload.idEstado))
-    }
-
-    fd.append('fechaRecepcionFiscalia', payload.fechaRecepcionFiscalia)
+    fd.append('fechaEtapa', payload.fechaEtapa)
     fd.append('diasOtorgados', String(payload.diasOtorgados))
+
+    if (payload.formalizacionAccion?.trim()) {
+      fd.append('formalizacionAccion', payload.formalizacionAccion.trim())
+    }
 
     if (payload.descripcionDocumento?.trim()) {
       fd.append('descripcionDocumento', payload.descripcionDocumento.trim())

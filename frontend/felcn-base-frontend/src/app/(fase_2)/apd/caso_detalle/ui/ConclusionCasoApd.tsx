@@ -1,13 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '@/components/ui/Button'
 import IconDownload from '@/components/Icon/IconDownload'
 
 import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas-apd.api'
-import type { CatalogoConclusionLgi } from '../../(parametricas)/types/parametricas-apd.types'
+import type {
+  BienSujetoConclusionApd,
+  CatalogoConclusionLgi,
+  SentenciaConclusionApd,
+} from '../../(parametricas)/types/parametricas-apd.types'
 import { ConclusionCasoApi } from '../api/conclusion-caso-apd.api'
 
 import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
@@ -31,7 +35,6 @@ type GrupoCheckboxProps = {
   opciones: CatalogoConclusionLgi[]
   seleccionados: string[]
   onToggle: (id: string) => void
-  columnas?: 1 | 2
   cargando?: boolean
 }
 
@@ -41,7 +44,6 @@ function GrupoCheckboxes({
   opciones,
   seleccionados,
   onToggle,
-  columnas = 1,
   cargando = false,
 }: GrupoCheckboxProps) {
   return (
@@ -56,13 +58,7 @@ function GrupoCheckboxes({
       ) : opciones.length === 0 ? (
         <p className="text-xs text-gray-500">Sin opciones disponibles.</p>
       ) : (
-        <div
-          className={
-            columnas === 2
-              ? 'grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2'
-              : 'flex flex-col gap-1'
-          }
-        >
+        <div className="flex flex-col gap-1">
           {opciones.map((opcion) => {
             const marcado = seleccionados.includes(String(opcion.id))
 
@@ -90,41 +86,48 @@ function GrupoCheckboxes({
 export function ConclusionCaso({ casoId }: Props) {
   const queryClient = useQueryClient()
 
-  const [cicloIds, setCicloIds] = useState<string[]>([])
-  const [verboRectorIds, setVerboRectorIds] = useState<string[]>([])
-  const [tipologiaIds, setTipologiaIds] = useState<string[]>([])
+  const [sentenciaIds, setSentenciaIds] = useState<string[]>([])
+  const [bienSujetoIds, setBienSujetoIds] = useState<string[]>([])
   const [guardando, setGuardando] = useState(false)
   const [mensaje, setMensaje] = useState<Mensaje>(null)
 
   const {
-    data: ciclos = [],
-    isLoading: cargandoCiclos,
-    isError: errorCiclos,
-  } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['apd-conclusion-caso', 'catalogos', 'ciclos'],
-    queryFn: () => ParametricasLgiApi.listarCiclos(),
+    data: sentencias = [],
+    isLoading: cargandoSentencias,
+    isError: errorSentencias,
+  } = useQuery<SentenciaConclusionApd[]>({
+    queryKey: ['apd-conclusion-caso', 'catalogos', 'sentencias'],
+    queryFn: () => ParametricasLgiApi.listarSentencias(),
     staleTime: Infinity,
   })
 
   const {
-    data: verbosRectores = [],
-    isLoading: cargandoVerbos,
-    isError: errorVerbos,
-  } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['apd-conclusion-caso', 'catalogos', 'verbos-rectores'],
-    queryFn: () => ParametricasLgiApi.listarVerbosRectores(),
+    data: bienesSujetos = [],
+    isLoading: cargandoBienesSujetos,
+    isError: errorBienesSujetos,
+  } = useQuery<BienSujetoConclusionApd[]>({
+    queryKey: ['apd-conclusion-caso', 'catalogos', 'bien-sujetos-pd'],
+    queryFn: () => ParametricasLgiApi.listarBienSujeto(),
     staleTime: Infinity,
   })
 
-  const {
-    data: tipologias = [],
-    isLoading: cargandoTipologias,
-    isError: errorTipologias,
-  } = useQuery<CatalogoConclusionLgi[]>({
-    queryKey: ['apd-conclusion-caso', 'catalogos', 'tipologias'],
-    queryFn: () => ParametricasLgiApi.listarTipologias(),
-    staleTime: Infinity,
-  })
+  const opcionesSentencias = useMemo<CatalogoConclusionLgi[]>(
+    () =>
+      sentencias.map((item) => ({
+        id: String(item.idSentencia),
+        descripcion: item.descripcion,
+      })),
+    [sentencias]
+  )
+
+  const opcionesBienesSujetos = useMemo<CatalogoConclusionLgi[]>(
+    () =>
+      bienesSujetos.map((item) => ({
+        id: String(item.idBienSujetoPd),
+        descripcion: item.descripcion,
+      })),
+    [bienesSujetos]
+  )
 
   const {
     data: conclusion,
@@ -138,35 +141,31 @@ export function ConclusionCaso({ casoId }: Props) {
 
   useEffect(() => {
     if (!conclusion) return
-    setCicloIds((conclusion.ciclos ?? []).map((item) => String(item.id)))
-    setVerboRectorIds(
-      (conclusion.verbosRectores ?? []).map((item) => String(item.id))
+    setSentenciaIds(
+      (conclusion.sentencias ?? []).map((item) => String(item.id))
     )
-    setTipologiaIds(
-      (conclusion.tipologias ?? []).map((item) => String(item.id))
+    setBienSujetoIds(
+      (conclusion.bienesSujetosPd ?? []).map((item) => String(item.id))
     )
   }, [conclusion])
 
-  const cargandoCatalogos =
-    cargandoCiclos || cargandoVerbos || cargandoTipologias
-  const errorCatalogos = errorCiclos || errorVerbos || errorTipologias
+  const cargandoCatalogos = cargandoSentencias || cargandoBienesSujetos
+  const errorCatalogos = errorSentencias || errorBienesSujetos
 
   const guardar = async () => {
     setGuardando(true)
     setMensaje(null)
     try {
       const resultado = await ConclusionCasoApi.guardarConclusionCaso({
-        casoId: String(casoId),
-        cicloIds,
-        verboRectorIds,
-        tipologiaIds,
+        casosId: casoId,
+        bienesSujetosPd: bienSujetoIds.map(Number),
+        sentencias: sentenciaIds.map(Number),
       })
-      setCicloIds((resultado.ciclos ?? []).map((item) => String(item.id)))
-      setVerboRectorIds(
-        (resultado.verbosRectores ?? []).map((item) => String(item.id))
+      setSentenciaIds(
+        (resultado.sentencias ?? []).map((item) => String(item.id))
       )
-      setTipologiaIds(
-        (resultado.tipologias ?? []).map((item) => String(item.id))
+      setBienSujetoIds(
+        (resultado.bienesSujetosPd ?? []).map((item) => String(item.id))
       )
       await queryClient.invalidateQueries({
         queryKey: ['apd-conclusion-caso', casoId],
@@ -260,36 +259,24 @@ export function ConclusionCaso({ casoId }: Props) {
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <GrupoCheckboxes
-              titulo="Etapas/Ciclos LGI"
-              descripcion="Etapas del ciclo de lavado de activos identificadas en el caso."
-              opciones={ciclos}
-              seleccionados={cicloIds}
-              onToggle={(id) => setCicloIds((actual) => alternar(actual, id))}
-              cargando={cargandoCiclos}
-            />
-
-            <GrupoCheckboxes
-              titulo="Verbos rectores"
-              descripcion="Acciones que definen el delito investigado."
-              opciones={verbosRectores}
-              seleccionados={verboRectorIds}
-              onToggle={(id) =>
-                setVerboRectorIds((actual) => alternar(actual, id))
-              }
-              columnas={2}
-              cargando={cargandoVerbos}
-            />
-          </div>
+          <GrupoCheckboxes
+            titulo="Sentencias seleccionadas"
+            descripcion="Sentencias determinadas para el caso según la pérdida de dominio."
+            opciones={opcionesSentencias}
+            seleccionados={sentenciaIds}
+            onToggle={(id) => setSentenciaIds((actual) => alternar(actual, id))}
+            cargando={cargandoSentencias}
+          />
 
           <GrupoCheckboxes
-            titulo="Tipologías investigadas"
-            descripcion="Tipos de delitos o patrones criminales identificados en el caso."
-            opciones={tipologias}
-            seleccionados={tipologiaIds}
-            onToggle={(id) => setTipologiaIds((actual) => alternar(actual, id))}
-            cargando={cargandoTipologias}
+            titulo="Bienes sujetos a pérdida de dominio"
+            descripcion="Bienes identificados como sujetos a la pérdida de dominio en el caso."
+            opciones={opcionesBienesSujetos}
+            seleccionados={bienSujetoIds}
+            onToggle={(id) =>
+              setBienSujetoIds((actual) => alternar(actual, id))
+            }
+            cargando={cargandoBienesSujetos}
           />
 
           <div className="flex items-center gap-3 border-t border-gray-200 pt-4 dark:border-[#1b2e4b]">

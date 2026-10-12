@@ -63,3 +63,13 @@ export interface CatalogoConclusionLgi {
   id: string
   descripcion: string
 }
+
+export interface SentenciaConclusionApd {
+  idSentencia: string
+  descripcion: string
+}
+
+export interface BienSujetoConclusionApd {
+  idBienSujetoPd: string
+  descripcion: string
+}

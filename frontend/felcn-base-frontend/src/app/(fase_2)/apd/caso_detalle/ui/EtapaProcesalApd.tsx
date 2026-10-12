@@ -33,6 +33,7 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
   const [fechaRecepcion, setFechaRecepcion] = useState('')
   const [diasOtorgados, setDiasOtorgados] = useState('')
   const [descripcionDocumento, setDescripcionDocumento] = useState('')
+  const [formalizacionAccion, setFormalizacionAccion] = useState('')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [guardando, setGuardando] = useState(false)
 
@@ -74,8 +75,8 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
         casoId,
         {
           etapaId: Number(etapaId),
-          idEstado: idEstado ? Number(idEstado) : undefined,
-          fechaRecepcionFiscalia: fechaRecepcion,
+          fechaEtapa: fechaRecepcion,
+          formalizacionAccion: formalizacionAccion || undefined,
           diasOtorgados: Number(diasOtorgados),
           descripcionDocumento: descripcionDocumento || undefined,
         },
@@ -202,24 +203,10 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
                     }}
                   />
                 </div>
+
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Estado del caso (opcional)
-                  </label>
-                  <Select
-                    options={estadosEtapa.map((d) => ({
-                      value: String(d.estId),
-                      label: d.descripcion,
-                    }))}
-                    placeholder="Seleccione estado"
-                    value={idEstado}
-                    disabled={!etapaId}
-                    onChange={(e) => setIdEstado(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
-                    Fecha recepción fiscalía
+                    Fecha recepción
                   </label>
                   <Input
                     type="date"
@@ -237,6 +224,16 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
                     value={diasOtorgados}
                     onChange={(e) => setDiasOtorgados(e.target.value)}
                     placeholder="0"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
+                    Formalización accion
+                  </label>
+                  <Input
+                    value={formalizacionAccion}
+                    onChange={(e) => setFormalizacionAccion(e.target.value)}
+                    placeholder=""
                   />
                 </div>
                 <div className="md:col-span-2">

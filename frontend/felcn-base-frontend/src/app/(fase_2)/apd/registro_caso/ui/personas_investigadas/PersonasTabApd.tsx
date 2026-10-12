@@ -23,7 +23,7 @@ export function PersonasTab({
       <Card title="Personas afectadas">
         <p className="text-sm text-gray-500">
           Primero registre los datos generales del caso para poder agregar
-          personas investigadas.
+          personas afectadas.
         </p>
         <div className="mt-4">
           <Button type="button" variant="primary" onClick={onIrDatosGenerales}>

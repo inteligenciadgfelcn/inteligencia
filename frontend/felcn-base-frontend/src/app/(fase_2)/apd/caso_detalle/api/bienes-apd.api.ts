@@ -13,6 +13,7 @@ import type {
   CaracteristicaCatalogo,
   CaracteristicaPayload,
   ClaseBien,
+  MedidasCautelares,
   SituacionBienPayload,
   SituacionJuridicaBienPayload,
   TipoBien,
@@ -26,7 +27,7 @@ import type {
 
 const BASE_BIENES = `${Constantes.baseUrl}/bienes-identificados-pd`
 const BASE_SITUACION = `${Constantes.baseUrl}/situacion-juridica-bien`
-const BASE_SITUACION_BIEN = `${Constantes.baseUrl}/situacion-juridica-pd`
+const BASE_SITUACION_BIEN = `${Constantes.baseUrl}/situacion-bien-pd`
 const BASE_CARACTERISTICAS = `${Constantes.baseUrl}/caracteristicas-bienes`
 const BASE_PARAMETRICAS = `${Constantes.baseUrl}/parametricas-lgi`
 const BASE_VINCULO_BIEN = `${Constantes.baseUrl}/vinculo-bien-pd`
@@ -99,6 +100,14 @@ export const BienesApi = {
   listarSituacionBien(): Promise<CalidadBien[]> {
     return sesionPeticion({
       url: `${BASE_PARAMETRICAS}/allSituacionBien`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
+
+  listarMedidasCautelares(): Promise<MedidasCautelares[]> {
+    return sesionPeticion({
+      url: `${BASE_PARAMETRICAS}/medidas-cautelares`,
       method: 'get',
       withCredentials: true,
     })
