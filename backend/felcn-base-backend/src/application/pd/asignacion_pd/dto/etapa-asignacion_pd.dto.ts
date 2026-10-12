@@ -37,7 +37,6 @@ export class RegistrarEtapaProcesalPdDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(150)
   formalizacionAccion?: string
 
   @ApiPropertyOptional({

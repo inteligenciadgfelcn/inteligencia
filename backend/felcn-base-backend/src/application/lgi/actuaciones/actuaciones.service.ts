@@ -7,6 +7,7 @@ import path from 'path'
 import { obtenerRutaRelativa } from '@/common/utils/file-storage.util'
 import { PaginacionQueryDto } from '@/common/dto/paginacion-query.dto'
 import { UpdateConclusionCasoDto } from './dto/update-conclusion-caso.dto'
+import { crearStreamArchivo } from '@/common/utils/archivo-seguro.util'
 
 @Injectable()
 export class ActuacionesService {
@@ -84,4 +85,14 @@ export class ActuacionesService {
 
     return operativo
   }
+
+  async obtenerArchivo(id: number) {
+      const operativo = await this.findOne(id)
+  
+      if (!operativo) {
+        throw new NotFoundException('La actuación no existe')
+      }
+  
+      return crearStreamArchivo(operativo.rutaArchivo)
+    }
 }

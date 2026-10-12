@@ -20,7 +20,7 @@ export class CasoIntegralService {
     private readonly conclusionRepository: ConclusionReporteRepository,
     private readonly empresasService: PersonasJuridicasReporteService,
     private readonly consultaSiii: ConsultaSiiiRepository,
-  ) {}
+  ) { }
 
   async GenerarPDFCasoIntegral(casosId: number) {
     if (!Number.isSafeInteger(casosId) || casosId <= 0) throw new BadRequestException('casosId debe ser un entero positivo')
@@ -63,7 +63,7 @@ export class CasoIntegralService {
           })),
           historialJuridico: reporte.bien.historialJuridico.map((s: any, i: number) => ({
             ...s, detalles: this.campos((registro.situacionesJuridicas ?? [])
-              .filter((r: any) => [1,2,3].includes(Number(r.idTipoSituacionLegalBien)))[i]?.datos ?? {}),
+              .filter((r: any) => [1, 2, 3].includes(Number(r.idTipoSituacionLegalBien)))[i]?.datos ?? {}),
           })),
         })
       }
@@ -71,9 +71,11 @@ export class CasoIntegralService {
       for (const e of registrosEmpresas) {
         empresas.push((await this.empresasService.GenerarPDFEmpresa(Number(e.empId))).empresa)
       }
-      actuaciones.push({ numeroSeccion: indice + 1, ...base,
+      actuaciones.push({
+        numeroSeccion: indice + 1, ...base,
         responsables: this.campos(completo.responsables),
-        datosActuacion: this.campos({ encabezado: completo.encabezado, dependencia: completo.dependenciaInstitucional, etapaProcesal: completo.etapaProcesal, actuacion: completo.actuacion }), bienes, empresas })
+        datosActuacion: this.campos({ encabezado: completo.encabezado, dependencia: completo.dependenciaInstitucional, etapaProcesal: completo.etapaProcesal, actuacion: completo.actuacion }), bienes, empresas
+      })
     }
     const [resumen, conclusion, precedentes] = await Promise.all([
       this.repository.resumen(casosId), this.conclusionRepository.obtenerSelecciones(casosId),
@@ -83,7 +85,10 @@ export class CasoIntegralService {
     ])
     return this.prepararTablas({
       caso: datosCaso, personas, actuaciones, conclusion,
-      precedentes: precedentes.map((p: any, i: number) => ({ numero: i + 1, datos: this.campos(p) })),
+      precedentes: (precedentes ?? []).map((p: any, i: number) => ({
+        numero: i + 1,
+        datos: this.prepararPrecedente(p),
+      })),
       resumen: resumen.map((r: any) => ({ ...r, total: r.total === null ? 'Sin valoración' : formatearMoneda(Number(r.total)) })),
       totalBienes: formatearMoneda(resumen.reduce((s: number, r: any) => s + Number(r.total ?? 0), 0)),
       cantidadBienes: resumen.reduce((s: number, r: any) => s + Number(r.cantidad ?? 0), 0),
@@ -132,7 +137,7 @@ export class CasoIntegralService {
     const salida: Array<{ etiqueta: string; valor: string }> = []
     const recorrer = (valor: any, ruta: string, profundidad = 0) => {
       if (valor === null || valor === undefined || profundidad > 8 || Buffer.isBuffer(valor)) return
-      if (valor instanceof Date) { salida.push({ etiqueta: ruta, valor: valor.toISOString().slice(0,10) }); return }
+      if (valor instanceof Date) { salida.push({ etiqueta: ruta, valor: valor.toISOString().slice(0, 10) }); return }
       if (typeof valor === 'object') {
         for (const [clave, item] of Object.entries(valor)) {
           if (/^(id|.*Id|.*_id|imagen|fotografia|rutaArchivo|imagenBase64|imagenDataUrl)$/i.test(clave)) continue
@@ -145,5 +150,165 @@ export class CasoIntegralService {
     }
     recorrer(objeto, '')
     return salida
+  }
+
+  private prepararPrecedente(
+    precedente: any,
+  ): Array<{ etiqueta: string; valor: string }> {
+    const campos = this.campos(precedente)
+
+    const normalizar = (texto: string): string =>
+      texto
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\s_]+/g, '')
+        .toLowerCase()
+
+    const obtener = (...nombres: string[]): string => {
+      for (const nombre of nombres) {
+        const campo = campos.find(
+          (item) =>
+            normalizar(item.etiqueta) === normalizar(nombre),
+        )
+
+        if (campo?.valor?.trim()) {
+          return campo.valor.trim()
+        }
+      }
+
+      return 'Sin registro'
+    }
+
+    // Prioriza el resumen de personas del reporte SIII.
+    const personas = obtener(
+      'aprehendidos',
+      'personas Implicadas',
+    )
+
+    // Usa el resumen existente, cuando el repositorio lo proporciona.
+    let bienes = obtener('resumen Bienes')
+
+    if (bienes === 'Sin registro') {
+      // Agrupa los campos de cada bien sin mostrar IDs ni atributos internos.
+      const grupos = new Map<
+        string,
+        Array<{ etiqueta: string; valor: string }>
+      >()
+
+      for (const campo of campos) {
+        const coincidencia = campo.etiqueta.match(
+          /^detalle\s*Bienes\s*\/\s*(\d+)\s*\/\s*(.+)$/i,
+        )
+
+        if (!coincidencia) continue
+
+        const indice = coincidencia[1]
+        const registros = grupos.get(indice) ?? []
+
+        registros.push({
+          etiqueta: coincidencia[2],
+          valor: campo.valor,
+        })
+
+        grupos.set(indice, registros)
+      }
+
+      bienes = [...grupos.values()]
+        .map((registros) => {
+          const dato = (nombre: string): string =>
+            registros.find(
+              (item) =>
+                normalizar(item.etiqueta) === normalizar(nombre),
+            )?.valor ?? ''
+
+          const cantidad = dato('cantidad')
+          const tipo = dato('tipo Bien')
+
+          const caracteristicas = registros
+            .filter((item) =>
+              /^caracteristicas\s*\/\s*\d+\s*\/\s*descripcion$/i.test(
+                item.etiqueta,
+              ),
+            )
+            .map((item) => item.valor)
+            .join(', ')
+
+          const investigacion =
+            normalizar(dato('en Investigacion')) === 'si'
+              ? ' (en investigación)'
+              : ''
+
+          return [
+            [cantidad, tipo].filter(Boolean).join(' '),
+            caracteristicas ? `: ${caracteristicas}` : '',
+            investigacion,
+          ].join('')
+        })
+        .filter(Boolean)
+        .join('; ')
+
+      if (!bienes) bienes = 'Sin bienes registrados'
+    }
+
+    const monto = (...nombres: string[]): string => {
+      const valor = obtener(...nombres)
+
+      if (valor === 'Sin registro') return valor
+
+      const numero = Number(valor)
+
+      // Conserva textos que ya incluyen formato o moneda.
+      return Number.isFinite(numero)
+        ? numero.toLocaleString('es-BO', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+        : valor
+    }
+
+    return [
+      {
+        etiqueta: 'Caso N.º',
+        valor: obtener('numero Caso'),
+      },
+      {
+        etiqueta: 'Nombre del caso',
+        valor: obtener('nombre Caso'),
+      },
+      {
+        etiqueta: 'Fecha',
+        valor: obtener('fecha Operativo'),
+      },
+      {
+        etiqueta: 'Unidad',
+        valor: obtener('ubicacion Institucional'),
+      },
+      {
+        etiqueta: 'Lugar',
+        valor: obtener('ubicacion Geografica'),
+      },
+      {
+        etiqueta: 'Personas implicadas',
+        valor: personas,
+      },
+      {
+        etiqueta: 'Bienes registrados',
+        valor: bienes,
+      },
+      {
+        etiqueta: 'Total aproximado',
+        valor: monto(
+          'costo Total Aproximado Texto',
+          'costo Total Aproximado Bienes',
+        ),
+      },
+      {
+        etiqueta: 'Total cuantificado',
+        valor: monto(
+          'costo Total Cuantificado Texto',
+          'costo Total Cuantificado Bienes',
+        ),
+      },
+    ]
   }
 }
