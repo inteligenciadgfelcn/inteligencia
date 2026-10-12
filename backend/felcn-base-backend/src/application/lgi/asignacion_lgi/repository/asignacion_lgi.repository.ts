@@ -9,6 +9,7 @@ import { CreateAsignacionLgiDto } from '../dto/create-asignacion_lgi.dto'
 import { AsignacionASIG } from '@/application/inteligencia/felcn_asignacion_caso/asignaciones/entities/asignacionAsig.entity'
 import { GrupoLgiRepository } from '../../parametro/parametricas_lgi/repository/grupo.repository'
 import { DistritalLgiRepository } from '../../parametro/parametricas_lgi/repository/distrito.repository'
+import { EtapaLgi } from '../../parametro/etapa/entities/etapa.entity'
 
 @Injectable()
 export class AsignacionLgiRepository {
@@ -74,100 +75,159 @@ export class AsignacionLgiRepository {
   }
 
   async findAllPaginadoInvestigado(
-    pagination: PaginacionQueryDto,
-    numeroPase: string
-  ): Promise<[any[], number]> {
-    const { limite, saltar, filtro } = pagination
+  pagination: PaginacionQueryDto,
+  numeroPase: string
+): Promise<[any[], number]> {
+  const { limite, saltar, filtro } = pagination
 
-    const query = this.repository
-      .createQueryBuilder('a')
-      .where('a.estado = :estado', { estado: 'ACTIVO' })
-      .andWhere('a.usuario = :numeroPase', {
-        numeroPase: numeroPase.trim(),
-      })
+  const pase = numeroPase.trim().toUpperCase()
 
-    if (filtro?.trim()) {
-      const valor = `%${filtro.trim()}%`
-
-      query.andWhere(
-        new Brackets((qb) => {
-          qb.where('a.nombrecaso ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocaso ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasogiaef ILIKE :filtro', { filtro: valor })
-            .orWhere('a.nrocasofis ILIKE :filtro', { filtro: valor })
-            .orWhere('a.cudifp ILIKE :filtro', { filtro: valor })
-        })
-      )
-    }
-
-    const total = await query.clone().getCount()
-
-    const filas = await query
-      .leftJoin(
-        '(SELECT * FROM parametricas.etapainvest)',
-        'e',
-        'a.eta_inv = e.eta_inv'
-      )
-      .select(['a.*', 'e.descripcion AS "etapaInvestigacion"'])
-      .orderBy('a.casos_id', 'DESC')
-      .limit(limite)
-      .offset(saltar)
-      .getRawMany()
-
-    const distritosIds = [
-      ...new Set(
-        filas
-          .filter((fila) => fila.dis_id != null)
-          .map((fila) => Number(fila.dis_id))
-      ),
-    ]
-
-    const gruposIds = [
-      ...new Set(
-        filas
-          .filter((fila) => fila.id_grupo != null)
-          .map((fila) => Number(fila.id_grupo))
-      ),
-    ]
-
-    // Consultar cada ID una sola vez por página en DB_AUTH.
-    const [distritos, grupos] = await Promise.all([
-      Promise.all(
-        distritosIds.map(async (id) => ({
-          id,
-          datos: await this.distritalLgiRepository.findOne(id),
-        }))
-      ),
-
-      Promise.all(
-        gruposIds.map(async (id) => ({
-          id,
-          datos: await this.grupoLgiRepository.findOne(id),
-        }))
-      ),
-    ])
-
-    const distritosMap = new Map(distritos.map(({ id, datos }) => [id, datos]))
-
-    const gruposMap = new Map(grupos.map(({ id, datos }) => [id, datos]))
-
-    const data = filas.map((fila) => {
-      const distrito =
-        fila.dis_id != null ? distritosMap.get(Number(fila.dis_id)) : null
-
-      const grupo =
-        fila.id_grupo != null ? gruposMap.get(Number(fila.id_grupo)) : null
-
-      return {
-        ...fila,
-        unidad: distrito?.unidad ?? null,
-        regional: distrito?.descripcion ?? null,
-        puesto: grupo?.descripcion ?? null,
-      }
+  const query = this.repository
+    .createQueryBuilder('a')
+    .where('a.estado = :estado', {
+      estado: 'ACTIVO',
     })
+    .andWhere(
+      `
+      EXISTS (
+        SELECT 1
+        FROM public.investigador inv
+        WHERE inv.casos_id = a.casos_id
+          AND UPPER(TRIM(inv.usuario_asignado)) = :numeroPase
+      )
+      `,
+      { numeroPase: pase }
+    )
 
-    return [data, total]
+  // =====================================================
+  // FILTRO DE BÚSQUEDA
+  // =====================================================
+
+  if (filtro?.trim()) {
+    const valor = `%${filtro.trim()}%`
+
+    query.andWhere(
+      new Brackets((qb) => {
+        qb.where('a.nombrecaso ILIKE :filtro', {
+          filtro: valor,
+        })
+          .orWhere('a.nrocaso ILIKE :filtro', {
+            filtro: valor,
+          })
+          .orWhere('a.nrocasogiaef ILIKE :filtro', {
+            filtro: valor,
+          })
+          .orWhere('a.nrocasofis ILIKE :filtro', {
+            filtro: valor,
+          })
+          .orWhere('a.cudifp ILIKE :filtro', {
+            filtro: valor,
+          })
+      })
+    )
   }
+
+  // =====================================================
+  // TOTAL DE REGISTROS
+  // =====================================================
+
+  const total = await query.clone().getCount()
+
+  // =====================================================
+  // CONSULTAR CASOS ASIGNADOS
+  // =====================================================
+
+  const filas = await query
+    .leftJoin(
+      EtapaLgi,
+      'e',
+      'a.eta_inv = e.eta_inv'
+    )
+    .select([
+      'a.*',
+      'e.descripcion AS "etapaInvestigacion"',
+    ])
+    .orderBy('a.casos_id', 'DESC')
+    .limit(Number(limite))
+    .offset(Number(saltar))
+    .getRawMany()
+
+  // =====================================================
+  // OBTENER DISTRITALES Y GRUPOS
+  // =====================================================
+
+  const distritosIds = [
+    ...new Set(
+      filas
+        .filter((fila) => fila.dis_id != null)
+        .map((fila) => Number(fila.dis_id))
+    ),
+  ]
+
+  const gruposIds = [
+    ...new Set(
+      filas
+        .filter((fila) => fila.id_grupo != null)
+        .map((fila) => Number(fila.id_grupo))
+    ),
+  ]
+
+  // =====================================================
+  // CONSULTAR DATOS DESDE DB_AUTH
+  // =====================================================
+
+  const [distritos, grupos] = await Promise.all([
+    Promise.all(
+      distritosIds.map(async (id) => ({
+        id,
+        datos: await this.distritalLgiRepository.findOne(id),
+      }))
+    ),
+
+    Promise.all(
+      gruposIds.map(async (id) => ({
+        id,
+        datos: await this.grupoLgiRepository.findOne(id),
+      }))
+    ),
+  ])
+
+  const distritosMap = new Map(
+    distritos.map(({ id, datos }) => [id, datos])
+  )
+
+  const gruposMap = new Map(
+    grupos.map(({ id, datos }) => [id, datos])
+  )
+
+  // =====================================================
+  // CONSOLIDAR RESULTADOS
+  // =====================================================
+
+  const data = filas.map((fila) => {
+    const distrito =
+      fila.dis_id != null
+        ? distritosMap.get(Number(fila.dis_id))
+        : null
+
+    const grupo =
+      fila.id_grupo != null
+        ? gruposMap.get(Number(fila.id_grupo))
+        : null
+
+    return {
+      ...fila,
+
+      unidad: distrito?.unidad ?? null,
+
+      regional: distrito?.descripcion ?? null,
+
+      puesto: grupo?.descripcion ?? null,
+    }
+  })
+
+  return [data, total]
+}
 
   async findAllPaginado(
     pagination: PaginacionQueryDto
