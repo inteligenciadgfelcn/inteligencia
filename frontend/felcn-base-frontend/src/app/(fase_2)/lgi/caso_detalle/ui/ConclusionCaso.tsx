@@ -10,7 +10,7 @@ import { ParametricasLgiApi } from '../../(parametricas)/api/parametricas.api'
 import type { CatalogoConclusionLgi } from '../../(parametricas)/types/parametricas.types'
 import { ConclusionCasoApi } from '../api/conclusion-caso.api'
 
-import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 type Props = {
   casoId: number
@@ -89,6 +89,7 @@ function GrupoCheckboxes({
 
 export function ConclusionCaso({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [cicloIds, setCicloIds] = useState<string[]>([])
   const [verboRectorIds, setVerboRectorIds] = useState<string[]>([])
@@ -185,21 +186,6 @@ export function ConclusionCaso({ casoId }: Props) {
     }
   }
 
-  const abrirReporte = async () => {
-    setMensaje(null)
-    try {
-      await abrirPdfEnNuevaPestana(() =>
-        ConclusionCasoApi.exportarConclusionCasoPdf(casoId)
-      )
-    } catch {
-      setMensaje({
-        tipo: 'error',
-        texto:
-          'No se pudo abrir el reporte. Verifique que su navegador permita pestañas emergentes.',
-      })
-    }
-  }
-
   const reintentarCatalogos = () => {
     void queryClient.invalidateQueries({
       queryKey: ['lgi-conclusion-caso', 'catalogos'],
@@ -217,10 +203,11 @@ export function ConclusionCaso({ casoId }: Props) {
     <div className="space-y-4">
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${mensaje.tipo === 'exito'
+          className={`rounded-md border px-4 py-3 text-sm ${
+            mensaje.tipo === 'exito'
               ? 'border-success/30 bg-success/5 text-success'
               : 'border-danger/30 bg-danger/5 text-danger'
-            }`}
+          }`}
         >
           {mensaje.texto}
         </div>
@@ -329,7 +316,12 @@ export function ConclusionCaso({ casoId }: Props) {
             type="button"
             variant="outline-primary"
             className="w-full gap-2"
-            onClick={abrirReporte}
+            onClick={() => {
+              void descargarPdf(
+                () => ConclusionCasoApi.exportarConclusionCasoPdf(casoId),
+                'el reporte de conclusión'
+              )
+            }}
           >
             <IconDownload className="h-4 w-4" />
             Descargar reporte de conclusión

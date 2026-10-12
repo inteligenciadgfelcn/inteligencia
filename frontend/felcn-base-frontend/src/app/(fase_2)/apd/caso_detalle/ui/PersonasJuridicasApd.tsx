@@ -15,8 +15,10 @@ import IconPlus from '@/components/Icon/IconPlus'
 import IconEdit from '@/components/Icon/IconEdit'
 import IconTrash from '@/components/Icon/IconTrash'
 import IconEye from '@/components/Icon/IconEye'
+import IconFile from '@/components/Icon/IconFile'
 import { BuscadorDireccion } from '@/components/mapas/BuscadorDireccion'
 
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 import { PersonasJuridicasApi } from '../api/personas-juridicas-apd.api'
 import { ImplicadoLgiApi } from '../api/implicado-lgi-apd.api'
 import { ActuacionesApi } from '../api/actuaciones-apd.api'
@@ -60,6 +62,7 @@ const apellidosDe = (fila: ImplicadoRow) =>
 
 export function PersonasJuridicas({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
   const [personaEditando, setPersonaEditando] =
@@ -306,9 +309,9 @@ export function PersonasJuridicas({ casoId }: Props) {
       const fd = construirFormData()
       const empresa = personaEditando
         ? await PersonasJuridicasApi.actualizarPersonaJuridica(
-          Number(personaEditando.empId),
-          fd
-        )
+            Number(personaEditando.empId),
+            fd
+          )
         : await PersonasJuridicasApi.crearPersonaJuridica(fd)
 
       const empId = Number(empresa?.empId)
@@ -349,14 +352,14 @@ export function PersonasJuridicas({ casoId }: Props) {
     setImplicadoForm(
       fila
         ? {
-          nombres: fila.nombres ?? '',
-          apellidoPaterno: fila.apellidoPaterno ?? '',
-          apellidoMaterno: fila.apellidoMaterno ?? '',
-          apellidoEsposo: fila.apellidoEsposo ?? '',
-          tipoImplicadoId: fila.tipoImplicadoId ?? '',
-          tipoDocumentoId: fila.tipoDocumentoId ?? '',
-          numeroDocumento: fila.numeroDocumento ?? '',
-        }
+            nombres: fila.nombres ?? '',
+            apellidoPaterno: fila.apellidoPaterno ?? '',
+            apellidoMaterno: fila.apellidoMaterno ?? '',
+            apellidoEsposo: fila.apellidoEsposo ?? '',
+            tipoImplicadoId: fila.tipoImplicadoId ?? '',
+            tipoDocumentoId: fila.tipoDocumentoId ?? '',
+            numeroDocumento: fila.numeroDocumento ?? '',
+          }
         : { ...IMPLICADO_POR_DEFECTO }
     )
     setMensaje(null)
@@ -453,17 +456,17 @@ export function PersonasJuridicas({ casoId }: Props) {
       setPersonaEditando((prev) =>
         prev
           ? {
-            ...prev,
-            ultimaSituacionJuridica: {
-              ...prev.ultimaSituacionJuridica,
-              idEmpresa: String(empresaId),
-              fecha: situacion.fecha,
-              idTipoSituacionJuridica: String(
-                situacion.idTipoSituacionJuridica
-              ),
-              descripcionTipo: descripcionTipo ?? '',
-            },
-          }
+              ...prev,
+              ultimaSituacionJuridica: {
+                ...prev.ultimaSituacionJuridica,
+                idEmpresa: String(empresaId),
+                fecha: situacion.fecha,
+                idTipoSituacionJuridica: String(
+                  situacion.idTipoSituacionJuridica
+                ),
+                descripcionTipo: descripcionTipo ?? '',
+              },
+            }
           : prev
       )
 
@@ -542,6 +545,22 @@ export function PersonasJuridicas({ casoId }: Props) {
             onClick={() => setPersonaDetalle(row)}
           >
             <IconEye className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline-primary"
+            size="sm"
+            className="!p-1.5"
+            title="Ver reporte PDF"
+            onClick={() => {
+              void descargarPdf(
+                () =>
+                  PersonasJuridicasApi.exportarEmpresaPdf(Number(row.empId)),
+                'el reporte de la persona jurídica'
+              )
+            }}
+          >
+            <IconFile className="h-4 w-4" />
           </Button>
           {/* <Button
             type="button"
@@ -651,10 +670,11 @@ export function PersonasJuridicas({ casoId }: Props) {
 
         {mensaje && (
           <div
-            className={`rounded-md border px-4 py-3 text-sm ${mensajeError
-              ? 'border-danger/30 bg-danger/5 text-danger'
-              : 'border-success/30 bg-success/5 text-success'
-              }`}
+            className={`rounded-md border px-4 py-3 text-sm ${
+              mensajeError
+                ? 'border-danger/30 bg-danger/5 text-danger'
+                : 'border-success/30 bg-success/5 text-success'
+            }`}
           >
             {mensaje}
           </div>
@@ -1233,10 +1253,11 @@ export function PersonasJuridicas({ casoId }: Props) {
 
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${mensajeError
-            ? 'border-danger/30 bg-danger/5 text-danger'
-            : 'border-success/30 bg-success/5 text-success'
-            }`}
+          className={`rounded-md border px-4 py-3 text-sm ${
+            mensajeError
+              ? 'border-danger/30 bg-danger/5 text-danger'
+              : 'border-success/30 bg-success/5 text-success'
+          }`}
         >
           {mensaje}
         </div>

@@ -1,5 +1,6 @@
 export * from './useAlerts'
 export * from './useConfirmDialog'
+export * from './useDescargaPdf'
 export * from './useSession'
 export * from './useInactivity'
 export * from './useTokenRefresh'

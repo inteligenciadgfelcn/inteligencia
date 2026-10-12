@@ -12,7 +12,7 @@ import { DatosGeneralesForm } from './datos_generales/DatosGeneralesForm'
 import { PersonasTab } from './personas_investigadas/PersonasTab'
 import { AntecedentesTab } from './antecedentes_caso/AntecedentesTab'
 import { InvestigadoresTab } from './investigadores_asignados/InvestigadoresTab'
-import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 type TabKey =
   | 'datos-generales'
@@ -36,6 +36,7 @@ const tabs: Array<{ key: TabKey; label: string }> = [
 
 export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
   const router = useRouter()
+  const { descargarPdf } = useDescargaPdf()
 
   const isLectura = modo === 'ver'
   const casoActivo = casoId ? Number(casoId) : null
@@ -126,8 +127,10 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 type="button"
                 variant="outline-primary"
                 onClick={() =>
-                  void abrirPdfEnNuevaPestana(() =>
-                    RegistroCasoApi.exportarInicioPdf(Number(casoIdEfectivo))
+                  void descargarPdf(
+                    () =>
+                      RegistroCasoApi.exportarInicioPdf(Number(casoIdEfectivo)),
+                    'el reporte integral del caso'
                   )
                 }
               >
@@ -154,10 +157,11 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                 <button
                   key={tab.key}
                   type="button"
-                  className={`border-b-2 px-5 py-4 text-sm font-semibold transition ${active
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
-                    }`}
+                  className={`border-b-2 px-5 py-4 text-sm font-semibold transition ${
+                    active
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
+                  }`}
                   onClick={() => setActiveTab(tab.key)}
                 >
                   {tab.label}
@@ -198,7 +202,11 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
 
           {activeTab === 'investigadores' && (
             <InvestigadoresTab
-              casoId={caso?.casosId ? Number(caso.casosId) : (casoIdEfectivo ?? undefined)}
+              casoId={
+                caso?.casosId
+                  ? Number(caso.casosId)
+                  : (casoIdEfectivo ?? undefined)
+              }
             />
           )}
         </div>

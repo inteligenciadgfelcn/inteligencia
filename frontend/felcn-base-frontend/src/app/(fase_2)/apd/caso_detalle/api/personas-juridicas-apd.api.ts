@@ -36,10 +36,10 @@ export const PersonasJuridicasApi = {
     // })
     return [
       {
-        "idVinculo": 5,
-        "descripcion": "Identificada/intervenida",
-        "empresa": true
-      }
+        idVinculo: 5,
+        descripcion: 'Identificada/intervenida',
+        empresa: true,
+      },
     ]
   },
 
@@ -76,9 +76,7 @@ export const PersonasJuridicasApi = {
     return respuesta.datos
   },
 
-  async crearPersonaJuridica(
-    formData: FormData
-  ): Promise<PersonaJuridicaRow> {
+  async crearPersonaJuridica(formData: FormData): Promise<PersonaJuridicaRow> {
     const respuesta = await sesionPeticion<
       { datos?: PersonaJuridicaRow } & Partial<PersonaJuridicaRow>
     >({
@@ -122,6 +120,16 @@ export const PersonasJuridicasApi = {
       url: BASE_SIT_EMP,
       method: 'post',
       body: payload,
+      withCredentials: true,
+    })
+  },
+
+  exportarEmpresaPdf(idEmpresa: number): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-pd/export/pdf/personas-juridicas/${idEmpresa}`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
       withCredentials: true,
     })
   },

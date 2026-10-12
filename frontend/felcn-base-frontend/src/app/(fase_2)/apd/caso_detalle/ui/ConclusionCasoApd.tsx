@@ -14,7 +14,7 @@ import type {
 } from '../../(parametricas)/types/parametricas-apd.types'
 import { ConclusionCasoApi } from '../api/conclusion-caso-apd.api'
 
-import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 type Props = {
   casoId: number
@@ -85,6 +85,7 @@ function GrupoCheckboxes({
 
 export function ConclusionCaso({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [sentenciaIds, setSentenciaIds] = useState<string[]>([])
   const [bienSujetoIds, setBienSujetoIds] = useState<string[]>([])
@@ -181,21 +182,6 @@ export function ConclusionCaso({ casoId }: Props) {
       })
     } finally {
       setGuardando(false)
-    }
-  }
-
-  const abrirReporte = async () => {
-    setMensaje(null)
-    try {
-      await abrirPdfEnNuevaPestana(() =>
-        ConclusionCasoApi.exportarConclusionCasoPdf(casoId)
-      )
-    } catch {
-      setMensaje({
-        tipo: 'error',
-        texto:
-          'No se pudo abrir el reporte. Verifique que su navegador permita pestañas emergentes.',
-      })
     }
   }
 
@@ -316,7 +302,12 @@ export function ConclusionCaso({ casoId }: Props) {
             type="button"
             variant="outline-primary"
             className="w-full gap-2"
-            onClick={abrirReporte}
+            onClick={() => {
+              void descargarPdf(
+                () => ConclusionCasoApi.exportarConclusionCasoPdf(casoId),
+                'el reporte de conclusión'
+              )
+            }}
           >
             <IconDownload className="h-4 w-4" />
             Descargar reporte de conclusión

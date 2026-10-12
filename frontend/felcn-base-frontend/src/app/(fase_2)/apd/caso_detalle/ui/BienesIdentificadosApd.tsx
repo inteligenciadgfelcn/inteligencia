@@ -14,8 +14,10 @@ import type { Column } from '@/components/datatable/VristoDataTable'
 import IconPlus from '@/components/Icon/IconPlus'
 import IconEye from '@/components/Icon/IconEye'
 import IconTrash from '@/components/Icon/IconTrash'
+import IconFile from '@/components/Icon/IconFile'
 import { BuscadorDireccion } from '@/components/mapas/BuscadorDireccion'
 
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 import { BienesApi } from '../api/bienes-apd.api'
 import { ActuacionesApi } from '../api/actuaciones-apd.api'
 import { VinculosBienCard } from './VinculosBienCardApd'
@@ -59,6 +61,7 @@ type FormState = typeof VALORES_POR_DEFECTO
 
 export function BienesIdentificados({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
   const [bienDetalle, setBienDetalle] = useState<BienSecuestradoRow | null>(
@@ -253,8 +256,8 @@ export function BienesIdentificados({ casoId }: Props) {
     setErrorFotos(
       excedidas.length > 0
         ? `Se omitieron ${excedidas.length} imagen(es) por superar los 10 MB: ${excedidas
-          .map((f) => f.name)
-          .join(', ')}`
+            .map((f) => f.name)
+            .join(', ')}`
         : null
     )
 
@@ -368,7 +371,7 @@ export function BienesIdentificados({ casoId }: Props) {
         fiscalia: form.fiscalRequirente,
         fechaResolucion: form.fechaEntrega,
         autoridad: form.responsableRecepcion,
-        idMedidaCautelar: form.calbId
+        idMedidaCautelar: form.calbId,
       })
 
       let vinculosGuardados = true
@@ -480,6 +483,21 @@ export function BienesIdentificados({ casoId }: Props) {
             onClick={() => setBienDetalle(row)}
           >
             <IconEye className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline-primary"
+            size="sm"
+            className="!p-1.5"
+            title="Ver reporte PDF"
+            onClick={() => {
+              void descargarPdf(
+                () => BienesApi.exportarBienPdf(Number(row.itembiensecId)),
+                'el reporte del bien'
+              )
+            }}
+          >
+            <IconFile className="h-4 w-4" />
           </Button>
           <Button
             type="button"
@@ -871,9 +889,7 @@ export function BienesIdentificados({ casoId }: Props) {
                   )}
                   placeholder="Seleccione una medida"
                   value={form.calbId ? String(form.calbId) : ''}
-                  onChange={(e) =>
-                    setField('calbId', Number(e.target.value))
-                  }
+                  onChange={(e) => setField('calbId', Number(e.target.value))}
                 />
               </div>
               <div>

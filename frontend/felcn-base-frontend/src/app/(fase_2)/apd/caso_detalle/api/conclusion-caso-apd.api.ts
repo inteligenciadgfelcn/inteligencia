@@ -7,7 +7,7 @@ import type {
 } from '../types/conclusion-caso-apd.types'
 
 const BASE = `${Constantes.baseUrl}/conclusion-pd`
-const BASE_REPORTES = `${Constantes.baseUrl}/reportes-lgi`
+const BASE_REPORTES = `${Constantes.baseUrl}/reportes-pd`
 
 export const ConclusionCasoApi = {
   obtenerConclusionCaso(casoId: number): Promise<ConclusionCasoActual> {
@@ -31,7 +31,7 @@ export const ConclusionCasoApi = {
 
   exportarConclusionCasoPdf(casoId: number): Promise<Blob> {
     return sesionPeticion<Blob>({
-      url: `${BASE_REPORTES}/export/pdf/caso/${casoId}`,
+      url: `${BASE_REPORTES}/export/pdf/conclusion/${casoId}`,
       method: 'get',
       responseType: 'blob',
       headers: { accept: 'application/pdf' },

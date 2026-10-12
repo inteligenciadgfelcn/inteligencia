@@ -38,8 +38,8 @@ import {
   VALORES_POR_DEFECTO,
 } from '../types/personas-juridicas.types'
 import { formatFecha } from '../../utils/fechas'
-import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
-import IconFile from '../../../../../components/Icon/IconFile'
+import IconFile from '@/components/Icon/IconFile'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -62,6 +62,7 @@ const apellidosDe = (fila: ImplicadoRow) =>
 
 export function PersonasJuridicas({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
   const [personaEditando, setPersonaEditando] =
@@ -308,9 +309,9 @@ export function PersonasJuridicas({ casoId }: Props) {
       const fd = construirFormData()
       const empresa = personaEditando
         ? await PersonasJuridicasApi.actualizarPersonaJuridica(
-          Number(personaEditando.empId),
-          fd
-        )
+            Number(personaEditando.empId),
+            fd
+          )
         : await PersonasJuridicasApi.crearPersonaJuridica(fd)
 
       const empId = Number(empresa?.empId)
@@ -351,14 +352,14 @@ export function PersonasJuridicas({ casoId }: Props) {
     setImplicadoForm(
       fila
         ? {
-          nombres: fila.nombres ?? '',
-          apellidoPaterno: fila.apellidoPaterno ?? '',
-          apellidoMaterno: fila.apellidoMaterno ?? '',
-          apellidoEsposo: fila.apellidoEsposo ?? '',
-          tipoImplicadoId: fila.tipoImplicadoId ?? '',
-          tipoDocumentoId: fila.tipoDocumentoId ?? '',
-          numeroDocumento: fila.numeroDocumento ?? '',
-        }
+            nombres: fila.nombres ?? '',
+            apellidoPaterno: fila.apellidoPaterno ?? '',
+            apellidoMaterno: fila.apellidoMaterno ?? '',
+            apellidoEsposo: fila.apellidoEsposo ?? '',
+            tipoImplicadoId: fila.tipoImplicadoId ?? '',
+            tipoDocumentoId: fila.tipoDocumentoId ?? '',
+            numeroDocumento: fila.numeroDocumento ?? '',
+          }
         : { ...IMPLICADO_POR_DEFECTO }
     )
     setMensaje(null)
@@ -455,17 +456,17 @@ export function PersonasJuridicas({ casoId }: Props) {
       setPersonaEditando((prev) =>
         prev
           ? {
-            ...prev,
-            ultimaSituacionJuridica: {
-              ...prev.ultimaSituacionJuridica,
-              idEmpresa: String(empresaId),
-              fecha: situacion.fecha,
-              idTipoSituacionJuridica: String(
-                situacion.idTipoSituacionJuridica
-              ),
-              descripcionTipo: descripcionTipo ?? '',
-            },
-          }
+              ...prev,
+              ultimaSituacionJuridica: {
+                ...prev.ultimaSituacionJuridica,
+                idEmpresa: String(empresaId),
+                fecha: situacion.fecha,
+                idTipoSituacionJuridica: String(
+                  situacion.idTipoSituacionJuridica
+                ),
+                descripcionTipo: descripcionTipo ?? '',
+              },
+            }
           : prev
       )
 
@@ -552,8 +553,10 @@ export function PersonasJuridicas({ casoId }: Props) {
             className="!p-1.5"
             title="Ver reporte PDF"
             onClick={() => {
-              void abrirPdfEnNuevaPestana(() =>
-                PersonasJuridicasApi.exportarEmpresaPdf(Number(row.empId))
+              void descargarPdf(
+                () =>
+                  PersonasJuridicasApi.exportarEmpresaPdf(Number(row.empId)),
+                'el reporte de la persona jurídica'
               )
             }}
           >
@@ -667,10 +670,11 @@ export function PersonasJuridicas({ casoId }: Props) {
 
         {mensaje && (
           <div
-            className={`rounded-md border px-4 py-3 text-sm ${mensajeError
-              ? 'border-danger/30 bg-danger/5 text-danger'
-              : 'border-success/30 bg-success/5 text-success'
-              }`}
+            className={`rounded-md border px-4 py-3 text-sm ${
+              mensajeError
+                ? 'border-danger/30 bg-danger/5 text-danger'
+                : 'border-success/30 bg-success/5 text-success'
+            }`}
           >
             {mensaje}
           </div>
@@ -970,9 +974,9 @@ export function PersonasJuridicas({ casoId }: Props) {
                 {personaEditando.ultimaSituacionJuridica.descripcionTipo ?? '-'}
                 {personaEditando.ultimaSituacionJuridica.fecha
                   ? ` (${formatFecha(
-                    personaEditando.ultimaSituacionJuridica.fecha,
-                    'dd/MM/yyyy'
-                  )})`
+                      personaEditando.ultimaSituacionJuridica.fecha,
+                      'dd/MM/yyyy'
+                    )})`
                   : ''}
               </div>
             )}
@@ -1117,7 +1121,6 @@ export function PersonasJuridicas({ casoId }: Props) {
               </div>
 
               <div className="space-y-4 p-5">
-
                 <div>
                   <label className="mb-1 block text-sm font-semibold text-dark dark:text-white-light">
                     Tipo de implicado *
@@ -1335,10 +1338,11 @@ export function PersonasJuridicas({ casoId }: Props) {
 
       {mensaje && (
         <div
-          className={`rounded-md border px-4 py-3 text-sm ${mensajeError
-            ? 'border-danger/30 bg-danger/5 text-danger'
-            : 'border-success/30 bg-success/5 text-success'
-            }`}
+          className={`rounded-md border px-4 py-3 text-sm ${
+            mensajeError
+              ? 'border-danger/30 bg-danger/5 text-danger'
+              : 'border-success/30 bg-success/5 text-success'
+          }`}
         >
           {mensaje}
         </div>

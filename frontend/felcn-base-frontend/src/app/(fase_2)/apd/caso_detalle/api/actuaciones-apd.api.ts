@@ -71,7 +71,7 @@ export const ActuacionesApi = {
 
   exportarActuacionPdf(opId: number): Promise<Blob> {
     return sesionPeticion<Blob>({
-      url: `${Constantes.baseUrl}/reportes-lgi/export/pdf/actuacion/${opId}`,
+      url: `${Constantes.baseUrl}/reportes-pd/export/pdf/actuacion/${opId}`,
       method: 'get',
       responseType: 'blob',
       headers: { accept: 'application/pdf' },
@@ -80,12 +80,12 @@ export const ActuacionesApi = {
   },
 
   abrirArchivoActuacion(opId: number | string): Promise<Blob> {
-  return sesionPeticion<Blob>({
-    url: `${BASE}/${opId}/archivo`,
-    method: 'get',
-    responseType: 'blob',
-    headers: { accept: 'application/pdf' },
-    withCredentials: true,
-  })
-},
+    return sesionPeticion<Blob>({
+      url: `${BASE}/${opId}/archivo`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
 }

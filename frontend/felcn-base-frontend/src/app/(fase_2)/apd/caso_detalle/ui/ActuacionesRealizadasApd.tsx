@@ -15,7 +15,7 @@ import IconUsers from '@/components/Icon/IconUsers'
 import IconCashBanknotes from '@/components/Icon/IconCashBanknotes'
 
 import { Constantes } from '@/config/Constantes'
-import { abrirPdfEnNuevaPestana } from '@/utils/peticion'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 import { ActuacionesApi } from '../api/actuaciones-apd.api'
 import type { ActuacionRow, TipoInforme } from '../types/actuaciones-apd.types'
 import type { MenuOption } from './MenuVerticalApd'
@@ -47,6 +47,7 @@ function DetalleCampo({
 
 export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
@@ -105,10 +106,11 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   }
 
   const abrirArchivo = (opId: number | string) => {
-  void abrirPdfEnNuevaPestana(() =>
-    ActuacionesApi.abrirArchivoActuacion(opId)
-  )
-}
+    void descargarPdf(
+      () => ActuacionesApi.abrirArchivoActuacion(opId),
+      'el archivo adjunto'
+    )
+  }
 
   const columns: Column<ActuacionRow>[] = [
     {
@@ -167,8 +169,9 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
             className="!p-1.5"
             title="Ver reporte PDF"
             onClick={() => {
-              void abrirPdfEnNuevaPestana(() =>
-                ActuacionesApi.exportarActuacionPdf(Number(row.opId))
+              void descargarPdf(
+                () => ActuacionesApi.exportarActuacionPdf(Number(row.opId)),
+                'el reporte de actuación'
               )
             }}
           >
@@ -180,11 +183,7 @@ export function ActuacionesRealizadas({ casoId, onSelect }: Props) {
   ]
 
   const isFormValid =
-    nroInforme &&
-    tipoInformeId &&
-    opLugar &&
-    sintesis &&
-    archivo
+    nroInforme && tipoInformeId && opLugar && sintesis && archivo
 
   return (
     <div className="space-y-4">

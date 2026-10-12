@@ -211,4 +211,14 @@ export const BienesApi = {
       withCredentials: true,
     })
   },
+
+  exportarBienPdf(idBien: number): Promise<Blob> {
+    return sesionPeticion<Blob>({
+      url: `${Constantes.baseUrl}/reportes-pd/export/pdf/bienes/${idBien}`,
+      method: 'get',
+      responseType: 'blob',
+      headers: { accept: 'application/pdf' },
+      withCredentials: true,
+    })
+  },
 }

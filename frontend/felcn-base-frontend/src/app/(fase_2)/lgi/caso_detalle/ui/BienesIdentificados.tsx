@@ -34,8 +34,8 @@ import type {
 } from '../types/bienes.types'
 import { VALORES_POR_DEFECTO } from '../types/bienes.types'
 import { formatFecha } from '../../utils/fechas'
-import IconFile from '../../../../../components/Icon/IconFile'
-import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
+import IconFile from '@/components/Icon/IconFile'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 const MapaConMarcador = dynamic(
   () => import('@/components/mapas/MapaConMarcador'),
@@ -60,6 +60,7 @@ type FormState = typeof VALORES_POR_DEFECTO
 
 export function BienesIdentificados({ casoId }: Props) {
   const queryClient = useQueryClient()
+  const { descargarPdf } = useDescargaPdf()
 
   const [vista, setVista] = useState<'lista' | 'formulario'>('lista')
   const [bienDetalle, setBienDetalle] = useState<BienSecuestradoRow | null>(
@@ -254,8 +255,8 @@ export function BienesIdentificados({ casoId }: Props) {
     setErrorFotos(
       excedidas.length > 0
         ? `Se omitieron ${excedidas.length} imagen(es) por superar los 10 MB: ${excedidas
-          .map((f) => f.name)
-          .join(', ')}`
+            .map((f) => f.name)
+            .join(', ')}`
         : null
     )
 
@@ -506,8 +507,9 @@ export function BienesIdentificados({ casoId }: Props) {
             className="!p-1.5"
             title="Ver reporte PDF"
             onClick={() => {
-              void abrirPdfEnNuevaPestana(() =>
-                BienesApi.exportarBienPdf(Number(row.itembiensecId))
+              void descargarPdf(
+                () => BienesApi.exportarBienPdf(Number(row.itembiensecId)),
+                'el reporte del bien'
               )
             }}
           >

@@ -25,10 +25,11 @@ import {
 import type { AsignacionCasoListadoRow } from '../types/listado-casos.types'
 import IconListCheck from '@/components/Icon/IconListCheck'
 import dayjs from 'dayjs'
-import IconFile from '../../../../../components/Icon/IconFile'
-import { abrirPdfEnNuevaPestana } from '../../../../../utils/peticion'
+import IconFile from '@/components/Icon/IconFile'
+import { useDescargaPdf } from '@/hooks/useDescargaPdf'
 
 export function CasosAsignados() {
+  const { descargarPdf } = useDescargaPdf()
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -101,11 +102,19 @@ export function CasosAsignados() {
         if (tiempo === null) return <span>-</span>
 
         // Calculamos el total de días aproximado o usamos el campo de días para evaluar la variante del badge
-        const totalDiasAprox = (tiempo.anos * 365) + (tiempo.meses * 30) + tiempo.dias; // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
+        const totalDiasAprox =
+          tiempo.anos * 365 + tiempo.meses * 30 + tiempo.dias // O bien dayjs().diff(dayjs(row.fechahoraing), 'day')
 
         // Si prefieres evaluar el color estrictamente por los días totales de diferencia:
-        const diasTotales = dayjs().startOf('day').diff(dayjs(row.fechahoraing).startOf('day'), 'day')
-        const variant = diasTotales <= 5 ? 'success' : diasTotales <= 10 ? 'warning' : 'danger'
+        const diasTotales = dayjs()
+          .startOf('day')
+          .diff(dayjs(row.fechahoraing).startOf('day'), 'day')
+        const variant =
+          diasTotales <= 5
+            ? 'success'
+            : diasTotales <= 10
+              ? 'warning'
+              : 'danger'
 
         // Construimos el texto dinámicamente solo mostrando lo que sea mayor a 0 (opcional, para que se vea más limpio)
         const partes: string[] = []
@@ -115,7 +124,11 @@ export function CasosAsignados() {
 
         const textoFormateado = partes.join(', ')
 
-        return <Badge variant={variant} rounded>{textoFormateado}</Badge>
+        return (
+          <Badge variant={variant} rounded>
+            {textoFormateado}
+          </Badge>
+        )
       },
     },
     {
@@ -141,8 +154,9 @@ export function CasosAsignados() {
             className="!p-1.5"
             title="Ver reporte PDF"
             onClick={() => {
-              void abrirPdfEnNuevaPestana(() =>
-                ListadoCasosApi.exportarCasoIntegral(Number(row.casosId))
+              void descargarPdf(
+                () => ListadoCasosApi.exportarCasoIntegral(Number(row.casosId)),
+                'el reporte integral del caso'
               )
             }}
           >
