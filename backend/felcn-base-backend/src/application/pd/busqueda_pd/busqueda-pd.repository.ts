@@ -37,7 +37,8 @@ const SITUACION_LEGAL_BIEN = `(SELECT ev.tipo FROM (${EVENTOS_LEGALES_BIEN}) ev
   WHERE ev.itembiensec_id = b.itembiensec_id
   ORDER BY ev.ingreso DESC NULLS LAST, ev.tipo DESC, ev.id DESC LIMIT 1)`
 const CASO_SELECT = `a.casos_id::text AS "casosId",
-  a.nrocasoperdom AS "numeroCasoGiaef", a.nombrecaso AS "nombreCaso",
+  a.nrocasoperdom AS "numeroCasoGiaef",
+  a.nrocasoperdom AS "numeroCasoPd", a.nombrecaso AS "nombreCaso",
   a.nrocaso AS "numeroCaso", a.nrocasofis AS "numeroCasoFiscalia",
   a.cudifp AS cud, a.fechainicio AS "fechaInicio", a.estado,
   a.dptoav_id AS "departamentoCodigo", a.uni_abrev AS "unidadAbreviada",
@@ -61,15 +62,14 @@ function escaparLike(texto: string): string {
     )
     .join('')
 }
-
 type Registro = Record<string, any>
 export type ResultadoPaginadoPd = [Registro[], number]
+const CRITERIO_CASO_PD =
+  "a.estado = 'ACTIVO' AND a.nrocasoperdom ILIKE '%-PD-%'"
+
 class Condiciones {
   readonly valores: unknown[] = []
-  readonly caso: string[] = [
-    "a.estado = 'ACTIVO'",
-    "a.nrocasoperdom LIKE '%-PD-%'",
-  ]
+  readonly caso: string[] = [CRITERIO_CASO_PD]
   parametro(valor: unknown): string {
     this.valores.push(valor)
     return `$${this.valores.length}`
@@ -142,7 +142,7 @@ export class BusquedaPdRepository {
     if (f.numeroCaso?.trim()) {
       const v = c.parametro('%' + escaparLike(f.numeroCaso.trim()) + '%')
       c.caso.push(
-        `(a.nrocasoperdom ILIKE ${v} OR a.nrocaso ILIKE ${v} OR a.nrocasoperdom ILIKE ${v})`
+        `(a.nrocasoperdom ILIKE ${v} OR a.nrocaso ILIKE ${v} OR a.nrocasogiaef ILIKE ${v})`
       )
     }
     if (f.tipologiaId !== undefined) {
@@ -266,7 +266,8 @@ export class BusquedaPdRepository {
       ${o.length ? 'AND ' + o.join(' AND ') : ''} AND ${e.join(' AND ')})`)
     if (f.filtro?.trim()) {
       const v = c.parametro('%' + escaparLike(f.filtro.trim()) + '%')
-      c.caso.push(`(a.nrocasoperdom ILIKE ${v} OR a.nombrecaso ILIKE ${v}
+      c.caso.push(`(a.nrocasoperdom ILIKE ${v} OR a.nrocaso ILIKE ${v}
+        OR a.nrocasogiaef ILIKE ${v} OR a.nombrecaso ILIKE ${v}
         OR a.cudifp ILIKE ${v} OR a.nrocasofis ILIKE ${v}
         OR EXISTS (SELECT 1 FROM public.detenidosaux p WHERE p.caso_id = a.casos_id
           AND p.estado = TRUE AND (CONCAT_WS(' ', p.de_nombres, p.de_paterno,
@@ -383,7 +384,7 @@ export class BusquedaPdRepository {
   ): Promise<Registro | null> {
     const [caso] = await manager.query(
       `SELECT ${CASO_SELECT} ${CASO_FROM}
-      WHERE a.casos_id = $1 AND a.estado = 'ACTIVO' AND a.nrocasoperdom LIKE '%-PD-%'`,
+      WHERE a.casos_id = $1::bigint AND ${CRITERIO_CASO_PD}`,
       [casosId]
     )
     if (!caso) return null
@@ -517,8 +518,8 @@ export class BusquedaPdRepository {
   async obtenerCatalogos(): Promise<Registro> {
     return this.dataSource.transaction('REPEATABLE READ', async (m) => {
       const consultas: Record<string, string> = {
-        departamentos: `SELECT DISTINCT dptoav_id AS codigo FROM public.asignacion
-          WHERE estado = 'ACTIVO' AND nrocasoperdom LIKE '%-PD-%' ORDER BY codigo`,
+        departamentos: `SELECT DISTINCT a.dptoav_id AS codigo FROM public.asignacion a
+          WHERE ${CRITERIO_CASO_PD} ORDER BY codigo`,
         unidades: `SELECT uni_id::text AS id, uni_descripcion AS descripcion FROM parametricas.unidades ORDER BY descripcion`,
         distritales: `SELECT dis_id::text AS id, dis_descripcion AS descripcion, uni_id::text AS "unidadId" FROM parametricas.distritales ORDER BY descripcion`,
         grupos: `SELECT grp_id::text AS id, TRIM(descripcion) AS descripcion, dis_id::text AS "distritalId" FROM parametricas.grupos ORDER BY descripcion`,

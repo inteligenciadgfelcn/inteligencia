@@ -76,7 +76,7 @@ export class CasoIntegralService {
         datosActuacion: this.campos({ encabezado: completo.encabezado, dependencia: completo.dependenciaInstitucional, etapaProcesal: completo.etapaProcesal, actuacion: completo.actuacion }), bienes, empresas })
     }
     const [resumen, conclusion, precedentes] = await Promise.all([
-      this.repository.resumen(casosId), this.conclusionRepository.obtenerSelecciones(String(casosId)),
+      this.repository.resumen(casosId), this.conclusionRepository.obtenerSelecciones(casosId),
       numerosPrecedentes.size
         ? this.consultaSiii.buscarCasosPrecedentesParaReporte([...numerosPrecedentes])
         : Promise.resolve([]),

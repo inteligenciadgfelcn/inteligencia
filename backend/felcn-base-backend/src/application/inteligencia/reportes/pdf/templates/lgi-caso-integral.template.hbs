@@ -1,398 +1,299 @@
 <!DOCTYPE html>
 <html lang='es'>
-
 <head>
     <meta charset='UTF-8' />
-    <title>Reporte integral del caso</title>
+    <title>Reporte integral del caso LGI</title>
     <style>
-        @page {
-            size: 216mm 330mm;
-            margin: 10mm;
-        }
+    :root {
+      --ink: #20271e;
+      --navy: #385231;
+      --line: #c5d3be;
+      --blue: #eef3e9;
+      --muted: #6b7566
+    }
+    * {
+      box-sizing: border-box
+    }
+    html {
+      background: #fff
+    }
+    body {
+      margin: 0;
+      width: 100%;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      break-inside: avoid;
+      background: #f7f9f2;
+      border-radius: 8px;
+      padding: 14px 16px;
+      border-bottom: 3px solid #4f6b43;
+      margin-bottom: 18px
+    }
+    .logos {
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+    .logos img {
+      width: 43px;
+      height: 48px;
+      object-fit: contain
+    }
+    .org {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: .3px
+    }
+    .title {
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 5px 0
+    }
+    .subtitle {
+      font-size: 10px;
+      color: var(--muted)
+    }
+    h2 {
+      color: var(--navy);
+      font-size: 14px;
+      margin: 20px 0 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      break-after: avoid;
+      page-break-after: avoid
+    }
+    h3 {
+      background: var(--blue);
+      color: var(--navy);
+      font-size: 11px;
+      margin: 15px 0 8px;
+      padding: 7px 9px;
+      break-after: avoid;
+      page-break-after: avoid
+    }
+    p {
+      margin: 7px 0
+    }
+    .muted {
+      color: var(--muted)
+    }
+    .text {
+      white-space: pre-line;
+      overflow-wrap: anywhere
+    }
+    .empty {
+      color: var(--muted);
+      font-style: italic;
+      padding: 8px 0
+    }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 12px 0 17px;
+      break-inside: avoid
+    }
+    .metric {
+      flex: 1 1 30%;
+      background: #f7f9f2;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px
+    }
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px
+    }
+    .metric strong {
+      display: block;
+      font-size: 17px;
+      color: var(--navy);
+      margin-top: 3px
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+      table-layout: fixed
+    }
+    thead {
+      display: table-header-group
+    }
+    tr {
+      break-inside: avoid;
+      page-break-inside: avoid
+    }
+    th {
+      background: var(--blue);
+      color: var(--navy);
+      font-weight: 700;
+      text-align: left
+    }
+    td,
+    th {
+      padding: 7px 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      overflow-wrap: anywhere
+    }
+    tbody tr:nth-child(even) {
+      background: #f8faf5
+    }
+    .kv th {
+      width: 25%;
+      background: #f7f9f2;
+      color: var(--muted);
+      font-size: 10px
+    }
+    .kv td {
+      width: 25%
+    }
+    .small {
+      font-size: 9.5px
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      background: #eef3e9;
+      color: var(--navy);
+      border-radius: 9px;
+      font-size: 9px
+    }
+    .case-title {
+      padding: 9px 11px;
+      border-left: 3px solid #4f6b43;
+      background: #f7f9f2;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 12px 0 8px;
+      break-after: avoid
+    }
+    .values {
+      display: flex;
+      gap: 12px;
+      margin: 10px 0 14px;
+      break-inside: avoid
+    }
+    .value {
+      flex: 1;
+      border: 1px solid var(--line);
+      padding: 9px;
+      border-radius: 5px
+    }
+    .value span {
+      display: block;
+      color: var(--muted);
+      font-size: 9px
+    }
+    .value strong {
+      font-size: 12px
+    }
+    .closing {
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9px;
+      margin-top: 20px;
+      padding-top: 9px
+    }
+    .photo {
+      break-inside: avoid;
+      margin: 10px 0
+    }
+    .photo img {
+      max-width: 240px;
+      max-height: 180px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      padding: 5px;
+      border-radius: 5px
+    }
+    .latest td {
+      background: #eef3e9
+    }
+    a {
+      color: #4f6b43;
+      text-decoration: none
+    }
+    .photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px
+    }
+    .photos .photo {
+      width: calc(50% - 6px)
+    }
+    .photos img {
+      width: 100%;
+      max-height: 180px
+    }
+    .precedente-resumen {
+      border-left: 3px solid #4f6b43;
+      background: #f7f9f2;
+      padding: 10px 12px;
+      margin: 10px 0 15px
+    }
+    .precedente-resumen p {
+      margin: 3px 0
+    }
+    .precedente-resumen b {
+      color: var(--navy)
+    }
+@page { size: 216mm 330mm; margin: 18mm 16mm; }
+header { display:flex; align-items:center; gap:14px; background:#f7f9f2; border-radius:8px; padding:14px 16px; border-bottom:3px solid #4f6b43; margin-bottom:18px; break-inside:avoid; }
+header > img { width:43px; height:48px; object-fit:contain; }
+header h1 { margin:0 0 5px; font-size:9px; color:var(--navy); letter-spacing:.3px; }
+header strong { display:block; font-size:17px; line-height:1.25; color:var(--navy); }
+header p { margin:5px 0 0; font-size:10px; color:var(--muted); }
+.resumen-portada { display:flex; flex-wrap:wrap; gap:9px; margin:12px 0 17px; break-inside:avoid; }
+.resumen-portada > div { flex:1 1 30%; background:#f7f9f2; border:1px solid var(--line); border-radius:6px; padding:10px; }
+.resumen-portada span { display:block; color:var(--muted); font-size:9px; }
+.resumen-portada strong { display:block; font-size:17px; color:var(--navy); margin-top:3px; }
+.ficha-caso .valor { font-weight:600; }
+.ficha-caso .etiqueta { font-size:9px; color:var(--muted); margin-top:3px; }
+.dato { display:inline; margin-right:10px; overflow-wrap:anywhere; }
+.datos-adicionales-caso,.datos-actuacion,.datos-precedente { margin:8px 0 12px; }
+.texto { white-space:pre-line; overflow-wrap:anywhere; margin:7px 0; }
+.sin { color:var(--muted); font-style:italic; }
+.actuacion > h2,.bien > h3,.empresa > h3 { border-left:3px solid #4f6b43; background:#f7f9f2; padding:9px 11px; }
+.bien,.empresa { margin:12px 0; }
+.ultima,.ultima td { background:#eef3e9; }
+.ultima { padding:8px; margin:8px 0; border-left:3px solid #4f6b43; }
+.fotos { display:flex; flex-wrap:wrap; gap:12px; margin:10px 0; }
+.fotos figure { width:calc(50% - 6px); margin:0; min-width:0; break-inside:avoid; }
+.fotos img { width:100%; height:180px; object-fit:contain; border:1px solid var(--line); padding:5px; border-radius:5px; }
+figcaption { font-size:9px; color:var(--muted); margin-top:4px; overflow-wrap:anywhere; }
+.ubicacion { display:grid; grid-template-columns:43mm minmax(0,1fr); gap:12px; margin:12px 0; break-inside:avoid; }
+.ubicacion img { width:43mm; height:43mm; object-fit:contain; }
+.atribucion { font-size:7px; color:var(--muted); }
+.pie { border-top:1px solid var(--line); color:var(--muted); font-size:9px; margin-top:20px; padding-top:9px; }
+.col-numero { width:6%; } .col-nombre { width:27%; } .col-documento { width:20%; } .col-relacion { width:17%; }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            color: #20271e;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 10px;
-            line-height: 1.35;
-        }
-
-        header {
-            display: flex;
-            gap: 4mm;
-            align-items: center;
-            padding: 3mm 0;
-            border-bottom: 2px solid #4f6b43;
-        }
-
-        header img {
-            width: 18mm;
-            height: 18mm;
-            object-fit: contain;
-        }
-
-        header div {
-            flex: 1;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 14px;
-            line-height: 1.25;
-            color: #3d5633;
-            margin: 0 0 2mm;
-        }
-
-        header p {
-            margin: 1mm 0;
-            font-weight: bold;
-        }
-
-        h2 {
-            margin: 4mm 0 2mm;
-            font-size: 12px;
-            color: #3d5633;
-            border-bottom: 1px solid #4f6b43;
-            padding-bottom: 1.5mm;
-            break-after: avoid;
-        }
-
-        h3 {
-            margin: 3mm 0 1mm;
-            font-size: 10px;
-            color: #3d5633;
-            break-after: avoid;
-        }
-
-        h4 {
-            margin: 2mm 0 1mm;
-            font-size: 9px;
-            break-after: avoid;
-        }
-
-        p {
-            margin: 1mm 0;
-        }
-
-        .resumen-portada {
-            display: flex;
-            gap: 3mm;
-            margin: 3mm 0;
-        }
-
-        .resumen-portada>div {
-            flex: 1;
-            background: #f7f9f2;
-            padding: 2mm 3mm;
-            border-bottom: 2px solid #4f6b43;
-        }
-
-        .resumen-portada span {
-            display: block;
-            font-size: 8px;
-            color: #56644d;
-        }
-
-        .resumen-portada strong {
-            font-size: 13px;
-        }
-
-        .ficha-caso {
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: separate;
-            border-spacing: 3mm 1mm;
-            background: #f7f9f2;
-            margin: 2mm 0;
-        }
-
-        .ficha-caso td {
-            padding: 1mm 2mm;
-            vertical-align: top;
-            text-align: center;
-        }
-
-        .ficha-caso .valor {
-            padding: 0 1mm 1mm;
-            border-bottom: 1px solid #d58d55;
-            font-size: 10px;
-            line-height: 1.3;
-            overflow-wrap: anywhere;
-        }
-
-        .ficha-caso .etiqueta {
-            padding-top: 0.5mm;
-            font-size: 7px;
-            color: #4f6b43;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        .tabla {
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            margin: 2mm 0;
-            font-size: 9px;
-        }
-
-        .tabla th,
-        .tabla td {
-            padding: 1.5mm;
-            border-bottom: 1px solid #ddd;
-            vertical-align: top;
-            text-align: left;
-            overflow-wrap: anywhere;
-        }
-
-        .tabla th {
-            background: #f7f9f2;
-            color: #3d5633;
-            font-weight: bold;
-        }
-
-        .tabla thead {
-            display: table-header-group;
-        }
-
-        .tabla tr {
-            break-inside: avoid;
-        }
-
-        .tabla tbody tr:nth-child(even) td {
-            background: #fafbf8;
-        }
-
-        .col-numero {
-            width: 5%;
-        }
-
-        .col-nombre {
-            width: 25%;
-        }
-
-        .col-documento {
-            width: 13%;
-        }
-
-        .col-relacion {
-            width: 17%;
-        }
-
-        .dato {
-            display: inline;
-            font-size: 9px;
-            line-height: 1.45;
-            overflow-wrap: anywhere;
-        }
-
-        .dato::after {
-            content: ' · ';
-            color: #999;
-            padding: 0 1mm;
-        }
-
-        .dato:last-child::after {
-            content: '';
-        }
-
-        .dato strong {
-            text-transform: capitalize;
-        }
-
-        .persona-extras .dato {
-            font-size: 8px;
-        }
-
-        .persona-extras .dato[data-campo='nombres'],
-        .persona-extras .dato[data-campo='paterno'],
-        .persona-extras .dato[data-campo='materno'],
-        .persona-extras .dato[data-campo='esposo'],
-        .persona-extras .dato[data-campo='numero Documento'],
-        .persona-extras .dato[data-campo='relacion'] {
-            display: none;
-        }
-
-        .datos-adicionales-caso .dato[data-campo='nombre Caso'],
-        .datos-adicionales-caso .dato[data-campo='fecha Inicio'],
-        .datos-adicionales-caso .dato[data-campo='numero Caso Fiscalia'],
-        .datos-adicionales-caso .dato[data-campo='numero Caso Giaef'],
-        .datos-adicionales-caso .dato[data-campo='cud Ifp'],
-        .datos-adicionales-caso .dato[data-campo='forma Inicio'],
-        .datos-adicionales-caso .dato[data-campo='control Jurisdiccional'],
-        .datos-adicionales-caso .dato[data-campo*='numeros Casos Precedentes'] {
-            display: none;
-        }
-
-        .dato[data-campo*='id Operativo'],
-        .dato[data-campo*='id Item Bien'],
-        .dato[data-campo*='color Relevancia'],
-        .datos-actuacion .dato[data-campo='actuacion / sintesis'] {
-            display: none;
-        }
-
-        .datos-actuacion,
-        .datos-precedente,
-        .caracteristicas-compactas {
-            margin: 1mm 0 2mm;
-        }
-
-        .precedente-ficha {
-            padding: 2mm 3mm;
-            margin: 2mm 0;
-            border-left: 2px solid #4f6b43;
-            background: #fafbf8;
-        }
-
-        .texto {
-            white-space: pre-line;
-            text-align: justify;
-            margin: 2mm 0;
-            line-height: 1.45;
-        }
-
-        .actuacion {
-            break-before: auto;
-        }
-
-        .actuacion>h2 {
-            padding: 2mm 3mm;
-            background: #eef3e9;
-            border-left: 3px solid #4f6b43;
-        }
-
-        .bien,
-        .empresa {
-            margin: 2mm 0;
-            padding-bottom: 2mm;
-            border-bottom: 1px solid #aaa;
-        }
-
-        .bien>h3,
-        .empresa>h3 {
-            padding: 2mm;
-            background: #f7f9f2;
-        }
-
-        .ultima {
-            padding: 2mm;
-            background: #eef3e9;
-            border-left: 2px solid #4f6b43;
-            margin-bottom: 2mm;
-        }
-
-        .ultima td {
-            background: #eef3e9 !important;
-            font-weight: bold;
-        }
-
-        .fotos {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 3mm;
-            margin: 2mm 0;
-        }
-
-        figure {
-            margin: 0;
-            min-width: 0;
-            break-inside: avoid;
-        }
-
-        figure img {
-            width: 100%;
-            height: 30mm;
-            object-fit: contain;
-            border: 1px solid #ddd;
-        }
-
-        figcaption {
-            font-size: 7px;
-            padding-top: 1mm;
-            overflow-wrap: anywhere;
-        }
-
-        .ubicacion {
-            display: grid;
-            grid-template-columns: 43mm minmax(0, 1fr);
-            gap: 3mm;
-            margin: 2mm 0;
-            break-inside: avoid;
-        }
-
-        .ubicacion img {
-            width: 43mm;
-            height: 43mm;
-            object-fit: contain;
-        }
-
-        .atribucion {
-            font-size: 6px;
-            text-align: center;
-        }
-
-        .sin {
-            color: #777;
-            font-style: italic;
-        }
-
-        .pie {
-            border-top: 1px dashed #d58d55;
-            text-align: center;
-            padding: 2mm;
-            margin-top: 4mm;
-        }
-
-        .tabla-campos {
-            margin: 1mm 0 2mm;
-            font-size: 8.5px;
-        }
-
-        .tabla-campos .campo-label {
-            width: 18%;
-        }
-
-        .tabla-campos .campo-valor {
-            width: 32%;
-        }
-
-        .tabla-campos th {
-            background: #f7f9f2;
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-
-        .tabla-campos td {
-            background: white;
-        }
-
-        .tabla-campos th,
-        .tabla-campos td {
-            padding: 1.5mm 2mm;
-            border: 1px solid #e1e6dd;
-        }
-
-        .tabla-personas>tbody>tr>td {
-            padding: 2mm;
-        }
-
-        .tabla-personas .tabla-campos {
-            margin: 0;
-        }
-    </style>
+.precedente-resumen { font-size:11px; line-height:1.5; }
+.precedente-resumen p { margin:3px 0; }
+.tabla-campos .campo-label { width:25%; }
+.tabla-campos .campo-valor { width:25%; }
+h4 { font-size:11px; color:var(--navy); background:var(--blue); padding:7px 9px; margin:15px 0 8px; break-after:avoid; }
+</style>
 </head>
-
 <body>
     <header>
         <img src='{{institucional}}' alt='Logotipo institucional' />
         <img src='{{escudo}}' alt='Escudo institucional' />
         <div>
-            <h1>Grupo de Investigación y Análisis Económico Financiero</h1><strong>REPORTE INTEGRAL DEL CASO</strong>
+            <h1>Grupo de Investigación y Análisis Económico Financiero</h1><strong>REPORTE INTEGRAL · LGI</strong>
             <p>{{caso.nombreCaso}}</p>
         </div>
     </header>
@@ -403,66 +304,32 @@
             <div><span>Valor aproximado registrado</span><strong>{{totalBienes}}</strong></div>
         </div>
         <h2>Datos generales del caso</h2>
-        <table class='ficha-caso'>
+        <table class='kv ficha-caso'>
             <tbody>
                 <tr>
-                    <td>
-                        <div class='valor'>{{caso.nombreCaso}}</div>
-                        <div class='etiqueta'>Nombre del caso</div>
-                    </td>
-                    <td>
-                        <div class='valor'>{{caso.fechaInicio}}</div>
-                        <div class='etiqueta'>Fecha de inicio</div>
-                    </td>
+                    <th>Nombre del caso</th><td>{{caso.nombreCaso}}</td>
+                    <th>Fecha de inicio</th><td>{{caso.fechaInicio}}</td>
                 </tr>
                 <tr>
-                    <td>
-                        <div class='valor'>{{caso.numeroCasoFiscalia}}</div>
-                        <div class='etiqueta'>N.º caso Fiscalía</div>
-                    </td>
-                    <td>
-                        <div class='valor'>{{caso.numeroCasoGiaef}}</div>
-                        <div class='etiqueta'>N.º caso GIAEF</div>
-                    </td>
+                    <th>N.º caso Fiscalía</th><td>{{caso.numeroCasoFiscalia}}</td>
+                    <th>N.º caso GIAEF</th><td>{{caso.numeroCasoGiaef}}</td>
                 </tr>
                 <tr>
-                    <td>
-                        <div class='valor'>{{caso.etapa}}</div>
-                        <div class='etiqueta'>Etapa procesal</div>
-                    </td>
-                    <td>
-                        <div class='valor'>{{caso.cudIfp}}</div>
-                        <div class='etiqueta'>Investigación financiera paralela</div>
-                    </td>
+                    <th>Etapa procesal</th><td>{{caso.etapa}}</td>
+                    <th>Investigación financiera paralela</th><td>{{caso.cudIfp}}</td>
                 </tr>
                 <tr>
-                    <td colspan='2'>
-                        <div class='valor'>{{caso.formaInicio}}</div>
-                        <div class='etiqueta'>Forma de inicio del caso</div>
-                    </td>
+                    <th>Forma de inicio del caso</th><td colspan="3">{{caso.formaInicio}}</td>
                 </tr>
                 <tr>
-                    <td colspan='2'>
-                        <div class='valor'>{{caso.lugarInvestigacion}}</div>
-                        <div class='etiqueta'>Lugar donde se investiga el caso</div>
-                    </td>
+                    <th>Lugar donde se investiga el caso</th><td colspan="3">{{caso.lugarInvestigacion}}</td>
                 </tr>
                 <tr>
-                    <td colspan='2'>
-                        <div class='valor'>{{#each caso.investigadores}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}
-                        </div>
-                        <div class='etiqueta'>Investigadores asignados</div>
-                    </td>
+                    <th>Investigadores asignados</th><td colspan="3">{{#each caso.investigadores}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}</td>
                 </tr>
                 <tr>
-                    <td>
-                        <div class='valor'>{{caso.fiscalAsignado}}</div>
-                        <div class='etiqueta'>Fiscal asignado</div>
-                    </td>
-                    <td>
-                        <div class='valor'>{{caso.controlJurisdiccional}}</div>
-                        <div class='etiqueta'>Control jurisdiccional</div>
-                    </td>
+                    <th>Fiscal asignado</th><td>{{caso.fiscalAsignado}}</td>
+                    <th>Control jurisdiccional</th><td>{{caso.controlJurisdiccional}}</td>
                 </tr>
             </tbody>
         </table>
@@ -523,26 +390,18 @@
                 </tr>{{/each}}</tbody>
         </table>
         <h2>Casos precedentes</h2>
-        {{#each precedentes}}<div class='precedente-ficha'>
-            <h3>Precedente {{numero}}</h3>
-            <div class='datos-precedente'>
-                <table class='tabla tabla-campos'>
-                    <colgroup>
-                        <col class='campo-label' />
-                        <col class='campo-valor' />
-                        <col class='campo-label' />
-                        <col class='campo-valor' />
-                    </colgroup>
-                    <tbody>{{#each filasDatos}}<tr>
-                            <th>{{izquierda.etiqueta}}</th>
-                            <td>{{izquierda.valor}}</td>
-                            <th>{{#if derecha}}{{derecha.etiqueta}}{{/if}}</th>
-                            <td>{{#if derecha}}{{derecha.valor}}{{/if}}</td>
-                        </tr>{{/each}}</tbody>
-                </table>
-            </div>
-        </div>{{else}}<p class='sin'>Sin casos precedentes recuperados.</p>{{/each}}
-    </section>
+{{#each precedentes}}
+  <div class="precedente-resumen">
+    {{#each datos}}
+      <p class="text"><b>{{etiqueta}}:</b> {{valor}}</p>
+    {{else}}
+      <p class="empty">Sin información del precedente.</p>
+    {{/each}}
+  </div>
+{{else}}
+  <p class="empty">No hay casos precedentes registrados.</p>
+{{/each}}
+</section>
     {{#each actuaciones}}
     <section class='actuacion'>
         <h2>Actuación {{numeroSeccion}} — {{novedad.numero}}</h2>
@@ -629,21 +488,9 @@
                     </tr>
                 </tbody>
             </table>
-            <h4>Características</h4>{{#if filasCaracteristicas}}<table class='tabla tabla-campos'>
-                <colgroup>
-                    <col class='campo-label' />
-                    <col class='campo-valor' />
-                    <col class='campo-label' />
-                    <col class='campo-valor' />
-                </colgroup>
-                <tbody>{{#each filasCaracteristicas}}<tr>
-                        <th>{{izquierda.etiqueta}}</th>
-                        <td>{{izquierda.valor}}</td>
-                        <th>{{#if derecha}}{{derecha.etiqueta}}{{/if}}</th>
-                        <td>{{#if derecha}}{{derecha.valor}}{{/if}}</td>
-                    </tr>{{/each}}</tbody>
-            </table>{{else}}<p class='sin'>Sin características registradas.</p>{{/if}}
-            <h4>Historial de situación jurídica</h4>
+            <h3>Características</h3>
+<p class="text">{{#each caracteristicas}}<b>{{etiqueta}}:</b> {{valor}}{{#unless @last}}; {{/unless}}{{else}}No registradas{{/each}}</p>
+<h4>Historial de situación jurídica</h4>
             <table class='tabla'>
                 <thead>
                     <tr>
@@ -867,5 +714,4 @@
     </section>
     <footer class='pie'>Fin del reporte integral del caso</footer>
 </body>
-
 </html>
