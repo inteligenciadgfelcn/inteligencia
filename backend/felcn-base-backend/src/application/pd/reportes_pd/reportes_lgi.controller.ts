@@ -9,13 +9,14 @@ import {
   UseGuards,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiProduces, ApiTags } from '@nestjs/swagger'
 import { PDF_OFICIO_VERTICAL } from '@/application/inteligencia/reportes/export/pdf/pdf-options'
 import { ActuacionLgiService } from './service/actuacion.service'
 import { InicioInvestigacionService } from './service/inicio_investigacion.service'
 import { BienesLgiService } from './service/bienes_lgi.service'
 import { PersonasJuridicasReporteService } from './service/personas-juridicas.service'
 import { ConclusionReporteService } from './service/conclusion.service'
+import { ReportePdService } from './service/reporte-pd.service'
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -25,10 +26,10 @@ export class ReportesLgiController {
   constructor(
     private readonly reporteService: ActuacionLgiService,
     private readonly exportService: ExportService,
-    private readonly reporteIncio: InicioInvestigacionService,
     private readonly reporteBienes: BienesLgiService,
     private readonly personasJuridicasReporte: PersonasJuridicasReporteService,
-    private readonly conclusionReporte: ConclusionReporteService
+    private readonly conclusionReporte: ConclusionReporteService,
+     private readonly reportePdService: ReportePdService,
   ) {}
 
   @Get('export/pdf/actuacion/:id')
@@ -120,4 +121,36 @@ export class ReportesLgiController {
 
     res.end(buffer)
   }
+
+   @Get('export/pdf/caso-integral/:casosId')
+  @ApiOperation({ summary: 'Exportar reporte integral de Pérdida de Dominio' })
+  @ApiProduces('application/pdf')
+  @ApiParam({ name: 'casosId', type: String, example: '196' })
+  async exportPDFCasoIntegral(
+    @Param('casosId') casosId: string,
+    @Res() res: Response,
+  ) {
+    const data = await this.reportePdService.generarReporte(casosId)
+    const buffer = await this.exportService.generatePDF(
+      'pd-caso-integral',
+      data,
+      {
+        ...PDF_OFICIO_VERTICAL,
+        margin: {
+          top: '18mm',
+          right: '16mm',
+          bottom: '18mm',
+          left: '16mm',
+        },
+      },
+    )
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=pd-caso-integral-${casosId}.pdf`,
+      'Content-Length': buffer.length,
+    })
+    res.end(buffer)
+  }
+
+
 }
