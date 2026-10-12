@@ -78,4 +78,15 @@ export const ActuacionesApi = {
       withCredentials: true,
     })
   },
+
+  async obtenerArchivo(id: number): Promise<Blob> {
+    const response = await sesionPeticion({
+      url: `${BASE}/${id}/archivo`,
+      method: 'get',
+      responseType: 'blob',
+      withCredentials: true,
+    })
+
+    return response as Blob
+  },
 }
