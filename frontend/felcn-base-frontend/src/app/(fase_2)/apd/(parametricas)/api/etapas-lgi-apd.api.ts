@@ -11,4 +11,12 @@ export const EtapasLgiApi = {
       withCredentials: true,
     })
   },
+  
+  listarEtapasApd(): Promise<EtapaLgi[]> {
+    return sesionPeticion({
+      url: `${Constantes.baseUrl}/parametricas-lgi/allEtapaPd`,
+      method: 'get',
+      withCredentials: true,
+    })
+  },
 }

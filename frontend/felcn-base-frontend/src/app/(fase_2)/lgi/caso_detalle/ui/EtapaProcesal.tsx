@@ -95,16 +95,33 @@ export function EtapaProcesal({ casoId, isLectura = false }: Props) {
 
   const abrirDocumento = (row: EtapaProcesalRow) => {
     if (row.dataUrl) {
-      window.open(row.dataUrl, '_blank')
+      const base64 = row.dataUrl.split(",")[1];
+
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+
+      const blob = new Blob([byteArray], {
+        type: "application/pdf",
+      });
+
+      const pdfUrl = URL.createObjectURL(blob);
+
+      window.open(pdfUrl, "_blank");
     }
   }
 
   const columns: Column<EtapaProcesalRow>[] = [
-    {
-      accessor: 'docCasoId',
-      title: 'ID documento',
-      sortable: true,
-    },
+    // {
+    //   accessor: 'docCasoId',
+    //   title: 'ID documento',
+    //   sortable: true,
+    // },
     {
       accessor: 'descripcion',
       title: 'Descripción',

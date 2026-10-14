@@ -25,7 +25,7 @@ const campos: Array<{ label: string; key: keyof CasoDetalle }> = [
 export function DatosCasoPanel({ caso }: Props) {
   const { data: etapas = [] } = useQuery<EtapaLgi[]>({
     queryKey: ['apd-etapas'],
-    queryFn: () => EtapasLgiApi.listarEtapas(),
+    queryFn: () => EtapasLgiApi.listarEtapasApd(),
     staleTime: 5 * 60 * 1000,
   })
 

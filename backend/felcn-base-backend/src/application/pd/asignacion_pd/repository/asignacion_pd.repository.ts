@@ -294,6 +294,9 @@ export class AsignacionPdRepository {
         casosId: id,
         estado: 'ACTIVO',
       },
+      relations: {
+        etapaInvestigacion: true
+      },
     })
 
     if (!asignacion) {

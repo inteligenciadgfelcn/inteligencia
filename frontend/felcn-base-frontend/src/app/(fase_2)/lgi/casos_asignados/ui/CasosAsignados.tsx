@@ -57,7 +57,12 @@ export function CasosAsignados() {
   )
 
   const irADetalle = (row: AsignacionCasoListadoRow) => {
-    router.push(`/lgi/caso_detalle/${row.casosId}`)
+    console.log(row);
+    if(row.nroCaso.includes('-PD-')) {
+      router.push(`/apd/caso_detalle/${row.casosId}`)
+    } else {
+      router.push(`/lgi/caso_detalle/${row.casosId}`)
+    }
   }
 
   const irA = (row: AsignacionCasoListadoRow, modo?: 'ver') => {

@@ -107,7 +107,7 @@ export function RegistroCaso({ casoId, modo = 'nuevo' }: Props) {
                   : 'Editar caso'}
             </p>
             <h2 className="mt-1 text-xl font-bold text-dark dark:text-white-light">
-              {caso?.nombreCaso || 'Registro de caso LGI'}
+              {caso?.nombreCaso || 'Registro de caso PDA'}
             </h2>
             {casoIdEfectivo && (
               <p className="mt-1 text-sm text-gray-500">ID {casoIdEfectivo}</p>
